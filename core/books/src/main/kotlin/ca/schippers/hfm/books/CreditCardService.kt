@@ -57,10 +57,10 @@ class CreditCardService internal constructor(private val books: Books) {
     fun saveTerms(accountId: String, terms: CreditCardTerms) {
         val (group, account) = books.accounts.locate(accountId)
         books.require(group, PermissionLevel.EDIT)
-        validate(account.type.kind == AccountKind.CREDIT) { "Card terms apply to credit accounts only" }
-        listOfNotNull(terms.statementDay, terms.dueDay).forEach { validate(it in 1..31) { "Days must be between 1 and 31" } }
+        validate(account.type.kind == AccountKind.CREDIT, "error.notCreditAccount")
+        listOfNotNull(terms.statementDay, terms.dueDay).forEach { validate(it in 1..31, "error.dayOfMonth") }
         listOfNotNull(terms.purchaseRate, terms.cashAdvanceRate, terms.promoRate, terms.minPaymentPercent)
-            .forEach { validate(it.signum() >= 0 && it < BigDecimal.ONE) { "Rates are fractions between 0 and 1" } }
+            .forEach { validate(it.signum() >= 0 && it < BigDecimal.ONE, "error.rateRange") }
         books.ledger(group).ledgerQueries.upsertCreditCard(
             accountId, terms.creditLimit?.minorUnits, terms.purchaseRate?.toPlainString(), terms.cashAdvanceRate?.toPlainString(),
             terms.promoRate?.toPlainString(), terms.promoEnds?.toString(), terms.statementDay?.toLong(), terms.dueDay?.toLong(),
@@ -83,8 +83,8 @@ class CreditCardService internal constructor(private val books: Books) {
     fun recordStatement(accountId: String, statementDate: LocalDate, balance: Money, dueDate: LocalDate, minimumDue: Money? = null): CardStatement {
         val (group, account) = books.accounts.locate(accountId)
         books.require(group, PermissionLevel.EDIT)
-        validate(balance.currency == account.currency) { "The balance must be in the card's currency" }
-        validate(dueDate >= statementDate) { "The due date cannot be before the statement date" }
+        validate(balance.currency == account.currency, "error.currencyMismatch", account.currency.code)
+        validate(dueDate >= statementDate, "error.dueBeforeStatement")
         val minimum = minimumDue ?: terms(accountId)?.let { minimumPayment(balance, it) } ?: Money.zero(account.currency)
         val existing = statements(accountId).firstOrNull { it.statementDate == statementDate }
         val statement = CardStatement(existing?.id ?: Ids.newId(), statementDate, balance, minimum, dueDate, existing?.paid ?: false)

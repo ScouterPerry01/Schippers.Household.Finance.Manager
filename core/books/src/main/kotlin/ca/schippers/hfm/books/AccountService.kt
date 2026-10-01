@@ -36,9 +36,9 @@ class AccountService internal constructor(private val books: Books) {
     fun create(draft: AccountDraft): Account {
         val group = books.group(draft.groupId)
         books.require(group, PermissionLevel.EDIT)
-        validate(draft.name.isNotBlank()) { "Account name is required" }
-        validate(draft.openingBalance.currency == draft.currency) { "The opening balance must be in the account's currency" }
-        validate(draft.type != AccountType.CRYPTO_WALLET || draft.currency.isCrypto) { "A crypto wallet holds a crypto-asset such as BTC" }
+        validate(draft.name.isNotBlank(), "error.nameRequired")
+        validate(draft.openingBalance.currency == draft.currency, "error.openingCurrency")
+        validate(draft.type != AccountType.CRYPTO_WALLET || draft.currency.isCrypto, "error.cryptoCurrency")
         val ledger = books.ledger(group)
         val id = Ids.newId()
         val now = books.now()
@@ -61,9 +61,9 @@ class AccountService internal constructor(private val books: Books) {
     fun update(account: Account, newNumber: String? = null) {
         val (group, existing) = locate(account.id)
         books.require(group, PermissionLevel.EDIT)
-        validate(account.name.isNotBlank()) { "Account name is required" }
-        validate(account.type == existing.type && account.currency == existing.currency) { "Account type and currency cannot be changed" }
-        validate(account.openingBalance.currency == existing.currency) { "The opening balance must be in the account's currency" }
+        validate(account.name.isNotBlank(), "error.nameRequired")
+        validate(account.type == existing.type && account.currency == existing.currency, "error.accountTypeFixed")
+        validate(account.openingBalance.currency == existing.currency, "error.openingCurrency")
         val ledger = books.ledger(group)
         val full = newNumber?.trim()?.ifEmpty { null } ?: ledger.ledgerQueries.accountById(account.id).executeAsOne().number_full
         ledger.transaction {

@@ -18,6 +18,7 @@ kotlin {
 
 dependencies {
     implementation(project(":core:data-jdbc"))
+    implementation(project(":core:books"))
     implementation(project(":core:i18n"))
     implementation(project(":core:calc"))
     implementation(compose.desktop.currentOs)
@@ -54,4 +55,16 @@ compose.desktop {
             }
         }
     }
+}
+
+// Opens a throw-away sample household: ./gradlew :app:desktop:runDemo [-Plang=fr] [-Paccount=Visa Desjardins] [-Psection=CATEGORIES]
+tasks.register<JavaExec>("runDemo") {
+    group = "application"
+    description = "Runs the desktop app with a temporary sample household"
+    mainClass.set("ca.schippers.hfm.desktop.MainKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    systemProperty("hfm.demo", "true")
+    providers.gradleProperty("lang").orNull?.let { systemProperty("hfm.demo.lang", it) }
+    providers.gradleProperty("account").orNull?.let { systemProperty("hfm.demo.account", it) }
+    providers.gradleProperty("section").orNull?.let { systemProperty("hfm.demo.section", it) }
 }

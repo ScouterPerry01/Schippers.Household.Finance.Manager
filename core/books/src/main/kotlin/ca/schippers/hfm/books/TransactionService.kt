@@ -104,8 +104,8 @@ class TransactionService internal constructor(private val books: Books) {
     fun update(transactionId: String, draft: TransactionDraft, confirmReconciled: Boolean = false): Transaction {
         val (group, row) = locate(transactionId)
         books.require(group, PermissionLevel.EDIT)
-        validate(row.transfer_id == null) { "Use updateTransfer to change a transfer" }
-        validate(draft.accountId == row.account_id) { "Moving a transaction to another account is done by deleting and re-entering it" }
+        validate(row.transfer_id == null, "error.editTransferAsTransfer")
+        validate(draft.accountId == row.account_id, "error.cannotChangeAccount")
         guardReconciled(row, confirmReconciled)
         val account = books.accounts.get(row.account_id)
         val prepared = prepare(draft, account)
@@ -172,9 +172,7 @@ class TransactionService internal constructor(private val books: Books) {
         val sides = transferSides(transferId)
         val fromRow = sides.firstOrNull { it.second.account_id == draft.fromAccountId }?.second
         val toRow = sides.firstOrNull { it.second.account_id == draft.toAccountId }?.second
-        validate(fromRow != null && toRow != null && fromRow.id != toRow.id) {
-            "Changing the accounts of a transfer is done by deleting and re-entering it"
-        }
+        validate(fromRow != null && toRow != null && fromRow.id != toRow.id, "error.cannotChangeAccount")
         sides.forEach { (group, row) ->
             books.require(group, PermissionLevel.EDIT)
             guardReconciled(row, confirmReconciled)
@@ -230,21 +228,21 @@ class TransactionService internal constructor(private val books: Books) {
     }
 
     private fun planTransfer(draft: TransferDraft): TransferPlan {
-        validate(draft.fromAccountId != draft.toAccountId) { "A transfer needs two different accounts" }
+        validate(draft.fromAccountId != draft.toAccountId, "error.transferSameAccount")
         val (fromGroup, from) = books.accounts.locate(draft.fromAccountId)
         val (toGroup, to) = books.accounts.locate(draft.toAccountId)
         books.require(fromGroup, PermissionLevel.CAPTURE_ONLY)
         books.require(toGroup, PermissionLevel.CAPTURE_ONLY)
-        validate(draft.amount.isPositive) { "The transfer amount must be positive" }
-        validate(draft.amount.currency == from.currency) { "The amount must be in ${from.currency}, the currency of ${from.name}" }
+        validate(draft.amount.isPositive, "error.transferPositive")
+        validate(draft.amount.currency == from.currency, "error.currencyMismatch", from.currency.code)
         val toAmount = when {
             from.currency == to.currency -> {
-                validate(draft.toAmount == null || draft.toAmount == draft.amount) { "Both sides of a same-currency transfer are equal" }
+                validate(draft.toAmount == null || draft.toAmount == draft.amount, "error.transferSameCurrency")
                 draft.amount
             }
             else -> {
-                val received = draft.toAmount ?: throw ValidationException("Enter the amount received in ${to.currency}")
-                validate(received.currency == to.currency && received.isPositive) { "The amount received must be a positive amount in ${to.currency}" }
+                val received = draft.toAmount ?: throw ValidationException("error.transferToAmount", to.currency.code)
+                validate(received.currency == to.currency && received.isPositive, "error.transferToAmount", to.currency.code)
                 received
             }
         }
@@ -316,23 +314,23 @@ class TransactionService internal constructor(private val books: Books) {
 
     private fun prepare(draft: TransactionDraft, account: Account): Prepared {
         val currency = account.currency
-        validate(draft.amount.currency == currency) { "The amount must be in ${currency.code}, the currency of ${account.name}" }
+        validate(draft.amount.currency == currency, "error.currencyMismatch", currency.code)
         val splits = draft.splits.ifEmpty { listOf(SplitDraft(null, draft.amount)) }
-        validate(splits.all { it.amount.currency == currency }) { "Split amounts must be in ${currency.code}" }
+        validate(splits.all { it.amount.currency == currency }, "error.currencyMismatch", currency.code)
         val splitTotal = splits.map { it.amount }.sum(currency)
-        validate(splitTotal == draft.amount) { "The splits add up to $splitTotal but the transaction is ${draft.amount}" }
+        validate(splitTotal == draft.amount, "error.splitTotal", splitTotal, draft.amount)
         val knownCategories = books.categories.list(includeArchived = true).mapTo(HashSet()) { it.id }
-        validate(splits.all { it.categoryId == null || it.categoryId in knownCategories }) { "Unknown category" }
+        validate(splits.all { it.categoryId == null || it.categoryId in knownCategories }, "error.unknownCategory")
 
         var fxRate = draft.fxRate
         draft.originalAmount?.let { original ->
-            validate(original.currency != currency) { "The original amount must be in a foreign currency" }
-            validate(original.signum == draft.amount.signum) { "The original and converted amounts must have the same sign" }
+            validate(original.currency != currency, "error.originalNotForeign")
+            validate(original.signum == draft.amount.signum, "error.originalSign")
             if (fxRate == null && !original.isZero) {
                 fxRate = draft.amount.toBigDecimal().divide(original.toBigDecimal(), MathContext.DECIMAL64).abs()
             }
         }
-        fxRate?.let { validate(it.signum() > 0) { "The exchange rate must be positive" } }
+        fxRate?.let { validate(it.signum() > 0, "error.ratePositive") }
 
         val payeeId = draft.payeeName?.let { books.payees.findOrCreate(it)?.id }
         val tagIds = draft.tags.filter { it.isNotBlank() }.map { name ->

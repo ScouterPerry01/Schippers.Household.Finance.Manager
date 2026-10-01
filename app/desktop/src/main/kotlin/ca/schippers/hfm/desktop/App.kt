@@ -53,15 +53,18 @@ fun App(state: AppState) {
         Surface(Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize()) {
                 TopBar(state)
-                Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp), contentAlignment = Alignment.TopCenter) {
-                    Column(Modifier.widthIn(max = 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        when (val screen = state.screen) {
-                            Screen.Welcome -> WelcomeScreen(state)
-                            Screen.Create -> CreateScreen(state)
-                            is Screen.Unlock -> UnlockScreen(state, screen.dir)
-                            is Screen.Reset -> ResetScreen(state, screen.dir)
-                            is Screen.ShowRecoveryKey -> RecoveryKeyScreen(state, screen)
-                            is Screen.Home -> HomeScreen(state, screen)
+                when (val screen = state.screen) {
+                    is Screen.Main -> MainScreen(screen.model)
+                    else -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp), contentAlignment = Alignment.TopCenter) {
+                        Column(Modifier.widthIn(max = 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            when (screen) {
+                                Screen.Welcome -> WelcomeScreen(state)
+                                Screen.Create -> CreateScreen(state)
+                                is Screen.Unlock -> UnlockScreen(state, screen.dir)
+                                is Screen.Reset -> ResetScreen(state, screen.dir)
+                                is Screen.ShowRecoveryKey -> RecoveryKeyScreen(state, screen)
+                                is Screen.Main -> Unit
+                            }
                         }
                     }
                 }
@@ -80,7 +83,7 @@ private fun TopBar(state: AppState) {
                 Text(if (language == Language.ENGLISH) "English" else "Français")
             }
         }
-        if (state.screen is Screen.Home) {
+        if (state.screen is Screen.Main) {
             OutlinedButton(onClick = state::lock) { Text(state.t("common.lock")) }
         }
     }
@@ -257,27 +260,6 @@ private fun ResetScreen(state: AppState, dir: Path) {
             }
         }) { Text(state.t("reset.submit")) }
     }
-}
-
-@Composable
-private fun HomeScreen(state: AppState, screen: Screen.Home) {
-    val session = screen.session
-    val household = remember(session) { session.core.coreQueries.household().executeAsOne() }
-    val user = remember(session) { session.core.coreQueries.userById(session.userId).executeAsOne() }
-    val groups = remember(session) { session.core.coreQueries.groups().executeAsList() }
-
-    Text(state.t("home.title"), style = MaterialTheme.typography.headlineMedium)
-    Text(state.t("home.unlocked", household.name, user.display_name))
-    Text(state.t("home.groups"), style = MaterialTheme.typography.titleMedium)
-    for (group in groups.filter { session.canOpen(it.partition_id) }) {
-        Card(Modifier.fillMaxWidth()) {
-            Row(Modifier.padding(16.dp)) {
-                Text(group.name, Modifier.weight(1f))
-                Text(state.t(if (group.owner_user_id == null) "home.group.shared" else "home.group.private"))
-            }
-        }
-    }
-    Text(state.t("home.phase0"), style = MaterialTheme.typography.bodySmall)
 }
 
 @Composable

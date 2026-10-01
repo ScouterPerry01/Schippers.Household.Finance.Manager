@@ -19,7 +19,7 @@ class MemberService internal constructor(private val books: Books) {
 
     fun create(displayName: String, kind: MemberKind, birthDate: LocalDate? = null): Member {
         requireAdmin(books)
-        validate(displayName.isNotBlank()) { "Name is required" }
+        validate(displayName.isNotBlank(), "error.nameRequired")
         val id = Ids.newId()
         books.core.insertMember(id, displayName.trim(), kind.name, birthDate?.toString(), books.now())
         books.session.audit("CREATE", "member", id)
@@ -28,7 +28,7 @@ class MemberService internal constructor(private val books: Books) {
 
     fun update(member: Member) {
         requireAdmin(books)
-        validate(member.displayName.isNotBlank()) { "Name is required" }
+        validate(member.displayName.isNotBlank(), "error.nameRequired")
         books.core.updateMember(member.displayName.trim(), member.kind.name, member.birthDate?.toString(), if (member.archived) 1 else 0, member.id)
         books.session.audit("UPDATE", "member", member.id)
     }
@@ -49,7 +49,7 @@ class InstitutionService internal constructor(private val books: Books) {
     }
 
     fun create(institution: Institution): Institution {
-        validate(institution.name.isNotBlank()) { "Name is required" }
+        validate(institution.name.isNotBlank(), "error.nameRequired")
         validateNumbers(institution)
         val id = Ids.newId()
         with(institution) {
@@ -60,7 +60,7 @@ class InstitutionService internal constructor(private val books: Books) {
     }
 
     fun update(institution: Institution) {
-        validate(institution.name.isNotBlank()) { "Name is required" }
+        validate(institution.name.isNotBlank(), "error.nameRequired")
         validateNumbers(institution)
         with(institution) {
             books.core.updateInstitution(name.trim(), branch, institutionNumber, transitNumber, website, phone, notes, id)
@@ -71,10 +71,10 @@ class InstitutionService internal constructor(private val books: Books) {
     /** Canadian institution numbers have 3 digits and transit (branch) numbers 5. */
     private fun validateNumbers(institution: Institution) {
         institution.institutionNumber?.takeIf { it.isNotBlank() }?.let {
-            validate(it.matches(Regex("\\d{3}"))) { "The institution number has 3 digits" }
+            validate(it.matches(Regex("\\d{3}")), "error.institutionNumber")
         }
         institution.transitNumber?.takeIf { it.isNotBlank() }?.let {
-            validate(it.matches(Regex("\\d{5}"))) { "The transit number has 5 digits" }
+            validate(it.matches(Regex("\\d{5}")), "error.transitNumber")
         }
     }
 }
@@ -107,9 +107,9 @@ class CategoryService internal constructor(private val books: Books) {
     }
 
     fun create(parentId: String?, nameEn: String, nameFr: String, kind: CategoryKind, taxFlag: TaxFlag? = null): Category {
-        validate(nameEn.isNotBlank() || nameFr.isNotBlank()) { "A name is required" }
-        val parent = parentId?.let { id -> list(includeArchived = true).firstOrNull { it.id == id } ?: throw ValidationException("Unknown parent category") }
-        validate(parent == null || parent.kind == kind) { "A category must have the same kind as its parent" }
+        validate(nameEn.isNotBlank() || nameFr.isNotBlank(), "error.nameRequired")
+        val parent = parentId?.let { id -> list(includeArchived = true).firstOrNull { it.id == id } ?: throw ValidationException("error.unknownCategory") }
+        validate(parent == null || parent.kind == kind, "error.categoryKind")
         val en = nameEn.ifBlank { nameFr }.trim()
         val fr = nameFr.ifBlank { nameEn }.trim()
         val order = list(includeArchived = true).count { it.parentId == parentId }
@@ -120,11 +120,11 @@ class CategoryService internal constructor(private val books: Books) {
     }
 
     fun update(category: Category) {
-        validate(category.parentId != category.id) { "A category cannot be its own parent" }
+        validate(category.parentId != category.id, "error.categoryCycle")
         val all = list(includeArchived = true).associateBy { it.id }
         var ancestor = category.parentId
         while (ancestor != null) {
-            validate(ancestor != category.id) { "A category cannot be moved under one of its own subcategories" }
+            validate(ancestor != category.id, "error.categoryCycle")
             ancestor = all[ancestor]?.parentId
         }
         books.core.updateCategory(
@@ -169,20 +169,20 @@ class PayeeService internal constructor(private val books: Books) {
         .filter { includeArchived || !it.archived }
 
     fun create(name: String, defaultCategoryId: String? = null): Payee {
-        validate(name.isNotBlank()) { "Payee name is required" }
+        validate(name.isNotBlank(), "error.nameRequired")
         val id = Ids.newId()
         books.core.insertPayee(id, name.trim(), defaultCategoryId)
         return Payee(id, name.trim(), defaultCategoryId, archived = false)
     }
 
     fun update(payee: Payee) {
-        validate(payee.name.isNotBlank()) { "Payee name is required" }
+        validate(payee.name.isNotBlank(), "error.nameRequired")
         books.core.updatePayee(payee.name.trim(), payee.defaultCategoryId, if (payee.archived) 1 else 0, payee.id)
     }
 
     /** "AMZN MKTP CA*2X4" → Amazon: an alias pattern contained in the text, ignoring case. */
     fun addAlias(payeeId: String, pattern: String) {
-        validate(pattern.isNotBlank()) { "Alias is required" }
+        validate(pattern.isNotBlank(), "error.nameRequired")
         books.core.insertPayeeAlias(Ids.newId(), payeeId, pattern.trim())
     }
 

@@ -40,7 +40,11 @@ object MoneyFormat {
      *
      * @throws IllegalArgumentException if the text is not a valid amount for the currency.
      */
-    fun parse(text: String, currency: Currency, locale: Locale): Money {
+    fun parse(text: String, currency: Currency, locale: Locale): Money =
+        Money.exact(parseDecimal(text.replace(currency.code, "", ignoreCase = true), locale), currency)
+
+    /** The same lenient rules as [parse], without a currency or a limit on decimals. */
+    fun parseDecimal(text: String, locale: Locale): BigDecimal {
         var s = text.trim()
         require(s.isNotEmpty()) { "Amount is empty" }
         var negative = false
@@ -48,8 +52,7 @@ object MoneyFormat {
             negative = true
             s = s.substring(1, s.length - 1)
         }
-        s = s.replace(currency.code, "", ignoreCase = true)
-            .filterNot { it.isWhitespace() || it.isSpaceSeparator() || it in CURRENCY_SYMBOLS }
+        s = s.filterNot { it.isWhitespace() || it.isSpaceSeparator() || it in CURRENCY_SYMBOLS }
         if (s.startsWith("-")) {
             negative = !negative
             s = s.substring(1)
@@ -66,7 +69,7 @@ object MoneyFormat {
         }
         require(normalized.matches(AMOUNT)) { "Not a valid amount: $text" }
         val value = BigDecimal(normalized)
-        return Money.exact(if (negative) value.negate() else value, currency)
+        return if (negative) value.negate() else value
     }
 
     private val AMOUNT = Regex("""\d+(\.\d*)?|\.\d+""")

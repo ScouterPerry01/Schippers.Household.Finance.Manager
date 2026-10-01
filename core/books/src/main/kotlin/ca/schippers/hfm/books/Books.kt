@@ -6,6 +6,8 @@ import ca.schippers.hfm.domain.AccessPolicy
 import ca.schippers.hfm.domain.AccountGroupAccess
 import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.domain.Role
+import ca.schippers.hfm.i18n.Language
+import ca.schippers.hfm.i18n.Messages
 
 /**
  * The household's books for one signed-in user: the entry point the apps use for everything in
@@ -54,11 +56,18 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     internal fun now(): Long = clock()
 }
 
-class ValidationException(message: String) : IllegalArgumentException(message)
+/**
+ * A rule was broken. [key] names a message in `core/i18n` so the apps can show it in the user's
+ * language; the exception message itself is the English text, for logs.
+ */
+class ValidationException(val key: String, vararg val args: Any) :
+    IllegalArgumentException(Messages.get(Language.ENGLISH, key, *args)) {
+    fun message(language: Language): String = Messages.get(language, key, *args)
+}
 
 /** Thrown when a reconciled transaction would change without explicit confirmation (section 8, step 5). */
 class ReconciledChangeException : IllegalStateException("This transaction is reconciled; confirm the change first")
 
-internal fun validate(condition: Boolean, message: () -> String) {
-    if (!condition) throw ValidationException(message())
+internal fun validate(condition: Boolean, key: String, vararg args: Any) {
+    if (!condition) throw ValidationException(key, *args)
 }

@@ -20,7 +20,7 @@ sealed interface Screen {
     data class Unlock(val dir: Path) : Screen
     data class Reset(val dir: Path) : Screen
     data class ShowRecoveryKey(val session: HouseholdSession, val key: RecoveryKey) : Screen
-    data class Home(val session: HouseholdSession) : Screen
+    data class Main(val model: BooksModel) : Screen
 }
 
 /** UI state for the desktop app. Holds at most one unlocked household session. */
@@ -38,9 +38,9 @@ class AppState(
 
     fun t(key: String, vararg args: Any): String = Messages.get(language, key, *args)
 
-    fun switchLanguage(to: Language) {
+    fun switchLanguage(to: Language, remember: Boolean = true) {
         language = to
-        prefs.put(PREF_LANGUAGE, to.tag)
+        if (remember) prefs.put(PREF_LANGUAGE, to.tag)
     }
 
     val recentHouseholds: List<Path>
@@ -53,15 +53,20 @@ class AppState(
 
     fun opened(session: HouseholdSession) {
         remember(session.dir)
-        screen = Screen.Home(session)
+        screen = try {
+            Screen.Main(BooksModel(session, this))
+        } catch (e: Exception) {
+            session.close()
+            throw e
+        }
     }
 
     /** Locks the household: closes the session, wiping its keys from memory (SEC-02). */
     fun lock() {
         when (val s = screen) {
-            is Screen.Home -> {
-                s.session.close()
-                screen = Screen.Unlock(s.session.dir)
+            is Screen.Main -> {
+                s.model.session.close()
+                screen = Screen.Unlock(s.model.session.dir)
             }
             is Screen.ShowRecoveryKey -> {
                 s.session.close()

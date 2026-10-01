@@ -5,7 +5,7 @@ A personal, family and household finance application for Canada (Quebec first), 
 - **Desktop app** (Windows and Linux) holds the household's books: accounts, transactions, reconciliation, bills, investments, registered plans, medical claims, assets and reports. All data stays on your own computer, encrypted.
 - **Android companion app** captures receipts, bills and expenses on the spot and sends them to the desktop over your home Wi-Fi.
 
-Status: **Phase 0 (foundations)**. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
+Status: **Phase 1 (core desktop) in progress**. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
 
 ## Project layout
 
@@ -17,6 +17,7 @@ Status: **Phase 0 (foundations)**. See the [requirements](docs/Household%20Finan
 | `core/security` | Argon2id, AES-256-GCM, X25519 key sealing, recovery keys |
 | `core/data` | Household folder format, key ring, SQLDelight schemas, schema upgrades |
 | `core/data-jdbc` | Encrypted SQLite (SQLCipher v4) driver for the desktop |
+| `core/books` | Bookkeeping rules: categories, payees, institutions, members, accounts, transactions, splits, transfers |
 | `core/i18n` | English and French text |
 | `core/importers`, `core/ocr`, `core/sync` | Interfaces for statement import, text recognition and phone sync |
 | `app/desktop` | Compose Desktop application |
@@ -32,6 +33,7 @@ Requirements: JDK 21. For the Android app, the Android SDK (API 37).
 ```sh
 ./gradlew test                      # all core tests
 ./gradlew :app:desktop:run          # run the desktop app
+./gradlew :app:desktop:runDemo      # try it with a throw-away sample household (-Plang=fr for French)
 ./gradlew :app:desktop:packageMsi   # Windows installer (on Windows)
 ./gradlew :app:desktop:packageDeb   # Linux package (on Linux)
 ./gradlew :app:android:assembleDebug
