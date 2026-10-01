@@ -1,0 +1,162 @@
+-- Core database: household-wide data every signed-in user can open.
+-- Amounts never appear here; they live in the ledger partitions.
+
+CREATE TABLE household (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    base_currency TEXT NOT NULL DEFAULT 'CAD',
+    default_locale TEXT NOT NULL DEFAULT 'fr-CA',
+    created_at INTEGER NOT NULL
+);
+
+-- People in the household (HH-01): owners of accounts, patients, plan members.
+CREATE TABLE member (
+    id TEXT NOT NULL PRIMARY KEY,
+    display_name TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('ADULT', 'CHILD', 'DEPENDANT')),
+    birth_date TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+);
+
+-- Sign-in accounts (HH-05, HH-06). Keys and password material live in household.json.
+CREATE TABLE app_user (
+    id TEXT NOT NULL PRIMARY KEY,
+    login_name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    display_name TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('ADMINISTRATOR', 'MEMBER', 'VIEWER')),
+    member_id TEXT REFERENCES member(id),
+    -- Copy of the public key in household.json, protected by the database's authentication,
+    -- so a tampered header cannot redirect key grants to another key.
+    public_key BLOB NOT NULL,
+    preferred_locale TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL
+);
+
+-- Account groups (HH-07). Each group's data is stored in its own encrypted ledger partition.
+CREATE TABLE account_group (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    partition_id TEXT NOT NULL UNIQUE,
+    owner_user_id TEXT REFERENCES app_user(id),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE group_permission (
+    group_id TEXT NOT NULL REFERENCES account_group(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    level TEXT NOT NULL CHECK (level IN ('NONE', 'VIEW', 'CAPTURE_ONLY', 'EDIT')),
+    PRIMARY KEY (group_id, user_id)
+);
+
+CREATE TABLE institution (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    branch TEXT,
+    institution_number TEXT,
+    transit_number TEXT,
+    website TEXT,
+    phone TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+-- Bilingual category tree (CAT-01), any depth.
+CREATE TABLE category (
+    id TEXT NOT NULL PRIMARY KEY,
+    parent_id TEXT REFERENCES category(id),
+    name_en TEXT NOT NULL,
+    name_fr TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('EXPENSE', 'INCOME')),
+    tax_flag TEXT,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    archived INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX category_parent ON category(parent_id);
+
+CREATE TABLE payee (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    default_category_id TEXT REFERENCES category(id),
+    address TEXT,
+    phone TEXT,
+    website TEXT,
+    notes TEXT,
+    archived INTEGER NOT NULL DEFAULT 0
+);
+
+-- Aliases map statement text to a clean payee (section 7.4).
+CREATE TABLE payee_alias (
+    id TEXT NOT NULL PRIMARY KEY,
+    payee_id TEXT NOT NULL REFERENCES payee(id) ON DELETE CASCADE,
+    pattern TEXT NOT NULL
+);
+
+CREATE TABLE tag (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE COLLATE NOCASE
+);
+
+CREATE TABLE setting (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+-- Activity log (HH-13) for household-level changes. Ledger changes are logged in each ledger.
+CREATE TABLE audit_log (
+    id TEXT NOT NULL PRIMARY KEY,
+    at INTEGER NOT NULL,
+    user_id TEXT,
+    action TEXT NOT NULL,
+    entity TEXT NOT NULL,
+    entity_id TEXT,
+    details TEXT
+);
+
+CREATE INDEX audit_log_at ON audit_log(at);
+
+insertHousehold:
+INSERT INTO household(id, name, base_currency, default_locale, created_at) VALUES (?, ?, ?, ?, ?);
+
+household:
+SELECT * FROM household LIMIT 1;
+
+insertUser:
+INSERT INTO app_user(id, login_name, display_name, role, member_id, public_key, preferred_locale, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+userById:
+SELECT * FROM app_user WHERE id = ?;
+
+users:
+SELECT * FROM app_user ORDER BY display_name;
+
+insertMember:
+INSERT INTO member(id, display_name, kind, birth_date, created_at) VALUES (?, ?, ?, ?, ?);
+
+insertGroup:
+INSERT INTO account_group(id, name, partition_id, owner_user_id, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?);
+
+groups:
+SELECT * FROM account_group ORDER BY sort_order, name;
+
+setPermission:
+INSERT OR REPLACE INTO group_permission(group_id, user_id, level) VALUES (?, ?, ?);
+
+permissionsForGroup:
+SELECT * FROM group_permission WHERE group_id = ?;
+
+putSetting:
+INSERT OR REPLACE INTO setting(key, value) VALUES (?, ?);
+
+getSetting:
+SELECT value FROM setting WHERE key = ?;
+
+insertAudit:
+INSERT INTO audit_log(id, at, user_id, action, entity, entity_id, details) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+recentAudit:
+SELECT * FROM audit_log ORDER BY at DESC LIMIT ?;

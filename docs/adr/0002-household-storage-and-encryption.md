@@ -1,0 +1,80 @@
+# ADR 0002: Household storage and encryption
+
+Status: Accepted (Phase 0, 2026-10-01). **Note the deviation from the wording of ARC-01, described below.**
+
+## Context
+
+- ARC-01: all data stored locally, encrypted, usable offline.
+- SEC-01: AES-256 encryption at rest, key derived from the master password.
+- SEC-07: a printed recovery key, since there is no server.
+- HH-05 to HH-11: several users, each with their own password. Access is per account group, and **private accounts are unreadable by other users even by opening the data file directly** (HH-11).
+- NFR-02: 250,000 transactions and 50,000 documents must stay fast.
+
+HH-11 rules out a single database file under a single key: anyone who can open that file can read everything in it. Encrypting individual columns inside one database would break SQL queries, sums and indexes, which the reports depend on.
+
+## Decision
+
+A household is a **folder** (for example `Schippers.hfm/`), treated by the application as one unit:
+
+```
+Schippers.hfm/
+  household.json          key ring: no financial data (see below)
+  core.db                 SQLCipher: users, groups, permissions, categories, payees, settings, audit log
+  ledger-<group>.db       SQLCipher: one per account group: accounts, transactions, documents, change log
+  vault/                  encrypted document files (Phase 2)
+  backups/pre-upgrade/    automatic copies taken before schema upgrades (NFR-11)
+```
+
+### Keys
+
+- Every **partition** (`core.db` and each ledger) has its own random 256-bit key. SQLCipher v4 uses it directly as a raw key: AES-256-CBC pages with HMAC-SHA512 page authentication.
+- Every **user** has an X25519 key pair.
+  - The private key is wrapped with AES-256-GCM under a key derived from the user's password with Argon2id (64 MiB, 3 passes).
+  - It is wrapped a second time under a key derived (HKDF) from the user's printed **recovery key** (SEC-07).
+- A **grant** gives a user access to a partition. It is the partition key sealed to that user's public key (X25519 + HKDF-SHA256 + AES-256-GCM).
+  - Granting therefore needs only the grantee's public key, never their password.
+  - A user without a grant does not have the partition key at all (HH-11).
+- Every wrapped value carries authenticated data binding it to its household, user and partition, so values cannot be swapped between entries.
+
+### Who gets which key
+
+- **`core.db`:** every user.
+- **Shared groups:** every administrator, plus each member granted a permission.
+- **Private groups:** the owner, plus whoever the owner shares with. Administrators are not included unless the owner shares the group (HH-09).
+
+`household.json` is the only unencrypted file. It holds login names, salts, KDF settings, public keys and sealed keys, but no names of people, amounts or institutions.
+
+- **Tampering:** public keys used for new grants are always read from the authenticated `core.db`, never from the header, so editing the header cannot redirect a grant to an attacker's key.
+- **Safe writes:** the header is written atomically and the previous version is kept as `household.json.bak`.
+
+## Deviation from ARC-01
+
+ARC-01 says "one encrypted household data file". This design uses one encrypted household **folder**, for two reasons:
+
+1. HH-11 requires per-user encryption.
+2. 50,000 scanned documents do not belong inside a SQLite file.
+
+The user still handles a household as one item:
+
+- **Backups (BAK-01) and moving to a new computer (BAK-05):** produce a single encrypted archive file.
+- **On Linux:** the folder can be associated with the application.
+
+## Consequences
+
+- **Reports across groups:** reports covering several groups run one query per open ledger and combine the results. The number of groups is small (typically under 10).
+- **Transfers between groups:** a transfer between accounts in different groups is stored as two linked rows (same `transfer_id`), one in each ledger.
+- **Revocation:** removing a grant stops future access. A user who already held the key could have copied it, so true revocation needs key rotation (re-encrypting the ledger under a new key). That is planned with SYNC-08 in Phase 2.
+- **Windows Hello (ADR 0003):** Hello unlock adds another wrapping of the user's private key. Nothing else changes.
+- **Upgrades:** every database records its schema version in `PRAGMA user_version`. Upgrades checkpoint the write-ahead log and copy the file before migrating, and a database written by a newer version of the application is refused.
+
+## Verified in Phase 0
+
+`core/data-jdbc` tests check that:
+
+- files are not plain SQLite;
+- wrong keys and passwords fail;
+- private groups cannot be opened by an administrator without a grant;
+- grants and sharing work;
+- the recovery key resets the password;
+- a tampered header cannot redirect grants;
+- upgrades back up first and keep the data.

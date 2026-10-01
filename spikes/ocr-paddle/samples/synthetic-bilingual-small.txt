@@ -1,0 +1,14 @@
+PHARMACIE DU QUARTIER / PHARMACY
+No TPS/GST 812345678 RT0001
+No TVQ/QST 1234567890 TQ0001
+Ibuprofène 200 mg x24 8,97 $
+Dentifrice / Toothpaste 3,49 $
+Crème hydratante 14,99 $
+Vitamine D 1000 UI 10,29 $
+Mouchoirs - Tissues 2,79 $
+Sous-total / Subtotal 40,53 $
+TPS / GST 1,61 $
+TVQ / QST 3,21 $
+TOTAL 45,35 $
+Remise / Change 4,65 $
+Conservez votre reçu

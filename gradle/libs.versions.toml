@@ -1,0 +1,50 @@
+[versions]
+kotlin = "2.4.20"
+compose-multiplatform = "1.12.1"
+agp = "9.4.1"
+sqldelight = "2.4.0"
+coroutines = "1.11.0"
+serialization = "1.11.0"
+datetime = "0.8.0"
+sqlite-jdbc-crypt = "3.53.4.0"
+sqlcipher-android = "4.19.1"
+androidx-sqlite = "2.7.1"
+bouncycastle = "1.86"
+kotest = "6.2.5"
+junit = "6.1.3"
+activity-compose = "1.13.0"
+compose-material3 = "1.9.0"
+androidx-compose-bom = "2026.09.00"
+android-compileSdk = "37"
+android-minSdk = "29"
+android-targetSdk = "36"
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
+sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
+sqldelight-jdbc-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
+sqlite-jdbc-crypt = { module = "io.github.willena:sqlite-jdbc", version.ref = "sqlite-jdbc-crypt" }
+sqlcipher-android = { module = "net.zetetic:sqlcipher-android", version.ref = "sqlcipher-android" }
+androidx-sqlite = { module = "androidx.sqlite:sqlite", version.ref = "androidx-sqlite" }
+bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
+androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+android-application = { id = "com.android.application", version.ref = "agp" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }

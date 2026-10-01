@@ -1,0 +1,142 @@
+-- Ledger database: the accounts and transactions of one account group.
+-- Money is stored as INTEGER minor units plus a currency code, never as REAL (NFR-04).
+-- Ids are UUIDv7 text, unique across every device (SYNC-02).
+
+CREATE TABLE account (
+    id TEXT NOT NULL PRIMARY KEY,
+    institution_id TEXT,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    currency TEXT NOT NULL,
+    -- SEC-04: the masked form is shown; the full number only after re-authentication.
+    number_masked TEXT,
+    number_full TEXT,
+    opening_balance_minor INTEGER NOT NULL DEFAULT 0,
+    opening_date TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'DORMANT', 'CLOSED')),
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- ACC-03: individual or joint ownership, by household member.
+CREATE TABLE account_owner (
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    member_id TEXT NOT NULL,
+    PRIMARY KEY (account_id, member_id)
+);
+
+CREATE TABLE txn (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id),
+    date TEXT NOT NULL,
+    payee_id TEXT,
+    payee_text TEXT,
+    -- Amount in the account's currency.
+    amount_minor INTEGER NOT NULL,
+    -- FX-03: original foreign amount and the rate actually charged.
+    original_amount_minor INTEGER,
+    original_currency TEXT,
+    fx_rate TEXT,
+    memo TEXT,
+    member_id TEXT,
+    cleared TEXT NOT NULL DEFAULT 'UNCLEARED' CHECK (cleared IN ('UNCLEARED', 'CLEARED', 'RECONCILED')),
+    -- TX-03: both sides of a transfer share this id; the other side may be in another ledger.
+    transfer_id TEXT,
+    -- Who captured it and on which device (SYNC-07).
+    created_by TEXT,
+    source_device TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX txn_account_date ON txn(account_id, date);
+CREATE INDEX txn_transfer ON txn(transfer_id) WHERE transfer_id IS NOT NULL;
+
+-- TX-02: a transaction is split across categories; a simple transaction has one split.
+CREATE TABLE txn_split (
+    id TEXT NOT NULL PRIMARY KEY,
+    txn_id TEXT NOT NULL REFERENCES txn(id) ON DELETE CASCADE,
+    category_id TEXT,
+    amount_minor INTEGER NOT NULL,
+    memo TEXT,
+    member_id TEXT,
+    tax_flag TEXT
+);
+
+CREATE INDEX txn_split_txn ON txn_split(txn_id);
+CREATE INDEX txn_split_category ON txn_split(category_id);
+
+CREATE TABLE txn_tag (
+    txn_id TEXT NOT NULL REFERENCES txn(id) ON DELETE CASCADE,
+    tag_id TEXT NOT NULL,
+    PRIMARY KEY (txn_id, tag_id)
+);
+
+-- Documents in the encrypted vault (section 4.4). The file itself is stored outside the database.
+CREATE TABLE document (
+    id TEXT NOT NULL PRIMARY KEY,
+    vault_file TEXT NOT NULL,
+    mime_type TEXT NOT NULL,
+    sha256 TEXT NOT NULL,
+    page_count INTEGER NOT NULL DEFAULT 1,
+    recognized_text TEXT,
+    captured_at INTEGER NOT NULL,
+    captured_by TEXT,
+    source_device TEXT
+);
+
+CREATE INDEX document_sha ON document(sha256);
+
+CREATE TABLE document_link (
+    document_id TEXT NOT NULL REFERENCES document(id) ON DELETE CASCADE,
+    entity TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    PRIMARY KEY (document_id, entity, entity_id)
+);
+
+-- TX-08: full change history per record, kept inside the same encrypted ledger.
+CREATE TABLE change_log (
+    id TEXT NOT NULL PRIMARY KEY,
+    at INTEGER NOT NULL,
+    user_id TEXT,
+    entity TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    action TEXT NOT NULL CHECK (action IN ('CREATE', 'UPDATE', 'DELETE')),
+    before_json TEXT,
+    after_json TEXT
+);
+
+CREATE INDEX change_log_entity ON change_log(entity, entity_id);
+
+insertAccount:
+INSERT INTO account(id, institution_id, name, type, currency, number_masked, number_full,
+    opening_balance_minor, opening_date, status, notes, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+accounts:
+SELECT * FROM account ORDER BY name;
+
+insertTxn:
+INSERT INTO txn(id, account_id, date, payee_id, payee_text, amount_minor, original_amount_minor,
+    original_currency, fx_rate, memo, member_id, cleared, transfer_id, created_by, source_device,
+    created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+insertSplit:
+INSERT INTO txn_split(id, txn_id, category_id, amount_minor, memo, member_id, tax_flag)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+accountBalance:
+SELECT a.opening_balance_minor + coalesce((SELECT sum(t.amount_minor) FROM txn t WHERE t.account_id = a.id), 0)
+FROM account a WHERE a.id = ?;
+
+register:
+SELECT * FROM txn WHERE account_id = ? ORDER BY date, created_at;
+
+txnCount:
+SELECT count(*) FROM txn;
+
+insertChange:
+INSERT INTO change_log(id, at, user_id, entity, entity_id, action, before_json, after_json)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);

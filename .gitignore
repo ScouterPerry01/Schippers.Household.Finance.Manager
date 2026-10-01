@@ -1,0 +1,25 @@
+# Gradle / build
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+.kotlin/
+local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Spike artefacts
+spikes/**/models/
+spikes/**/bin/
+spikes/**/obj/
+
+# Never commit household data or keys
+*.hfm/
+*.hfmbak
