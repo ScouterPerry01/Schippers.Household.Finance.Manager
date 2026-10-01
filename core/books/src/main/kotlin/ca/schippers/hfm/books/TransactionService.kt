@@ -1,0 +1,434 @@
+package ca.schippers.hfm.books
+
+import ca.schippers.hfm.data.AccessDeniedException
+import ca.schippers.hfm.data.ledger.LedgerDatabase
+import ca.schippers.hfm.domain.ClearedStatus
+import ca.schippers.hfm.domain.Ids
+import ca.schippers.hfm.domain.PermissionLevel
+import ca.schippers.hfm.domain.TaxFlag
+import ca.schippers.hfm.money.Currency
+import ca.schippers.hfm.money.Money
+import ca.schippers.hfm.money.sum
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import java.math.BigDecimal
+import java.math.MathContext
+import ca.schippers.hfm.data.ledger.Txn as TxnRow
+import ca.schippers.hfm.data.ledger.Txn_split as SplitRow
+
+/** One entry in a record's change history (TX-08). */
+data class Change(val at: Long, val userId: String?, val action: String, val before: String?, val after: String?)
+
+/**
+ * Transactions, splits and transfers (TX-01 to TX-03, TX-08).
+ *
+ * Rules enforced here:
+ * - amounts are in the account's currency, and splits always add up exactly to the amount;
+ * - a transfer is one movement recorded in both accounts and never counts as income or spending;
+ * - creating needs at least capture permission on the account's group, changing needs edit permission;
+ * - reconciled transactions only change with explicit confirmation, and every change is logged.
+ */
+class TransactionService internal constructor(private val books: Books) {
+
+    private val json = Json { encodeDefaults = false }
+
+    // --- Reading --------------------------------------------------------------------------------
+
+    /** Every transaction of an account, oldest first, with the running balance (TX-01). */
+    fun register(accountId: String): List<RegisterRow> {
+        val (group, account) = books.accounts.locate(accountId)
+        val q = books.ledger(group).ledgerQueries
+        val splits = q.splitsForAccount(accountId).executeAsList().groupBy { it.txn_id }
+        val tags = q.tagsForAccount(accountId).executeAsList().groupBy({ it.txn_id }, { it.tag_id })
+        return q.register(accountId).executeAsList().map { r ->
+            val row = TxnRow(
+                r.id, r.account_id, r.date, r.payee_id, r.payee_text, r.amount_minor, r.original_amount_minor,
+                r.original_currency, r.fx_rate, r.memo, r.member_id, r.cleared, r.transfer_id, r.transfer_account_id,
+                r.created_by, r.source_device, r.created_at, r.updated_at,
+            )
+            RegisterRow(
+                row.toTransaction(account.currency, splits[r.id].orEmpty(), tags[r.id].orEmpty().toSet()),
+                Money.ofMinor(r.running_balance ?: account.openingBalance.minorUnits, account.currency),
+            )
+        }
+    }
+
+    fun get(transactionId: String): Transaction {
+        val (group, row) = locate(transactionId)
+        return load(books.ledger(group), row)
+    }
+
+    fun history(transactionId: String): List<Change> {
+        val (group, _) = locate(transactionId)
+        return books.ledger(group).ledgerQueries.changesFor(ENTITY, transactionId).executeAsList()
+            .map { Change(it.at, it.user_id, it.action, it.before_json, it.after_json) }
+    }
+
+    /** Values from the payee's most recent transaction, offered when the payee is typed (MAN-02). */
+    fun suggest(accountId: String, payeeName: String): PayeeSuggestion? {
+        val payee = books.payees.match(payeeName) ?: return null
+        val (group, account) = books.accounts.locate(accountId)
+        val q = books.ledger(group).ledgerQueries
+        val last = q.lastUseOfPayee(payee.id).executeAsOneOrNull()
+        if (last == null || last.currency(group) != account.currency) {
+            return PayeeSuggestion(payee.id, null, listOfNotNull(payee.defaultCategoryId?.let { SplitDraft(it, Money.zero(account.currency)) }))
+        }
+        val splits = q.splitsForTxn(last.id).executeAsList()
+            .map { SplitDraft(it.category_id, Money.ofMinor(it.amount_minor, account.currency), it.memo, it.member_id, it.tax_flag?.let(TaxFlag::valueOf)) }
+        return PayeeSuggestion(payee.id, Money.ofMinor(last.amount_minor, account.currency), splits)
+    }
+
+    // --- Ordinary transactions ------------------------------------------------------------------
+
+    fun create(draft: TransactionDraft): Transaction {
+        val (group, account) = books.accounts.locate(draft.accountId)
+        books.require(group, PermissionLevel.CAPTURE_ONLY)
+        val prepared = prepare(draft, account)
+        val ledger = books.ledger(group)
+        val id = Ids.newId()
+        val now = books.now()
+        ledger.transaction {
+            ledger.ledgerQueries.insertTxn(
+                id, account.id, draft.date.toString(), prepared.payeeId, draft.payeeName?.trim()?.ifEmpty { null },
+                draft.amount.minorUnits, draft.originalAmount?.minorUnits, draft.originalAmount?.currency?.code,
+                prepared.fxRate?.toPlainString(), draft.memo?.ifBlank { null }, draft.memberId, draft.cleared.name,
+                null, null, books.userId, DESKTOP, now, now,
+            )
+            writeChildren(ledger, id, prepared)
+            logChange(ledger, id, "CREATE", null, snapshot(ledger, id))
+        }
+        return get(id)
+    }
+
+    fun update(transactionId: String, draft: TransactionDraft, confirmReconciled: Boolean = false): Transaction {
+        val (group, row) = locate(transactionId)
+        books.require(group, PermissionLevel.EDIT)
+        validate(row.transfer_id == null) { "Use updateTransfer to change a transfer" }
+        validate(draft.accountId == row.account_id) { "Moving a transaction to another account is done by deleting and re-entering it" }
+        guardReconciled(row, confirmReconciled)
+        val account = books.accounts.get(row.account_id)
+        val prepared = prepare(draft, account)
+        val ledger = books.ledger(group)
+        ledger.transaction {
+            val before = snapshot(ledger, transactionId)
+            ledger.ledgerQueries.updateTxn(
+                draft.date.toString(), prepared.payeeId, draft.payeeName?.trim()?.ifEmpty { null }, draft.amount.minorUnits,
+                draft.originalAmount?.minorUnits, draft.originalAmount?.currency?.code, prepared.fxRate?.toPlainString(),
+                draft.memo?.ifBlank { null }, draft.memberId, draft.cleared.name, null, null, books.now(), transactionId,
+            )
+            ledger.ledgerQueries.deleteSplits(transactionId)
+            ledger.ledgerQueries.deleteTxnTags(transactionId)
+            writeChildren(ledger, transactionId, prepared)
+            logChange(ledger, transactionId, "UPDATE", before, snapshot(ledger, transactionId))
+        }
+        return get(transactionId)
+    }
+
+    /** Deletes a transaction; deleting either side of a transfer deletes both sides. */
+    fun delete(transactionId: String, confirmReconciled: Boolean = false) {
+        val (group, row) = locate(transactionId)
+        row.transfer_id?.let { return deleteTransfer(it, confirmReconciled) }
+        books.require(group, PermissionLevel.EDIT)
+        guardReconciled(row, confirmReconciled)
+        val ledger = books.ledger(group)
+        ledger.transaction {
+            logChange(ledger, transactionId, "DELETE", snapshot(ledger, transactionId), null)
+            ledger.ledgerQueries.deleteTxn(transactionId)
+        }
+    }
+
+    fun setCleared(transactionId: String, status: ClearedStatus, confirmReconciled: Boolean = false) {
+        val (group, row) = locate(transactionId)
+        books.require(group, PermissionLevel.EDIT)
+        if (row.cleared == status.name) return
+        guardReconciled(row, confirmReconciled)
+        val ledger = books.ledger(group)
+        ledger.transaction {
+            val before = snapshot(ledger, transactionId)
+            ledger.ledgerQueries.setCleared(status.name, books.now(), transactionId)
+            logChange(ledger, transactionId, "UPDATE", before, snapshot(ledger, transactionId))
+        }
+    }
+
+    // --- Transfers ------------------------------------------------------------------------------
+
+    /** Records a transfer once; it appears in both accounts (TX-03), with both amounts when currencies differ (FX-04). */
+    fun transfer(draft: TransferDraft): Pair<Transaction, Transaction> {
+        val plan = planTransfer(draft)
+        val transferId = Ids.newId()
+        val fromId = Ids.newId()
+        val toId = Ids.newId()
+        val now = books.now()
+        writeBothSides(plan, { ledger ->
+            insertTransferSide(ledger, fromId, plan.from, -plan.fromAmount, plan.toAmount, plan.rate, draft, transferId, plan.to.id, now)
+        }, { ledger ->
+            insertTransferSide(ledger, toId, plan.to, plan.toAmount, plan.fromAmount, plan.inverseRate, draft, transferId, plan.from.id, now)
+        }, undoFrom = { ledger -> ledger.ledgerQueries.deleteTxn(fromId) })
+        return get(fromId) to get(toId)
+    }
+
+    fun updateTransfer(transferId: String, draft: TransferDraft, confirmReconciled: Boolean = false) {
+        val sides = transferSides(transferId)
+        val fromRow = sides.firstOrNull { it.second.account_id == draft.fromAccountId }?.second
+        val toRow = sides.firstOrNull { it.second.account_id == draft.toAccountId }?.second
+        validate(fromRow != null && toRow != null && fromRow.id != toRow.id) {
+            "Changing the accounts of a transfer is done by deleting and re-entering it"
+        }
+        sides.forEach { (group, row) ->
+            books.require(group, PermissionLevel.EDIT)
+            guardReconciled(row, confirmReconciled)
+        }
+        val plan = planTransfer(draft)
+        val now = books.now()
+        for ((group, row) in sides) {
+            val ledger = books.ledger(group)
+            val isFrom = row.id == fromRow!!.id
+            ledger.transaction {
+                val before = snapshot(ledger, row.id)
+                ledger.ledgerQueries.updateTxn(
+                    draft.date.toString(), null, null,
+                    if (isFrom) -plan.fromAmount.minorUnits else plan.toAmount.minorUnits,
+                    if (plan.crossCurrency) (if (isFrom) plan.toAmount else plan.fromAmount).minorUnits else null,
+                    if (plan.crossCurrency) (if (isFrom) plan.to.currency else plan.from.currency).code else null,
+                    if (plan.crossCurrency) (if (isFrom) plan.rate else plan.inverseRate).toPlainString() else null,
+                    draft.memo?.ifBlank { null }, draft.memberId, row.cleared, transferId, row.transfer_account_id, now, row.id,
+                )
+                logChange(ledger, row.id, "UPDATE", before, snapshot(ledger, row.id))
+            }
+        }
+    }
+
+    private fun deleteTransfer(transferId: String, confirmReconciled: Boolean) {
+        val sides = transferSides(transferId)
+        sides.forEach { (group, row) ->
+            books.require(group, PermissionLevel.EDIT)
+            guardReconciled(row, confirmReconciled)
+        }
+        for ((group, row) in sides) {
+            val ledger = books.ledger(group)
+            ledger.transaction {
+                logChange(ledger, row.id, "DELETE", snapshot(ledger, row.id), null)
+                ledger.ledgerQueries.deleteTxn(row.id)
+            }
+        }
+    }
+
+    private class TransferPlan(
+        val from: Account,
+        val to: Account,
+        val fromGroup: GroupInfo,
+        val toGroup: GroupInfo,
+        val fromAmount: Money,
+        val toAmount: Money,
+    ) {
+        val crossCurrency: Boolean get() = from.currency != to.currency
+
+        /** Units of the destination currency per unit of the source currency. */
+        val rate: BigDecimal get() = toAmount.toBigDecimal().divide(fromAmount.toBigDecimal(), MathContext.DECIMAL64)
+        val inverseRate: BigDecimal get() = fromAmount.toBigDecimal().divide(toAmount.toBigDecimal(), MathContext.DECIMAL64)
+    }
+
+    private fun planTransfer(draft: TransferDraft): TransferPlan {
+        validate(draft.fromAccountId != draft.toAccountId) { "A transfer needs two different accounts" }
+        val (fromGroup, from) = books.accounts.locate(draft.fromAccountId)
+        val (toGroup, to) = books.accounts.locate(draft.toAccountId)
+        books.require(fromGroup, PermissionLevel.CAPTURE_ONLY)
+        books.require(toGroup, PermissionLevel.CAPTURE_ONLY)
+        validate(draft.amount.isPositive) { "The transfer amount must be positive" }
+        validate(draft.amount.currency == from.currency) { "The amount must be in ${from.currency}, the currency of ${from.name}" }
+        val toAmount = when {
+            from.currency == to.currency -> {
+                validate(draft.toAmount == null || draft.toAmount == draft.amount) { "Both sides of a same-currency transfer are equal" }
+                draft.amount
+            }
+            else -> {
+                val received = draft.toAmount ?: throw ValidationException("Enter the amount received in ${to.currency}")
+                validate(received.currency == to.currency && received.isPositive) { "The amount received must be a positive amount in ${to.currency}" }
+                received
+            }
+        }
+        return TransferPlan(from, to, fromGroup, toGroup, draft.amount, toAmount)
+    }
+
+    /**
+     * Writes both sides. Within one ledger this is one database transaction. Across two ledgers
+     * (two encrypted files) the second write is attempted after the first commits, and the first is
+     * undone if the second fails, so a failure never leaves half a transfer.
+     */
+    private fun writeBothSides(
+        plan: TransferPlan,
+        writeFrom: (LedgerDatabase) -> Unit,
+        writeTo: (LedgerDatabase) -> Unit,
+        undoFrom: (LedgerDatabase) -> Unit,
+    ) {
+        val fromLedger = books.ledger(plan.fromGroup)
+        val toLedger = books.ledger(plan.toGroup)
+        if (plan.fromGroup.id == plan.toGroup.id) {
+            fromLedger.transaction {
+                writeFrom(fromLedger)
+                writeTo(fromLedger)
+            }
+            return
+        }
+        fromLedger.transaction { writeFrom(fromLedger) }
+        try {
+            toLedger.transaction { writeTo(toLedger) }
+        } catch (e: Throwable) {
+            fromLedger.transaction { undoFrom(fromLedger) }
+            throw e
+        }
+    }
+
+    private fun insertTransferSide(
+        ledger: LedgerDatabase,
+        id: String,
+        account: Account,
+        amount: Money,
+        otherAmount: Money,
+        rate: BigDecimal,
+        draft: TransferDraft,
+        transferId: String,
+        otherAccountId: String,
+        now: Long,
+    ) {
+        val cross = otherAmount.currency != account.currency
+        ledger.ledgerQueries.insertTxn(
+            id, account.id, draft.date.toString(), null, null, amount.minorUnits,
+            if (cross) otherAmount.minorUnits else null, if (cross) otherAmount.currency.code else null,
+            if (cross) rate.toPlainString() else null, draft.memo?.ifBlank { null }, draft.memberId,
+            ClearedStatus.UNCLEARED.name, transferId, otherAccountId, books.userId, DESKTOP, now, now,
+        )
+        logChange(ledger, id, "CREATE", null, snapshot(ledger, id))
+    }
+
+    private fun transferSides(transferId: String): List<Pair<GroupInfo, TxnRow>> {
+        val sides = books.groups().flatMap { group ->
+            books.ledger(group).ledgerQueries.txnsByTransfer(transferId).executeAsList().map { group to it }
+        }
+        if (sides.size != 2) throw AccessDeniedException("Both sides of this transfer must be accessible to change it")
+        return sides
+    }
+
+    // --- Helpers --------------------------------------------------------------------------------
+
+    private class Prepared(val payeeId: String?, val splits: List<SplitDraft>, val tagIds: List<String>, val fxRate: BigDecimal?)
+
+    private fun prepare(draft: TransactionDraft, account: Account): Prepared {
+        val currency = account.currency
+        validate(draft.amount.currency == currency) { "The amount must be in ${currency.code}, the currency of ${account.name}" }
+        val splits = draft.splits.ifEmpty { listOf(SplitDraft(null, draft.amount)) }
+        validate(splits.all { it.amount.currency == currency }) { "Split amounts must be in ${currency.code}" }
+        val splitTotal = splits.map { it.amount }.sum(currency)
+        validate(splitTotal == draft.amount) { "The splits add up to $splitTotal but the transaction is ${draft.amount}" }
+        val knownCategories = books.categories.list(includeArchived = true).mapTo(HashSet()) { it.id }
+        validate(splits.all { it.categoryId == null || it.categoryId in knownCategories }) { "Unknown category" }
+
+        var fxRate = draft.fxRate
+        draft.originalAmount?.let { original ->
+            validate(original.currency != currency) { "The original amount must be in a foreign currency" }
+            validate(original.signum == draft.amount.signum) { "The original and converted amounts must have the same sign" }
+            if (fxRate == null && !original.isZero) {
+                fxRate = draft.amount.toBigDecimal().divide(original.toBigDecimal(), MathContext.DECIMAL64).abs()
+            }
+        }
+        fxRate?.let { validate(it.signum() > 0) { "The exchange rate must be positive" } }
+
+        val payeeId = draft.payeeName?.let { books.payees.findOrCreate(it)?.id }
+        val tagIds = draft.tags.filter { it.isNotBlank() }.map { name ->
+            books.core.insertTag(Ids.newId(), name.trim())
+            books.core.tagByName(name.trim()).executeAsOne().id
+        }
+        return Prepared(payeeId, splits, tagIds, fxRate)
+    }
+
+    private fun writeChildren(ledger: LedgerDatabase, txnId: String, prepared: Prepared) {
+        for (split in prepared.splits) {
+            ledger.ledgerQueries.insertSplit(
+                Ids.newId(), txnId, split.categoryId, split.amount.minorUnits, split.memo?.ifBlank { null }, split.memberId, split.taxFlag?.name,
+            )
+        }
+        prepared.tagIds.forEach { ledger.ledgerQueries.insertTxnTag(txnId, it) }
+    }
+
+    private fun guardReconciled(row: TxnRow, confirmed: Boolean) {
+        if (row.cleared == ClearedStatus.RECONCILED.name && !confirmed) throw ReconciledChangeException()
+    }
+
+    private fun locate(transactionId: String): Pair<GroupInfo, TxnRow> {
+        for (group in books.groups()) {
+            val row = books.ledger(group).ledgerQueries.txnById(transactionId).executeAsOneOrNull() ?: continue
+            return group to row
+        }
+        throw AccessDeniedException("Transaction not found or not accessible")
+    }
+
+    private fun load(ledger: LedgerDatabase, row: TxnRow): Transaction {
+        val currency = Currency.of(ledger.ledgerQueries.accountById(row.account_id).executeAsOne().currency)
+        val q = ledger.ledgerQueries
+        return row.toTransaction(currency, q.splitsForTxn(row.id).executeAsList(), q.tagsForTxn(row.id).executeAsList().toSet())
+    }
+
+    private fun TxnRow.currency(group: GroupInfo): Currency =
+        Currency.of(books.ledger(group).ledgerQueries.accountById(account_id).executeAsOne().currency)
+
+    private fun logChange(ledger: LedgerDatabase, txnId: String, action: String, before: String?, after: String?) {
+        ledger.ledgerQueries.insertChange(Ids.newId(), books.now(), books.userId, ENTITY, txnId, action, before, after)
+    }
+
+    private fun snapshot(ledger: LedgerDatabase, txnId: String): String {
+        val q = ledger.ledgerQueries
+        val row = q.txnById(txnId).executeAsOne()
+        val snapshot = Snapshot(
+            date = row.date,
+            payee = row.payee_text,
+            amountMinor = row.amount_minor,
+            memo = row.memo,
+            cleared = row.cleared,
+            transferId = row.transfer_id,
+            splits = q.splitsForTxn(txnId).executeAsList().map { SnapshotSplit(it.category_id, it.amount_minor, it.memo) },
+            tags = q.tagsForTxn(txnId).executeAsList(),
+        )
+        return json.encodeToString(Snapshot.serializer(), snapshot)
+    }
+
+    @Serializable
+    private data class Snapshot(
+        val date: String,
+        val payee: String? = null,
+        val amountMinor: Long,
+        val memo: String? = null,
+        val cleared: String,
+        val transferId: String? = null,
+        val splits: List<SnapshotSplit> = emptyList(),
+        val tags: List<String> = emptyList(),
+    )
+
+    @Serializable
+    private data class SnapshotSplit(val categoryId: String? = null, val amountMinor: Long, val memo: String? = null)
+
+    private companion object {
+        const val ENTITY = "txn"
+        const val DESKTOP = "desktop"
+    }
+}
+
+private fun TxnRow.toTransaction(currency: Currency, splits: List<SplitRow>, tagIds: Set<String>): Transaction = Transaction(
+    id = id,
+    accountId = account_id,
+    date = LocalDate.parse(date),
+    payeeId = payee_id,
+    payeeText = payee_text,
+    amount = Money.ofMinor(amount_minor, currency),
+    originalAmount = original_amount_minor?.let { Money.ofMinor(it, Currency.of(original_currency!!)) },
+    fxRate = fx_rate?.let(::BigDecimal),
+    memo = memo,
+    memberId = member_id,
+    cleared = ClearedStatus.valueOf(cleared),
+    transfer = transfer_id?.let { TransferLink(it, transfer_account_id!!) },
+    splits = splits.map {
+        Split(it.id, it.category_id, Money.ofMinor(it.amount_minor, currency), it.memo, it.member_id, it.tax_flag?.let(TaxFlag::valueOf))
+    },
+    tagIds = tagIds,
+    createdBy = created_by,
+)

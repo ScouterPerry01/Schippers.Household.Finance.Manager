@@ -67,6 +67,8 @@ CREATE TABLE institution (
 CREATE TABLE category (
     id TEXT NOT NULL PRIMARY KEY,
     parent_id TEXT REFERENCES category(id),
+    -- Stable key of a built-in category (e.g. "health.pharmacy"); null for user-created ones.
+    system_key TEXT UNIQUE,
     name_en TEXT NOT NULL,
     name_fr TEXT NOT NULL,
     kind TEXT NOT NULL CHECK (kind IN ('EXPENSE', 'INCOME')),
@@ -136,6 +138,74 @@ SELECT * FROM app_user ORDER BY display_name;
 
 insertMember:
 INSERT INTO member(id, display_name, kind, birth_date, created_at) VALUES (?, ?, ?, ?, ?);
+
+updateMember:
+UPDATE member SET display_name = ?, kind = ?, birth_date = ?, archived = ? WHERE id = ?;
+
+members:
+SELECT * FROM member ORDER BY archived, display_name;
+
+linkUserToMember:
+UPDATE app_user SET member_id = ? WHERE id = ?;
+
+-- Institutions (ACC-01) --------------------------------------------------------------------
+
+insertInstitution:
+INSERT INTO institution(id, name, branch, institution_number, transit_number, website, phone, notes, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateInstitution:
+UPDATE institution SET name = ?, branch = ?, institution_number = ?, transit_number = ?, website = ?, phone = ?, notes = ?
+WHERE id = ?;
+
+institutions:
+SELECT * FROM institution ORDER BY name COLLATE NOCASE;
+
+-- Categories (CAT-01) ------------------------------------------------------------------------
+
+insertCategory:
+INSERT INTO category(id, parent_id, system_key, name_en, name_fr, kind, tax_flag, sort_order)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+updateCategory:
+UPDATE category SET parent_id = ?, name_en = ?, name_fr = ?, tax_flag = ?, sort_order = ?, archived = ? WHERE id = ?;
+
+categories:
+SELECT * FROM category ORDER BY kind, sort_order, name_en;
+
+categoryCount:
+SELECT count(*) FROM category;
+
+-- Payees (section 7.4) -----------------------------------------------------------------------
+
+insertPayee:
+INSERT INTO payee(id, name, default_category_id) VALUES (?, ?, ?);
+
+updatePayee:
+UPDATE payee SET name = ?, default_category_id = ?, archived = ? WHERE id = ?;
+
+payees:
+SELECT * FROM payee ORDER BY name COLLATE NOCASE;
+
+payeeByName:
+SELECT * FROM payee WHERE name = ? COLLATE NOCASE LIMIT 1;
+
+insertPayeeAlias:
+INSERT INTO payee_alias(id, payee_id, pattern) VALUES (?, ?, ?);
+
+payeeAliases:
+SELECT * FROM payee_alias;
+
+-- Tags (CAT-04) ------------------------------------------------------------------------------
+
+insertTag:
+INSERT OR IGNORE INTO tag(id, name) VALUES (?, ?);
+
+tags:
+SELECT * FROM tag ORDER BY name COLLATE NOCASE;
+
+tagByName:
+SELECT * FROM tag WHERE name = ? COLLATE NOCASE;
 
 insertGroup:
 INSERT INTO account_group(id, name, partition_id, owner_user_id, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?);

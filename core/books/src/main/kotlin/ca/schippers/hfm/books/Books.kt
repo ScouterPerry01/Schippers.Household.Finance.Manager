@@ -1,0 +1,64 @@
+package ca.schippers.hfm.books
+
+import ca.schippers.hfm.data.AccessDeniedException
+import ca.schippers.hfm.data.HouseholdSession
+import ca.schippers.hfm.domain.AccessPolicy
+import ca.schippers.hfm.domain.AccountGroupAccess
+import ca.schippers.hfm.domain.PermissionLevel
+import ca.schippers.hfm.domain.Role
+
+/**
+ * The household's books for one signed-in user: the entry point the apps use for everything in
+ * Phase 1. Every operation checks the user's permission on the account group concerned
+ * (HH-08, HH-10); private groups the user was not granted cannot even be opened (HH-11).
+ */
+class Books(val session: HouseholdSession, internal val clock: () -> Long = System::currentTimeMillis) {
+
+    internal val core get() = session.core.coreQueries
+    val userId: String get() = session.userId
+    val role: Role by lazy { session.role }
+
+    val members = MemberService(this)
+    val institutions = InstitutionService(this)
+    val categories = CategoryService(this)
+    val payees = PayeeService(this)
+    val accounts = AccountService(this)
+    val transactions = TransactionService(this)
+    val creditCards = CreditCardService(this)
+
+    init {
+        categories.ensureDefaults()
+    }
+
+    /** Account groups the user can see at all, with their permission level. */
+    fun groups(): List<GroupInfo> = core.groups().executeAsList().mapNotNull { row ->
+        val grants = core.permissionsForGroup(row.id).executeAsList()
+            .associate { it.user_id to PermissionLevel.valueOf(it.level) }
+        val level = AccessPolicy.levelFor(userId, role, AccountGroupAccess(row.id, row.owner_user_id, grants))
+        if (level == PermissionLevel.NONE || !session.canOpen(row.partition_id)) {
+            null
+        } else {
+            GroupInfo(row.id, row.name, row.partition_id, row.owner_user_id, level)
+        }
+    }
+
+    internal fun group(groupId: String): GroupInfo =
+        groups().firstOrNull { it.id == groupId } ?: throw AccessDeniedException("You do not have access to this account group")
+
+    internal fun require(group: GroupInfo, level: PermissionLevel) {
+        if (!group.level.allows(level)) throw AccessDeniedException("You do not have permission to change ${group.name}")
+    }
+
+    internal fun ledger(group: GroupInfo) = session.ledger(group.partitionId)
+
+    internal fun now(): Long = clock()
+}
+
+class ValidationException(message: String) : IllegalArgumentException(message)
+
+/** Thrown when a reconciled transaction would change without explicit confirmation (section 8, step 5). */
+class ReconciledChangeException : IllegalStateException("This transaction is reconciled; confirm the change first")
+
+internal fun validate(condition: Boolean, message: () -> String) {
+    if (!condition) throw ValidationException(message())
+}

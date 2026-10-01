@@ -1,0 +1,209 @@
+package ca.schippers.hfm.books
+
+import ca.schippers.hfm.data.AccessDeniedException
+import ca.schippers.hfm.domain.CategoryKind
+import ca.schippers.hfm.domain.Ids
+import ca.schippers.hfm.domain.MemberKind
+import ca.schippers.hfm.domain.Role
+import ca.schippers.hfm.domain.TaxFlag
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+/** Household members (HH-01): people who own accounts, receive care, hold plans. */
+class MemberService internal constructor(private val books: Books) {
+
+    fun list(includeArchived: Boolean = false): List<Member> = books.core.members().executeAsList()
+        .map { Member(it.id, it.display_name, MemberKind.valueOf(it.kind), it.birth_date?.let(LocalDate::parse), it.archived == 1L) }
+        .filter { includeArchived || !it.archived }
+
+    fun create(displayName: String, kind: MemberKind, birthDate: LocalDate? = null): Member {
+        requireAdmin(books)
+        validate(displayName.isNotBlank()) { "Name is required" }
+        val id = Ids.newId()
+        books.core.insertMember(id, displayName.trim(), kind.name, birthDate?.toString(), books.now())
+        books.session.audit("CREATE", "member", id)
+        return Member(id, displayName.trim(), kind, birthDate, archived = false)
+    }
+
+    fun update(member: Member) {
+        requireAdmin(books)
+        validate(member.displayName.isNotBlank()) { "Name is required" }
+        books.core.updateMember(member.displayName.trim(), member.kind.name, member.birthDate?.toString(), if (member.archived) 1 else 0, member.id)
+        books.session.audit("UPDATE", "member", member.id)
+    }
+
+    /** Links a sign-in account to the person it belongs to (HH-09). */
+    fun linkUser(userId: String, memberId: String?) {
+        requireAdmin(books)
+        books.core.linkUserToMember(memberId, userId)
+        books.session.audit("LINK", "app_user", userId, memberId)
+    }
+}
+
+/** Financial institutions (ACC-01). */
+class InstitutionService internal constructor(private val books: Books) {
+
+    fun list(): List<Institution> = books.core.institutions().executeAsList().map {
+        Institution(it.id, it.name, it.branch, it.institution_number, it.transit_number, it.website, it.phone, it.notes)
+    }
+
+    fun create(institution: Institution): Institution {
+        validate(institution.name.isNotBlank()) { "Name is required" }
+        validateNumbers(institution)
+        val id = Ids.newId()
+        with(institution) {
+            books.core.insertInstitution(id, name.trim(), branch, institutionNumber, transitNumber, website, phone, notes, books.now())
+        }
+        books.session.audit("CREATE", "institution", id)
+        return institution.copy(id = id, name = institution.name.trim())
+    }
+
+    fun update(institution: Institution) {
+        validate(institution.name.isNotBlank()) { "Name is required" }
+        validateNumbers(institution)
+        with(institution) {
+            books.core.updateInstitution(name.trim(), branch, institutionNumber, transitNumber, website, phone, notes, id)
+        }
+        books.session.audit("UPDATE", "institution", institution.id)
+    }
+
+    /** Canadian institution numbers have 3 digits and transit (branch) numbers 5. */
+    private fun validateNumbers(institution: Institution) {
+        institution.institutionNumber?.takeIf { it.isNotBlank() }?.let {
+            validate(it.matches(Regex("\\d{3}"))) { "The institution number has 3 digits" }
+        }
+        institution.transitNumber?.takeIf { it.isNotBlank() }?.let {
+            validate(it.matches(Regex("\\d{5}"))) { "The transit number has 5 digits" }
+        }
+    }
+}
+
+/** The bilingual category tree (CAT-01) with tax flags (CAT-05). */
+class CategoryService internal constructor(private val books: Books) {
+
+    fun list(includeArchived: Boolean = false): List<Category> = books.core.categories().executeAsList()
+        .map {
+            Category(
+                it.id, it.parent_id, it.system_key, it.name_en, it.name_fr, CategoryKind.valueOf(it.kind),
+                it.tax_flag?.let(TaxFlag::valueOf), it.sort_order.toInt(), it.archived == 1L,
+            )
+        }
+        .filter { includeArchived || !it.archived }
+
+    /** Categories in tree order, each with its depth, for pickers and the category editor. */
+    fun tree(includeArchived: Boolean = false): List<Pair<Category, Int>> {
+        val all = list(includeArchived)
+        val children = all.groupBy { it.parentId }
+        val out = ArrayList<Pair<Category, Int>>()
+        fun walk(parentId: String?, depth: Int) {
+            for (c in children[parentId].orEmpty().sortedWith(compareBy({ it.kind }, { it.sortOrder }, { it.nameEn }))) {
+                out += c to depth
+                walk(c.id, depth + 1)
+            }
+        }
+        walk(null, 0)
+        return out
+    }
+
+    fun create(parentId: String?, nameEn: String, nameFr: String, kind: CategoryKind, taxFlag: TaxFlag? = null): Category {
+        validate(nameEn.isNotBlank() || nameFr.isNotBlank()) { "A name is required" }
+        val parent = parentId?.let { id -> list(includeArchived = true).firstOrNull { it.id == id } ?: throw ValidationException("Unknown parent category") }
+        validate(parent == null || parent.kind == kind) { "A category must have the same kind as its parent" }
+        val en = nameEn.ifBlank { nameFr }.trim()
+        val fr = nameFr.ifBlank { nameEn }.trim()
+        val order = list(includeArchived = true).count { it.parentId == parentId }
+        val id = Ids.newId()
+        books.core.insertCategory(id, parentId, null, en, fr, kind.name, taxFlag?.name, order.toLong())
+        books.session.audit("CREATE", "category", id)
+        return Category(id, parentId, null, en, fr, kind, taxFlag, order, archived = false)
+    }
+
+    fun update(category: Category) {
+        validate(category.parentId != category.id) { "A category cannot be its own parent" }
+        val all = list(includeArchived = true).associateBy { it.id }
+        var ancestor = category.parentId
+        while (ancestor != null) {
+            validate(ancestor != category.id) { "A category cannot be moved under one of its own subcategories" }
+            ancestor = all[ancestor]?.parentId
+        }
+        books.core.updateCategory(
+            category.parentId, category.nameEn.trim(), category.nameFr.trim(), category.taxFlag?.name,
+            category.sortOrder.toLong(), if (category.archived) 1 else 0, category.id,
+        )
+        books.session.audit("UPDATE", "category", category.id)
+    }
+
+    /** Seeds the default tree the first time a household is opened. */
+    internal fun ensureDefaults() {
+        if (books.core.categoryCount().executeAsOne() > 0) return
+        val text = javaClass.getResourceAsStream("/hfm/books/default-categories.json")!!.reader(Charsets.UTF_8).use { it.readText() }
+        val roots = Json.decodeFromString<List<DefaultCategory>>(text)
+        books.session.core.transaction {
+            fun insert(node: DefaultCategory, parentId: String?, kind: String, index: Int) {
+                val id = Ids.newId()
+                val nodeKind = node.kind ?: kind
+                books.core.insertCategory(id, parentId, node.key, node.en, node.fr, nodeKind, node.tax, index.toLong())
+                node.children.forEachIndexed { i, child -> insert(child, id, nodeKind, i) }
+            }
+            roots.forEachIndexed { i, root -> insert(root, null, root.kind ?: CategoryKind.EXPENSE.name, i) }
+        }
+    }
+
+    @Serializable
+    private data class DefaultCategory(
+        val key: String,
+        val en: String,
+        val fr: String,
+        val kind: String? = null,
+        val tax: String? = null,
+        val children: List<DefaultCategory> = emptyList(),
+    )
+}
+
+/** Payees with aliases that map statement text to a clean name (section 7.4). */
+class PayeeService internal constructor(private val books: Books) {
+
+    fun list(includeArchived: Boolean = false): List<Payee> = books.core.payees().executeAsList()
+        .map { Payee(it.id, it.name, it.default_category_id, it.archived == 1L) }
+        .filter { includeArchived || !it.archived }
+
+    fun create(name: String, defaultCategoryId: String? = null): Payee {
+        validate(name.isNotBlank()) { "Payee name is required" }
+        val id = Ids.newId()
+        books.core.insertPayee(id, name.trim(), defaultCategoryId)
+        return Payee(id, name.trim(), defaultCategoryId, archived = false)
+    }
+
+    fun update(payee: Payee) {
+        validate(payee.name.isNotBlank()) { "Payee name is required" }
+        books.core.updatePayee(payee.name.trim(), payee.defaultCategoryId, if (payee.archived) 1 else 0, payee.id)
+    }
+
+    /** "AMZN MKTP CA*2X4" → Amazon: an alias pattern contained in the text, ignoring case. */
+    fun addAlias(payeeId: String, pattern: String) {
+        validate(pattern.isNotBlank()) { "Alias is required" }
+        books.core.insertPayeeAlias(Ids.newId(), payeeId, pattern.trim())
+    }
+
+    /** Finds the payee for text typed or imported, by alias, then exact name. */
+    fun match(text: String): Payee? {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return null
+        val payees = list(includeArchived = true).associateBy { it.id }
+        val byAlias = books.core.payeeAliases().executeAsList()
+            .filter { trimmed.contains(it.pattern, ignoreCase = true) }
+            .maxByOrNull { it.pattern.length }
+        byAlias?.let { alias -> payees[alias.payee_id]?.let { return it } }
+        return books.core.payeeByName(trimmed).executeAsOneOrNull()?.let { Payee(it.id, it.name, it.default_category_id, it.archived == 1L) }
+    }
+
+    internal fun findOrCreate(text: String): Payee? {
+        if (text.isBlank()) return null
+        return match(text) ?: create(text)
+    }
+}
+
+internal fun requireAdmin(books: Books) {
+    if (books.role != Role.ADMINISTRATOR) throw AccessDeniedException("Only an administrator can do this")
+}

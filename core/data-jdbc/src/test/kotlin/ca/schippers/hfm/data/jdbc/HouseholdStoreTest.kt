@@ -154,7 +154,7 @@ class HouseholdStoreTest {
         val now = System.currentTimeMillis()
         val accountId = Ids.newId()
         ledger.ledgerQueries.insertAccount(accountId, null, "Chequing", "CHEQUING", "CAD", "****1234", null, 100_000, "2026-01-01", "OPEN", null, now, now)
-        ledger.ledgerQueries.insertTxn(Ids.newId(), accountId, "2026-01-02", null, "IGA", -4_567, null, null, null, null, null, "UNCLEARED", null, null, null, now, now)
+        ledger.ledgerQueries.insertTxn(Ids.newId(), accountId, "2026-01-02", null, "IGA", -4_567, null, null, null, null, null, "UNCLEARED", null, null, null, null, now, now)
         assertEquals(95_433L, ledger.ledgerQueries.accountBalance(accountId).executeAsOne())
     }
 }

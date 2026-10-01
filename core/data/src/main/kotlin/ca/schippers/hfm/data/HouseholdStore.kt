@@ -138,6 +138,19 @@ class HouseholdStore(
 
     internal fun now(): Long = clock()
 
+    internal fun verifyPassword(header: HouseholdHeader, userId: String, password: CharArray): Boolean {
+        val user = header.users.firstOrNull { it.userId == userId } ?: return false
+        val wrappingKey = PasswordKdf.derive(password, user.salt.unb64(), user.kdf)
+        return try {
+            Aead.open(wrappingKey, user.wrappedPrivateKey.unb64(), userKeyAad(header.householdId, userId)).fill(0)
+            true
+        } catch (_: DecryptionException) {
+            false
+        } finally {
+            wrappingKey.fill(0)
+        }
+    }
+
     internal fun newUserKeys(
         householdId: String,
         userId: String,

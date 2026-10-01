@@ -1,0 +1,139 @@
+[
+  { "key": "housing", "en": "Housing", "fr": "Habitation", "kind": "EXPENSE", "children": [
+    { "key": "housing.rent", "en": "Rent", "fr": "Loyer" },
+    { "key": "housing.mortgage_interest", "en": "Mortgage interest", "fr": "Intérêts hypothécaires" },
+    { "key": "housing.municipal_tax", "en": "Municipal taxes", "fr": "Taxes municipales" },
+    { "key": "housing.school_tax", "en": "School taxes", "fr": "Taxes scolaires" },
+    { "key": "housing.condo_fees", "en": "Condo fees", "fr": "Frais de copropriété" },
+    { "key": "housing.insurance", "en": "Home insurance", "fr": "Assurance habitation" },
+    { "key": "housing.maintenance", "en": "Maintenance and repairs", "fr": "Entretien et réparations" },
+    { "key": "housing.furnishings", "en": "Furniture and appliances", "fr": "Meubles et électroménagers" },
+    { "key": "housing.garden", "en": "Yard and snow removal", "fr": "Terrain et déneigement" }
+  ]},
+  { "key": "utilities", "en": "Utilities", "fr": "Services publics", "kind": "EXPENSE", "children": [
+    { "key": "utilities.electricity", "en": "Electricity", "fr": "Électricité" },
+    { "key": "utilities.heating", "en": "Heating (gas, oil)", "fr": "Chauffage (gaz, mazout)" },
+    { "key": "utilities.water", "en": "Water", "fr": "Eau" },
+    { "key": "utilities.internet", "en": "Internet", "fr": "Internet" },
+    { "key": "utilities.phone", "en": "Home phone", "fr": "Téléphone résidentiel" },
+    { "key": "utilities.mobile", "en": "Mobile phone", "fr": "Cellulaire" },
+    { "key": "utilities.tv_streaming", "en": "TV and streaming", "fr": "Télé et diffusion en continu" }
+  ]},
+  { "key": "food", "en": "Food", "fr": "Alimentation", "kind": "EXPENSE", "children": [
+    { "key": "food.groceries", "en": "Groceries", "fr": "Épicerie" },
+    { "key": "food.restaurants", "en": "Restaurants", "fr": "Restaurants" },
+    { "key": "food.coffee_snacks", "en": "Coffee and snacks", "fr": "Café et collations" },
+    { "key": "food.alcohol", "en": "Beer, wine and spirits", "fr": "Bière, vin et spiritueux" }
+  ]},
+  { "key": "transport", "en": "Transportation", "fr": "Transport", "kind": "EXPENSE", "children": [
+    { "key": "transport.fuel", "en": "Fuel", "fr": "Carburant" },
+    { "key": "transport.ev_charging", "en": "Electric vehicle charging", "fr": "Recharge de véhicule électrique" },
+    { "key": "transport.maintenance", "en": "Vehicle maintenance", "fr": "Entretien du véhicule" },
+    { "key": "transport.insurance", "en": "Vehicle insurance", "fr": "Assurance automobile" },
+    { "key": "transport.registration", "en": "Registration and licence", "fr": "Immatriculation et permis" },
+    { "key": "transport.lease", "en": "Vehicle lease", "fr": "Location de véhicule" },
+    { "key": "transport.transit", "en": "Public transit", "fr": "Transport en commun" },
+    { "key": "transport.parking_tolls", "en": "Parking and tolls", "fr": "Stationnement et péages" },
+    { "key": "transport.taxi", "en": "Taxi and ride sharing", "fr": "Taxi et covoiturage" }
+  ]},
+  { "key": "health", "en": "Health", "fr": "Santé", "kind": "EXPENSE", "tax": "MEDICAL", "children": [
+    { "key": "health.pharmacy", "en": "Prescriptions", "fr": "Médicaments sur ordonnance", "tax": "MEDICAL" },
+    { "key": "health.dental", "en": "Dental care", "fr": "Soins dentaires", "tax": "MEDICAL" },
+    { "key": "health.vision", "en": "Eye care and glasses", "fr": "Soins de la vue et lunettes", "tax": "MEDICAL" },
+    { "key": "health.medical", "en": "Medical services", "fr": "Services médicaux", "tax": "MEDICAL" },
+    { "key": "health.paramedical", "en": "Paramedical (physio, massage, psychology)", "fr": "Soins paramédicaux (physio, massothérapie, psychologie)", "tax": "MEDICAL" },
+    { "key": "health.premiums", "en": "Health and dental plan premiums", "fr": "Primes d'assurance santé et dentaire", "tax": "MEDICAL" },
+    { "key": "health.otc", "en": "Pharmacy (non-prescription)", "fr": "Pharmacie (sans ordonnance)" }
+  ]},
+  { "key": "insurance", "en": "Insurance", "fr": "Assurances", "kind": "EXPENSE", "children": [
+    { "key": "insurance.life", "en": "Life insurance", "fr": "Assurance vie" },
+    { "key": "insurance.disability", "en": "Disability insurance", "fr": "Assurance invalidité" },
+    { "key": "insurance.critical_illness", "en": "Critical illness insurance", "fr": "Assurance maladies graves" },
+    { "key": "insurance.travel", "en": "Travel insurance", "fr": "Assurance voyage" }
+  ]},
+  { "key": "children", "en": "Children", "fr": "Enfants", "kind": "EXPENSE", "children": [
+    { "key": "children.childcare", "en": "Child care", "fr": "Frais de garde", "tax": "CHILD_CARE" },
+    { "key": "children.school", "en": "School fees and supplies", "fr": "Frais et fournitures scolaires" },
+    { "key": "children.activities", "en": "Activities and camps", "fr": "Activités et camps" },
+    { "key": "children.clothing", "en": "Children's clothing", "fr": "Vêtements pour enfants" },
+    { "key": "children.allowance", "en": "Allowance", "fr": "Allocation" }
+  ]},
+  { "key": "personal", "en": "Personal", "fr": "Dépenses personnelles", "kind": "EXPENSE", "children": [
+    { "key": "personal.clothing", "en": "Clothing and shoes", "fr": "Vêtements et chaussures" },
+    { "key": "personal.hair_beauty", "en": "Hair and beauty", "fr": "Coiffure et esthétique" },
+    { "key": "personal.fitness", "en": "Fitness and sports", "fr": "Conditionnement physique et sports" },
+    { "key": "personal.electronics", "en": "Electronics and software", "fr": "Électronique et logiciels" }
+  ]},
+  { "key": "pets", "en": "Pets", "fr": "Animaux de compagnie", "kind": "EXPENSE", "children": [
+    { "key": "pets.food", "en": "Pet food", "fr": "Nourriture pour animaux" },
+    { "key": "pets.vet", "en": "Veterinarian", "fr": "Vétérinaire" },
+    { "key": "pets.supplies", "en": "Pet supplies and grooming", "fr": "Fournitures et toilettage" }
+  ]},
+  { "key": "leisure", "en": "Leisure", "fr": "Loisirs", "kind": "EXPENSE", "children": [
+    { "key": "leisure.entertainment", "en": "Entertainment and outings", "fr": "Divertissement et sorties" },
+    { "key": "leisure.hobbies", "en": "Hobbies", "fr": "Passe-temps" },
+    { "key": "leisure.subscriptions", "en": "Books, magazines and subscriptions", "fr": "Livres, revues et abonnements" },
+    { "key": "leisure.cottage_rv", "en": "Cottage, RV and boat", "fr": "Chalet, VR et bateau" }
+  ]},
+  { "key": "travel", "en": "Travel", "fr": "Voyages", "kind": "EXPENSE", "children": [
+    { "key": "travel.transport", "en": "Flights and transportation", "fr": "Vols et transport" },
+    { "key": "travel.lodging", "en": "Lodging", "fr": "Hébergement" },
+    { "key": "travel.meals", "en": "Meals while travelling", "fr": "Repas en voyage" },
+    { "key": "travel.activities", "en": "Activities and tours", "fr": "Activités et excursions" }
+  ]},
+  { "key": "gifts", "en": "Gifts and donations", "fr": "Cadeaux et dons", "kind": "EXPENSE", "children": [
+    { "key": "gifts.gifts", "en": "Gifts", "fr": "Cadeaux" },
+    { "key": "gifts.charity", "en": "Charitable donations", "fr": "Dons de bienfaisance", "tax": "CHARITABLE" },
+    { "key": "gifts.political", "en": "Political contributions", "fr": "Contributions politiques", "tax": "POLITICAL" }
+  ]},
+  { "key": "education", "en": "Education", "fr": "Éducation", "kind": "EXPENSE", "children": [
+    { "key": "education.tuition", "en": "Tuition", "fr": "Frais de scolarité", "tax": "TUITION" },
+    { "key": "education.books", "en": "Books and supplies", "fr": "Livres et fournitures" }
+  ]},
+  { "key": "financial", "en": "Financial costs", "fr": "Frais financiers", "kind": "EXPENSE", "children": [
+    { "key": "financial.bank_fees", "en": "Bank fees", "fr": "Frais bancaires" },
+    { "key": "financial.card_fees", "en": "Credit card fees", "fr": "Frais de carte de crédit" },
+    { "key": "financial.interest", "en": "Interest charges", "fr": "Frais d'intérêts" },
+    { "key": "financial.fx_fees", "en": "Foreign exchange fees", "fr": "Frais de change" },
+    { "key": "financial.professional", "en": "Accounting and legal fees", "fr": "Honoraires comptables et juridiques" }
+  ]},
+  { "key": "taxes", "en": "Taxes", "fr": "Impôts", "kind": "EXPENSE", "children": [
+    { "key": "taxes.income_tax", "en": "Income tax", "fr": "Impôt sur le revenu" },
+    { "key": "taxes.instalments", "en": "Tax instalments", "fr": "Acomptes provisionnels" }
+  ]},
+  { "key": "business", "en": "Self-employment expenses", "fr": "Dépenses de travail autonome", "kind": "EXPENSE", "tax": "BUSINESS", "children": [
+    { "key": "business.supplies", "en": "Office supplies", "fr": "Fournitures de bureau", "tax": "BUSINESS" },
+    { "key": "business.home_office", "en": "Home office", "fr": "Bureau à domicile", "tax": "BUSINESS" },
+    { "key": "business.vehicle", "en": "Business use of vehicle", "fr": "Usage commercial du véhicule", "tax": "BUSINESS" }
+  ]},
+  { "key": "misc", "en": "Miscellaneous", "fr": "Divers", "kind": "EXPENSE" },
+
+  { "key": "income.employment", "en": "Employment income", "fr": "Revenus d'emploi", "kind": "INCOME", "children": [
+    { "key": "income.employment.salary", "en": "Salary and wages", "fr": "Salaire" },
+    { "key": "income.employment.bonus", "en": "Bonuses and commissions", "fr": "Primes et commissions" }
+  ]},
+  { "key": "income.self_employment", "en": "Self-employment income", "fr": "Revenus de travail autonome", "kind": "INCOME", "tax": "BUSINESS" },
+  { "key": "income.rental", "en": "Rental income", "fr": "Revenus de location", "kind": "INCOME" },
+  { "key": "income.pension", "en": "Pensions", "fr": "Rentes et pensions", "kind": "INCOME", "children": [
+    { "key": "income.pension.employer", "en": "Employer pension", "fr": "Régime de retraite de l'employeur" },
+    { "key": "income.pension.qpp_cpp", "en": "QPP / CPP", "fr": "RRQ / RPC" },
+    { "key": "income.pension.oas", "en": "Old Age Security", "fr": "Pension de la Sécurité de la vieillesse" },
+    { "key": "income.pension.rrif", "en": "RRIF and annuity payments", "fr": "Retraits de FERR et rentes" }
+  ]},
+  { "key": "income.benefits", "en": "Government benefits", "fr": "Prestations gouvernementales", "kind": "INCOME", "children": [
+    { "key": "income.benefits.ccb", "en": "Canada Child Benefit", "fr": "Allocation canadienne pour enfants" },
+    { "key": "income.benefits.family_allowance", "en": "Quebec Family Allowance", "fr": "Allocation famille (Québec)" },
+    { "key": "income.benefits.gst_credit", "en": "GST/HST credit", "fr": "Crédit pour la TPS/TVH" },
+    { "key": "income.benefits.solidarity", "en": "Solidarity tax credit", "fr": "Crédit d'impôt pour solidarité" },
+    { "key": "income.benefits.ei_qpip", "en": "Employment Insurance / QPIP", "fr": "Assurance-emploi / RQAP" }
+  ]},
+  { "key": "income.investment", "en": "Investment income", "fr": "Revenus de placement", "kind": "INCOME", "children": [
+    { "key": "income.investment.interest", "en": "Interest", "fr": "Intérêts" },
+    { "key": "income.investment.dividends", "en": "Dividends", "fr": "Dividendes" },
+    { "key": "income.investment.distributions", "en": "Fund distributions", "fr": "Distributions de fonds" }
+  ]},
+  { "key": "income.gifts", "en": "Gifts received", "fr": "Cadeaux reçus", "kind": "INCOME" },
+  { "key": "income.refunds", "en": "Refunds and reimbursements", "fr": "Remboursements", "kind": "INCOME" },
+  { "key": "income.tax_refund", "en": "Tax refunds", "fr": "Remboursements d'impôt", "kind": "INCOME" },
+  { "key": "income.other", "en": "Other income", "fr": "Autres revenus", "kind": "INCOME" }
+]

@@ -44,6 +44,9 @@ class HouseholdSession internal constructor(
 
     fun canOpen(partitionId: String): Boolean = partitionId in partitionKeys
 
+    /** Re-authentication before revealing sensitive values such as full account numbers (SEC-04). */
+    fun verifyPassword(password: CharArray): Boolean = store.verifyPassword(header, userId, password)
+
     fun ledger(partitionId: String): LedgerDatabase {
         checkOpen()
         return ledgers.getOrPut(partitionId) {

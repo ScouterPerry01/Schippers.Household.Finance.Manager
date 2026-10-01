@@ -48,3 +48,6 @@ enum class ClearedStatus { UNCLEARED, CLEARED, RECONCILED }
 enum class MemberKind { ADULT, CHILD, DEPENDANT }
 
 enum class CategoryKind { EXPENSE, INCOME }
+
+/** Tax treatment flags on categories and splits, feeding the tax summary (CAT-05). */
+enum class TaxFlag { MEDICAL, CHARITABLE, POLITICAL, CHILD_CARE, TUITION, BUSINESS, EMPLOYMENT, MOVING }

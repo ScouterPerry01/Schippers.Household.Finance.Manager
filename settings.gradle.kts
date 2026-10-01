@@ -23,6 +23,7 @@ include(
     ":core:security",
     ":core:data",
     ":core:data-jdbc",
+    ":core:books",
     ":core:i18n",
     ":core:importers",
     ":core:sync",
