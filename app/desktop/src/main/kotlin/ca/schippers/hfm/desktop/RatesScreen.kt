@@ -1,5 +1,8 @@
 package ca.schippers.hfm.desktop
 
+import ca.schippers.hfm.books.Metal
+import ca.schippers.hfm.books.PriceService
+import ca.schippers.hfm.books.PriceFeed
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,7 +50,8 @@ object Http {
 
     fun get(url: String): String {
         require(url.startsWith("https://")) { "Only HTTPS is allowed" }
-        val request = HttpRequest.newBuilder(URI(url)).timeout(Duration.ofSeconds(30)).header("Accept", "application/json").GET().build()
+        val request = HttpRequest.newBuilder(URI(url)).timeout(Duration.ofSeconds(30)).header("Accept", "application/json")
+            .header("User-Agent", "HouseholdFinanceManager/1.0").GET().build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         check(response.statusCode() == 200) { "HTTP ${response.statusCode()}" }
         return response.body()
@@ -149,6 +153,7 @@ fun RatesScreen(model: BooksModel) {
                 }
             }) { Text(model.t("common.save")) }
         }
+        MarketPrices(model)
         selected?.let { c ->
             HorizontalDivider()
             Text(model.t("rates.historyOf", c.code), style = MaterialTheme.typography.titleMedium)
@@ -166,6 +171,86 @@ fun RatesScreen(model: BooksModel) {
 }
 
 private fun sourceName(model: BooksModel, source: RateSource): String = model.t("rates.source.${source.name}")
+
+/**
+ * INV-04, CR-05, PM-02: the optional price downloads, each off until turned on, coin prices with
+ * their CoinGecko names, and precious metal spot prices with manual entry.
+ */
+@Composable
+private fun MarketPrices(model: BooksModel) {
+    val books = model.books
+    val scope = rememberCoroutineScope()
+    val today = today()
+    val locale = model.language.locale
+    var busy by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf<String?>(null) }
+    val coins = remember(model.revision) { books.prices.coinsHeld() }
+    HorizontalDivider()
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(model.t("prices.title"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+        Button(enabled = !busy && PriceFeed.entries.any { books.prices.enabled(it) }, onClick = {
+            busy = true
+            scope.launch {
+                val result = withContext(Dispatchers.IO) { runCatching { books.prices.updateAll(today, Http::get) } }
+                status = result.fold(
+                    { r -> model.t("prices.updated", r.total) + if (r.problems.isNotEmpty()) " " + model.t("prices.problems", r.problems.joinToString("; ")) else "" },
+                    { model.t("rates.failed", it.message.orEmpty()) },
+                )
+                busy = false
+                model.changed()
+            }
+        }) { Text(model.t("prices.update")) }
+    }
+    Text(model.t("prices.explain"), style = MaterialTheme.typography.bodySmall)
+    for (feed in PriceFeed.entries) {
+        val on = remember(model.revision, feed) { books.prices.enabled(feed) }
+        LabeledCheckbox(model.t("prices.feed.$feed"), on) { v -> model.act { books.prices.setEnabled(feed, v) } }
+    }
+    Text(PriceService.ATTRIBUTION, style = MaterialTheme.typography.bodySmall)
+    books.prices.lastUpdate()?.let { Text(model.t("prices.last", model.date(it)), style = MaterialTheme.typography.bodySmall) }
+    status?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+
+    if (coins.isNotEmpty()) {
+        Text(model.t("prices.coins"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+        for (c in coins) {
+            val latest = remember(model.revision, c) { books.rates.list(c, today.minus(DatePeriod(days = 30)), today).lastOrNull() }
+            var id by remember(model.revision, c) { mutableStateOf(books.prices.coinId(c).orEmpty()) }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(c.code, Modifier.width(80.dp))
+                Text(latest?.let { model.money(ca.schippers.hfm.money.Money.of(it.cadPerUnit, Currency.CAD)) + " · " + model.date(it.date) + " · " + sourceName(model, it.source) } ?: model.t("rates.missing"), Modifier.weight(1f))
+                TextInput(model.t("prices.coinId"), id, Modifier.width(260.dp)) { id = it }
+                TextButton(onClick = { model.act { books.prices.setCoinId(c, id) } }) { Text(model.t("common.save")) }
+            }
+        }
+        Text(model.t("prices.coinsHint"), style = MaterialTheme.typography.bodySmall)
+    }
+
+    Text(model.t("prices.metals"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+    for (m in Metal.entries) {
+        val spot = remember(model.revision, m) { books.prices.spot(m, today) }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(model.t("metal.$m"), Modifier.width(140.dp))
+            Text(spot?.let { model.t("prices.perOz", model.money(ca.schippers.hfm.money.Money.of(it.cadPerOz, Currency.CAD))) + " · " + model.date(it.date) + " · " + model.t(if (it.manual) "rates.source.MANUAL" else "prices.market") } ?: model.t("rates.missing"), Modifier.weight(1f))
+        }
+    }
+    var metal by remember { mutableStateOf(Metal.GOLD) }
+    var date by remember { mutableStateOf(today.toString()) }
+    var price by remember { mutableStateOf("") }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Picker(model.t("prices.metal"), Metal.entries, metal, { model.t("metal.$it") }, Modifier.width(180.dp)) { metal = it }
+        DateInput(model.t("report.date"), date, Modifier.width(170.dp)) { date = it }
+        TextInput(model.t("prices.cadPerOz"), price, Modifier.width(240.dp)) { price = it }
+        OutlinedButton(onClick = {
+            model.act {
+                val d = runCatching { LocalDate.parse(date.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
+                val value = runCatching { MoneyFormat.parseDecimal(price, locale) }.getOrElse { throw ValidationException("error.invalidNumber") }
+                books.prices.setSpot(metal, d, value)
+                price = ""
+            }
+        }) { Text(model.t("common.save")) }
+    }
+    Text(model.t("prices.metalsHint"), style = MaterialTheme.typography.bodySmall)
+}
 
 /** Six significant digits are plenty to read a rate; the full value is kept for conversions. */
 private fun shortRate(value: java.math.BigDecimal): String = value.round(java.math.MathContext(6)).stripTrailingZeros().toPlainString()

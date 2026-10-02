@@ -110,7 +110,8 @@ class AccountService internal constructor(private val books: Books) {
 }
 
 private fun AccountRow.toAccount(groupId: String, owners: Set<String>): Account {
-    val currency = Currency.of(currency)
+    // A wallet may hold a coin found in an exchange import (CR-03): its code is registered again on load.
+    val currency = if (type == AccountType.CRYPTO_WALLET.name) Currency.registerCrypto(currency) else Currency.of(currency)
     return Account(
         id = id,
         groupId = groupId,

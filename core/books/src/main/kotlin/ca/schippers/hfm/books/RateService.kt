@@ -13,7 +13,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.math.BigDecimal
 import java.math.MathContext
 
-enum class RateSource { BOC, OPEN, MANUAL }
+enum class RateSource { BOC, OPEN, MANUAL, MARKET }
 
 data class FxRate(val currency: Currency, val date: LocalDate, val cadPerUnit: BigDecimal, val source: RateSource) {
     val manual: Boolean get() = source == RateSource.MANUAL

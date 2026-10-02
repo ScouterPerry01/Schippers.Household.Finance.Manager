@@ -176,9 +176,19 @@ CREATE TABLE fx_rate (
     currency TEXT NOT NULL,
     date TEXT NOT NULL,
     cad_per_unit TEXT NOT NULL,
-    -- BOC: Bank of Canada; OPEN: the optional second source (FX-08); MANUAL: entered by the user.
-    source TEXT NOT NULL CHECK (source IN ('BOC', 'OPEN', 'MANUAL')),
+    -- BOC: Bank of Canada; OPEN: the optional second source (FX-08); MANUAL: entered by the user;
+    -- MARKET: a crypto-asset's price in CAD from the optional market data download (CR-05).
+    source TEXT NOT NULL CHECK (source IN ('BOC', 'OPEN', 'MANUAL', 'MARKET')),
     PRIMARY KEY (currency, date)
+);
+
+-- PM-02: precious metal spot prices in CAD per troy ounce of pure metal, downloaded or entered.
+CREATE TABLE spot_price (
+    metal TEXT NOT NULL CHECK (metal IN ('GOLD', 'SILVER', 'PLATINUM', 'PALLADIUM')),
+    date TEXT NOT NULL,
+    cad_per_oz TEXT NOT NULL,
+    source TEXT NOT NULL CHECK (source IN ('MARKET', 'MANUAL')),
+    PRIMARY KEY (metal, date)
 );
 
 -- BUD-01: a monthly or annual budget per category, optionally rolling unspent amounts forward.
@@ -368,6 +378,28 @@ ON CONFLICT(currency, date) DO UPDATE SET cad_per_unit = excluded.cad_per_unit W
 insertOpenRate:
 INSERT INTO fx_rate(currency, date, cad_per_unit, source) VALUES (?, ?, ?, 'OPEN')
 ON CONFLICT(currency, date) DO UPDATE SET cad_per_unit = excluded.cad_per_unit WHERE fx_rate.source = 'OPEN';
+
+-- CR-05: market prices of crypto-assets fill gaps and refresh themselves; manual ones are never replaced.
+insertMarketRate:
+INSERT INTO fx_rate(currency, date, cad_per_unit, source) VALUES (?, ?, ?, 'MARKET')
+ON CONFLICT(currency, date) DO UPDATE SET cad_per_unit = excluded.cad_per_unit WHERE fx_rate.source = 'MARKET';
+
+latestMarketDate:
+SELECT max(date) AS latest FROM fx_rate WHERE currency = ? AND source = 'MARKET';
+
+putSpot:
+INSERT INTO spot_price(metal, date, cad_per_oz, source) VALUES (?, ?, ?, ?)
+ON CONFLICT(metal, date) DO UPDATE SET cad_per_oz = excluded.cad_per_oz, source = excluded.source
+WHERE spot_price.source = 'MARKET' OR excluded.source = 'MANUAL';
+
+spotOnOrBefore:
+SELECT * FROM spot_price WHERE metal = ? AND date <= ? ORDER BY date DESC LIMIT 1;
+
+spots:
+SELECT * FROM spot_price WHERE metal = ? ORDER BY date DESC LIMIT ?;
+
+deleteSpot:
+DELETE FROM spot_price WHERE metal = ? AND date = ?;
 
 upsertManualRate:
 INSERT OR REPLACE INTO fx_rate(currency, date, cad_per_unit, source) VALUES (?, ?, ?, 'MANUAL');

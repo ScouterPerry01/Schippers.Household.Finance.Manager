@@ -36,7 +36,9 @@ fun MainScreen(model: BooksModel, app: AppState) {
     // FX-02: fetch missing Bank of Canada rates in the background; offline is fine (NFR-10).
     LaunchedEffect(model) {
         val added = withContext(Dispatchers.IO) { runCatching { model.books.rates.updateAll(today(), Http::get) }.getOrDefault(0) }
-        if (added > 0) model.changed()
+        // INV-04, CR-05, PM-02: market prices, only for the feeds the user turned on.
+        val prices = withContext(Dispatchers.IO) { runCatching { model.books.prices.updateAll(today(), Http::get).total }.getOrDefault(0) }
+        if (added + prices > 0) model.changed()
     }
     // GOAL-02: scheduled set-asides are entered on their dates while the app is open.
     LaunchedEffect(model) {

@@ -19,6 +19,7 @@ class Currency private constructor(val code: String, val minorUnits: Int, val is
 
         private val cryptoCodes = setOf(
             "BTC", "ETH", "LTC", "BCH", "XRP", "ADA", "SOL", "DOT", "DOGE", "XLM", "USDC", "USDT",
+            "AVAX", "LINK", "MATIC", "POL", "ATOM", "UNI", "ETC", "XMR", "ALGO", "TRX", "SHIB",
         )
         private val cache = ConcurrentHashMap<String, Currency>()
 

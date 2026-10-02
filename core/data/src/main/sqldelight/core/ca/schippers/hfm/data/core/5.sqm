@@ -1,0 +1,21 @@
+-- Version 5 to 6 (CR-05, PM-02): crypto-asset prices kept as CAD rates, and precious metal spot prices.
+
+-- SQLite cannot change a CHECK constraint in place: the rates table is rebuilt to accept MARKET.
+CREATE TABLE fx_rate_new (
+    currency TEXT NOT NULL,
+    date TEXT NOT NULL,
+    cad_per_unit TEXT NOT NULL,
+    source TEXT NOT NULL CHECK (source IN ('BOC', 'OPEN', 'MANUAL', 'MARKET')),
+    PRIMARY KEY (currency, date)
+);
+INSERT INTO fx_rate_new SELECT currency, date, cad_per_unit, source FROM fx_rate;
+DROP TABLE fx_rate;
+ALTER TABLE fx_rate_new RENAME TO fx_rate;
+
+CREATE TABLE spot_price (
+    metal TEXT NOT NULL CHECK (metal IN ('GOLD', 'SILVER', 'PLATINUM', 'PALLADIUM')),
+    date TEXT NOT NULL,
+    cad_per_oz TEXT NOT NULL,
+    source TEXT NOT NULL CHECK (source IN ('MARKET', 'MANUAL')),
+    PRIMARY KEY (metal, date)
+);

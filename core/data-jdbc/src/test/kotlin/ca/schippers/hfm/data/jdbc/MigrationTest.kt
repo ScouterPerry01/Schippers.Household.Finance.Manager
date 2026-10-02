@@ -209,6 +209,26 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 5 core databases keep their rates and accept market prices`() {
+        val file = temp.resolve("core5.db")
+        older("../data/src/main/sqldelight/core/schemas/5.db", file, 5).use { driver ->
+            driver.execute(null, "INSERT INTO fx_rate(currency, date, cad_per_unit, source) VALUES ('USD', '2026-09-30', '1.39', 'BOC')", 0)
+            driver.execute(null, "INSERT INTO fx_rate(currency, date, cad_per_unit, source) VALUES ('BTC', '2026-09-30', '80000', 'MANUAL')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, CoreDatabase.Schema, file)
+            val q = CoreDatabase(driver).coreQueries
+            assertEquals("1.39", q.rateOnOrBefore("USD", "2026-10-01").executeAsOne().cad_per_unit)
+            q.insertMarketRate("BTC", "2026-09-30", "86000")
+            q.insertMarketRate("BTC", "2026-10-01", "86500")
+            assertEquals("80000", q.rateOnOrBefore("BTC", "2026-09-30").executeAsOne().cad_per_unit, "manual stays")
+            assertEquals("MARKET", q.rateOnOrBefore("BTC", "2026-10-01").executeAsOne().source)
+            q.putSpot("GOLD", "2026-10-01", "3699.07", "MARKET")
+            assertEquals("3699.07", q.spotOnOrBefore("GOLD", "2026-10-02").executeAsOne().cad_per_oz)
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()
