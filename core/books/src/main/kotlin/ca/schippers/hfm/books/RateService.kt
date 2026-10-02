@@ -13,7 +13,11 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.math.BigDecimal
 import java.math.MathContext
 
-data class FxRate(val currency: Currency, val date: LocalDate, val cadPerUnit: BigDecimal, val manual: Boolean)
+enum class RateSource { BOC, OPEN, MANUAL }
+
+data class FxRate(val currency: Currency, val date: LocalDate, val cadPerUnit: BigDecimal, val source: RateSource) {
+    val manual: Boolean get() = source == RateSource.MANUAL
+}
 
 /**
  * Exchange rates (FX-01, FX-02): the Bank of Canada's daily average rates, stored in CAD per unit
@@ -46,7 +50,7 @@ class RateService internal constructor(private val books: Books) {
 
     fun list(currency: Currency, from: LocalDate, to: LocalDate): List<FxRate> =
         books.core.ratesFor(currency.code, from.toString(), to.toString()).executeAsList()
-            .map { FxRate(currency, LocalDate.parse(it.date), BigDecimal(it.cad_per_unit), it.source == "MANUAL") }
+            .map { FxRate(currency, LocalDate.parse(it.date), BigDecimal(it.cad_per_unit), RateSource.valueOf(it.source)) }
 
     /** FX-02 manual override, e.g. for a currency the Bank of Canada does not publish. */
     fun setManual(currency: Currency, date: LocalDate, cadPerUnit: BigDecimal) {
@@ -58,10 +62,77 @@ class RateService internal constructor(private val books: Books) {
     fun deleteRate(currency: Currency, date: LocalDate) = books.core.deleteRate(currency.code, date.toString())
 
     /** Currencies used by the household's accounts that need rates and that the Bank of Canada publishes. */
-    fun neededCurrencies(): Set<Currency> = books.accounts.list(includeClosed = true)
-        .map { it.account.currency }
-        .filter { it != Currency.CAD && !it.isCrypto && it.code in BANK_OF_CANADA }
-        .toSet() + (if (baseCurrency != Currency.CAD && baseCurrency.code in BANK_OF_CANADA) setOf(baseCurrency) else emptySet())
+    fun neededCurrencies(): Set<Currency> = allNeeded().filter { it.code in BANK_OF_CANADA }.toSet()
+
+    /** Every fiat currency that needs rates: account currencies, the base currency and followed ones (FX-07). */
+    fun allNeeded(): Set<Currency> = (
+        books.accounts.list(includeClosed = true).map { it.account.currency } + baseCurrency + followed()
+        ).filter { it != Currency.CAD && !it.isCrypto }.toSet()
+
+    /** FX-07: currencies the user follows although no account uses them. */
+    fun followed(): List<Currency> = books.setting(FOLLOWED).orEmpty().split(',').filter { it.isNotBlank() }
+        .mapNotNull { runCatching { Currency.of(it) }.getOrNull() }
+
+    fun follow(currency: Currency) {
+        validate(!currency.isCrypto, "error.unknownCurrency")
+        books.putSetting(FOLLOWED, (followed() + currency).distinct().joinToString(",") { it.code })
+    }
+
+    fun unfollow(currency: Currency) {
+        books.putSetting(FOLLOWED, (followed() - currency).joinToString(",") { it.code })
+    }
+
+    /** FX-08: whether the optional second source is used; off by default. */
+    var openSourceEnabled: Boolean
+        get() = books.setting(OPEN_SOURCE) == "true"
+        set(value) { books.putSetting(OPEN_SOURCE, value.toString()) }
+
+    /** Currencies the Bank of Canada does not publish; they need the second source or manual rates. */
+    fun notOnBankOfCanada(): Set<Currency> = allNeeded().filter { it.code !in BANK_OF_CANADA }.toSet()
+
+    /**
+     * Every update that applies: the Bank of Canada always, then the second source for the other
+     * currencies when it is enabled (FX-08). Returns the number of rates stored.
+     */
+    fun updateAll(today: LocalDate, fetch: (String) -> String): Int {
+        var count = updateFromBankOfCanada(today, fetch)
+        if (openSourceEnabled && notOnBankOfCanada().isNotEmpty()) count += updateFromOpenSource(fetch)
+        return count
+    }
+
+    /**
+     * FX-08: today's rates from ExchangeRate-API's open access service (about 160 currencies, no key,
+     * attribution required), stored for the currencies the Bank of Canada does not publish. They never
+     * replace Bank of Canada or manual rates.
+     */
+    fun updateFromOpenSource(fetch: (String) -> String): Int {
+        val wanted = notOnBankOfCanada().map { it.code }.toSet()
+        if (wanted.isEmpty()) return 0
+        return applyOpenSource(fetch(OPEN_SOURCE_URL), wanted)
+    }
+
+    /** Stores rates from an open.er-api.com response (units of each currency per CAD). */
+    fun applyOpenSource(json: String, wanted: Set<String>): Int {
+        val root = Json.parseToJsonElement(json).jsonObject
+        if (root["result"]?.jsonPrimitive?.content != "success") return 0
+        val date = root["time_last_update_utc"]?.jsonPrimitive?.content?.let(::rfc1123Date) ?: return 0
+        val rates = root["rates"]?.jsonObject ?: return 0
+        var count = 0
+        books.session.core.transaction {
+            for (code in wanted) {
+                val perCad = rates[code]?.jsonPrimitive?.content?.toBigDecimalOrNull() ?: continue
+                if (perCad.signum() <= 0) continue
+                books.core.insertOpenRate(code, date.toString(), BigDecimal.ONE.divide(perCad, MathContext.DECIMAL64).toPlainString())
+                count++
+            }
+        }
+        return count
+    }
+
+    private fun rfc1123Date(text: String): LocalDate? = runCatching {
+        val d = java.time.ZonedDateTime.parse(text, java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME).toLocalDate()
+        LocalDate(d.year, d.monthValue, d.dayOfMonth)
+    }.getOrNull()
 
     /**
      * Downloads missing daily rates from the Bank of Canada up to [today]. [fetch] performs the
@@ -100,6 +171,11 @@ class RateService internal constructor(private val books: Books) {
     }
 
     companion object {
+        private const val FOLLOWED = "fx.followed"
+        private const val OPEN_SOURCE = "fx.openSource"
+        const val OPEN_SOURCE_URL = "https://open.er-api.com/v6/latest/CAD"
+        const val OPEN_SOURCE_ATTRIBUTION = "Rates By Exchange Rate API (https://www.exchangerate-api.com)"
+
         /** Currencies in the Bank of Canada's daily exchange rate group. */
         val BANK_OF_CANADA = setOf(
             "AUD", "BRL", "CHF", "CNY", "EUR", "GBP", "HKD", "IDR", "INR", "JPY", "KRW", "MXN", "MYR", "NOK",
