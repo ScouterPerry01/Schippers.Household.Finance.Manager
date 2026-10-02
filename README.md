@@ -5,14 +5,14 @@ A personal, family and household finance application for Canada, in every provin
 - **Desktop app** (Windows and Linux) holds the household's books: accounts, transactions, reconciliation, bills, investments, registered plans, medical claims, assets and reports. All data stays on your own computer, encrypted.
 - **Android companion app** captures receipts, bills and expenses on the spot and sends them to the desktop over your home Wi-Fi.
 
-Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: with Phase 1, this is the first usable release. Phase 3 (wealth) in progress: loans and mortgages, investments with returns and asset allocation, registered plans and pensions, market prices, crypto-assets and precious metals done. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
+Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: with Phase 1, this is the first usable release. Phase 3 (wealth) in progress: loans and mortgages, investments with returns, asset allocation and tax slips, registered plans and pensions, market prices, crypto-assets and precious metals done. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
 
 ## Project layout
 
 | Module | Contents |
 |---|---|
 | `core/money` | Exact money type (minor units, never floating point), currencies, locale formatting and parsing |
-| `core/calc` | Financial calculations shared by both apps: amortization and loan schedules with prepayments, rate changes and what-ifs; adjusted cost base; time-weighted and money-weighted returns; allocation and rebalancing; registered plan rules (RRIF minimums, LIF maximums by jurisdiction, TFSA and FHSA limits, RESP grants); precious metal weights and values; provinces and bank holidays; schedules for bills and events |
+| `core/calc` | Financial calculations shared by both apps: amortization and loan schedules with prepayments, rate changes and what-ifs; adjusted cost base; time-weighted and money-weighted returns; allocation and rebalancing; T5, T3, RL-3 and RL-16 boxes; registered plan rules (RRIF minimums, LIF maximums by jurisdiction, TFSA and FHSA limits, RESP grants); precious metal weights and values; provinces and bank holidays; schedules for bills and events |
 | `core/domain` | Ids, roles, permissions, account types |
 | `core/security` | Argon2id, AES-256-GCM, X25519 key sealing and pair keys, recovery keys; watch-only Bitcoin addresses from an extended public key |
 | `core/data` | Household folder format, key ring, encrypted document vault, SQLDelight schemas and upgrades |

@@ -1,0 +1,18 @@
+-- Version 11 to 12 (INV-08): investment tax slips entered from the slip itself, which replace
+-- the amounts estimated from the books.
+
+CREATE TABLE tax_slip (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    year INTEGER NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('T5', 'T3', 'RL3', 'RL16')),
+    -- The fund a T3 or RL-16 is for; empty for a slip covering the whole account.
+    security_id TEXT NOT NULL DEFAULT '',
+    -- JSON map of box code to amount in dollars, as printed on the slip.
+    boxes TEXT NOT NULL,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE UNIQUE INDEX tax_slip_key ON tax_slip(account_id, year, kind, security_id);

@@ -49,7 +49,7 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import java.time.format.DateTimeFormatter
 
-enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, PORTFOLIO, DEBT, BUDGET, RECONCILIATION }
+enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, DEBT, BUDGET, RECONCILIATION }
 enum class RangePreset { THIS_MONTH, LAST_MONTH, THIS_YEAR, LAST_YEAR, LAST_12_MONTHS, CUSTOM }
 enum class Compare { NONE, PREVIOUS, LAST_YEAR }
 
@@ -63,6 +63,8 @@ class ReportState {
     var memberId by mutableStateOf<String?>(null)
     var tagId by mutableStateOf<String?>(null)
     var compare by mutableStateOf(Compare.NONE)
+    /** The tax year of the investment income report: last year by default, as for filing. */
+    var taxYear by mutableStateOf(today().year - 1)
     /** Drill path in the category reports: the category whose subcategories are shown. */
     var parent by mutableStateOf<Category?>(null)
     var drill by mutableStateOf<Pair<String, List<DrillRow>>?>(null)
@@ -110,19 +112,22 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
         Column(Modifier.fillMaxSize().padding(12.dp)) {
             // Filters in one row above the chart.
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (state.kind != ReportKind.RECONCILIATION && state.kind != ReportKind.DEBT) {
+                if (state.kind == ReportKind.INVESTMENT_INCOME) {
+                    Picker(model.t("income.year"), (today().year downTo today().year - 10).toList(), state.taxYear, { it.toString() }, Modifier.width(190.dp)) { state.taxYear = it }
+                }
+                if (state.kind !in setOf(ReportKind.RECONCILIATION, ReportKind.DEBT, ReportKind.INVESTMENT_INCOME)) {
                     Picker(model.t("report.period"), RangePreset.entries, state.preset, { model.t("range.$it") }, Modifier.width(200.dp)) { state.preset = it }
                     if (state.preset == RangePreset.CUSTOM) {
                         DateInput(model.t("report.from"), state.customFrom, Modifier.width(150.dp)) { state.customFrom = it }
                         DateInput(model.t("report.to"), state.customTo, Modifier.width(150.dp)) { state.customTo = it }
                     }
                 }
-                if (groups.size > 1) {
+                if (groups.size > 1 && state.kind != ReportKind.INVESTMENT_INCOME) {
                     Picker(model.t("report.accounts"), listOf(null) + groups, groups.firstOrNull { it.id == state.groupId }, { it?.name ?: model.t("report.allAccounts") }, Modifier.width(200.dp)) {
                         state.groupId = it?.id
                     }
                 }
-                if (state.kind == ReportKind.PORTFOLIO && members.isNotEmpty()) {
+                if ((state.kind == ReportKind.PORTFOLIO || state.kind == ReportKind.INVESTMENT_INCOME) && members.isNotEmpty()) {
                     Picker(model.t("report.person"), listOf(null) + members, members.firstOrNull { it.id == state.memberId }, { it?.displayName ?: model.t("report.everyone") }, Modifier.width(180.dp)) {
                         state.memberId = it?.id
                     }
@@ -150,6 +155,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                     ReportKind.SPENDING_BY_PAYEE -> PayeeReport(model, state, filter)
                     ReportKind.NET_WORTH -> NetWorthReport(model, filter)
                     ReportKind.PORTFOLIO -> PortfolioReport(model, filter, state.groupId)
+                    ReportKind.INVESTMENT_INCOME -> InvestmentIncomeReport(model, state.taxYear, state.memberId)
                     ReportKind.DEBT -> DebtReport(model, filter.accountIds)
                     ReportKind.BUDGET -> BudgetReportView(model, LocalDate(to.year, to.month, 1), yearView = state.preset in setOf(RangePreset.THIS_YEAR, RangePreset.LAST_YEAR))
                     ReportKind.RECONCILIATION -> ReconciliationReport(model)

@@ -274,6 +274,20 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 11 ledgers gain tax slips`() {
+        val file = temp.resolve("ledger11.db")
+        older("../data/src/main/sqldelight/ledger/schemas/11.db", file, 11).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('b', 'Courtage', 'BROKERAGE', 'CAD', '2020-01-01', 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            val q = LedgerDatabase(driver).taxSlipsQueries
+            q.upsertSlip("s", "b", 2026, "T5", "", "{\"13\":\"42.00\"}", null, 0, 0)
+            assertEquals("{\"13\":\"42.00\"}", q.slipByKey("b", 2026, "T5", "").executeAsOne().boxes)
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()
