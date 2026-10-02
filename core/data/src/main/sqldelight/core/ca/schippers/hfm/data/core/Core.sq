@@ -102,6 +102,20 @@ CREATE TABLE tag (
     name TEXT NOT NULL UNIQUE COLLATE NOCASE
 );
 
+-- CAT-02: "if the payee contains X (and the amount is between Y and Z), use category C".
+CREATE TABLE category_rule (
+    id TEXT NOT NULL PRIMARY KEY,
+    payee_contains TEXT NOT NULL,
+    -- Optional amount condition on the absolute amount, in minor units of [currency].
+    amount_min_minor INTEGER,
+    amount_max_minor INTEGER,
+    currency TEXT,
+    category_id TEXT NOT NULL REFERENCES category(id),
+    -- Optionally rename the payee too.
+    payee_id TEXT REFERENCES payee(id),
+    sort_order INTEGER NOT NULL DEFAULT 0
+);
+
 CREATE TABLE setting (
     key TEXT NOT NULL PRIMARY KEY,
     value TEXT NOT NULL
@@ -230,3 +244,15 @@ INSERT INTO audit_log(id, at, user_id, action, entity, entity_id, details) VALUE
 
 recentAudit:
 SELECT * FROM audit_log ORDER BY at DESC LIMIT ?;
+
+-- Category rules (CAT-02) -------------------------------------------------------------------
+
+insertRule:
+INSERT INTO category_rule(id, payee_contains, amount_min_minor, amount_max_minor, currency, category_id, payee_id, sort_order)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteRule:
+DELETE FROM category_rule WHERE id = ?;
+
+rules:
+SELECT * FROM category_rule ORDER BY sort_order, payee_contains;

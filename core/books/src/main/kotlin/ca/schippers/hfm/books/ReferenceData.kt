@@ -198,6 +198,24 @@ class PayeeService internal constructor(private val books: Books) {
         return books.core.payeeByName(trimmed).executeAsOneOrNull()?.let { Payee(it.id, it.name, it.default_category_id, it.archived == 1L) }
     }
 
+    companion object {
+        /**
+         * A tidier name for a payee first seen on a statement: store numbers removed and capitals
+         * softened ("COSTCO WHOLESALE W512" becomes "Costco Wholesale"). The original text is kept
+         * on the transaction.
+         */
+        fun cleanName(text: String): String {
+            var s = text.trim().replace(Regex("""\s+"""), " ")
+            s = s.replace(Regex("""\s*#\s*\d+.*$"""), "") // "IGA EXTRA #8123"
+            s = s.replace(Regex("""\s+[A-Z]?\d{3,}$"""), "") // "COSTCO WHOLESALE W512"
+            if (s.isEmpty()) return text.trim()
+            if (s.none { it.isLowerCase() }) {
+                s = s.lowercase().split(' ').joinToString(" ") { word -> word.replaceFirstChar { it.titlecase() } }
+            }
+            return s
+        }
+    }
+
     internal fun findOrCreate(text: String): Payee? {
         if (text.isBlank()) return null
         return match(text) ?: create(text)

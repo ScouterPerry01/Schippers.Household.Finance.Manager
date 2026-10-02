@@ -44,6 +44,9 @@ CREATE TABLE txn (
     -- TX-03: both sides of a transfer share this id; the other side may be in another ledger.
     transfer_id TEXT,
     transfer_account_id TEXT,
+    -- The institution's id for this transaction (OFX FITID, or a fingerprint for CSV lines),
+    -- set when it is matched to an imported statement line (REC-10 duplicate protection).
+    external_id TEXT,
     -- Who captured it and on which device (SYNC-07).
     created_by TEXT,
     source_device TEXT,
@@ -53,6 +56,7 @@ CREATE TABLE txn (
 
 CREATE INDEX txn_account_date ON txn(account_id, date, created_at, id);
 CREATE INDEX txn_transfer ON txn(transfer_id) WHERE transfer_id IS NOT NULL;
+CREATE UNIQUE INDEX txn_external ON txn(account_id, external_id) WHERE external_id IS NOT NULL;
 
 -- TX-02: a transaction is split across categories; a simple transaction has one split.
 CREATE TABLE txn_split (
@@ -73,6 +77,52 @@ CREATE TABLE txn_tag (
     tag_id TEXT NOT NULL,
     PRIMARY KEY (txn_id, tag_id)
 );
+
+-- Imported or manually entered statements, and their reconciliation (section 8).
+CREATE TABLE statement (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    source_name TEXT,
+    format TEXT,
+    -- SHA-256 of the imported file: the same file is never imported twice (REC-10).
+    file_sha256 TEXT,
+    period_start TEXT,
+    period_end TEXT NOT NULL,
+    opening_balance_minor INTEGER,
+    -- Unknown for a CSV export without a balance column, until the user enters it.
+    closing_balance_minor INTEGER,
+    status TEXT NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'RECONCILED', 'UNDONE')),
+    imported_at INTEGER NOT NULL,
+    imported_by TEXT,
+    reconciled_at INTEGER,
+    reconciled_by TEXT,
+    -- REC-06: cleared and outstanding items at completion, as JSON.
+    report_json TEXT,
+    undo_reason TEXT,
+    document_id TEXT
+);
+
+CREATE INDEX statement_account ON statement(account_id, period_end);
+CREATE UNIQUE INDEX statement_file ON statement(account_id, file_sha256) WHERE file_sha256 IS NOT NULL;
+
+CREATE TABLE statement_line (
+    id TEXT NOT NULL PRIMARY KEY,
+    statement_id TEXT NOT NULL REFERENCES statement(id) ON DELETE CASCADE,
+    line_no INTEGER NOT NULL,
+    external_id TEXT NOT NULL,
+    date TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    payee TEXT,
+    memo TEXT,
+    check_number TEXT,
+    -- MATCHED: linked to an existing transaction; CREATED: a new transaction was added;
+    -- PROPOSED: a likely match waiting for confirmation; DUPLICATE: already imported before;
+    -- UNMATCHED: needs a decision; IGNORED: deliberately left out.
+    status TEXT NOT NULL CHECK (status IN ('MATCHED', 'CREATED', 'PROPOSED', 'DUPLICATE', 'UNMATCHED', 'IGNORED')),
+    txn_id TEXT
+);
+
+CREATE INDEX statement_line_statement ON statement_line(statement_id, line_no);
 
 -- CC-01: credit card terms. Rates are decimal fractions stored as text (e.g. "0.1999").
 CREATE TABLE credit_card (
@@ -262,6 +312,71 @@ SELECT tag_id FROM txn_tag WHERE txn_id = ?;
 
 tagsForAccount:
 SELECT tt.* FROM txn_tag tt JOIN txn t ON t.id = tt.txn_id WHERE t.account_id = ?;
+
+setExternalId:
+UPDATE txn SET external_id = ?, updated_at = ? WHERE id = ?;
+
+txnByExternalId:
+SELECT * FROM txn WHERE account_id = ? AND external_id = ?;
+
+-- Candidates for matching a statement line: same account and amount, not yet matched.
+matchCandidates:
+SELECT * FROM txn
+WHERE account_id = ? AND amount_minor = ? AND external_id IS NULL AND cleared != 'RECONCILED'
+  AND date BETWEEN ? AND ?;
+
+unreconciledThrough:
+SELECT * FROM txn WHERE account_id = ? AND cleared != 'RECONCILED' AND date <= ? ORDER BY date, created_at;
+
+clearedBalance:
+SELECT CAST(a.opening_balance_minor + coalesce(sum(t.amount_minor), 0) AS INTEGER)
+FROM account a LEFT JOIN txn t ON t.account_id = a.id AND t.cleared != 'UNCLEARED'
+WHERE a.id = ?
+GROUP BY a.id;
+
+setClearedFor:
+UPDATE txn SET cleared = ?, updated_at = ? WHERE account_id = ? AND cleared = ? AND date <= ?;
+
+-- Statements --------------------------------------------------------------------------------
+
+insertStatement:
+INSERT INTO statement(id, account_id, source_name, format, file_sha256, period_start, period_end,
+    opening_balance_minor, closing_balance_minor, status, imported_at, imported_by)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?);
+
+updateStatementBalances:
+UPDATE statement SET period_start = ?, period_end = ?, opening_balance_minor = ?, closing_balance_minor = ? WHERE id = ?;
+
+completeStatement:
+UPDATE statement SET status = 'RECONCILED', reconciled_at = ?, reconciled_by = ?, report_json = ? WHERE id = ?;
+
+undoStatement:
+UPDATE statement SET status = 'UNDONE', undo_reason = ? WHERE id = ?;
+
+statementById:
+SELECT * FROM statement WHERE id = ?;
+
+statementsForAccount:
+SELECT * FROM statement WHERE account_id = ? ORDER BY period_end DESC, imported_at DESC;
+
+statementByFile:
+SELECT * FROM statement WHERE account_id = ? AND file_sha256 = ?;
+
+lastReconciled:
+SELECT account_id, max(period_end) AS period_end FROM statement WHERE status = 'RECONCILED' GROUP BY account_id;
+
+insertStatementLine:
+INSERT INTO statement_line(id, statement_id, line_no, external_id, date, amount_minor, payee, memo, check_number, status, txn_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+statementLines:
+SELECT * FROM statement_line WHERE statement_id = ? ORDER BY line_no;
+
+statementLineById:
+SELECT * FROM statement_line WHERE id = ?;
+
+setLineStatus:
+UPDATE statement_line SET status = ?, txn_id = ? WHERE id = ?;
 
 -- Change history (TX-08) --------------------------------------------------------------------
 

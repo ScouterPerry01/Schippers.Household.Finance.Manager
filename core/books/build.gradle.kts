@@ -9,6 +9,7 @@ dependencies {
     api(project(":core:data"))
     api(project(":core:money"))
     api(project(":core:i18n"))
+    api(project(":core:importers"))
     implementation(libs.kotlinx.serialization.json)
     testImplementation(project(":core:data-jdbc"))
     testImplementation(kotlin("test"))

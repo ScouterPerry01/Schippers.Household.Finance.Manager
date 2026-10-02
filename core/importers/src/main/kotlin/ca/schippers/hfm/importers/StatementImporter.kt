@@ -4,33 +4,35 @@ import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import kotlinx.datetime.LocalDate
 import java.io.InputStream
-import java.util.ServiceLoader
 
 /**
  * Plug-in contract for statement and history importers (ARC-04, NFR-13): OFX/QFX/QBO, CSV,
- * QIF (Quicken, GnuCash, Moneydance), exchange and brokerage files. New institutions are added by
- * shipping a new implementation, registered through `META-INF/services`, without core changes.
- * First implementations arrive in Phase 1 (OFX, CSV) and Phase 2 (QIF).
+ * later QIF (Quicken, GnuCash, Moneydance), exchange and brokerage files. New formats are added by
+ * writing another implementation and listing it in [Importers]; the core does not change.
  */
 interface StatementImporter {
-    /** Stable identifier stored with saved column mappings, e.g. "ofx" or "csv". */
+    /** Stable identifier stored with saved settings, e.g. "ofx" or "csv". */
     val id: String
     val fileExtensions: Set<String>
 
-    /** Quick check on the first bytes of a file, so the right importer can be suggested. */
+    /** Quick check on the file name and first bytes, so the right importer can be suggested. */
     fun canRead(fileName: String, head: ByteArray): Boolean
 
-    fun read(input: InputStream, options: ImportOptions = ImportOptions()): ImportedStatement
+    /** Reads every account statement in the file; an OFX file may hold several accounts. */
+    fun read(input: InputStream, options: ImportOptions = ImportOptions()): List<ImportedStatement>
 }
+
+class ImportException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 data class ImportOptions(
     /** Currency to assume when the file does not say. */
     val defaultCurrency: Currency = Currency.CAD,
-    /** Saved CSV column mapping for this institution (REC-01), as importer-specific settings. */
+    /** Importer-specific settings, e.g. a saved CSV column mapping for the institution (REC-01). */
     val mapping: Map<String, String> = emptyMap(),
 )
 
 data class ImportedStatement(
+    val format: String,
     val accountNumberHint: String?,
     val currency: Currency,
     val periodStart: LocalDate?,
@@ -41,7 +43,7 @@ data class ImportedStatement(
 )
 
 data class ImportedLine(
-    /** The institution's own transaction id (OFX FITID) when present; used for duplicate protection (REC-10). */
+    /** The institution's own transaction id (OFX FITID) when the file has one. */
     val externalId: String?,
     val date: LocalDate,
     val amount: Money,
@@ -51,7 +53,7 @@ data class ImportedLine(
 )
 
 object Importers {
-    fun all(): List<StatementImporter> = ServiceLoader.load(StatementImporter::class.java).toList()
+    val all: List<StatementImporter> = listOf(OfxImporter(), CsvImporter())
 
-    fun forFile(fileName: String, head: ByteArray): List<StatementImporter> = all().filter { it.canRead(fileName, head) }
+    fun forFile(fileName: String, head: ByteArray): StatementImporter? = all.firstOrNull { it.canRead(fileName, head) }
 }

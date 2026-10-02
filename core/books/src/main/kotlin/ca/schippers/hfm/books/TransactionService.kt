@@ -44,7 +44,7 @@ class TransactionService internal constructor(private val books: Books) {
         return q.register(accountId).executeAsList().map { r ->
             val row = TxnRow(
                 r.id, r.account_id, r.date, r.payee_id, r.payee_text, r.amount_minor, r.original_amount_minor,
-                r.original_currency, r.fx_rate, r.memo, r.member_id, r.cleared, r.transfer_id, r.transfer_account_id,
+                r.original_currency, r.fx_rate, r.memo, r.member_id, r.cleared, r.transfer_id, r.transfer_account_id, r.external_id,
                 r.created_by, r.source_device, r.created_at, r.updated_at,
             )
             RegisterRow(

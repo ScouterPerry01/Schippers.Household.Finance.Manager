@@ -1,0 +1,5 @@
+Account Type,Account Number,Transaction Date,Cheque Number,Description 1,Description 2,CAD$,USD$
+Chequing,05432-1234567,3/1/2026,,"PAYROLL, EMPLOYER INC",,3150.00,
+Chequing,05432-1234567,3/12/2026,,HYDRO-QUEBEC,Bill payment,-132.48,
+Chequing,05432-1234567,3/15/2026,107,CHEQUE 107,,-1450.00,
+Chequing,05432-1234567,3/18/2026,,VIDEOTRON,,-95.00,

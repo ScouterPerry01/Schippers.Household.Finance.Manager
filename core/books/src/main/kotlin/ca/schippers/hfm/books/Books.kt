@@ -27,6 +27,8 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val accounts = AccountService(this)
     val transactions = TransactionService(this)
     val creditCards = CreditCardService(this)
+    val rules = RuleService(this)
+    val statements = StatementService(this)
 
     init {
         categories.ensureDefaults()
