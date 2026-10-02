@@ -270,9 +270,13 @@ class ReportService internal constructor(private val books: Books) {
             q.balancesThrough(first.toString()).executeAsList().forEach { balances[it.account_id] = it.total ?: 0L }
             q.dailyNetChange(first.toString(), last.toString()).executeAsList()
         }.sortedBy { it.date }
+        // An investment account is worth its cash plus its securities at market value, valued in one pass.
+        val book = books.investments.PriceBook()
+        val securities = accounts.values.filter { it.type.kind == AccountKind.INVESTMENT && (accountIds == null || it.id in accountIds) }
+            .associate { it.id to books.investments.securitiesValues(it, sortedDates, book) }
         var next = 0
         val byDate = HashMap<LocalDate, NetWorthPoint>()
-        for (date in sortedDates) {
+        for ((index, date) in sortedDates.withIndex()) {
             val key = date.toString()
             while (next < changes.size && changes[next].date <= key) {
                 val c = changes[next++]
@@ -284,9 +288,8 @@ class ReportService internal constructor(private val books: Books) {
                 if (accountIds != null && account.id !in accountIds) continue
                 if (account.openingDate > date) continue
                 val minor = account.openingBalance.minorUnits + (balances[account.id] ?: 0L)
-                // An investment account is worth its cash plus its securities at market value.
-                val securities = if (account.type.kind == AccountKind.INVESTMENT) books.investments.securitiesValue(account.id, date).minorUnits else 0L
-                val balance = converter.toBase(Money.ofMinor(minor + securities, account.currency), date) ?: continue
+                val held = securities[account.id]?.get(index)?.minorUnits ?: 0L
+                val balance = converter.toBase(Money.ofMinor(minor + held, account.currency), date) ?: continue
                 if (account.type.kind.isLiability) liabilities -= balance else assets += balance
             }
             byDate[date] = NetWorthPoint(date, assets, liabilities)

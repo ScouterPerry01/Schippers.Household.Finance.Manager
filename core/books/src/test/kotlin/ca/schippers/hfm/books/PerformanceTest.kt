@@ -11,11 +11,14 @@ import ca.schippers.hfm.security.KdfParams
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.random.Random
@@ -85,6 +88,38 @@ class PerformanceTest {
             }
         }
         println("Generated $TRANSACTIONS transactions in $generation")
+        val (_, investing) = measureTimedValue { investments(group.id) }
+        println("Generated 30 years of investments in $investing")
+    }
+
+    private lateinit var portfolio: List<Account>
+    private var investmentLines = 0L
+
+    /** A brokerage account and an RRSP fed every month for 30 years, three funds priced monthly, dividends quarterly. */
+    private fun investments(groupId: String) {
+        val before = books.ledger(books.groups().single()).ledgerQueries.txnCount().executeAsOne()
+        val inv = books.investments
+        portfolio = listOf(AccountType.BROKERAGE, AccountType.RRSP).map {
+            books.accounts.create(AccountDraft(groupId, "Invest $it", it, Currency.CAD, Money.parse("0", Currency.CAD), start))
+        }
+        val funds = listOf("XIC", "XUU", "XEF").map { inv.saveSecurity(Security("", it, "TSX", "Fund $it", SecurityKind.ETF, Currency.CAD)) }
+        val random = Random(7)
+        val prices = funds.associate { it.id to BigDecimal("20") }.toMutableMap()
+        for (m in 0 until 360) {
+            val date = start.plus(DatePeriod(months = m))
+            for (f in funds) {
+                prices[f.id] = prices.getValue(f.id).multiply(BigDecimal(1 + (random.nextDouble() - 0.45) * 0.06)).setScale(2, RoundingMode.HALF_UP)
+                inv.setPrice(f.id, date, prices.getValue(f.id))
+            }
+            portfolio.forEachIndexed { i, a ->
+                books.transactions.transfer(TransferDraft(accounts[0].id, a.id, date, Money.parse("500", Currency.CAD)))
+                val f = funds[(m + i) % funds.size]
+                val qty = BigDecimal("500").divide(prices.getValue(f.id), 0, RoundingMode.DOWN)
+                inv.save(InvestmentTxn("", a.id, date, InvestmentKind.BUY, f.id, qty, prices.getValue(f.id), Money.of(qty.multiply(prices.getValue(f.id)), Currency.CAD)))
+                if (m % 3 == 2) inv.save(InvestmentTxn("", a.id, date, InvestmentKind.INCOME, f.id, amount = Money.parse("40", Currency.CAD), incomeType = IncomeType.DIVIDEND))
+            }
+        }
+        investmentLines = books.ledger(books.groups().single()).ledgerQueries.txnCount().executeAsOne() - before
     }
 
     @AfterAll
@@ -105,8 +140,8 @@ class PerformanceTest {
     @Test
     fun `screens open in under a second`() {
         val list = timed("account list", 1000) { books.accounts.list() }
-        assertEquals(TRANSACTIONS.toLong(), books.ledger(books.groups().single()).ledgerQueries.txnCount().executeAsOne())
-        assertEquals(accounts.size, list.size)
+        assertEquals(TRANSACTIONS + investmentLines, books.ledger(books.groups().single()).ledgerQueries.txnCount().executeAsOne())
+        assertEquals(accounts.size + portfolio.size, list.size)
         val register = timed("largest register, latest 1000", 1000) { books.transactions.register(accounts[0].id, limit = 1000) }
         assertEquals(1000, register.size)
         assertTrue(books.transactions.count(accounts[0].id) > 140_000, "the main account holds most transactions")
@@ -130,6 +165,9 @@ class PerformanceTest {
         timed("net worth, 30 years monthly", 3000) { books.reports.netWorth(books.reports.monthEnds(start, today)) }
         timed("spending by category, one year", 1000) { books.reports.byCategory(ReportFilter(today.minus(DatePeriod(years = 1)), today)) }
         timed("drill-down, one year", 1000) { books.reports.drillDown(ReportFilter(today.minus(DatePeriod(years = 1)), today)) }
+        val returns = timed("portfolio returns, 30 years", 3000) { books.portfolio.performance(start, today) }
+        assertEquals(Money.parse("360000", Currency.CAD), returns.total.contributions)
+        timed("portfolio returns, one year", 1000) { books.portfolio.performance(today.minus(DatePeriod(years = 1)), today) }
     }
 
     private companion object {

@@ -275,8 +275,10 @@ class InvestmentService internal constructor(private val books: Books) {
     }
 
     private fun requirePossible(account: Account, txns: List<InvestmentTxn>) {
+        val zero = Money.zero(account.currency)
+        val pools = HashMap<String, CostPool>()
         try {
-            holdingsFrom(account, txns.sortedBy { it.date }, LocalDate(9999, 12, 31))
+            txns.sortedBy { it.date }.forEach { t -> applyTo(t, { pools.getOrPut(it) { CostPool(zero) } }, { it }) }
         } catch (_: CostBaseException) {
             throw ValidationException("error.notEnoughUnits")
         }
@@ -353,6 +355,63 @@ class InvestmentService internal constructor(private val books: Books) {
         return holdingsFrom(account, transactions(accountId), date).map { it.marketValue ?: it.bookCost }.sum(account.currency) + metals
     }
 
+    /**
+     * The market value of the account's securities (and precious metals) on each of [dates], in
+     * its currency, replaying its history once; for net worth and returns over many dates (NFR-02).
+     * Values the same way as [securitiesValue].
+     */
+    internal fun securitiesValues(account: Account, dates: List<LocalDate>, book: PriceBook = PriceBook()): List<Money> {
+        val zero = Money.zero(account.currency)
+        val txns = transactions(account.id)
+        val pools = LinkedHashMap<String, CostPool>()
+        val sorted = dates.withIndex().sortedBy { it.value }
+        val out = arrayOfNulls<Money>(dates.size)
+        var next = 0
+        for ((i, date) in sorted) {
+            while (next < txns.size && txns[next].date <= date) applyTo(txns[next++], { pools.getOrPut(it) { CostPool(zero) } }, { it })
+            var value = zero
+            for ((sid, p) in pools) {
+                val state = p.state
+                if (state.quantity.signum() == 0) continue
+                value += book.value(sid, state.quantity, account.currency, date) ?: state.cost
+            }
+            if (account.type == AccountType.PRECIOUS_METALS) value += books.metals.value(account.id, date)
+            out[i] = value
+        }
+        return out.map { it!! }
+    }
+
+    /** Securities, prices and exchange rates read once, for valuing holdings on many dates. */
+    internal inner class PriceBook {
+        val securities: Map<String, Security> = securities(includeArchived = true).associateBy { it.id }
+        private val prices = HashMap<String, List<Pair<LocalDate, BigDecimal>>>()
+        private val rates = HashMap<Triple<Currency, Currency, LocalDate>, BigDecimal?>()
+
+        /** The latest price on or before [date]. */
+        fun price(securityId: String, date: LocalDate): BigDecimal? {
+            val list = prices.getOrPut(securityId) { prices(securityId).reversed() }
+            var lo = 0
+            var hi = list.size - 1
+            var found: BigDecimal? = null
+            while (lo <= hi) {
+                val mid = (lo + hi) ushr 1
+                if (list[mid].first <= date) { found = list[mid].second; lo = mid + 1 } else hi = mid - 1
+            }
+            return found
+        }
+
+        fun rate(from: Currency, to: Currency, date: LocalDate): BigDecimal? =
+            if (from == to) BigDecimal.ONE else rates.getOrPut(Triple(from, to, date)) { books.rates.rate(from, to, date) }
+
+        /** [quantity] units at the price on [date], in [currency]; null without a price or a rate. */
+        fun value(securityId: String, quantity: BigDecimal, currency: Currency, date: LocalDate): Money? {
+            val security = securities[securityId] ?: return null
+            val px = price(securityId, date) ?: return null
+            val native = Money.of(quantity.multiply(px).multiply(security.multiplier), security.currency)
+            return if (native.currency == currency) native else rate(native.currency, currency, date)?.let { native.convert(currency, it) }
+        }
+    }
+
     private fun holdingsFrom(account: Account, txns: List<InvestmentTxn>, date: LocalDate): List<Holding> {
         val zero = Money.zero(account.currency)
         val pools = LinkedHashMap<String, CostPool>()
@@ -373,7 +432,7 @@ class InvestmentService internal constructor(private val books: Books) {
      * Applies one transaction to the pools given by [pool], with amounts turned into the pools'
      * currency by [convert]. A merger moves the cost of the old units to the new security.
      */
-    private fun applyTo(t: InvestmentTxn, pool: (String) -> CostPool, convert: (Money) -> Money) {
+    internal fun applyTo(t: InvestmentTxn, pool: (String) -> CostPool, convert: (Money) -> Money) {
         val sid = t.securityId ?: return
         val q = t.quantity ?: BigDecimal.ZERO
         fun ev(kind: CostEventKind, amount: Money? = null, quantity: BigDecimal = q) = CostEvent(t.date, kind, quantity, amount?.let(convert), t.ratio, ref = t.id)

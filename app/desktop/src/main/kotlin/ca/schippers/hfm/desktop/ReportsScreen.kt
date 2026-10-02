@@ -49,7 +49,7 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import java.time.format.DateTimeFormatter
 
-enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, DEBT, BUDGET, RECONCILIATION }
+enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, PORTFOLIO, DEBT, BUDGET, RECONCILIATION }
 enum class RangePreset { THIS_MONTH, LAST_MONTH, THIS_YEAR, LAST_YEAR, LAST_12_MONTHS, CUSTOM }
 enum class Compare { NONE, PREVIOUS, LAST_YEAR }
 
@@ -122,6 +122,11 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                         state.groupId = it?.id
                     }
                 }
+                if (state.kind == ReportKind.PORTFOLIO && members.isNotEmpty()) {
+                    Picker(model.t("report.person"), listOf(null) + members, members.firstOrNull { it.id == state.memberId }, { it?.displayName ?: model.t("report.everyone") }, Modifier.width(180.dp)) {
+                        state.memberId = it?.id
+                    }
+                }
                 if (state.kind in setOf(ReportKind.INCOME_EXPENSE, ReportKind.SPENDING_BY_CATEGORY, ReportKind.INCOME_BY_CATEGORY, ReportKind.SPENDING_BY_PAYEE)) {
                     if (members.isNotEmpty()) {
                         Picker(model.t("report.person"), listOf(null) + members, members.firstOrNull { it.id == state.memberId }, { it?.displayName ?: model.t("report.everyone") }, Modifier.width(180.dp)) {
@@ -144,6 +149,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                     ReportKind.INCOME_BY_CATEGORY -> CategoryReport(model, state, filter, CategoryKind.INCOME)
                     ReportKind.SPENDING_BY_PAYEE -> PayeeReport(model, state, filter)
                     ReportKind.NET_WORTH -> NetWorthReport(model, filter)
+                    ReportKind.PORTFOLIO -> PortfolioReport(model, filter)
                     ReportKind.DEBT -> DebtReport(model, filter.accountIds)
                     ReportKind.BUDGET -> BudgetReportView(model, LocalDate(to.year, to.month, 1), yearView = state.preset in setOf(RangePreset.THIS_YEAR, RangePreset.LAST_YEAR))
                     ReportKind.RECONCILIATION -> ReconciliationReport(model)
@@ -154,15 +160,15 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
     state.drill?.let { (title, rows) -> DrillDialog(model, title, rows) { state.drill = null } }
 }
 
-private fun subtitle(model: BooksModel, filter: ReportFilter, extra: String? = null): String =
+internal fun subtitle(model: BooksModel, filter: ReportFilter, extra: String? = null): String =
     listOfNotNull("${model.date(filter.from)} – ${model.date(filter.to)}", model.t("report.inCurrency", model.books.reports.base.code), extra).joinToString(" · ")
 
-private fun BooksModel.axis(): (Double) -> String = { compactNumber(it, language.locale) }
+internal fun BooksModel.axis(): (Double) -> String = { compactNumber(it, language.locale) }
 
-private fun Money.d(): Double = toBigDecimal().toDouble()
+internal fun Money.d(): Double = toBigDecimal().toDouble()
 
 @Composable
-private fun MissingRates(model: BooksModel, missing: Set<Currency>) {
+internal fun MissingRates(model: BooksModel, missing: Set<Currency>) {
     if (missing.isNotEmpty()) {
         Text(model.t("report.missingRates", missing.joinToString { it.code }), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
     }

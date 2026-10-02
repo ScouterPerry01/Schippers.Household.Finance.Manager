@@ -145,3 +145,11 @@ DELETE FROM inv_statement WHERE id = ?;
 
 balanceOn:
 SELECT CAST(coalesce(sum(amount_minor), 0) AS INTEGER) FROM txn WHERE account_id = ? AND date <= ?;
+
+-- INV-06: every cash line of an account with its splits, to tell money put in or taken out from
+-- income and costs earned inside the account.
+performanceLines:
+SELECT t.id, t.date, t.amount_minor, t.transfer_account_id, t.investment_id, s.category_id, s.amount_minor AS split_minor
+FROM txn t LEFT JOIN txn_split s ON s.txn_id = t.id
+WHERE t.account_id = ?
+ORDER BY t.date, t.id;

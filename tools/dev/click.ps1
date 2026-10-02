@@ -1,5 +1,6 @@
-param([int]$X, [int]$Y, [string]$Out)
-# Clicks at (X, Y) relative to the app window's top-left corner, then optionally captures the window.
+param([int]$X, [int]$Y, [string]$Out, [int]$Wheel = 0)
+# Clicks at (X, Y) relative to the app window's top-left corner (or, with -Wheel, scrolls there:
+# negative values scroll down, 120 per notch), then optionally captures the window.
 Add-Type -AssemblyName System.Drawing
 Add-Type @'
 using System; using System.Runtime.InteropServices;
@@ -8,6 +9,7 @@ public class C { [StructLayout(LayoutKind.Sequential)] public struct R { public 
 [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
 [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
 [DllImport("user32.dll")] public static extern void mouse_event(uint f, int x, int y, uint d, IntPtr e);
+[DllImport("user32.dll", EntryPoint = "mouse_event")] public static extern void wheel(uint f, int x, int y, int d, IntPtr e);
 [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr h, IntPtr dc, uint f); }
 '@
 $p = Get-Process -Name java,javaw -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like '*Household Finance*' -or $_.MainWindowTitle -like '*finances du m*' } | Select-Object -First 1
@@ -18,7 +20,8 @@ $r = New-Object C+R; [C]::GetWindowRect($h, [ref]$r) | Out-Null
 Start-Sleep -Milliseconds 300
 if ($X -gt 0) {
     [C]::SetCursorPos($r.L + $X, $r.T + $Y) | Out-Null
-    [C]::mouse_event(2, 0, 0, 0, [IntPtr]::Zero); [C]::mouse_event(4, 0, 0, 0, [IntPtr]::Zero)
+    if ($Wheel -ne 0) { [C]::wheel(0x0800, 0, 0, $Wheel, [IntPtr]::Zero) }
+    else { [C]::mouse_event(2, 0, 0, 0, [IntPtr]::Zero); [C]::mouse_event(4, 0, 0, 0, [IntPtr]::Zero) }
     Start-Sleep -Seconds 2
 }
 if ($Out) {
