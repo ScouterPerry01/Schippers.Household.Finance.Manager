@@ -8,11 +8,14 @@ Thank you for your interest in Household Finance Manager.
 - Bugs and feature requests use the issue templates.
 - Never attach real financial data, statements or receipts to an issue. Anonymize samples first.
 
-## Contributor terms
+## Support
 
-The project is licensed under GPL-3.0-or-later. So that the licence can be changed later if ever needed (see section 16.2 of the requirements), every contribution must be covered by a contributor licence agreement (CLA) granting the copyright holder the right to relicense the contribution.
+- Questions and bug reports: GitHub Issues (please use the templates).
+- Email: info-rann-apps@NorthMail.ca
 
-**The CLA text is still being prepared. Until it is published, external pull requests cannot be merged.**
+## Code contributions
+
+The project is licensed under GPL-3.0-or-later. **Code contributions are not being accepted at this time**; bug reports, translation corrections and suggestions through Issues are very welcome. If code contributions open later, the terms will be published here first.
 
 ## Code guidelines
 

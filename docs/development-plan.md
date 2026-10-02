@@ -271,5 +271,8 @@ Based on the *Household Finance Manager — Software Requirements Specification*
 | Desktop OCR | PaddleOCR PP-OCRv5 (latin) via ONNX Runtime; Tesseract not needed (ADR 0004) |
 | Microsoft Store | MSIX listing "Schippers Household Finance Manager", identity in `app/desktop/packaging/msix/store-identity.properties` |
 | Android package | `ca.schippers.hfm.companion` (permanent once uploaded to Google Play) |
+| Support | GitHub Issues and info-rann-apps@NorthMail.ca (DIST-06) |
+| Windows Hello | Optional, off by default, opt-in per computer; low priority (the owner does not use it) |
+| Contributor agreement | Undecided; until then, code contributions are not accepted. Draft in `docs/legal/contributor-license-agreement-DRAFT.md` |
 | Backups | One encrypted `.hfmbak` per backup, checked after writing, restored into a new folder (ADR 0005) |
 | Phase 1 status (2026-10-02) | Complete. Deferred to later phases: REC-03 (one-to-many matching), REC-04 (FX fee posting), statement image with the report (needs the vault), BILL-03 (bill from a capture), 50,000-document part of NFR-02 |

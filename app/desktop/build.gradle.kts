@@ -51,8 +51,8 @@ compose.desktop {
             }
             linux {
                 packageName = "household-finance-manager"
-                // TODO: replace with the dedicated support address (DIST-06) before the first release.
-                debMaintainer = "support@example.invalid"
+                // Dedicated support address (DIST-06).
+                debMaintainer = "RANN <info-rann-apps@NorthMail.ca>"
                 appCategory = "Office"
             }
         }

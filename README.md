@@ -40,6 +40,10 @@ Requirements: JDK 21. For the Android app, the Android SDK (API 37).
 ./gradlew :app:android:assembleDebug
 ```
 
+## Support
+
+GitHub Issues, or email info-rann-apps@NorthMail.ca.
+
 ## Licence
 
-GPL-3.0-or-later. See [LICENSE](LICENSE). Contributions require agreeing to the contributor terms in [CONTRIBUTING.md](CONTRIBUTING.md).
+GPL-3.0-or-later. See [LICENSE](LICENSE). Code contributions are not accepted at this time; see [CONTRIBUTING.md](CONTRIBUTING.md).
