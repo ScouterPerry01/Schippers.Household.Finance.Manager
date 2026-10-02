@@ -19,6 +19,7 @@ kotlin {
 dependencies {
     implementation(project(":core:data-jdbc"))
     implementation(project(":core:books"))
+    implementation(project(":core:ocr-desktop"))
     implementation(project(":core:i18n"))
     implementation(project(":core:calc"))
     implementation(compose.desktop.currentOs)

@@ -31,6 +31,8 @@ import ca.schippers.hfm.books.Warranty
 import ca.schippers.hfm.books.WarrantyKind
 import ca.schippers.hfm.books.Severity
 import kotlinx.datetime.LocalTime
+import ca.schippers.hfm.ocr.OcrLine
+import ca.schippers.hfm.ocr.OcrResult
 import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
 import ca.schippers.hfm.calc.schedule.Frequency
 import ca.schippers.hfm.calc.schedule.Recurrence
@@ -153,6 +155,7 @@ object DemoHousehold {
         addBills(books, chequing, savings, visa, today)
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
         addPetAndCarRecords(books, group, visa, rex, civic, today)
+        addDocuments(books, group, today)
         // GOAL-01 to GOAL-04: three goals sharing the savings account.
         val goals = books.goals
         goals.save(SavingsGoal("", savings.id, "Voyage en Gaspésie", cad("4000"), LocalDate(today.year + 1, 7, 1), cad("250"), Recurrence.MONTHLY, start.plus(DatePeriod(days = 15))))
@@ -167,6 +170,51 @@ object DemoHousehold {
         books.budgets.set(cat("transport"), BudgetPeriod.MONTHLY, cad("120.00"), startMonth = firstMonth)
         books.budgets.set(cat("utilities"), BudgetPeriod.MONTHLY, cad("250.00"), startMonth = firstMonth)
         books.budgets.set(cat("housing"), BudgetPeriod.MONTHLY, cad("1450.00"), startMonth = firstMonth)
+    }
+
+    /**
+     * Three documents waiting in the inbox (SYNC-05): a grocery receipt that matches a card
+     * purchase, this month's electricity bill (BILL-03), and a receipt with no transaction yet.
+     * Their text is given directly so the demo starts quickly; real imports are read by OCR.
+     */
+    private fun addDocuments(books: Books, group: String, today: LocalDate) {
+        val lastSixth = LocalDate(today.year, today.month, 6).let { if (it > today) it.minus(DatePeriod(months = 1)) else it }
+        val hydro = books.bills.list().first { it.name == "Hydro-Québec" }
+        val due = books.bills.occurrences(today, today.plus(DatePeriod(days = 40)), setOf(hydro.id)).first().dueDate
+        val documents = listOf(
+            "IMG_4127.jpg" to listOf(
+                "IGA Extra Famille Jodoin", "1250, boul. Charest Ouest", "LAIT 2% 4L          6,49", "POULET ENTIER      17,98", "FRUITS ET LEGUMES  42,37",
+                "EPICERIE          112,59", "SOUS-TOTAL        179,43", "TPS                 2,64", "TVQ                 5,25", "TOTAL             187,32",
+                "VISA ************1234", "$lastSixth 17:42",
+            ),
+            "Hydro-Quebec-facture.jpg" to listOf(
+                "Hydro-Québec", "Votre facture d'électricité", "Date de facturation : ${due.minus(DatePeriod(days = 21))}", "Numéro de compte : 6 1234 5678 9",
+                "Montant à payer 138,91 \$", "Date d'échéance : $due",
+            ),
+            "scan-0031.jpg" to listOf(
+                "Canadian Tire #412", "Receipt # 412-88213", "LAVE-GLACE -40       5,99", "AMPOULE H11         24,99", "SUBTOTAL            30,98",
+                "GST                 1,55", "QST                 3,09", "TOTAL               35,62", "INTERAC", "${today.minus(DatePeriod(days = 1))} 10:12",
+            ),
+        )
+        for ((name, lines) in documents) {
+            val doc = books.documents.import(group, receiptImage(lines), name, "image/jpeg").document
+            books.documents.recordText(doc.id, 1, OcrResult(lines.map { OcrLine(it, 0.96f) }, 0), "demo", today)
+        }
+    }
+
+    /** A receipt-like image, so the review screen has something to show. */
+    private fun receiptImage(lines: List<String>): ByteArray {
+        val img = java.awt.image.BufferedImage(620, 80 + lines.size * 40, java.awt.image.BufferedImage.TYPE_INT_RGB)
+        img.createGraphics().apply {
+            setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
+            color = java.awt.Color(248, 246, 240)
+            fillRect(0, 0, img.width, img.height)
+            color = java.awt.Color(35, 35, 35)
+            font = java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.BOLD, 22)
+            lines.forEachIndexed { i, line -> drawString(line, 30, 60 + i * 40) }
+            dispose()
+        }
+        return java.io.ByteArrayOutputStream().also { javax.imageio.ImageIO.write(img, "jpg", it) }.toByteArray()
     }
 
     /** The car's maintenance history and warranty, and the dog's vet visit and vaccines. */

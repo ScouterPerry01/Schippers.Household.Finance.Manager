@@ -28,7 +28,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
 
-enum class Section { DASHBOARD, ACCOUNTS, BILLS, BUDGETS, GOALS, REPORTS, CALENDAR, HEALTH, PETS, VEHICLES, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, BACKUPS, SECURITY }
+enum class Section { DASHBOARD, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, REPORTS, CALENDAR, HEALTH, PETS, VEHICLES, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, BACKUPS, SECURITY }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -51,6 +51,9 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
 
     /** Counts from the last import, shown at the top of the reconciliation screen. */
     var lastImport by mutableStateOf<ImportResult?>(null)
+
+    /** CAP-03, CAP-04: what the last document import did. */
+    var lastImportMessage by mutableStateOf<String?>(null)
 
     /** OTH-03: the last search and its results, shown in a dialog. */
     var search by mutableStateOf<Pair<String, SearchResults>?>(null)

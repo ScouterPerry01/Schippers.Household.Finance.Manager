@@ -31,6 +31,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun MainScreen(model: BooksModel, app: AppState) {
     val reminders = remember(model.revision) { model.reminderLines() }
+    val inboxCount = remember(model.revision) { runCatching { model.books.documents.inboxCount() }.getOrDefault(0) }
     // FX-02: fetch missing Bank of Canada rates in the background; offline is fine (NFR-10).
     LaunchedEffect(model) {
         val added = withContext(Dispatchers.IO) { runCatching { model.books.rates.updateAll(today(), Http::get) }.getOrDefault(0) }
@@ -43,6 +44,8 @@ fun MainScreen(model: BooksModel, app: AppState) {
             delay(60 * 60_000L)
         }
     }
+    // CAP-04: files saved into the watched folder are imported in the background.
+    LaunchedEffect(model) { watchFolder(model) }
     LaunchedEffect(model) {
         ensureBackupDefaults(model)
         backupScheduler(model)
@@ -67,7 +70,11 @@ fun MainScreen(model: BooksModel, app: AppState) {
             Column(Modifier.width(200.dp).fillMaxHeight().verticalScroll(rememberScrollState()).padding(8.dp)) {
                 for (section in Section.entries) {
                     NavigationDrawerItem(
-                        label = { Text(model.t("nav.${section.name.lowercase()}")) },
+                        label = {
+                            // SYNC-05: how many documents wait for review.
+                            val count = if (section == Section.DOCUMENTS) inboxCount else 0
+                            Text(model.t("nav.${section.name.lowercase()}") + if (count > 0) " ($count)" else "")
+                        },
                         selected = model.section == section,
                         onClick = { model.section = section },
                     )
@@ -78,6 +85,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
                 when (model.section) {
                     Section.DASHBOARD -> DashboardScreen(model)
                     Section.ACCOUNTS -> AccountsScreen(model)
+                    Section.DOCUMENTS -> DocumentsScreen(model)
                     Section.BILLS -> BillsScreen(model)
                     Section.CALENDAR -> CalendarScreen(model)
                     Section.HEALTH -> HealthScreen(model)

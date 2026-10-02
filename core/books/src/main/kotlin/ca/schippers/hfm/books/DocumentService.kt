@@ -342,7 +342,7 @@ class DocumentService internal constructor(private val books: Books) {
         fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
 
         /** "IGA Extra Famille Jodoin" and "IGA" are the same business; "Metro" and "IGA" are not. */
-        internal fun similarNames(a: String?, b: String?): Boolean {
+        fun similarNames(a: String?, b: String?): Boolean {
             if (a.isNullOrBlank() || b.isNullOrBlank()) return a.isNullOrBlank() && b.isNullOrBlank()
             fun words(s: String) = FieldExtractor.fold(s).split(Regex("[^a-z0-9]+")).filter { it.length >= 2 }.toSet()
             val wa = words(a)
