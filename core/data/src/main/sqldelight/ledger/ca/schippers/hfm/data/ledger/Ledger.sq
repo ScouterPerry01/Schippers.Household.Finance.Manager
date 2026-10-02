@@ -590,6 +590,10 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 changesFor:
 SELECT * FROM change_log WHERE entity = ? AND entity_id = ? ORDER BY at, id;
 
+-- HH-13: recent changes, by everyone or by one user.
+recentChanges:
+SELECT * FROM change_log WHERE (:user IS NULL OR user_id = :user) ORDER BY at DESC LIMIT :limit;
+
 setTxnAsset:
 UPDATE txn SET asset_id = ? WHERE id = ?;
 

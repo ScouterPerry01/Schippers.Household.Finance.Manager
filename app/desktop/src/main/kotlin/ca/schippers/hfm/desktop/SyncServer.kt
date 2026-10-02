@@ -87,6 +87,9 @@ class SyncServer(private val books: Books, private val today: () -> LocalDate, p
                 block()
             } catch (_: DeviceNotPairedException) {
                 403 to ByteArray(0)
+            } catch (_: ca.schippers.hfm.books.OwnerAwayException) {
+                // HH-12: the phone's owner is not the one signed in; the phone keeps its items.
+                409 to ByteArray(0)
             } catch (_: PairingRejectedException) {
                 401 to ByteArray(0)
             } catch (_: DecryptionException) {

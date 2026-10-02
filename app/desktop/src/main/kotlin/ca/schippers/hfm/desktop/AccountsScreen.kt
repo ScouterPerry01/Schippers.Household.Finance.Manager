@@ -149,7 +149,9 @@ fun AccountDialog(model: BooksModel, existing: Account?, onClose: () -> Unit) {
     var name by remember { mutableStateOf(existing?.name.orEmpty()) }
     var type by remember { mutableStateOf(existing?.type ?: AccountType.CHEQUING) }
     var currencyCode by remember { mutableStateOf(existing?.currency?.code ?: "CAD") }
-    var groupId by remember { mutableStateOf(existing?.groupId ?: groups.firstOrNull()?.id) }
+    // HH-09: a member's own accounts are private unless they choose to share them.
+    val own = groups.firstOrNull { it.ownerUserId == model.session.userId }
+    var groupId by remember { mutableStateOf(existing?.groupId ?: (if (model.books.users.isAdministrator) null else own)?.id ?: groups.firstOrNull()?.id) }
     var institutionId by remember { mutableStateOf(existing?.institutionId) }
     var opening by remember { mutableStateOf(existing?.let { MoneyFormat.formatAmount(it.openingBalance, model.language.locale) } ?: "0") }
     var openingDate by remember { mutableStateOf(existing?.openingDate?.toString() ?: today().toString()) }

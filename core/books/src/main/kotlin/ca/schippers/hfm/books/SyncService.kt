@@ -50,6 +50,12 @@ data class PairedDevice(
 /** SYNC-08: the request came from a phone that is not, or no longer, paired. */
 class DeviceNotPairedException : Exception("This phone is not paired")
 
+/**
+ * HH-11, HH-12: the phone belongs to another household user, who is not the one signed in. Its pair
+ * key is sealed for that user, so its captures wait on the phone until they open the household.
+ */
+class OwnerAwayException(val ownerName: String) : Exception("The phone's owner is not signed in")
+
 /** SYNC-03: the phone's answer did not match a current QR code. */
 class PairingRejectedException : Exception("Pairing was refused")
 
@@ -106,10 +112,9 @@ class SyncService internal constructor(private val books: Books) {
         pending.remove(match)
         require(request.deviceId.isNotBlank() && request.deviceId.length <= 64) { "Invalid device id" }
         val pairKey = PairKey.derive(key, phoneKey, key.publicKey, phoneKey)
-        books.core.insertDevice(
-            request.deviceId, request.deviceName.take(80).ifBlank { "Phone" }, request.phonePublicKey, SyncCrypto.b64(pairKey), books.userId,
-            defaultGroup(), now,
-        )
+        // Only the user who paired the phone can open its key (HH-11).
+        val sealedKey = SyncCrypto.b64(books.session.sealFor(books.userId, pairKey, "device:${request.deviceId}"))
+        books.core.insertDevice(request.deviceId, request.deviceName.take(80).ifBlank { "Phone" }, request.phonePublicKey, sealedKey, books.userId, defaultGroup(), now)
         books.session.audit("PAIR", "device", request.deviceId, request.deviceName.take(80))
         return PairResponse(id, books.core.household().executeAsOne().name, SyncCrypto.desktopProof(pairKey, id, request.deviceId))
     }
@@ -140,7 +145,8 @@ class SyncService internal constructor(private val books: Books) {
      */
     fun handle(deviceId: String, sealed: ByteArray, converter: CaptureConverter, now: Long, today: LocalDate): ByteArray {
         val device = books.core.deviceById(deviceId).executeAsOneOrNull()?.takeIf { it.revoked_at == null } ?: throw DeviceNotPairedException()
-        val key = SyncCrypto.unb64(device.pair_key)
+        if (device.user_id != books.userId) throw OwnerAwayException(books.core.userById(device.user_id).executeAsOneOrNull()?.display_name.orEmpty())
+        val key = books.session.openSealed(SyncCrypto.unb64(device.pair_key), "device:$deviceId")
         val request = SyncCrypto.open(SyncRequest.serializer(), sealed, key, desktopId, deviceId, Direction.TO_DESKTOP)
         val imported = ArrayList<String>()
         val failed = ArrayList<SyncFailure>()
@@ -238,8 +244,13 @@ class SyncService internal constructor(private val books: Books) {
         return MessageDigest.getInstance("SHA-256").digest(text.encodeToByteArray()).take(12).joinToString("") { "%02x".format(it) }
     }
 
-    private fun defaultGroup(): String? =
-        books.groups().filter { it.level.allows(PermissionLevel.CAPTURE_ONLY) }.let { g -> (g.firstOrNull { !it.isPrivate } ?: g.firstOrNull())?.id }
+    /** HH-12: a member's captures go to their own private group; an administrator's to the shared one. */
+    private fun defaultGroup(): String? {
+        val groups = books.groups().filter { it.level.allows(PermissionLevel.CAPTURE_ONLY) }
+        val own = groups.firstOrNull { it.ownerUserId == books.userId }
+        val shared = groups.firstOrNull { !it.isPrivate }
+        return (if (books.role == ca.schippers.hfm.domain.Role.ADMINISTRATOR) shared ?: own else own ?: shared)?.id ?: groups.firstOrNull()?.id
+    }
 
     companion object {
         private const val DESKTOP_ID = "sync.desktopId"

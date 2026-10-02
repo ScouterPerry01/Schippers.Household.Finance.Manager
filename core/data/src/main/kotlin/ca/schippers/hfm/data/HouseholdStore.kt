@@ -183,6 +183,19 @@ class HouseholdStore(
 
     internal fun writeHeader(dir: Path, header: HouseholdHeader) = HeaderFile.write(dir, header)
 
+    /** Wraps a user's private key under a new password; the recovery wrapping is unchanged. */
+    internal fun rewrapPassword(header: HouseholdHeader, userId: String, keys: KeyPair, newPassword: CharArray): HouseholdHeader {
+        val user = header.users.first { it.userId == userId }
+        val salt = Random.bytes(PasswordKdf.SALT_BYTES)
+        val wrap = PasswordKdf.derive(newPassword, salt, kdfParams)
+        try {
+            val updated = user.copy(kdf = kdfParams, salt = salt.b64(), wrappedPrivateKey = Aead.seal(wrap, keys.privateKey, userKeyAad(header.householdId, userId)).b64())
+            return header.copy(users = header.users.map { if (it.userId == userId) updated else it })
+        } finally {
+            wrap.fill(0)
+        }
+    }
+
     private fun recoveryWrappingKey(recovery: RecoveryKey, userId: String) =
         Hkdf.derive(recovery.bytes, userId.toByteArray(), "hfm/recovery/v1")
 

@@ -11,6 +11,7 @@ import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.domain.Role
 import ca.schippers.hfm.security.KeyPair
 import ca.schippers.hfm.security.Random
+import ca.schippers.hfm.security.SealedBox
 import ca.schippers.hfm.security.RecoveryKey
 import java.nio.file.Path
 
@@ -149,6 +150,79 @@ class HouseholdSession internal constructor(
         core.coreQueries.setPermission(groupId, targetUserId, level.name)
         updateHeader(header.copy(grants = grants))
         audit("SET_PERMISSION", "account_group", groupId, "$targetUserId=$level")
+    }
+
+    /**
+     * HH-06: changes a user's role. A new administrator receives the keys of every shared group;
+     * a former administrator keeps only the groups they were given explicitly. The household always
+     * keeps at least one active administrator.
+     */
+    fun setRole(targetUserId: String, role: Role) {
+        checkOpen()
+        requireAdministrator()
+        val target = core.coreQueries.userById(targetUserId).executeAsOne()
+        if (target.role == Role.ADMINISTRATOR.name && role != Role.ADMINISTRATOR) requireAnotherAdministrator(targetUserId)
+        val shared = core.coreQueries.groups().executeAsList().filter { it.owner_user_id == null }
+        var grants = header.grants
+        for (group in shared) {
+            val key = partitionKeys[group.partition_id] ?: continue
+            val has = grants.any { it.partitionId == group.partition_id && it.userId == targetUserId }
+            val explicit = core.coreQueries.permissionsForGroup(group.id).executeAsList().any { it.user_id == targetUserId && it.level != PermissionLevel.NONE.name }
+            when {
+                role == Role.ADMINISTRATOR && !has -> grants = grants + store.seal(householdId, group.partition_id, targetUserId, publicKeyOf(targetUserId), key)
+                role != Role.ADMINISTRATOR && has && !explicit -> grants = grants.filterNot { it.partitionId == group.partition_id && it.userId == targetUserId }
+            }
+        }
+        core.coreQueries.setUserRole(role.name, targetUserId)
+        updateHeader(header.copy(grants = grants))
+        audit("SET_ROLE", "app_user", targetUserId, role.name)
+    }
+
+    /** A deactivated user can no longer sign in; their past entries stay. */
+    fun setActive(targetUserId: String, active: Boolean) {
+        checkOpen()
+        requireAdministrator()
+        require(targetUserId != userId || active) { "You cannot deactivate yourself" }
+        if (!active && core.coreQueries.userById(targetUserId).executeAsOne().role == Role.ADMINISTRATOR.name) requireAnotherAdministrator(targetUserId)
+        core.coreQueries.setUserActive(if (active) 1 else 0, targetUserId)
+        audit(if (active) "ACTIVATE" else "DEACTIVATE", "app_user", targetUserId)
+    }
+
+    fun renameUser(targetUserId: String, displayName: String) {
+        checkOpen()
+        if (targetUserId != userId) requireAdministrator()
+        require(displayName.isNotBlank()) { "A name is required" }
+        core.coreQueries.renameUser(displayName.trim(), targetUserId)
+    }
+
+    /** HH-09: the household member a user is, so their own accounts and phones are theirs. */
+    fun linkMember(targetUserId: String, memberId: String?) {
+        checkOpen()
+        requireAdministrator()
+        core.coreQueries.linkUserToMember(memberId, targetUserId)
+    }
+
+    /** Changes the signed-in user's password; the recovery key stays valid. */
+    fun changePassword(current: CharArray, newPassword: CharArray) {
+        checkOpen()
+        if (!verifyPassword(current)) throw WrongPasswordException()
+        updateHeader(store.rewrapPassword(header, userId, keys, newPassword))
+        audit("CHANGE_PASSWORD", "app_user", userId)
+    }
+
+    /** Seals data so that only [targetUserId] can open it, with their private key (HH-11). */
+    fun sealFor(targetUserId: String, plaintext: ByteArray, context: String): ByteArray =
+        SealedBox.seal(publicKeyOf(targetUserId), plaintext, "hfm/user-sealed/v1|$householdId|$targetUserId|$context".toByteArray())
+
+    /** Opens data sealed for the signed-in user with [sealFor]. */
+    fun openSealed(sealed: ByteArray, context: String): ByteArray {
+        checkOpen()
+        return SealedBox.open(keys, sealed, "hfm/user-sealed/v1|$householdId|$userId|$context".toByteArray())
+    }
+
+    private fun requireAnotherAdministrator(exceptUserId: String) {
+        val others = activeUsers().count { it.role == Role.ADMINISTRATOR.name && it.id != exceptUserId }
+        if (others == 0) throw IllegalStateException("The household needs at least one administrator")
     }
 
     fun audit(action: String, entity: String, entityId: String?, details: String? = null) {

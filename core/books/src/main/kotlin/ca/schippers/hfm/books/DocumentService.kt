@@ -156,14 +156,20 @@ class DocumentService internal constructor(private val books: Books) {
 
     fun get(documentId: String): VaultDocument = locate(documentId).let { (g, row) -> toDocument(g, row) }
 
-    /** SYNC-05: documents waiting for review, newest first. */
+    /**
+     * SYNC-05, HH-12: documents waiting for review, newest first: the user's own captures, and for
+     * an administrator also those of shared groups.
+     */
     fun inbox(): List<VaultDocument> = books.groups().flatMap { g ->
-        books.ledger(g).ledgerQueries.documentsByStatus(DocumentStatus.INBOX.name).executeAsList().map { toDocument(g, it) }
+        books.ledger(g).ledgerQueries.documentsByStatus(DocumentStatus.INBOX.name).executeAsList().filter { reviewsHere(g, it.captured_by) }.map { toDocument(g, it) }
     }.sortedByDescending { it.capturedAt }
 
     fun inboxCount(): Int = books.groups().sumOf { g ->
-        books.ledger(g).ledgerQueries.documentCounts().executeAsList().firstOrNull { it.status == DocumentStatus.INBOX.name }?.total?.toInt() ?: 0
+        books.ledger(g).ledgerQueries.documentsByStatus(DocumentStatus.INBOX.name).executeAsList().count { reviewsHere(g, it.captured_by) }
     }
+
+    private fun reviewsHere(group: GroupInfo, capturedBy: String?): Boolean =
+        capturedBy == books.userId || (!group.isPrivate && books.role == ca.schippers.hfm.domain.Role.ADMINISTRATOR)
 
     fun search(query: DocumentQuery): List<VaultDocument> {
         val pattern = query.text?.trim()?.takeIf { it.isNotEmpty() }?.let { "%" + it.replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%" }

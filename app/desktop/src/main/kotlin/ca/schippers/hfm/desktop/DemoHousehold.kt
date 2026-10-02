@@ -156,6 +156,9 @@ object DemoHousehold {
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
         addPetAndCarRecords(books, group, visa, rex, civic, today)
         addDocuments(books, group, today)
+        // HH-05: Sam signs in too, as a member who can view the shared accounts.
+        val samUser = books.users.add("sam", "Sam Demo", ca.schippers.hfm.domain.Role.MEMBER, "sam-demo-password".toCharArray(), sam.id).userId
+        books.users.setAccess(group, samUser, ca.schippers.hfm.domain.PermissionLevel.VIEW)
         // GOAL-01 to GOAL-04: three goals sharing the savings account.
         val goals = books.goals
         goals.save(SavingsGoal("", savings.id, "Voyage en Gaspésie", cad("4000"), LocalDate(today.year + 1, 7, 1), cad("250"), Recurrence.MONTHLY, start.plus(DatePeriod(days = 15))))

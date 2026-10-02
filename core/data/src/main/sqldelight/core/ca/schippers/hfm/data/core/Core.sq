@@ -235,6 +235,15 @@ SELECT * FROM member ORDER BY archived, display_name;
 linkUserToMember:
 UPDATE app_user SET member_id = ? WHERE id = ?;
 
+setUserRole:
+UPDATE app_user SET role = ? WHERE id = ?;
+
+setUserActive:
+UPDATE app_user SET active = ? WHERE id = ?;
+
+renameUser:
+UPDATE app_user SET display_name = ? WHERE id = ?;
+
 -- Institutions (ACC-01) --------------------------------------------------------------------
 
 insertInstitution:
@@ -321,6 +330,10 @@ INSERT INTO audit_log(id, at, user_id, action, entity, entity_id, details) VALUE
 
 recentAudit:
 SELECT * FROM audit_log ORDER BY at DESC LIMIT ?;
+
+-- HH-13: the activity of one user, or of everyone.
+auditFor:
+SELECT * FROM audit_log WHERE (:user IS NULL OR user_id = :user) ORDER BY at DESC LIMIT :limit;
 
 -- Category rules (CAT-02) -------------------------------------------------------------------
 

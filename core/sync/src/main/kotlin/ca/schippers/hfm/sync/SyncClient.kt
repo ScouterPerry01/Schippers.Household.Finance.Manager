@@ -27,6 +27,8 @@ class SyncException(val reason: Reason, message: String, cause: Throwable? = nul
         REVOKED,
         /** The QR code expired, or the answer did not prove the right desktop. */
         REJECTED,
+        /** HH-12: another household user is signed in on the computer; the phone's owner must open the household. */
+        OWNER_AWAY,
     }
 }
 
@@ -77,6 +79,7 @@ class SyncClient(private val connectTimeoutMillis: Int = 5_000, private val read
             return when (val code = connection.responseCode) {
                 200 -> connection.inputStream.use { it.readBytes() }
                 403 -> throw SyncException(SyncException.Reason.REVOKED, "This phone is no longer paired")
+                409 -> throw SyncException(SyncException.Reason.OWNER_AWAY, "The phone's owner is not signed in on the computer")
                 400, 401 -> throw SyncException(SyncException.Reason.REJECTED, "The desktop refused the request ($code)")
                 else -> throw SyncException(SyncException.Reason.UNREACHABLE, "The desktop answered $code")
             }
