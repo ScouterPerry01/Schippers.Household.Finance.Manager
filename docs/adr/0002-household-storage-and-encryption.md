@@ -96,7 +96,7 @@ The user still handles a household as one item:
 - The household always keeps at least one active administrator.
 - Changing a password re-wraps the private key; the recovery key stays valid.
 
-**Schema versions:** core 5 (pets, paired devices; the province or territory in Phase 3), ledger 9 (goals, vehicles, document review fields; loans in Phase 3a; securities, prices, investment transactions and statements in Phase 3b, kept per group so private holdings stay private; registered plan details, contribution room, RESP grants and pensions in Phase 3c; LIF jurisdictions and the B.C. grant for provinces and territories; crypto-asset wallet details in Phase 3d). Each step is a verified migration with an upgrade test from every earlier version.
+**Schema versions:** core 5 (pets, paired devices; the province or territory in Phase 3), ledger 10 (goals, vehicles, document review fields; loans in Phase 3a; securities, prices, investment transactions and statements in Phase 3b, kept per group so private holdings stay private; registered plan details, contribution room, RESP grants and pensions in Phase 3c; LIF jurisdictions and the B.C. grant for provinces and territories; crypto-asset wallet details and precious metal items in Phase 3d). Each step is a verified migration with an upgrade test from every earlier version.
 
 `core/data-jdbc` tests (`DocumentVaultTest`, `UserManagementTest`, `MigrationTest`) cover these.
 

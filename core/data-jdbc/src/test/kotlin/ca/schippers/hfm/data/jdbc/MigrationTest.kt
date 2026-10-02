@@ -243,6 +243,20 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 9 ledgers gain precious metal items`() {
+        val file = temp.resolve("ledger9.db")
+        older("../data/src/main/sqldelight/ledger/schemas/9.db", file, 9).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('m', 'Métaux', 'PRECIOUS_METALS', 'CAD', '2020-01-01', 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            val q = LedgerDatabase(driver).metalsQueries
+            q.upsertMetalItem("i", "m", "GOLD", "COIN", "Maple Leaf", "1", "OZT", "0.9999", 2, null, null, null, 620000, null, "BANK_BOX", null, 1, null, null, null, null, 0, 0)
+            assertEquals("Maple Leaf", q.metalItems("m").executeAsOne().description)
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()

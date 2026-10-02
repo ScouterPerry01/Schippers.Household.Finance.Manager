@@ -40,6 +40,11 @@ import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.CreditCardTerms
 import ca.schippers.hfm.books.LoanDetails
 import ca.schippers.hfm.books.CryptoIncomeKind
+import ca.schippers.hfm.books.Metal
+import ca.schippers.hfm.books.MetalForm
+import ca.schippers.hfm.books.MetalItem
+import ca.schippers.hfm.books.MetalStorage
+import ca.schippers.hfm.calc.metals.WeightUnit
 import ca.schippers.hfm.books.Beneficiary
 import ca.schippers.hfm.books.BeneficiaryKind
 import ca.schippers.hfm.books.GrantKind
@@ -197,6 +202,7 @@ object DemoHousehold {
         addInvestments(books, group, alex, sam, desjardins, today)
         addPlans(books, group, chequing, savings, alex, sam, lea, desjardins, today)
         addCrypto(books, group, chequing, alex, today)
+        addMetals(books, group, alex, sam, desjardins, today)
         addDocuments(books, group, today)
         // HH-05: Sam signs in too, as a member who can view the shared accounts.
         val samUser = books.users.add("sam", "Sam Demo", ca.schippers.hfm.domain.Role.MEMBER, "sam-demo-password".toCharArray(), sam.id).userId
@@ -314,6 +320,25 @@ object DemoHousehold {
         // REC-08: last month's statement for the brokerage account, waiting to be checked.
         val held = inv.holdings(brokerage.id, day(1))
         inv.saveStatement(brokerage.id, day(1), held.cash, held.holdings.associate { it.security.id to it.quantity }, "MANUAL")
+    }
+
+    /** PM-01 to PM-04: gold coins in a safe deposit box and silver rounds at home, valued from spot prices entered by hand. */
+    private fun addMetals(books: Books, group: String, alex: Member, sam: Member, institution: Institution, today: LocalDate) {
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        for (m in 0..6) {
+            val day = today.minus(DatePeriod(months = m))
+            books.prices.setSpot(Metal.GOLD, day, BigDecimal(3700 - m * 45))
+            books.prices.setSpot(Metal.SILVER, day, BigDecimal("44.10").subtract(BigDecimal(m)))
+        }
+        val safe = books.accounts.create(AccountDraft(group, "Métaux précieux", AccountType.PRECIOUS_METALS, Currency.CAD, cad("0"), LocalDate(2024, 1, 1), institution.id, ownerMemberIds = setOf(alex.id, sam.id)))
+        books.metals.save(
+            MetalItem("", safe.id, Metal.GOLD, MetalForm.COIN, "Feuille d'érable 1 oz", BigDecimal.ONE, WeightUnit.OZT, BigDecimal("0.9999"), 3, "", "Monnaie royale canadienne",
+                LocalDate(2024, 5, 14), cad("9480"), BigDecimal("3"), MetalStorage.BANK_BOX, "Desjardins, coffret 112", true, "Assurance habitation, avenant de 15 000 $"),
+        )
+        books.metals.save(
+            MetalItem("", safe.id, Metal.SILVER, MetalForm.ROUND, "Rondelles d'argent 1 oz", BigDecimal.ONE, WeightUnit.OZT, BigDecimal("0.999"), 25, dealer = "Silver Gold Bull",
+                purchaseDate = LocalDate(2025, 2, 3), cost = cad("1060"), storage = MetalStorage.HOME_SAFE, storageDetail = "Coffre du sous-sol"),
+        )
     }
 
     /**

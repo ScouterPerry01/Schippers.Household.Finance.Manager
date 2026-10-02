@@ -9,6 +9,7 @@ import ca.schippers.hfm.calc.invest.Disposition
 import ca.schippers.hfm.calc.invest.normalized
 import ca.schippers.hfm.data.ledger.LedgerDatabase
 import ca.schippers.hfm.domain.AccountKind
+import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.money.Currency
@@ -106,12 +107,12 @@ data class Holding(
     val gain: Money? get() = marketValue?.let { it - bookCost }
 }
 
-data class AccountHoldings(val account: Account, val cash: Money, val holdings: List<Holding>) {
+data class AccountHoldings(val account: Account, val cash: Money, val holdings: List<Holding>, val metals: Money? = null) {
     private val zero get() = Money.zero(account.currency)
     val bookCost: Money get() = holdings.map { it.bookCost }.sum(account.currency)
 
-    /** Cash plus holdings at market value; a holding without a price counts at its book cost. */
-    val totalValue: Money get() = cash + holdings.map { it.marketValue ?: it.bookCost }.fold(zero) { a, b -> a + b }
+    /** Cash plus holdings at market value (a holding without a price at its book cost), plus precious metals (PM-02). */
+    val totalValue: Money get() = cash + holdings.map { it.marketValue ?: it.bookCost }.fold(zero) { a, b -> a + b } + (metals ?: zero)
     val missingPrices: List<Security> get() = holdings.filter { it.marketValue == null }.map { it.security }
 }
 
@@ -338,7 +339,8 @@ class InvestmentService internal constructor(private val books: Books) {
     fun holdings(accountId: String, date: LocalDate): AccountHoldings {
         val (group, account) = books.accounts.locate(accountId)
         val cash = Money.ofMinor(account.openingBalance.minorUnits + books.ledger(group).investmentsQueries.balanceOn(accountId, date.toString()).executeAsOne(), account.currency)
-        return AccountHoldings(account, cash, holdingsFrom(account, transactions(accountId), date))
+        val metals = if (account.type == AccountType.PRECIOUS_METALS) books.metals.value(accountId, date) else null
+        return AccountHoldings(account, cash, holdingsFrom(account, transactions(accountId), date), metals)
     }
 
     /** Every investment account's holdings on [date]. */
@@ -347,7 +349,8 @@ class InvestmentService internal constructor(private val books: Books) {
     /** Market value of the account's securities on [date], in its currency (cash not included); for net worth. */
     fun securitiesValue(accountId: String, date: LocalDate): Money {
         val account = books.accounts.get(accountId)
-        return holdingsFrom(account, transactions(accountId), date).map { it.marketValue ?: it.bookCost }.sum(account.currency)
+        val metals = if (account.type == AccountType.PRECIOUS_METALS) books.metals.value(accountId, date) else Money.zero(account.currency)
+        return holdingsFrom(account, transactions(accountId), date).map { it.marketValue ?: it.bookCost }.sum(account.currency) + metals
     }
 
     private fun holdingsFrom(account: Account, txns: List<InvestmentTxn>, date: LocalDate): List<Holding> {
@@ -440,7 +443,7 @@ class InvestmentService internal constructor(private val books: Books) {
         // CR-06: crypto-assets are capital property too, pooled per coin and owner.
         val crypto = books.crypto.acb(through)
         return AcbReport(
-            (list + crypto.pools).sortedBy { it.security.name.lowercase() }, (gains + crypto.gains).sortedBy { it.disposition.date },
+            (list + crypto.pools).sortedBy { it.security.name.lowercase() }, (gains + crypto.gains + books.metals.gains(through)).sortedBy { it.disposition.date },
             missing + crypto.missingRates, problems + crypto.problems,
         )
     }

@@ -55,6 +55,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val plans = PlanService(this)
     val prices = PriceService(this)
     val crypto = CryptoService(this)
+    val metals = MetalService(this)
     val loans = LoanService(this)
     val documents = DocumentService(this)
     val sync = SyncService(this)

@@ -1,0 +1,47 @@
+-- Precious metals (PM-01 to PM-04), held in a PRECIOUS_METALS account. Amounts in the account's
+-- currency, in minor units; weights, purities and premiums are decimal strings.
+
+CREATE TABLE metal_item (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    metal TEXT NOT NULL CHECK (metal IN ('GOLD', 'SILVER', 'PLATINUM', 'PALLADIUM')),
+    form TEXT NOT NULL CHECK (form IN ('COIN', 'BAR', 'ROUND', 'JEWELLERY', 'OTHER')),
+    description TEXT NOT NULL,
+    weight TEXT NOT NULL,
+    weight_unit TEXT NOT NULL CHECK (weight_unit IN ('OZT', 'G', 'KG')),
+    purity TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    serial_numbers TEXT,
+    dealer TEXT,
+    purchase_date TEXT,
+    -- What was paid in all, premium included: the cost for capital gains.
+    cost_minor INTEGER,
+    -- PM-02: valued above (coins) or below (a buy-back discount) the metal's spot value, in percent.
+    premium_percent TEXT,
+    -- PM-03: where it is kept and whether it is insured.
+    storage TEXT NOT NULL DEFAULT 'HOME_SAFE' CHECK (storage IN ('HOME_SAFE', 'BANK_BOX', 'VAULT', 'DEALER', 'OTHER')),
+    storage_detail TEXT,
+    insured INTEGER NOT NULL DEFAULT 0,
+    insurance_note TEXT,
+    disposal_date TEXT,
+    proceeds_minor INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX metal_item_account ON metal_item(account_id);
+
+upsertMetalItem:
+INSERT OR REPLACE INTO metal_item(id, account_id, metal, form, description, weight, weight_unit, purity, quantity, serial_numbers, dealer,
+    purchase_date, cost_minor, premium_percent, storage, storage_detail, insured, insurance_note, disposal_date, proceeds_minor, notes, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+metalItems:
+SELECT * FROM metal_item WHERE account_id = ? ORDER BY metal, description;
+
+metalItemById:
+SELECT * FROM metal_item WHERE id = ?;
+
+deleteMetalItem:
+DELETE FROM metal_item WHERE id = ?;

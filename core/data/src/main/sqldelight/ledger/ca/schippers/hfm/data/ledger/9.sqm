@@ -1,0 +1,29 @@
+-- Version 9 to 10 (PM-01 to PM-04): precious metal items.
+
+CREATE TABLE metal_item (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    metal TEXT NOT NULL CHECK (metal IN ('GOLD', 'SILVER', 'PLATINUM', 'PALLADIUM')),
+    form TEXT NOT NULL CHECK (form IN ('COIN', 'BAR', 'ROUND', 'JEWELLERY', 'OTHER')),
+    description TEXT NOT NULL,
+    weight TEXT NOT NULL,
+    weight_unit TEXT NOT NULL CHECK (weight_unit IN ('OZT', 'G', 'KG')),
+    purity TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    serial_numbers TEXT,
+    dealer TEXT,
+    purchase_date TEXT,
+    cost_minor INTEGER,
+    premium_percent TEXT,
+    storage TEXT NOT NULL DEFAULT 'HOME_SAFE' CHECK (storage IN ('HOME_SAFE', 'BANK_BOX', 'VAULT', 'DEALER', 'OTHER')),
+    storage_detail TEXT,
+    insured INTEGER NOT NULL DEFAULT 0,
+    insurance_note TEXT,
+    disposal_date TEXT,
+    proceeds_minor INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX metal_item_account ON metal_item(account_id);

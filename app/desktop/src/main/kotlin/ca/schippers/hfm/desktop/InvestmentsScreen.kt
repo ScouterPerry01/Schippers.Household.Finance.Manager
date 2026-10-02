@@ -144,7 +144,11 @@ fun InvestmentsScreen(model: BooksModel) {
             }
             when (val v = shown) {
                 is InvView.Of -> all.firstOrNull { it.account.id == v.accountId }?.let { h ->
-                    if (h.account.type == AccountType.CRYPTO_WALLET) WalletView(model, h.account) else AccountView(model, h) { action = it }
+                    when (h.account.type) {
+                        AccountType.CRYPTO_WALLET -> WalletView(model, h.account)
+                        AccountType.PRECIOUS_METALS -> MetalsView(model, h.account)
+                        else -> AccountView(model, h) { action = it }
+                    }
                 }
                 InvView.Gains -> GainsView(model)
                 InvView.Securities -> SecuritiesView(model) { action = it }
