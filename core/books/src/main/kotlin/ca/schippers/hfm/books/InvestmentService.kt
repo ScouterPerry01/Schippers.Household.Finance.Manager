@@ -304,16 +304,16 @@ class InvestmentService internal constructor(private val books: Books) {
         }
         val qty = t.quantity?.toPlainString()
         when (t.kind) {
-            InvestmentKind.BUY -> line(t.cashEffect, emptyList(), true, describe("Buy", qty, t.price))
-            InvestmentKind.SELL -> line(t.cashEffect, emptyList(), true, describe("Sell", qty, t.price))
-            InvestmentKind.RETURN_OF_CAPITAL -> line(t.amount, emptyList(), true, "Return of capital")
+            InvestmentKind.BUY -> line(t.cashEffect, emptyList(), true, describe(books.text("generated.invBuy"), qty, t.price))
+            InvestmentKind.SELL -> line(t.cashEffect, emptyList(), true, describe(books.text("generated.invSell"), qty, t.price))
+            InvestmentKind.RETURN_OF_CAPITAL -> line(t.amount, emptyList(), true, books.text("generated.roc"))
             InvestmentKind.INCOME, InvestmentKind.REINVEST -> {
                 val splits = listOfNotNull(
                     SplitDraft(category(incomeKey(t.incomeType)), t.amount),
                     t.withheld.takeIf { it.isPositive }?.let { SplitDraft(category("taxes.foreign_tax"), -it) },
                 )
                 line(t.amount - t.withheld, splits, false, null)
-                if (t.kind == InvestmentKind.REINVEST) line(-(t.amount + t.fees), emptyList(), true, describe("Reinvested", qty, t.price))
+                if (t.kind == InvestmentKind.REINVEST) line(-(t.amount + t.fees), emptyList(), true, describe(books.text("generated.reinvested"), qty, t.price))
             }
             InvestmentKind.FEE -> line(-t.amount, listOf(SplitDraft(category("financial.investment_fees"), -t.amount)), false, null)
             else -> Unit
@@ -436,8 +436,13 @@ class InvestmentService internal constructor(private val books: Books) {
         }.sortedBy { it.disposition.date }
         val list = pools.filter { it.value.state.quantity.signum() != 0 || !it.value.state.cost.isZero }.map { (key, p) ->
             AcbPool(security(key.securityId), key.owners, poolAccounts[key].orEmpty(), p.state.quantity, p.state.cost)
-        }.sortedBy { it.security.name.lowercase() }
-        return AcbReport(list, gains, missing, problems)
+        }
+        // CR-06: crypto-assets are capital property too, pooled per coin and owner.
+        val crypto = books.crypto.acb(through)
+        return AcbReport(
+            (list + crypto.pools).sortedBy { it.security.name.lowercase() }, (gains + crypto.gains).sortedBy { it.disposition.date },
+            missing + crypto.missingRates, problems + crypto.problems,
+        )
     }
 
     // --- Statements and reconciliation (REC-08) ----------------------------------------------------

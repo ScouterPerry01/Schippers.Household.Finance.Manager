@@ -20,6 +20,13 @@ import kotlinx.datetime.LocalDate
 class Books(val session: HouseholdSession, internal val clock: () -> Long = System::currentTimeMillis) {
 
     internal val core get() = session.core.coreQueries
+
+    /** The language of texts the books write themselves (descriptions of generated lines), set by the app. */
+    @Volatile
+    var language: Language = Language.ENGLISH
+
+    /** A text in the user's language, for lines the books create (NFR-06). */
+    internal fun text(key: String, vararg args: Any): String = Messages.get(language, key, *args)
     val userId: String get() = session.userId
     val role: Role by lazy { session.role }
 
@@ -47,6 +54,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val brokerage = BrokerageImportService(this)
     val plans = PlanService(this)
     val prices = PriceService(this)
+    val crypto = CryptoService(this)
     val loans = LoanService(this)
     val documents = DocumentService(this)
     val sync = SyncService(this)

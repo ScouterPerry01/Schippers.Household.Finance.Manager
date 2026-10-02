@@ -149,6 +149,7 @@ class CategoryService internal constructor(private val books: Books) {
             if (version < 3) addMissing(roots, ADDED_IN_3)
             if (version < 4) addMissing(roots, ADDED_IN_4)
             if (version < 5) addMissing(roots, ADDED_IN_5)
+            if (version < 6) addMissing(roots, ADDED_IN_6)
             return
         }
         val province = books.province
@@ -201,7 +202,7 @@ class CategoryService internal constructor(private val books: Books) {
 
     private companion object {
         const val DEFAULTS_VERSION = "categories.defaultsVersion"
-        const val CURRENT_DEFAULTS = 5
+        const val CURRENT_DEFAULTS = 6
 
         /** Default categories added in version 2 (CAT-06). */
         val ADDED_IN_2 = setOf("transport.transit.pass", "transport.transit.fares", "pets.licence", "pets.insurance", "pets.boarding")
@@ -210,6 +211,7 @@ class CategoryService internal constructor(private val books: Books) {
 
         /** PROV-03: categories for provinces other than Quebec; Quebec households receive none of them. */
         val ADDED_IN_5 = setOf("income.benefits.ei", "income.benefits.provincial")
+        val ADDED_IN_6 = setOf("financial.crypto_fees", "income.investment.crypto")
     }
 
     @Serializable

@@ -29,7 +29,7 @@ fun main() = application {
                 System.getProperty("hfm.demo.lang")?.let { tag ->
                     Language.entries.firstOrNull { it.tag == tag }?.let { app.switchLanguage(it, remember = false) }
                 }
-                val model = BooksModel(DemoHousehold.create(app.store), app)
+                val model = BooksModel(DemoHousehold.create(app.store, app.language), app)
                 model.selectedAccountId = model.books.accounts.list().firstOrNull { it.account.name == System.getProperty("hfm.demo.account") }?.account?.id
                 System.getProperty("hfm.demo.section")?.let { name -> Section.entries.firstOrNull { it.name == name }?.let { model.section = it } }
                 System.getProperty("hfm.demo.report")?.let { name -> ReportKind.entries.firstOrNull { it.name == name }?.let { model.reportState.kind = it } }

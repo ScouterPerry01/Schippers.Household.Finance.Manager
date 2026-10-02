@@ -39,6 +39,7 @@ import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.CreditCardTerms
 import ca.schippers.hfm.books.LoanDetails
+import ca.schippers.hfm.books.CryptoIncomeKind
 import ca.schippers.hfm.books.Beneficiary
 import ca.schippers.hfm.books.BeneficiaryKind
 import ca.schippers.hfm.books.GrantKind
@@ -86,10 +87,10 @@ object DemoHousehold {
     const val LOGIN = "demo"
     const val PASSWORD = "demo-password"
 
-    fun create(store: HouseholdStore): HouseholdSession {
+    fun create(store: HouseholdStore, language: ca.schippers.hfm.i18n.Language = ca.schippers.hfm.i18n.Language.ENGLISH): HouseholdSession {
         val dir = Files.createTempDirectory("hfm-demo").resolve("Demo.hfm")
         val created = store.create(dir, "Famille Démo", LOGIN, "Alex Demo", PASSWORD.toCharArray())
-        val books = Books(created.session)
+        val books = Books(created.session).also { it.language = language }
         fill(books)
         return created.session
     }
@@ -195,6 +196,7 @@ object DemoHousehold {
         addPetAndCarRecords(books, group, visa, rex, civic, today)
         addInvestments(books, group, alex, sam, desjardins, today)
         addPlans(books, group, chequing, savings, alex, sam, lea, desjardins, today)
+        addCrypto(books, group, chequing, alex, today)
         addDocuments(books, group, today)
         // HH-05: Sam signs in too, as a member who can view the shared accounts.
         val samUser = books.users.add("sam", "Sam Demo", ca.schippers.hfm.domain.Role.MEMBER, "sam-demo-password".toCharArray(), sam.id).userId
@@ -312,6 +314,33 @@ object DemoHousehold {
         // REC-08: last month's statement for the brokerage account, waiting to be checked.
         val held = inv.holdings(brokerage.id, day(1))
         inv.saveStatement(brokerage.id, day(1), held.cash, held.holdings.associate { it.security.id to it.quantity }, "MANUAL")
+    }
+
+    /**
+     * CR-01 to CR-06: Bitcoin bought monthly on an exchange, part of it moved to cold storage with
+     * its network fee, some converted to ether, and a staking reward. Prices are entered by hand
+     * for the demo; the downloads stay off.
+     */
+    private fun addCrypto(books: Books, group: String, chequing: Account, alex: Member, today: LocalDate) {
+        val eth = Currency.of("ETH")
+        fun day(monthsAgo: Int) = today.minus(DatePeriod(months = monthsAgo))
+        for (m in 0..12) {
+            books.rates.setManual(Currency.BTC, day(m), BigDecimal(118000 - m * 3500))
+            books.rates.setManual(eth, day(m), BigDecimal(5600 - m * 120))
+        }
+        fun wallet(name: String, currency: Currency) =
+            books.accounts.create(AccountDraft(group, name, AccountType.CRYPTO_WALLET, currency, Money.zero(currency), day(12), ownerMemberIds = setOf(alex.id)))
+        val exchange = wallet("Shakepay BTC", Currency.BTC)
+        val cold = wallet("Ledger (stockage à froid)", Currency.BTC)
+        val ether = wallet("Ether", eth)
+        val crypto = books.crypto
+        for (m in listOf(3, 2, 1)) {
+            val price = BigDecimal(118000 - m * 3500)
+            crypto.buy(exchange.id, chequing.id, day(m), Money.of(BigDecimal(250).divide(price, java.math.MathContext.DECIMAL64), Currency.BTC), Money.parse("250", Currency.CAD))
+        }
+        crypto.move(exchange.id, cold.id, day(1).plus(DatePeriod(days = 2)), Money.parse("0.004", Currency.BTC), Money.parse("0.00002", Currency.BTC))
+        crypto.convert(exchange.id, ether.id, day(1).plus(DatePeriod(days = 5)), Money.parse("0.0008", Currency.BTC), Money.parse("0.0168", eth))
+        crypto.income(ether.id, today.minus(DatePeriod(days = 3)), Money.parse("0.00012", eth), CryptoIncomeKind.STAKING)
     }
 
     /**

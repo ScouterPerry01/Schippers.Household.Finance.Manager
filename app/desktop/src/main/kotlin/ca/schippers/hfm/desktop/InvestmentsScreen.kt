@@ -50,6 +50,7 @@ import ca.schippers.hfm.books.Region
 import ca.schippers.hfm.books.Security
 import ca.schippers.hfm.books.SecurityKind
 import ca.schippers.hfm.books.ValidationException
+import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.importers.ImportedInvestmentStatement
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
@@ -84,11 +85,15 @@ fun InvestmentsScreen(model: BooksModel) {
     val books = model.books
     // Non-registered accounts first, as listed.
     val all = remember(model.revision) { runCatching { books.investments.allHoldings(today()) }.getOrDefault(emptyList()).sortedBy { it.account.type.isRegistered } }
+    // Wallets are shown at their value in the base currency, with the coins underneath (CR-05).
+    val base = books.rates.baseCurrency
+    fun shown(h: AccountHoldings): Money = if (h.account.currency.isCrypto) books.rates.convert(h.totalValue, base, today()) ?: h.totalValue else h.totalValue
     val kept = remember(model.revision) { books.brokerage.keptQuickenFiles() }
     var view by remember { mutableStateOf<InvView?>(model.selectedAccountId?.takeIf { id -> all.any { it.account.id == id } }?.let { InvView.Of(it) }) }
     val shown = view ?: all.firstOrNull()?.let { InvView.Of(it.account.id) } ?: InvView.Securities
     var action by remember { mutableStateOf<InvAction?>(null) }
     var keptResult by remember { mutableStateOf<InvestmentImportResult?>(null) }
+    var exchangeFile by remember { mutableStateOf<File?>(null) }
 
     Row(Modifier.fillMaxSize()) {
         Column(Modifier.width(300.dp).fillMaxHeight().padding(12.dp)) {
@@ -102,9 +107,12 @@ fun InvestmentsScreen(model: BooksModel) {
                         Row(Modifier.fillMaxWidth().clickable { view = InvView.Of(h.account.id) }.padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
                                 Text(h.account.name, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
-                                Text(model.t("accountType.${h.account.type}"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                Text(
+                                    if (h.account.currency.isCrypto) model.money(h.totalValue) else model.t("accountType.${h.account.type}"),
+                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline,
+                                )
                             }
-                            MoneyText(model, h.totalValue, bold = selected)
+                            MoneyText(model, shown(h), bold = selected)
                         }
                     }
                 }
@@ -112,12 +120,14 @@ fun InvestmentsScreen(model: BooksModel) {
                     HorizontalDivider(Modifier.padding(vertical = 8.dp))
                     NavigationDrawerItem(label = { Text(model.t("investments.gains")) }, selected = shown == InvView.Gains, onClick = { view = InvView.Gains })
                     NavigationDrawerItem(label = { Text(model.t("investments.securities")) }, selected = shown == InvView.Securities, onClick = { view = InvView.Securities })
+                    // CR-03: an exchange's history brings its wallets with it.
+                    TextButton(onClick = { chooseExchangeFile(model)?.let { exchangeFile = it } }) { Text(model.t("wallet.importTitle")) }
                 }
             }
-            for (h in all.groupBy { it.account.currency }.toSortedMap(compareBy { it.code })) {
+            for (h in all.map(::shown).groupBy { it.currency }.toSortedMap(compareBy { it.code })) {
                 Row(Modifier.padding(4.dp)) {
                     Text(model.t("accounts.total", h.key.code), Modifier.weight(1f), fontWeight = FontWeight.Bold)
-                    MoneyText(model, h.value.map { it.totalValue }.sum(h.key), bold = true)
+                    MoneyText(model, h.value.sum(h.key), bold = true)
                 }
             }
         }
@@ -133,7 +143,9 @@ fun InvestmentsScreen(model: BooksModel) {
                 }
             }
             when (val v = shown) {
-                is InvView.Of -> all.firstOrNull { it.account.id == v.accountId }?.let { AccountView(model, it) { action = it } }
+                is InvView.Of -> all.firstOrNull { it.account.id == v.accountId }?.let { h ->
+                    if (h.account.type == AccountType.CRYPTO_WALLET) WalletView(model, h.account) else AccountView(model, h) { action = it }
+                }
                 InvView.Gains -> GainsView(model)
                 InvView.Securities -> SecuritiesView(model) { action = it }
             }
@@ -150,6 +162,7 @@ fun InvestmentsScreen(model: BooksModel) {
         null -> Unit
     }
     keptResult?.let { r -> ImportResultDialog(model, r) { keptResult = null } }
+    exchangeFile?.let { f -> ExchangeImportDialog(model, f) { exchangeFile = null } }
 }
 
 // --- One account --------------------------------------------------------------------------------

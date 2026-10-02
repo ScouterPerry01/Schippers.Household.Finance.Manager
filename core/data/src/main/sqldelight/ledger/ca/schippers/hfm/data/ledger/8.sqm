@@ -1,0 +1,10 @@
+-- Version 8 to 9 (CR-01 to CR-06): crypto-asset wallet details: opening cost and the watched address or key.
+
+CREATE TABLE wallet (
+    account_id TEXT NOT NULL PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
+    opening_cost_minor INTEGER,
+    watch TEXT,
+    watch_kind TEXT CHECK (watch_kind IN ('ADDRESS', 'XPUB')),
+    last_sync INTEGER,
+    notes TEXT
+);

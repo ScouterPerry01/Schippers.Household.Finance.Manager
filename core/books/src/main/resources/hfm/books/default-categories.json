@@ -102,6 +102,7 @@
     { "key": "financial.interest", "en": "Interest charges", "fr": "Frais d'intérêts" },
     { "key": "financial.fx_fees", "en": "Foreign exchange fees", "fr": "Frais de change" },
     { "key": "financial.investment_fees", "en": "Investment fees", "fr": "Frais de placement" },
+    { "key": "financial.crypto_fees", "en": "Crypto network and trading fees", "fr": "Frais de réseau et d'opérations sur cryptoactifs" },
     { "key": "financial.professional", "en": "Accounting and legal fees", "fr": "Honoraires comptables et juridiques" }
   ]},
   { "key": "taxes", "en": "Taxes", "fr": "Impôts", "kind": "EXPENSE", "children": [
@@ -141,7 +142,8 @@
   { "key": "income.investment", "en": "Investment income", "fr": "Revenus de placement", "kind": "INCOME", "children": [
     { "key": "income.investment.interest", "en": "Interest", "fr": "Intérêts" },
     { "key": "income.investment.dividends", "en": "Dividends", "fr": "Dividendes" },
-    { "key": "income.investment.distributions", "en": "Fund distributions", "fr": "Distributions de fonds" }
+    { "key": "income.investment.distributions", "en": "Fund distributions", "fr": "Distributions de fonds" },
+    { "key": "income.investment.crypto", "en": "Crypto-asset income (staking, mining, rewards)", "fr": "Revenus de cryptoactifs (jalonnement, minage, récompenses)" }
   ]},
   { "key": "income.gifts", "en": "Gifts received", "fr": "Cadeaux reçus", "kind": "INCOME" },
   { "key": "income.refunds", "en": "Refunds and reimbursements", "fr": "Remboursements", "kind": "INCOME" },

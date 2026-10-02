@@ -31,7 +31,10 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun MainScreen(model: BooksModel, app: AppState) {
-    val reminders = remember(model.revision) { model.reminderLines() }
+    // Recomputed when the language changes too, so the banner follows it.
+    val reminders = remember(model.revision, model.language) { model.reminderLines() }
+    // Lines the books write themselves are written in the language in use.
+    LaunchedEffect(model.language) { model.books.language = model.language }
     val inboxCount = remember(model.revision) { runCatching { model.books.documents.inboxCount() }.getOrDefault(0) }
     // FX-02: fetch missing Bank of Canada rates in the background; offline is fine (NFR-10).
     LaunchedEffect(model) {

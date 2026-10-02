@@ -1,0 +1,22 @@
+-- Crypto-asset wallets (CR-01 to CR-06). A wallet is a CRYPTO_WALLET account held in its coin.
+
+-- What the books need beyond the account: the cost (in the base currency) of the coins already in
+-- the wallet when its history starts, and for a watch-only wallet (CR-02) the public address or
+-- extended public key it follows. Private keys and seed phrases are never stored.
+CREATE TABLE wallet (
+    account_id TEXT NOT NULL PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
+    opening_cost_minor INTEGER,
+    watch TEXT,
+    watch_kind TEXT CHECK (watch_kind IN ('ADDRESS', 'XPUB')),
+    last_sync INTEGER,
+    notes TEXT
+);
+
+upsertWallet:
+INSERT OR REPLACE INTO wallet(account_id, opening_cost_minor, watch, watch_kind, last_sync, notes) VALUES (?, ?, ?, ?, ?, ?);
+
+wallet:
+SELECT * FROM wallet WHERE account_id = ?;
+
+setWalletSynced:
+UPDATE wallet SET last_sync = ? WHERE account_id = ?;

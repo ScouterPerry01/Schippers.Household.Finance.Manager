@@ -229,6 +229,20 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 8 ledgers gain wallet details`() {
+        val file = temp.resolve("ledger8.db")
+        older("../data/src/main/sqldelight/ledger/schemas/8.db", file, 8).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('w', 'Cold', 'CRYPTO_WALLET', 'BTC', '2020-01-01', 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            val q = LedgerDatabase(driver).cryptoQueries
+            q.upsertWallet("w", 150000, "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu", "ADDRESS", null, null)
+            assertEquals("ADDRESS", q.wallet("w").executeAsOne().watch_kind)
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()
