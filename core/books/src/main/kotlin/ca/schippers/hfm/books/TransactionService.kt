@@ -35,23 +35,35 @@ class TransactionService internal constructor(private val books: Books) {
 
     // --- Reading --------------------------------------------------------------------------------
 
-    /** Every transaction of an account, oldest first, with the running balance (TX-01). */
-    fun register(accountId: String): List<RegisterRow> {
+    /**
+     * The transactions of an account, oldest first, with the running balance (TX-01). With
+     * [limit], only the most recent ones are returned, so the register opens quickly however long
+     * the history (NFR-02); the running balance still counts every earlier transaction.
+     */
+    fun register(accountId: String, limit: Int? = null): List<RegisterRow> {
         val (group, account) = books.accounts.locate(accountId)
         val q = books.ledger(group).ledgerQueries
-        val splits = q.splitsForAccount(accountId).executeAsList().groupBy { it.txn_id }
-        val tags = q.tagsForAccount(accountId).executeAsList().groupBy({ it.txn_id }, { it.tag_id })
-        return q.register(accountId).executeAsList().map { r ->
-            val row = TxnRow(
-                r.id, r.account_id, r.date, r.payee_id, r.payee_text, r.amount_minor, r.original_amount_minor,
-                r.original_currency, r.fx_rate, r.memo, r.member_id, r.cleared, r.transfer_id, r.transfer_account_id, r.external_id,
-                r.created_by, r.source_device, r.created_at, r.updated_at,
+        val rows = q.latestForAccount(accountId, (limit ?: Int.MAX_VALUE).toLong()).executeAsList()
+        val from = rows.lastOrNull()?.date ?: return emptyList()
+        val splits = q.splitsForAccountFrom(accountId, from).executeAsList().groupBy { it.txn_id }
+        val tags = q.tagsForAccountFrom(accountId, from).executeAsList().groupBy({ it.txn_id }, { it.tag_id })
+        // Running balances, worked backwards from today's balance, so earlier history is never read.
+        var balance = q.accountBalance(accountId).executeAsOne()
+        val result = ArrayList<RegisterRow>(rows.size)
+        for (row in rows) {
+            result += RegisterRow(
+                row.toTransaction(account.currency, splits[row.id].orEmpty(), tags[row.id].orEmpty().toSet()),
+                Money.ofMinor(balance, account.currency),
             )
-            RegisterRow(
-                row.toTransaction(account.currency, splits[r.id].orEmpty(), tags[r.id].orEmpty().toSet()),
-                Money.ofMinor(r.running_balance ?: account.openingBalance.minorUnits, account.currency),
-            )
+            balance -= row.amount_minor
         }
+        return result.asReversed()
+    }
+
+    /** How many transactions the account has in all, for "showing the last N of M". */
+    fun count(accountId: String): Long {
+        val (group, _) = books.accounts.locate(accountId)
+        return books.ledger(group).ledgerQueries.txnCountForAccount(accountId).executeAsOne()
     }
 
     fun get(transactionId: String): Transaction {
@@ -411,7 +423,7 @@ class TransactionService internal constructor(private val books: Books) {
     }
 }
 
-private fun TxnRow.toTransaction(currency: Currency, splits: List<SplitRow>, tagIds: Set<String>): Transaction = Transaction(
+internal fun TxnRow.toTransaction(currency: Currency, splits: List<SplitRow>, tagIds: Set<String>): Transaction = Transaction(
     id = id,
     accountId = account_id,
     date = LocalDate.parse(date),

@@ -3,6 +3,7 @@ package ca.schippers.hfm.desktop
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusRequester
 import ca.schippers.hfm.data.HouseholdSession
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
@@ -35,6 +36,31 @@ class AppState(
         private set
 
     var screen: Screen by mutableStateOf(Screen.Welcome)
+
+    /** Focus target for Ctrl+F (OTH-03). */
+    val searchFocus = FocusRequester()
+
+    /** SEC-02: minutes without keyboard or mouse activity before the household locks; 0 = never. A per-computer setting. */
+    var autoLockMinutes: Int by mutableStateOf(prefs.getInt(PREF_AUTO_LOCK, DEFAULT_AUTO_LOCK))
+        private set
+
+    @Volatile
+    private var lastActivity = System.currentTimeMillis()
+
+    fun touch() {
+        lastActivity = System.currentTimeMillis()
+    }
+
+    fun setAutoLock(minutes: Int) {
+        autoLockMinutes = minutes
+        prefs.putInt(PREF_AUTO_LOCK, minutes)
+    }
+
+    /** Locks the household if it has been idle longer than the auto-lock time. */
+    fun lockIfIdle(now: Long = System.currentTimeMillis()) {
+        val unlocked = screen is Screen.Main || screen is Screen.ShowRecoveryKey
+        if (unlocked && autoLockMinutes > 0 && now - lastActivity > autoLockMinutes * 60_000L) lock()
+    }
 
     fun t(key: String, vararg args: Any): String = Messages.get(language, key, *args)
 
@@ -79,6 +105,8 @@ class AppState(
     companion object {
         const val MIN_PASSWORD_LENGTH = 12
         private const val PREF_LANGUAGE = "language"
+        private const val PREF_AUTO_LOCK = "autoLockMinutes"
+        const val DEFAULT_AUTO_LOCK = 10
         private const val PREF_RECENT = "recentHouseholds"
         private const val MAX_RECENT = 5
     }

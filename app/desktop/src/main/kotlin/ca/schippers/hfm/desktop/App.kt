@@ -32,6 +32,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -51,11 +53,21 @@ import javax.swing.JFileChooser
 @Composable
 fun App(state: AppState) {
     MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
-        Surface(Modifier.fillMaxSize()) {
+        Surface(
+            Modifier.fillMaxSize().pointerInput(state) {
+                // Any mouse activity counts as use, for auto-lock (SEC-02).
+                awaitPointerEventScope {
+                    while (true) {
+                        awaitPointerEvent(PointerEventPass.Initial)
+                        state.touch()
+                    }
+                }
+            },
+        ) {
             Column(Modifier.fillMaxSize()) {
                 TopBar(state)
                 when (val screen = state.screen) {
-                    is Screen.Main -> MainScreen(screen.model)
+                    is Screen.Main -> MainScreen(screen.model, state)
                     else -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp), contentAlignment = Alignment.TopCenter) {
                         Column(Modifier.widthIn(max = 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             when (screen) {
@@ -84,8 +96,9 @@ private fun TopBar(state: AppState) {
                 Text(if (language == Language.ENGLISH) "English" else "Français")
             }
         }
-        if (state.screen is Screen.Main) {
-            OutlinedButton(onClick = state::lock) { Text(state.t("common.lock")) }
+        (state.screen as? Screen.Main)?.let { main ->
+            SearchBox(state, main.model)
+            OutlinedButton(onClick = state::lock, modifier = Modifier.padding(start = 8.dp)) { Text(state.t("common.lock")) }
         }
     }
 }

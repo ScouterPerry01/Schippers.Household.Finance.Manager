@@ -82,20 +82,48 @@ class ReportService internal constructor(private val books: Books) {
     }
 
     private class Row(val categoryId: String?, val date: LocalDate, val amount: Money)
+    private class MonthRow(val accountId: String, val categoryId: String?, val month: String, val total: Long?)
+    private class PayeeRow(val accountId: String, val payeeId: String?, val payeeText: String, val date: String, val total: Long?)
+
+    /** Ranges over about 13 months read the table straight through rather than through the date index. */
+    private fun ReportFilter.isWide(): Boolean = from.daysUntil(to) > 400
 
     /** Category totals per day, in the base currency, for the accounts in the filter. */
+    /**
+     * Category totals in the base currency. Accounts in the base currency are summed by month in
+     * SQL (dated the first day of the month, or the filter's start); foreign-currency accounts are
+     * summed by day so each day converts at its own rate (FX-01).
+     */
     private fun categoryRows(filter: ReportFilter, converter: Converter): List<Row> {
         val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
-        return books.groups().flatMap { group ->
-            books.ledger(group).ledgerQueries.categoryDaily(filter.from.toString(), filter.to.toString(), filter.memberId, filter.tagId)
-                .executeAsList()
-                .filter { filter.accountIds == null || it.account_id in filter.accountIds }
-                .mapNotNull { r ->
-                    val account = accounts[r.account_id] ?: return@mapNotNull null
+        fun wanted(accountId: String) = filter.accountIds == null || accountId in filter.accountIds
+        val foreign = accounts.values.filter { it.currency != base && wanted(it.id) }.map { it.id }
+        val out = ArrayList<Row>()
+        for (group in books.groups()) {
+            val q = books.ledger(group).ledgerQueries
+            val monthly = if (filter.isWide()) {
+                q.categoryMonthlyWide(filter.from.toString(), filter.to.toString(), filter.memberId, filter.tagId).executeAsList()
+                    .map { Triple(it.account_id, it.category_id, it.month to it.total) }
+            } else {
+                q.categoryMonthly(filter.from.toString(), filter.to.toString(), filter.memberId, filter.tagId).executeAsList()
+                    .map { Triple(it.account_id, it.category_id, it.month to it.total) }
+            }
+            for ((accountId, categoryId, monthTotal) in monthly) {
+                val r = MonthRow(accountId, categoryId, monthTotal.first, monthTotal.second)
+                val account = accounts[r.accountId] ?: continue
+                if (!wanted(r.accountId) || account.currency != base) continue
+                val monthStart = LocalDate.parse(r.month + "-01")
+                out += Row(r.categoryId, maxOf(monthStart, filter.from), Money.ofMinor(r.total ?: 0, base))
+            }
+            if (foreign.isNotEmpty()) {
+                for (r in q.categoryDailyFor(filter.from.toString(), filter.to.toString(), foreign, filter.memberId, filter.tagId).executeAsList()) {
+                    val account = accounts[r.account_id] ?: continue
                     val date = LocalDate.parse(r.date)
-                    converter.toBase(Money.ofMinor(r.total ?: 0, account.currency), date)?.let { Row(r.category_id, date, it) }
+                    converter.toBase(Money.ofMinor(r.total ?: 0, account.currency), date)?.let { out += Row(r.category_id, date, it) }
                 }
+            }
         }
+        return out
     }
 
     private fun categories() = books.categories.list(includeArchived = true).associateBy { it.id }
@@ -111,16 +139,17 @@ class ReportService internal constructor(private val books: Books) {
         val categories = categories()
         val rows = categoryRows(filter, converter)
         val periods = periods(filter.from, filter.to, granularity)
-        val zero = Money.zero(base)
-        val totals = periods.map { (start, end) ->
-            var income = zero
-            var expense = zero
-            for (r in rows) {
-                if (r.date < start || r.date > end) continue
-                if (isIncome(r.categoryId, r.amount, categories)) income += r.amount else expense -= r.amount
-            }
-            PeriodTotals(start, end, income, expense)
+        val starts = periods.map { it.first }
+        val income = Array(periods.size) { Money.zero(base) }
+        val expense = Array(periods.size) { Money.zero(base) }
+        // One pass: each row goes to the period it falls in (found by binary search).
+        for (r in rows) {
+            val found = starts.binarySearch(r.date)
+            val i = if (found >= 0) found else -found - 2
+            if (i < 0 || r.date > periods[i].second) continue
+            if (isIncome(r.categoryId, r.amount, categories)) income[i] += r.amount else expense[i] -= r.amount
         }
+        val totals = periods.mapIndexed { i, (start, end) -> PeriodTotals(start, end, income[i], expense[i]) }
         return Report(totals, converter.missing)
     }
 
@@ -200,11 +229,19 @@ class ReportService internal constructor(private val books: Books) {
         val names = books.payees.list(includeArchived = true).associate { it.id to it.name }
         val totals = HashMap<Pair<String?, String>, Money>()
         for (group in books.groups()) {
-            for (r in books.ledger(group).ledgerQueries.payeeDaily(filter.from.toString(), filter.to.toString(), filter.memberId, filter.tagId).executeAsList()) {
-                if (filter.accountIds != null && r.account_id !in filter.accountIds) continue
-                val account = accounts[r.account_id] ?: continue
+            val q = books.ledger(group).ledgerQueries
+            val from = filter.from.toString()
+            val to = filter.to.toString()
+            val rows = if (filter.isWide()) {
+                q.payeeDailyWide(from, to, filter.memberId, filter.tagId).executeAsList().map { PayeeRow(it.account_id, it.payee_id, it.payee_text, it.date, it.total) }
+            } else {
+                q.payeeDaily(from, to, filter.memberId, filter.tagId).executeAsList().map { PayeeRow(it.account_id, it.payee_id, it.payee_text, it.date, it.total) }
+            }
+            for (r in rows) {
+                if (filter.accountIds != null && r.accountId !in filter.accountIds) continue
+                val account = accounts[r.accountId] ?: continue
                 val amount = converter.toBase(Money.ofMinor(r.total ?: 0, account.currency), LocalDate.parse(r.date)) ?: continue
-                val key = r.payee_id to (r.payee_id?.let(names::get) ?: r.payee_text)
+                val key = r.payeeId to (r.payeeId?.let(names::get) ?: r.payeeText)
                 totals[key] = (totals[key] ?: Money.zero(base)) - amount
             }
         }
@@ -221,20 +258,37 @@ class ReportService internal constructor(private val books: Books) {
         val converter = Converter(books.rates, base)
         val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
         val zero = Money.zero(base)
-        val points = dates.map { date ->
+        val sortedDates = dates.sorted()
+        val last = sortedDates.lastOrNull() ?: return Report(emptyList(), emptySet())
+        // Running balance per account: everything up to the first date in one sum, then each day's
+        // net change after it, so a 12-month chart never reads 30 years of days.
+        val first = sortedDates.first()
+        val balances = HashMap<String, Long>()
+        val changes = books.groups().flatMap { group ->
+            val q = books.ledger(group).ledgerQueries
+            q.balancesThrough(first.toString()).executeAsList().forEach { balances[it.account_id] = it.total ?: 0L }
+            q.dailyNetChange(first.toString(), last.toString()).executeAsList()
+        }.sortedBy { it.date }
+        var next = 0
+        val byDate = HashMap<LocalDate, NetWorthPoint>()
+        for (date in sortedDates) {
+            val key = date.toString()
+            while (next < changes.size && changes[next].date <= key) {
+                val c = changes[next++]
+                balances[c.account_id] = (balances[c.account_id] ?: 0L) + (c.total ?: 0L)
+            }
             var assets = zero
             var liabilities = zero
-            for (group in books.groups()) {
-                for (r in books.ledger(group).ledgerQueries.balancesAsOf(date.toString()).executeAsList()) {
-                    if (accountIds != null && r.id !in accountIds) continue
-                    val account = accounts[r.id] ?: continue
-                    val balance = converter.toBase(Money.ofMinor(r.balance, account.currency), date) ?: continue
-                    if (account.type.kind.isLiability) liabilities -= balance else assets += balance
-                }
+            for (account in accounts.values) {
+                if (accountIds != null && account.id !in accountIds) continue
+                if (account.openingDate > date) continue
+                val minor = account.openingBalance.minorUnits + (balances[account.id] ?: 0L)
+                val balance = converter.toBase(Money.ofMinor(minor, account.currency), date) ?: continue
+                if (account.type.kind.isLiability) liabilities -= balance else assets += balance
             }
-            NetWorthPoint(date, assets, liabilities)
+            byDate[date] = NetWorthPoint(date, assets, liabilities)
         }
-        return Report(points, converter.missing)
+        return Report(dates.map { byDate.getValue(it) }, converter.missing)
     }
 
     /** Month ends from [from]'s month to [to]'s month, ending with [to] itself. */

@@ -1,6 +1,11 @@
 package ca.schippers.hfm.desktop
 
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
@@ -14,6 +19,7 @@ import androidx.compose.ui.window.rememberWindowState
 import ca.schippers.hfm.books.StatementStatus
 import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.i18n.Messages
+import kotlinx.coroutines.delay
 
 fun main() = application {
     val state = remember {
@@ -32,6 +38,7 @@ fun main() = application {
                         model.reconcilingStatementId = model.books.statements.statements(id).firstOrNull { it.status == StatementStatus.OPEN }?.id
                     }
                 }
+                System.getProperty("hfm.demo.search")?.let { q -> model.search = q to model.books.search.search(q, model.language.locale) }
                 app.screen = Screen.Main(model)
             }
         }
@@ -49,10 +56,27 @@ fun main() = application {
             )
         }
     }
+    // SEC-02: lock after the chosen time without keyboard or mouse activity.
+    LaunchedEffect(state) {
+        while (true) {
+            delay(15_000)
+            state.lockIfIdle()
+        }
+    }
     Window(
         onCloseRequest = {
             state.lock()
             exitApplication()
+        },
+        onPreviewKeyEvent = { event ->
+            state.touch()
+            // Ctrl+F: go to the search box (OTH-03).
+            if (event.type == KeyEventType.KeyDown && event.isCtrlPressed && event.key == Key.F && state.screen is Screen.Main) {
+                runCatching { state.searchFocus.requestFocus() }
+                true
+            } else {
+                false
+            }
         },
         title = Messages.get(state.language, "app.name"),
         state = rememberWindowState(width = 1440.dp, height = 900.dp),

@@ -26,7 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun MainScreen(model: BooksModel) {
+fun MainScreen(model: BooksModel, app: AppState) {
     val reminders = remember(model.revision) { model.reminders() }
     // FX-02: fetch missing Bank of Canada rates in the background; offline is fine (NFR-10).
     LaunchedEffect(model) {
@@ -72,6 +72,7 @@ fun MainScreen(model: BooksModel) {
                     Section.REPORTS -> ReportsScreen(model, model.reportState)
                     Section.RATES -> RatesScreen(model)
                     Section.BACKUPS -> BackupsScreen(model)
+                    Section.SECURITY -> SecurityScreen(model, app)
                     Section.CATEGORIES -> CategoriesScreen(model)
                     Section.PAYEES -> PayeesScreen(model)
                     Section.RULES -> RulesScreen(model)
@@ -82,6 +83,7 @@ fun MainScreen(model: BooksModel) {
         }
     }
 
+    SearchResultsDialog(model)
     model.error?.let { message ->
         AlertDialog(
             onDismissRequest = { model.error = null },

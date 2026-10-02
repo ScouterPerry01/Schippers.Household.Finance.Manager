@@ -18,3 +18,15 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.launcher)
 }
+
+// NFR-02: 30 years of history (250,000 transactions). Run with ./gradlew :core:books:performanceTest
+tasks.register<Test>("performanceTest") {
+    description = "Times screens and reports on 30 years of generated data (NFR-02)"
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform { includeTags("performance") }
+    maxHeapSize = "2g"
+    testLogging { showStandardStreams = true }
+    outputs.upToDateWhen { false }
+}

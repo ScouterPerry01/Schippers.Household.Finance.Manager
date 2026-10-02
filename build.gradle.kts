@@ -28,5 +28,9 @@ subprojects {
         tasks.withType<Test>().configureEach {
             useJUnitPlatform()
         }
+        // The NFR-02 performance test is slow; it runs on its own with `performanceTest`.
+        tasks.named<Test>("test") {
+            useJUnitPlatform { excludeTags("performance") }
+        }
     }
 }

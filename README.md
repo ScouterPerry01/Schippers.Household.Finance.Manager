@@ -5,7 +5,7 @@ A personal, family and household finance application for Canada (Quebec first), 
 - **Desktop app** (Windows and Linux) holds the household's books: accounts, transactions, reconciliation, bills, investments, registered plans, medical claims, assets and reports. All data stays on your own computer, encrypted.
 - **Android companion app** captures receipts, bills and expenses on the spot and sends them to the desktop over your home Wi-Fi.
 
-Status: **Phase 1 (core desktop) in progress**. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
+Status: **Phase 1 (core desktop) complete**; Phase 2 (phone capture) next. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
 
 ## Project layout
 
@@ -34,6 +34,7 @@ Requirements: JDK 21. For the Android app, the Android SDK (API 37).
 ./gradlew test                      # all core tests
 ./gradlew :app:desktop:run          # run the desktop app
 ./gradlew :app:desktop:runDemo      # try it with a throw-away sample household (-Plang=fr for French)
+./gradlew :core:books:performanceTest  # NFR-02: times screens and reports on 30 years of data
 ./gradlew :app:desktop:packageMsi   # Windows installer (on Windows)
 ./gradlew :app:desktop:packageDeb   # Linux package (on Linux)
 ./gradlew :app:android:assembleDebug

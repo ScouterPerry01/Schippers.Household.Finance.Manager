@@ -71,4 +71,5 @@ tasks.register<JavaExec>("runDemo") {
     providers.gradleProperty("section").orNull?.let { systemProperty("hfm.demo.section", it) }
     providers.gradleProperty("reconcile").orNull?.let { systemProperty("hfm.demo.reconcile", it) }
     providers.gradleProperty("view").orNull?.let { systemProperty("hfm.demo.report", it) }
+    providers.gradleProperty("search").orNull?.let { systemProperty("hfm.demo.search", it) }
 }

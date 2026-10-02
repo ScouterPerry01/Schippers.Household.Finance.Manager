@@ -44,3 +44,19 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Build debug APK
         run: ./gradlew :app:android:assembleDebug --console=plain
+
+  performance:
+    name: Performance (NFR-02, 30 years of data)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Time screens and reports on 250,000 transactions
+        # CI machines are slower and shared; the limits are relaxed three times here.
+        env:
+          HFM_PERF_FACTOR: "3"
+        run: ./gradlew :core:books:performanceTest --console=plain

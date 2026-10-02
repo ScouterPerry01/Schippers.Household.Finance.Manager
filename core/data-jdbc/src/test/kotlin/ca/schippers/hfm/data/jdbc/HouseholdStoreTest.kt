@@ -46,6 +46,17 @@ class HouseholdStoreTest {
     }
 
     @Test
+    fun `a locked session refuses all access, even to databases it had open`() {
+        val session = createHousehold().session
+        val shared = session.core.coreQueries.groups().executeAsList().single().id
+        session.groupLedger(shared)
+        session.close()
+        assertFailsWith<IllegalStateException> { session.core }
+        assertFailsWith<IllegalStateException> { session.groupLedger(shared) }
+        assertFailsWith<IllegalStateException> { session.createGroup("X", private = true) }
+    }
+
+    @Test
     fun `wrong password and unknown user are rejected the same way`() {
         createHousehold().session.close()
         assertFailsWith<WrongPasswordException> { store.unlock(dir, "perry", "nope".toCharArray()) }

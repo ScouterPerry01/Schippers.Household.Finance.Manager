@@ -100,7 +100,10 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     val books = model.books
     val account = summary.account
     val locale = model.language.locale
-    val rows = remember(model.revision, account.id) { books.transactions.register(account.id) }
+    // NFR-02: open with the most recent transactions; earlier ones load on request.
+    var limit by remember(account.id) { mutableStateOf(PAGE) }
+    val rows = remember(model.revision, account.id, limit) { books.transactions.register(account.id, limit) }
+    val total = remember(model.revision, account.id) { books.transactions.count(account.id) }
     val categoryTree = remember(model.revision) { books.categories.tree() }
     val categories = remember(categoryTree) { categoryTree.associate { it.first.id to it.first } }
     val otherAccounts = remember(model.revision, account.id) { books.accounts.list().map { it.account }.filter { it.id != account.id } }
@@ -116,7 +119,11 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     var pendingImport by remember { mutableStateOf<PendingImport?>(null) }
     var showStatements by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
-    LaunchedEffect(account.id, rows.size) { if (rows.isNotEmpty()) listState.scrollToItem(rows.size - 1) }
+    // Jump to the newest entry when the account opens or a transaction is added, not after "show earlier".
+    LaunchedEffect(account.id, total) {
+        val items = rows.size + if (rows.size < total) 1 else 0
+        if (items > 0) listState.scrollToItem(items - 1)
+    }
 
     val choices: List<CategoryChoice> = remember(categoryTree, otherAccounts) {
         listOf(CategoryChoice.Uncategorized) +
@@ -161,6 +168,20 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
         if (model.act(retryConfirmed = { perform(true); entry.clear() }) { perform(false) } != null) entry.clear()
     }
 
+    // A transaction chosen in search: load enough history to include it, then open it in the form.
+    LaunchedEffect(model.focusTransactionId, rows) {
+        val id = model.focusTransactionId ?: return@LaunchedEffect
+        val index = rows.indexOfFirst { it.transaction.id == id }
+        when {
+            index >= 0 -> {
+                load(rows[index].transaction)
+                listState.scrollToItem(index + if (rows.size < total) 1 else 0)
+                model.focusTransactionId = null
+            }
+            rows.size < total -> limit = total.toInt()
+            else -> model.focusTransactionId = null
+        }
+    }
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         // Header: account, balances and actions.
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -206,6 +227,14 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
 
         LazyColumn(Modifier.weight(1f), state = listState) {
             if (rows.isEmpty()) item { Text(model.t("register.empty"), Modifier.padding(16.dp)) }
+            if (rows.size < total) {
+                item {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
+                        Text(model.t("register.showing", rows.size, total), style = MaterialTheme.typography.bodySmall)
+                        TextButton(onClick = { limit += 2 * PAGE }) { Text(model.t("register.showEarlier")) }
+                    }
+                }
+            }
             items(rows, key = { it.transaction.id }) { row ->
                 val txn = row.transaction
                 val selected = entry.editing?.id == txn.id
@@ -600,3 +629,6 @@ private fun Heading(text: String, modifier: Modifier, align: TextAlign = TextAli
 private fun Cell(text: String, modifier: Modifier) {
     Text(text, modifier = modifier.padding(end = 8.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
 }
+
+/** Transactions shown when a register opens (NFR-02). */
+private const val PAGE = 1000

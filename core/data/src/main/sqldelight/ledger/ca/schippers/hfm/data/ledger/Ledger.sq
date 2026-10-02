@@ -56,6 +56,10 @@ CREATE TABLE txn (
 
 CREATE INDEX txn_account_date ON txn(account_id, date, created_at, id);
 CREATE INDEX txn_transfer ON txn(transfer_id) WHERE transfer_id IS NOT NULL;
+-- Covers balances and running totals without reading (and decrypting) whole rows (NFR-02).
+CREATE INDEX txn_account_amount ON txn(account_id, date, amount_minor, cleared);
+-- Date ranges across all accounts (reports for a month or a year).
+CREATE INDEX txn_date ON txn(date);
 CREATE UNIQUE INDEX txn_external ON txn(account_id, external_id) WHERE external_id IS NOT NULL;
 
 -- TX-02: a transaction is split across categories; a simple transaction has one split.
@@ -325,6 +329,25 @@ FROM txn t
 WHERE t.account_id = ?
 ORDER BY t.date, t.created_at, t.id;
 
+-- The most recent transactions of an account, newest first (read from the index; NFR-02).
+latestForAccount:
+SELECT * FROM txn
+WHERE account_id = :account
+ORDER BY date DESC, created_at DESC, id DESC
+LIMIT :limit;
+
+clearedForAccount:
+SELECT * FROM txn WHERE account_id = ? AND cleared = 'CLEARED' ORDER BY date, created_at;
+
+txnCountForAccount:
+SELECT count(*) FROM txn WHERE account_id = ?;
+
+splitsForAccountFrom:
+SELECT s.* FROM txn_split s JOIN txn t ON t.id = s.txn_id WHERE t.account_id = ? AND t.date >= ?;
+
+tagsForAccountFrom:
+SELECT tt.* FROM txn_tag tt JOIN txn t ON t.id = tt.txn_id WHERE t.account_id = ? AND t.date >= ?;
+
 txnCount:
 SELECT count(*) FROM txn;
 
@@ -338,8 +361,6 @@ DELETE FROM txn_split WHERE txn_id = ?;
 splitsForTxn:
 SELECT * FROM txn_split WHERE txn_id = ?;
 
-splitsForAccount:
-SELECT s.* FROM txn_split s JOIN txn t ON t.id = s.txn_id WHERE t.account_id = ?;
 
 -- Most recent use of each payee, for auto-complete (MAN-02).
 lastUseOfPayee:
@@ -354,8 +375,6 @@ DELETE FROM txn_tag WHERE txn_id = ?;
 tagsForTxn:
 SELECT tag_id FROM txn_tag WHERE txn_id = ?;
 
-tagsForAccount:
-SELECT tt.* FROM txn_tag tt JOIN txn t ON t.id = tt.txn_id WHERE t.account_id = ?;
 
 setExternalId:
 UPDATE txn SET external_id = ?, updated_at = ? WHERE id = ?;
@@ -381,16 +400,66 @@ GROUP BY a.id;
 setClearedFor:
 UPDATE txn SET cleared = ?, updated_at = ? WHERE account_id = ? AND cleared = ? AND date <= ?;
 
+-- Global search (OTH-03): text in the payee or memo, a known payee, or an amount either way.
+searchTxns:
+SELECT * FROM txn
+WHERE payee_text LIKE :pattern ESCAPE '!' OR memo LIKE :pattern ESCAPE '!' OR payee_id IN :payeeIds
+   OR amount_minor = :amount OR amount_minor = :negativeAmount
+ORDER BY date DESC, created_at DESC
+LIMIT :limit;
+
 -- Reports (section 12) ---------------------------------------------------------------------
 -- Transfers between own accounts are never income or spending (TX-03), so they are left out.
 
-categoryDaily:
-SELECT t.account_id, s.category_id, t.date, CAST(sum(s.amount_minor) AS INTEGER) AS total
+
+-- Monthly totals per account and category: enough for accounts in the base currency.
+categoryMonthly:
+SELECT t.account_id, s.category_id, substr(t.date, 1, 7) AS month, CAST(sum(s.amount_minor) AS INTEGER) AS total
 FROM txn_split s JOIN txn t ON t.id = s.txn_id
 WHERE t.date >= :from AND t.date <= :to AND t.transfer_id IS NULL
   AND (:member IS NULL OR coalesce(s.member_id, t.member_id) = :member)
   AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
+GROUP BY t.account_id, s.category_id, month;
+
+-- The same for long ranges: "+t.date" stops SQLite from using the date index, because reading
+-- most of the table row by row through an index is far slower than reading it straight (NFR-02).
+categoryMonthlyWide:
+SELECT t.account_id, s.category_id, substr(t.date, 1, 7) AS month, CAST(sum(s.amount_minor) AS INTEGER) AS total
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE +t.date >= :from AND +t.date <= :to AND t.transfer_id IS NULL
+  AND (:member IS NULL OR coalesce(s.member_id, t.member_id) = :member)
+  AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
+GROUP BY t.account_id, s.category_id, month;
+
+-- Daily totals for the given accounts only: foreign-currency accounts, converted at each day's rate.
+categoryDailyFor:
+SELECT t.account_id, s.category_id, t.date, CAST(sum(s.amount_minor) AS INTEGER) AS total
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE t.date >= :from AND t.date <= :to AND t.transfer_id IS NULL AND t.account_id IN :accounts
+  AND (:member IS NULL OR coalesce(s.member_id, t.member_id) = :member)
+  AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
 GROUP BY t.account_id, s.category_id, t.date;
+
+-- Balance movement per account up to and including a date (from the covering index).
+balancesThrough:
+SELECT account_id, CAST(sum(amount_minor) AS INTEGER) AS total
+FROM txn WHERE date <= :through
+GROUP BY account_id;
+
+-- Net change per account and day after one date up to another, for running balances.
+dailyNetChange:
+SELECT account_id, date, CAST(sum(amount_minor) AS INTEGER) AS total
+FROM txn WHERE date > :after AND date <= :to
+GROUP BY account_id, date
+ORDER BY date;
+
+payeeDailyWide:
+SELECT t.account_id, t.payee_id, coalesce(t.payee_text, '') AS payee_text, t.date, CAST(sum(t.amount_minor) AS INTEGER) AS total
+FROM txn t
+WHERE +t.date >= :from AND +t.date <= :to AND t.transfer_id IS NULL
+  AND (:member IS NULL OR t.member_id = :member)
+  AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
+GROUP BY t.account_id, t.payee_id, payee_text, t.date;
 
 payeeDaily:
 SELECT t.account_id, t.payee_id, coalesce(t.payee_text, '') AS payee_text, t.date, CAST(sum(t.amount_minor) AS INTEGER) AS total
@@ -408,9 +477,6 @@ WHERE t.date >= :from AND t.date <= :to AND t.transfer_id IS NULL
   AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
 ORDER BY t.date, t.created_at;
 
-balancesAsOf:
-SELECT a.id, CAST(a.opening_balance_minor + coalesce((SELECT sum(t.amount_minor) FROM txn t WHERE t.account_id = a.id AND t.date <= :date), 0) AS INTEGER) AS balance
-FROM account a WHERE a.opening_date <= :date;
 
 uncategorizedCount:
 SELECT count(*) FROM txn t WHERE t.transfer_id IS NULL AND EXISTS (SELECT 1 FROM txn_split s WHERE s.txn_id = t.id AND s.category_id IS NULL);

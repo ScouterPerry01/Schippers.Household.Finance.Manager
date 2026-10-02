@@ -374,7 +374,7 @@ class StatementService internal constructor(private val books: Books) {
 
         lateinit var report: ReconciliationReport
         ledger.transaction {
-            val toReconcile = q.register(row.account_id).executeAsList().filter { it.cleared == ClearedStatus.CLEARED.name }
+            val toReconcile = q.clearedForAccount(row.account_id).executeAsList()
             report = ReconciliationReport(
                 periodEnd = row.period_end,
                 closingBalanceMinor = row.closing_balance_minor!!,

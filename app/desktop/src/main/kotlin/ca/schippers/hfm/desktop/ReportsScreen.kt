@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
@@ -446,10 +445,7 @@ fun DrillDialog(model: BooksModel, title: String, rows: List<DrillRow>, onClose:
     val accounts = remember { books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name } }
     val categories = remember { books.categories.list(true).associateBy { it.id } }
     val total = rows.mapNotNull { it.baseAmount }.fold(Money.zero(books.reports.base)) { a, m -> a + m }
-    AlertDialog(
-        onDismissRequest = onClose,
-        title = { Text(title) },
-        text = {
+    WideDialog(title, model.t("common.close"), onClose) {
             Column(Modifier.width(820.dp)) {
                 Text(model.t("report.drillSummary", rows.size, model.money(total)), style = MaterialTheme.typography.bodySmall)
                 LazyColumn(Modifier.heightIn(max = 460.dp).padding(top = 8.dp)) {
@@ -472,7 +468,5 @@ fun DrillDialog(model: BooksModel, title: String, rows: List<DrillRow>, onClose:
                     }
                 }
             }
-        },
-        confirmButton = { TextButton(onClick = onClose) { Text(model.t("common.close")) } },
-    )
+    }
 }

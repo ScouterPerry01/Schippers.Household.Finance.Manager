@@ -37,7 +37,14 @@ class HouseholdSession internal constructor(
     private val ledgers = mutableMapOf<String, LedgerDatabase>()
     private var closed = false
 
-    val core: CoreDatabase by lazy { CoreDatabase(open(header.corePartition, CoreDatabase.Schema)) }
+    private val coreDatabase: CoreDatabase by lazy { CoreDatabase(open(header.corePartition, CoreDatabase.Schema)) }
+
+    /** The core database; refused once the household is locked (SEC-02), even though it was opened before. */
+    val core: CoreDatabase
+        get() {
+            checkOpen()
+            return coreDatabase
+        }
 
     val householdId: String get() = header.householdId
 

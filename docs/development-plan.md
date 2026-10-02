@@ -269,3 +269,7 @@ Based on the *Household Finance Manager — Software Requirements Specification*
 | Shared code | Plain Kotlin/JVM libraries rather than Kotlin Multiplatform modules; no visible difference to users. Converting is possible later if iPhone or web is ever wanted (ADR 0001) |
 | Windows Hello | NativeAOT helper exe with KeyCredentialManager-derived key; optional per-machine slot; Linux password only (ADR 0003) |
 | Desktop OCR | PaddleOCR PP-OCRv5 (latin) via ONNX Runtime; Tesseract not needed (ADR 0004) |
+| Microsoft Store | MSIX listing "Schippers Household Finance Manager", identity in `app/desktop/packaging/msix/store-identity.properties` |
+| Android package | `ca.schippers.hfm.companion` (permanent once uploaded to Google Play) |
+| Backups | One encrypted `.hfmbak` per backup, checked after writing, restored into a new folder (ADR 0005) |
+| Phase 1 status (2026-10-02) | Complete. Deferred to later phases: REC-03 (one-to-many matching), REC-04 (FX fee posting), statement image with the report (needs the vault), BILL-03 (bill from a capture), 50,000-document part of NFR-02 |

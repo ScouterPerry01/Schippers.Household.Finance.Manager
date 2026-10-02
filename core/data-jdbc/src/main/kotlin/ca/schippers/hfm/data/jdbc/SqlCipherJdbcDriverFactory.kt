@@ -25,6 +25,8 @@ class SqlCipherJdbcDriverFactory : EncryptedDriverFactory {
         properties["foreign_keys"] = "true"
         // Writers wait (rather than fail) while a backup briefly holds the write lock.
         properties["busy_timeout"] = "15000"
+        // Every connection keeps up to 64 MB of decrypted pages, so repeated reads skip decryption (NFR-02).
+        properties["cache_size"] = "-65536"
         val driver = JdbcSqliteDriver("jdbc:sqlite:${file.toAbsolutePath()}", properties)
         try {
             // SQLCipher only checks the key when the first page is read.
