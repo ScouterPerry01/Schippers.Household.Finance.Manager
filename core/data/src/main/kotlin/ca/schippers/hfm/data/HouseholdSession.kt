@@ -1,5 +1,6 @@
 package ca.schippers.hfm.data
 
+import app.cash.sqldelight.TransacterImpl
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlSchema
@@ -159,6 +160,48 @@ class HouseholdSession internal constructor(
         SchemaManager.prepare(driver, schema, dir.resolve(partition.file))
         return driver
     }
+
+    /**
+     * Runs [block] while every open database holds its write lock, so files copied inside are
+     * consistent (database file plus write-ahead log). Readers continue; writers wait.
+     */
+    internal fun <T> withWritesPaused(block: () -> T): T {
+        checkOpen()
+        core // make sure the core database is open, so it is locked too
+        val open = drivers.values.toList()
+        fun lockFrom(i: Int): T {
+            if (i == open.size) return block()
+            val driver = open[i]
+            var result: Result<T>? = null
+            object : TransacterImpl(driver) {}.transaction {
+                // Rewriting the schema version is a write, which takes the database's write lock.
+                driver.execute(null, "PRAGMA user_version = ${SchemaManager.userVersion(driver)}", 0)
+                result = runCatching { lockFrom(i + 1) }
+            }
+            return result!!.getOrThrow()
+        }
+        return lockFrom(0)
+    }
+
+    /**
+     * EXP-01: every table of every database this user can open, for the full export. The core
+     * database is named "core"; ledgers are named after their account group.
+     */
+    fun readableTables(): Map<String, List<TableDump>> {
+        checkOpen()
+        val result = LinkedHashMap<String, List<TableDump>>()
+        core // opens the core database if needed
+        result["core"] = TableDump.all(drivers.getValue(header.corePartition.id))
+        for (group in core.coreQueries.groups().executeAsList()) {
+            if (!canOpen(group.partition_id)) continue
+            ledger(group.partition_id)
+            result["ledger - ${group.name}"] = TableDump.all(drivers.getValue(group.partition_id))
+        }
+        return result
+    }
+
+    /** A copy of a partition key this user holds, to open a backup's copy of that database for checking. */
+    internal fun partitionKeyForBackupCheck(partitionId: String): ByteArray? = partitionKeys[partitionId]?.copyOf()
 
     private fun activeUsers() = core.coreQueries.users().executeAsList().filter { it.active == 1L }
 

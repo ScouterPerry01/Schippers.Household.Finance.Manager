@@ -75,6 +75,7 @@ fun DashboardScreen(model: BooksModel) {
             uncategorized = books.reports.uncategorizedCount(),
             behind = summaries.filter { s -> last[s.account.id]?.let { it.daysUntil(today) > 45 } ?: false }.map { it.account.name },
             missingRates = missing.map { it.code }.sorted(),
+            backupReminder = books.backups.needsReminder(java.time.Instant.now()),
         )
     }
 
@@ -105,6 +106,7 @@ fun DashboardScreen(model: BooksModel) {
             if (data.unresolvedLines > 0) add(model.t("dashboard.review.statementLines", data.unresolvedLines) to Section.ACCOUNTS)
             if (data.uncategorized > 0) add(model.t("dashboard.review.uncategorized", data.uncategorized) to Section.ACCOUNTS)
             data.behind.forEach { add(model.t("dashboard.review.behind", it) to Section.ACCOUNTS) }
+            if (data.backupReminder) add(model.t("dashboard.review.backup") to Section.BACKUPS)
             if (data.missingRates.isNotEmpty()) add(model.t("report.missingRates", data.missingRates.joinToString()) to Section.RATES)
         }
         Card(Modifier.fillMaxWidth()) {
@@ -157,6 +159,7 @@ private class DashboardData(
     val uncategorized: Long,
     val behind: List<String>,
     val missingRates: List<String>,
+    val backupReminder: Boolean,
 )
 
 private fun signed(model: BooksModel, m: Money) = (if (m.isPositive) "+" else "") + model.money(m)

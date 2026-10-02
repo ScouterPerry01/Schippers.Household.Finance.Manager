@@ -16,7 +16,7 @@ import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 
-enum class Section { DASHBOARD, ACCOUNTS, BILLS, BUDGETS, REPORTS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES }
+enum class Section { DASHBOARD, ACCOUNTS, BILLS, BUDGETS, REPORTS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, BACKUPS }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and

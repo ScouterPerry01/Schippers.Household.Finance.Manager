@@ -23,6 +23,8 @@ class SqlCipherJdbcDriverFactory : EncryptedDriverFactory {
             .build()
             .toProperties()
         properties["foreign_keys"] = "true"
+        // Writers wait (rather than fail) while a backup briefly holds the write lock.
+        properties["busy_timeout"] = "15000"
         val driver = JdbcSqliteDriver("jdbc:sqlite:${file.toAbsolutePath()}", properties)
         try {
             // SQLCipher only checks the key when the first page is read.

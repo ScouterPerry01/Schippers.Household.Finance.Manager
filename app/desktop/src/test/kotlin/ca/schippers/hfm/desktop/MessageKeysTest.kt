@@ -39,6 +39,7 @@ class MessageKeysTest {
             "compare" to Compare.entries,
             "report.export" to ExportFormat.entries,
             "budgetPeriod" to ca.schippers.hfm.books.BudgetPeriod.entries,
+            "backupFrequency" to ca.schippers.hfm.books.BackupFrequency.entries,
             "amountKind" to ca.schippers.hfm.books.AmountKind.entries,
             "paymentMethod" to ca.schippers.hfm.books.PaymentMethod.entries,
             "monthDay" to ca.schippers.hfm.calc.schedule.MonthDay.entries,
@@ -49,7 +50,7 @@ class MessageKeysTest {
 
         val chosenInCode = listOf(
             "bills.overdue", "bills.dueToday", "bills.upcoming", "bills.markPaid", "bills.markReceived", "bills.edit",
-            "bills.payingAccount", "bills.depositAccount", "repeat.EVERY_N_DAYS.n", "repeat.EVERY_N_WEEKS.n", "repeat.EVERY_N_MONTHS.n",
+            "bills.payingAccount", "bills.depositAccount", "backup.now", "backup.running", "welcome.restoring", "repeat.EVERY_N_DAYS.n", "repeat.EVERY_N_WEEKS.n", "repeat.EVERY_N_MONTHS.n",
         )
         for (language in Language.entries) {
             val missing = (keys + enumKeys + chosenInCode).filterNot { it in Messages.keys(language) }

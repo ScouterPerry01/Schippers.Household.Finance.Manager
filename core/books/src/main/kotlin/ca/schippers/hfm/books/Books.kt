@@ -33,6 +33,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val rates = RateService(this)
     val reports = ReportService(this)
     val budgets = BudgetService(this)
+    val backups = BackupService(this)
 
     init {
         categories.ensureDefaults()

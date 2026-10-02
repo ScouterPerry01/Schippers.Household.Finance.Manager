@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.data.Backups
 import ca.schippers.hfm.data.WrongPasswordException
 import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.security.RecoveryKey
@@ -98,6 +99,7 @@ private fun WelcomeScreen(state: AppState) {
         onClick = { chooseFolder(state.t("welcome.open"))?.let { state.screen = Screen.Unlock(it) } },
         modifier = Modifier.fillMaxWidth(),
     ) { Text(state.t("welcome.open")) }
+    RestoreButton(state)
     val recent = state.recentHouseholds
     if (recent.isNotEmpty()) {
         Text(state.t("welcome.recent"), style = MaterialTheme.typography.titleSmall)
@@ -105,6 +107,39 @@ private fun WelcomeScreen(state: AppState) {
             TextButton(onClick = { state.screen = Screen.Unlock(dir) }) { Text(dir.toString()) }
         }
     }
+}
+
+/**
+ * BAK-03 / BAK-05: restores a backup into a new folder (never over an existing household), for
+ * recovery or for moving to a new computer, then asks for the password as usual.
+ */
+@Composable
+private fun RestoreButton(state: AppState) {
+    var error by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    OutlinedButton(enabled = !busy, modifier = Modifier.fillMaxWidth(), onClick = {
+        val chooser = JFileChooser().apply {
+            dialogTitle = state.t("welcome.restore")
+            fileFilter = javax.swing.filechooser.FileNameExtensionFilter(state.t("welcome.restore.fileType"), Backups.EXTENSION)
+        }
+        if (chooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) return@OutlinedButton
+        val backup = chooser.selectedFile.toPath()
+        val parent = chooseFolder(state.t("welcome.restore.where")) ?: return@OutlinedButton
+        val base = backup.fileName.toString().substringBefore("-20").ifBlank { "Household" }
+        var target = parent.resolve("$base.hfm")
+        var n = 2
+        while (Files.exists(target)) target = parent.resolve("$base ($n).hfm").also { n++ }
+        busy = true
+        error = null
+        scope.launch {
+            val result = withContext(Dispatchers.IO) { runCatching { Backups.restore(backup, target) } }
+            busy = false
+            result.onSuccess { dir -> state.remember(dir); state.screen = Screen.Unlock(dir) }
+                .onFailure { error = state.t("error.generic", it.message ?: it.javaClass.simpleName) }
+        }
+    }) { Text(state.t(if (busy) "welcome.restoring" else "welcome.restore")) }
+    error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 }
 
 @Composable

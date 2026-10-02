@@ -33,6 +33,10 @@ fun MainScreen(model: BooksModel) {
         val added = withContext(Dispatchers.IO) { runCatching { model.books.rates.updateFromBankOfCanada(today(), Http::get) }.getOrDefault(0) }
         if (added > 0) model.changed()
     }
+    LaunchedEffect(model) {
+        ensureBackupDefaults(model)
+        backupScheduler(model)
+    }
     Column(Modifier.fillMaxSize()) {
         // BILL-04: bills due soon, shown on every screen except Bills itself.
         if (reminders.isNotEmpty() && model.section != Section.BILLS) {
@@ -67,6 +71,7 @@ fun MainScreen(model: BooksModel) {
                     Section.BUDGETS -> BudgetsScreen(model)
                     Section.REPORTS -> ReportsScreen(model, model.reportState)
                     Section.RATES -> RatesScreen(model)
+                    Section.BACKUPS -> BackupsScreen(model)
                     Section.CATEGORIES -> CategoriesScreen(model)
                     Section.PAYEES -> PayeesScreen(model)
                     Section.RULES -> RulesScreen(model)
