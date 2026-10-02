@@ -1,0 +1,36 @@
+-- Version 4 to 5 (LN-01 to LN-06): loan and mortgage terms, and what changed since.
+
+CREATE TABLE loan (
+    account_id TEXT NOT NULL PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
+    principal_minor INTEGER NOT NULL,
+    annual_rate TEXT NOT NULL,
+    rate_type TEXT NOT NULL DEFAULT 'FIXED' CHECK (rate_type IN ('FIXED', 'VARIABLE')),
+    compounding TEXT NOT NULL CHECK (compounding IN ('ANNUAL', 'SEMI_ANNUAL', 'MONTHLY')),
+    amortization_months INTEGER NOT NULL,
+    frequency TEXT NOT NULL CHECK (frequency IN ('MONTHLY', 'SEMI_MONTHLY', 'BI_WEEKLY', 'ACCELERATED_BI_WEEKLY', 'WEEKLY', 'ACCELERATED_WEEKLY')),
+    first_payment_date TEXT NOT NULL,
+    payment_minor INTEGER,
+    extra_payment_minor INTEGER,
+    term_end TEXT,
+    renewal_remind_days INTEGER NOT NULL DEFAULT 120,
+    property_tax_minor INTEGER,
+    insurance_minor INTEGER,
+    payment_account_id TEXT,
+    last_paid_date TEXT,
+    notes TEXT
+);
+
+CREATE TABLE loan_change (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('PREPAYMENT', 'RATE_CHANGE', 'PAYMENT_CHANGE')),
+    amount_minor INTEGER,
+    annual_rate TEXT,
+    recalculate INTEGER NOT NULL DEFAULT 0,
+    txn_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX loan_change_account ON loan_change(account_id, date);

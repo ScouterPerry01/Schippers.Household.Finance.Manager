@@ -38,6 +38,12 @@ import ca.schippers.hfm.calc.schedule.Frequency
 import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.CreditCardTerms
+import ca.schippers.hfm.books.LoanDetails
+import ca.schippers.hfm.calc.loan.Compounding
+import ca.schippers.hfm.calc.loan.LoanPlan
+import ca.schippers.hfm.calc.loan.LoanProjection
+import ca.schippers.hfm.calc.loan.LoanTerms
+import ca.schippers.hfm.calc.loan.PaymentFrequency
 import ca.schippers.hfm.books.Institution
 import ca.schippers.hfm.books.SplitDraft
 import ca.schippers.hfm.books.TransactionDraft
@@ -94,6 +100,18 @@ object DemoHousehold {
         books.creditCards.saveTerms(visa.id, CreditCardTerms(cad("8000"), BigDecimal("0.1995"), statementDay = 20, dueDay = 10, minPaymentPercent = BigDecimal("0.05"), minPaymentFloor = cad("10")))
         val usd = books.accounts.create(AccountDraft(group, "Compte US", AccountType.CHEQUING, Currency.USD, Money.parse("500.00", Currency.USD), start, bank.id))
 
+        // A cottage mortgage renewed two years ago, with its term ending soon (LN-01 to LN-04).
+        val firstPayment = LocalDate(start.year, start.month, 1).minus(DatePeriod(months = 22))
+        val terms = LoanTerms(cad("148000"), BigDecimal("0.0489"), Compounding.SEMI_ANNUAL, 21 * 12, PaymentFrequency.MONTHLY)
+        val owedAtStart = LoanProjection.project(LoanPlan(terms, firstPayment)).balanceOn(start.minus(DatePeriod(days = 1)))
+        val mortgage = books.accounts.create(AccountDraft(group, "Hypothèque du chalet", AccountType.MORTGAGE, Currency.CAD, -owedAtStart, start, desjardins.id, "MTG-7745120"))
+        books.loans.save(
+            LoanDetails(
+                mortgage.id, terms.principal, terms.annualRate, amortizationMonths = terms.amortizationMonths, firstPaymentDate = firstPayment,
+                termEnd = today.plus(DatePeriod(days = 100)), paymentAccountId = chequing.id, lastPaidDate = start.minus(DatePeriod(days = 1)),
+            ),
+        )
+
         // A dog and a car (PET-01, VEH-01), created first so the monthly activity can refer to them.
         val rex = books.pets.save(
             Pet(
@@ -146,6 +164,11 @@ object DemoHousehold {
             add(TransferDraft(chequing.id, visa.id, on(10), cad("566.57")))
             add(TransferDraft(chequing.id, savings.id, on(16), cad("500.00"), memo = "Épargne mensuelle"))
             month = month.plus(DatePeriod(months = 1))
+        }
+        // LN-02: the mortgage payments since the demo starts, each split from the balance owed.
+        while (true) {
+            val payment = books.loans.nextPayment(mortgage.id, today)?.takeIf { it.date <= today } ?: break
+            books.loans.recordPayment(mortgage.id, chequing.id, payment)
         }
         books.transactions.create(
             TransactionDraft(visa.id, today, cad("-137.25"), "Amazon.com", originalAmount = Money.parse("-100.00", Currency.USD)),

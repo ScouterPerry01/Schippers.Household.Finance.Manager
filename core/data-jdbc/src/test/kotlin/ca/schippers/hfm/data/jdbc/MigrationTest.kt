@@ -110,6 +110,25 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 4 ledgers keep their accounts and gain loans`() {
+        val file = temp.resolve("ledger4.db")
+        older("../data/src/main/sqldelight/ledger/schemas/4.db", file, 4).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_balance_minor, opening_date, created_at, updated_at) VALUES ('m', 'Mortgage', 'MORTGAGE', 'CAD', -50000000, '2026-01-01', 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).loansQueries
+            q.upsertLoan("m", 50000000, "0.05", "FIXED", "SEMI_ANNUAL", 300, "MONTHLY", "2026-02-01", null, null, "2031-01-01", 120, 25000, null, null, null, null)
+            q.insertLoanChange("c", "m", "2027-01-01", "PREPAYMENT", 1000000, null, 0, null, null, 0)
+            assertEquals("2031-01-01", q.loan("m").executeAsOne().term_end)
+            driver.execute(null, "PRAGMA foreign_keys = ON", 0)
+            driver.execute(null, "DELETE FROM account WHERE id = 'm'", 0)
+            assertEquals(0L, count(driver, "SELECT count(*) FROM loan") + count(driver, "SELECT count(*) FROM loan_change"), "loans go with their account")
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()

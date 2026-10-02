@@ -41,6 +41,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val goals = GoalService(this)
     val pets = PetService(this)
     val vehicles = VehicleService(this)
+    val loans = LoanService(this)
     val documents = DocumentService(this)
     val sync = SyncService(this)
     val quicken = QifImportService(this)
@@ -77,8 +78,12 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     internal fun today(): LocalDate = java.time.Instant.ofEpochMilli(clock()).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
         .let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
 
-    /** Everything that must be renewed within [withinDays] of [today], or is overdue: pet licences and insurance, vehicle papers and warranties. */
-    fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> = (pets.renewals(today, withinDays) + vehicles.renewals(today, withinDays)).sortedBy { it.date }
+    /**
+     * Everything that must be renewed within [withinDays] of [today], or is overdue: pet licences and
+     * insurance, vehicle papers and warranties, and loan terms (each with its own lead time, LN-04).
+     */
+    fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> =
+        (pets.renewals(today, withinDays) + vehicles.renewals(today, withinDays) + loans.renewals(today, withinDays)).sortedBy { it.date }
 
     /** Tags for projects and events (CAT-04). */
     fun tags(): List<Tag> = core.tags().executeAsList().map { Tag(it.id, it.name) }

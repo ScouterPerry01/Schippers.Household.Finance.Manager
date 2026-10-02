@@ -96,7 +96,7 @@ The user still handles a household as one item:
 - The household always keeps at least one active administrator.
 - Changing a password re-wraps the private key; the recovery key stays valid.
 
-**Schema versions:** core 4 (pets, paired devices), ledger 4 (goals, vehicles, document review fields). Each step is a verified migration with an upgrade test from every earlier version.
+**Schema versions:** core 4 (pets, paired devices), ledger 5 (goals, vehicles, document review fields; loans in Phase 3a). Each step is a verified migration with an upgrade test from every earlier version.
 
 `core/data-jdbc` tests (`DocumentVaultTest`, `UserManagementTest`, `MigrationTest`) cover these.
 

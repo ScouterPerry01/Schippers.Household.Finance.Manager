@@ -42,13 +42,14 @@ import ca.schippers.hfm.books.StatementStatus
 import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
+import ca.schippers.hfm.money.sum
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import java.time.format.DateTimeFormatter
 
-enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, BUDGET, RECONCILIATION }
+enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, DEBT, BUDGET, RECONCILIATION }
 enum class RangePreset { THIS_MONTH, LAST_MONTH, THIS_YEAR, LAST_YEAR, LAST_12_MONTHS, CUSTOM }
 enum class Compare { NONE, PREVIOUS, LAST_YEAR }
 
@@ -109,7 +110,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
         Column(Modifier.fillMaxSize().padding(12.dp)) {
             // Filters in one row above the chart.
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (state.kind != ReportKind.RECONCILIATION) {
+                if (state.kind != ReportKind.RECONCILIATION && state.kind != ReportKind.DEBT) {
                     Picker(model.t("report.period"), RangePreset.entries, state.preset, { model.t("range.$it") }, Modifier.width(200.dp)) { state.preset = it }
                     if (state.preset == RangePreset.CUSTOM) {
                         DateInput(model.t("report.from"), state.customFrom, Modifier.width(150.dp)) { state.customFrom = it }
@@ -143,6 +144,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                     ReportKind.INCOME_BY_CATEGORY -> CategoryReport(model, state, filter, CategoryKind.INCOME)
                     ReportKind.SPENDING_BY_PAYEE -> PayeeReport(model, state, filter)
                     ReportKind.NET_WORTH -> NetWorthReport(model, filter)
+                    ReportKind.DEBT -> DebtReport(model, filter.accountIds)
                     ReportKind.BUDGET -> BudgetReportView(model, LocalDate(to.year, to.month, 1), yearView = state.preset in setOf(RangePreset.THIS_YEAR, RangePreset.LAST_YEAR))
                     ReportKind.RECONCILIATION -> ReconciliationReport(model)
                 }
@@ -362,6 +364,34 @@ private fun NetWorthReport(model: BooksModel, filter: ReportFilter) {
     )
 }
 
+// --- Debt summary ---------------------------------------------------------------------------------
+
+/** Every liability: what is owed, at what rate, the payment, and when it will be paid off. */
+@Composable
+private fun DebtReport(model: BooksModel, accountIds: Set<String>?) {
+    val lines = remember(model.revision, accountIds) { model.books.loans.debtSummary(today()).filter { accountIds == null || it.account.id in accountIds } }
+    val locale = model.language.locale
+    fun pct(r: java.math.BigDecimal?) = r?.let { java.text.NumberFormat.getNumberInstance(locale).apply { minimumFractionDigits = 2; maximumFractionDigits = 3 }.format(it.movePointRight(2)) + " %" }.orEmpty()
+    Text(model.t("report.DEBT"), style = MaterialTheme.typography.titleLarge)
+    Text(model.t("report.debtHint", model.date(today())), style = MaterialTheme.typography.bodySmall)
+    Row(horizontalArrangement = Arrangement.spacedBy(32.dp), modifier = Modifier.padding(vertical = 8.dp)) {
+        for ((currency, list) in lines.groupBy { it.account.currency }.toSortedMap(compareBy { it.code })) {
+            Stat(model.t("report.totalOwed", currency.code), model.money(list.map { it.owed }.sum(currency)))
+            list.mapNotNull { it.interestRemaining }.takeIf { it.isNotEmpty() }?.let { Stat(model.t("report.interestLeft", currency.code), model.money(it.sum(currency))) }
+        }
+    }
+    if (lines.isEmpty()) Text(model.t("report.noDebt"))
+    TableView(
+        model,
+        ReportTable(
+            model.t("report.DEBT"), model.date(today()),
+            listOf(model.t("nav.accounts"), model.t("account.type"), model.t("loans.owed"), model.t("loans.rate"), model.t("loans.payment"), model.t("loans.payoff"), model.t("loans.interestLeft"), model.t("loans.renewal")),
+            lines.map { listOf(it.account.name, model.t("accountType.${it.account.type}"), it.owed, pct(it.annualRate), it.payment, it.payoffDate, it.interestRemaining, it.termEnd) },
+        ),
+        startOpen = true,
+    )
+}
+
 // --- Reconciliation history -----------------------------------------------------------------------
 
 @Composable
@@ -419,7 +449,7 @@ fun TableView(model: BooksModel, table: ReportTable, startOpen: Boolean = false)
         Column(Modifier.padding(top = 8.dp)) {
             Row(Modifier.fillMaxWidth()) {
                 table.columns.forEachIndexed { c, name ->
-                    Text(name, Modifier.weight(1f), fontWeight = FontWeight.Bold, textAlign = if (table.isNumeric(c)) TextAlign.End else TextAlign.Start, style = MaterialTheme.typography.bodySmall)
+                    Text(name, Modifier.weight(1f).padding(horizontal = 6.dp), fontWeight = FontWeight.Bold, textAlign = if (table.isNumeric(c)) TextAlign.End else TextAlign.Start, style = MaterialTheme.typography.bodySmall)
                 }
             }
             HorizontalDivider()
@@ -427,7 +457,7 @@ fun TableView(model: BooksModel, table: ReportTable, startOpen: Boolean = false)
                 Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                     table.columns.indices.forEach { c ->
                         Text(
-                            ReportExport.text(row.getOrNull(c), locale), Modifier.weight(1f),
+                            ReportExport.text(row.getOrNull(c), locale), Modifier.weight(1f).padding(horizontal = 6.dp),
                             textAlign = if (table.isNumeric(c)) TextAlign.End else TextAlign.Start, style = MaterialTheme.typography.bodySmall,
                             maxLines = 1, overflow = TextOverflow.Ellipsis,
                         )

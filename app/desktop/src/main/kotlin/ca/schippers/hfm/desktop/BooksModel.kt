@@ -28,7 +28,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
 
-enum class Section { DASHBOARD, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, REPORTS, CALENDAR, HEALTH, PETS, VEHICLES, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, PHONES, USERS, BACKUPS, SECURITY }
+enum class Section { DASHBOARD, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, LOANS, REPORTS, CALENDAR, HEALTH, PETS, VEHICLES, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, PHONES, USERS, BACKUPS, SECURITY }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -142,8 +142,11 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         return "${r.subjectName}: ${t("renewalKind.${r.kind}")}${r.detail?.let { " ($it)" }.orEmpty()} $whenText"
     }
 
-    fun renewalSection(kind: RenewalKind): Section =
-        if (kind == RenewalKind.PET_LICENCE || kind == RenewalKind.PET_INSURANCE) Section.PETS else Section.VEHICLES
+    fun renewalSection(kind: RenewalKind): Section = when (kind) {
+        RenewalKind.PET_LICENCE, RenewalKind.PET_INSURANCE -> Section.PETS
+        RenewalKind.LOAN_RENEWAL -> Section.LOANS
+        else -> Section.VEHICLES
+    }
 
     /** "Garage: winter tires: tomorrow at 09:30". */
     fun describe(r: EventReminder): String {

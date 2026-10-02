@@ -32,7 +32,7 @@ data class Pet(
     val archived: Boolean = false,
 )
 
-enum class RenewalKind { PET_LICENCE, PET_INSURANCE, REGISTRATION, VEHICLE_INSURANCE, WARRANTY }
+enum class RenewalKind { PET_LICENCE, PET_INSURANCE, REGISTRATION, VEHICLE_INSURANCE, WARRANTY, LOAN_RENEWAL }
 
 /** A licence, policy, registration or warranty that expires soon or has expired. */
 data class Renewal(val kind: RenewalKind, val subjectId: String, val subjectName: String, val date: LocalDate, val daysLeft: Int, val detail: String? = null)
