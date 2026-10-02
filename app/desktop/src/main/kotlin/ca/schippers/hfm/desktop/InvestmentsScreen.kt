@@ -537,6 +537,9 @@ private fun SecurityDialog(model: BooksModel, existing: Security?, defaultCurren
     var currency by remember { mutableStateOf(existing?.currency?.code ?: defaultCurrency?.code ?: model.books.rates.baseCurrency.code) }
     var assetClass by remember { mutableStateOf(existing?.assetClass ?: AssetClass.EQUITY) }
     var region by remember { mutableStateOf(existing?.region ?: Region.CANADA) }
+    // INV-07: how a balanced or global fund divides, in percent.
+    val classMix = remember { mutableStateMapOf<AssetClass, String>().apply { MIX_CLASSES.forEach { c -> put(c, existing?.classMix?.get(c)?.let { decimal(it, locale) }.orEmpty()) } } }
+    val regionMix = remember { mutableStateMapOf<Region, String>().apply { MIX_REGIONS.forEach { r -> put(r, existing?.regionMix?.get(r)?.let { decimal(it, locale) }.orEmpty()) } } }
     var multiplier by remember { mutableStateOf(existing?.multiplier?.let { editable(it, locale) } ?: "1") }
     var maturity by remember { mutableStateOf(existing?.maturity?.toString().orEmpty()) }
     var coupon by remember { mutableStateOf(existing?.couponRate?.movePointRight(2)?.stripTrailingZeros()?.toPlainString().orEmpty()) }
@@ -557,6 +560,8 @@ private fun SecurityDialog(model: BooksModel, existing: Security?, defaultCurren
                         existing?.id.orEmpty(), symbol, exchange, name, kind, cur!!, assetClass, region,
                         parseDecimal(multiplier, locale) ?: BigDecimal.ONE, maturity.trim().ifEmpty { null }?.let(::dateOf),
                         parseDecimal(coupon, locale)?.movePointLeft(2), notes, archived,
+                        mixOf(classMix, locale).takeIf { assetClass == AssetClass.BALANCED },
+                        mixOf(regionMix, locale).takeIf { region == Region.GLOBAL },
                     ),
                 )
                 parseDecimal(price, locale)?.let { model.books.investments.setPrice(s.id, dateOf(priceDate), it) }
@@ -583,6 +588,8 @@ private fun SecurityDialog(model: BooksModel, existing: Security?, defaultCurren
                 Picker(model.t("investments.assetClass"), AssetClass.entries, assetClass, { model.t("assetClass.$it") }, Modifier.weight(1f)) { assetClass = it }
                 Picker(model.t("investments.region"), Region.entries, region, { model.t("region.$it") }, Modifier.weight(1f)) { region = it }
             }
+            if (assetClass == AssetClass.BALANCED) MixInputs(model, model.t("investments.classMix"), MIX_CLASSES, classMix) { model.t("assetClass.$it") }
+            if (region == Region.GLOBAL) MixInputs(model, model.t("investments.regionMix"), MIX_REGIONS, regionMix) { model.t("region.$it") }
             TextInput(model.t("investments.multiplier"), multiplier, supporting = model.t("investments.multiplierHint")) { multiplier = it }
             if (kind in setOf(SecurityKind.BOND, SecurityKind.GIC)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -605,6 +612,30 @@ private fun SecurityDialog(model: BooksModel, existing: Security?, defaultCurren
             if (existing != null) LabeledCheckbox(model.t("investments.archive"), archived) { archived = it }
         }
     }
+}
+
+private val MIX_CLASSES = listOf(AssetClass.EQUITY, AssetClass.FIXED_INCOME, AssetClass.CASH)
+private val MIX_REGIONS = listOf(Region.CANADA, Region.US, Region.INTERNATIONAL, Region.EMERGING)
+
+/** The percentages entered, or null when none were (the fund then counts whole in its class or region). */
+private fun <K> mixOf(fields: Map<K, String>, locale: Locale): Map<K, BigDecimal>? =
+    fields.mapNotNull { (k, v) -> parseDecimal(v, locale)?.let { k to it } }.toMap().takeIf { it.isNotEmpty() }
+
+/** A row of percentage fields for a fund's mix, with their total. */
+@Composable
+private fun <K> MixInputs(model: BooksModel, title: String, keys: List<K>, fields: MutableMap<K, String>, label: (K) -> String) {
+    val locale = model.language.locale
+    val total = fields.values.mapNotNull { parseDecimal(it, locale) }.fold(BigDecimal.ZERO, BigDecimal::add)
+    val entered = fields.values.any { it.isNotBlank() }
+    Text(title, style = MaterialTheme.typography.labelLarge)
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (k in keys) TextInput("${label(k)} %", fields[k].orEmpty(), Modifier.weight(1f)) { fields[k] = it }
+    }
+    Text(
+        if (entered) model.t("investments.mixTotal", decimal(total, locale)) else model.t("investments.mixHint"),
+        style = MaterialTheme.typography.bodySmall,
+        color = if (entered && total.compareTo(BigDecimal(100)) != 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
+    )
 }
 
 /** INV-04: today's price for every holding of the account, in one go. */

@@ -141,7 +141,7 @@ class MigrationTest {
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val db = LedgerDatabase(driver)
             assertEquals(1, db.ledgerQueries.categoryMonthly("2026-01-01", "2026-01-31", null, null).executeAsList().size, "existing lines are not trades")
-            db.investmentsQueries.upsertSecurity("x", "XIC", "TSX", "iShares XIC", "ETF", "CAD", "EQUITY", "CANADA", "1", null, null, null, 0, 0, 0)
+            db.investmentsQueries.upsertSecurity("x", "XIC", "TSX", "iShares XIC", "ETF", "CAD", "EQUITY", "CANADA", "1", null, null, null, 0, 0, 0, null, null)
             db.investmentsQueries.insertInvTxn("i", "b", "2026-01-15", "BUY", null, "x", "10", "38.5", 38500, 995, 0, null, null, "T1", null, 0, 0)
             db.investmentsQueries.putPrice("x", "2026-01-31", "39", "MANUAL")
             db.ledgerQueries.setTxnInvestment("i", 1, "t")
@@ -253,6 +253,23 @@ class MigrationTest {
             val q = LedgerDatabase(driver).metalsQueries
             q.upsertMetalItem("i", "m", "GOLD", "COIN", "Maple Leaf", "1", "OZT", "0.9999", 2, null, null, null, 620000, null, "BANK_BOX", null, 1, null, null, null, null, 0, 0)
             assertEquals("Maple Leaf", q.metalItems("m").executeAsOne().description)
+        }
+    }
+
+    @Test
+    fun `version 10 ledgers gain fund mixes`() {
+        val file = temp.resolve("ledger10.db")
+        older("../data/src/main/sqldelight/ledger/schemas/10.db", file, 10).use { driver ->
+            driver.execute(null, "INSERT INTO security(id, name, kind, currency, asset_class, region, created_at, updated_at) VALUES ('s', 'XBAL', 'ETF', 'CAD', 'BALANCED', 'GLOBAL', 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            val q = LedgerDatabase(driver).investmentsQueries
+            val kept = q.securityById("s").executeAsOne()
+            assertEquals("XBAL", kept.name)
+            assertEquals(null, kept.class_mix)
+            q.upsertSecurity("s", null, null, "XBAL", "ETF", "CAD", "BALANCED", "GLOBAL", "1", null, null, null, 0, 0, 0, "{\"EQUITY\":\"60\",\"FIXED_INCOME\":\"40\"}", null)
+            assertEquals("{\"EQUITY\":\"60\",\"FIXED_INCOME\":\"40\"}", q.securityById("s").executeAsOne().class_mix)
         }
     }
 

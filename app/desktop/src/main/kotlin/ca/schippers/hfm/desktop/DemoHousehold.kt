@@ -2,6 +2,8 @@ package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Account
 import ca.schippers.hfm.books.AccountDraft
+import ca.schippers.hfm.books.AllocationBy
+import ca.schippers.hfm.books.AllocationTarget
 import ca.schippers.hfm.books.AmountKind
 import ca.schippers.hfm.books.BillDraft
 import ca.schippers.hfm.books.BillKind
@@ -60,6 +62,7 @@ import ca.schippers.hfm.books.InvestmentTxn
 import ca.schippers.hfm.books.Region
 import ca.schippers.hfm.books.Security
 import ca.schippers.hfm.books.SecurityKind
+import ca.schippers.hfm.books.TargetScope
 import ca.schippers.hfm.calc.loan.Compounding
 import ca.schippers.hfm.calc.loan.LoanPlan
 import ca.schippers.hfm.calc.loan.LoanProjection
@@ -289,7 +292,14 @@ object DemoHousehold {
         val xic = security("XIC", "iShares Core S&P/TSX Capped Composite", SecurityKind.ETF)
         val vfv = security("VFV", "Vanguard S&P 500 Index ETF", SecurityKind.ETF, region = Region.US)
         val zag = security("ZAG", "BMO Aggregate Bond Index ETF", SecurityKind.ETF, AssetClass.FIXED_INCOME)
-        val xeqt = security("XEQT", "iShares Core Equity ETF Portfolio", SecurityKind.ETF, region = Region.GLOBAL)
+        val xeqt = security("XEQT", "iShares Core Equity ETF Portfolio", SecurityKind.ETF, region = Region.GLOBAL).let {
+            // INV-07: an all-in-one fund divided by region, as on its fact sheet (approximate).
+            inv.saveSecurity(it.copy(regionMix = mapOf(Region.CANADA to n("25"), Region.US to n("45"), Region.INTERNATIONAL to n("25"), Region.EMERGING to n("5"))))
+        }
+        books.allocation.setTarget(
+            TargetScope.Household, AllocationBy.CLASS,
+            AllocationTarget(mapOf("EQUITY" to n("70"), "FIXED_INCOME" to n("20"), "CASH" to n("5"), "COMMODITY" to n("5"))),
+        )
         val ry = security("RY", "Royal Bank of Canada", SecurityKind.STOCK)
 
         fun day(monthsAgo: Int) = today.minus(DatePeriod(months = monthsAgo))

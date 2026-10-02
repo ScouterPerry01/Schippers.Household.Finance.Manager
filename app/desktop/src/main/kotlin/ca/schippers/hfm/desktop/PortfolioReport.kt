@@ -1,6 +1,24 @@
 package ca.schippers.hfm.desktop
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import ca.schippers.hfm.books.AllocationBy
+import ca.schippers.hfm.books.AllocationReport
+import ca.schippers.hfm.books.AllocationService
+import ca.schippers.hfm.books.AllocationTarget
+import ca.schippers.hfm.books.AssetClass
+import ca.schippers.hfm.books.Region
+import ca.schippers.hfm.books.TargetScope
+import ca.schippers.hfm.money.MoneyFormat
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
@@ -23,7 +41,7 @@ import java.time.format.DateTimeFormatter
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun PortfolioReport(model: BooksModel, filter: ReportFilter) {
+internal fun PortfolioReport(model: BooksModel, filter: ReportFilter, groupId: String?) {
     val books = model.books
     val base = books.reports.base
     val accounts = remember(model.revision, filter.accountIds, filter.memberId) {
@@ -98,6 +116,8 @@ internal fun PortfolioReport(model: BooksModel, filter: ReportFilter) {
         startOpen = true,
     )
 
+    AllocationSection(model, filter, ids, filter.memberId?.let { TargetScope.Person(it) } ?: groupId?.let { TargetScope.Group(it) } ?: TargetScope.Household)
+
     Text(model.t("portfolio.holdings", model.date(filter.to)), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
     val rows = holdings.flatMap { h ->
         val a = h.account
@@ -138,4 +158,136 @@ private fun percentOf(gain: Money?, cost: Money, locale: java.util.Locale): Stri
     if (gain == null || cost.isZero) return ""
     val pct = gain.toBigDecimal().movePointRight(2).divide(cost.toBigDecimal(), 1, java.math.RoundingMode.HALF_UP)
     return java.text.NumberFormat.getNumberInstance(locale).apply { minimumFractionDigits = 1; maximumFractionDigits = 1 }.format(pct) + " %"
+}
+
+/**
+ * INV-07: the portfolio divided by class, region, currency or account against the target of the
+ * household, the person or the group chosen in the filters, with the trades that bring it back.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AllocationSection(model: BooksModel, filter: ReportFilter, ids: Set<String>, scope: TargetScope) {
+    val books = model.books
+    val locale = model.language.locale
+    var by by remember { mutableStateOf(AllocationBy.CLASS) }
+    var editing by remember { mutableStateOf(false) }
+    var newMoney by remember { mutableStateOf("") }
+    var sell by remember { mutableStateOf(false) }
+    val report = remember(model.revision, by, filter.to, ids, scope) { books.allocation.allocation(by, filter.to, ids, scope) }
+    val names = remember(model.revision) { books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name } }
+    fun label(key: String) = when (by) {
+        AllocationBy.CLASS -> if (key == AllocationService.CRYPTO) model.t("allocation.crypto") else model.t("assetClass.$key")
+        AllocationBy.REGION -> model.t("region.$key")
+        AllocationBy.CURRENCY -> key
+        AllocationBy.ACCOUNT -> names[key] ?: key
+    }
+    val target = report.target
+    val scopeName = when (scope) {
+        TargetScope.Household -> model.t("allocation.scopeHousehold")
+        is TargetScope.Person -> books.members.list(includeArchived = true).firstOrNull { it.id == scope.memberId }?.displayName.orEmpty()
+        is TargetScope.Group -> books.groups().firstOrNull { it.id == scope.groupId }?.name.orEmpty()
+    }
+
+    Text(model.t("allocation.title", model.date(filter.to)), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(vertical = 6.dp)) {
+        Picker(model.t("allocation.by"), AllocationBy.entries, by, { model.t("allocation.by.$it") }, Modifier.width(220.dp)) { by = it }
+        if (by != AllocationBy.ACCOUNT) {
+            OutlinedButton(onClick = { editing = true }) { Text(model.t(if (target == null) "allocation.setTarget" else "allocation.editTarget", scopeName)) }
+        }
+    }
+    if (report.unsplit.isNotEmpty()) {
+        Text(model.t("allocation.unsplit", report.unsplit.joinToString { it.label }), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+    }
+    val pct = java.text.NumberFormat.getNumberInstance(locale).apply { minimumFractionDigits = 1; maximumFractionDigits = 1 }
+    fun p(v: BigDecimal) = pct.format(v) + " %"
+    RankedBars(
+        report.slices.map { s ->
+            RankedBar(
+                label(s.key), s.value.d(), model.money(s.value),
+                note = listOfNotNull(p(s.percent), s.target?.let { model.t("allocation.targetOf", p(it)) }).joinToString(" · "),
+            )
+        },
+    )
+    if (target != null) {
+        val off = report.offTarget
+        Text(
+            if (off.isEmpty()) model.t("allocation.onTarget", pct.format(target.tolerance)) else model.t("allocation.offTarget", off.joinToString { label(it.key) }, pct.format(target.tolerance)),
+            style = MaterialTheme.typography.bodySmall,
+            color = if (off.isEmpty()) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.error,
+        )
+    }
+    TableView(
+        model,
+        ReportTable(
+            model.t("allocation.title", model.date(filter.to)), subtitle(model, filter, model.t("allocation.by.$by")),
+            listOfNotNull(model.t("allocation.part"), model.t("investments.marketValue"), "%", target?.let { model.t("allocation.target") }, target?.let { model.t("allocation.drift") }),
+            report.slices.map { s -> listOfNotNull(label(s.key), s.value, p(s.percent), target?.let { s.target?.let(::p) }, target?.let { s.drift?.let(::p) }) } +
+                listOf(listOfNotNull(model.t("report.total"), report.total, p(BigDecimal(100)), target?.let { "" }, target?.let { "" })),
+        ),
+    )
+
+    // Rebalancing: new money first, or a full rebalance that also sells.
+    if (target != null) {
+        Text(model.t("allocation.rebalance"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            TextInput(model.t("allocation.newMoney", books.reports.base.code), newMoney, Modifier.width(220.dp)) { newMoney = it }
+            LabeledCheckbox(model.t("allocation.allowSales"), sell) { sell = it }
+        }
+        val amount = runCatching { MoneyFormat.parseDecimal(newMoney.trim().ifEmpty { "0" }, locale) }.getOrNull()
+        val trades = amount?.let { a -> runCatching { books.allocation.rebalance(report, Money.of(a, books.reports.base), sell) }.getOrNull() }
+        when {
+            trades == null -> Text(model.t("error.invalidNumber"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            trades.isEmpty() -> Text(model.t("allocation.nothingToDo"), style = MaterialTheme.typography.bodySmall)
+            else -> TableView(
+                model,
+                ReportTable(
+                    model.t("allocation.rebalance"), subtitle(model, filter, model.t("allocation.by.$by")),
+                    listOf(model.t("allocation.part"), model.t("allocation.buy"), model.t("allocation.sell")),
+                    trades.entries.sortedByDescending { it.value }.map { (k, m) -> listOf(label(k), m.takeIf { it.isPositive }, (-m).takeIf { m.isNegative }) },
+                ),
+                startOpen = true,
+            )
+        }
+        Text(model.t("allocation.rebalanceHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+    }
+    if (editing) {
+        TargetDialog(model, by, scope, scopeName, report, ::label) { editing = false }
+    }
+}
+
+/** The target percentages for one way of dividing the portfolio; all fields empty removes the target. */
+@Composable
+private fun TargetDialog(model: BooksModel, by: AllocationBy, scope: TargetScope, scopeName: String, report: AllocationReport, label: (String) -> String, onClose: () -> Unit) {
+    val locale = model.language.locale
+    val existing = report.target
+    val keys = when (by) {
+        AllocationBy.CLASS -> AssetClass.entries.filter { it != AssetClass.BALANCED }.map { it.name } + AllocationService.CRYPTO
+        AllocationBy.REGION -> Region.entries.map { it.name }
+        else -> (report.slices.map { it.key } + existing?.weights?.keys.orEmpty()).distinct()
+    }
+    fun text(v: BigDecimal?) = v?.let { java.text.NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 2 }.format(it) }.orEmpty()
+    val fields = remember { mutableStateMapOf<String, String>().apply { keys.forEach { put(it, text(existing?.weights?.get(it))) } } }
+    var tolerance by remember { mutableStateOf(text(existing?.tolerance ?: BigDecimal(5))) }
+    fun parse(t: String) = t.trim().removeSuffix("%").trim().ifEmpty { null }?.let { runCatching { MoneyFormat.parseDecimal(it, locale) }.getOrNull() }
+    val total = fields.values.mapNotNull(::parse).fold(BigDecimal.ZERO, BigDecimal::add)
+    val empty = fields.values.all { it.isBlank() }
+    FormDialog(
+        model.t("allocation.targetFor", scopeName, model.t("allocation.by.$by").replaceFirstChar { it.lowercase(locale) }), model.t("common.save"), model.t("common.cancel"),
+        canSave = empty || total.compareTo(BigDecimal(100)) == 0,
+        onDismiss = onClose,
+        onSave = {
+            model.act {
+                val target = if (empty) null else AllocationTarget(fields.mapNotNull { (k, v) -> parse(v)?.let { k to it } }.toMap(), parse(tolerance) ?: BigDecimal(5))
+                model.books.allocation.setTarget(scope, by, target)
+            }
+            onClose()
+        },
+    ) {
+        Column(Modifier.width(420.dp).heightIn(max = 560.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            for (k in keys) TextInput("${label(k)} %", fields[k].orEmpty()) { fields[k] = it }
+            Text(model.t("investments.mixTotal", text(total)), style = MaterialTheme.typography.bodySmall, color = if (empty || total.compareTo(BigDecimal(100)) == 0) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.error)
+            TextInput(model.t("allocation.tolerance"), tolerance, supporting = model.t("allocation.toleranceHint")) { tolerance = it }
+            Text(model.t("allocation.targetHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+        }
+    }
 }

@@ -168,6 +168,7 @@ class PerformanceTest {
         val returns = timed("portfolio returns, 30 years", 3000) { books.portfolio.performance(start, today) }
         assertEquals(Money.parse("360000", Currency.CAD), returns.total.contributions)
         timed("portfolio returns, one year", 1000) { books.portfolio.performance(today.minus(DatePeriod(years = 1)), today) }
+        timed("asset allocation", 1000) { books.allocation.allocation(AllocationBy.CLASS, today) }
     }
 
     private companion object {

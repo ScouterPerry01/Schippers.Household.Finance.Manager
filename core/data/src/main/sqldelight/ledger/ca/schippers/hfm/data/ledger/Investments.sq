@@ -19,7 +19,11 @@ CREATE TABLE security (
     notes TEXT,
     archived INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+    updated_at INTEGER NOT NULL,
+    -- INV-07: a fund's split between asset classes and regions, as JSON maps of percentages
+    -- ({"EQUITY": "60", "FIXED_INCOME": "40"}); null means all in [asset_class] and [region].
+    class_mix TEXT,
+    region_mix TEXT
 );
 
 -- INV-04: prices per day, manual or downloaded (3d).
@@ -79,8 +83,8 @@ CREATE INDEX inv_statement_account ON inv_statement(account_id, date);
 -- Securities and prices ----------------------------------------------------------------------------
 
 upsertSecurity:
-INSERT OR REPLACE INTO security(id, symbol, exchange, name, kind, currency, asset_class, region, multiplier, maturity, coupon_rate, notes, archived, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO security(id, symbol, exchange, name, kind, currency, asset_class, region, multiplier, maturity, coupon_rate, notes, archived, created_at, updated_at, class_mix, region_mix)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 securities:
 SELECT * FROM security ORDER BY name;

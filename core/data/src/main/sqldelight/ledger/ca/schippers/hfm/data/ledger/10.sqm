@@ -1,0 +1,5 @@
+-- Version 10 to 11 (INV-07): how a balanced or global fund divides between asset classes and
+-- regions, as JSON maps of percentages, for the asset allocation.
+
+ALTER TABLE security ADD COLUMN class_mix TEXT;
+ALTER TABLE security ADD COLUMN region_mix TEXT;

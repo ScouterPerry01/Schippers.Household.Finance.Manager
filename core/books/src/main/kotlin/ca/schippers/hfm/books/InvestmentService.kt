@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.invest.Allocation
 import ca.schippers.hfm.calc.invest.CostBase
 import ca.schippers.hfm.calc.invest.CostBaseException
 import ca.schippers.hfm.calc.invest.CostEvent
@@ -18,6 +19,8 @@ import ca.schippers.hfm.money.sum
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import java.math.BigDecimal
 import java.math.MathContext
@@ -47,6 +50,10 @@ data class Security(
     val couponRate: BigDecimal? = null,
     val notes: String? = null,
     val archived: Boolean = false,
+    /** INV-07: how a balanced fund divides between asset classes, in percent; null for all in [assetClass]. */
+    val classMix: Map<AssetClass, BigDecimal>? = null,
+    /** INV-07: how a global fund divides between regions, in percent; null for all in [region]. */
+    val regionMix: Map<Region, BigDecimal>? = null,
 ) {
     /** "XIC" or the name when there is no symbol. */
     val label: String get() = symbol ?: name
@@ -169,6 +176,7 @@ class InvestmentService internal constructor(private val books: Books) {
     fun saveSecurity(security: Security, groupId: String? = null): Security {
         validate(security.name.isNotBlank(), "error.nameRequired")
         validate(security.multiplier.signum() > 0, "error.invalidNumber")
+        listOfNotNull(security.classMix, security.regionMix).forEach { validate(Allocation.isComplete(it), "error.mixNot100") }
         val s = security.copy(
             id = security.id.ifBlank { Ids.newId() }, symbol = security.symbol.blankToNull()?.uppercase(), exchange = security.exchange.blankToNull()?.uppercase(),
             name = security.name.trim(), notes = security.notes.blankToNull(),
@@ -577,13 +585,21 @@ class InvestmentService internal constructor(private val books: Books) {
         ledger.investmentsQueries.upsertSecurity(
             s.id, s.symbol, s.exchange, s.name, s.kind.name, s.currency.code, s.assetClass.name, s.region.name, s.multiplier.normalized().toPlainString(),
             s.maturity?.toString(), s.couponRate?.toPlainString(), s.notes, if (s.archived) 1 else 0, created, now,
+            s.classMix?.let(::encodeMix), s.regionMix?.let(::encodeMix),
         )
     }
 
     private fun SecurityRow.toSecurity() = Security(
         id, symbol, exchange, name, SecurityKind.valueOf(kind), Currency.of(currency), AssetClass.valueOf(asset_class), Region.valueOf(region),
         BigDecimal(multiplier), maturity?.let(LocalDate::parse), coupon_rate?.let(::BigDecimal), notes, archived == 1L,
+        class_mix?.let { decodeMix(it).mapKeys { (k, _) -> AssetClass.valueOf(k) } }, region_mix?.let { decodeMix(it).mapKeys { (k, _) -> Region.valueOf(k) } },
     )
+
+    private fun encodeMix(mix: Map<out Enum<*>, BigDecimal>): String =
+        json.encodeToString(MapSerializer(String.serializer(), String.serializer()), mix.filterValues { it.signum() > 0 }.entries.associate { it.key.name to it.value.normalized().toPlainString() })
+
+    private fun decodeMix(text: String): Map<String, BigDecimal> =
+        json.decodeFromString(MapSerializer(String.serializer(), String.serializer()), text).mapValues { BigDecimal(it.value) }
 
     private fun InvRow.toTxn(c: Currency) = InvestmentTxn(
         id, account_id, LocalDate.parse(date), InvestmentKind.valueOf(kind), security_id, quantity?.let(::BigDecimal), price?.let(::BigDecimal),

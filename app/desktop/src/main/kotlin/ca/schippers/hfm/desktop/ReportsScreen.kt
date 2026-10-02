@@ -149,7 +149,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                     ReportKind.INCOME_BY_CATEGORY -> CategoryReport(model, state, filter, CategoryKind.INCOME)
                     ReportKind.SPENDING_BY_PAYEE -> PayeeReport(model, state, filter)
                     ReportKind.NET_WORTH -> NetWorthReport(model, filter)
-                    ReportKind.PORTFOLIO -> PortfolioReport(model, filter)
+                    ReportKind.PORTFOLIO -> PortfolioReport(model, filter, state.groupId)
                     ReportKind.DEBT -> DebtReport(model, filter.accountIds)
                     ReportKind.BUDGET -> BudgetReportView(model, LocalDate(to.year, to.month, 1), yearView = state.preset in setOf(RangePreset.THIS_YEAR, RangePreset.LAST_YEAR))
                     ReportKind.RECONCILIATION -> ReconciliationReport(model)
