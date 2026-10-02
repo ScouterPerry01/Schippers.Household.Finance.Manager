@@ -21,7 +21,7 @@ sqldelight {
         create("CoreDatabase") {
             packageName.set("ca.schippers.hfm.data.core")
             srcDirs.setFrom("src/main/sqldelight/core")
-            schemaOutputDirectory.set(file("src/main/sqldelight/core-schemas"))
+            schemaOutputDirectory.set(file("src/main/sqldelight/core/schemas"))
             dialect("app.cash.sqldelight:sqlite-3-44-dialect:${libs.versions.sqldelight.get()}")
             verifyMigrations.set(true)
         }
@@ -29,7 +29,7 @@ sqldelight {
         create("LedgerDatabase") {
             packageName.set("ca.schippers.hfm.data.ledger")
             srcDirs.setFrom("src/main/sqldelight/ledger")
-            schemaOutputDirectory.set(file("src/main/sqldelight/ledger-schemas"))
+            schemaOutputDirectory.set(file("src/main/sqldelight/ledger/schemas"))
             dialect("app.cash.sqldelight:sqlite-3-44-dialect:${libs.versions.sqldelight.get()}")
             verifyMigrations.set(true)
         }

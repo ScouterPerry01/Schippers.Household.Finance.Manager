@@ -1,0 +1,60 @@
+-- Calendar events and appointments (CAL-01 to CAL-06). Stored in the ledger of the account group
+-- the user chooses, so private events are encrypted from other household users (HH-11).
+
+CREATE TABLE event (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('MEDICAL', 'FINANCIAL', 'VEHICLE', 'HOME', 'PERSONAL', 'OTHER')),
+    start_date TEXT NOT NULL,
+    -- HH:MM; null for an all-day event.
+    start_time TEXT,
+    duration_minutes INTEGER,
+    location TEXT,
+    notes TEXT,
+    member_id TEXT,
+    provider_id TEXT,
+    account_id TEXT,
+    -- Same encoding as bills (BILL-02); null for a one-time event.
+    recurrence TEXT,
+    end_date TEXT,
+    -- Reminder lead times in minutes, e.g. "1440,60" for a day and an hour before.
+    reminder_minutes TEXT NOT NULL DEFAULT '1440',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- One occurrence marked done or cancelled, without changing the series (CAL-05).
+CREATE TABLE event_occurrence (
+    event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('DONE', 'CANCELLED')),
+    PRIMARY KEY (event_id, date)
+);
+
+insertEvent:
+INSERT INTO event(id, title, category, start_date, start_time, duration_minutes, location, notes, member_id, provider_id,
+    account_id, recurrence, end_date, reminder_minutes, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateEvent:
+UPDATE event SET title = ?, category = ?, start_date = ?, start_time = ?, duration_minutes = ?, location = ?, notes = ?,
+    member_id = ?, provider_id = ?, account_id = ?, recurrence = ?, end_date = ?, reminder_minutes = ?, updated_at = ?
+WHERE id = ?;
+
+deleteEvent:
+DELETE FROM event WHERE id = ?;
+
+events:
+SELECT * FROM event ORDER BY start_date, start_time;
+
+eventById:
+SELECT * FROM event WHERE id = ?;
+
+setOccurrenceStatus:
+INSERT OR REPLACE INTO event_occurrence(event_id, date, status) VALUES (?, ?, ?);
+
+clearOccurrenceStatus:
+DELETE FROM event_occurrence WHERE event_id = ? AND date = ?;
+
+occurrenceStatuses:
+SELECT * FROM event_occurrence;

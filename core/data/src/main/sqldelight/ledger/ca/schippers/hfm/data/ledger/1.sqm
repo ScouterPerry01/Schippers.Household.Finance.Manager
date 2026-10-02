@@ -1,0 +1,109 @@
+-- Version 1 to 2: calendar events (CAL-01 to CAL-06) and health records (HLT-01 to HLT-07).
+
+CREATE TABLE event (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('MEDICAL', 'FINANCIAL', 'VEHICLE', 'HOME', 'PERSONAL', 'OTHER')),
+    start_date TEXT NOT NULL,
+    start_time TEXT,
+    duration_minutes INTEGER,
+    location TEXT,
+    notes TEXT,
+    member_id TEXT,
+    provider_id TEXT,
+    account_id TEXT,
+    recurrence TEXT,
+    end_date TEXT,
+    reminder_minutes TEXT NOT NULL DEFAULT '1440',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE event_occurrence (
+    event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('DONE', 'CANCELLED')),
+    PRIMARY KEY (event_id, date)
+);
+
+CREATE TABLE health_provider (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('DOCTOR', 'DENTIST', 'PHARMACY', 'CLINIC', 'HOSPITAL', 'SPECIALIST', 'LAB', 'OTHER')),
+    phone TEXT,
+    address TEXT,
+    notes TEXT,
+    archived INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE medication (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    dose TEXT,
+    instructions TEXT,
+    prescriber_id TEXT,
+    pharmacy_id TEXT,
+    rx_number TEXT,
+    start_date TEXT,
+    end_date TEXT,
+    days_supply INTEGER,
+    refills_remaining INTEGER,
+    last_fill_date TEXT,
+    refill_reminder_days INTEGER NOT NULL DEFAULT 5,
+    active INTEGER NOT NULL DEFAULT 1,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE medication_fill (
+    id TEXT NOT NULL PRIMARY KEY,
+    medication_id TEXT NOT NULL REFERENCES medication(id) ON DELETE CASCADE,
+    fill_date TEXT NOT NULL,
+    days_supply INTEGER,
+    quantity TEXT,
+    notes TEXT
+);
+
+CREATE TABLE health_condition (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    diagnosed_date TEXT,
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'MANAGED', 'RESOLVED')),
+    provider_id TEXT,
+    notes TEXT
+);
+
+CREATE TABLE allergy (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    substance TEXT NOT NULL,
+    reaction TEXT,
+    severity TEXT CHECK (severity IN ('MILD', 'MODERATE', 'SEVERE')),
+    notes TEXT
+);
+
+CREATE TABLE health_test (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    date TEXT NOT NULL,
+    result TEXT,
+    units TEXT,
+    reference_range TEXT,
+    provider_id TEXT,
+    follow_up_date TEXT,
+    notes TEXT
+);
+
+CREATE TABLE immunization (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    vaccine TEXT NOT NULL,
+    date TEXT NOT NULL,
+    provider_id TEXT,
+    next_due_date TEXT,
+    notes TEXT
+);
