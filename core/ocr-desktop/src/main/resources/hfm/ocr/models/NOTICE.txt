@@ -1,0 +1,10 @@
+PaddleOCR PP-OCRv5 models (mobile text detection, latin text recognition and its dictionary),
+converted to ONNX by the RapidOCR project (ModelScope RapidAI/RapidOCR, tag v3.9.2).
+
+Copyright (c) PaddlePaddle Authors and RapidAI. Licensed under the Apache License, Version 2.0:
+https://www.apache.org/licenses/LICENSE-2.0
+
+Files:
+  det_v5_mobile.onnx         onnx/PP-OCRv5/det/ch_PP-OCRv5_det_mobile.onnx
+  rec_latin_v5_mobile.onnx   onnx/PP-OCRv5/rec/latin_PP-OCRv5_rec_mobile.onnx
+  ppocrv5_latin_dict.txt     paddle/PP-OCRv5/rec/latin_PP-OCRv5_rec_mobile/ppocrv5_latin_dict.txt

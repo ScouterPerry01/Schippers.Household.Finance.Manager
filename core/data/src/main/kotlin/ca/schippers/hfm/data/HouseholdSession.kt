@@ -63,6 +63,13 @@ class HouseholdSession internal constructor(
         }
     }
 
+    /** The encrypted document files of a partition; the same access rules as its ledger (HH-11). */
+    fun vault(partitionId: String): DocumentVault {
+        checkOpen()
+        val key = partitionKeys[partitionId] ?: throw AccessDeniedException("You do not have access to this account group")
+        return DocumentVault(dir.resolve(DocumentVault.DIR), householdId, partitionId, key)
+    }
+
     /** Ledger for an account group, by group id. */
     fun groupLedger(groupId: String): LedgerDatabase {
         val group = core.coreQueries.groups().executeAsList().first { it.id == groupId }

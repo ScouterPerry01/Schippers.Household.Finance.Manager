@@ -28,6 +28,7 @@ include(
     ":core:importers",
     ":core:sync",
     ":core:ocr",
+    ":core:ocr-desktop",
     ":app:desktop",
     ":app:android",
 )

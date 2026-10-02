@@ -229,12 +229,12 @@ class BillService internal constructor(private val books: Books) {
     }
 
     /** BILL-03 and variable bills: records the actual amount of one bill (from the paper or e-bill). */
-    fun setAmount(billId: String, dueDate: LocalDate, amount: Money) {
+    fun setAmount(billId: String, dueDate: LocalDate, amount: Money, documentId: String? = null) {
         val (group, bill) = locate(billId)
         books.require(group, PermissionLevel.EDIT)
         validate(amount.currency == bill.amount.currency && !amount.isNegative, "error.billAmountPositive")
         val existing = storedOccurrence(group, billId, dueDate)
-        upsert(group, billId, dueDate, amount, OccurrenceStatus.valueOf(existing?.status ?: "DUE"), existing?.txn_id, existing?.paid_date)
+        upsert(group, billId, dueDate, amount, OccurrenceStatus.valueOf(existing?.status ?: "DUE"), existing?.txn_id, existing?.paid_date, documentId)
     }
 
     /**
@@ -395,9 +395,11 @@ class BillService internal constructor(private val books: Books) {
     private fun storedOccurrence(group: GroupInfo, billId: String, dueDate: LocalDate): OccurrenceRow? =
         books.ledger(group).ledgerQueries.occurrencesForBill(billId).executeAsList().firstOrNull { it.due_date == dueDate.toString() }
 
-    private fun upsert(group: GroupInfo, billId: String, dueDate: LocalDate, amount: Money?, status: OccurrenceStatus, txnId: String?, paidDate: String?) {
+    private fun upsert(group: GroupInfo, billId: String, dueDate: LocalDate, amount: Money?, status: OccurrenceStatus, txnId: String?, paidDate: String?, documentId: String? = null) {
         val existing = storedOccurrence(group, billId, dueDate)
-        books.ledger(group).ledgerQueries.upsertOccurrence(existing?.id ?: Ids.newId(), billId, dueDate.toString(), amount?.minorUnits, status.name, txnId, paidDate, existing?.document_id)
+        books.ledger(group).ledgerQueries.upsertOccurrence(
+            existing?.id ?: Ids.newId(), billId, dueDate.toString(), amount?.minorUnits, status.name, txnId, paidDate, documentId ?: existing?.document_id,
+        )
     }
 
     private fun BillRow.toBill(currency: Currency) = Bill(

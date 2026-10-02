@@ -41,6 +41,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val goals = GoalService(this)
     val pets = PetService(this)
     val vehicles = VehicleService(this)
+    val documents = DocumentService(this)
 
     init {
         categories.ensureDefaults()

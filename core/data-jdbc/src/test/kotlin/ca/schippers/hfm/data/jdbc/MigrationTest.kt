@@ -91,6 +91,7 @@ class MigrationTest {
             driver.execute(null, "INSERT INTO event(id, title, category, start_date, reminder_minutes, created_at, updated_at) VALUES ('e', 'Garage', 'VEHICLE', '2026-10-05', '1440', 0, 0)", 0)
             driver.execute(null, "INSERT INTO event_occurrence(event_id, date, status) VALUES ('e', '2026-10-05', 'DONE')", 0)
             driver.execute(null, "INSERT INTO health_provider(id, name, kind) VALUES ('p', 'Pharmacie', 'PHARMACY')", 0)
+            driver.execute(null, "INSERT INTO document(id, vault_file, mime_type, sha256, captured_at) VALUES ('d', 'd.hfmdoc', 'image/jpeg', 'abc', 0)", 0)
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
@@ -104,6 +105,7 @@ class MigrationTest {
             assertEquals(0L, count(driver, "SELECT count(*) FROM event_occurrence"), "the foreign key still cascades after the rename")
             assertEquals(0L, count(driver, "SELECT count(*) FROM vehicle") + count(driver, "SELECT count(*) FROM savings_goal"))
             assertEquals(0L, count(driver, "SELECT count(*) FROM txn WHERE asset_id IS NOT NULL"))
+            assertEquals(1L, count(driver, "SELECT count(*) FROM document WHERE status = 'FILED' AND keep_forever = 0"), "version 4: existing documents count as filed")
         }
     }
 

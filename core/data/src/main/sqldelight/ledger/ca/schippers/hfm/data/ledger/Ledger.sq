@@ -215,10 +215,31 @@ CREATE TABLE document (
     recognized_text TEXT,
     captured_at INTEGER NOT NULL,
     captured_by TEXT,
-    source_device TEXT
+    source_device TEXT,
+    -- Version 4 (section 4.4, OCR-02, CAP-03): review and search fields.
+    file_name TEXT,
+    title TEXT,
+    -- INBOX until reviewed (SYNC-05), then FILED; DISMISSED documents stay in the vault unfiled.
+    status TEXT NOT NULL DEFAULT 'FILED',
+    kind TEXT,
+    doc_date TEXT,
+    merchant TEXT,
+    amount_minor INTEGER,
+    currency TEXT,
+    -- The extracted fields with their confidence, as JSON (OCR-05).
+    extraction TEXT,
+    ocr_engine TEXT,
+    size_bytes INTEGER,
+    -- Retention (section 4.4): kept indefinitely when set, otherwise flagged after the CRA period.
+    keep_forever INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    updated_at INTEGER
 );
 
 CREATE INDEX document_sha ON document(sha256);
+CREATE INDEX document_status ON document(status, captured_at);
+CREATE INDEX document_date ON document(doc_date);
+CREATE INDEX document_link_entity ON document_link(entity, entity_id);
 
 CREATE TABLE document_link (
     document_id TEXT NOT NULL REFERENCES document(id) ON DELETE CASCADE,
@@ -583,3 +604,70 @@ memberLines:
 SELECT t.id, t.date, t.account_id, s.category_id, s.amount_minor
 FROM txn_split s JOIN txn t ON t.id = s.txn_id
 WHERE coalesce(s.member_id, t.member_id) = :member AND t.transfer_id IS NULL AND t.date >= :from AND t.date <= :to;
+
+-- Document vault (section 4.4) -----------------------------------------------------------------
+
+insertDocument:
+INSERT INTO document(id, vault_file, mime_type, sha256, page_count, recognized_text, captured_at, captured_by, source_device,
+    file_name, title, status, kind, doc_date, merchant, amount_minor, currency, extraction, ocr_engine, size_bytes, keep_forever, notes, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateDocumentText:
+UPDATE document SET page_count = ?, recognized_text = ?, kind = ?, doc_date = ?, merchant = ?, amount_minor = ?, currency = ?, extraction = ?,
+    ocr_engine = ?, updated_at = ?
+WHERE id = ?;
+
+updateDocumentDetails:
+UPDATE document SET title = ?, status = ?, kind = ?, doc_date = ?, merchant = ?, amount_minor = ?, currency = ?, keep_forever = ?, notes = ?, updated_at = ?
+WHERE id = ?;
+
+setDocumentStatus:
+UPDATE document SET status = ?, updated_at = ? WHERE id = ?;
+
+deleteDocument:
+DELETE FROM document WHERE id = ?;
+
+documentById:
+SELECT * FROM document WHERE id = ?;
+
+documentsBySha:
+SELECT * FROM document WHERE sha256 = ?;
+
+documentsByStatus:
+SELECT * FROM document WHERE status = ? ORDER BY captured_at DESC;
+
+-- Section 4.4: by recognised text, title, merchant or notes, and by date and amount.
+searchDocuments:
+SELECT * FROM document
+WHERE (:text IS NULL OR recognized_text LIKE :text ESCAPE '!' OR title LIKE :text ESCAPE '!' OR merchant LIKE :text ESCAPE '!'
+        OR notes LIKE :text ESCAPE '!' OR file_name LIKE :text ESCAPE '!')
+  AND (:fromDate IS NULL OR coalesce(doc_date, date(captured_at / 1000, 'unixepoch')) >= :fromDate)
+  AND (:toDate IS NULL OR coalesce(doc_date, date(captured_at / 1000, 'unixepoch')) <= :toDate)
+  AND (:minAmount IS NULL OR abs(amount_minor) >= :minAmount)
+  AND (:maxAmount IS NULL OR abs(amount_minor) <= :maxAmount)
+ORDER BY coalesce(doc_date, date(captured_at / 1000, 'unixepoch')) DESC, captured_at DESC
+LIMIT :limit;
+
+-- OCR-10: earlier documents with the same merchant, date and amount.
+similarDocuments:
+SELECT * FROM document WHERE id != :id AND doc_date = :date AND amount_minor = :amount;
+
+linkDocument:
+INSERT OR IGNORE INTO document_link(document_id, entity, entity_id) VALUES (?, ?, ?);
+
+unlinkDocument:
+DELETE FROM document_link WHERE document_id = ? AND entity = ? AND entity_id = ?;
+
+linksForDocument:
+SELECT * FROM document_link WHERE document_id = ?;
+
+documentsFor:
+SELECT d.* FROM document d JOIN document_link l ON l.document_id = d.id WHERE l.entity = ? AND l.entity_id = ? ORDER BY d.captured_at DESC;
+
+documentCounts:
+SELECT status, count(*) AS total FROM document GROUP BY status;
+
+-- Matching a captured receipt or bill to a transaction already entered or imported.
+txnsNear:
+SELECT * FROM txn WHERE date >= :from AND date <= :to AND (amount_minor = :amount OR amount_minor = -:amount) AND transfer_id IS NULL
+ORDER BY date;

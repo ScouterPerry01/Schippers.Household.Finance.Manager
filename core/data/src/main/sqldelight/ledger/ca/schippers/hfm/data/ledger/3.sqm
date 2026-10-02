@@ -1,0 +1,20 @@
+-- Version 3 to 4 (section 4.4, OCR-02, OCR-05, CAP-03): document vault review and search fields.
+
+ALTER TABLE document ADD COLUMN file_name TEXT;
+ALTER TABLE document ADD COLUMN title TEXT;
+ALTER TABLE document ADD COLUMN status TEXT NOT NULL DEFAULT 'FILED';
+ALTER TABLE document ADD COLUMN kind TEXT;
+ALTER TABLE document ADD COLUMN doc_date TEXT;
+ALTER TABLE document ADD COLUMN merchant TEXT;
+ALTER TABLE document ADD COLUMN amount_minor INTEGER;
+ALTER TABLE document ADD COLUMN currency TEXT;
+ALTER TABLE document ADD COLUMN extraction TEXT;
+ALTER TABLE document ADD COLUMN ocr_engine TEXT;
+ALTER TABLE document ADD COLUMN size_bytes INTEGER;
+ALTER TABLE document ADD COLUMN keep_forever INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE document ADD COLUMN notes TEXT;
+ALTER TABLE document ADD COLUMN updated_at INTEGER;
+
+CREATE INDEX document_status ON document(status, captured_at);
+CREATE INDEX document_date ON document(doc_date);
+CREATE INDEX document_link_entity ON document_link(entity, entity_id);
