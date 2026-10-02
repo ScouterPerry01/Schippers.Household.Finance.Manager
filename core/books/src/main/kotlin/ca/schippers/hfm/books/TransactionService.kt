@@ -118,6 +118,7 @@ class TransactionService internal constructor(private val books: Books) {
         val (group, row) = locate(transactionId)
         books.require(group, PermissionLevel.EDIT)
         validate(row.transfer_id == null, "error.editTransferAsTransfer")
+        validate(row.investment_id == null, "error.editInInvestments")
         validate(draft.accountId == row.account_id, "error.cannotChangeAccount")
         guardReconciled(row, confirmReconciled)
         val account = books.accounts.get(row.account_id)
@@ -142,6 +143,7 @@ class TransactionService internal constructor(private val books: Books) {
     /** Deletes a transaction; deleting either side of a transfer deletes both sides. */
     fun delete(transactionId: String, confirmReconciled: Boolean = false) {
         val (group, row) = locate(transactionId)
+        validate(row.investment_id == null, "error.editInInvestments")
         row.transfer_id?.let { return deleteTransfer(it, confirmReconciled) }
         books.require(group, PermissionLevel.EDIT)
         guardReconciled(row, confirmReconciled)
@@ -363,6 +365,34 @@ class TransactionService internal constructor(private val books: Books) {
         prepared.tagIds.forEach { ledger.ledgerQueries.insertTxnTag(txnId, it) }
     }
 
+    // --- Investment cash lines (INV-02) -----------------------------------------------------------
+
+    /**
+     * Creates a cash line for an investment transaction. [trade] lines stay out of income and
+     * spending reports: they carry no category lines, so the category totals never see them.
+     */
+    internal fun createForInvestment(draft: TransactionDraft, investmentId: String, trade: Boolean): Transaction {
+        val created = create(draft)
+        val (group, _) = locate(created.id)
+        val q = books.ledger(group).ledgerQueries
+        q.setTxnInvestment(investmentId, if (trade) 1 else 0, created.id)
+        if (trade) q.deleteSplits(created.id)
+        return get(created.id)
+    }
+
+    /** Deletes the cash lines of an investment transaction, logged like any deletion. */
+    internal fun deleteForInvestment(group: GroupInfo, investmentId: String, confirmReconciled: Boolean) {
+        val ledger = books.ledger(group)
+        val rows = ledger.ledgerQueries.txnsForInvestment(investmentId).executeAsList()
+        rows.forEach { guardReconciled(it, confirmReconciled) }
+        ledger.transaction {
+            for (row in rows) {
+                logChange(ledger, row.id, "DELETE", snapshot(ledger, row.id), null)
+                ledger.ledgerQueries.deleteTxn(row.id)
+            }
+        }
+    }
+
     private fun guardReconciled(row: TxnRow, confirmed: Boolean) {
         if (row.cleared == ClearedStatus.RECONCILED.name && !confirmed) throw ReconciledChangeException()
     }
@@ -444,4 +474,5 @@ internal fun TxnRow.toTransaction(currency: Currency, splits: List<SplitRow>, ta
     },
     tagIds = tagIds,
     createdBy = created_by,
+    investmentId = investment_id,
 )

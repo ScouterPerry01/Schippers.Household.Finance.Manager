@@ -29,6 +29,11 @@ enum class AccountType(val kind: AccountKind) {
     PROPERTY(AccountKind.ASSET),
     VEHICLE(AccountKind.ASSET),
     OTHER_ASSET(AccountKind.ASSET),
+    ;
+
+    /** Registered plans and pensions: no capital gains while the money stays inside (INV-03). */
+    val isRegistered: Boolean
+        get() = this in setOf(RRSP, SPOUSAL_RRSP, RRIF, SPOUSAL_RRIF, LIRA, LIF, TFSA, FHSA, RESP, PENSION)
 }
 
 enum class AccountKind(val isLiability: Boolean) {

@@ -64,9 +64,10 @@ class RateService internal constructor(private val books: Books) {
     /** Currencies used by the household's accounts that need rates and that the Bank of Canada publishes. */
     fun neededCurrencies(): Set<Currency> = allNeeded().filter { it.code in BANK_OF_CANADA }.toSet()
 
-    /** Every fiat currency that needs rates: account currencies, the base currency and followed ones (FX-07). */
+    /** Every fiat currency that needs rates: account and security currencies, the base currency and followed ones (FX-07). */
     fun allNeeded(): Set<Currency> = (
-        books.accounts.list(includeClosed = true).map { it.account.currency } + baseCurrency + followed()
+        books.accounts.list(includeClosed = true).map { it.account.currency } + baseCurrency + followed() +
+            runCatching { books.investments.securities(includeArchived = true).map { it.currency } }.getOrDefault(emptyList())
         ).filter { it != Currency.CAD && !it.isCrypto }.toSet()
 
     /** FX-07: currencies the user follows although no account uses them. */

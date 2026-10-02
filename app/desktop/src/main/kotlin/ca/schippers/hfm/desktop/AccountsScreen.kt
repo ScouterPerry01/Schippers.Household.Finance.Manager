@@ -50,6 +50,11 @@ fun AccountsScreen(model: BooksModel) {
     var quicken by remember { mutableStateOf<java.io.File?>(null) }
     val summaries = remember(model.revision, showClosed) { model.books.accounts.list(includeClosed = showClosed) }
     val lastReconciled = remember(model.revision) { model.books.statements.lastReconciled() }
+    // Investment accounts are shown at their full value: cash plus securities (INV-04).
+    val invested = remember(model.revision) {
+        runCatching { model.books.investments.allHoldings(today()).associate { it.account.id to it.totalValue } }.getOrDefault(emptyMap())
+    }
+    val shown = summaries.map { s -> invested[s.account.id]?.let { s.copy(balance = it) } ?: s }
     if (model.selectedAccountId != null && summaries.none { it.account.id == model.selectedAccountId }) model.selectedAccountId = null
 
     Row(Modifier.fillMaxSize()) {
@@ -63,13 +68,13 @@ fun AccountsScreen(model: BooksModel) {
             TextButton(onClick = { chooseQif(model)?.let { quicken = it } }) { Text(model.t("quicken.import")) }
             LazyColumn(Modifier.weight(1f)) {
                 if (summaries.isEmpty()) item { Text(model.t("accounts.none"), Modifier.padding(8.dp)) }
-                for ((kind, list) in summaries.groupBy { it.account.type.kind }.toSortedMap()) {
+                for ((kind, list) in shown.groupBy { it.account.type.kind }.toSortedMap()) {
                     item { Text(model.t("accountKind.$kind"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)) }
                     items(list, key = { it.account.id }) { summary -> AccountRow(model, summary, lastReconciled[summary.account.id]) }
                 }
             }
             HorizontalDivider()
-            Totals(model, summaries)
+            Totals(model, shown)
         }
         VerticalDivider()
         Box(Modifier.fillMaxSize()) {

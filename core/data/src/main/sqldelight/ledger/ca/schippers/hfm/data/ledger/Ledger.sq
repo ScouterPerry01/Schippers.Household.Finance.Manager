@@ -53,7 +53,12 @@ CREATE TABLE txn (
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL,
     -- VEH-09: the vehicle (or, later, other asset) the transaction is for.
-    asset_id TEXT
+    asset_id TEXT,
+    -- INV-02: the investment transaction this cash line belongs to. Trade lines (buys, sells,
+    -- returns of capital) move money between cash and holdings, so reports leave them out: they
+    -- have no category lines at all, and the payee queries skip them.
+    investment_id TEXT,
+    trade INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX txn_account_date ON txn(account_id, date, created_at, id);
@@ -480,7 +485,7 @@ ORDER BY date;
 payeeDailyWide:
 SELECT t.account_id, t.payee_id, coalesce(t.payee_text, '') AS payee_text, t.date, CAST(sum(t.amount_minor) AS INTEGER) AS total
 FROM txn t
-WHERE +t.date >= :from AND +t.date <= :to AND t.transfer_id IS NULL
+WHERE +t.date >= :from AND +t.date <= :to AND t.transfer_id IS NULL AND t.trade = 0
   AND (:member IS NULL OR t.member_id = :member)
   AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
 GROUP BY t.account_id, t.payee_id, payee_text, t.date;
@@ -488,7 +493,7 @@ GROUP BY t.account_id, t.payee_id, payee_text, t.date;
 payeeDaily:
 SELECT t.account_id, t.payee_id, coalesce(t.payee_text, '') AS payee_text, t.date, CAST(sum(t.amount_minor) AS INTEGER) AS total
 FROM txn t
-WHERE t.date >= :from AND t.date <= :to AND t.transfer_id IS NULL
+WHERE t.date >= :from AND t.date <= :to AND t.transfer_id IS NULL AND t.trade = 0
   AND (:member IS NULL OR t.member_id = :member)
   AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
 GROUP BY t.account_id, t.payee_id, payee_text, t.date;
@@ -601,7 +606,7 @@ UPDATE txn SET asset_id = ? WHERE id = ?;
 assetLines:
 SELECT t.id, t.date, t.account_id, s.category_id, s.amount_minor
 FROM txn_split s JOIN txn t ON t.id = s.txn_id
-WHERE t.asset_id = :asset AND t.transfer_id IS NULL AND t.date >= :from AND t.date <= :to;
+WHERE t.asset_id = :asset AND t.transfer_id IS NULL AND t.trade = 0 AND t.date >= :from AND t.date <= :to;
 
 -- PET-05: the lines recorded for one person or pet.
 memberLines:
@@ -673,5 +678,13 @@ SELECT status, count(*) AS total FROM document GROUP BY status;
 
 -- Matching a captured receipt or bill to a transaction already entered or imported.
 txnsNear:
-SELECT * FROM txn WHERE date >= :from AND date <= :to AND (amount_minor = :amount OR amount_minor = -:amount) AND transfer_id IS NULL
+SELECT * FROM txn WHERE date >= :from AND date <= :to AND (amount_minor = :amount OR amount_minor = -:amount) AND transfer_id IS NULL AND trade = 0
 ORDER BY date;
+
+-- Investment cash lines (INV-02) ------------------------------------------------------------------
+
+setTxnInvestment:
+UPDATE txn SET investment_id = ?, trade = ? WHERE id = ?;
+
+txnsForInvestment:
+SELECT * FROM txn WHERE investment_id = ?;

@@ -125,6 +125,7 @@ private fun PlanRow(model: BooksModel, plan: QifAccountPlan, existing: List<Acco
 private fun ResultView(model: BooksModel, r: QifImportResult) {
     Text(model.t("quicken.done"), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
     Text(model.t("quicken.result", r.accountsCreated, r.transactions, r.transfers, r.categoriesCreated))
+    if (r.investmentActions > 0) Text(model.t("quicken.investmentsDone", r.investmentActions))
     if (r.alreadyThere > 0) Text(model.t("quicken.alreadyThere", r.alreadyThere))
     if (r.warnings.isNotEmpty()) {
         Text(model.t("quicken.notes"), style = MaterialTheme.typography.labelLarge)

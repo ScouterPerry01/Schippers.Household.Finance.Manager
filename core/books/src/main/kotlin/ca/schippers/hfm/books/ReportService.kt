@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
@@ -283,7 +284,9 @@ class ReportService internal constructor(private val books: Books) {
                 if (accountIds != null && account.id !in accountIds) continue
                 if (account.openingDate > date) continue
                 val minor = account.openingBalance.minorUnits + (balances[account.id] ?: 0L)
-                val balance = converter.toBase(Money.ofMinor(minor, account.currency), date) ?: continue
+                // An investment account is worth its cash plus its securities at market value.
+                val securities = if (account.type.kind == AccountKind.INVESTMENT) books.investments.securitiesValue(account.id, date).minorUnits else 0L
+                val balance = converter.toBase(Money.ofMinor(minor + securities, account.currency), date) ?: continue
                 if (account.type.kind.isLiability) liabilities -= balance else assets += balance
             }
             byDate[date] = NetWorthPoint(date, assets, liabilities)

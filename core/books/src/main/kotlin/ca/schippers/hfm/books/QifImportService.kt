@@ -45,7 +45,8 @@ data class QifImportResult(
     val transfers: Int,
     val alreadyThere: Int,
     val categoriesCreated: Int,
-    val investmentActionsKept: Int,
+    /** Investment actions imported into investment accounts (INV-02). */
+    val investmentActions: Int,
     val warnings: List<String>,
 )
 
@@ -58,9 +59,8 @@ data class QifImportResult(
  * import can safely be repeated. Categories are matched to the existing tree by name in either
  * language and created when missing; classes become tags.
  *
- * Investment holdings arrive with the investment module (Phase 3). Until then the cash moving in
- * and out of investment accounts is imported, and the QIF file itself is kept in the vault so the
- * full investment history can be read from it then.
+ * Investment actions (buys, sells, income, splits...) go into the investment accounts with their
+ * securities (INV-02); the QIF file itself is kept in the vault as the record of the import.
  */
 class QifImportService internal constructor(private val books: Books) {
 
@@ -185,18 +185,21 @@ class QifImportService internal constructor(private val books: Books) {
             imported++
         }
 
-        // Investment history waits for the investment module; the file itself is kept.
+        // Investment history, into the investment accounts; the file is kept as the record.
+        var investmentActions = 0
         if (file.investments.isNotEmpty()) {
+            val result = books.brokerage.importQif(file, dateOrder, accountIds.filterKeys { it in included }, included.keys)
+            investmentActions = result.added
+            warnings += result.warnings
             val doc = books.documents.import(groupId, content, fileName ?: "quicken.qif", "application/qif").document
             books.documents.update(
                 doc.id,
-                DocumentDetails("Quicken (QIF)", null, today, "Quicken", null, keepForever = true, notes = "${file.investments.size} investment actions kept for the investment module"),
+                DocumentDetails("Quicken (QIF)", null, today, "Quicken", null, keepForever = true, notes = BrokerageImportService.READ_NOTE),
             )
             books.documents.setStatus(doc.id, DocumentStatus.FILED)
-            warnings += "${file.investments.size} investment actions are kept with the imported file until the investment module arrives."
         }
         books.session.audit("IMPORT", "qif", null, "${imported + transfers} transactions")
-        return QifImportResult(accountsCreated, imported, transfers, already, categories.created, file.investments.size, warnings.distinct())
+        return QifImportResult(accountsCreated, imported, transfers, already, categories.created, investmentActions, warnings.distinct())
     }
 
     private fun key(date: LocalDate, amount: Money, payee: String?) = "$date|${amount.minorUnits}|${payee?.let(FieldExtractor::fold)?.trim().orEmpty()}"

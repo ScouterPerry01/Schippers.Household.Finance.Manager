@@ -217,6 +217,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
             if (account.numberMasked != null) OutlinedButton(onClick = { revealing = true }) { Text(model.t("account.show")) }
             if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCard = true }) { Text(model.t("account.cardDetails")) }
             if (account.type.kind == AccountKind.LOAN) OutlinedButton(onClick = { model.section = Section.LOANS }) { Text(model.t("account.loanDetails")) }
+            if (account.type.kind == AccountKind.INVESTMENT) OutlinedButton(onClick = { model.section = Section.INVESTMENTS }) { Text(model.t("account.holdings")) }
             if (account.status != AccountStatus.CLOSED) {
                 OutlinedButton(onClick = { confirmClose = true }) { Text(model.t("account.close")) }
             }

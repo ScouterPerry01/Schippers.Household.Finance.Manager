@@ -1,0 +1,147 @@
+-- Investments (INV-01 to INV-05, REC-08). Securities and prices are kept in each group's ledger, so
+-- a private group's holdings stay unreadable to other users (HH-11). Quantities and prices are
+-- decimal strings; amounts are in the account's currency, in minor units.
+
+-- INV-01: the securities master. [multiplier] turns quantity times price into value: 1 for shares
+-- and units, 100 for option contracts, 0.01 for bonds quoted per 100 of face value.
+CREATE TABLE security (
+    id TEXT NOT NULL PRIMARY KEY,
+    symbol TEXT,
+    exchange TEXT,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('STOCK', 'ETF', 'MUTUAL_FUND', 'BOND', 'GIC', 'OPTION', 'OTHER')),
+    currency TEXT NOT NULL,
+    asset_class TEXT NOT NULL DEFAULT 'EQUITY' CHECK (asset_class IN ('EQUITY', 'FIXED_INCOME', 'CASH', 'BALANCED', 'REAL_ESTATE', 'COMMODITY', 'OTHER')),
+    region TEXT NOT NULL DEFAULT 'CANADA' CHECK (region IN ('CANADA', 'US', 'INTERNATIONAL', 'EMERGING', 'GLOBAL', 'OTHER')),
+    multiplier TEXT NOT NULL DEFAULT '1',
+    maturity TEXT,
+    coupon_rate TEXT,
+    notes TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- INV-04: prices per day, manual or downloaded (3d).
+CREATE TABLE security_price (
+    security_id TEXT NOT NULL REFERENCES security(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    price TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'MANUAL',
+    PRIMARY KEY (security_id, date)
+);
+
+-- INV-02: one row per investment transaction. [amount_minor] is the gross value (quantity times
+-- price, or the income); [fees_minor] the commission; [withheld_minor] foreign tax withheld.
+CREATE TABLE inv_txn (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('BUY', 'SELL', 'INCOME', 'REINVEST', 'RETURN_OF_CAPITAL', 'NOTIONAL_DISTRIBUTION', 'SPLIT', 'MERGER', 'TRANSFER_IN', 'TRANSFER_OUT', 'FEE')),
+    income_type TEXT CHECK (income_type IN ('DIVIDEND', 'INTEREST', 'DISTRIBUTION')),
+    security_id TEXT REFERENCES security(id),
+    quantity TEXT,
+    price TEXT,
+    amount_minor INTEGER NOT NULL DEFAULT 0,
+    fees_minor INTEGER NOT NULL DEFAULT 0,
+    withheld_minor INTEGER NOT NULL DEFAULT 0,
+    -- SPLIT and MERGER: new units per old unit; MERGER: the security received.
+    ratio TEXT,
+    other_security_id TEXT REFERENCES security(id),
+    external_id TEXT,
+    memo TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX inv_txn_account ON inv_txn(account_id, date);
+CREATE INDEX inv_txn_security ON inv_txn(security_id);
+CREATE UNIQUE INDEX inv_txn_external ON inv_txn(account_id, external_id) WHERE external_id IS NOT NULL;
+CREATE INDEX txn_investment ON txn(investment_id) WHERE investment_id IS NOT NULL;
+
+-- REC-08: a brokerage statement's cash and holdings, compared with the books.
+CREATE TABLE inv_statement (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    cash_minor INTEGER,
+    -- JSON list of {security, quantity, price}.
+    positions TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'RECONCILED')),
+    source TEXT,
+    created_at INTEGER NOT NULL,
+    reconciled_at INTEGER,
+    reconciled_by TEXT
+);
+
+CREATE INDEX inv_statement_account ON inv_statement(account_id, date);
+
+-- Securities and prices ----------------------------------------------------------------------------
+
+upsertSecurity:
+INSERT OR REPLACE INTO security(id, symbol, exchange, name, kind, currency, asset_class, region, multiplier, maturity, coupon_rate, notes, archived, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+securities:
+SELECT * FROM security ORDER BY name;
+
+securityById:
+SELECT * FROM security WHERE id = ?;
+
+deleteSecurity:
+DELETE FROM security WHERE id = ?;
+
+securityUseCount:
+SELECT count(*) FROM inv_txn WHERE security_id = :id OR other_security_id = :id;
+
+putPrice:
+INSERT OR REPLACE INTO security_price(security_id, date, price, source) VALUES (?, ?, ?, ?);
+
+priceOnOrBefore:
+SELECT * FROM security_price WHERE security_id = ? AND date <= ? ORDER BY date DESC LIMIT 1;
+
+prices:
+SELECT * FROM security_price WHERE security_id = ? ORDER BY date DESC;
+
+deletePrice:
+DELETE FROM security_price WHERE security_id = ? AND date = ?;
+
+-- Investment transactions ----------------------------------------------------------------------------
+
+insertInvTxn:
+INSERT OR REPLACE INTO inv_txn(id, account_id, date, kind, income_type, security_id, quantity, price, amount_minor, fees_minor,
+    withheld_minor, ratio, other_security_id, external_id, memo, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+invTxnsForAccount:
+SELECT * FROM inv_txn WHERE account_id = ? ORDER BY date, created_at;
+
+invTxns:
+SELECT * FROM inv_txn ORDER BY date, created_at;
+
+invTxnById:
+SELECT * FROM inv_txn WHERE id = ?;
+
+invTxnByExternal:
+SELECT * FROM inv_txn WHERE account_id = ? AND external_id = ?;
+
+deleteInvTxn:
+DELETE FROM inv_txn WHERE id = ?;
+
+-- Statements ---------------------------------------------------------------------------------------
+
+insertInvStatement:
+INSERT OR REPLACE INTO inv_statement(id, account_id, date, cash_minor, positions, status, source, created_at, reconciled_at, reconciled_by)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+invStatements:
+SELECT * FROM inv_statement WHERE account_id = ? ORDER BY date DESC;
+
+setInvStatementStatus:
+UPDATE inv_statement SET status = ?, reconciled_at = ?, reconciled_by = ? WHERE id = ?;
+
+deleteInvStatement:
+DELETE FROM inv_statement WHERE id = ?;
+
+balanceOn:
+SELECT CAST(coalesce(sum(amount_minor), 0) AS INTEGER) FROM txn WHERE account_id = ? AND date <= ?;

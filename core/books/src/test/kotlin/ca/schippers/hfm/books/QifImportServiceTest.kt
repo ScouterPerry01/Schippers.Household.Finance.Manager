@@ -140,11 +140,16 @@ class QifImportServiceTest {
         assertEquals(3, result.accountsCreated)
         assertEquals(3, result.transactions, "IGA, the pay split and the grooming")
         assertEquals(2, result.transfers, "Visa payment and TFSA contribution, each once")
-        assertEquals(2, result.investmentActionsKept)
+        assertEquals(1, result.investmentActions, "the buy; the cash moved in is the chequing account's transfer")
 
         assertEquals(cad("1762.68"), balance("Compte chèques"), "1,000 - 187.32 - 500 - 1,000 + 2,450")
         assertEquals(cad("438.00"), balance("Visa Desjardins"), "-62 + 500")
-        assertEquals(cad("1000.00"), balance("CELI"), "the cash moved in; holdings come in Phase 3")
+        assertEquals(cad("0.00"), balance("CELI"), "1,000 moved in, then spent on 40 units")
+        val celi = books.accounts.list().first { it.account.name == "CELI" }.account
+        val holding = books.investments.holdings(celi.id, today).holdings.single()
+        assertEquals("FNB Indiciel", holding.security.name)
+        assertEquals(java.math.BigDecimal("40"), holding.quantity)
+        assertEquals(cad("1000.00"), holding.bookCost)
 
         val chequing = books.accounts.list().first { it.account.name == "Compte chèques" }.account
         assertEquals(LocalDate(2024, 2, 1), chequing.openingDate)
@@ -155,13 +160,14 @@ class QifImportServiceTest {
         assertTrue(books.categories.list().any { it.nameFr == "Toilettage" }, "a category the tree did not have is created")
         val pay = books.transactions.register(chequing.id).map { it.transaction }.first { it.payeeText == "Employeur inc." }
         assertEquals(books.categories.list().first { it.systemKey == "income.employment.salary" }.id, pay.splits.first().categoryId, "found deeper in the tree")
-        assertTrue(books.documents.search(DocumentQuery(text = "Quicken")).single().keepForever, "the file is kept for the investment history")
+        assertTrue(books.documents.search(DocumentQuery(text = "Quicken")).single().keepForever, "the file is kept as the record")
 
         // Imported again, into the same accounts: nothing is added.
         val again = books.quicken.import(qif, "quicken.qif", group, books.quicken.preview(qif).plans, DateOrder.DAY_MONTH, today)
         assertEquals(0, again.accountsCreated)
         assertEquals(0, again.transactions + again.transfers)
         assertEquals(5, again.alreadyThere)
+        assertEquals(0, again.investmentActions)
         assertEquals(cad("1762.68"), balance("Compte chèques"))
         assertEquals(cad("438.00"), balance("Visa Desjardins"))
     }

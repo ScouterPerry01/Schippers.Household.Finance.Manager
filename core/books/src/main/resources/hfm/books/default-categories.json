@@ -101,10 +101,12 @@
     { "key": "financial.card_fees", "en": "Credit card fees", "fr": "Frais de carte de crédit" },
     { "key": "financial.interest", "en": "Interest charges", "fr": "Frais d'intérêts" },
     { "key": "financial.fx_fees", "en": "Foreign exchange fees", "fr": "Frais de change" },
+    { "key": "financial.investment_fees", "en": "Investment fees", "fr": "Frais de placement" },
     { "key": "financial.professional", "en": "Accounting and legal fees", "fr": "Honoraires comptables et juridiques" }
   ]},
   { "key": "taxes", "en": "Taxes", "fr": "Impôts", "kind": "EXPENSE", "children": [
     { "key": "taxes.income_tax", "en": "Income tax", "fr": "Impôt sur le revenu" },
+    { "key": "taxes.foreign_tax", "en": "Foreign tax withheld", "fr": "Impôt étranger retenu" },
     { "key": "taxes.instalments", "en": "Tax instalments", "fr": "Acomptes provisionnels" }
   ]},
   { "key": "business", "en": "Self-employment expenses", "fr": "Dépenses de travail autonome", "kind": "EXPENSE", "tax": "BUSINESS", "children": [

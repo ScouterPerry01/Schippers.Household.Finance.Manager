@@ -5,14 +5,16 @@ import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.sum
 import kotlinx.datetime.LocalDate
 import java.io.InputStream
+import java.math.BigDecimal
 import java.nio.charset.Charset
 
 /**
  * OFX, QFX (Quicken) and QBO (QuickBooks) statements, in both the SGML form of OFX 1.x, where
  * value tags are usually not closed, and the XML form of OFX 2.x. Bank and credit card
- * statements are read (REC-01); investment statements follow in Phase 3.
+ * statements are read (REC-01), and investment statements with their securities, actions, holdings
+ * and cash (INV-05, REC-08).
  */
-class OfxImporter : StatementImporter {
+class OfxImporter : StatementImporter, InvestmentImporter {
     override val id = "ofx"
     override val fileExtensions = setOf("ofx", "qfx", "qbo")
 
@@ -30,6 +32,93 @@ class OfxImporter : StatementImporter {
         val statements = root.findAll("STMTRS") + root.findAll("CCSTMTRS")
         if (statements.isEmpty()) throw ImportException("The OFX file contains no bank or credit card statement")
         return statements.map { statement(it, options) }
+    }
+
+    override fun canReadInvestments(fileName: String, head: ByteArray): Boolean = canRead(fileName, head)
+
+    override fun readInvestments(input: InputStream, options: ImportOptions): List<ImportedInvestmentStatement> {
+        val bytes = input.readBytes()
+        val text = String(bytes, charsetOf(bytes))
+        val start = text.indexOf("<OFX>", ignoreCase = true)
+        if (start < 0) throw ImportException("Not an OFX file: no <OFX> element")
+        val root = parse(text.substring(start))
+        val statements = root.findAll("INVSTMTRS")
+        if (statements.isEmpty()) throw ImportException("The OFX file contains no investment statement")
+        val kinds = mapOf("STOCKINFO" to "STOCK", "MFINFO" to "MUTUAL_FUND", "DEBTINFO" to "BOND", "OPTINFO" to "OPTION", "OTHERINFO" to "OTHER")
+        val securities = kinds.flatMap { (tag, kind) -> root.findAll(tag).mapNotNull { it.find("SECINFO")?.let { info -> info to kind } } }.mapNotNull { (info, kind) ->
+            val key = info.find("SECID")?.value("UNIQUEID") ?: return@mapNotNull null
+            ImportedSecurity(
+                key, info.value("TICKER")?.trim()?.ifEmpty { null }, info.value("SECNAME")?.trim() ?: key, key,
+                kind, info.value("UNITPRICE")?.let(::decimal), info.value("DTASOF")?.let(::date),
+            )
+        }
+        return statements.map { investmentStatement(it, securities, options) }
+    }
+
+    private fun investmentStatement(rs: Element, securities: List<ImportedSecurity>, options: ImportOptions): ImportedInvestmentStatement {
+        val currency = rs.value("CURDEF")?.let { runCatching { Currency.of(it) }.getOrNull() } ?: options.defaultCurrency
+        val list = rs.find("INVTRANLIST")
+        val actions = list?.children.orEmpty().mapNotNull { action(it) }
+        val positions = rs.find("INVPOSLIST")?.findAll("INVPOS").orEmpty().mapNotNull { pos ->
+            val key = pos.find("SECID")?.value("UNIQUEID") ?: return@mapNotNull null
+            ImportedPosition(key, pos.value("UNITS")?.let(::decimal)?.abs() ?: return@mapNotNull null, pos.value("UNITPRICE")?.let(::decimal))
+        }
+        return ImportedInvestmentStatement(
+            "OFX", rs.find("INVACCTFROM")?.value("ACCTID"), currency, rs.value("DTASOF")?.let(::date) ?: list?.value("DTEND")?.let(::date),
+            rs.find("INVBAL")?.value("AVAILCASH")?.let(::decimal), securities, actions, positions,
+        )
+    }
+
+    /** One element of INVTRANLIST, or null for elements that are not actions (DTSTART, DTEND). */
+    private fun action(e: Element): ImportedInvestmentAction? {
+        if (e.name == "INVBANKTRAN") {
+            val trn = e.find("STMTTRN") ?: return null
+            val amount = decimal(trn.value("TRNAMT") ?: return null)
+            return ImportedInvestmentAction(
+                trn.value("FITID"), date(trn.value("DTPOSTED") ?: return null), if (amount.signum() < 0) ImportedAction.CASH_OUT else ImportedAction.CASH_IN,
+                null, null, null, amount.abs(), null, null, null, null, listOfNotNull(trn.value("NAME"), trn.value("MEMO")).joinToString(" ").ifBlank { null },
+            )
+        }
+        val tran = e.find("INVTRAN") ?: return null
+        val id = tran.value("FITID")
+        val date = date(tran.value("DTTRADE") ?: tran.value("DTSETTLE") ?: return null)
+        val memo = tran.value("MEMO")?.trim()?.ifEmpty { null }
+        val security = e.find("SECID")?.value("UNIQUEID")
+        fun v(tag: String) = e.find(tag)?.text?.let(::decimal)
+        val units = v("UNITS")?.abs()
+        val price = v("UNITPRICE")?.abs()
+        val fees = listOfNotNull(v("COMMISSION"), v("FEES"), v("TAXES"), v("LOAD")).fold(BigDecimal.ZERO) { a, b -> a + b.abs() }.takeIf { it.signum() != 0 }
+        val total = v("TOTAL")
+        fun gross(buy: Boolean): BigDecimal? = if (units != null && price != null) units.multiply(price)
+            else total?.abs()?.let { if (buy) it - (fees ?: BigDecimal.ZERO) else it + (fees ?: BigDecimal.ZERO) }
+        fun income(type: String?) = when (type?.uppercase()) {
+            "INTEREST" -> ImportedAction.INTEREST
+            "CGLONG", "CGSHORT" -> ImportedAction.DISTRIBUTION
+            else -> ImportedAction.DIVIDEND
+        }
+        return when {
+            e.name.startsWith("BUY") -> ImportedInvestmentAction(id, date, ImportedAction.BUY, security, units, price, gross(true), fees, null, null, null, memo)
+            e.name.startsWith("SELL") -> ImportedInvestmentAction(id, date, ImportedAction.SELL, security, units, price, gross(false), fees, null, null, null, memo)
+            e.name == "INCOME" -> ImportedInvestmentAction(id, date, income(e.value("INCOMETYPE")), security, null, null, total?.abs(), null, v("WITHHOLDING")?.abs(), null, null, memo)
+            e.name == "REINVEST" -> ImportedInvestmentAction(id, date, ImportedAction.REINVEST, security, units, price, total?.abs(), fees, null, null, income(e.value("INCOMETYPE")), memo)
+            e.name == "RETOFCAP" -> ImportedInvestmentAction(id, date, ImportedAction.RETURN_OF_CAPITAL, security, null, null, total?.abs(), null, null, null, null, memo)
+            e.name == "SPLIT" -> {
+                val ratio = v("NUMERATOR")?.let { n -> v("DENOMINATOR")?.takeIf { it.signum() != 0 }?.let { d -> n.divide(d, java.math.MathContext.DECIMAL64) } }
+                    ?: v("NEWUNITS")?.let { n -> v("OLDUNITS")?.takeIf { it.signum() != 0 }?.let { o -> n.divide(o, java.math.MathContext.DECIMAL64) } }
+                ImportedInvestmentAction(id, date, ImportedAction.SPLIT, security, null, null, null, null, null, ratio, null, memo)
+            }
+            e.name == "TRANSFER" -> ImportedInvestmentAction(
+                id, date, if (e.value("TFERACTION")?.uppercase() == "OUT") ImportedAction.TRANSFER_OUT else ImportedAction.TRANSFER_IN,
+                security, units, price, null, null, null, null, null, memo,
+            )
+            e.name == "INVEXPENSE" || e.name == "MARGININTEREST" -> ImportedInvestmentAction(id, date, ImportedAction.FEE, security, null, null, total?.abs(), null, null, null, null, memo)
+            else -> null
+        }
+    }
+
+    private fun decimal(s: String): BigDecimal {
+        val cleaned = s.trim().replace(" ", "").let { if (',' in it && '.' !in it) it.replace(',', '.') else it.replace(",", "") }
+        return cleaned.toBigDecimalOrNull() ?: throw ImportException("Invalid OFX number: $s")
     }
 
     private fun statement(rs: Element, options: ImportOptions): ImportedStatement {

@@ -1,0 +1,71 @@
+-- Version 5 to 6 (INV-01 to INV-05, REC-08): securities, prices, investment transactions and
+-- statements; cash lines know their investment transaction, and trades stay out of reports.
+
+ALTER TABLE txn ADD COLUMN investment_id TEXT;
+ALTER TABLE txn ADD COLUMN trade INTEGER NOT NULL DEFAULT 0;
+
+CREATE TABLE security (
+    id TEXT NOT NULL PRIMARY KEY,
+    symbol TEXT,
+    exchange TEXT,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('STOCK', 'ETF', 'MUTUAL_FUND', 'BOND', 'GIC', 'OPTION', 'OTHER')),
+    currency TEXT NOT NULL,
+    asset_class TEXT NOT NULL DEFAULT 'EQUITY' CHECK (asset_class IN ('EQUITY', 'FIXED_INCOME', 'CASH', 'BALANCED', 'REAL_ESTATE', 'COMMODITY', 'OTHER')),
+    region TEXT NOT NULL DEFAULT 'CANADA' CHECK (region IN ('CANADA', 'US', 'INTERNATIONAL', 'EMERGING', 'GLOBAL', 'OTHER')),
+    multiplier TEXT NOT NULL DEFAULT '1',
+    maturity TEXT,
+    coupon_rate TEXT,
+    notes TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE security_price (
+    security_id TEXT NOT NULL REFERENCES security(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    price TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'MANUAL',
+    PRIMARY KEY (security_id, date)
+);
+
+CREATE TABLE inv_txn (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('BUY', 'SELL', 'INCOME', 'REINVEST', 'RETURN_OF_CAPITAL', 'NOTIONAL_DISTRIBUTION', 'SPLIT', 'MERGER', 'TRANSFER_IN', 'TRANSFER_OUT', 'FEE')),
+    income_type TEXT CHECK (income_type IN ('DIVIDEND', 'INTEREST', 'DISTRIBUTION')),
+    security_id TEXT REFERENCES security(id),
+    quantity TEXT,
+    price TEXT,
+    amount_minor INTEGER NOT NULL DEFAULT 0,
+    fees_minor INTEGER NOT NULL DEFAULT 0,
+    withheld_minor INTEGER NOT NULL DEFAULT 0,
+    ratio TEXT,
+    other_security_id TEXT REFERENCES security(id),
+    external_id TEXT,
+    memo TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX inv_txn_account ON inv_txn(account_id, date);
+CREATE INDEX inv_txn_security ON inv_txn(security_id);
+CREATE UNIQUE INDEX inv_txn_external ON inv_txn(account_id, external_id) WHERE external_id IS NOT NULL;
+CREATE INDEX txn_investment ON txn(investment_id) WHERE investment_id IS NOT NULL;
+
+CREATE TABLE inv_statement (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    cash_minor INTEGER,
+    positions TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'RECONCILED')),
+    source TEXT,
+    created_at INTEGER NOT NULL,
+    reconciled_at INTEGER,
+    reconciled_by TEXT
+);
+
+CREATE INDEX inv_statement_account ON inv_statement(account_id, date);

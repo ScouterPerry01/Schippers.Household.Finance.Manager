@@ -39,6 +39,13 @@ import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.CreditCardTerms
 import ca.schippers.hfm.books.LoanDetails
+import ca.schippers.hfm.books.AssetClass
+import ca.schippers.hfm.books.IncomeType
+import ca.schippers.hfm.books.InvestmentKind
+import ca.schippers.hfm.books.InvestmentTxn
+import ca.schippers.hfm.books.Region
+import ca.schippers.hfm.books.Security
+import ca.schippers.hfm.books.SecurityKind
 import ca.schippers.hfm.calc.loan.Compounding
 import ca.schippers.hfm.calc.loan.LoanPlan
 import ca.schippers.hfm.calc.loan.LoanProjection
@@ -178,6 +185,7 @@ object DemoHousehold {
         addBills(books, chequing, savings, visa, today)
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
         addPetAndCarRecords(books, group, visa, rex, civic, today)
+        addInvestments(books, group, alex, sam, desjardins, today)
         addDocuments(books, group, today)
         // HH-05: Sam signs in too, as a member who can view the shared accounts.
         val samUser = books.users.add("sam", "Sam Demo", ca.schippers.hfm.domain.Role.MEMBER, "sam-demo-password".toCharArray(), sam.id).userId
@@ -244,6 +252,59 @@ object DemoHousehold {
     }
 
     /** The car's maintenance history and warranty, and the dog's vet visit and vaccines. */
+    /**
+     * INV-01 to INV-04: a non-registered account with a sale (a capital gain), a TFSA and an RRSP,
+     * bought over the past two years, with dividends, a reinvested distribution and current prices.
+     */
+    private fun addInvestments(books: Books, group: String, alex: Member, sam: Member, institution: Institution, today: LocalDate) {
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        fun n(s: String) = BigDecimal(s)
+        val inv = books.investments
+        val opened = today.minus(DatePeriod(years = 2))
+        // The cash each account started with, so the demo's chequing account is not drawn on years before it opens.
+        fun account(name: String, type: AccountType, owners: Set<String>, number: String, cash: String) =
+            books.accounts.create(AccountDraft(group, name, type, Currency.CAD, cad(cash), opened, institution.id, number, owners))
+        val brokerage = account("Courtage Disnat", AccountType.BROKERAGE, setOf(alex.id, sam.id), "DIS-4471230", "22000")
+        val tfsa = account("CELI Alex", AccountType.TFSA, setOf(alex.id), "CELI-5512", "14000")
+        val rrsp = account("REER Sam", AccountType.RRSP, setOf(sam.id), "REER-8820", "6000")
+        fun security(symbol: String, name: String, kind: SecurityKind, assetClass: AssetClass = AssetClass.EQUITY, region: Region = Region.CANADA) =
+            inv.saveSecurity(Security("", symbol, "TSX", name, kind, Currency.CAD, assetClass, region))
+        val xic = security("XIC", "iShares Core S&P/TSX Capped Composite", SecurityKind.ETF)
+        val vfv = security("VFV", "Vanguard S&P 500 Index ETF", SecurityKind.ETF, region = Region.US)
+        val zag = security("ZAG", "BMO Aggregate Bond Index ETF", SecurityKind.ETF, AssetClass.FIXED_INCOME)
+        val xeqt = security("XEQT", "iShares Core Equity ETF Portfolio", SecurityKind.ETF, region = Region.GLOBAL)
+        val ry = security("RY", "Royal Bank of Canada", SecurityKind.STOCK)
+
+        fun day(monthsAgo: Int) = today.minus(DatePeriod(months = monthsAgo))
+        fun buy(a: Account, s: Security, monthsAgo: Int, qty: String, price: String, fees: String = "9.95") = inv.save(
+            InvestmentTxn("", a.id, day(monthsAgo), InvestmentKind.BUY, s.id, n(qty), n(price), Money.of(n(qty).multiply(n(price)), Currency.CAD), cad(fees)),
+        )
+        fun income(a: Account, s: Security, monthsAgo: Int, amount: String, type: IncomeType = IncomeType.DIVIDEND) =
+            inv.save(InvestmentTxn("", a.id, day(monthsAgo), InvestmentKind.INCOME, s.id, amount = cad(amount), incomeType = type))
+
+        buy(brokerage, xic, 23, "200", "33.10")
+        buy(brokerage, ry, 23, "40", "128.40")
+        buy(brokerage, vfv, 18, "50", "112.25")
+        buy(brokerage, xic, 12, "100", "35.80")
+        for (m in listOf(21, 18, 15, 12, 9, 6, 3)) income(brokerage, xic, m, if (m > 12) "58.20" else "84.30")
+        for (m in listOf(20, 17, 14, 11, 8, 5, 2)) income(brokerage, ry, m, "55.20")
+        inv.save(InvestmentTxn("", brokerage.id, day(4), InvestmentKind.SELL, ry.id, n("15"), n("162.50"), cad("2437.50"), cad("9.95")))
+        inv.save(InvestmentTxn("", brokerage.id, LocalDate(today.year - 1, 12, 31), InvestmentKind.NOTIONAL_DISTRIBUTION, vfv.id, amount = cad("21.40")))
+
+        buy(tfsa, xeqt, 22, "250", "26.90", "0")
+        buy(tfsa, xeqt, 10, "220", "30.70", "0")
+        inv.save(InvestmentTxn("", tfsa.id, day(1), InvestmentKind.REINVEST, xeqt.id, n("3"), n("34.10"), cad("102.30"), incomeType = IncomeType.DISTRIBUTION))
+
+        buy(rrsp, zag, 19, "300", "13.60")
+        buy(rrsp, xic, 19, "50", "33.90")
+        for (m in listOf(18, 15, 12, 9, 6, 3)) income(rrsp, zag, m, "36.00", IncomeType.DISTRIBUTION)
+
+        for ((s, price) in listOf(xic to "39.85", vfv to "141.30", zag to "13.92", xeqt to "34.60", ry to "171.20")) inv.setPrice(s.id, today, n(price))
+        // REC-08: last month's statement for the brokerage account, waiting to be checked.
+        val held = inv.holdings(brokerage.id, day(1))
+        inv.saveStatement(brokerage.id, day(1), held.cash, held.holdings.associate { it.security.id to it.quantity }, "MANUAL")
+    }
+
     private fun addPetAndCarRecords(books: Books, group: String, visa: Account, rex: Pet, civic: Vehicle, today: LocalDate) {
         fun cad(s: String) = Money.parse(s, Currency.CAD)
         fun cat(key: String) = books.categories.list().first { it.systemKey == key }.id

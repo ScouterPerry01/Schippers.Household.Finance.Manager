@@ -44,6 +44,9 @@ data class QifInvestment(
     val transferAmount: BigDecimal?,
 )
 
+/** A security from the !Type:Security list: name, ticker symbol and Quicken's type (Stock, Mutual Fund...). */
+data class QifSecurity(val name: String, val symbol: String?, val type: String?)
+
 /** A date as written; its day and month order is decided for the whole file (see [QifFile.dateOrder]). */
 data class QifDate(val first: Int, val second: Int, val year: Int, val yearFirst: Boolean) {
     fun toLocalDate(order: DateOrder): LocalDate? = runCatching {
@@ -66,6 +69,7 @@ data class QifFile(
     /** What the dates say: decided when any day is over 12, otherwise null (ask the user). */
     val dateOrder: DateOrder?,
     val warnings: List<String>,
+    val securities: List<QifSecurity> = emptyList(),
 )
 
 /**
@@ -83,6 +87,7 @@ object QifParser {
         val classes = ArrayList<String>()
         val transactions = ArrayList<QifTransaction>()
         val investments = ArrayList<QifInvestment>()
+        val securities = ArrayList<QifSecurity>()
         val warnings = ArrayList<String>()
         var section = ""
         var currentAccount: QifAccount? = null
@@ -110,6 +115,7 @@ object QifParser {
                     categories += QifCategory(n.split(':').map(String::trim), fields.any { it.startsWith("I") }, value(fields, 'D'), fields.any { it == "T" || it.startsWith("T") })
                 }
                 section == "class" -> value(fields, 'N')?.let { classes += it }
+                section == "security" -> value(fields, 'N')?.let { securities += QifSecurity(it, value(fields, 'S')?.ifBlank { null }, value(fields, 'T')) }
                 section == "invst" -> parseInvestment(fields, accountFor(QifAccountKind.INVESTMENT), warnings)?.let { investments += it }
                 kind != null -> parseTransaction(fields, accountFor(kind), warnings)?.let { transactions += it }
                 else -> Unit // memorized transactions, prices, securities and the like are not needed
@@ -139,7 +145,7 @@ object QifParser {
         }
         flush()
         if (!autoSwitch && accounts.isEmpty() && transactions.isNotEmpty()) warnings += "No account list: everything was read into one account."
-        return QifFile(accounts.values.toList(), categories, classes, transactions, investments, dateOrder(transactions.map { it.date } + investments.map { it.date }), warnings)
+        return QifFile(accounts.values.toList(), categories, classes, transactions, investments, dateOrder(transactions.map { it.date } + investments.map { it.date }), warnings, securities)
     }
 
     /** The order of day and month: decided by any value over 12; null when every date could be either. */

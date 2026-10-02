@@ -129,6 +129,27 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 5 ledgers keep their transactions in reports and gain investments`() {
+        val file = temp.resolve("ledger5.db")
+        older("../data/src/main/sqldelight/ledger/schemas/5.db", file, 5).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('b', 'Courtage', 'BROKERAGE', 'CAD', '2026-01-01', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO txn(id, account_id, date, amount_minor, created_at, updated_at) VALUES ('t', 'b', '2026-01-02', 2410, 0, 0)", 0)
+            driver.execute(null, "INSERT INTO txn_split(id, txn_id, amount_minor) VALUES ('s', 't', 2410)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val db = LedgerDatabase(driver)
+            assertEquals(1, db.ledgerQueries.categoryMonthly("2026-01-01", "2026-01-31", null, null).executeAsList().size, "existing lines are not trades")
+            db.investmentsQueries.upsertSecurity("x", "XIC", "TSX", "iShares XIC", "ETF", "CAD", "EQUITY", "CANADA", "1", null, null, null, 0, 0, 0)
+            db.investmentsQueries.insertInvTxn("i", "b", "2026-01-15", "BUY", null, "x", "10", "38.5", 38500, 995, 0, null, null, "T1", null, 0, 0)
+            db.investmentsQueries.putPrice("x", "2026-01-31", "39", "MANUAL")
+            db.ledgerQueries.setTxnInvestment("i", 1, "t")
+            assertEquals(0, db.ledgerQueries.payeeDaily("2026-01-01", "2026-01-31", null, null).executeAsList().size, "trades stay out of reports")
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()

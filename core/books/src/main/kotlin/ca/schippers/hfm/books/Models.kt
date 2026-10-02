@@ -138,6 +138,8 @@ data class Transaction(
     val splits: List<Split>,
     val tagIds: Set<String>,
     val createdBy: String?,
+    /** INV-02: the investment transaction this cash line belongs to; it changes only from there. */
+    val investmentId: String? = null,
 ) {
     val isSplit: Boolean get() = splits.size > 1
 }
