@@ -7,7 +7,9 @@ CREATE TABLE registered_plan (
     contributor_member_id TEXT,
     minimum_age_member_id TEXT,
     lif_reference_rate TEXT,
-    notes TEXT
+    notes TEXT,
+    -- PROV-05: the law a LIRA or LIF answers to (a province's code, or FEDERAL); null means the holder's province.
+    jurisdiction TEXT
 );
 
 -- INV-11: beneficiaries and the successor holder; RESP beneficiaries are household members.
@@ -63,7 +65,7 @@ CREATE TABLE resp_grant (
     account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     member_id TEXT NOT NULL,
     date TEXT NOT NULL,
-    kind TEXT NOT NULL CHECK (kind IN ('CESG', 'QESI', 'CLB', 'OTHER')),
+    kind TEXT NOT NULL CHECK (kind IN ('CESG', 'QESI', 'BCTESG', 'CLB', 'OTHER')),
     amount_minor INTEGER NOT NULL,
     txn_id TEXT,
     notes TEXT
@@ -107,7 +109,7 @@ CREATE TABLE pension_statement (
 CREATE INDEX pension_statement_pension ON pension_statement(pension_id, year);
 
 upsertPlan:
-INSERT OR REPLACE INTO registered_plan(account_id, contributor_member_id, minimum_age_member_id, lif_reference_rate, notes) VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO registered_plan(account_id, contributor_member_id, minimum_age_member_id, lif_reference_rate, notes, jurisdiction) VALUES (?, ?, ?, ?, ?, ?);
 
 plan:
 SELECT * FROM registered_plan WHERE account_id = ?;

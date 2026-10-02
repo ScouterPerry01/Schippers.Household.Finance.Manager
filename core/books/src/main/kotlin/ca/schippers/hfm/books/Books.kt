@@ -1,5 +1,7 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.Province
+import ca.schippers.hfm.calc.schedule.BusinessDays
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.data.HouseholdSession
 import ca.schippers.hfm.domain.AccessPolicy
@@ -50,7 +52,24 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val quicken = QifImportService(this)
     val users = UserService(this)
 
+    /** PROV-01: the household's province or territory, whose rules apply unless a person has their own. */
+    val province: Province get() = Province.of(core.household().executeAsOne().province) ?: Province.QC
+
+    /** The province whose rules apply to [memberId]: their own when set, otherwise the household's. */
+    fun provinceOf(memberId: String?): Province =
+        memberId?.let { id -> members.list(includeArchived = true).firstOrNull { it.id == id }?.province } ?: province
+
+    /** Changes the household's province: bank holidays follow, and its default categories are added. */
+    fun setProvince(p: Province) {
+        requireAdmin(this)
+        core.setHouseholdProvince(p.name)
+        BusinessDays.province = p
+        categories.addForProvince()
+        session.audit("UPDATE", "household", null, "province ${p.name}")
+    }
+
     init {
+        BusinessDays.province = province
         categories.ensureDefaults()
     }
 

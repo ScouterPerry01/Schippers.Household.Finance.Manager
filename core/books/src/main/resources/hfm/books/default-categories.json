@@ -3,7 +3,7 @@
     { "key": "housing.rent", "en": "Rent", "fr": "Loyer" },
     { "key": "housing.mortgage_interest", "en": "Mortgage interest", "fr": "Intérêts hypothécaires" },
     { "key": "housing.municipal_tax", "en": "Municipal taxes", "fr": "Taxes municipales" },
-    { "key": "housing.school_tax", "en": "School taxes", "fr": "Taxes scolaires" },
+    { "key": "housing.school_tax", "en": "School taxes", "fr": "Taxes scolaires", "only": ["QC"] },
     { "key": "housing.condo_fees", "en": "Condo fees", "fr": "Frais de copropriété" },
     { "key": "housing.insurance", "en": "Home insurance", "fr": "Assurance habitation" },
     { "key": "housing.maintenance", "en": "Maintenance and repairs", "fr": "Entretien et réparations" },
@@ -130,10 +130,12 @@
   ]},
   { "key": "income.benefits", "en": "Government benefits", "fr": "Prestations gouvernementales", "kind": "INCOME", "children": [
     { "key": "income.benefits.ccb", "en": "Canada Child Benefit", "fr": "Allocation canadienne pour enfants" },
-    { "key": "income.benefits.family_allowance", "en": "Quebec Family Allowance", "fr": "Allocation famille (Québec)" },
+    { "key": "income.benefits.family_allowance", "en": "Quebec Family Allowance", "fr": "Allocation famille (Québec)", "only": ["QC"] },
+    { "key": "income.benefits.provincial", "en": "Provincial benefits and credits", "fr": "Prestations et crédits provinciaux", "except": ["QC"] },
     { "key": "income.benefits.gst_credit", "en": "GST/HST credit", "fr": "Crédit pour la TPS/TVH" },
-    { "key": "income.benefits.solidarity", "en": "Solidarity tax credit", "fr": "Crédit d'impôt pour solidarité" },
-    { "key": "income.benefits.ei_qpip", "en": "Employment Insurance / QPIP", "fr": "Assurance-emploi / RQAP" },
+    { "key": "income.benefits.solidarity", "en": "Solidarity tax credit", "fr": "Crédit d'impôt pour solidarité", "only": ["QC"] },
+    { "key": "income.benefits.ei_qpip", "en": "Employment Insurance / QPIP", "fr": "Assurance-emploi / RQAP", "only": ["QC"] },
+    { "key": "income.benefits.ei", "en": "Employment Insurance", "fr": "Assurance-emploi", "except": ["QC"] },
     { "key": "income.benefits.resp_grants", "en": "RESP grants (CESG, QESI)", "fr": "Subventions REEE (SCEE, IQEE)" }
   ]},
   { "key": "income.investment", "en": "Investment income", "fr": "Revenus de placement", "kind": "INCOME", "children": [

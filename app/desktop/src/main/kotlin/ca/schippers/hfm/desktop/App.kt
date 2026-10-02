@@ -1,5 +1,7 @@
 package ca.schippers.hfm.desktop
 
+import androidx.compose.foundation.layout.width
+import ca.schippers.hfm.calc.Province
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -163,6 +165,7 @@ private fun CreateScreen(state: AppState) {
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
+    var province by remember { mutableStateOf(Province.QC) }
     var error by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -173,6 +176,8 @@ private fun CreateScreen(state: AppState) {
         Text(parent?.toString() ?: "", style = MaterialTheme.typography.bodySmall)
     }
     Field(state.t("create.name"), name) { name = it }
+    // PROV-01: the province or territory whose rules apply; it can be changed later.
+    Picker(state.t("household.province"), Province.entries.sortedBy { state.t("province.$it") }, province, { state.t("province.$it") }, Modifier.width(400.dp)) { province = it }
     Field(state.t("create.adminName"), adminName) { adminName = it }
     Field(state.t("create.login"), login) { login = it }
     Field(state.t("create.password"), password, secret = true) { password = it }
@@ -195,7 +200,7 @@ private fun CreateScreen(state: AppState) {
                     try {
                         val dir = parent!!.resolve("${name.trim()}.hfm")
                         val created = withContext(Dispatchers.IO) {
-                            state.store.create(dir, name, login, adminName, password.toCharArray(), locale = state.language.locale.toLanguageTag())
+                            state.store.create(dir, name, login, adminName, password.toCharArray(), locale = state.language.locale.toLanguageTag(), province = province.name)
                         }
                         state.remember(dir)
                         state.screen = Screen.ShowRecoveryKey(created.session, created.recoveryKey)

@@ -1,0 +1,4 @@
+-- Version 4 to 5 (PROV-01): the household's province or territory, and a person's own when it differs.
+
+ALTER TABLE household ADD COLUMN province TEXT NOT NULL DEFAULT 'QC';
+ALTER TABLE member ADD COLUMN province TEXT;

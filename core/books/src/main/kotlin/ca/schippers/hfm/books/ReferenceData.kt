@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.domain.Ids
@@ -14,7 +15,7 @@ import kotlinx.serialization.json.Json
 class MemberService internal constructor(private val books: Books) {
 
     fun list(includeArchived: Boolean = false): List<Member> = books.core.members().executeAsList()
-        .map { Member(it.id, it.display_name, MemberKind.valueOf(it.kind), it.birth_date?.let(LocalDate::parse), it.archived == 1L) }
+        .map { Member(it.id, it.display_name, MemberKind.valueOf(it.kind), it.birth_date?.let(LocalDate::parse), it.archived == 1L, Province.of(it.province)) }
         .filter { includeArchived || !it.archived }
 
     fun create(displayName: String, kind: MemberKind, birthDate: LocalDate? = null): Member {
@@ -30,6 +31,7 @@ class MemberService internal constructor(private val books: Books) {
         requireAdmin(books)
         validate(member.displayName.isNotBlank(), "error.nameRequired")
         books.core.updateMember(member.displayName.trim(), member.kind.name, member.birthDate?.toString(), if (member.archived) 1 else 0, member.id)
+        books.core.setMemberProvince(member.province?.name, member.id)
         books.session.audit("UPDATE", "member", member.id)
     }
 
@@ -146,10 +148,13 @@ class CategoryService internal constructor(private val books: Books) {
             if (version < 2) addMissing(roots, ADDED_IN_2)
             if (version < 3) addMissing(roots, ADDED_IN_3)
             if (version < 4) addMissing(roots, ADDED_IN_4)
+            if (version < 5) addMissing(roots, ADDED_IN_5)
             return
         }
+        val province = books.province
         books.session.core.transaction {
             fun insert(node: DefaultCategory, parentId: String?, kind: String, index: Int) {
+                if (!node.appliesTo(province)) return
                 val id = Ids.newId()
                 val nodeKind = node.kind ?: kind
                 books.core.insertCategory(id, parentId, node.key, node.en, node.fr, nodeKind, node.tax, index.toLong())
@@ -160,14 +165,26 @@ class CategoryService internal constructor(private val books: Books) {
         }
     }
 
-    /** Inserts the default categories in [keys] that are missing, under their default parent if it still exists. */
+    /**
+     * PROV-03: after the household's province changes, adds the default categories meant for it
+     * (Employment Insurance, provincial benefits...). Categories already there are never removed.
+     */
+    internal fun addForProvince() {
+        val text = javaClass.getResourceAsStream("/hfm/books/default-categories.json")!!.reader(Charsets.UTF_8).use { it.readText() }
+        val roots = Json.decodeFromString<List<DefaultCategory>>(text)
+        fun regional(node: DefaultCategory): List<String> = listOfNotNull(node.key.takeIf { node.only != null || node.except != null }) + node.children.flatMap(::regional)
+        addMissing(roots, roots.flatMap(::regional).toSet())
+    }
+
+    /** Inserts the default categories in [keys] that are missing and apply to the household's province, under their default parent if it still exists. */
     private fun addMissing(roots: List<DefaultCategory>, keys: Set<String>) {
+        val province = books.province
         val existing = books.core.categories().executeAsList()
         val byKey = existing.mapNotNull { row -> row.system_key?.let { it to row } }.toMap().toMutableMap()
         books.session.core.transaction {
             fun visit(node: DefaultCategory, parentKey: String?, kind: String, index: Int) {
                 val nodeKind = node.kind ?: kind
-                if (node.key in keys && node.key !in byKey) {
+                if (node.key in keys && node.key !in byKey && node.appliesTo(province)) {
                     val parent = parentKey?.let(byKey::get)
                     if (parentKey == null || parent != null) {
                         val id = Ids.newId()
@@ -184,12 +201,15 @@ class CategoryService internal constructor(private val books: Books) {
 
     private companion object {
         const val DEFAULTS_VERSION = "categories.defaultsVersion"
-        const val CURRENT_DEFAULTS = 4
+        const val CURRENT_DEFAULTS = 5
 
         /** Default categories added in version 2 (CAT-06). */
         val ADDED_IN_2 = setOf("transport.transit.pass", "transport.transit.fares", "pets.licence", "pets.insurance", "pets.boarding")
         val ADDED_IN_3 = setOf("financial.investment_fees", "taxes.foreign_tax")
         val ADDED_IN_4 = setOf("income.benefits.resp_grants")
+
+        /** PROV-03: categories for provinces other than Quebec; Quebec households receive none of them. */
+        val ADDED_IN_5 = setOf("income.benefits.ei", "income.benefits.provincial")
     }
 
     @Serializable
@@ -198,9 +218,14 @@ class CategoryService internal constructor(private val books: Books) {
         val en: String,
         val fr: String,
         val kind: String? = null,
+        /** PROV-03: the provinces a category is for, or those it is not for; neither means everywhere. */
+        val only: List<String>? = null,
+        val except: List<String>? = null,
         val tax: String? = null,
         val children: List<DefaultCategory> = emptyList(),
-    )
+    ) {
+        fun appliesTo(p: Province): Boolean = (only == null || p.name in only) && (except == null || p.name !in except)
+    }
 }
 
 /** Payees with aliases that map statement text to a clean name (section 7.4). */

@@ -40,6 +40,8 @@ class HouseholdStore(
         password: CharArray,
         baseCurrency: String = "CAD",
         locale: String = "fr-CA",
+        /** PROV-01: the province or territory code, e.g. "ON". */
+        province: String = "QC",
     ): CreatedHousehold {
         require(householdName.isNotBlank()) { "Household name is required" }
         require(adminLogin.isNotBlank()) { "Login name is required" }
@@ -64,7 +66,7 @@ class HouseholdStore(
         val session = HouseholdSession(this, dir, header, adminId, keys, mutableMapOf(corePartition.id to coreKey))
         val now = clock()
         session.core.transaction {
-            session.core.coreQueries.insertHousehold(householdId, householdName.trim(), baseCurrency, locale, now)
+            session.core.coreQueries.insertHousehold(householdId, householdName.trim(), baseCurrency, locale, now, province)
             session.core.coreQueries.insertUser(adminId, adminLogin.trim(), adminDisplayName.trim(), Role.ADMINISTRATOR.name, null, keys.publicKey, locale, now)
         }
         session.audit("CREATE", "household", householdId)

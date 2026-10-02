@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Account
+import ca.schippers.hfm.calc.PensionJurisdiction
 import ca.schippers.hfm.books.Beneficiary
 import ca.schippers.hfm.books.BeneficiaryKind
 import ca.schippers.hfm.books.GrantKind
@@ -172,7 +173,10 @@ private fun WithdrawalsTab(model: BooksModel, year: Int, onAction: (PlanAction) 
         Card(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
             Column(Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(w.account.name + " · " + model.t("accountType.${w.account.type}"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    Text(
+                        listOfNotNull(w.account.name, model.t("accountType.${w.account.type}"), w.jurisdiction?.let { jurisdictionName(model, it) }).joinToString(" · "),
+                        style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f),
+                    )
                     TextButton(onClick = { onAction(PlanAction.Details(w.account, year)) }) { Text(model.t("plans.details")) }
                 }
                 FlowRow(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
@@ -180,6 +184,7 @@ private fun WithdrawalsTab(model: BooksModel, year: Int, onAction: (PlanAction) 
                     Stat(model.t("plans.age"), w.age?.toString() ?: "–")
                     Stat(model.t("plans.minimum"), w.minimum?.let(model::money) ?: "–")
                     w.maximum?.let { Stat(model.t("plans.maximum"), model.money(it)) }
+                    if (w.jurisdiction != null && w.maximum == null && !w.firstYear) Stat(model.t("plans.maximum"), model.t("plans.noMaximum"))
                     Stat(model.t("plans.withdrawnYear"), model.money(w.withdrawn))
                     Stat(model.t("plans.stillToWithdraw"), w.leftToWithdraw?.let(model::money) ?: "–")
                 }
@@ -207,16 +212,22 @@ private fun RespTab(model: BooksModel, year: Int, onAction: (PlanAction) -> Unit
             model.t("plans.resp"), year.toString(),
             listOf(
                 model.t("plans.beneficiary"), model.t("plans.contributedYear", year.toString()), model.t("plans.contributedTotal"), model.t("plans.cesgExpected"),
-                model.t("plans.cesgReceived"), model.t("plans.qesiExpected"), model.t("plans.qesiReceived"), model.t("plans.respLifetimeLeft"),
+                model.t("plans.cesgReceived"), model.t("plans.provincialGrant"), model.t("plans.provincialExpected"), model.t("plans.provincialReceived"), model.t("plans.respLifetimeLeft"),
             ),
-            rows.map { r -> listOf(r.member.displayName, r.contributionsThisYear, r.contributionsTotal, r.cesgExpected, r.cesgReceived, r.qesiExpected, r.qesiReceived, r.lifetimeLeft) },
+            rows.map { r ->
+                listOf(
+                    r.member.displayName, r.contributionsThisYear, r.contributionsTotal, r.cesgExpected, r.cesgReceived,
+                    r.provincialGrant?.let { model.t("grantShort.$it") } ?: model.t("plans.noProvincialGrant"),
+                    r.provincialExpected.takeIf { r.provincialGrant != null }, r.provincialReceived.takeIf { r.provincialGrant != null }, r.lifetimeLeft,
+                )
+            },
         ),
         startOpen = true,
     )
     for (r in rows) {
         val pending = listOfNotNull(
             (r.cesgExpected - r.cesgReceived).takeIf { it.isPositive }?.let { model.t("plans.cesgShort") + " " + model.money(it) },
-            (r.qesiExpected - r.qesiReceived).takeIf { it.isPositive }?.let { model.t("plans.qesiShort") + " " + model.money(it) },
+            (r.provincialExpected - r.provincialReceived).takeIf { it.isPositive }?.let { model.t("grantShort.${r.provincialGrant}") + " " + model.money(it) },
         )
         if (pending.isNotEmpty()) Text(model.t("plans.grantsPending", r.member.displayName, pending.joinToString(", ")), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
         if (r.member.birthDate == null) Text(model.t("plans.respBirthDate", r.member.displayName), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
@@ -292,7 +303,12 @@ private fun BeneficiariesTab(model: BooksModel, onAction: (PlanAction) -> Unit) 
 // --- Dialogs -------------------------------------------------------------------------------------------------
 
 /** Plans with details to set: a contributor, the age for the minimum, the January 1 value, the LIF rate. */
-private val WITH_DETAILS = setOf(AccountType.SPOUSAL_RRSP, AccountType.SPOUSAL_RRIF, AccountType.RESP, AccountType.RRIF, AccountType.LIF)
+private val WITH_DETAILS = setOf(AccountType.SPOUSAL_RRSP, AccountType.SPOUSAL_RRIF, AccountType.RESP, AccountType.RRIF, AccountType.LIF, AccountType.LIRA)
+
+private fun jurisdictionName(model: BooksModel, j: PensionJurisdiction): String = when (j) {
+    PensionJurisdiction.Federal -> model.t("jurisdiction.FEDERAL")
+    is PensionJurisdiction.Provincial -> model.t("province.${j.province}")
+}
 
 private fun parseDate(text: String): LocalDate = runCatching { LocalDate.parse(text.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
 
@@ -386,6 +402,7 @@ private fun DetailsDialog(model: BooksModel, account: Account, year: Int, onClos
     var contributor by remember { mutableStateOf(members.firstOrNull { it.id == d.contributorMemberId }) }
     var ageMember by remember { mutableStateOf(members.firstOrNull { it.id == d.minimumAgeMemberId }) }
     var rate by remember { mutableStateOf(d.lifReferenceRate?.movePointRight(2)?.stripTrailingZeros()?.toPlainString().orEmpty()) }
+    var jurisdiction by remember { mutableStateOf(d.jurisdiction) }
     val status = remember { model.books.plans.withdrawalStatus(account, year) }
     var value by remember { mutableStateOf(if (status.valueEntered) status.valueJanuary1?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty() else "") }
     var earnings by remember { mutableStateOf("") }
@@ -393,7 +410,7 @@ private fun DetailsDialog(model: BooksModel, account: Account, year: Int, onClos
     FormDialog(model.t("plans.detailsOf", account.name), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.plans.saveDetails(
-                PlanDetails(account.id, contributor?.id, ageMember?.id, rate.trim().ifEmpty { null }?.let { MoneyFormat.parseDecimal(it, locale).movePointLeft(2) }, d.notes),
+                PlanDetails(account.id, contributor?.id, ageMember?.id, rate.trim().ifEmpty { null }?.let { MoneyFormat.parseDecimal(it, locale).movePointLeft(2) }, d.notes, jurisdiction),
             )
             if (withdrawals) model.books.plans.setValueJanuary1(account.id, year, parseAmount(value, account.currency, locale), parseAmount(earnings, account.currency, locale))
         }
@@ -402,6 +419,14 @@ private fun DetailsDialog(model: BooksModel, account: Account, year: Int, onClos
         if (account.type in setOf(AccountType.SPOUSAL_RRSP, AccountType.SPOUSAL_RRIF, AccountType.RESP)) {
             Text(model.t(if (account.type == AccountType.RESP) "plans.subscriberHint" else "plans.contributorHint"), style = MaterialTheme.typography.bodySmall)
             Picker(model.t(if (account.type == AccountType.RESP) "plans.subscriber" else "plans.contributor"), listOf<Member?>(null) + members, contributor, { it?.displayName ?: model.t("common.none") }) { contributor = it }
+        }
+        if (account.type in setOf(AccountType.LIF, AccountType.LIRA)) {
+            // PROV-05: the pension law the locked-in money answers to.
+            Text(model.t("plans.jurisdictionHint"), style = MaterialTheme.typography.bodySmall)
+            Picker(
+                model.t("plans.jurisdiction"), listOf<PensionJurisdiction?>(null) + PensionJurisdiction.all, jurisdiction,
+                { it?.let { j -> jurisdictionName(model, j) } ?: model.t("plans.jurisdictionHolder") },
+            ) { jurisdiction = it }
         }
         if (withdrawals) {
             Text(model.t("plans.valueHint", year.toString()), style = MaterialTheme.typography.bodySmall)
@@ -452,6 +477,9 @@ private fun GrantDialog(model: BooksModel, start: Account?, onClose: () -> Unit)
 private fun PensionDialog(model: BooksModel, existing: Pension?, onClose: () -> Unit) {
     val members = remember { model.books.members.list().filter { it.kind == ca.schippers.hfm.domain.MemberKind.ADULT } }
     var member by remember { mutableStateOf(members.firstOrNull { it.id == existing?.memberId } ?: members.firstOrNull()) }
+    // The QPP in Quebec, the CPP elsewhere, offered first (PROV-06).
+    val quebec = remember(member) { model.books.provinceOf(member?.id).isQuebec }
+    val kinds = PensionKind.entries.sortedBy { if (it == (if (quebec) PensionKind.CPP else PensionKind.QPP)) 1 else 0 }
     var kind by remember { mutableStateOf(existing?.kind ?: PensionKind.DEFINED_BENEFIT) }
     var name by remember { mutableStateOf(existing?.name.orEmpty()) }
     var administrator by remember { mutableStateOf(existing?.administrator.orEmpty()) }
@@ -477,7 +505,7 @@ private fun PensionDialog(model: BooksModel, existing: Pension?, onClose: () -> 
         Column(Modifier.heightIn(max = 600.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Picker(model.t("plans.person"), members, member, { it.displayName }, Modifier.weight(1f)) { member = it }
-                Picker(model.t("plans.pensionKind"), PensionKind.entries, kind, { model.t("pensionKind.$it") }, Modifier.weight(1f)) { k ->
+                Picker(model.t("plans.pensionKind"), kinds, kind, { model.t("pensionKind.$it") }, Modifier.weight(1f)) { k ->
                     kind = k
                     if (name.isBlank()) name = model.t("pensionKind.$k")
                     if (payer.isBlank()) payer = when (k) { PensionKind.QPP -> "Retraite Québec"; PensionKind.CPP, PensionKind.OAS -> "Service Canada"; else -> "" }

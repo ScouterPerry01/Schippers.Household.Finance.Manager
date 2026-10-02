@@ -6,7 +6,9 @@ CREATE TABLE household (
     name TEXT NOT NULL,
     base_currency TEXT NOT NULL DEFAULT 'CAD',
     default_locale TEXT NOT NULL DEFAULT 'fr-CA',
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    -- PROV-01: the province or territory whose rules apply (bank holidays, grants, tax forms).
+    province TEXT NOT NULL DEFAULT 'QC'
 );
 
 -- People in the household (HH-01): owners of accounts, patients, plan members.
@@ -16,7 +18,9 @@ CREATE TABLE member (
     kind TEXT NOT NULL CHECK (kind IN ('ADULT', 'CHILD', 'DEPENDANT')),
     birth_date TEXT,
     archived INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    -- PROV-01: a person who lives or files elsewhere than the household; null means the household's.
+    province TEXT
 );
 
 -- PET-01, PET-02: pets in the household. Records that name a person (health, calendar,
@@ -208,7 +212,10 @@ CREATE TABLE audit_log (
 CREATE INDEX audit_log_at ON audit_log(at);
 
 insertHousehold:
-INSERT INTO household(id, name, base_currency, default_locale, created_at) VALUES (?, ?, ?, ?, ?);
+INSERT INTO household(id, name, base_currency, default_locale, created_at, province) VALUES (?, ?, ?, ?, ?, ?);
+
+setHouseholdProvince:
+UPDATE household SET province = ?;
 
 household:
 SELECT * FROM household LIMIT 1;
@@ -228,6 +235,9 @@ INSERT INTO member(id, display_name, kind, birth_date, created_at) VALUES (?, ?,
 
 updateMember:
 UPDATE member SET display_name = ?, kind = ?, birth_date = ?, archived = ? WHERE id = ?;
+
+setMemberProvince:
+UPDATE member SET province = ? WHERE id = ?;
 
 members:
 SELECT * FROM member ORDER BY archived, display_name;

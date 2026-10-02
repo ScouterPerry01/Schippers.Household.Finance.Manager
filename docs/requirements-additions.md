@@ -83,3 +83,23 @@ The vehicle part of section 11 (AST, WAR, INS, MNT), brought forward from Phase 
 | ID | Requirement | Priority |
 | --- | --- | --- |
 | CAT-06 | Public transit is split into Transit passes and Fares and tickets; Pets gains Licence, Insurance and Boarding. Existing households receive the new categories when upgraded. | Should |
+
+## Provinces and territories
+
+Requested on 2026-10-02, during Phase 3: full support for every province and territory, not only
+Quebec. Built before Phase 3d.
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| PROV-01 | The household has a province or territory, chosen when it is created (existing households are in Quebec) and changeable later; a person who lives or files elsewhere can have their own. | Must |
+| PROV-02 | Bank holidays follow the province or territory for "last business day" bills: Family Day and its equivalents, the Civic Holiday, Fête nationale in Quebec, the territorial days. | Must |
+| PROV-03 | Default categories follow the province: Quebec-only ones (school taxes, Quebec Family Allowance, solidarity credit, EI/QPIP) only in Quebec; Employment Insurance and provincial benefits elsewhere. Changing province adds the new province's categories and removes none. | Should |
+| PROV-04 | Provincial RESP grants follow the beneficiary's province: the QESI in Quebec, the B.C. Training and Education Savings Grant in British Columbia; none where the province has none. | Should |
+| PROV-05 | Each LIRA and LIF records the law it answers to (a province, or federal), by default the holder's province; the LIF maximum follows it (none in Saskatchewan and Prince Edward Island). | Must |
+| PROV-06 | Pension and tax wording follow the province: the QPP offered first in Quebec and the CPP elsewhere; Quebec forms (TP-21.4.39, RL slips) named only for Quebec. | Should |
+| PROV-07 | Later phases use the province too: provincial medical expense credit totals (MED-14) and provincial slips (RL-3, RL-16 in Quebec) in the tax and medical reports. | Should |
+
+Not covered yet: unlocking rules for locked-in plans (age 55 or 65, small balances, financial
+hardship), which differ by jurisdiction and are left to the institution; provincial grants that are
+suspended (Saskatchewan's SAGES).
+

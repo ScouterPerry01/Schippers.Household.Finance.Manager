@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.plans.RegisteredPlans
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.AccountType
@@ -160,7 +161,8 @@ class PlanServiceTest {
         assertEquals(cad("5000"), l.contributionsTotal)
         assertEquals(cad("1000.00"), l.cesgExpected, "20% of 5,000, at most 1,000 in a year")
         assertEquals(cad("500"), l.cesgReceived)
-        assertEquals(cad("500.00"), l.qesiExpected, "10% of 5,000, at most 500 in a year")
+        assertEquals(RegisteredPlans.ProvincialGrant.QESI, l.provincialGrant, "the household is in Quebec")
+        assertEquals(cad("500.00"), l.provincialExpected, "10% of 5,000, at most 500 in a year")
         assertEquals(cad("45000"), l.lifetimeLeft)
         assertEquals(cad("2500"), status.getValue("Noah").contributionsTotal)
         assertEquals(cad("500"), books.accounts.list().first { it.account.id == resp.id }.balance - cad("7500"), "the grant is in the register")

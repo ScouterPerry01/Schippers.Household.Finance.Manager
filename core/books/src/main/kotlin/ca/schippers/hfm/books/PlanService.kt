@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.PensionJurisdiction
 import ca.schippers.hfm.calc.plans.RegisteredPlans
 import ca.schippers.hfm.domain.AccountStatus
 import ca.schippers.hfm.domain.AccountType
@@ -15,7 +16,7 @@ import java.math.BigDecimal
 
 enum class RoomPlan { RRSP, TFSA, FHSA }
 enum class BeneficiaryKind { BENEFICIARY, SUCCESSOR_HOLDER, RESP_BENEFICIARY }
-enum class GrantKind { CESG, QESI, CLB, OTHER }
+enum class GrantKind { CESG, QESI, BCTESG, CLB, OTHER }
 enum class PensionKind { DEFINED_BENEFIT, DEFINED_CONTRIBUTION, QPP, CPP, OAS, OTHER }
 
 /** Where a room figure comes from: the CRA (entered), worked out from the rules and the books, or not known. */
@@ -32,6 +33,8 @@ data class PlanDetails(
     val minimumAgeMemberId: String? = null,
     val lifReferenceRate: BigDecimal? = null,
     val notes: String? = null,
+    /** PROV-05: the law a LIRA or LIF answers to; null means the holder's province. */
+    val jurisdiction: PensionJurisdiction? = null,
 )
 
 /** INV-11. */
@@ -85,10 +88,12 @@ data class WithdrawalStatus(
     val valueEntered: Boolean,
     val age: Int?,
     val minimum: Money?,
-    /** LIF only. */
+    /** LIF only, where the jurisdiction sets one. */
     val maximum: Money?,
     val withdrawn: Money,
     val firstYear: Boolean,
+    /** LIF only: the jurisdiction whose rules apply. */
+    val jurisdiction: PensionJurisdiction? = null,
 ) {
     val leftToWithdraw: Money? get() = minimum?.let { (it - withdrawn).let { left -> if (left.isNegative) Money.zero(left.currency) else left } }
     val overMaximum: Boolean get() = maximum != null && withdrawn > maximum
@@ -96,15 +101,20 @@ data class WithdrawalStatus(
 
 data class RespGrantRecord(val id: String, val accountId: String, val memberId: String, val date: LocalDate, val kind: GrantKind, val amount: Money, val notes: String?)
 
-/** One RESP beneficiary across all the household's RESPs: contributions, grants expected and received. */
+/**
+ * One RESP beneficiary across all the household's RESPs: contributions, grants expected and
+ * received. [provincialGrant] is the grant of the province the beneficiary lives in (QESI in
+ * Quebec, BCTESG in British Columbia), or null where there is none (PROV-04).
+ */
 data class RespBeneficiaryStatus(
     val member: Member,
     val contributionsTotal: Money,
     val contributionsThisYear: Money,
     val cesgExpected: Money,
     val cesgReceived: Money,
-    val qesiExpected: Money,
-    val qesiReceived: Money,
+    val provincialGrant: RegisteredPlans.ProvincialGrant?,
+    val provincialExpected: Money,
+    val provincialReceived: Money,
     val otherGrants: Money,
     /** CESG room carried forward: what extra contributions could still attract. */
     val cesgRoomLeft: Money,
@@ -162,7 +172,7 @@ class PlanService internal constructor(private val books: Books) {
     fun details(accountId: String): PlanDetails {
         val (group, _) = books.accounts.locate(accountId)
         return books.ledger(group).plansQueries.plan(accountId).executeAsOneOrNull()?.let {
-            PlanDetails(it.account_id, it.contributor_member_id, it.minimum_age_member_id, it.lif_reference_rate?.let(::BigDecimal), it.notes)
+            PlanDetails(it.account_id, it.contributor_member_id, it.minimum_age_member_id, it.lif_reference_rate?.let(::BigDecimal), it.notes, PensionJurisdiction.of(it.jurisdiction))
         } ?: PlanDetails(accountId)
     }
 
@@ -171,7 +181,7 @@ class PlanService internal constructor(private val books: Books) {
         books.require(group, PermissionLevel.EDIT)
         validate(account.type.isRegistered, "error.notRegisteredPlan")
         validate(d.lifReferenceRate == null || (d.lifReferenceRate.signum() > 0 && d.lifReferenceRate < BigDecimal("0.25")), "error.rateRange")
-        books.ledger(group).plansQueries.upsertPlan(d.accountId, d.contributorMemberId, d.minimumAgeMemberId, d.lifReferenceRate?.toPlainString(), d.notes.blankToNull())
+        books.ledger(group).plansQueries.upsertPlan(d.accountId, d.contributorMemberId, d.minimumAgeMemberId, d.lifReferenceRate?.toPlainString(), d.notes.blankToNull(), d.jurisdiction?.code)
         books.session.audit("UPDATE", "registered_plan", d.accountId)
     }
 
@@ -388,12 +398,14 @@ class PlanService internal constructor(private val books: Books) {
             value == null || age == null -> null
             else -> RegisteredPlans.rrifMinimum(value, age)
         }
-        val maximum = if (account.type == AccountType.LIF && value != null && age != null && !firstYear) {
+        val holder = account.ownerMemberIds.singleOrNull()
+        val jurisdiction = if (account.type == AccountType.LIF) d.jurisdiction ?: PensionJurisdiction.Provincial(books.provinceOf(holder)) else null
+        val maximum = if (jurisdiction != null && RegisteredPlans.lifHasMaximum(jurisdiction) && value != null && age != null && !firstYear) {
             RegisteredPlans.lifMaximum(value, age, d.lifReferenceRate ?: BigDecimal("0.06"), entered?.last_year_earnings_minor?.let { Money.ofMinor(it, account.currency) })
         } else {
             null
         }
-        return WithdrawalStatus(account, year, value, entered != null, age, minimum, maximum, withdrawn(account, year), firstYear)
+        return WithdrawalStatus(account, year, value, entered != null, age, minimum, maximum, withdrawn(account, year), firstYear, jurisdiction)
     }
 
     /** What left the plan in [year]: money moved anywhere but another retirement plan (a TFSA counts), and tax withheld. */
@@ -442,6 +454,7 @@ class PlanService internal constructor(private val books: Books) {
     private val GrantKind.label get() = when (this) {
         GrantKind.CESG -> "CESG / SCEE"
         GrantKind.QESI -> "QESI / IQEE"
+        GrantKind.BCTESG -> "BCTESG"
         GrantKind.CLB -> "CLB / BEC"
         GrantKind.OTHER -> "RESP grant"
     }
@@ -450,7 +463,7 @@ class PlanService internal constructor(private val books: Books) {
      * Every RESP beneficiary: contributions (a contribution names its beneficiary, or is shared
      * equally among the plan's beneficiaries), the CESG and QESI the rules give, and what was received.
      */
-    fun respBeneficiaries(year: Int): List<RespBeneficiaryStatus> {
+    fun respBeneficiaries(year: Int, today: LocalDate = books.today()): List<RespBeneficiaryStatus> {
         val resps = registeredAccounts(includeClosed = true).filter { it.type == AccountType.RESP }
         val all = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
         val members = books.members.list(includeArchived = true).associateBy { it.id }
@@ -476,12 +489,19 @@ class PlanService internal constructor(private val books: Books) {
             val contributions = byMember[id].orEmpty()
             val birthYear = member.birthDate?.year
             val cesg = birthYear?.let { RegisteredPlans.grants(RegisteredPlans.CESG, it, contributions, year) }.orEmpty()
-            val qesi = birthYear?.let { RegisteredPlans.grants(RegisteredPlans.QESI, it, contributions, year) }.orEmpty()
+            val provincial = RegisteredPlans.provincialGrant(books.provinceOf(id))
+            val asOf = minOf(today, LocalDate(year, 12, 31))
+            val provincialExpected = when (provincial) {
+                RegisteredPlans.ProvincialGrant.QESI -> birthYear?.let { RegisteredPlans.grants(RegisteredPlans.QESI, it, contributions, year).sumOf { g -> g.grant } } ?: 0L
+                RegisteredPlans.ProvincialGrant.BCTESG -> member.birthDate?.takeIf { RegisteredPlans.bctesgEligible(it, asOf) }?.let { RegisteredPlans.BCTESG_AMOUNT } ?: 0L
+                null -> 0L
+            }
+            val provincialKind = provincial?.let { GrantKind.valueOf(it.name) }
             fun m(v: Long) = Money.ofMinor(v, cad)
             RespBeneficiaryStatus(
                 member, m(contributions.filterKeys { it <= year }.values.sum()), m(contributions[year] ?: 0L),
-                m(cesg.sumOf { it.grant }), m(received[id to GrantKind.CESG] ?: 0L), m(qesi.sumOf { it.grant }), m(received[id to GrantKind.QESI] ?: 0L),
-                m((received[id to GrantKind.CLB] ?: 0L) + (received[id to GrantKind.OTHER] ?: 0L)), m(cesg.lastOrNull()?.roomLeft ?: 0L),
+                m(cesg.sumOf { it.grant }), m(received[id to GrantKind.CESG] ?: 0L), provincial, m(provincialExpected), m(provincialKind?.let { received[id to it] } ?: 0L),
+                m(GrantKind.entries.filter { it != GrantKind.CESG && it != provincialKind }.sumOf { received[id to it] ?: 0L }), m(cesg.lastOrNull()?.roomLeft ?: 0L),
             )
         }.sortedBy { it.member.displayName }
     }

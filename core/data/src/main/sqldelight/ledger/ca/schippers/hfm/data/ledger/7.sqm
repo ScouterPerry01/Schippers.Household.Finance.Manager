@@ -1,0 +1,21 @@
+-- Version 7 to 8 (PROV-04, PROV-05): a locked-in plan's jurisdiction, and the B.C. RESP grant.
+
+ALTER TABLE registered_plan ADD COLUMN jurisdiction TEXT;
+
+-- SQLite cannot change a CHECK constraint in place: the grants table is rebuilt to accept BCTESG.
+CREATE TABLE resp_grant_new (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    member_id TEXT NOT NULL,
+    date TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('CESG', 'QESI', 'BCTESG', 'CLB', 'OTHER')),
+    amount_minor INTEGER NOT NULL,
+    txn_id TEXT,
+    notes TEXT
+);
+
+INSERT INTO resp_grant_new SELECT id, account_id, member_id, date, kind, amount_minor, txn_id, notes FROM resp_grant;
+DROP INDEX resp_grant_account;
+DROP TABLE resp_grant;
+ALTER TABLE resp_grant_new RENAME TO resp_grant;
+CREATE INDEX resp_grant_account ON resp_grant(account_id, date);

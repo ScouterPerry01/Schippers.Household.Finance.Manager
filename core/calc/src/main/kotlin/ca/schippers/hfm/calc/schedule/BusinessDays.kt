@@ -1,5 +1,6 @@
 package ca.schippers.hfm.calc.schedule
 
+import ca.schippers.hfm.calc.Province
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -8,17 +9,23 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
 /**
- * Days when Canadian banks do not process payments, as observed in Quebec: weekends, the
- * federal bank holidays and Quebec's Fête nationale. Used for "last business day" bills and to
- * predict when a pre-authorized debit actually leaves the account (BILL-02, BILL-07).
+ * Days when Canadian banks do not process payments: weekends, the federal bank holidays, and the
+ * holidays banks observe in the household's province or territory (PROV-02): Fête nationale in
+ * Quebec, Family Day and its equivalents, the Civic Holiday and the territorial days. Used for
+ * "last business day" bills and to predict when a pre-authorized debit actually leaves the account
+ * (BILL-02, BILL-07).
  *
  * A holiday falling on a weekend is observed on the following Monday (Christmas and Boxing Day
  * on a weekend move to the next two weekdays).
  */
 object BusinessDays {
 
+    /** The open household's province or territory; set when a household is opened or its province changes. */
+    @Volatile
+    var province: Province = Province.QC
+
     fun isBusinessDay(date: LocalDate): Boolean =
-        date.dayOfWeek != DayOfWeek.SATURDAY && date.dayOfWeek != DayOfWeek.SUNDAY && date !in holidays(date.year)
+        date.dayOfWeek != DayOfWeek.SATURDAY && date.dayOfWeek != DayOfWeek.SUNDAY && date !in holidays(date.year, province)
 
     fun previousOrSame(date: LocalDate): LocalDate {
         var d = date
@@ -34,16 +41,23 @@ object BusinessDays {
 
     fun lastBusinessDayOfMonth(year: Int, month: Month): LocalDate = previousOrSame(lastDayOfMonth(year, month))
 
-    private val cache = java.util.concurrent.ConcurrentHashMap<Int, Set<LocalDate>>()
+    private val cache = java.util.concurrent.ConcurrentHashMap<Pair<Province, Int>, Set<LocalDate>>()
 
-    fun holidays(year: Int): Set<LocalDate> = cache.getOrPut(year) {
+    fun holidays(year: Int, province: Province = this.province): Set<LocalDate> = cache.getOrPut(province to year) {
         val easter = easterSunday(year)
         buildSet {
             add(observed(LocalDate(year, Month.JANUARY, 1)))
+            // Family Day, Louis Riel Day (MB), Islander Day (PE), Heritage Day (NS).
+            if (province in FAMILY_DAY) add(nthMonday(year, Month.FEBRUARY, 3))
             add(easter.minus(DatePeriod(days = 2))) // Good Friday
             add(mondayBefore(LocalDate(year, Month.MAY, 25))) // Victoria Day / Journée nationale des patriotes
-            add(observed(LocalDate(year, Month.JUNE, 24))) // Fête nationale du Québec
+            if (province in setOf(Province.NT, Province.YT)) add(observed(LocalDate(year, Month.JUNE, 21))) // National Indigenous Peoples Day
+            if (province == Province.QC) add(observed(LocalDate(year, Month.JUNE, 24))) // Fête nationale du Québec
             add(observed(LocalDate(year, Month.JULY, 1))) // Canada Day
+            if (province == Province.NU) add(observed(LocalDate(year, Month.JULY, 9))) // Nunavut Day
+            // Civic Holiday, under its provincial names (B.C. Day, Heritage Day, Saskatchewan Day, Natal Day...).
+            if (province in CIVIC_HOLIDAY) add(nthMonday(year, Month.AUGUST, 1))
+            if (province == Province.YT) add(nthMonday(year, Month.AUGUST, 3)) // Discovery Day
             add(nthMonday(year, Month.SEPTEMBER, 1)) // Labour Day
             if (year >= 2021) add(observed(LocalDate(year, Month.SEPTEMBER, 30))) // Truth and Reconciliation
             add(nthMonday(year, Month.OCTOBER, 2)) // Thanksgiving
@@ -55,6 +69,9 @@ object BusinessDays {
             add(boxing)
         }
     }
+
+    private val FAMILY_DAY = setOf(Province.AB, Province.BC, Province.MB, Province.NB, Province.NS, Province.ON, Province.PE, Province.SK)
+    private val CIVIC_HOLIDAY = setOf(Province.AB, Province.BC, Province.MB, Province.NB, Province.NS, Province.NT, Province.NU, Province.ON, Province.SK)
 
     /** Easter Sunday by the anonymous Gregorian algorithm. */
     fun easterSunday(year: Int): LocalDate {

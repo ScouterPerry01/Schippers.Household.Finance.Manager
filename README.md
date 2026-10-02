@@ -1,6 +1,6 @@
 # Household Finance Manager
 
-A personal, family and household finance application for Canada (Quebec first), in English and French.
+A personal, family and household finance application for Canada, in every province and territory, in English and French.
 
 - **Desktop app** (Windows and Linux) holds the household's books: accounts, transactions, reconciliation, bills, investments, registered plans, medical claims, assets and reports. All data stays on your own computer, encrypted.
 - **Android companion app** captures receipts, bills and expenses on the spot and sends them to the desktop over your home Wi-Fi.

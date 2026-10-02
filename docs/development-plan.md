@@ -179,7 +179,7 @@ Based on the *Household Finance Manager — Software Requirements Specification*
   - Realized and unrealized FX gains and losses; reports in base or original currency (FX-05/06).
   - FX-fee posting during reconciliation (REC-04); investment reconciliation (REC-08).
   - Card benefits and supplementary cards (CC-04/05).
-- **Reports:** debt summary, investment portfolio, investment income and capital gains, registered plans.
+- **Reports:** debt summary, investment portfolio, investment income and capital gains, registered plans. Tax slips: T3 and T5 everywhere, RL-3 and RL-16 in Quebec (PROV-07).
 
 **Exit:** every `:core:calc` routine is checked against published reference figures (CRA examples, bank amortization tables, RRIF minimum-withdrawal tables).
 
@@ -190,7 +190,7 @@ Based on the *Household Finance Manager — Software Requirements Specification*
   - Coverage rules and remaining annual maximums (MED-02/04); plan documents in the vault (MED-05).
   - Expenses and the full claim lifecycle (MED-06/07); EOB matching (MED-08).
   - Submission deadline reminders (MED-09); out-of-pocket amounts (MED-10).
-  - Best 12-month window report, federal and Quebec totals, PDF receipt bundle (MED-12/14/15).
+  - Best 12-month window report, federal and provincial totals (by each person's province, PROV-07), PDF receipt bundle (MED-12/14/15).
 - *Vehicles (VEH-01 to VEH-11: details, warranties, insurance, maintenance, service and fuel logs, cost of ownership) were delivered before Phase 2; the rest of this section extends the same approach to the home, appliances, RV and other assets.*
 - **Home inventory:**
   - Asset records and parent/child assets (AST-01/02); value feeding net worth (AST-03).
@@ -292,3 +292,4 @@ Based on the *Household Finance Manager — Software Requirements Specification*
 | Securities and prices storage | Kept in each account group's ledger, not in the shared database, so a private group's holdings stay unreadable to other users (HH-11). The same security id is used in every group that holds it, so prices entered once reach all of them |
 | Phase 3c status (2026-10-02) | Done: contribution room per person (INV-09): RRSP from the notice of assessment with the March-to-February window and the $2,000 allowance, spousal RRSPs on the contributor's room; TFSA from the CRA's figure or estimated from the yearly limits; FHSA with carry-forward and the lifetime limit; over-contribution warnings with the 1% a month penalty. RRIF and LIF minimums from the CRA factors and the Quebec LIF maximum, with a reminder from November (INV-10); RRSP conversion reminder at 71. Beneficiaries and successor holders (INV-11). RESP contributions per beneficiary, CESG and QESI expected with carry-forward, grants received. Pensions (defined benefit and contribution, QPP/CPP, OAS): yearly statements and payments received. Ledger schema version 7. Not covered: the spousal RRSP three-year attribution rule, the additional CESG and low-income amounts, the Quebec LIF temporary income before 65; Canada Learning Bond amounts are entered as received |
 | Personal plan figures | CRA room figures, outside contributions and pensions are stored in an account group chosen by the user (the person's private group by default), as for health records (CAL-06), so they stay private |
+| Provinces and territories (2026-10-02) | Full support for all of Canada, not only Quebec (owner's request; PROV-01 to PROV-07 in `docs/requirements-additions.md`). Done before 3d: province of the household and per person, bank holidays, default categories, provincial RESP grants (QESI, BCTESG), LIF jurisdiction and maximum, QPP or CPP first, tax wording. Core schema version 5, ledger version 8. The SRS still names Quebec as the first market; the app now works for every province and territory |

@@ -356,7 +356,8 @@ private fun GainsView(model: BooksModel) {
             ),
             startOpen = true,
         )
-        Text(model.t("investments.taxNotice"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 12.dp))
+        // PROV-06: the Quebec return has its own schedule as well.
+        Text(model.t(if (books.province.isQuebec) "investments.taxNotice.QC" else "investments.taxNotice"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 12.dp))
     }
 }
 

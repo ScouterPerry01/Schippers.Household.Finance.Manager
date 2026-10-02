@@ -1,5 +1,7 @@
 package ca.schippers.hfm.desktop
 
+import androidx.compose.foundation.layout.Box
+import ca.schippers.hfm.calc.Province
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -258,16 +260,28 @@ fun MembersScreen(model: BooksModel) {
     var creating by remember { mutableStateOf(false) }
     val selected = members.firstOrNull { it.id == selectedId }
 
-    ListEditor(
-        model.t("nav.members"), members, key = { it.id },
-        label = { "${it.displayName} · ${model.t("memberKind.${it.kind}")}" }, dimmed = { it.archived },
-        addLabel = model.t("common.add"), onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
-        onSelect = { selectedId = it.id; creating = false },
-    ) {
-        if (creating || selected != null) {
-            MemberForm(model, if (creating) null else selected) { id -> creating = false; selectedId = id }
-        } else {
-            Text(model.t("member.select"))
+    val province = remember(model.revision) { model.books.province }
+    Column(Modifier.fillMaxSize()) {
+        // PROV-01: the household's province or territory, whose rules apply unless a person has their own.
+        Row(Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Picker(model.t("household.province"), Province.entries.sortedBy { model.t("province.$it") }, province, { model.t("province.$it") }, Modifier.width(360.dp), enabled = model.books.users.isAdministrator) {
+                if (it != province) model.act { model.books.setProvince(it) }
+            }
+            Text(model.t("household.provinceHint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+        }
+        Box(Modifier.weight(1f)) {
+            ListEditor(
+                model.t("nav.members"), members, key = { it.id },
+                label = { listOfNotNull(it.displayName, model.t("memberKind.${it.kind}"), it.province?.let { p -> model.t("province.$p") }).joinToString(" · ") }, dimmed = { it.archived },
+                addLabel = model.t("common.add"), onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
+                onSelect = { selectedId = it.id; creating = false },
+            ) {
+                if (creating || selected != null) {
+                    MemberForm(model, if (creating) null else selected) { id -> creating = false; selectedId = id }
+                } else {
+                    Text(model.t("member.select"))
+                }
+            }
         }
     }
 }
@@ -278,10 +292,15 @@ private fun MemberForm(model: BooksModel, existing: Member?, onSaved: (String) -
     var kind by remember(existing) { mutableStateOf(existing?.kind ?: MemberKind.ADULT) }
     var birth by remember(existing) { mutableStateOf(existing?.birthDate?.toString().orEmpty()) }
     var archived by remember(existing) { mutableStateOf(existing?.archived ?: false) }
+    var province by remember(existing) { mutableStateOf(existing?.province) }
 
     TextInput(model.t("member.name"), name) { name = it }
     Picker(model.t("member.kind"), MemberKind.entries, kind, { model.t("memberKind.$it") }) { kind = it }
     DateInput(model.t("member.birthDate"), birth, Modifier.fillMaxWidth()) { birth = it }
+    Picker(
+        model.t("member.province"), listOf<Province?>(null) + Province.entries.sortedBy { model.t("province.$it") }, province,
+        { it?.let { p -> model.t("province.$p") } ?: model.t("member.provinceHousehold") },
+    ) { province = it }
     if (existing != null) LabeledCheckbox(model.t("category.archived"), archived) { archived = it }
     Button(onClick = {
         val id = model.act {
@@ -289,9 +308,9 @@ private fun MemberForm(model: BooksModel, existing: Member?, onSaved: (String) -
                 runCatching { LocalDate.parse(it) }.getOrElse { throw ValidationException("error.invalidDate") }
             }
             if (existing == null) {
-                model.books.members.create(name, kind, birthDate).id
+                model.books.members.create(name, kind, birthDate).also { m -> if (province != null) model.books.members.update(m.copy(province = province)) }.id
             } else {
-                model.books.members.update(existing.copy(displayName = name, kind = kind, birthDate = birthDate, archived = archived))
+                model.books.members.update(existing.copy(displayName = name, kind = kind, birthDate = birthDate, archived = archived, province = province))
                 existing.id
             }
         }

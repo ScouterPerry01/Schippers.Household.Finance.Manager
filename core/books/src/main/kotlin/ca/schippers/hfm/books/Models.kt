@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.domain.AccountStatus
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.domain.CategoryKind
@@ -30,6 +31,8 @@ data class Member(
     val kind: MemberKind,
     val birthDate: LocalDate?,
     val archived: Boolean,
+    /** PROV-01: where this person lives or files, when not where the household is. */
+    val province: Province? = null,
 )
 
 data class Institution(

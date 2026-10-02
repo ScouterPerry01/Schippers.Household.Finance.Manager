@@ -1,7 +1,10 @@
 package ca.schippers.hfm.calc.plans
 
 import ca.schippers.hfm.calc.CALC
+import ca.schippers.hfm.calc.PensionJurisdiction
+import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.money.Money
+import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -38,10 +41,12 @@ object RegisteredPlans {
     fun rrifMinimum(valueJanuary1: Money, age: Int): Money = valueJanuary1.times(rrifFactor(age))
 
     /**
-     * Quebec LIF maximum withdrawal (Regulation respecting supplemental pension plans, s. 20 of
-     * schedule 0.7): the value on January 1 divided by an annuity of 1 payable at the start of each
-     * year until the end of the year the holder turns 90, at the reference rate (6% unless the
-     * long-term rate for the first 15 years is higher). Never less than the year's minimum.
+     * LIF maximum withdrawal, as the federal rules and most provinces set it (in Quebec, s. 20 of
+     * schedule 0.7 of the Regulation respecting supplemental pension plans; in Ontario, schedule 1.1
+     * of Regulation 909; and so on): the value on January 1 divided by an annuity of 1 payable at
+     * the start of each year until the end of the year the holder turns 90, at the reference rate
+     * (6% unless the long-term rate for the first 15 years is higher). Never less than the year's
+     * minimum. Saskatchewan and Prince Edward Island set no maximum: see [lifHasMaximum].
      */
     fun lifMaximumFactor(age: Int, referenceRate: BigDecimal = BigDecimal("0.06")): BigDecimal {
         val years = 90 - age
@@ -64,6 +69,13 @@ object RegisteredPlans {
         val byFormula = valueJanuary1.times(lifMaximumFactor(age, referenceRate))
         return if (lastYearEarnings != null && lastYearEarnings > byFormula) lastYearEarnings else byFormula
     }
+
+    /**
+     * Whether a LIF under [jurisdiction] has a yearly maximum. Saskatchewan replaced LIFs with
+     * prescribed RRIFs without a maximum in 2002, and Prince Edward Island has no locked-in plan rules.
+     */
+    fun lifHasMaximum(jurisdiction: PensionJurisdiction): Boolean =
+        jurisdiction != PensionJurisdiction.Provincial(Province.SK) && jurisdiction != PensionJurisdiction.Provincial(Province.PE)
 
     /** The RRSP must become a RRIF or annuity by December 31 of the year its holder turns 71. */
     const val RRSP_LAST_AGE = 71
@@ -132,6 +144,30 @@ object RegisteredPlans {
     val QESI = GrantRules(BigDecimal("0.10"), 250_00, 500_00, 3600_00, 2007)
 
     const val RESP_LIFETIME = 50000_00L
+
+    /** The provincial RESP grant for a beneficiary living in [province], if it has one. */
+    fun provincialGrant(province: Province): ProvincialGrant? = when (province) {
+        Province.QC -> ProvincialGrant.QESI
+        Province.BC -> ProvincialGrant.BCTESG
+        else -> null
+    }
+
+    enum class ProvincialGrant { QESI, BCTESG }
+
+    /** B.C. Training and Education Savings Grant: $1,200 once, without a contribution. */
+    const val BCTESG_AMOUNT = 1200_00L
+
+    /**
+     * Whether a B.C. child born on [birth] can have the BCTESG by [today]: born in 2006 or later,
+     * applied for between the 6th birthday and the day before the 9th.
+     */
+    fun bctesgEligible(birth: LocalDate, today: LocalDate): Boolean = birth.year >= 2006 && ageOn(birth, today) >= 6
+
+    /** The BCTESG can no longer be applied for once the child turns 9. */
+    fun bctesgWindowClosed(birth: LocalDate, today: LocalDate): Boolean = ageOn(birth, today) >= 9
+
+    private fun ageOn(birth: LocalDate, date: LocalDate): Int =
+        date.year - birth.year - if (date.month < birth.month || (date.month == birth.month && date.day < birth.day)) 1 else 0
 
     data class GrantYear(val year: Int, val contributions: Long, val grant: Long, val roomLeft: Long, val eligible: Boolean)
 

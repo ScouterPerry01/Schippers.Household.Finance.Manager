@@ -159,7 +159,7 @@ class MigrationTest {
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).plansQueries
-            q.upsertPlan("r", null, null, "0.06", null)
+            q.upsertPlan("r", null, null, "0.06", null, null)
             q.putPlanValue("r", 2026, 10000000, null)
             q.upsertBeneficiary("b", "r", "SUCCESSOR_HOLDER", null, "Sam", "Spouse", null, null)
             q.upsertRoom("x", "m", "TFSA", 2026, 700000, 0, null)
@@ -167,6 +167,44 @@ class MigrationTest {
             q.upsertPensionStatement("s", "p", 2025, null, null, 1240000, null, null, null)
             assertEquals(1L, count(driver, "SELECT count(*) FROM pension_statement"))
             assertEquals("Sam", q.beneficiaries("r").executeAsOne().name)
+        }
+    }
+
+    @Test
+    fun `version 4 core databases default to Quebec`() {
+        val file = temp.resolve("core4.db")
+        older("../data/src/main/sqldelight/core/schemas/4.db", file, 4).use { driver ->
+            driver.execute(null, "INSERT INTO household(id, name, base_currency, default_locale, created_at) VALUES ('h', 'Maison', 'CAD', 'fr-CA', 0)", 0)
+            driver.execute(null, "INSERT INTO member(id, display_name, kind, created_at) VALUES ('m', 'Léa', 'CHILD', 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, CoreDatabase.Schema, file)
+            val q = CoreDatabase(driver).coreQueries
+            assertEquals("QC", q.household().executeAsOne().province, "existing households are in Quebec")
+            assertEquals(null, q.members().executeAsOne().province)
+            q.setMemberProvince("BC", "m")
+            assertEquals("BC", q.members().executeAsOne().province)
+        }
+    }
+
+    @Test
+    fun `version 7 ledgers keep their RESP grants and accept the BC grant`() {
+        val file = temp.resolve("ledger7.db")
+        older("../data/src/main/sqldelight/ledger/schemas/7.db", file, 7).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('r', 'REEE', 'RESP', 'CAD', '2020-01-01', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO resp_grant(id, account_id, member_id, date, kind, amount_minor) VALUES ('g', 'r', 'm', '2025-03-31', 'CESG', 50000)", 0)
+            driver.execute(null, "INSERT INTO registered_plan(account_id) VALUES ('r')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            val q = LedgerDatabase(driver).plansQueries
+            assertEquals(listOf("CESG"), q.grantsFor("r").executeAsList().map { it.kind }, "grants survive the table rebuild")
+            q.insertGrant("b", "r", "m", "2026-05-01", "BCTESG", 120000, null, null)
+            assertEquals(2, q.grantsFor("r").executeAsList().size)
+            assertEquals(null, q.plan("r").executeAsOne().jurisdiction)
+            driver.execute(null, "PRAGMA foreign_keys = ON", 0)
+            driver.execute(null, "DELETE FROM account WHERE id = 'r'", 0)
+            assertEquals(0L, count(driver, "SELECT count(*) FROM resp_grant"), "the foreign key still cascades after the rebuild")
         }
     }
 
