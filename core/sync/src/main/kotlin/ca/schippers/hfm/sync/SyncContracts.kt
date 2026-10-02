@@ -23,15 +23,20 @@ data class PairingInvitation(
     /** A short code that proves the phone saw the QR code; it expires after a few minutes. */
     val oneTimeCode: String,
 ) {
-    /** The text inside the QR code. */
+    /**
+     * The text inside the QR code: a link the companion app opens, so the phone's own camera app can
+     * start the pairing too.
+     */
     fun toQrText(): String = PREFIX + B64URL.encodeToString(SyncJson.encodeToString(serializer(), this).encodeToByteArray())
 
     companion object {
-        private const val PREFIX = "HFMPAIR1:"
+        const val SCHEME = "hfmpair"
+        private const val PREFIX = "$SCHEME:v1:"
 
         fun fromQrText(text: String): PairingInvitation? = runCatching {
-            require(text.startsWith(PREFIX))
-            SyncJson.decodeFromString(serializer(), B64URL_DECODER.decode(text.removePrefix(PREFIX)).decodeToString())
+            val trimmed = text.trim()
+            require(trimmed.startsWith(PREFIX))
+            SyncJson.decodeFromString(serializer(), B64URL_DECODER.decode(trimmed.removePrefix(PREFIX)).decodeToString())
         }.getOrNull()
     }
 }

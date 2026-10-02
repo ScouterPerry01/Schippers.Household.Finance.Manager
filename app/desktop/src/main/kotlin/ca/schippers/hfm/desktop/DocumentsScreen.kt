@@ -262,10 +262,11 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
             // The document itself.
             Box(Modifier.width(360.dp).heightIn(min = 300.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant).verticalScroll(rememberScrollState())) {
                 val image = preview
-                if (image != null) {
-                    Image(image, doc.label, Modifier.fillMaxWidth(), contentScale = ContentScale.FillWidth)
-                } else {
-                    Text(model.t("documents.loadingPreview"), Modifier.padding(16.dp))
+                when {
+                    image != null -> Image(image, doc.label, Modifier.fillMaxWidth(), contentScale = ContentScale.FillWidth)
+                    // CAP-07: a quick expense from the phone has no photo, only what was typed.
+                    doc.mimeType == "text/plain" -> Text(model.t("documents.noPhoto"), Modifier.padding(16.dp))
+                    else -> Text(model.t("documents.loadingPreview"), Modifier.padding(16.dp))
                 }
             }
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {

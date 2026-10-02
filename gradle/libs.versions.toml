@@ -19,6 +19,12 @@ openpdf = "3.0.5"
 onnxruntime = "1.30.0"
 pdfbox = "3.0.5"
 zxing = "3.5.3"
+androidx-work = "2.10.0"
+androidx-biometric = "1.1.0"
+androidx-lifecycle = "2.8.7"
+mlkit-text = "16.0.1"
+mlkit-document-scanner = "16.0.0-beta1"
+gms-code-scanner = "16.1.0"
 androidx-compose-bom = "2026.09.00"
 android-compileSdk = "37"
 android-minSdk = "29"
@@ -45,6 +51,12 @@ openpdf = { module = "com.github.librepdf:openpdf", version.ref = "openpdf" }
 onnxruntime = { module = "com.microsoft.onnxruntime:onnxruntime", version.ref = "onnxruntime" }
 pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
+androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "androidx-work" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "androidx-biometric" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+mlkit-text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "mlkit-text" }
+mlkit-document-scanner = { module = "com.google.android.gms:play-services-mlkit-document-scanner", version.ref = "mlkit-document-scanner" }
+gms-code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version.ref = "gms-code-scanner" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }

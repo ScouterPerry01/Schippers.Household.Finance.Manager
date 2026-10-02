@@ -134,6 +134,10 @@ private fun PairingDialog(model: BooksModel, invitation: PairingInvitation, devi
                         color = if (secondsLeft > 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
                     )
                     Text("${invitation.host}:${invitation.port}", style = MaterialTheme.typography.bodySmall)
+                    // For a phone whose camera cannot read the screen: the same link as text, to paste on the phone.
+                    TextButton(onClick = {
+                        java.awt.Toolkit.getDefaultToolkit().systemClipboard.setContents(java.awt.datatransfer.StringSelection(invitation.toQrText()), null)
+                    }) { Text(model.t("phones.copyText")) }
                 }
             }
         }

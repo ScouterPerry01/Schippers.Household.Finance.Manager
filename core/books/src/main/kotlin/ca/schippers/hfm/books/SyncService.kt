@@ -222,7 +222,7 @@ class SyncService internal constructor(private val books: Books) {
             payees = books.payees.list().take(MAX_PAYEES).map { RefPayee(it.name, it.defaultCategoryId) },
             people = books.members.list().map { RefPerson(it.id, it.displayName, false) } + books.pets.list().map { RefPerson(it.id, it.name, true) },
             vehicles = books.vehicles.list().map { RefVehicle(it.id, it.name, books.vehicles.latestOdometer(it.id)?.odometer) },
-            bills = books.bills.occurrences(today, today.plus(DatePeriod(days = 60))).filter { it.status == OccurrenceStatus.DUE }.map {
+            bills = books.bills.occurrences(today, today.plus(DatePeriod(days = 60))).filter { it.status == OccurrenceStatus.DUE && it.bill.kind == BillKind.BILL }.map {
                 RefBill(it.bill.name, it.dueDate.toString(), it.amount.toBigDecimal().toPlainString(), it.amount.currency.code, !it.amountKnown, it.bill.reminderDays)
             },
             budgets = budgets?.lines.orEmpty().filter { it.category.kind == CategoryKind.EXPENSE }.map {
