@@ -67,4 +67,5 @@ tasks.register<JavaExec>("runDemo") {
     providers.gradleProperty("lang").orNull?.let { systemProperty("hfm.demo.lang", it) }
     providers.gradleProperty("account").orNull?.let { systemProperty("hfm.demo.account", it) }
     providers.gradleProperty("section").orNull?.let { systemProperty("hfm.demo.section", it) }
+    providers.gradleProperty("reconcile").orNull?.let { systemProperty("hfm.demo.reconcile", it) }
 }

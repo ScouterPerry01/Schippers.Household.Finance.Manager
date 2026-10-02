@@ -40,12 +40,14 @@ import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import ca.schippers.hfm.money.sum
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 
 @Composable
 fun AccountsScreen(model: BooksModel) {
     var showClosed by remember { mutableStateOf(false) }
     var adding by remember { mutableStateOf(false) }
     val summaries = remember(model.revision, showClosed) { model.books.accounts.list(includeClosed = showClosed) }
+    val lastReconciled = remember(model.revision) { model.books.statements.lastReconciled() }
     if (model.selectedAccountId != null && summaries.none { it.account.id == model.selectedAccountId }) model.selectedAccountId = null
 
     Row(Modifier.fillMaxSize()) {
@@ -59,7 +61,7 @@ fun AccountsScreen(model: BooksModel) {
                 if (summaries.isEmpty()) item { Text(model.t("accounts.none"), Modifier.padding(8.dp)) }
                 for ((kind, list) in summaries.groupBy { it.account.type.kind }.toSortedMap()) {
                     item { Text(model.t("accountKind.$kind"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)) }
-                    items(list, key = { it.account.id }) { summary -> AccountRow(model, summary) }
+                    items(list, key = { it.account.id }) { summary -> AccountRow(model, summary, lastReconciled[summary.account.id]) }
                 }
             }
             HorizontalDivider()
@@ -68,7 +70,10 @@ fun AccountsScreen(model: BooksModel) {
         VerticalDivider()
         Box(Modifier.fillMaxSize()) {
             val selected = summaries.firstOrNull { it.account.id == model.selectedAccountId }
-            if (selected != null) {
+            val reconciling = model.reconcilingStatementId
+            if (selected != null && reconciling != null) {
+                ReconcileScreen(model, selected.account, reconciling)
+            } else if (selected != null) {
                 RegisterScreen(model, selected)
             } else {
                 Text(model.t("accounts.select"), Modifier.padding(24.dp))
@@ -79,17 +84,28 @@ fun AccountsScreen(model: BooksModel) {
 }
 
 @Composable
-private fun AccountRow(model: BooksModel, summary: AccountSummary) {
+private fun AccountRow(model: BooksModel, summary: AccountSummary, lastReconciled: LocalDate?) {
     val selected = model.selectedAccountId == summary.account.id
+    // REC-09: accounts more than 45 days behind are highlighted.
+    val behind = lastReconciled != null && lastReconciled.daysUntil(today()) > 45
     Row(
-        Modifier.fillMaxWidth().clickable { model.selectedAccountId = summary.account.id }.padding(horizontal = 8.dp, vertical = 6.dp),
+        Modifier.fillMaxWidth().clickable {
+            if (model.selectedAccountId != summary.account.id) model.reconcilingStatementId = null
+            model.selectedAccountId = summary.account.id
+        }.padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            summary.account.name + if (summary.account.status == AccountStatus.CLOSED) " (${model.t("status.CLOSED")})" else "",
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-            modifier = Modifier.weight(1f),
-        )
+        Column(Modifier.weight(1f)) {
+            Text(
+                summary.account.name + if (summary.account.status == AccountStatus.CLOSED) " (${model.t("status.CLOSED")})" else "",
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            )
+            Text(
+                lastReconciled?.let { model.t("accounts.reconciled", model.date(it)) } ?: model.t("accounts.neverReconciled"),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (behind) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
+            )
+        }
         MoneyText(model, summary.balance, bold = selected)
     }
 }

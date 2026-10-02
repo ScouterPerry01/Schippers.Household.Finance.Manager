@@ -30,6 +30,9 @@ class MessageKeysTest {
             "tax" to ca.schippers.hfm.domain.TaxFlag.entries,
             "category.new" to ca.schippers.hfm.domain.CategoryKind.entries,
             "nav" to Section.entries.map { it.name.lowercase() },
+            "lineStatus" to ca.schippers.hfm.books.LineStatus.entries,
+            "statementStatus" to ca.schippers.hfm.books.StatementStatus.entries,
+            "import.amountMode" to listOf("single", "split"),
         ).flatMap { (prefix, values) -> values.map { "$prefix.$it" } }
 
         for (language in Language.entries) {

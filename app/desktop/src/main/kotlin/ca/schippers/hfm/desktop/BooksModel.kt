@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import ca.schippers.hfm.books.Books
+import ca.schippers.hfm.books.ImportResult
 import ca.schippers.hfm.books.ReconciledChangeException
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.data.AccessDeniedException
@@ -14,7 +15,7 @@ import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 
-enum class Section { ACCOUNTS, CATEGORIES, PAYEES, INSTITUTIONS, MEMBERS }
+enum class Section { ACCOUNTS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -28,6 +29,12 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     var error by mutableStateOf<String?>(null)
     var section by mutableStateOf(Section.ACCOUNTS)
     var selectedAccountId by mutableStateOf<String?>(null)
+
+    /** The statement being reconciled; the register is shown again when null. */
+    var reconcilingStatementId by mutableStateOf<String?>(null)
+
+    /** Counts from the last import, shown at the top of the reconciliation screen. */
+    var lastImport by mutableStateOf<ImportResult?>(null)
 
     /** A change that needs confirmation because it touches reconciled transactions. */
     var pendingReconciledChange by mutableStateOf<(() -> Unit)?>(null)

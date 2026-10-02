@@ -46,6 +46,7 @@ import ca.schippers.hfm.books.Category
 import ca.schippers.hfm.books.CreditCardTerms
 import ca.schippers.hfm.books.ReconciledChangeException
 import ca.schippers.hfm.books.SplitDraft
+import ca.schippers.hfm.books.StatementStatus
 import ca.schippers.hfm.books.Transaction
 import ca.schippers.hfm.books.TransactionDraft
 import ca.schippers.hfm.books.TransferDraft
@@ -112,6 +113,8 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     var revealing by remember { mutableStateOf(false) }
     var confirmClose by remember { mutableStateOf(false) }
     var splitting by remember { mutableStateOf(false) }
+    var pendingImport by remember { mutableStateOf<PendingImport?>(null) }
+    var showStatements by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
     LaunchedEffect(account.id, rows.size) { if (rows.isNotEmpty()) listState.scrollToItem(rows.size - 1) }
 
@@ -129,7 +132,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     fun load(txn: Transaction) {
         entry.editing = txn
         entry.date = txn.date.toString()
-        entry.payee = txn.payeeText ?: txn.payeeId?.let(payeeNames::get).orEmpty()
+        entry.payee = txn.payeeId?.let(payeeNames::get) ?: txn.payeeText.orEmpty()
         entry.memo = txn.memo.orEmpty()
         val magnitude = MoneyFormat.formatAmount(txn.amount.abs(), locale)
         entry.payment = if (txn.amount.isNegative) magnitude else ""
@@ -174,6 +177,12 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
             }
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(vertical = 8.dp)) {
+            Button(onClick = { pendingImport = startImport(model, account) }) { Text(model.t("import.button")) }
+            OutlinedButton(onClick = {
+                val open = books.statements.statements(account.id).firstOrNull { it.status == StatementStatus.OPEN }
+                if (open != null) model.reconcilingStatementId = open.id else showStatements = true
+            }) { Text(model.t("reconcile.button")) }
+            OutlinedButton(onClick = { showStatements = true }) { Text(model.t("statements.button")) }
             OutlinedButton(onClick = { editingAccount = true }) { Text(model.t("account.edit")) }
             if (account.numberMasked != null) OutlinedButton(onClick = { revealing = true }) { Text(model.t("account.show")) }
             if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCard = true }) { Text(model.t("account.cardDetails")) }
@@ -213,7 +222,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Cell(model.date(txn.date), Modifier.width(100.dp))
-                    Cell(txn.payeeText ?: txn.payeeId?.let(payeeNames::get).orEmpty(), Modifier.weight(2f))
+                    Cell(txn.payeeId?.let(payeeNames::get) ?: txn.payeeText.orEmpty(), Modifier.weight(2f))
                     Cell(category, Modifier.weight(2f))
                     Cell(txn.memo.orEmpty(), Modifier.weight(2f))
                     MoneyText(model, txn.amount, modifier = Modifier.width(120.dp), textAlign = TextAlign.End)
@@ -309,6 +318,8 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
         }
     }
 
+    pendingImport?.let { PendingImportDialog(model, it) { pendingImport = null } }
+    if (showStatements) StatementsDialog(model, account) { showStatements = false }
     if (splitting) {
         SplitDialog(model, account, entry, categoryTree) { splitting = false }
     }

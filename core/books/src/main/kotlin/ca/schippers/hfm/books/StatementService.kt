@@ -81,6 +81,8 @@ data class ReconciliationView(
     val lines: List<StatementLine>,
     /** Recorded transactions up to the statement date that are not cleared: outstanding, or in error. */
     val outstanding: List<Transaction>,
+    /** Cleared by hand but not linked to a statement line, e.g. ticked off a paper statement. */
+    val clearedByHand: List<Transaction>,
     /** Opening balance plus every cleared or reconciled transaction. */
     val clearedBalance: Money,
     /** Statement closing balance minus the cleared balance; must be zero to finish (REC-05). Null until the closing balance is known. */
@@ -282,11 +284,11 @@ class StatementService internal constructor(private val books: Books) {
         val statement = row.toStatement(account)
         val lines = q.statementLines(statementId).executeAsList().map { it.toLine(account) }
         val linked = lines.mapNotNullTo(HashSet()) { it.transactionId }
-        val outstanding = q.unreconciledThrough(row.account_id, statement.periodEnd.toString()).executeAsList()
-            .filter { it.cleared == ClearedStatus.UNCLEARED.name && it.id !in linked }
-            .map { books.transactions.get(it.id) }
+        val unreconciled = q.unreconciledThrough(row.account_id, statement.periodEnd.toString()).executeAsList().filter { it.id !in linked }
+        val outstanding = unreconciled.filter { it.cleared == ClearedStatus.UNCLEARED.name }.map { books.transactions.get(it.id) }
+        val clearedByHand = unreconciled.filter { it.cleared == ClearedStatus.CLEARED.name }.map { books.transactions.get(it.id) }
         val cleared = Money.ofMinor(q.clearedBalance(row.account_id).executeAsOne(), account.currency)
-        return ReconciliationView(statement, lines, outstanding, cleared, statement.closingBalance?.minus(cleared))
+        return ReconciliationView(statement, lines, outstanding, clearedByHand, cleared, statement.closingBalance?.minus(cleared))
     }
 
     /** Accepts a proposed match (step 3). */

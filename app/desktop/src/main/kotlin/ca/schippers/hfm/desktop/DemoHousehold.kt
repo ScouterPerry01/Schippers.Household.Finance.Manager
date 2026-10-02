@@ -1,5 +1,6 @@
 package ca.schippers.hfm.desktop
 
+import ca.schippers.hfm.books.Account
 import ca.schippers.hfm.books.AccountDraft
 import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.CreditCardTerms
@@ -11,6 +12,8 @@ import ca.schippers.hfm.data.HouseholdSession
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.domain.MemberKind
+import ca.schippers.hfm.importers.ImportedLine
+import ca.schippers.hfm.importers.ImportedStatement
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import kotlinx.datetime.DatePeriod
@@ -86,5 +89,29 @@ object DemoHousehold {
             TransactionDraft(visa.id, today, cad("-137.25"), "Amazon.com", originalAmount = Money.parse("-100.00", Currency.USD)),
         )
         books.transactions.transfer(TransferDraft(chequing.id, usd.id, today, cad("274.50"), Money.parse("200.00", Currency.USD), "Achat de dollars US"))
+        importStatement(books, chequing, today)
+    }
+
+    /**
+     * A bank statement for the joint account up to the end of last month, as if downloaded: most
+     * lines match what was entered, Vidéotron posts 4 days late (so it is proposed for confirmation),
+     * and a monthly bank fee was never entered.
+     */
+    private fun importStatement(books: Books, account: Account, today: LocalDate) {
+        val end = LocalDate(today.year, today.month, 1).minus(DatePeriod(days = 1))
+        val recorded = books.transactions.register(account.id).map { it.transaction }.filter { it.date <= end }
+        val payees = books.payees.list().associate { it.id to it.name }
+        val fee = Money.parse("-4.95", Currency.CAD)
+        val lines = recorded.mapIndexed { i, t ->
+            val name = t.payeeId?.let(payees::get) ?: if (t.transfer != null) "VIREMENT" else "?"
+            val shift = if (name.startsWith("Vidéotron")) 4 else 0
+            ImportedLine("D$i", t.date.plus(DatePeriod(days = shift)).let { if (it > end) end else it }, t.amount, name.uppercase(), null, null)
+        } + ImportedLine("FEE", end, fee, "FRAIS MENSUELS DU FORFAIT", null, null)
+        val closing = account.openingBalance + recorded.map { it.amount }.fold(Money.zero(Currency.CAD), Money::plus) + fee
+        books.statements.import(
+            account.id,
+            ImportedStatement("OFX", "0045678", Currency.CAD, account.openingDate, end, account.openingBalance, closing, lines),
+            "releve-desjardins.ofx",
+        )
     }
 }

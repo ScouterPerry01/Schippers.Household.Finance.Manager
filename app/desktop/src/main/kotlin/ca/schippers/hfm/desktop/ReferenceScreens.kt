@@ -36,6 +36,7 @@ import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.domain.MemberKind
 import ca.schippers.hfm.domain.TaxFlag
+import ca.schippers.hfm.money.Currency
 import kotlinx.datetime.LocalDate
 
 /** A list on the left and an editor for the selected (or new) item on the right. */
@@ -295,5 +296,60 @@ private fun MemberForm(model: BooksModel, existing: Member?, onSaved: (String) -
             }
         }
         if (id != null) onSaved(id)
+    }) { Text(model.t("common.save")) }
+}
+
+// --- Category rules (CAT-02) -------------------------------------------------------------------
+
+@Composable
+fun RulesScreen(model: BooksModel) {
+    val books = model.books
+    val rules = remember(model.revision) { books.rules.list() }
+    val tree = remember(model.revision) { books.categories.tree() }
+    val names = remember(tree) { tree.associate { it.first.id to it.first.name(model.language) } }
+    var selectedId by remember { mutableStateOf<String?>(null) }
+    var creating by remember { mutableStateOf(false) }
+    val selected = rules.firstOrNull { it.id == selectedId }
+
+    ListEditor(
+        model.t("nav.rules"), rules, key = { it.id },
+        label = { r -> model.t("rule.summary", r.payeeContains, names[r.categoryId] ?: "?") },
+        addLabel = model.t("common.add"), onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
+        onSelect = { selectedId = it.id; creating = false },
+    ) {
+        Text(model.t("rule.explain"), style = MaterialTheme.typography.bodySmall)
+        when {
+            creating -> RuleForm(model, tree) { creating = false; selectedId = it }
+            selected != null -> {
+                Text(model.t("rule.summary", selected.payeeContains, names[selected.categoryId] ?: "?"), style = MaterialTheme.typography.titleMedium)
+                listOfNotNull(selected.amountMin?.let { model.t("rule.min") + " " + model.money(it) }, selected.amountMax?.let { model.t("rule.max") + " " + model.money(it) })
+                    .forEach { Text(it) }
+                OutlinedButton(onClick = { if (model.act { books.rules.delete(selected.id) } != null) selectedId = null }) { Text(model.t("common.delete")) }
+            }
+            else -> Text(model.t("rule.select"))
+        }
+    }
+}
+
+@Composable
+private fun RuleForm(model: BooksModel, tree: List<Pair<Category, Int>>, onSaved: (String) -> Unit) {
+    val locale = model.language.locale
+    val currency = remember { Currency.of(model.session.core.coreQueries.household().executeAsOne().base_currency) }
+    var contains by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf<Pair<Category, Int>?>(null) }
+    var min by remember { mutableStateOf("") }
+    var max by remember { mutableStateOf("") }
+
+    TextInput(model.t("rule.contains"), contains, supporting = model.t("rule.contains.hint")) { contains = it }
+    Picker(model.t("register.category"), tree, category, { it.first.name(model.language) }, indent = { it.second }) { category = it }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        AmountInput(model.t("rule.min"), min, currency, locale, Modifier.weight(1f), model::money) { min = it }
+        AmountInput(model.t("rule.max"), max, currency, locale, Modifier.weight(1f), model::money) { max = it }
+    }
+    Button(enabled = contains.isNotBlank() && category != null, onClick = {
+        val rule = model.act {
+            model.books.rules.create(contains, category!!.first.id, parseAmount(min, currency, locale), parseAmount(max, currency, locale))
+        }
+        if (rule != null) onSaved(rule.id)
     }) { Text(model.t("common.save")) }
 }

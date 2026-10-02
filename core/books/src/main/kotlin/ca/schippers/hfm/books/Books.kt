@@ -56,6 +56,11 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     internal fun ledger(group: GroupInfo) = session.ledger(group.partitionId)
 
     internal fun now(): Long = clock()
+
+    /** Household-wide settings, such as saved CSV column mappings per institution (REC-01). */
+    fun setting(key: String): String? = core.getSetting(key).executeAsOneOrNull()
+
+    fun putSetting(key: String, value: String) = core.putSetting(key, value)
 }
 
 /**

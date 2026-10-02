@@ -35,6 +35,7 @@ fun MainScreen(model: BooksModel) {
                 Section.ACCOUNTS -> AccountsScreen(model)
                 Section.CATEGORIES -> CategoriesScreen(model)
                 Section.PAYEES -> PayeesScreen(model)
+                Section.RULES -> RulesScreen(model)
                 Section.INSTITUTIONS -> InstitutionsScreen(model)
                 Section.MEMBERS -> MembersScreen(model)
             }

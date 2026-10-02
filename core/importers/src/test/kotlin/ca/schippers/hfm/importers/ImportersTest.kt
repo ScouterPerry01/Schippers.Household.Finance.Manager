@@ -112,6 +112,8 @@ class CsvImporterTest {
     fun `mapping survives saving and loading`() {
         val m = CsvMapping(delimiter = '\t', hasHeader = false, dateColumn = 1, debitColumn = 3, creditColumn = 4, negate = true, decimalComma = true)
         assertEquals(m, CsvMapping.fromMap(m.toMap()))
+        assertEquals(m, CsvMapping.decode(m.encode()))
+        assertEquals(CsvMapping(delimiter = ';'), CsvMapping.decode(CsvMapping(delimiter = ';').encode()))
     }
 
     @Test

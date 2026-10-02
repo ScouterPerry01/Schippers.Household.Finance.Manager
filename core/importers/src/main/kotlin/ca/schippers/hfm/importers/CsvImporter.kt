@@ -51,9 +51,16 @@ data class CsvMapping(
         put("charset", charset)
     }
 
+    /** One "key=value" per line, for saving. */
+    fun encode(): String = toMap().entries.joinToString("\n") { "${it.key}=${it.value}" }
+
     fun isValid(): Boolean = amountColumn != null || debitColumn != null || creditColumn != null
 
     companion object {
+        fun decode(text: String): CsvMapping = fromMap(
+            text.lines().filter { '=' in it }.associate { it.substringBefore('=') to it.substringAfter('=') },
+        )
+
         fun fromMap(m: Map<String, String>): CsvMapping = CsvMapping(
             delimiter = m["delimiter"]?.let { if (it == "TAB") '\t' else it.firstOrNull() } ?: ',',
             hasHeader = m["hasHeader"]?.toBoolean() ?: true,
@@ -199,7 +206,7 @@ class CsvImporter : StatementImporter {
     private fun isNewestFirst(lines: List<ImportedLine>): Boolean = lines.size > 1 && lines.first().date > lines.last().date
 
     companion object {
-        private val DATE_FORMATS = listOf("yyyy-MM-dd", "yyyy/MM/dd", "yyyyMMdd", "MM/dd/yyyy", "dd/MM/yyyy", "M/d/yyyy", "d/M/yyyy", "dd-MM-yyyy", "yyyy-M-d")
+        val DATE_FORMATS = listOf("yyyy-MM-dd", "yyyy/MM/dd", "yyyyMMdd", "MM/dd/yyyy", "dd/MM/yyyy", "M/d/yyyy", "d/M/yyyy", "dd-MM-yyyy", "yyyy-M-d")
 
         /** Picks the first format that reads every sample; day-first is chosen only when a day above 12 proves it. */
         fun guessDateFormat(samples: List<String>): String {
