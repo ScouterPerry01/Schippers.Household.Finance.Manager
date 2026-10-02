@@ -28,7 +28,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
 
-enum class Section { DASHBOARD, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, REPORTS, CALENDAR, HEALTH, PETS, VEHICLES, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, BACKUPS, SECURITY }
+enum class Section { DASHBOARD, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, REPORTS, CALENDAR, HEALTH, PETS, VEHICLES, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, PHONES, BACKUPS, SECURITY }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -51,6 +51,15 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
 
     /** Counts from the last import, shown at the top of the reconciliation screen. */
     var lastImport by mutableStateOf<ImportResult?>(null)
+
+    /** Section 3: listens for paired phones while this household is unlocked. */
+    val syncServer = SyncServer(books, { today() }) { changed() }
+
+    /** Why the phone listener could not start, if it could not. */
+    var syncError by mutableStateOf<String?>(null)
+
+    /** The name the phone shows for this computer. */
+    fun desktopName(): String = runCatching { java.net.InetAddress.getLocalHost().hostName }.getOrNull() ?: "Desktop"
 
     /** CAP-03, CAP-04: what the last document import did. */
     var lastImportMessage by mutableStateOf<String?>(null)

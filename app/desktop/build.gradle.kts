@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.swing)
     implementation(libs.fastexcel)
     implementation(libs.openpdf)
+    implementation(libs.zxing.core)
     testImplementation(kotlin("test"))
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)

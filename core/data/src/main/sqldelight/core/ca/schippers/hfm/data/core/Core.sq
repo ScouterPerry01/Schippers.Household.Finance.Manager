@@ -45,6 +45,31 @@ CREATE TABLE pet (
     updated_at INTEGER NOT NULL
 );
 
+-- Paired phones (SYNC-03, SYNC-07, SYNC-08). The pair key is stored here, inside the encrypted core.db.
+CREATE TABLE sync_device (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    public_key TEXT NOT NULL,
+    pair_key TEXT NOT NULL,
+    -- The household user the phone captures for (HH-12), and the group its documents go to.
+    user_id TEXT NOT NULL,
+    group_id TEXT,
+    paired_at INTEGER NOT NULL,
+    last_seen INTEGER,
+    items_received INTEGER NOT NULL DEFAULT 0,
+    revoked_at INTEGER
+);
+
+-- SYNC-02: every item received, so one sent twice is acknowledged but imported once.
+CREATE TABLE sync_item (
+    item_id TEXT NOT NULL PRIMARY KEY,
+    device_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    received_at INTEGER NOT NULL,
+    document_id TEXT,
+    status TEXT NOT NULL
+);
+
 -- Sign-in accounts (HH-05, HH-06). Keys and password material live in household.json.
 CREATE TABLE app_user (
     id TEXT NOT NULL PRIMARY KEY,
@@ -363,3 +388,34 @@ SELECT * FROM pet ORDER BY archived, name;
 
 deletePet:
 DELETE FROM pet WHERE id = ?;
+
+insertDevice:
+INSERT OR REPLACE INTO sync_device(id, name, public_key, pair_key, user_id, group_id, paired_at, last_seen, items_received, revoked_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 0, NULL);
+
+devices:
+SELECT * FROM sync_device ORDER BY revoked_at IS NOT NULL, paired_at DESC;
+
+deviceById:
+SELECT * FROM sync_device WHERE id = ?;
+
+deviceSeen:
+UPDATE sync_device SET last_seen = ?, items_received = items_received + ? WHERE id = ?;
+
+revokeDevice:
+UPDATE sync_device SET revoked_at = ? WHERE id = ?;
+
+renameDevice:
+UPDATE sync_device SET name = ?, group_id = ? WHERE id = ?;
+
+deleteDevice:
+DELETE FROM sync_device WHERE id = ?;
+
+insertSyncItem:
+INSERT OR IGNORE INTO sync_item(item_id, device_id, kind, received_at, document_id, status) VALUES (?, ?, ?, ?, ?, ?);
+
+syncItemById:
+SELECT * FROM sync_item WHERE item_id = ?;
+
+syncItemsForDevice:
+SELECT * FROM sync_item WHERE device_id = ? ORDER BY received_at DESC LIMIT ?;

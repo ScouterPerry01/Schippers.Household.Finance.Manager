@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -43,6 +44,15 @@ fun MainScreen(model: BooksModel, app: AppState) {
             if (runCatching { model.books.goals.postScheduled(today()) }.getOrDefault(0) > 0) model.changed()
             delay(60 * 60_000L)
         }
+    }
+    // Section 3: phones can send captures while the household is unlocked; locking stops it.
+    DisposableEffect(model) {
+        try {
+            model.syncServer.start()
+        } catch (e: Exception) {
+            model.syncError = e.message ?: e.javaClass.simpleName
+        }
+        onDispose { model.syncServer.close() }
     }
     // CAP-04: files saved into the watched folder are imported in the background.
     LaunchedEffect(model) { watchFolder(model) }
@@ -95,6 +105,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
                     Section.GOALS -> GoalsScreen(model)
                     Section.REPORTS -> ReportsScreen(model, model.reportState)
                     Section.RATES -> RatesScreen(model)
+                    Section.PHONES -> PhonesScreen(model)
                     Section.BACKUPS -> BackupsScreen(model)
                     Section.SECURITY -> SecurityScreen(model, app)
                     Section.CATEGORIES -> CategoriesScreen(model)

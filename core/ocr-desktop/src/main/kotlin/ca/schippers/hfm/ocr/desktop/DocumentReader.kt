@@ -86,3 +86,18 @@ class DocumentReader(private val engine: PaddleOcrEngine) {
         fun png(img: BufferedImage): ByteArray = ByteArrayOutputStream().also { ImageIO.write(img, "png", it) }.toByteArray()
     }
 }
+
+/** CAP-02: the pages of a multi-page capture, as one PDF, each page the size of its photo at 150 DPI. */
+object PdfPages {
+    fun fromJpegs(pages: List<ByteArray>): ByteArray = org.apache.pdfbox.pdmodel.PDDocument().use { doc ->
+        for ((i, bytes) in pages.withIndex()) {
+            val image = org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject.createFromByteArray(doc, bytes, "page-$i.jpg")
+            val w = image.width * 72f / 150f
+            val h = image.height * 72f / 150f
+            val page = org.apache.pdfbox.pdmodel.PDPage(org.apache.pdfbox.pdmodel.common.PDRectangle(w, h))
+            doc.addPage(page)
+            org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page).use { it.drawImage(image, 0f, 0f, w, h) }
+        }
+        java.io.ByteArrayOutputStream().also { doc.save(it) }.toByteArray()
+    }
+}

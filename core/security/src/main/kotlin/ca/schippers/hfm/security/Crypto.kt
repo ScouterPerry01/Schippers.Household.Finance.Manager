@@ -153,3 +153,23 @@ object SealedBox {
         }
     }
 }
+
+/**
+ * SYNC-03: the key a paired phone and desktop share. Each side combines its own private key with
+ * the other's public key (X25519); both public keys are bound in, so the key belongs to this pair.
+ */
+object PairKey {
+    private const val INFO = "hfm/sync-pair/v1"
+
+    fun derive(own: KeyPair, peerPublicKey: ByteArray, desktopPublicKey: ByteArray, phonePublicKey: ByteArray): ByteArray {
+        val secret = ByteArray(KEY_BYTES)
+        X25519Agreement().apply { init(X25519PrivateKeyParameters(own.privateKey, 0)) }
+            .calculateAgreement(X25519PublicKeyParameters(peerPublicKey, 0), secret, 0)
+        if (secret.all { it == 0.toByte() }) throw DecryptionException("Invalid public key")
+        return try {
+            Hkdf.derive(secret, desktopPublicKey + phonePublicKey, INFO)
+        } finally {
+            secret.fill(0)
+        }
+    }
+}
