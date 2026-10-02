@@ -107,6 +107,7 @@ class TransactionService internal constructor(private val books: Books) {
                 prepared.fxRate?.toPlainString(), draft.memo?.ifBlank { null }, draft.memberId, draft.cleared.name,
                 null, null, books.userId, DESKTOP, now, now,
             )
+            if (draft.assetId != null) ledger.ledgerQueries.setTxnAsset(draft.assetId, id)
             writeChildren(ledger, id, prepared)
             logChange(ledger, id, "CREATE", null, snapshot(ledger, id))
         }
@@ -129,6 +130,7 @@ class TransactionService internal constructor(private val books: Books) {
                 draft.originalAmount?.minorUnits, draft.originalAmount?.currency?.code, prepared.fxRate?.toPlainString(),
                 draft.memo?.ifBlank { null }, draft.memberId, draft.cleared.name, null, null, books.now(), transactionId,
             )
+            ledger.ledgerQueries.setTxnAsset(draft.assetId, transactionId)
             ledger.ledgerQueries.deleteSplits(transactionId)
             ledger.ledgerQueries.deleteTxnTags(transactionId)
             writeChildren(ledger, transactionId, prepared)
@@ -434,6 +436,7 @@ internal fun TxnRow.toTransaction(currency: Currency, splits: List<SplitRow>, ta
     fxRate = fx_rate?.let(::BigDecimal),
     memo = memo,
     memberId = member_id,
+    assetId = asset_id,
     cleared = ClearedStatus.valueOf(cleared),
     transfer = transfer_id?.let { TransferLink(it, transfer_account_id!!) },
     splits = splits.map {

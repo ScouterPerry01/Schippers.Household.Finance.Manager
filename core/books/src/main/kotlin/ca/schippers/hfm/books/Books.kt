@@ -8,6 +8,7 @@ import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.domain.Role
 import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.i18n.Messages
+import kotlinx.datetime.LocalDate
 
 /**
  * The household's books for one signed-in user: the entry point the apps use for everything in
@@ -38,6 +39,8 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val calendar = CalendarService(this)
     val health = HealthService(this)
     val goals = GoalService(this)
+    val pets = PetService(this)
+    val vehicles = VehicleService(this)
 
     init {
         categories.ensureDefaults()
@@ -65,6 +68,13 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     internal fun ledger(group: GroupInfo) = session.ledger(group.partitionId)
 
     internal fun now(): Long = clock()
+
+    /** Today in the computer's time zone, from the same clock as [now]. */
+    internal fun today(): LocalDate = java.time.Instant.ofEpochMilli(clock()).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+        .let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
+
+    /** Everything that must be renewed within [withinDays] of [today], or is overdue: pet licences and insurance, vehicle papers and warranties. */
+    fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> = (pets.renewals(today, withinDays) + vehicles.renewals(today, withinDays)).sortedBy { it.date }
 
     /** Tags for projects and events (CAT-04). */
     fun tags(): List<Tag> = core.tags().executeAsList().map { Tag(it.id, it.name) }

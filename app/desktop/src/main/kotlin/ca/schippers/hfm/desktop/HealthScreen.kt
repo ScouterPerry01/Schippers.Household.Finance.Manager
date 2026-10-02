@@ -42,7 +42,6 @@ import ca.schippers.hfm.books.HealthRecord
 import ca.schippers.hfm.books.HealthTest
 import ca.schippers.hfm.books.Immunization
 import ca.schippers.hfm.books.Medication
-import ca.schippers.hfm.books.Member
 import ca.schippers.hfm.books.ProviderKind
 import ca.schippers.hfm.books.Severity
 import ca.schippers.hfm.books.ValidationException
@@ -71,8 +70,8 @@ private sealed interface HealthEdit {
 @Composable
 fun HealthScreen(model: BooksModel) {
     val books = model.books
-    val people = remember(model.revision) { books.members.list() }
-    var personId by remember { mutableStateOf<String?>(null) }
+    val people = remember(model.revision) { model.peopleAndPets() }
+    var personId by remember { mutableStateOf(model.healthSubjectId) }
     var tab by remember { mutableStateOf(HealthTab.MEDICATIONS) }
     var edit by remember { mutableStateOf<HealthEdit?>(null) }
     val person = people.firstOrNull { it.id == personId } ?: people.firstOrNull()
@@ -80,7 +79,7 @@ fun HealthScreen(model: BooksModel) {
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(model.t("nav.health"), style = MaterialTheme.typography.titleLarge)
-            if (person != null) Picker(model.t("health.person"), people, person, { it.displayName }, Modifier.width(260.dp)) { personId = it.id }
+            if (person != null) Picker(model.t("health.person"), people, person, { it.name }, Modifier.width(260.dp)) { personId = it.id }
             Box(Modifier.weight(1f))
             if (person != null && tab != HealthTab.PROVIDERS) {
                 Button(onClick = { edit = newRecord(model, tab, person) }) { Text(model.t("health.add.${tab.name}")) }
@@ -140,9 +139,11 @@ fun HealthScreen(model: BooksModel) {
     }
 }
 
-private fun newRecord(model: BooksModel, tab: HealthTab, person: Member): HealthEdit? {
-    if (tab == HealthTab.APPOINTMENTS) return model.newEventDraft(today(), EventCategory.MEDICAL, person.id)?.let { HealthEdit.NewEvent(it) }
-    val group = model.defaultGroupForPersonalRecords()
+private fun newRecord(model: BooksModel, tab: HealthTab, person: BooksModel.Who): HealthEdit? {
+    val category = if (person.isPet) EventCategory.PET else EventCategory.MEDICAL
+    if (tab == HealthTab.APPOINTMENTS) return model.newEventDraft(today(), category, person.id)?.let { HealthEdit.NewEvent(it) }
+    // Pets belong to the whole household; people's records default to their private group.
+    val group = if (person.isPet) model.editableGroups().let { g -> g.firstOrNull { !it.isPrivate } ?: g.firstOrNull() } else model.defaultGroupForPersonalRecords()
     if (group == null) {
         model.error = model.t("error.noEditableGroup")
         return null
@@ -171,7 +172,7 @@ private fun newProvider(model: BooksModel): HealthEdit? {
 // --- Medications (HLT-01 to HLT-03) ---------------------------------------------------------------
 
 @Composable
-private fun MedicationsTab(model: BooksModel, person: Member, onEdit: (HealthEdit) -> Unit) {
+private fun MedicationsTab(model: BooksModel, person: BooksModel.Who, onEdit: (HealthEdit) -> Unit) {
     val books = model.books
     val meds = remember(model.revision, person.id) { books.health.medications(person.id).sortedWith(compareBy({ !it.active }, { it.name.lowercase() })) }
     val providers = remember(model.revision) { books.health.providers().associate { it.id to it.name } }

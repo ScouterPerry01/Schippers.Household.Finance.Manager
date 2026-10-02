@@ -45,6 +45,7 @@ import ca.schippers.hfm.books.GroupInfo
 import ca.schippers.hfm.books.HealthDue
 import ca.schippers.hfm.books.OccurrenceMark
 import ca.schippers.hfm.books.OccurrenceStatus
+import ca.schippers.hfm.books.Renewal
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.calc.schedule.Frequency
 import ca.schippers.hfm.calc.schedule.Recurrence
@@ -108,7 +109,7 @@ internal fun AgendaList(model: BooksModel, from: LocalDate, to: LocalDate, membe
     val books = model.books
     val items = remember(model.revision, from, to, memberId) {
         books.calendar.items(from, to).filter { item ->
-            memberId == null || (item is CalendarItem.Event && item.occurrence.event.memberId == memberId && item.occurrence.event.category == EventCategory.MEDICAL)
+            memberId == null || (item is CalendarItem.Event && item.occurrence.event.memberId == memberId && item.occurrence.event.category in setOf(EventCategory.MEDICAL, EventCategory.PET))
         }
     }
     val names = remember(model.revision) { lookups(model) }
@@ -129,6 +130,8 @@ private fun itemKey(item: CalendarItem): String = when (item) {
     is CalendarItem.Event -> "e-${item.occurrence.event.id}-${item.date}"
     is CalendarItem.Bill -> "b-${item.occurrence.bill.id}-${item.date}"
     is CalendarItem.Health -> "h-${item.due.javaClass.simpleName}-${item.due.memberId}-${item.date}-${healthTitle(item.due)}"
+    is CalendarItem.Renewal -> "r-${item.renewal.kind}-${item.renewal.subjectId}-${item.date}-${item.renewal.detail}"
+    is CalendarItem.Maintenance -> "m-${item.due.status.task.id}-${item.date}"
 }
 
 /** Names of people, providers and accounts, for the agenda lines. */
@@ -137,7 +140,7 @@ private class Lookups(val people: Map<String, String>, val providers: Map<String
 private fun lookups(model: BooksModel): Lookups {
     val books = model.books
     return Lookups(
-        books.members.list(includeArchived = true).associate { it.id to it.displayName },
+        model.peopleAndPets(includeArchived = true).associate { it.id to it.name },
         runCatching { books.health.providers() }.getOrDefault(emptyList()).associate { it.id to it.name },
         books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name },
     )
@@ -154,6 +157,9 @@ private fun dayTitle(model: BooksModel, day: LocalDate): String {
     }
     return "$name ${model.date(day)}$relative"
 }
+
+/** "Municipal licence (Québec)". */
+private fun renewalTitle(model: BooksModel, r: Renewal): String = model.t("renewalKind.${r.kind}") + (r.detail?.let { " ($it)" }.orEmpty())
 
 private fun time(t: LocalTime?): String? = t?.let { "%02d:%02d".format(it.hour, it.minute) }
 
@@ -228,6 +234,25 @@ private fun AgendaRow(model: BooksModel, item: CalendarItem, names: Lookups, onE
                     }
                     TextButton(onClick = { model.section = Section.HEALTH }) { Text(model.t("calendar.openHealth")) }
                 }
+                is CalendarItem.Renewal -> {
+                    val r = item.renewal
+                    Text(model.t("calendar.renewal"), Modifier.width(110.dp).padding(start = 12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(renewalTitle(model, r), fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(r.subjectName, style = MaterialTheme.typography.bodySmall)
+                    }
+                    val section = model.renewalSection(r.kind)
+                    TextButton(onClick = { model.section = section }) { Text(model.t("calendar.open.${section.name}")) }
+                }
+                is CalendarItem.Maintenance -> {
+                    val due = item.due
+                    Text(model.t("calendar.maintenance"), Modifier.width(110.dp).padding(start = 12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(due.status.task.name, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(due.vehicle.name, style = MaterialTheme.typography.bodySmall)
+                    }
+                    TextButton(onClick = { model.section = Section.VEHICLES }) { Text(model.t("calendar.open.VEHICLES")) }
+                }
             }
         }
     }
@@ -238,6 +263,8 @@ private fun kindColor(item: CalendarItem): Color = when (item) {
     is CalendarItem.Event -> MaterialTheme.colorScheme.primary
     is CalendarItem.Bill -> MaterialTheme.colorScheme.tertiary
     is CalendarItem.Health -> MaterialTheme.colorScheme.secondary
+    is CalendarItem.Renewal -> MaterialTheme.colorScheme.secondary
+    is CalendarItem.Maintenance -> MaterialTheme.colorScheme.secondary
 }
 
 private fun durationText(model: BooksModel, minutes: Int): String =
@@ -311,6 +338,8 @@ private fun MonthCellLine(model: BooksModel, item: CalendarItem, onEdit: (Calend
         }
         is CalendarItem.Bill -> item.occurrence.bill.name to Modifier.clickable { model.section = Section.BILLS }
         is CalendarItem.Health -> model.t("healthDue.${item.due.javaClass.simpleName}", healthTitle(item.due)) to Modifier.clickable { model.section = Section.HEALTH }
+        is CalendarItem.Renewal -> "${item.renewal.subjectName}: ${renewalTitle(model, item.renewal)}" to Modifier.clickable { model.section = model.renewalSection(item.renewal.kind) }
+        is CalendarItem.Maintenance -> "${item.due.vehicle.name}: ${item.due.status.task.name}" to Modifier.clickable { model.section = Section.VEHICLES }
     }
     val faded = (item is CalendarItem.Event && item.occurrence.mark != null) || (item is CalendarItem.Bill && item.occurrence.status != OccurrenceStatus.DUE)
     Text(
@@ -356,7 +385,7 @@ internal fun EventDialog(model: BooksModel, existing: CalendarEvent?, draft: Eve
     val books = model.books
     val start = existing?.let { EventDraft(it.groupId, it.title, it.category, it.startDate, it.startTime, it.durationMinutes, it.location, it.notes, it.memberId, it.providerId, it.accountId, it.recurrence, it.endDate, it.reminderMinutes) }
         ?: draft!!
-    val people = remember { books.members.list() }
+    val people = remember { model.peopleAndPets() }
     val providers = remember(model.revision) { books.health.providers().filter { !it.archived } }
     val accounts = remember { books.accounts.list().map { it.account } }
     var groupId by remember { mutableStateOf(start.groupId) }
@@ -431,7 +460,7 @@ internal fun EventDialog(model: BooksModel, existing: CalendarEvent?, draft: Eve
             LabeledCheckbox(model.t("calendar.allDay"), allDay) { allDay = it }
             TextInput(model.t("calendar.location"), location) { location = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Picker(model.t("calendar.person"), listOf(null) + people, people.firstOrNull { it.id == memberId }, { it?.displayName ?: model.t("common.none") }, Modifier.weight(1f)) { memberId = it?.id }
+                Picker(model.t("calendar.person"), listOf(null) + people, people.firstOrNull { it.id == memberId }, { it?.name ?: model.t("common.none") }, Modifier.weight(1f)) { memberId = it?.id }
                 Picker(model.t("calendar.provider"), listOf(null) + providers, providers.firstOrNull { it.id == providerId }, { it?.name ?: model.t("common.none") }, Modifier.weight(1f)) { providerId = it?.id }
             }
             Picker(model.t("calendar.account"), listOf(null) + accounts, accounts.firstOrNull { it.id == accountId }, { it?.name ?: model.t("common.none") }) { accountId = it?.id }

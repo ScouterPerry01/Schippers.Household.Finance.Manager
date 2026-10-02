@@ -134,11 +134,18 @@ class CategoryService internal constructor(private val books: Books) {
         books.session.audit("UPDATE", "category", category.id)
     }
 
-    /** Seeds the default tree the first time a household is opened. */
+    /**
+     * Seeds the default tree the first time a household is opened. Households created before a
+     * default category was added receive it once (CAT-06); one the user deleted is not brought back.
+     */
     internal fun ensureDefaults() {
-        if (books.core.categoryCount().executeAsOne() > 0) return
         val text = javaClass.getResourceAsStream("/hfm/books/default-categories.json")!!.reader(Charsets.UTF_8).use { it.readText() }
         val roots = Json.decodeFromString<List<DefaultCategory>>(text)
+        val version = books.setting(DEFAULTS_VERSION)?.toIntOrNull() ?: 1
+        if (books.core.categoryCount().executeAsOne() > 0) {
+            if (version < 2) addMissing(roots, ADDED_IN_2)
+            return
+        }
         books.session.core.transaction {
             fun insert(node: DefaultCategory, parentId: String?, kind: String, index: Int) {
                 val id = Ids.newId()
@@ -147,7 +154,38 @@ class CategoryService internal constructor(private val books: Books) {
                 node.children.forEachIndexed { i, child -> insert(child, id, nodeKind, i) }
             }
             roots.forEachIndexed { i, root -> insert(root, null, root.kind ?: CategoryKind.EXPENSE.name, i) }
+            books.putSetting(DEFAULTS_VERSION, CURRENT_DEFAULTS.toString())
         }
+    }
+
+    /** Inserts the default categories in [keys] that are missing, under their default parent if it still exists. */
+    private fun addMissing(roots: List<DefaultCategory>, keys: Set<String>) {
+        val existing = books.core.categories().executeAsList()
+        val byKey = existing.mapNotNull { row -> row.system_key?.let { it to row } }.toMap().toMutableMap()
+        books.session.core.transaction {
+            fun visit(node: DefaultCategory, parentKey: String?, kind: String, index: Int) {
+                val nodeKind = node.kind ?: kind
+                if (node.key in keys && node.key !in byKey) {
+                    val parent = parentKey?.let(byKey::get)
+                    if (parentKey == null || parent != null) {
+                        val id = Ids.newId()
+                        books.core.insertCategory(id, parent?.id, node.key, node.en, node.fr, parent?.kind ?: nodeKind, node.tax, index.toLong())
+                        byKey[node.key] = books.core.categories().executeAsList().first { it.id == id }
+                    }
+                }
+                node.children.forEachIndexed { i, child -> visit(child, node.key, nodeKind, i) }
+            }
+            roots.forEachIndexed { i, root -> visit(root, null, root.kind ?: CategoryKind.EXPENSE.name, i) }
+            books.putSetting(DEFAULTS_VERSION, CURRENT_DEFAULTS.toString())
+        }
+    }
+
+    private companion object {
+        const val DEFAULTS_VERSION = "categories.defaultsVersion"
+        const val CURRENT_DEFAULTS = 2
+
+        /** Default categories added in version 2 (CAT-06). */
+        val ADDED_IN_2 = setOf("transport.transit.pass", "transport.transit.fares", "pets.licence", "pets.insurance", "pets.boarding")
     }
 
     @Serializable

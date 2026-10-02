@@ -129,7 +129,10 @@ data class Transaction(
     val originalAmount: Money?,
     val fxRate: BigDecimal?,
     val memo: String?,
+    /** The person or pet it was for (PET-05). */
     val memberId: String?,
+    /** VEH-09: the vehicle it was for. */
+    val assetId: String?,
     val cleared: ClearedStatus,
     val transfer: TransferLink?,
     val splits: List<Split>,
@@ -152,6 +155,7 @@ data class TransactionDraft(
     val originalAmount: Money? = null,
     val fxRate: BigDecimal? = null,
     val tags: Set<String> = emptySet(),
+    val assetId: String? = null,
 )
 
 /**

@@ -8,9 +8,13 @@ import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.ImportResult
 import ca.schippers.hfm.books.EventReminder
 import ca.schippers.hfm.books.GroupInfo
+import ca.schippers.hfm.books.MaintenanceDue
 import ca.schippers.hfm.books.RefillReminder
+import ca.schippers.hfm.books.Renewal
+import ca.schippers.hfm.books.RenewalKind
 import ca.schippers.hfm.books.Reminder
 import ca.schippers.hfm.books.SearchResults
+import ca.schippers.hfm.books.Species
 import ca.schippers.hfm.books.ReconciledChangeException
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.data.AccessDeniedException
@@ -24,7 +28,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
 
-enum class Section { DASHBOARD, ACCOUNTS, BILLS, BUDGETS, GOALS, REPORTS, CALENDAR, HEALTH, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, BACKUPS, SECURITY }
+enum class Section { DASHBOARD, ACCOUNTS, BILLS, BUDGETS, GOALS, REPORTS, CALENDAR, HEALTH, PETS, VEHICLES, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, BACKUPS, SECURITY }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -106,8 +110,28 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         }
         val refills = runCatching { books.health.refillReminders(today()) }.getOrDefault(emptyList())
             .map { ReminderLine("refill:${it.medication.id}:${it.due}", describe(it), Section.HEALTH) }
-        return events + bills + refills
+        val renewals = runCatching { books.renewals(today()) }.getOrDefault(emptyList())
+            .map { ReminderLine("renewal:${it.kind}:${it.subjectId}:${it.date}:${it.detail}", describe(it), renewalSection(it.kind)) }
+        val maintenance = runCatching { books.vehicles.due(today()) }.getOrDefault(emptyList())
+            .map { ReminderLine("maintenance:${it.status.task.id}:${it.status.dueDate}:${it.status.dueOdometer}:${it.status.state}", describe(it), Section.VEHICLES) }
+        return events + bills + refills + renewals + maintenance
     }
+
+    /** "Civic: oil change due 2026-11-03 or at 55,700 km". */
+    fun describe(m: MaintenanceDue): String {
+        val s = m.status
+        val due = listOfNotNull(s.dueDate?.let(::date), s.dueOdometer?.let { t("vehicles.km", String.format(language.locale, "%,d", it)) }).joinToString(" ${t("vehicles.or")} ")
+        return "${m.vehicle.name}: ${s.task.name} ${t("maintenance.${s.state}", due)}"
+    }
+
+    /** "Rex: municipal licence expires in 12 days". */
+    fun describe(r: Renewal): String {
+        val whenText = if (r.daysLeft < 0) t("renewal.overdue", -r.daysLeft) else t("renewal.inDays", r.daysLeft)
+        return "${r.subjectName}: ${t("renewalKind.${r.kind}")}${r.detail?.let { " ($it)" }.orEmpty()} $whenText"
+    }
+
+    fun renewalSection(kind: RenewalKind): Section =
+        if (kind == RenewalKind.PET_LICENCE || kind == RenewalKind.PET_INSURANCE) Section.PETS else Section.VEHICLES
 
     /** "Garage: winter tires: tomorrow at 09:30". */
     fun describe(r: EventReminder): String {
@@ -124,7 +148,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
 
     /** "Atorvastatin (Marie): refill due in 4 days". */
     fun describe(r: RefillReminder): String {
-        val person = books.members.list(includeArchived = true).firstOrNull { it.id == r.medication.memberId }?.displayName
+        val person = peopleAndPets(includeArchived = true).firstOrNull { it.id == r.medication.memberId }?.name
         val base = when {
             r.daysLeft < 0 -> t("reminder.refillOverdue", -r.daysLeft)
             r.daysLeft == 0 -> t("reminder.refillToday")
@@ -133,6 +157,22 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         val renew = if (r.medication.needsRenewal) " · " + t("reminder.renew") else ""
         return "${r.medication.name}${person?.let { " ($it)" }.orEmpty()}: $base$renew"
     }
+
+    /** Someone a record can be about: a household member or a pet (PET-03). */
+    data class Who(val id: String, val name: String, val species: Species?) {
+        val isPet: Boolean get() = species != null
+    }
+
+    /** People first, then pets, e.g. "Léa", "Rex (dog)". */
+    fun peopleAndPets(includeArchived: Boolean = false): List<Who> =
+        books.members.list(includeArchived).map { Who(it.id, it.displayName, null) } +
+            runCatching { books.pets.list(includeArchived) }.getOrDefault(emptyList()).map { Who(it.id, "${it.name} (${t("species.${it.species}").lowercase(language.locale)})", it.species) }
+
+    /** Vehicles a transaction can be linked to (VEH-09), as id and name. */
+    fun vehicleChoices(): List<Pair<String, String>> = runCatching { books.vehicles.list() }.getOrDefault(emptyList()).map { it.id to it.name }
+
+    /** The person or pet the Health screen shows first, e.g. when coming from the Pets screen. */
+    var healthSubjectId by mutableStateOf<String?>(null)
 
     /** Account groups the user may edit, for "store in" choices (CAL-06). */
     fun editableGroups(): List<GroupInfo> = books.groups().filter { it.level == PermissionLevel.EDIT }

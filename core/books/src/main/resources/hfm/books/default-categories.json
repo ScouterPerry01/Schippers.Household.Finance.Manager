@@ -32,7 +32,10 @@
     { "key": "transport.insurance", "en": "Vehicle insurance", "fr": "Assurance automobile" },
     { "key": "transport.registration", "en": "Registration and licence", "fr": "Immatriculation et permis" },
     { "key": "transport.lease", "en": "Vehicle lease", "fr": "Location de véhicule" },
-    { "key": "transport.transit", "en": "Public transit", "fr": "Transport en commun" },
+    { "key": "transport.transit", "en": "Public transit", "fr": "Transport en commun", "children": [
+      { "key": "transport.transit.pass", "en": "Transit passes", "fr": "Laissez-passer" },
+      { "key": "transport.transit.fares", "en": "Fares and tickets", "fr": "Billets et droits de passage" }
+    ] },
     { "key": "transport.parking_tolls", "en": "Parking and tolls", "fr": "Stationnement et péages" },
     { "key": "transport.taxi", "en": "Taxi and ride sharing", "fr": "Taxi et covoiturage" }
   ]},
@@ -67,7 +70,10 @@
   { "key": "pets", "en": "Pets", "fr": "Animaux de compagnie", "kind": "EXPENSE", "children": [
     { "key": "pets.food", "en": "Pet food", "fr": "Nourriture pour animaux" },
     { "key": "pets.vet", "en": "Veterinarian", "fr": "Vétérinaire" },
-    { "key": "pets.supplies", "en": "Pet supplies and grooming", "fr": "Fournitures et toilettage" }
+    { "key": "pets.supplies", "en": "Pet supplies and grooming", "fr": "Fournitures et toilettage" },
+    { "key": "pets.licence", "en": "Pet licence", "fr": "Licence d’animal" },
+    { "key": "pets.insurance", "en": "Pet insurance", "fr": "Assurance pour animaux" },
+    { "key": "pets.boarding", "en": "Boarding and pet sitting", "fr": "Pension et garde d’animaux" }
   ]},
   { "key": "leisure", "en": "Leisure", "fr": "Loisirs", "kind": "EXPENSE", "children": [
     { "key": "leisure.entertainment", "en": "Entertainment and outings", "fr": "Divertissement et sorties" },

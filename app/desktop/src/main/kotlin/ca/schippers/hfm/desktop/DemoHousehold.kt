@@ -18,7 +18,17 @@ import ca.schippers.hfm.books.Immunization
 import ca.schippers.hfm.books.Medication
 import ca.schippers.hfm.books.Member
 import ca.schippers.hfm.books.ProviderKind
+import ca.schippers.hfm.books.FuelEntry
+import ca.schippers.hfm.books.FuelType
+import ca.schippers.hfm.books.PaymentDraft
+import ca.schippers.hfm.books.Pet
 import ca.schippers.hfm.books.SavingsGoal
+import ca.schippers.hfm.books.ServiceRecord
+import ca.schippers.hfm.books.Sex
+import ca.schippers.hfm.books.Species
+import ca.schippers.hfm.books.Vehicle
+import ca.schippers.hfm.books.Warranty
+import ca.schippers.hfm.books.WarrantyKind
 import ca.schippers.hfm.books.Severity
 import kotlinx.datetime.LocalTime
 import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
@@ -82,6 +92,23 @@ object DemoHousehold {
         books.creditCards.saveTerms(visa.id, CreditCardTerms(cad("8000"), BigDecimal("0.1995"), statementDay = 20, dueDay = 10, minPaymentPercent = BigDecimal("0.05"), minPaymentFloor = cad("10")))
         val usd = books.accounts.create(AccountDraft(group, "Compte US", AccountType.CHEQUING, Currency.USD, Money.parse("500.00", Currency.USD), start, bank.id))
 
+        // A dog and a car (PET-01, VEH-01), created first so the monthly activity can refer to them.
+        val rex = books.pets.save(
+            Pet(
+                "", "Rex", Species.DOG, "Golden retriever", Sex.MALE, LocalDate(2021, 5, 3), neutered = true, colour = "Doré", microchip = "985141000123456",
+                licenceNumber = "2026-04127", licenceMunicipality = "Ville de Québec", licenceExpiry = today.plus(DatePeriod(days = 21)),
+                insurer = "Trupanion", policyNumber = "TP-88213", insuranceRenewal = today.plus(DatePeriod(months = 5)), ownerMemberId = lea.id,
+            ),
+        )
+        val civic = books.vehicles.save(
+            Vehicle(
+                "", group, "Civic", "Honda", "Civic", 2021, "EX", "Gris", "2HGFE2F59MH512345", "F42 KLM", FuelType.GASOLINE, sam.id,
+                LocalDate(2023, 4, 12), cad("24500"), "Honda de Sainte-Foy", 38_200, Currency.CAD, today.plus(DatePeriod(months = 7)),
+                "Desjardins Assurances", "AUT-5521873", today.plus(DatePeriod(days = 12)),
+            ),
+        )
+        var odometer = 61_200
+
         // Only past activity: anything that would fall after today is skipped.
         fun add(draft: TransactionDraft) { if (draft.date <= today) books.transactions.create(draft) }
         fun add(draft: TransferDraft) { if (draft.date <= today) books.transactions.transfer(draft) }
@@ -102,7 +129,18 @@ object DemoHousehold {
                 ),
             )
             add(TransactionDraft(visa.id, on(21), cad("-64.15"), "Restaurant Chez Mimi", listOf(SplitDraft(cat("food.restaurants"), cad("-64.15")))))
-            add(TransactionDraft(visa.id, on(24), cad("-71.20"), "Petro-Canada", listOf(SplitDraft(cat("transport.fuel"), cad("-71.20")))))
+            // VEH-07, VEH-08: fill-ups entered from the fuel log, with their payments.
+            for ((day, litres, cost) in listOf(Triple(8, "41.8", "68.55"), Triple(24, "39.6", "64.95"))) {
+                odometer += 640
+                if (on(day) <= today) {
+                    books.vehicles.saveFuel(
+                        FuelEntry("", civic.id, on(day), odometer, BigDecimal(litres), cad(cost), station = "Petro-Canada"),
+                        PaymentDraft(visa.id, cat("transport.fuel"), "Petro-Canada"),
+                    )
+                }
+            }
+            add(TransactionDraft(visa.id, on(4), cad("-74.99"), "Mondou", listOf(SplitDraft(cat("pets.food"), cad("-74.99"))), memberId = rex.id))
+            add(TransactionDraft(chequing.id, on(1), cad("-56.50"), "RTC", listOf(SplitDraft(cat("transport.transit.pass"), cad("-56.50"))), memberId = lea.id, memo = "Laissez-passer étudiant"))
             add(TransferDraft(chequing.id, visa.id, on(10), cad("566.57")))
             add(TransferDraft(chequing.id, savings.id, on(16), cad("500.00"), memo = "Épargne mensuelle"))
             month = month.plus(DatePeriod(months = 1))
@@ -114,6 +152,7 @@ object DemoHousehold {
         importStatement(books, chequing, today)
         addBills(books, chequing, savings, visa, today)
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
+        addPetAndCarRecords(books, group, visa, rex, civic, today)
         // GOAL-01 to GOAL-04: three goals sharing the savings account.
         val goals = books.goals
         goals.save(SavingsGoal("", savings.id, "Voyage en Gaspésie", cad("4000"), LocalDate(today.year + 1, 7, 1), cad("250"), Recurrence.MONTHLY, start.plus(DatePeriod(days = 15))))
@@ -128,6 +167,41 @@ object DemoHousehold {
         books.budgets.set(cat("transport"), BudgetPeriod.MONTHLY, cad("120.00"), startMonth = firstMonth)
         books.budgets.set(cat("utilities"), BudgetPeriod.MONTHLY, cad("250.00"), startMonth = firstMonth)
         books.budgets.set(cat("housing"), BudgetPeriod.MONTHLY, cad("1450.00"), startMonth = firstMonth)
+    }
+
+    /** The car's maintenance history and warranty, and the dog's vet visit and vaccines. */
+    private fun addPetAndCarRecords(books: Books, group: String, visa: Account, rex: Pet, civic: Vehicle, today: LocalDate) {
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        fun cat(key: String) = books.categories.list().first { it.systemKey == key }.id
+        val vehicles = books.vehicles
+        vehicles.saveWarranty(Warranty("", civic.id, WarrantyKind.POWERTRAIN, "Honda Canada", LocalDate(2021, 3, 1), today.plus(DatePeriod(days = 50)), 100_000, "1-888-946-6329"))
+        vehicles.saveWarranty(Warranty("", civic.id, WarrantyKind.CORROSION, "Honda Canada", LocalDate(2021, 3, 1), LocalDate(2026, 3, 1).plus(DatePeriod(years = 2))))
+        val names = mapOf("oil" to "Vidange d'huile et filtre", "tire_rotation" to "Permutation des pneus", "winter_tires_on" to "Pose des pneus d'hiver",
+            "winter_tires_off" to "Retrait des pneus d'hiver", "brakes" to "Inspection des freins", "cabin_filter" to "Filtre à air de l'habitacle",
+            "engine_filter" to "Filtre à air du moteur", "inspection" to "Inspection annuelle")
+        val start = today.minus(DatePeriod(months = 3))
+        val tasks = vehicles.addStarterTasks(civic.id, today) { names.getValue(it) }.associateBy { it.templateKey }
+        // An oil change three months ago, with its payment; and a do-it-yourself filter change without one.
+        vehicles.saveService(
+            ServiceRecord("", civic.id, start.plus(DatePeriod(days = 5)), 61_500, "Garage Tremblay", cost = cad("94.85"), taskIds = setOfNotNull(tasks["oil"]?.id, tasks["tire_rotation"]?.id)),
+            PaymentDraft(visa.id, cat("transport.maintenance"), "Garage Tremblay"),
+        )
+        vehicles.saveService(ServiceRecord("", civic.id, start.plus(DatePeriod(days = 40)), 63_300, diy = true, cost = cad("24.99"), notes = "Filtre Canadian Tire", taskIds = setOfNotNull(tasks["cabin_filter"]?.id)))
+        books.transactions.create(
+            TransactionDraft(visa.id, start.plus(DatePeriod(days = 2)), cad("-1184.00"), "Desjardins Assurances", listOf(SplitDraft(cat("transport.insurance"), cad("-1184.00"))), assetId = civic.id),
+        )
+
+        val vet = books.health.saveProvider(HealthProvider("", group, "Hôpital vétérinaire Charlesbourg", ProviderKind.VET, "418-555-0190", null, null, false))
+        books.health.saveProvider(HealthProvider("", group, "Toilettage Patte de velours", ProviderKind.GROOMER, "418-555-0133", null, null, false))
+        books.transactions.create(
+            TransactionDraft(visa.id, start.plus(DatePeriod(days = 20)), cad("-287.40"), "Hôpital vétérinaire Charlesbourg", listOf(SplitDraft(cat("pets.vet"), cad("-287.40"))), memberId = rex.id),
+        )
+        books.transactions.create(
+            TransactionDraft(visa.id, LocalDate(today.year, 1, 15).let { if (it > today) start else it }, cad("-35.00"), "Ville de Québec", listOf(SplitDraft(cat("pets.licence"), cad("-35.00"))), memberId = rex.id),
+        )
+        books.health.saveImmunization(Immunization("", group, rex.id, "Rage", start.plus(DatePeriod(days = 20)), vet.id, start.plus(DatePeriod(days = 20, years = 3)), null))
+        books.health.saveImmunization(Immunization("", group, rex.id, "DHPP", start.plus(DatePeriod(days = 20)).minus(DatePeriod(years = 1)), vet.id, today.plus(DatePeriod(days = 18)), null))
+        books.calendar.create(EventDraft(group, "Toilettage de Rex", EventCategory.PET, today.plus(DatePeriod(days = 4)), LocalTime(13, 30), 90, "Patte de velours", memberId = rex.id))
     }
 
     /** Appointments of several kinds, and health records kept in Alex's private group. */

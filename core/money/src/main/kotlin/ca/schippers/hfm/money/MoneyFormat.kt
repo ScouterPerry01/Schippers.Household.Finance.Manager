@@ -32,6 +32,15 @@ object MoneyFormat {
         return nf.format(money.toBigDecimal())
     }
 
+    /** A plain number such as litres or a consumption, with grouping and up to three decimals. */
+    fun formatDecimal(value: BigDecimal, locale: Locale): String {
+        val nf = NumberFormat.getNumberInstance(locale).apply {
+            minimumFractionDigits = 0
+            maximumFractionDigits = 3
+        }
+        return nf.format(value)
+    }
+
     /**
      * Parses what a person types into an amount field. Accepts the locale's grouping and decimal
      * separators, any kind of space, a currency symbol or code, a leading minus sign or accounting

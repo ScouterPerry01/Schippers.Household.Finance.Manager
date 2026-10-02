@@ -238,6 +238,10 @@ SELECT * FROM category ORDER BY kind, sort_order, name_en;
 categoryCount:
 SELECT count(*) FROM category;
 
+-- Only categories that nothing refers to may be deleted.
+deleteCategory:
+DELETE FROM category WHERE id = ?;
+
 -- Payees (section 7.4) -----------------------------------------------------------------------
 
 insertPayee:

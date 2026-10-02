@@ -80,6 +80,9 @@ class EntryState {
     var deposit by mutableStateOf("")
     /** For a transfer to an account in another currency: the amount on the other side (FX-04). */
     var otherAmount by mutableStateOf("")
+    /** PET-05, VEH-09: the person or pet, and the vehicle, the transaction was for. */
+    var forId by mutableStateOf<String?>(null)
+    var assetId by mutableStateOf<String?>(null)
 
     fun clear(keepDate: Boolean = true) {
         editing = null
@@ -91,6 +94,8 @@ class EntryState {
         payment = ""
         deposit = ""
         otherAmount = ""
+        forId = null
+        assetId = null
     }
 }
 
@@ -109,6 +114,8 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     val otherAccounts = remember(model.revision, account.id) { books.accounts.list().map { it.account }.filter { it.id != account.id } }
     val allAccounts = remember(model.revision) { books.accounts.list(includeClosed = true).associate { it.account.id to it.account } }
     val payees = remember(model.revision) { books.payees.list() }
+    val whoList = remember(model.revision) { model.peopleAndPets() }
+    val vehicleList = remember(model.revision) { model.vehicleChoices() }
     val payeeNames = remember(payees) { payees.associate { it.id to it.name } }
     val entry = remember(account.id) { EntryState() }
     var editingAccount by remember { mutableStateOf(false) }
@@ -141,6 +148,8 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
         entry.date = txn.date.toString()
         entry.payee = txn.payeeId?.let(payeeNames::get) ?: txn.payeeText.orEmpty()
         entry.memo = txn.memo.orEmpty()
+        entry.forId = txn.memberId
+        entry.assetId = txn.assetId
         val magnitude = MoneyFormat.formatAmount(txn.amount.abs(), locale)
         entry.payment = if (txn.amount.isNegative) magnitude else ""
         entry.deposit = if (txn.amount.isNegative) "" else magnitude
@@ -299,6 +308,17 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                             }
                         },
                     )
+                    // PET-05, VEH-09: who or what it was for.
+                    if (entry.choice !is CategoryChoice.TransferWith) {
+                        Picker(model.t("register.for"), listOf(null) + whoList, whoList.firstOrNull { it.id == entry.forId }, { it?.name ?: model.t("register.forNobody") }, Modifier.width(200.dp)) {
+                            entry.forId = it?.id
+                        }
+                        if (vehicleList.isNotEmpty() || entry.assetId != null) {
+                            Picker(model.t("register.vehicle"), listOf(null) + vehicleList, vehicleList.firstOrNull { it.first == entry.assetId }, { it?.second ?: model.t("common.none") }, Modifier.width(170.dp)) {
+                                entry.assetId = it?.first
+                            }
+                        }
+                    }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                     if (entry.splits != null) {
@@ -423,7 +443,10 @@ private fun buildSave(model: BooksModel, account: Account, entry: EntryState): (
     }
     val draft = TransactionDraft(
         account.id, date, amount, entry.payee.ifBlank { null }, splitDrafts, memo,
+        memberId = entry.forId,
         cleared = editing?.cleared ?: ClearedStatus.UNCLEARED,
+        tags = editing?.tagIds.orEmpty(),
+        assetId = entry.assetId,
     )
     return { confirm ->
         guard(confirm)

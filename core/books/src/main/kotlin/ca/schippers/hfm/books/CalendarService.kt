@@ -9,11 +9,12 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import ca.schippers.hfm.data.ledger.Event as EventRow
 
-enum class EventCategory { MEDICAL, FINANCIAL, VEHICLE, HOME, PERSONAL, OTHER }
+enum class EventCategory { MEDICAL, FINANCIAL, VEHICLE, HOME, PET, PERSONAL, OTHER }
 enum class OccurrenceMark { DONE, CANCELLED }
 
 /** CAL-01, CAL-02: an appointment or event, one-time or repeating. */
@@ -81,6 +82,16 @@ sealed interface CalendarItem {
 
     data class Health(val due: HealthDue) : CalendarItem {
         override val date get() = due.date
+    }
+
+    /** VEH-11: a maintenance task's next due date. */
+    data class Maintenance(val due: MaintenanceDue) : CalendarItem {
+        override val date get() = due.status.nextDate!!
+    }
+
+    /** PET-02, VEH-02, VEH-03: a licence, policy, registration or warranty expiring. */
+    data class Renewal(val renewal: ca.schippers.hfm.books.Renewal) : CalendarItem {
+        override val date get() = renewal.date
     }
 }
 
@@ -159,8 +170,14 @@ class CalendarService internal constructor(private val books: Books) {
     fun items(from: LocalDate, to: LocalDate): List<CalendarItem> =
         (occurrences(from, to).map { CalendarItem.Event(it) } +
             books.bills.occurrences(from, to).map { CalendarItem.Bill(it) } +
-            books.health.due(from, to).map { CalendarItem.Health(it) })
+            books.health.due(from, to).map { CalendarItem.Health(it) } +
+            renewals(from, to).map { CalendarItem.Renewal(it) } +
+            books.vehicles.dueBetween(from, to, books.today()).map { CalendarItem.Maintenance(it) })
             .sortedBy { it.date }
+
+    /** Renewal dates between [from] and [to], for the calendar. */
+    private fun renewals(from: LocalDate, to: LocalDate): List<Renewal> =
+        books.renewals(from, from.daysUntil(to)).filter { it.date in from..to }
 
     /** CAL-03: events starting within one of their reminder lead times from [now]. */
     fun reminders(now: LocalDateTime): List<EventReminder> {

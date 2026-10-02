@@ -77,12 +77,16 @@ class BooksTest {
     fun `category tree lists parents before children`() {
         val tree = books.categories.tree()
         val index = tree.withIndex().associate { it.value.first.id to it.index }
+        val depths = tree.associate { it.first.id to it.second }
         tree.forEach { (c, depth) ->
             if (c.parentId != null) {
                 assertTrue(index.getValue(c.parentId) < index.getValue(c.id))
-                assertEquals(1, depth)
+                assertEquals(depths.getValue(c.parentId) + 1, depth)
+            } else {
+                assertEquals(0, depth)
             }
         }
+        assertTrue(depths.values.max() >= 2, "Public transit has its own subcategories (CAT-06)")
     }
 
     @Test

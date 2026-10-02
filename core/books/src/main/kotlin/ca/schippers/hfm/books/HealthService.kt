@@ -14,7 +14,7 @@ import ca.schippers.hfm.data.ledger.Health_test as TestRow
 import ca.schippers.hfm.data.ledger.Immunization as ImmunizationRow
 import ca.schippers.hfm.data.ledger.Medication as MedicationRow
 
-enum class ProviderKind { DOCTOR, DENTIST, PHARMACY, CLINIC, HOSPITAL, SPECIALIST, LAB, OTHER }
+enum class ProviderKind { DOCTOR, DENTIST, PHARMACY, CLINIC, HOSPITAL, SPECIALIST, LAB, VET, GROOMER, KENNEL, OTHER }
 enum class ConditionStatus { ACTIVE, MANAGED, RESOLVED }
 enum class Severity { MILD, MODERATE, SEVERE }
 

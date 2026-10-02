@@ -20,6 +20,8 @@ class MessageKeysTest {
         val keys = sources.flatMapTo(sortedSetOf()) { file ->
             val text = file.readText()
             Regex("""\bt\("([A-Za-z0-9_.]+)"""").findAll(text).map { it.groupValues[1] } +
+                // t(if (...) "a" else "b")
+                Regex("""\bt\(if \([^"]*"([A-Za-z0-9_.]+)" else "([A-Za-z0-9_.]+)"""").findAll(text).flatMap { listOf(it.groupValues[1], it.groupValues[2]) } +
                 Regex(""""(error\.[A-Za-z0-9_.]+)"""").findAll(text).map { it.groupValues[1] }
         }
         val enumKeys = listOf(
@@ -60,6 +62,19 @@ class MessageKeysTest {
             "health.field" to listOf("HealthCondition", "Allergy", "HealthTest", "Immunization"),
             "rates.source" to ca.schippers.hfm.books.RateSource.entries,
             "goalStatus" to ca.schippers.hfm.books.GoalStatus.entries,
+            "species" to ca.schippers.hfm.books.Species.entries,
+            "sex" to ca.schippers.hfm.books.Sex.entries,
+            "pets.neutered" to ca.schippers.hfm.books.Sex.entries,
+            "renewalKind" to ca.schippers.hfm.books.RenewalKind.entries,
+            "fuelType" to ca.schippers.hfm.books.FuelType.entries,
+            "vehicleStatus" to ca.schippers.hfm.books.VehicleStatus.entries,
+            "warrantyKind" to ca.schippers.hfm.books.WarrantyKind.entries,
+            "readingSource" to ca.schippers.hfm.books.ReadingSource.entries,
+            "taskState" to ca.schippers.hfm.books.TaskState.entries,
+            "maintenance" to ca.schippers.hfm.books.TaskState.entries,
+            "task" to ca.schippers.hfm.books.VehicleService.TEMPLATE_KEYS,
+            "vehicles.tab" to listOf("OVERVIEW", "MAINTENANCE", "SERVICE", "FUEL", "WARRANTIES", "COSTS"),
+            "calendar.open" to listOf("PETS", "VEHICLES"),
             "goalEntry" to ca.schippers.hfm.books.GoalEntryKind.entries,
             "goals.amount" to listOf("SET_ASIDE", "SPEND", "RELEASE"),
             "goals.amount" to listOf("SET_ASIDE.explain", "SPEND.explain", "RELEASE.explain", "SPEND.why", "RELEASE.why"),
