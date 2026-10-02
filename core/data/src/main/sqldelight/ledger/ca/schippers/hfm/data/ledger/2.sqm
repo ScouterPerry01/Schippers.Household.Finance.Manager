@@ -1,0 +1,201 @@
+-- Version 2 to 3: pets in the calendar and provider directory (PET-04), vehicles (VEH-01 to VEH-11),
+-- savings goals (GOAL-01 to GOAL-06) and the vehicle link on transactions (VEH-09).
+
+-- SQLite cannot change a CHECK constraint in place. The occurrences are copied before their event
+-- table is dropped, so nothing is lost to ON DELETE CASCADE; renaming event_v3 updates the
+-- reference in event_occurrence_v3.
+CREATE TABLE event_v3 (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('MEDICAL', 'FINANCIAL', 'VEHICLE', 'HOME', 'PET', 'PERSONAL', 'OTHER')),
+    start_date TEXT NOT NULL,
+    -- HH:MM; null for an all-day event.
+    start_time TEXT,
+    duration_minutes INTEGER,
+    location TEXT,
+    notes TEXT,
+    member_id TEXT,
+    provider_id TEXT,
+    account_id TEXT,
+    -- Same encoding as bills (BILL-02); null for a one-time event.
+    recurrence TEXT,
+    end_date TEXT,
+    -- Reminder lead times in minutes, e.g. "1440,60" for a day and an hour before.
+    reminder_minutes TEXT NOT NULL DEFAULT '1440',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+INSERT INTO event_v3 SELECT * FROM event;
+
+CREATE TABLE event_occurrence_v3 (
+    event_id TEXT NOT NULL REFERENCES event_v3(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('DONE', 'CANCELLED')),
+    PRIMARY KEY (event_id, date)
+);
+
+INSERT INTO event_occurrence_v3 SELECT * FROM event_occurrence;
+
+DROP TABLE event_occurrence;
+DROP TABLE event;
+ALTER TABLE event_v3 RENAME TO event;
+ALTER TABLE event_occurrence_v3 RENAME TO event_occurrence;
+
+CREATE TABLE health_provider_v3 (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('DOCTOR', 'DENTIST', 'PHARMACY', 'CLINIC', 'HOSPITAL', 'SPECIALIST', 'LAB', 'VET', 'GROOMER', 'KENNEL', 'OTHER')),
+    phone TEXT,
+    address TEXT,
+    notes TEXT,
+    archived INTEGER NOT NULL DEFAULT 0
+);
+
+INSERT INTO health_provider_v3 SELECT * FROM health_provider;
+
+DROP TABLE health_provider;
+ALTER TABLE health_provider_v3 RENAME TO health_provider;
+
+ALTER TABLE txn ADD COLUMN asset_id TEXT;
+
+CREATE INDEX txn_asset ON txn(asset_id) WHERE asset_id IS NOT NULL;
+
+CREATE TABLE savings_goal (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id),
+    name TEXT NOT NULL,
+    -- In the account's currency.
+    target_minor INTEGER NOT NULL,
+    target_date TEXT,
+    -- GOAL-02: the planned set-aside per period, on the schedule in recurrence (bills encoding).
+    contribution_minor INTEGER,
+    recurrence TEXT,
+    schedule_start TEXT,
+    -- When on, scheduled set-asides are entered automatically on their dates.
+    auto_post INTEGER NOT NULL DEFAULT 1,
+    -- The last scheduled date already entered.
+    last_posted TEXT,
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'REACHED', 'ARCHIVED')),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE goal_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    goal_id TEXT NOT NULL REFERENCES savings_goal(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('SET_ASIDE', 'SCHEDULED', 'SPENT', 'MOVE_IN', 'MOVE_OUT', 'RELEASED')),
+    amount_minor INTEGER NOT NULL,
+    txn_id TEXT,
+    memo TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX goal_entry_goal ON goal_entry(goal_id, date);
+
+CREATE TABLE vehicle (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    make TEXT,
+    model TEXT,
+    model_year INTEGER,
+    trim_level TEXT,
+    colour TEXT,
+    vin TEXT,
+    plate TEXT,
+    fuel_type TEXT NOT NULL DEFAULT 'GASOLINE' CHECK (fuel_type IN ('GASOLINE', 'DIESEL', 'HYBRID', 'PLUG_IN_HYBRID', 'ELECTRIC', 'OTHER')),
+    driver_member_id TEXT,
+    purchase_date TEXT,
+    purchase_price_minor INTEGER,
+    seller TEXT,
+    purchase_odometer INTEGER,
+    currency TEXT NOT NULL DEFAULT 'CAD',
+    registration_renewal TEXT,
+    insurer TEXT,
+    policy_number TEXT,
+    insurance_renewal TEXT,
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'SOLD', 'RETIRED')),
+    disposal_date TEXT,
+    disposal_price_minor INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE vehicle_reading (
+    id TEXT NOT NULL PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicle(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    odometer INTEGER NOT NULL,
+    notes TEXT
+);
+
+CREATE TABLE maintenance_task (
+    id TEXT NOT NULL PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicle(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    template_key TEXT,
+    interval_months INTEGER,
+    interval_km INTEGER,
+    -- Where the schedule starts until the task is first done.
+    start_date TEXT,
+    start_odometer INTEGER,
+    remind_days INTEGER NOT NULL DEFAULT 14,
+    remind_km INTEGER NOT NULL DEFAULT 500,
+    active INTEGER NOT NULL DEFAULT 1,
+    notes TEXT
+);
+
+CREATE TABLE service_record (
+    id TEXT NOT NULL PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicle(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    odometer INTEGER,
+    provider TEXT,
+    diy INTEGER NOT NULL DEFAULT 0,
+    cost_minor INTEGER,
+    txn_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE service_task (
+    service_id TEXT NOT NULL REFERENCES service_record(id) ON DELETE CASCADE,
+    task_id TEXT NOT NULL REFERENCES maintenance_task(id) ON DELETE CASCADE,
+    PRIMARY KEY (service_id, task_id)
+);
+
+CREATE TABLE fuel_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicle(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    odometer INTEGER,
+    quantity TEXT NOT NULL,
+    cost_minor INTEGER,
+    full_tank INTEGER NOT NULL DEFAULT 1,
+    station TEXT,
+    txn_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE vehicle_warranty (
+    id TEXT NOT NULL PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicle(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('MANUFACTURER', 'POWERTRAIN', 'EXTENDED', 'CORROSION', 'BATTERY', 'OTHER')),
+    provider TEXT,
+    start_date TEXT,
+    end_date TEXT,
+    end_km INTEGER,
+    phone TEXT,
+    notes TEXT
+);
+
+CREATE INDEX vehicle_reading_vehicle ON vehicle_reading(vehicle_id, date);
+
+CREATE INDEX service_record_vehicle ON service_record(vehicle_id, date);
+
+CREATE INDEX fuel_entry_vehicle ON fuel_entry(vehicle_id, date);

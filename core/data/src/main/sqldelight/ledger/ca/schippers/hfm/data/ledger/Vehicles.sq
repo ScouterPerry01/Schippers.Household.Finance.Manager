@@ -1,0 +1,189 @@
+-- Vehicles (VEH-01 to VEH-11): details, renewals, warranties, odometer, maintenance schedule,
+-- service and fuel logs. Amounts are in the vehicle's currency, in minor units.
+
+CREATE TABLE vehicle (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    make TEXT,
+    model TEXT,
+    model_year INTEGER,
+    trim_level TEXT,
+    colour TEXT,
+    vin TEXT,
+    plate TEXT,
+    fuel_type TEXT NOT NULL DEFAULT 'GASOLINE' CHECK (fuel_type IN ('GASOLINE', 'DIESEL', 'HYBRID', 'PLUG_IN_HYBRID', 'ELECTRIC', 'OTHER')),
+    driver_member_id TEXT,
+    purchase_date TEXT,
+    purchase_price_minor INTEGER,
+    seller TEXT,
+    purchase_odometer INTEGER,
+    currency TEXT NOT NULL DEFAULT 'CAD',
+    registration_renewal TEXT,
+    insurer TEXT,
+    policy_number TEXT,
+    insurance_renewal TEXT,
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'SOLD', 'RETIRED')),
+    disposal_date TEXT,
+    disposal_price_minor INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- VEH-04: odometer readings entered directly; fuel and service entries also carry readings.
+CREATE TABLE vehicle_reading (
+    id TEXT NOT NULL PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicle(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    odometer INTEGER NOT NULL,
+    notes TEXT
+);
+
+-- VEH-05: a task repeats every interval_months, every interval_km, or whichever comes first.
+CREATE TABLE maintenance_task (
+    id TEXT NOT NULL PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicle(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    template_key TEXT,
+    interval_months INTEGER,
+    interval_km INTEGER,
+    -- Where the schedule starts until the task is first done.
+    start_date TEXT,
+    start_odometer INTEGER,
+    remind_days INTEGER NOT NULL DEFAULT 14,
+    remind_km INTEGER NOT NULL DEFAULT 500,
+    active INTEGER NOT NULL DEFAULT 1,
+    notes TEXT
+);
+
+-- VEH-06.
+CREATE TABLE service_record (
+    id TEXT NOT NULL PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicle(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    odometer INTEGER,
+    provider TEXT,
+    diy INTEGER NOT NULL DEFAULT 0,
+    cost_minor INTEGER,
+    txn_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE service_task (
+    service_id TEXT NOT NULL REFERENCES service_record(id) ON DELETE CASCADE,
+    task_id TEXT NOT NULL REFERENCES maintenance_task(id) ON DELETE CASCADE,
+    PRIMARY KEY (service_id, task_id)
+);
+
+-- VEH-07: litres, or kWh for electric vehicles, as a decimal string.
+CREATE TABLE fuel_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicle(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    odometer INTEGER,
+    quantity TEXT NOT NULL,
+    cost_minor INTEGER,
+    full_tank INTEGER NOT NULL DEFAULT 1,
+    station TEXT,
+    txn_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+-- VEH-03.
+CREATE TABLE vehicle_warranty (
+    id TEXT NOT NULL PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicle(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('MANUFACTURER', 'POWERTRAIN', 'EXTENDED', 'CORROSION', 'BATTERY', 'OTHER')),
+    provider TEXT,
+    start_date TEXT,
+    end_date TEXT,
+    end_km INTEGER,
+    phone TEXT,
+    notes TEXT
+);
+
+CREATE INDEX vehicle_reading_vehicle ON vehicle_reading(vehicle_id, date);
+CREATE INDEX service_record_vehicle ON service_record(vehicle_id, date);
+CREATE INDEX fuel_entry_vehicle ON fuel_entry(vehicle_id, date);
+
+upsertVehicle:
+INSERT OR REPLACE INTO vehicle(id, name, make, model, model_year, trim_level, colour, vin, plate, fuel_type, driver_member_id,
+    purchase_date, purchase_price_minor, seller, purchase_odometer, currency, registration_renewal, insurer, policy_number,
+    insurance_renewal, status, disposal_date, disposal_price_minor, notes, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteVehicle:
+DELETE FROM vehicle WHERE id = ?;
+
+vehicles:
+SELECT * FROM vehicle ORDER BY status, name;
+
+vehicleById:
+SELECT * FROM vehicle WHERE id = ?;
+
+insertReading:
+INSERT INTO vehicle_reading(id, vehicle_id, date, odometer, notes) VALUES (?, ?, ?, ?, ?);
+
+deleteReading:
+DELETE FROM vehicle_reading WHERE id = ?;
+
+readings:
+SELECT * FROM vehicle_reading WHERE vehicle_id = ? ORDER BY date, odometer;
+
+upsertTask:
+INSERT OR REPLACE INTO maintenance_task(id, vehicle_id, name, template_key, interval_months, interval_km, start_date, start_odometer,
+    remind_days, remind_km, active, notes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteTask:
+DELETE FROM maintenance_task WHERE id = ?;
+
+tasks:
+SELECT * FROM maintenance_task WHERE vehicle_id = ? ORDER BY active DESC, name;
+
+insertService:
+INSERT INTO service_record(id, vehicle_id, date, odometer, provider, diy, cost_minor, txn_id, notes, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateService:
+UPDATE service_record SET date = ?, odometer = ?, provider = ?, diy = ?, cost_minor = ?, txn_id = ?, notes = ? WHERE id = ?;
+
+deleteService:
+DELETE FROM service_record WHERE id = ?;
+
+services:
+SELECT * FROM service_record WHERE vehicle_id = ? ORDER BY date DESC, created_at DESC;
+
+insertServiceTask:
+INSERT OR IGNORE INTO service_task(service_id, task_id) VALUES (?, ?);
+
+deleteServiceTasks:
+DELETE FROM service_task WHERE service_id = ?;
+
+serviceTasks:
+SELECT st.service_id, st.task_id FROM service_task st JOIN service_record r ON r.id = st.service_id WHERE r.vehicle_id = ?;
+
+insertFuel:
+INSERT INTO fuel_entry(id, vehicle_id, date, odometer, quantity, cost_minor, full_tank, station, txn_id, notes, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateFuel:
+UPDATE fuel_entry SET date = ?, odometer = ?, quantity = ?, cost_minor = ?, full_tank = ?, station = ?, txn_id = ?, notes = ? WHERE id = ?;
+
+deleteFuel:
+DELETE FROM fuel_entry WHERE id = ?;
+
+fuelEntries:
+SELECT * FROM fuel_entry WHERE vehicle_id = ? ORDER BY date, odometer, created_at;
+
+upsertWarranty:
+INSERT OR REPLACE INTO vehicle_warranty(id, vehicle_id, kind, provider, start_date, end_date, end_km, phone, notes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteWarranty:
+DELETE FROM vehicle_warranty WHERE id = ?;
+
+warranties:
+SELECT * FROM vehicle_warranty WHERE vehicle_id = ? ORDER BY end_date;

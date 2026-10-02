@@ -36,3 +36,50 @@ are delivered before Phase 2.
 | HLT-09 | A printable health summary per person (medications, conditions, allergies) for appointments and emergencies (EST-01). | Could |
 
 Health information is an organizational aid, not medical advice (as TAX-04 for tax figures).
+
+## Savings goals in one account
+
+Brings forward BUD-02 (sinking funds) and BUD-03 (savings goals) from Phase 5.
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| GOAL-01 | Any number of goals per account, each with a name, target amount, optional target date and notes. | Should |
+| GOAL-02 | A planned set-aside per goal (amount and schedule, such as each pay or monthly), posted automatically on schedule or entered by hand. Set-asides earmark part of the balance; no money moves. | Should |
+| GOAL-03 | The account shows its balance divided into goals and an unassigned remainder, with a warning when the goals add up to more than the balance. | Should |
+| GOAL-04 | Progress per goal: amount set aside, percentage, amount still needed, the set-aside needed per period to reach the target date, and whether the goal is on track. | Should |
+| GOAL-05 | Spending from a goal (optionally linked to the purchase), moving money between goals, and marking a goal reached or archived. | Should |
+| GOAL-06 | A history of each goal's set-asides, spending and moves. | Could |
+
+## Pets
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| PET-01 | Pet records: name, species, breed, sex, date of birth, colour, microchip number, spayed or neutered, photo (Phase 2 vault), notes, archived when no longer in the household. | Should |
+| PET-02 | Municipal licence: number, issuing municipality, expiry date, with a renewal reminder; pet insurance: insurer, policy number, renewal date. | Should |
+| PET-03 | Pets have the same health records as people (HLT-01 to HLT-05): vaccines with next dose due, medications and refills, conditions, allergies, tests. | Should |
+| PET-04 | Veterinarians, groomers and kennels in the provider directory (HLT-07); vet, grooming and boarding appointments in the calendar (CAL-01). | Should |
+| PET-05 | Transactions can be recorded for a pet, as for a person; cost per pet per year by category (food, vet, grooming, licence, insurance, boarding, supplies). | Should |
+
+## Vehicles
+
+The vehicle part of section 11 (AST, WAR, INS, MNT), brought forward from Phase 4.
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| VEH-01 | Vehicle records: name, make, model, year, trim, colour, VIN, licence plate, fuel type, main driver, purchase date, price, seller and odometer; status active, sold or retired, with the disposal date and price (AST-01, AST-05). | Should |
+| VEH-02 | Registration (SAAQ) renewal date and insurance (insurer, policy number, renewal date) with reminders (INS-03). | Should |
+| VEH-03 | Warranties per vehicle: kind, provider, end date and kilometre limit, with an expiry reminder 60 days before (WAR-01, WAR-02). | Should |
+| VEH-04 | Odometer readings entered directly or taken from fuel and service entries; the average distance per day is used to forecast kilometre-based maintenance (MNT-03). | Should |
+| VEH-05 | Maintenance tasks scheduled by time, by distance or both, from starter templates (oil, tire rotation, seasonal tire swap, brakes, air filters, inspection) or custom (MNT-01, MNT-02). | Should |
+| VEH-06 | Service log: date, odometer, tasks done, provider or do-it-yourself, cost, notes; completing a task restarts its schedule (MNT-04). | Should |
+| VEH-07 | Fuel and charging log: date, odometer, litres or kWh, cost, full tank; consumption in L/100 km (or kWh/100 km) and cost per km (MNT-07). | Should |
+| VEH-08 | Fuel and service entries can create the matching transaction in an account, linked to the vehicle. | Should |
+| VEH-09 | Any transaction can be linked to a vehicle. | Should |
+| VEH-10 | Cost of ownership per vehicle and year by category, and cost per km (MNT-06). Logbook entries without a linked transaction are included so nothing is missed or counted twice. | Should |
+| VEH-11 | Due maintenance, renewals and warranty expiries appear in the reminders and the calendar (MNT-05). | Should |
+
+## Categories
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| CAT-06 | Public transit is split into Transit passes and Fares and tickets; Pets gains Licence, Insurance and Boarding. Existing households receive the new categories when upgraded. | Should |

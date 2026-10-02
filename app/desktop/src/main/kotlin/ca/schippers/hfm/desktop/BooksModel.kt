@@ -24,7 +24,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
 
-enum class Section { DASHBOARD, ACCOUNTS, BILLS, CALENDAR, HEALTH, BUDGETS, REPORTS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, BACKUPS, SECURITY }
+enum class Section { DASHBOARD, ACCOUNTS, BILLS, BUDGETS, GOALS, REPORTS, CALENDAR, HEALTH, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, BACKUPS, SECURITY }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and

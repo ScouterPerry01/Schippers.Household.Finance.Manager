@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
@@ -23,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 @Composable
@@ -32,6 +35,13 @@ fun MainScreen(model: BooksModel, app: AppState) {
     LaunchedEffect(model) {
         val added = withContext(Dispatchers.IO) { runCatching { model.books.rates.updateAll(today(), Http::get) }.getOrDefault(0) }
         if (added > 0) model.changed()
+    }
+    // GOAL-02: scheduled set-asides are entered on their dates while the app is open.
+    LaunchedEffect(model) {
+        while (true) {
+            if (runCatching { model.books.goals.postScheduled(today()) }.getOrDefault(0) > 0) model.changed()
+            delay(60 * 60_000L)
+        }
     }
     LaunchedEffect(model) {
         ensureBackupDefaults(model)
@@ -54,7 +64,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
             }
         }
         Row(Modifier.fillMaxSize()) {
-            Column(Modifier.width(200.dp).fillMaxHeight().padding(8.dp)) {
+            Column(Modifier.width(200.dp).fillMaxHeight().verticalScroll(rememberScrollState()).padding(8.dp)) {
                 for (section in Section.entries) {
                     NavigationDrawerItem(
                         label = { Text(model.t("nav.${section.name.lowercase()}")) },
@@ -72,6 +82,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
                     Section.CALENDAR -> CalendarScreen(model)
                     Section.HEALTH -> HealthScreen(model)
                     Section.BUDGETS -> BudgetsScreen(model)
+                    Section.GOALS -> GoalsScreen(model)
                     Section.REPORTS -> ReportsScreen(model, model.reportState)
                     Section.RATES -> RatesScreen(model)
                     Section.BACKUPS -> BackupsScreen(model)

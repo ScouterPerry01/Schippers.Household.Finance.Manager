@@ -4,7 +4,7 @@
 CREATE TABLE health_provider (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
-    kind TEXT NOT NULL CHECK (kind IN ('DOCTOR', 'DENTIST', 'PHARMACY', 'CLINIC', 'HOSPITAL', 'SPECIALIST', 'LAB', 'OTHER')),
+    kind TEXT NOT NULL CHECK (kind IN ('DOCTOR', 'DENTIST', 'PHARMACY', 'CLINIC', 'HOSPITAL', 'SPECIALIST', 'LAB', 'VET', 'GROOMER', 'KENNEL', 'OTHER')),
     phone TEXT,
     address TEXT,
     notes TEXT,

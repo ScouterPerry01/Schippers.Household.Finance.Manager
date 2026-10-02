@@ -51,7 +51,9 @@ CREATE TABLE txn (
     created_by TEXT,
     source_device TEXT,
     created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+    updated_at INTEGER NOT NULL,
+    -- VEH-09: the vehicle (or, later, other asset) the transaction is for.
+    asset_id TEXT
 );
 
 CREATE INDEX txn_account_date ON txn(account_id, date, created_at, id);
@@ -60,6 +62,7 @@ CREATE INDEX txn_transfer ON txn(transfer_id) WHERE transfer_id IS NOT NULL;
 CREATE INDEX txn_account_amount ON txn(account_id, date, amount_minor, cleared);
 -- Date ranges across all accounts (reports for a month or a year).
 CREATE INDEX txn_date ON txn(date);
+CREATE INDEX txn_asset ON txn(asset_id) WHERE asset_id IS NOT NULL;
 CREATE UNIQUE INDEX txn_external ON txn(account_id, external_id) WHERE external_id IS NOT NULL;
 
 -- TX-02: a transaction is split across categories; a simple transaction has one split.
@@ -565,3 +568,18 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 changesFor:
 SELECT * FROM change_log WHERE entity = ? AND entity_id = ? ORDER BY at, id;
+
+setTxnAsset:
+UPDATE txn SET asset_id = ? WHERE id = ?;
+
+-- VEH-10: the lines of transactions linked to an asset.
+assetLines:
+SELECT t.id, t.date, t.account_id, s.category_id, s.amount_minor
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE t.asset_id = :asset AND t.transfer_id IS NULL AND t.date >= :from AND t.date <= :to;
+
+-- PET-05: the lines recorded for one person or pet.
+memberLines:
+SELECT t.id, t.date, t.account_id, s.category_id, s.amount_minor
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE coalesce(s.member_id, t.member_id) = :member AND t.transfer_id IS NULL AND t.date >= :from AND t.date <= :to;

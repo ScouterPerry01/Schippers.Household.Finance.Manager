@@ -59,6 +59,10 @@ class MessageKeysTest {
             "health.edit" to listOf("HealthCondition", "Allergy", "HealthTest", "Immunization"),
             "health.field" to listOf("HealthCondition", "Allergy", "HealthTest", "Immunization"),
             "rates.source" to ca.schippers.hfm.books.RateSource.entries,
+            "goalStatus" to ca.schippers.hfm.books.GoalStatus.entries,
+            "goalEntry" to ca.schippers.hfm.books.GoalEntryKind.entries,
+            "goals.amount" to listOf("SET_ASIDE", "SPEND", "RELEASE"),
+            "goals.amount" to listOf("SET_ASIDE.explain", "SPEND.explain", "RELEASE.explain", "SPEND.why", "RELEASE.why"),
             "repeat" to listOf("ONCE", "WEEKLY", "BI_WEEKLY", "SEMI_MONTHLY", "MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL", "EVERY_N_DAYS", "EVERY_N_WEEKS", "EVERY_N_MONTHS"),
         ).flatMap { (prefix, values) -> values.map { "$prefix.$it" } }
 

@@ -1,0 +1,72 @@
+-- Savings goals (GOAL-01 to GOAL-06, BUD-02, BUD-03): parts of one account's balance earmarked
+-- for identified purposes. No money moves; the entries only divide the balance.
+
+CREATE TABLE savings_goal (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id),
+    name TEXT NOT NULL,
+    -- In the account's currency.
+    target_minor INTEGER NOT NULL,
+    target_date TEXT,
+    -- GOAL-02: the planned set-aside per period, on the schedule in recurrence (bills encoding).
+    contribution_minor INTEGER,
+    recurrence TEXT,
+    schedule_start TEXT,
+    -- When on, scheduled set-asides are entered automatically on their dates.
+    auto_post INTEGER NOT NULL DEFAULT 1,
+    -- The last scheduled date already entered.
+    last_posted TEXT,
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'REACHED', 'ARCHIVED')),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- Positive amounts add to the goal, negative ones take from it.
+CREATE TABLE goal_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    goal_id TEXT NOT NULL REFERENCES savings_goal(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('SET_ASIDE', 'SCHEDULED', 'SPENT', 'MOVE_IN', 'MOVE_OUT', 'RELEASED')),
+    amount_minor INTEGER NOT NULL,
+    txn_id TEXT,
+    memo TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX goal_entry_goal ON goal_entry(goal_id, date);
+
+insertGoal:
+INSERT INTO savings_goal(id, account_id, name, target_minor, target_date, contribution_minor, recurrence, schedule_start,
+    auto_post, last_posted, status, sort_order, notes, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateGoal:
+UPDATE savings_goal SET name = ?, target_minor = ?, target_date = ?, contribution_minor = ?, recurrence = ?, schedule_start = ?,
+    auto_post = ?, last_posted = ?, status = ?, sort_order = ?, notes = ?, updated_at = ?
+WHERE id = ?;
+
+setLastPosted:
+UPDATE savings_goal SET last_posted = ? WHERE id = ?;
+
+deleteGoal:
+DELETE FROM savings_goal WHERE id = ?;
+
+goals:
+SELECT * FROM savings_goal ORDER BY status, sort_order, name;
+
+goalById:
+SELECT * FROM savings_goal WHERE id = ?;
+
+insertGoalEntry:
+INSERT INTO goal_entry(id, goal_id, date, kind, amount_minor, txn_id, memo, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteGoalEntry:
+DELETE FROM goal_entry WHERE id = ?;
+
+entriesFor:
+SELECT * FROM goal_entry WHERE goal_id = ? ORDER BY date DESC, created_at DESC;
+
+goalBalances:
+SELECT goal_id, CAST(sum(amount_minor) AS INTEGER) AS total FROM goal_entry GROUP BY goal_id;

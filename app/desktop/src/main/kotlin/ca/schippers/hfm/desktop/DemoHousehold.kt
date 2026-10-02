@@ -18,6 +18,7 @@ import ca.schippers.hfm.books.Immunization
 import ca.schippers.hfm.books.Medication
 import ca.schippers.hfm.books.Member
 import ca.schippers.hfm.books.ProviderKind
+import ca.schippers.hfm.books.SavingsGoal
 import ca.schippers.hfm.books.Severity
 import kotlinx.datetime.LocalTime
 import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
@@ -113,6 +114,14 @@ object DemoHousehold {
         importStatement(books, chequing, today)
         addBills(books, chequing, savings, visa, today)
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
+        // GOAL-01 to GOAL-04: three goals sharing the savings account.
+        val goals = books.goals
+        goals.save(SavingsGoal("", savings.id, "Voyage en Gaspésie", cad("4000"), LocalDate(today.year + 1, 7, 1), cad("250"), Recurrence.MONTHLY, start.plus(DatePeriod(days = 15))))
+        val car = goals.save(SavingsGoal("", savings.id, "Remplacement de l'auto", cad("15000"), LocalDate(today.year + 3, 6, 1), cad("200"), Recurrence(Frequency.SEMI_MONTHLY, secondDay = 0), LocalDate(start.year, start.month, 15)))
+        goals.setAside(car.id, start, cad("3000"), "Départ")
+        val emergency = goals.save(SavingsGoal("", savings.id, "Fonds d'urgence", cad("6000")))
+        goals.setAside(emergency.id, start, cad("2500"))
+        goals.postScheduled(today)
         val firstMonth = LocalDate(start.year, start.month, 1)
         books.budgets.set(cat("food"), BudgetPeriod.MONTHLY, cad("450.00"), rollover = true, startMonth = firstMonth)
         books.budgets.set(cat("food.restaurants"), BudgetPeriod.MONTHLY, cad("50.00"), startMonth = firstMonth)
