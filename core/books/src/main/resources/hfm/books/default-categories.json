@@ -133,7 +133,8 @@
     { "key": "income.benefits.family_allowance", "en": "Quebec Family Allowance", "fr": "Allocation famille (Québec)" },
     { "key": "income.benefits.gst_credit", "en": "GST/HST credit", "fr": "Crédit pour la TPS/TVH" },
     { "key": "income.benefits.solidarity", "en": "Solidarity tax credit", "fr": "Crédit d'impôt pour solidarité" },
-    { "key": "income.benefits.ei_qpip", "en": "Employment Insurance / QPIP", "fr": "Assurance-emploi / RQAP" }
+    { "key": "income.benefits.ei_qpip", "en": "Employment Insurance / QPIP", "fr": "Assurance-emploi / RQAP" },
+    { "key": "income.benefits.resp_grants", "en": "RESP grants (CESG, QESI)", "fr": "Subventions REEE (SCEE, IQEE)" }
   ]},
   { "key": "income.investment", "en": "Investment income", "fr": "Revenus de placement", "kind": "INCOME", "children": [
     { "key": "income.investment.interest", "en": "Interest", "fr": "Intérêts" },

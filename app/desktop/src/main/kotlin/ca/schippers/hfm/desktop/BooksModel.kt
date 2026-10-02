@@ -28,7 +28,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
 
-enum class Section { DASHBOARD, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, INVESTMENTS, LOANS, REPORTS, CALENDAR, HEALTH, PETS, VEHICLES, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, PHONES, USERS, BACKUPS, SECURITY }
+enum class Section { DASHBOARD, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, INVESTMENTS, PLANS, LOANS, REPORTS, CALENDAR, HEALTH, PETS, VEHICLES, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, PHONES, USERS, BACKUPS, SECURITY }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -126,7 +126,10 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
             .map { ReminderLine("renewal:${it.kind}:${it.subjectId}:${it.date}:${it.detail}", describe(it), renewalSection(it.kind)) }
         val maintenance = runCatching { books.vehicles.due(today()) }.getOrDefault(emptyList())
             .map { ReminderLine("maintenance:${it.status.task.id}:${it.status.dueDate}:${it.status.dueOdometer}:${it.status.state}", describe(it), Section.VEHICLES) }
-        return events + bills + refills + renewals + maintenance
+        // INV-09, INV-10: over-contributions, RRIF and LIF minimums, RRSPs to convert.
+        val plans = runCatching { books.plans.warnings(today()) }.getOrDefault(emptyList())
+            .map { w -> ReminderLine("plan:${w.key}:${w.subjectId}", t(w.key, *w.args.map { a -> if (a is Money) money(a) else a }.toTypedArray()), Section.PLANS) }
+        return events + bills + refills + renewals + maintenance + plans
     }
 
     /** "Civic: oil change due 2026-11-03 or at 55,700 km". */

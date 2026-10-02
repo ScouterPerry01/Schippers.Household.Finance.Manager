@@ -5,19 +5,19 @@ A personal, family and household finance application for Canada (Quebec first), 
 - **Desktop app** (Windows and Linux) holds the household's books: accounts, transactions, reconciliation, bills, investments, registered plans, medical claims, assets and reports. All data stays on your own computer, encrypted.
 - **Android companion app** captures receipts, bills and expenses on the spot and sends them to the desktop over your home Wi-Fi.
 
-Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: with Phase 1, this is the first usable release. Phase 3 (wealth) in progress: loans and mortgages, and investments, done. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
+Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: with Phase 1, this is the first usable release. Phase 3 (wealth) in progress: loans and mortgages, investments, and registered plans and pensions done. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
 
 ## Project layout
 
 | Module | Contents |
 |---|---|
 | `core/money` | Exact money type (minor units, never floating point), currencies, locale formatting and parsing |
-| `core/calc` | Financial calculations shared by both apps: amortization and loan schedules with prepayments, rate changes and what-ifs; adjusted cost base; schedules for bills and events |
+| `core/calc` | Financial calculations shared by both apps: amortization and loan schedules with prepayments, rate changes and what-ifs; adjusted cost base; registered plan rules (RRIF minimums, LIF maximum, TFSA and FHSA limits, RESP grants); schedules for bills and events |
 | `core/domain` | Ids, roles, permissions, account types |
 | `core/security` | Argon2id, AES-256-GCM, X25519 key sealing and pair keys, recovery keys |
 | `core/data` | Household folder format, key ring, encrypted document vault, SQLDelight schemas and upgrades |
 | `core/data-jdbc` | Encrypted SQLite (SQLCipher v4) driver for the desktop |
-| `core/books` | Bookkeeping services: accounts, transactions, reconciliation, bills, budgets, goals, loans and mortgages, investments and brokerage import, reports, calendar, health, pets, vehicles, documents, phone sync, Quicken import, users |
+| `core/books` | Bookkeeping services: accounts, transactions, reconciliation, bills, budgets, goals, loans and mortgages, investments and brokerage import, registered plans and pensions, reports, calendar, health, pets, vehicles, documents, phone sync, Quicken import, users |
 | `core/i18n` | English and French text |
 | `core/importers` | Statement import (OFX/QFX/QBO, CSV), brokerage statements (OFX, broker CSV) and Quicken QIF |
 | `core/ocr` | Text recognition interface and the field extractor shared with the phone |
@@ -43,7 +43,7 @@ Requirements: JDK 21. For the Android app, the Android SDK (API 37).
 ./gradlew :app:android:assembleDebug
 ```
 
-The demo opens on any section with `-Psection=` (for example `DOCUMENTS`, `PHONES`, `USERS`, `VEHICLES`, `GOALS`, `LOANS`, `INVESTMENTS`). Its users are `demo` / `demo-password` (administrator) and `sam` / `sam-demo-password` (member).
+The demo opens on any section with `-Psection=` (for example `DOCUMENTS`, `PHONES`, `USERS`, `VEHICLES`, `GOALS`, `LOANS`, `INVESTMENTS`, `PLANS`). Its users are `demo` / `demo-password` (administrator) and `sam` / `sam-demo-password` (member).
 
 ## Support
 

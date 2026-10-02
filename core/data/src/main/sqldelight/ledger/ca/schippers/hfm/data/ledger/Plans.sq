@@ -1,0 +1,180 @@
+-- Registered plans and pensions (INV-09 to INV-11). Amounts in minor units of the plan's currency.
+
+-- Details of one registered plan account: who contributes (spousal RRSP, RESP subscriber), whose
+-- age sets the RRIF/LIF minimum (the younger spouse, if elected), and the LIF reference rate.
+CREATE TABLE registered_plan (
+    account_id TEXT NOT NULL PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
+    contributor_member_id TEXT,
+    minimum_age_member_id TEXT,
+    lif_reference_rate TEXT,
+    notes TEXT
+);
+
+-- INV-11: beneficiaries and the successor holder; RESP beneficiaries are household members.
+CREATE TABLE plan_beneficiary (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('BENEFICIARY', 'SUCCESSOR_HOLDER', 'RESP_BENEFICIARY')),
+    member_id TEXT,
+    name TEXT NOT NULL,
+    relationship TEXT,
+    share_percent TEXT,
+    notes TEXT
+);
+
+CREATE INDEX plan_beneficiary_account ON plan_beneficiary(account_id);
+
+-- INV-10: the plan's value on January 1, from the statement, when it differs from the books.
+CREATE TABLE plan_value (
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    year INTEGER NOT NULL,
+    value_minor INTEGER NOT NULL,
+    last_year_earnings_minor INTEGER,
+    PRIMARY KEY (account_id, year)
+);
+
+-- INV-09: a person's room for one year as the CRA states it (RRSP deduction limit and unused
+-- contributions from the notice of assessment; TFSA or FHSA room at January 1), in dollars' cents.
+CREATE TABLE room_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    plan TEXT NOT NULL CHECK (plan IN ('RRSP', 'TFSA', 'FHSA')),
+    year INTEGER NOT NULL,
+    limit_minor INTEGER NOT NULL,
+    unused_minor INTEGER NOT NULL DEFAULT 0,
+    notes TEXT
+);
+
+CREATE UNIQUE INDEX room_entry_key ON room_entry(member_id, plan, year);
+
+-- Contributions made outside the books (through payroll, in kind) or lines not to count (negative).
+CREATE TABLE room_adjustment (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    plan TEXT NOT NULL CHECK (plan IN ('RRSP', 'TFSA', 'FHSA')),
+    date TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    notes TEXT
+);
+
+-- RESP grants received (CESG, QESI, Canada Learning Bond), per beneficiary.
+CREATE TABLE resp_grant (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    member_id TEXT NOT NULL,
+    date TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('CESG', 'QESI', 'CLB', 'OTHER')),
+    amount_minor INTEGER NOT NULL,
+    txn_id TEXT,
+    notes TEXT
+);
+
+CREATE INDEX resp_grant_account ON resp_grant(account_id, date);
+
+-- Pensions: employer plans (defined benefit or contribution), QPP/CPP and OAS, per person.
+CREATE TABLE pension (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('DEFINED_BENEFIT', 'DEFINED_CONTRIBUTION', 'QPP', 'CPP', 'OAS', 'OTHER')),
+    name TEXT NOT NULL,
+    administrator TEXT,
+    member_number TEXT,
+    start_date TEXT,
+    normal_retirement_age INTEGER,
+    indexed INTEGER NOT NULL DEFAULT 0,
+    survivor_percent TEXT,
+    -- A defined contribution plan's own investment account, when it is tracked.
+    account_id TEXT,
+    payer TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+-- The yearly statement: pension adjustment (it lowers next year's RRSP room), accrued and projected
+-- pensions (yearly amounts), the value (commuted or account value) and the member's contributions.
+CREATE TABLE pension_statement (
+    id TEXT NOT NULL PRIMARY KEY,
+    pension_id TEXT NOT NULL REFERENCES pension(id) ON DELETE CASCADE,
+    year INTEGER NOT NULL,
+    pension_adjustment_minor INTEGER,
+    accrued_annual_minor INTEGER,
+    projected_annual_minor INTEGER,
+    value_minor INTEGER,
+    contributions_minor INTEGER,
+    notes TEXT
+);
+
+CREATE INDEX pension_statement_pension ON pension_statement(pension_id, year);
+
+upsertPlan:
+INSERT OR REPLACE INTO registered_plan(account_id, contributor_member_id, minimum_age_member_id, lif_reference_rate, notes) VALUES (?, ?, ?, ?, ?);
+
+plan:
+SELECT * FROM registered_plan WHERE account_id = ?;
+
+beneficiaries:
+SELECT * FROM plan_beneficiary WHERE account_id = ? ORDER BY kind, name;
+
+upsertBeneficiary:
+INSERT OR REPLACE INTO plan_beneficiary(id, account_id, kind, member_id, name, relationship, share_percent, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteBeneficiary:
+DELETE FROM plan_beneficiary WHERE id = ?;
+
+putPlanValue:
+INSERT OR REPLACE INTO plan_value(account_id, year, value_minor, last_year_earnings_minor) VALUES (?, ?, ?, ?);
+
+planValue:
+SELECT * FROM plan_value WHERE account_id = ? AND year = ?;
+
+deletePlanValue:
+DELETE FROM plan_value WHERE account_id = ? AND year = ?;
+
+upsertRoom:
+INSERT OR REPLACE INTO room_entry(id, member_id, plan, year, limit_minor, unused_minor, notes) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+rooms:
+SELECT * FROM room_entry ORDER BY year;
+
+deleteRoom:
+DELETE FROM room_entry WHERE id = ?;
+
+insertAdjustment:
+INSERT INTO room_adjustment(id, member_id, plan, date, amount_minor, notes) VALUES (?, ?, ?, ?, ?, ?);
+
+adjustments:
+SELECT * FROM room_adjustment ORDER BY date;
+
+deleteAdjustment:
+DELETE FROM room_adjustment WHERE id = ?;
+
+insertGrant:
+INSERT INTO resp_grant(id, account_id, member_id, date, kind, amount_minor, txn_id, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+grantsFor:
+SELECT * FROM resp_grant WHERE account_id = ? ORDER BY date;
+
+deleteGrant:
+DELETE FROM resp_grant WHERE id = ?;
+
+upsertPension:
+INSERT OR REPLACE INTO pension(id, member_id, kind, name, administrator, member_number, start_date, normal_retirement_age, indexed,
+    survivor_percent, account_id, payer, notes, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+pensions:
+SELECT * FROM pension ORDER BY name;
+
+deletePension:
+DELETE FROM pension WHERE id = ?;
+
+upsertPensionStatement:
+INSERT OR REPLACE INTO pension_statement(id, pension_id, year, pension_adjustment_minor, accrued_annual_minor, projected_annual_minor,
+    value_minor, contributions_minor, notes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+pensionStatements:
+SELECT * FROM pension_statement WHERE pension_id = ? ORDER BY year DESC;
+
+deletePensionStatement:
+DELETE FROM pension_statement WHERE id = ?;

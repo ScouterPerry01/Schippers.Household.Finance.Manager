@@ -39,6 +39,14 @@ import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.CreditCardTerms
 import ca.schippers.hfm.books.LoanDetails
+import ca.schippers.hfm.books.Beneficiary
+import ca.schippers.hfm.books.BeneficiaryKind
+import ca.schippers.hfm.books.GrantKind
+import ca.schippers.hfm.books.Pension
+import ca.schippers.hfm.books.PensionKind
+import ca.schippers.hfm.books.PensionStatement
+import ca.schippers.hfm.books.RoomEntry
+import ca.schippers.hfm.books.RoomPlan
 import ca.schippers.hfm.books.AssetClass
 import ca.schippers.hfm.books.IncomeType
 import ca.schippers.hfm.books.InvestmentKind
@@ -93,8 +101,8 @@ object DemoHousehold {
         val today = today()
         val start = today.minus(DatePeriod(months = 3))
 
-        val alex = books.members.create("Alex", MemberKind.ADULT)
-        val sam = books.members.create("Sam", MemberKind.ADULT)
+        val alex = books.members.create("Alex", MemberKind.ADULT, LocalDate(1984, 5, 14))
+        val sam = books.members.create("Sam", MemberKind.ADULT, LocalDate(1986, 11, 2))
         val lea = books.members.create("Léa", MemberKind.CHILD, LocalDate(2015, 6, 12))
         val desjardins = books.institutions.create(Institution("", "Desjardins", institutionNumber = "815", transitNumber = "30123"))
         val bank = books.institutions.create(Institution("", "Banque Nationale", institutionNumber = "006"))
@@ -186,6 +194,7 @@ object DemoHousehold {
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
         addPetAndCarRecords(books, group, visa, rex, civic, today)
         addInvestments(books, group, alex, sam, desjardins, today)
+        addPlans(books, group, chequing, savings, alex, sam, lea, desjardins, today)
         addDocuments(books, group, today)
         // HH-05: Sam signs in too, as a member who can view the shared accounts.
         val samUser = books.users.add("sam", "Sam Demo", ca.schippers.hfm.domain.Role.MEMBER, "sam-demo-password".toCharArray(), sam.id).userId
@@ -303,6 +312,53 @@ object DemoHousehold {
         // REC-08: last month's statement for the brokerage account, waiting to be checked.
         val held = inv.holdings(brokerage.id, day(1))
         inv.saveStatement(brokerage.id, day(1), held.cash, held.holdings.associate { it.security.id to it.quantity }, "MANUAL")
+    }
+
+    /**
+     * INV-09 to INV-11 and pensions: CRA room figures, contributions this year, an RESP for Léa with
+     * a grant received, a retired relative's RRIF and QPP pension, Sam's workplace pension, and
+     * beneficiaries.
+     */
+    private fun addPlans(books: Books, group: String, chequing: Account, savings: Account, alex: Member, sam: Member, lea: Member, institution: Institution, today: LocalDate) {
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        val plans = books.plans
+        val accounts = books.accounts.list().map { it.account }
+        val tfsa = accounts.first { it.name == "CELI Alex" }
+        val rrsp = accounts.first { it.name == "REER Sam" }
+        val year = today.year
+        val thisYear = LocalDate(year, 1, 1)
+        fun day(monthsAgo: Int) = today.minus(DatePeriod(months = monthsAgo))
+
+        plans.saveRoom(RoomEntry("", alex.id, RoomPlan.TFSA, year, cad("31500")), group)
+        plans.saveRoom(RoomEntry("", sam.id, RoomPlan.RRSP, year, cad("18500")), group)
+        books.transactions.transfer(TransferDraft(chequing.id, tfsa.id, day(1), cad("1000"), memo = "Cotisation CELI"))
+        books.transactions.transfer(TransferDraft(chequing.id, rrsp.id, maxOf(day(2), LocalDate(year, 3, 2)), cad("1500"), memo = "Cotisation REER"))
+        plans.saveBeneficiary(Beneficiary("", tfsa.id, BeneficiaryKind.SUCCESSOR_HOLDER, sam.displayName, sam.id, "Conjoint"))
+        plans.saveBeneficiary(Beneficiary("", rrsp.id, BeneficiaryKind.BENEFICIARY, alex.displayName, alex.id, "Conjoint", BigDecimal(100)))
+
+        val resp = books.accounts.create(AccountDraft(group, "REEE Léa", AccountType.RESP, Currency.CAD, cad("6000"), thisYear.minus(DatePeriod(years = 3)), institution.id, "REEE-2231", setOf(alex.id, sam.id)))
+        plans.saveBeneficiary(Beneficiary("", resp.id, BeneficiaryKind.RESP_BENEFICIARY, lea.displayName, lea.id))
+        books.transactions.transfer(TransferDraft(savings.id, resp.id, maxOf(day(2), thisYear), cad("2500"), memo = "Cotisation REEE", memberId = lea.id))
+        plans.recordGrant(resp.id, lea.id, maxOf(day(1), thisYear), GrantKind.CESG, cad("500"))
+
+        // A retired relative living with the household: a RRIF paying monthly, and the QPP.
+        val gilles = books.members.create("Gilles", MemberKind.ADULT, LocalDate(1952, 8, 20))
+        val rrif = books.accounts.create(AccountDraft(group, "FERR Gilles", AccountType.RRIF, Currency.CAD, cad("85000"), LocalDate(2018, 1, 1), institution.id, "FERR-1180", setOf(gilles.id)))
+        val qppCategory = books.categories.list().first { it.systemKey == "income.pension.qpp_cpp" }.id
+        for (m in 1..today.month.ordinal + 1) {
+            val date = LocalDate(year, m, 15)
+            if (date > today) continue
+            books.transactions.transfer(TransferDraft(rrif.id, chequing.id, date, cad("500"), memo = "Retrait FERR"))
+            books.transactions.create(TransactionDraft(chequing.id, LocalDate(year, m, 25).let { if (it > today) date else it }, cad("812.40"), "Retraite Québec", listOf(SplitDraft(qppCategory, cad("812.40"))), memberId = gilles.id))
+        }
+        plans.saveBeneficiary(Beneficiary("", rrif.id, BeneficiaryKind.BENEFICIARY, "Succession de Gilles", relationship = "Succession", sharePercent = BigDecimal(100)))
+        val qpp = plans.savePension(Pension("", gilles.id, PensionKind.QPP, "Rente de retraite du RRQ", "Retraite Québec", indexed = true, payer = "Retraite Québec"), group)
+        plans.saveStatement(qpp, PensionStatement("", qpp.id, year - 1, projectedAnnual = cad("9748.80")))
+        val municipal = plans.savePension(
+            Pension("", sam.id, PensionKind.DEFINED_BENEFIT, "Régime de retraite des employés municipaux", "Ville de Québec", "RREM-44817", normalRetirementAge = 65, indexed = true, survivorPercent = BigDecimal(60)),
+            group,
+        )
+        plans.saveStatement(municipal, PensionStatement("", municipal.id, year - 1, cad("6200"), cad("14800"), cad("38200"), cad("96400"), cad("5150")))
     }
 
     private fun addPetAndCarRecords(books: Books, group: String, visa: Account, rex: Pet, civic: Vehicle, today: LocalDate) {

@@ -145,6 +145,7 @@ class CategoryService internal constructor(private val books: Books) {
         if (books.core.categoryCount().executeAsOne() > 0) {
             if (version < 2) addMissing(roots, ADDED_IN_2)
             if (version < 3) addMissing(roots, ADDED_IN_3)
+            if (version < 4) addMissing(roots, ADDED_IN_4)
             return
         }
         books.session.core.transaction {
@@ -183,11 +184,12 @@ class CategoryService internal constructor(private val books: Books) {
 
     private companion object {
         const val DEFAULTS_VERSION = "categories.defaultsVersion"
-        const val CURRENT_DEFAULTS = 3
+        const val CURRENT_DEFAULTS = 4
 
         /** Default categories added in version 2 (CAT-06). */
         val ADDED_IN_2 = setOf("transport.transit.pass", "transport.transit.fares", "pets.licence", "pets.insurance", "pets.boarding")
         val ADDED_IN_3 = setOf("financial.investment_fees", "taxes.foreign_tax")
+        val ADDED_IN_4 = setOf("income.benefits.resp_grants")
     }
 
     @Serializable

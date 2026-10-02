@@ -150,6 +150,27 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 6 ledgers gain registered plans and pensions`() {
+        val file = temp.resolve("ledger6.db")
+        older("../data/src/main/sqldelight/ledger/schemas/6.db", file, 6).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('r', 'FERR', 'RRIF', 'CAD', '2020-01-01', 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).plansQueries
+            q.upsertPlan("r", null, null, "0.06", null)
+            q.putPlanValue("r", 2026, 10000000, null)
+            q.upsertBeneficiary("b", "r", "SUCCESSOR_HOLDER", null, "Sam", "Spouse", null, null)
+            q.upsertRoom("x", "m", "TFSA", 2026, 700000, 0, null)
+            q.upsertPension("p", "m", "QPP", "RRQ", null, null, null, 65, 1, null, null, "Retraite Québec", null, 0)
+            q.upsertPensionStatement("s", "p", 2025, null, null, 1240000, null, null, null)
+            assertEquals(1L, count(driver, "SELECT count(*) FROM pension_statement"))
+            assertEquals("Sam", q.beneficiaries("r").executeAsOne().name)
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()

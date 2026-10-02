@@ -105,6 +105,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
                     Section.GOALS -> GoalsScreen(model)
                     Section.LOANS -> LoansScreen(model)
                     Section.INVESTMENTS -> InvestmentsScreen(model)
+                    Section.PLANS -> PlansScreen(model)
                     Section.REPORTS -> ReportsScreen(model, model.reportState)
                     Section.RATES -> RatesScreen(model)
                     Section.PHONES -> PhonesScreen(model)
