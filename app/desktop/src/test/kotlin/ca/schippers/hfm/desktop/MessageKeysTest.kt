@@ -68,6 +68,7 @@ class MessageKeysTest {
             "documentKind" to ca.schippers.hfm.ocr.DocumentKind.entries,
             "taxName" to ca.schippers.hfm.ocr.TaxName.entries,
             "documents.tab" to listOf("INBOX", "ALL", "RETENTION"),
+            "dateOrder" to ca.schippers.hfm.importers.DateOrder.entries,
             "renewalKind" to ca.schippers.hfm.books.RenewalKind.entries,
             "fuelType" to ca.schippers.hfm.books.FuelType.entries,
             "vehicleStatus" to ca.schippers.hfm.books.VehicleStatus.entries,

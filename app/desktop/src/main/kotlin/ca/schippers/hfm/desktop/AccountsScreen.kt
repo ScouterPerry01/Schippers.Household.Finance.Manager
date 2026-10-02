@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,6 +47,7 @@ import kotlinx.datetime.daysUntil
 fun AccountsScreen(model: BooksModel) {
     var showClosed by remember { mutableStateOf(false) }
     var adding by remember { mutableStateOf(false) }
+    var quicken by remember { mutableStateOf<java.io.File?>(null) }
     val summaries = remember(model.revision, showClosed) { model.books.accounts.list(includeClosed = showClosed) }
     val lastReconciled = remember(model.revision) { model.books.statements.lastReconciled() }
     if (model.selectedAccountId != null && summaries.none { it.account.id == model.selectedAccountId }) model.selectedAccountId = null
@@ -57,6 +59,8 @@ fun AccountsScreen(model: BooksModel) {
                 Button(onClick = { adding = true }) { Text(model.t("accounts.add")) }
             }
             LabeledCheckbox(model.t("accounts.showClosed"), showClosed) { showClosed = it }
+            // OTH-05: bring a Quicken history across.
+            TextButton(onClick = { chooseQif(model)?.let { quicken = it } }) { Text(model.t("quicken.import")) }
             LazyColumn(Modifier.weight(1f)) {
                 if (summaries.isEmpty()) item { Text(model.t("accounts.none"), Modifier.padding(8.dp)) }
                 for ((kind, list) in summaries.groupBy { it.account.type.kind }.toSortedMap()) {
@@ -81,6 +85,7 @@ fun AccountsScreen(model: BooksModel) {
         }
     }
     if (adding) AccountDialog(model, existing = null) { adding = false }
+    quicken?.let { file -> QuickenImportDialog(model, file) { quicken = null } }
 }
 
 @Composable

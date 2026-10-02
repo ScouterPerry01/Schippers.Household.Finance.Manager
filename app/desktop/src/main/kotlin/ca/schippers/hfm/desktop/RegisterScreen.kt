@@ -445,7 +445,8 @@ private fun buildSave(model: BooksModel, account: Account, entry: EntryState): (
         account.id, date, amount, entry.payee.ifBlank { null }, splitDrafts, memo,
         memberId = entry.forId,
         cleared = editing?.cleared ?: ClearedStatus.UNCLEARED,
-        tags = editing?.tagIds.orEmpty(),
+        // The draft takes tag names; keep the tags the transaction already has.
+        tags = editing?.tagIds?.let { ids -> model.books.tags().filter { it.id in ids }.map { it.name }.toSet() }.orEmpty(),
         assetId = entry.assetId,
     )
     return { confirm ->

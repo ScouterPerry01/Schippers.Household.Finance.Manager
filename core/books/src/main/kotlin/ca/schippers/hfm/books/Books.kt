@@ -43,6 +43,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val vehicles = VehicleService(this)
     val documents = DocumentService(this)
     val sync = SyncService(this)
+    val quicken = QifImportService(this)
 
     init {
         categories.ensureDefaults()
