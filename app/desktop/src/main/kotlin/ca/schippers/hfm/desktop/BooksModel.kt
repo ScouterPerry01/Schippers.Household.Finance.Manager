@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.ImportResult
+import ca.schippers.hfm.books.Reminder
 import ca.schippers.hfm.books.ReconciledChangeException
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.data.AccessDeniedException
@@ -15,7 +16,7 @@ import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 
-enum class Section { ACCOUNTS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS }
+enum class Section { ACCOUNTS, BILLS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -59,6 +60,21 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     } catch (e: Exception) {
         error = describe(e)
         null
+    }
+
+    /** BILL-04: what to remind about today, refreshed after every change. */
+    fun reminders(): List<Reminder> = runCatching { books.bills.reminders(today()) }.getOrDefault(emptyList())
+
+    /** One line per reminder, e.g. "Hydro-Québec: due in 7 days (≈ 142,00 $)". */
+    fun describe(reminder: Reminder): String {
+        val o = reminder.occurrence
+        val whenText = when {
+            o.bill.isSubscription && o.dueDate == o.bill.cancelBy -> t("reminder.cancelBy", reminder.daysBefore)
+            reminder.daysBefore < 0 -> t("reminder.overdue", -reminder.daysBefore)
+            reminder.daysBefore == 0 -> t("reminder.today")
+            else -> t("reminder.inDays", reminder.daysBefore)
+        }
+        return "${o.bill.name}: $whenText (${if (o.amountKnown) "" else "≈ "}${money(o.amount)})"
     }
 
     fun changed() {

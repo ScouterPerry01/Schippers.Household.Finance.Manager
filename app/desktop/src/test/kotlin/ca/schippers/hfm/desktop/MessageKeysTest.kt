@@ -33,10 +33,21 @@ class MessageKeysTest {
             "lineStatus" to ca.schippers.hfm.books.LineStatus.entries,
             "statementStatus" to ca.schippers.hfm.books.StatementStatus.entries,
             "import.amountMode" to listOf("single", "split"),
+            "billKind" to ca.schippers.hfm.books.BillKind.entries,
+            "amountKind" to ca.schippers.hfm.books.AmountKind.entries,
+            "paymentMethod" to ca.schippers.hfm.books.PaymentMethod.entries,
+            "monthDay" to ca.schippers.hfm.calc.schedule.MonthDay.entries,
+            "adjust" to ca.schippers.hfm.calc.schedule.BusinessDayAdjust.entries,
+            "bills.tab" to listOf("AGENDA", "ALL", "CALENDAR", "SUBSCRIPTIONS", "FORECAST"),
+            "repeat" to listOf("ONCE", "WEEKLY", "BI_WEEKLY", "SEMI_MONTHLY", "MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL", "EVERY_N_DAYS", "EVERY_N_WEEKS", "EVERY_N_MONTHS"),
         ).flatMap { (prefix, values) -> values.map { "$prefix.$it" } }
 
+        val chosenInCode = listOf(
+            "bills.overdue", "bills.dueToday", "bills.upcoming", "bills.markPaid", "bills.markReceived", "bills.edit",
+            "bills.payingAccount", "bills.depositAccount", "repeat.EVERY_N_DAYS.n", "repeat.EVERY_N_WEEKS.n", "repeat.EVERY_N_MONTHS.n",
+        )
         for (language in Language.entries) {
-            val missing = (keys + enumKeys).filterNot { it in Messages.keys(language) }
+            val missing = (keys + enumKeys + chosenInCode).filterNot { it in Messages.keys(language) }
             assertEquals(emptyList(), missing, "missing in $language")
         }
     }

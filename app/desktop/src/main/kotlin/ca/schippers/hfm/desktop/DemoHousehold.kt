@@ -2,6 +2,13 @@ package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Account
 import ca.schippers.hfm.books.AccountDraft
+import ca.schippers.hfm.books.AmountKind
+import ca.schippers.hfm.books.BillDraft
+import ca.schippers.hfm.books.BillKind
+import ca.schippers.hfm.books.PaymentMethod
+import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
+import ca.schippers.hfm.calc.schedule.Frequency
+import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.CreditCardTerms
 import ca.schippers.hfm.books.Institution
@@ -90,6 +97,37 @@ object DemoHousehold {
         )
         books.transactions.transfer(TransferDraft(chequing.id, usd.id, today, cad("274.50"), Money.parse("200.00", Currency.USD), "Achat de dollars US"))
         importStatement(books, chequing, today)
+        addBills(books, chequing, savings, visa, today)
+    }
+
+    /** Bills from next month on (this month's are already entered), plus a few due within days. */
+    private fun addBills(books: Books, chequing: Account, savings: Account, visa: Account, today: LocalDate) {
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        fun cat(key: String) = books.categories.list().first { it.systemKey == key }.id
+        fun next(day: Int): LocalDate {
+            val thisMonth = LocalDate(today.year, today.month, day)
+            return if (thisMonth > today) thisMonth else thisMonth.plus(DatePeriod(months = 1))
+        }
+        val bills = books.bills
+        bills.create(BillDraft(BillKind.BILL, "Loyer", cad("1450.00"), chequing.id, Recurrence.MONTHLY, next(1), "Propriétaire", categoryId = cat("housing.rent"), paymentMethod = PaymentMethod.CHEQUE))
+        bills.create(
+            BillDraft(
+                BillKind.BILL, "Hydro-Québec", cad("132.48"), chequing.id, Recurrence(Frequency.MONTHLY, adjust = BusinessDayAdjust.NEXT), next(12),
+                "Hydro-Québec", "6 1234 5678 9", AmountKind.VARIABLE, paymentMethod = PaymentMethod.PAD, categoryId = cat("utilities.electricity"),
+            ),
+        )
+        bills.create(BillDraft(BillKind.BILL, "Vidéotron", cad("95.00"), chequing.id, Recurrence.MONTHLY, next(18), "Vidéotron", paymentMethod = PaymentMethod.PAD, categoryId = cat("utilities.internet")))
+        bills.create(
+            BillDraft(BillKind.BILL, "Assurance habitation", cad("1184.00"), chequing.id, Recurrence.ANNUAL, today.plus(DatePeriod(days = 5)), "Desjardins Assurances", categoryId = cat("housing.insurance")),
+        )
+        bills.create(
+            BillDraft(
+                BillKind.BILL, "Diffusion en continu", cad("18.99"), visa.id, Recurrence.MONTHLY, today.plus(DatePeriod(days = 3)), "StreamCo",
+                paymentMethod = PaymentMethod.CARD, categoryId = cat("utilities.tv_streaming"), isSubscription = true, cancelBy = today.plus(DatePeriod(days = 3)),
+            ),
+        )
+        bills.create(BillDraft(BillKind.INCOME, "Paie", cad("3150.00"), chequing.id, Recurrence(Frequency.SEMI_MONTHLY, secondDay = 1), next(15), "Employeur inc.", categoryId = cat("income.employment.salary")))
+        bills.create(BillDraft(BillKind.TRANSFER, "Épargne mensuelle", cad("500.00"), chequing.id, Recurrence.MONTHLY, next(16), transferAccountId = savings.id))
     }
 
     /**

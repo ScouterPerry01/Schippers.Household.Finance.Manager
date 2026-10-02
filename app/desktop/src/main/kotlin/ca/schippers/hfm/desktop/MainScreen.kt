@@ -1,43 +1,66 @@
 package ca.schippers.hfm.desktop
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun MainScreen(model: BooksModel) {
-    Row(Modifier.fillMaxSize()) {
-        Column(Modifier.width(200.dp).fillMaxHeight().padding(8.dp)) {
-            for (section in Section.entries) {
-                NavigationDrawerItem(
-                    label = { Text(model.t("nav.${section.name.lowercase()}")) },
-                    selected = model.section == section,
-                    onClick = { model.section = section },
+    val reminders = remember(model.revision) { model.reminders() }
+    Column(Modifier.fillMaxSize()) {
+        // BILL-04: bills due soon, shown on every screen except Bills itself.
+        if (reminders.isNotEmpty() && model.section != Section.BILLS) {
+            Surface(
+                color = MaterialTheme.colorScheme.tertiaryContainer,
+                modifier = Modifier.fillMaxWidth().clickable { model.section = Section.BILLS },
+            ) {
+                Text(
+                    model.t("reminder.banner", reminders.size) + "  " + reminders.take(3).joinToString(" · ") { model.describe(it) },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
-        VerticalDivider()
-        Box(Modifier.fillMaxSize()) {
-            when (model.section) {
-                Section.ACCOUNTS -> AccountsScreen(model)
-                Section.CATEGORIES -> CategoriesScreen(model)
-                Section.PAYEES -> PayeesScreen(model)
-                Section.RULES -> RulesScreen(model)
-                Section.INSTITUTIONS -> InstitutionsScreen(model)
-                Section.MEMBERS -> MembersScreen(model)
+        Row(Modifier.fillMaxSize()) {
+            Column(Modifier.width(200.dp).fillMaxHeight().padding(8.dp)) {
+                for (section in Section.entries) {
+                    NavigationDrawerItem(
+                        label = { Text(model.t("nav.${section.name.lowercase()}")) },
+                        selected = model.section == section,
+                        onClick = { model.section = section },
+                    )
+                }
+            }
+            VerticalDivider()
+            Box(Modifier.fillMaxSize()) {
+                when (model.section) {
+                    Section.ACCOUNTS -> AccountsScreen(model)
+                    Section.BILLS -> BillsScreen(model)
+                    Section.CATEGORIES -> CategoriesScreen(model)
+                    Section.PAYEES -> PayeesScreen(model)
+                    Section.RULES -> RulesScreen(model)
+                    Section.INSTITUTIONS -> InstitutionsScreen(model)
+                    Section.MEMBERS -> MembersScreen(model)
+                }
             }
         }
     }

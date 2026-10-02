@@ -124,6 +124,50 @@ CREATE TABLE statement_line (
 
 CREATE INDEX statement_line_statement ON statement_line(statement_id, line_no);
 
+-- Bills, income and scheduled transfers (section 9). Stored in the ledger of the paying account.
+CREATE TABLE bill (
+    id TEXT NOT NULL PRIMARY KEY,
+    kind TEXT NOT NULL DEFAULT 'BILL' CHECK (kind IN ('BILL', 'INCOME', 'TRANSFER')),
+    name TEXT NOT NULL,
+    payee_name TEXT,
+    -- BILL-01: the household's account number with the payee (e.g. Hydro-Québec contract).
+    payee_account_number TEXT,
+    -- Positive amount; the kind gives the direction.
+    amount_minor INTEGER NOT NULL,
+    amount_kind TEXT NOT NULL DEFAULT 'FIXED' CHECK (amount_kind IN ('FIXED', 'VARIABLE', 'ESTIMATED')),
+    account_id TEXT NOT NULL REFERENCES account(id),
+    transfer_account_id TEXT,
+    payment_method TEXT NOT NULL DEFAULT 'ONLINE' CHECK (payment_method IN ('PAD', 'ONLINE', 'CARD', 'CHEQUE', 'CASH', 'OTHER')),
+    category_id TEXT,
+    recurrence TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    -- BILL-04: reminder lead times in days, e.g. "7,1".
+    reminder_days TEXT NOT NULL DEFAULT '7,1',
+    -- BILL-10: subscriptions, with renewal and cancellation reminder dates.
+    is_subscription INTEGER NOT NULL DEFAULT 0,
+    renewal_date TEXT,
+    cancel_by TEXT,
+    notes TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- One due date of a bill that has an actual amount, was paid or was skipped. Due dates without
+-- a row are computed from the recurrence and are simply due.
+CREATE TABLE bill_occurrence (
+    id TEXT NOT NULL PRIMARY KEY,
+    bill_id TEXT NOT NULL REFERENCES bill(id) ON DELETE CASCADE,
+    due_date TEXT NOT NULL,
+    amount_minor INTEGER,
+    status TEXT NOT NULL DEFAULT 'DUE' CHECK (status IN ('DUE', 'PAID', 'SKIPPED')),
+    txn_id TEXT,
+    paid_date TEXT,
+    document_id TEXT,
+    UNIQUE (bill_id, due_date)
+);
+
 -- CC-01: credit card terms. Rates are decimal fractions stored as text (e.g. "0.1999").
 CREATE TABLE credit_card (
     account_id TEXT NOT NULL PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
@@ -336,6 +380,41 @@ GROUP BY a.id;
 
 setClearedFor:
 UPDATE txn SET cleared = ?, updated_at = ? WHERE account_id = ? AND cleared = ? AND date <= ?;
+
+-- Bills ---------------------------------------------------------------------------------
+
+insertBill:
+INSERT INTO bill(id, kind, name, payee_name, payee_account_number, amount_minor, amount_kind, account_id, transfer_account_id,
+    payment_method, category_id, recurrence, start_date, end_date, reminder_days, is_subscription, renewal_date, cancel_by,
+    notes, active, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateBill:
+UPDATE bill SET kind = ?, name = ?, payee_name = ?, payee_account_number = ?, amount_minor = ?, amount_kind = ?,
+    account_id = ?, transfer_account_id = ?, payment_method = ?, category_id = ?, recurrence = ?, start_date = ?, end_date = ?,
+    reminder_days = ?, is_subscription = ?, renewal_date = ?, cancel_by = ?, notes = ?, active = ?, updated_at = ?
+WHERE id = ?;
+
+deleteBill:
+DELETE FROM bill WHERE id = ?;
+
+bills:
+SELECT * FROM bill ORDER BY name;
+
+billById:
+SELECT * FROM bill WHERE id = ?;
+
+upsertOccurrence:
+INSERT INTO bill_occurrence(id, bill_id, due_date, amount_minor, status, txn_id, paid_date, document_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(bill_id, due_date) DO UPDATE SET amount_minor = excluded.amount_minor, status = excluded.status,
+    txn_id = excluded.txn_id, paid_date = excluded.paid_date, document_id = excluded.document_id;
+
+occurrencesForBill:
+SELECT * FROM bill_occurrence WHERE bill_id = ? ORDER BY due_date;
+
+deleteOccurrence:
+DELETE FROM bill_occurrence WHERE bill_id = ? AND due_date = ?;
 
 -- Statements --------------------------------------------------------------------------------
 
