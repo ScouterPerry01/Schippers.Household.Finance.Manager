@@ -16,16 +16,16 @@ Based on the *Household Finance Manager — Software Requirements Specification*
 
 | Concern | Choice | Notes |
 |---|---|---|
-| Language / UI | Kotlin Multiplatform + Compose Multiplatform | Desktop on the JVM, plus Android |
-| Database | SQLDelight over SQLite + SQLCipher | SQLCipher for Android on the phone; an SQLCipher-capable JDBC driver (e.g. `sqlite-jdbc-crypt`) on the desktop |
+| Language / UI | Kotlin; shared code as plain Kotlin/JVM libraries (ADR 0001). Compose Multiplatform on the desktop, Jetpack Compose on Android | Desktop on JDK 21, Android minSdk 29 |
+| Database | SQLDelight over SQLite + SQLCipher v4 (`io.github.willena:sqlite-jdbc`) on the desktop | Every schema change is a verified migration (NFR-11). The phone keeps only an encrypted queue of files, no database |
 | Money | Custom `Money` type: a `Long` in minor units, with the scale set by the currency (ISO 4217) | Crypto to 8 decimals. Never floating point (NFR-04) |
 | Dates | `kotlinx-datetime` | |
-| Cryptography | libsodium (lazysodium) or the Tink library; Argon2id to derive keys from passwords | Database key, vault, sync bundles, pairing |
+| Cryptography | BouncyCastle (Argon2id, X25519, HKDF) and the JDK's AES-256-GCM; Android Keystore on the phone | Database keys, vault, sync bundles, pairing (ADR 0002, ADR 0006) |
 | OS secret storage | Windows Credential Manager / Linux Secret Service (`java-keyring` or JNA) | AI API keys (AI-02); a small native helper for Windows Hello (SEC-02) |
-| OCR | Android: ML Kit. Desktop: PaddleOCR on ONNX Runtime, with Tesseract as fallback | Both behind one shared `OcrEngine` interface |
-| Sync transport | Small server inside the desktop app (Ktor) on the local network; phones find it automatically (mDNS) | TLS plus end-to-end encrypted bundles |
+| OCR | Android: ML Kit text recognition (bundled latin model) and the ML Kit document scanner. Desktop: PaddleOCR PP-OCRv5 on ONNX Runtime, PDFBox for PDFs (ADR 0004) | Both feed the shared `FieldExtractor` |
+| Sync transport | Small HTTP listener inside the desktop app (JDK `HttpServer`) on the home network; the phone gets the address from the pairing QR code (ADR 0006) | Every body is sealed end to end, so TLS is not needed |
 | Charts | Compose charting library, or custom drawing on Canvas | Clicking a bar or slice drills down to the transactions (RPT-01) |
-| Export | OpenPDF / PDFBox, Apache POI or FastExcel | RPT-04 |
+| Export | OpenPDF and FastExcel; ZXing for QR codes | RPT-04 |
 | Build / CI | Gradle and GitHub Actions; packaging with `jpackage` / Conveyor / Compose installers | MSIX/MSI, .deb, .rpm, AppImage; Flatpak-ready from the start |
 
 ## Module layout
@@ -36,8 +36,10 @@ Based on the *Household Finance Manager — Software Requirements Specification*
 :core:domain       entities, use cases, permission checks
 :core:data         SQLDelight schema, migrations, repositories, encryption
 :core:importers    importer plug-in API + OFX/QFX/QBO/CSV/QIF/exchange/brokerage importers
-:core:sync         bundle format, crypto, protocol (shared by both apps)
-:core:ocr          OcrEngine interface, field extractors, AI JSON-Schema client
+:core:sync         pairing invitation, sealed bundles, phone client (shared by both apps)
+:core:ocr          OcrEngine interface and the shared field extractor (later: AI JSON-Schema client)
+:core:ocr-desktop  PaddleOCR on ONNX Runtime, image and PDF reading (desktop only)
+:core:books        bookkeeping services on top of the storage: accounts to vehicles, documents, sync, users
 :app:desktop       Compose Desktop UI, sync server, vault, backup, reports
 :app:android       Compose Android UI, capture, queue, sync client
 ```
@@ -189,6 +191,7 @@ Based on the *Household Finance Manager — Software Requirements Specification*
   - Expenses and the full claim lifecycle (MED-06/07); EOB matching (MED-08).
   - Submission deadline reminders (MED-09); out-of-pocket amounts (MED-10).
   - Best 12-month window report, federal and Quebec totals, PDF receipt bundle (MED-12/14/15).
+- *Vehicles (VEH-01 to VEH-11: details, warranties, insurance, maintenance, service and fuel logs, cost of ownership) were delivered before Phase 2; the rest of this section extends the same approach to the home, appliances, RV and other assets.*
 - **Home inventory:**
   - Asset records and parent/child assets (AST-01/02); value feeding net worth (AST-03).
   - Inventory report (AST-04); disposal linked to sales (AST-05, SAL-03).
@@ -215,7 +218,7 @@ Based on the *Household Finance Manager — Software Requirements Specification*
 
 ## Phase 5: Extras (post-1.0)
 
-- **Budgets and goals:** sinking funds (BUD-02), savings goals (BUD-03), phone budget alerts (BUD-04), budget built from the last 12 months (BUD-05).
+- **Budgets:** phone budget alerts (BUD-04), budget built from the last 12 months (BUD-05). *Sinking funds and savings goals (BUD-02, BUD-03) were delivered before Phase 2 as GOAL-01 to GOAL-06.*
 - **Tax package:**
   - Slip checklist (TAX-01) and year-end package (TAX-02); instalment reminders (TAX-03).
   - Tax flags on categories (CAT-05), sales tax per transaction (TX-04), pay stubs (SAL-02), donations (OTH-01).
@@ -258,7 +261,7 @@ Based on the *Household Finance Manager — Software Requirements Specification*
 |---|---|
 | "Must" priority | Must = public 1.0, reached at the end of Phase 4 |
 | First usable release | End of Phase 2 (private household use) |
-| BUD-01 basic budgets + budget vs. actual | Moved to Phase 1. Goals and sinking funds stay in Phase 5 |
+| BUD-01 basic budgets + budget vs. actual | Moved to Phase 1. Goals and sinking funds were later brought forward too (owner requests, second set) |
 | User accounts | Schema in Phase 0, screens and enforcement in Phase 2. Phase 1 runs as a single administrator |
 | Apple platforms | Out of scope (ARC-05 needs no priority) |
 | Flathub | Leaning toward it, but paid apps are not yet live. Keep builds Flatpak-ready; recheck early in Phase 4 |
@@ -278,6 +281,6 @@ Based on the *Household Finance Manager — Software Requirements Specification*
 | Phase 1 status (2026-10-02) | Complete. Deferred to later phases: REC-03 (one-to-many matching), REC-04 (FX fee posting), statement image with the report (needs the vault), BILL-03 (bill from a capture), 50,000-document part of NFR-02 |
 | Owner requests (2026-10-02) | Added before Phase 2 (see `docs/requirements-additions.md`): followed currencies and an optional second rate source, off by default (FX-07, FX-08); a calendar for appointments and events of any kind, with reminders (CAL-01 to CAL-06); a Health section per person (HLT-01 to HLT-07). Still to come: printable health summary (HLT-09) and the link to medical claims (HLT-08, Phase 4); calendar and reminders on the phone (Phase 2) |
 | Working language | Features are built and reviewed in English first, then French |
-| Phase 2a status (2026-10-02) | Done: encrypted vault, desktop OCR (PaddleOCR on ONNX Runtime, PDF text layer), OCR-02 fields with confidence, review inbox, matching to transactions, bills updated from captures (BILL-03), duplicates (OCR-10), retention, drag-and-drop and watched folder. The OCR models (12.7 MB, Apache-2.0) are kept in the repository. Packaging must still drop ONNX Runtime's other-platform libraries (ADR 0004) |
-| Phase 2 status (2026-10-02) | Complete. 2b: QR pairing, sealed bundles over the home network, one-time import with acknowledgement, removal of a phone. 2c: Android companion (scanner, ML Kit text, encrypted queue, PIN/biometric lock, share-to, summaries, bill reminders), tested on the emulator against the desktop. 2d: QIF import; users, roles, access per group, per-user inbox, phone keys sealed for their owner, activity log. Deferred: investment holdings from QIF (Phase 3, the file is kept); packaging must drop ONNX Runtime's other-platform libraries; the document scanner, code scanner and biometrics still need a test on a real phone; Google Play closed test (owner's task) |
 | Owner requests (2026-10-02, second set) | Added before Phase 2: savings goals inside an account (GOAL-01 to GOAL-06, bringing BUD-02 and BUD-03 forward from Phase 5); pets with licences, insurance, health records and costs (PET-01 to PET-05); the full vehicle module (VEH-01 to VEH-11, the vehicle part of section 11 brought forward from Phase 4); transit passes and fares as separate categories (CAT-06). Phase 4 keeps the other assets (home, appliances, RV), home inventory and insurance claims |
+| Phase 2a status (2026-10-02) | Done: encrypted vault, desktop OCR (PaddleOCR on ONNX Runtime, PDF text layer), OCR-02 fields with confidence, review inbox, matching to transactions, bills updated from captures (BILL-03), duplicates (OCR-10), retention, drag-and-drop and watched folder. The OCR models (12.7 MB, Apache-2.0) are kept in the repository. Packaging must still drop ONNX Runtime's other-platform libraries (ADR 0004) |
+| Phase 2 status (2026-10-02) | Complete. 2b (ADR 0006): QR pairing, sealed bundles over the home network, one-time import with acknowledgement, removal of a phone. 2c: Android companion (scanner, ML Kit text, encrypted queue, PIN/biometric lock, share-to, summaries, bill reminders), tested on the emulator against the desktop. 2d: QIF import; users, roles, access per group, per-user inbox, phone keys sealed for their owner, activity log. Deferred: investment holdings from QIF (Phase 3, the file is kept); packaging must drop ONNX Runtime's other-platform libraries; the document scanner, code scanner and biometrics still need a test on a real phone; Google Play closed test (owner's task) |

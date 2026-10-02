@@ -1,6 +1,6 @@
 # ADR 0004: Desktop text recognition
 
-Status: Accepted (Phase 0, 2026-10-01). Details in `spikes/ocr-paddle/README.md`.
+Status: Accepted (Phase 0, 2026-10-01); implemented in Phase 2a (2026-10-02) in `core/ocr-desktop`. Spike details in `spikes/ocr-paddle/README.md`.
 
 ## Context
 
@@ -37,3 +37,19 @@ OCR-01 and OCR-04: text recognition runs on the user's own device, in English an
   - Small text, where commas and periods get confused.
   - Lost French ligatures such as œ.
   - It should normalise decimal separators and check line items and taxes against the total before suggesting values.
+
+## Implemented in Phase 2a (2026-10-02)
+
+- **Engine:** `PaddleOcrEngine` in `core/ocr-desktop`.
+  - Models load once, on first use, from the jar.
+  - At most 4 threads.
+  - Words are grouped into visual rows along the text's slant.
+- **Images:** `ImageLoader` honours EXIF orientation and reduces photos larger than 3,200 px while decoding.
+- **PDFs:** `DocumentReader` uses a PDF's text layer when it has one (exact, confidence 1.0). Otherwise it renders up to 5 pages at 200 DPI and recognises them. `PdfPages` combines the pages of a phone capture into one PDF.
+- **Models in the repository:** `core/ocr-desktop/src/main/resources/hfm/ocr/models/` holds the detection model, the latin recognition model and its dictionary (12.7 MB, Apache-2.0, see `NOTICE.txt`). Keeping them there means builds never depend on a download site. The orientation classifier is not used.
+- **Field extraction:** `FieldExtractor` in `core/ocr` is shared with the phone.
+  - It reads merchant, date, total, subtotal, GST/HST/QST/PST, currency, payment method, masked card digits, invoice and account numbers, and the due date, in English and French.
+  - It checks the subtotal plus taxes against the total.
+  - Each field gets a confidence; fields under 0.85 are marked for review.
+- **Still to do at packaging:** drop ONNX Runtime's libraries for other platforms (see Consequences).
+

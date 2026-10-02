@@ -12,16 +12,19 @@ Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: wit
 | Module | Contents |
 |---|---|
 | `core/money` | Exact money type (minor units, never floating point), currencies, locale formatting and parsing |
-| `core/calc` | Financial calculations shared by both apps: amortization (more in later phases) |
+| `core/calc` | Financial calculations shared by both apps: amortization, schedules for bills and events |
 | `core/domain` | Ids, roles, permissions, account types |
-| `core/security` | Argon2id, AES-256-GCM, X25519 key sealing, recovery keys |
-| `core/data` | Household folder format, key ring, SQLDelight schemas, schema upgrades |
+| `core/security` | Argon2id, AES-256-GCM, X25519 key sealing and pair keys, recovery keys |
+| `core/data` | Household folder format, key ring, encrypted document vault, SQLDelight schemas and upgrades |
 | `core/data-jdbc` | Encrypted SQLite (SQLCipher v4) driver for the desktop |
-| `core/books` | Bookkeeping rules: categories, payees, institutions, members, accounts, transactions, splits, transfers |
+| `core/books` | Bookkeeping services: accounts, transactions, reconciliation, bills, budgets, goals, reports, calendar, health, pets, vehicles, documents, phone sync, Quicken import, users |
 | `core/i18n` | English and French text |
-| `core/importers`, `core/ocr`, `core/sync` | Interfaces for statement import, text recognition and phone sync |
-| `app/desktop` | Compose Desktop application |
-| `app/android` | Android companion application |
+| `core/importers` | Statement import (OFX/QFX/QBO, CSV) and Quicken QIF |
+| `core/ocr` | Text recognition interface and the field extractor shared with the phone |
+| `core/ocr-desktop` | PaddleOCR on ONNX Runtime and PDF reading, for the desktop |
+| `core/sync` | Pairing invitation, sealed transfer bundles and the phone's client |
+| `app/desktop` | Compose Desktop application, including the listener for phones |
+| `app/android` | Android companion: capture, encrypted queue, transfer, summaries |
 | `spikes/` | Phase 0 feasibility experiments (not part of the build) |
 
 Architecture decisions are recorded in [docs/adr](docs/adr).
@@ -39,6 +42,8 @@ Requirements: JDK 21. For the Android app, the Android SDK (API 37).
 ./gradlew :app:desktop:packageDeb   # Linux package (on Linux)
 ./gradlew :app:android:assembleDebug
 ```
+
+The demo opens on any section with `-Psection=` (for example `DOCUMENTS`, `PHONES`, `USERS`, `VEHICLES`, `GOALS`). Its users are `demo` / `demo-password` (administrator) and `sam` / `sam-demo-password` (member).
 
 ## Support
 

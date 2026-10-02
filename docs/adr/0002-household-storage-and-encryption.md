@@ -63,7 +63,7 @@ The user still handles a household as one item:
 
 - **Reports across groups:** reports covering several groups run one query per open ledger and combine the results. The number of groups is small (typically under 10).
 - **Transfers between groups:** a transfer between accounts in different groups is stored as two linked rows (same `transfer_id`), one in each ledger.
-- **Revocation:** removing a grant stops future access. A user who already held the key could have copied it, so true revocation needs key rotation (re-encrypting the ledger under a new key). That is planned with SYNC-08 in Phase 2.
+- **Revocation:** removing a grant stops future access. A user who already held the key could have copied it, so true revocation needs key rotation (re-encrypting the ledger under a new key). Not built yet. Removing a phone (SYNC-08) does not need it: a phone never holds household keys, only its pair key (ADR 0006).
 - **Windows Hello (ADR 0003):** Hello unlock adds another wrapping of the user's private key. Nothing else changes.
 - **Upgrades:** every database records its schema version in `PRAGMA user_version`. Upgrades checkpoint the write-ahead log and copy the file before migrating, and a database written by a newer version of the application is refused.
 
@@ -78,3 +78,25 @@ The user still handles a household as one item:
 - the recovery key resets the password;
 - a tampered header cannot redirect grants;
 - upgrades back up first and keep the data.
+
+## Added in Phase 2 (2026-10-02)
+
+**Document vault** (`vault/<partition>/<document>.hfmdoc`, `DocumentVault`):
+- One file per document, sealed with AES-256-GCM under a key derived (HKDF) from its group's partition key.
+- The household, partition and document ids are the authenticated data, so a file cannot be swapped with another or moved to another group.
+- Whoever lacks the group's key cannot read the group's documents, as for its ledger (HH-11). Backups already include `vault/`.
+
+**Data sealed for one user** (`HouseholdSession.sealFor` / `openSealed`):
+- Sealed to the user's public key (the same sealed box as grants), with a context bound in.
+- Used for each phone's pair key, so only the phone's owner can read its captures (ADR 0006).
+
+**User management** (`setRole`, `setActive`, `changePassword`, `linkMember`):
+- A new administrator receives the keys of every shared group. A former administrator keeps only the groups granted explicitly.
+- A deactivated user cannot sign in.
+- The household always keeps at least one active administrator.
+- Changing a password re-wraps the private key; the recovery key stays valid.
+
+**Schema versions:** core 4 (pets, paired devices), ledger 4 (goals, vehicles, document review fields). Each step is a verified migration with an upgrade test from every earlier version.
+
+`core/data-jdbc` tests (`DocumentVaultTest`, `UserManagementTest`, `MigrationTest`) cover these.
+
