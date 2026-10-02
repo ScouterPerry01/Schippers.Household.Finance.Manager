@@ -381,6 +381,40 @@ GROUP BY a.id;
 setClearedFor:
 UPDATE txn SET cleared = ?, updated_at = ? WHERE account_id = ? AND cleared = ? AND date <= ?;
 
+-- Reports (section 12) ---------------------------------------------------------------------
+-- Transfers between own accounts are never income or spending (TX-03), so they are left out.
+
+categoryDaily:
+SELECT t.account_id, s.category_id, t.date, CAST(sum(s.amount_minor) AS INTEGER) AS total
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE t.date >= :from AND t.date <= :to AND t.transfer_id IS NULL
+  AND (:member IS NULL OR coalesce(s.member_id, t.member_id) = :member)
+  AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
+GROUP BY t.account_id, s.category_id, t.date;
+
+payeeDaily:
+SELECT t.account_id, t.payee_id, coalesce(t.payee_text, '') AS payee_text, t.date, CAST(sum(t.amount_minor) AS INTEGER) AS total
+FROM txn t
+WHERE t.date >= :from AND t.date <= :to AND t.transfer_id IS NULL
+  AND (:member IS NULL OR t.member_id = :member)
+  AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
+GROUP BY t.account_id, t.payee_id, payee_text, t.date;
+
+reportSplits:
+SELECT t.id AS txn_id, t.account_id, t.date, t.payee_id, t.payee_text, t.memo, s.category_id, s.amount_minor
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE t.date >= :from AND t.date <= :to AND t.transfer_id IS NULL
+  AND (:member IS NULL OR coalesce(s.member_id, t.member_id) = :member)
+  AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
+ORDER BY t.date, t.created_at;
+
+balancesAsOf:
+SELECT a.id, CAST(a.opening_balance_minor + coalesce((SELECT sum(t.amount_minor) FROM txn t WHERE t.account_id = a.id AND t.date <= :date), 0) AS INTEGER) AS balance
+FROM account a WHERE a.opening_date <= :date;
+
+uncategorizedCount:
+SELECT count(*) FROM txn t WHERE t.transfer_id IS NULL AND EXISTS (SELECT 1 FROM txn_split s WHERE s.txn_id = t.id AND s.category_id IS NULL);
+
 -- Bills ---------------------------------------------------------------------------------
 
 insertBill:

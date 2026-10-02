@@ -116,6 +116,27 @@ CREATE TABLE category_rule (
     sort_order INTEGER NOT NULL DEFAULT 0
 );
 
+-- FX-02: daily exchange rates, in Canadian dollars per unit of the currency.
+CREATE TABLE fx_rate (
+    currency TEXT NOT NULL,
+    date TEXT NOT NULL,
+    cad_per_unit TEXT NOT NULL,
+    source TEXT NOT NULL CHECK (source IN ('BOC', 'MANUAL')),
+    PRIMARY KEY (currency, date)
+);
+
+-- BUD-01: a monthly or annual budget per category, optionally rolling unspent amounts forward.
+CREATE TABLE budget (
+    id TEXT NOT NULL PRIMARY KEY,
+    category_id TEXT NOT NULL UNIQUE REFERENCES category(id) ON DELETE CASCADE,
+    period TEXT NOT NULL CHECK (period IN ('MONTHLY', 'ANNUAL')),
+    amount_minor INTEGER NOT NULL,
+    currency TEXT NOT NULL,
+    rollover INTEGER NOT NULL DEFAULT 0,
+    -- First month (YYYY-MM) the budget applies to; rollover counts from here.
+    start_month TEXT NOT NULL
+);
+
 CREATE TABLE setting (
     key TEXT NOT NULL PRIMARY KEY,
     value TEXT NOT NULL
@@ -256,3 +277,41 @@ DELETE FROM category_rule WHERE id = ?;
 
 rules:
 SELECT * FROM category_rule ORDER BY sort_order, payee_contains;
+
+-- Exchange rates (FX-02) --------------------------------------------------------------------
+
+-- Bank of Canada rates never replace a rate the user entered by hand.
+insertBocRate:
+INSERT INTO fx_rate(currency, date, cad_per_unit, source) VALUES (?, ?, ?, 'BOC')
+ON CONFLICT(currency, date) DO UPDATE SET cad_per_unit = excluded.cad_per_unit WHERE fx_rate.source = 'BOC';
+
+upsertManualRate:
+INSERT OR REPLACE INTO fx_rate(currency, date, cad_per_unit, source) VALUES (?, ?, ?, 'MANUAL');
+
+deleteRate:
+DELETE FROM fx_rate WHERE currency = ? AND date = ?;
+
+rateOnOrBefore:
+SELECT * FROM fx_rate WHERE currency = ? AND date <= ? ORDER BY date DESC LIMIT 1;
+
+rateAfter:
+SELECT * FROM fx_rate WHERE currency = ? AND date > ? ORDER BY date LIMIT 1;
+
+ratesFor:
+SELECT * FROM fx_rate WHERE currency = ? AND date BETWEEN ? AND ? ORDER BY date;
+
+latestRateDate:
+SELECT max(date) AS latest FROM fx_rate WHERE currency = ? AND source = 'BOC';
+
+-- Budgets (BUD-01) --------------------------------------------------------------------------
+
+upsertBudget:
+INSERT INTO budget(id, category_id, period, amount_minor, currency, rollover, start_month) VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(category_id) DO UPDATE SET period = excluded.period, amount_minor = excluded.amount_minor,
+    currency = excluded.currency, rollover = excluded.rollover, start_month = excluded.start_month;
+
+deleteBudget:
+DELETE FROM budget WHERE category_id = ?;
+
+budgets:
+SELECT * FROM budget;
