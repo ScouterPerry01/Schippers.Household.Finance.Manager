@@ -5,6 +5,7 @@ import ca.schippers.hfm.books.AccountDraft
 import ca.schippers.hfm.books.AmountKind
 import ca.schippers.hfm.books.BillDraft
 import ca.schippers.hfm.books.BillKind
+import ca.schippers.hfm.books.BudgetPeriod
 import ca.schippers.hfm.books.PaymentMethod
 import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
 import ca.schippers.hfm.calc.schedule.Frequency
@@ -98,6 +99,12 @@ object DemoHousehold {
         books.transactions.transfer(TransferDraft(chequing.id, usd.id, today, cad("274.50"), Money.parse("200.00", Currency.USD), "Achat de dollars US"))
         importStatement(books, chequing, today)
         addBills(books, chequing, savings, visa, today)
+        val firstMonth = LocalDate(start.year, start.month, 1)
+        books.budgets.set(cat("food"), BudgetPeriod.MONTHLY, cad("450.00"), rollover = true, startMonth = firstMonth)
+        books.budgets.set(cat("food.restaurants"), BudgetPeriod.MONTHLY, cad("50.00"), startMonth = firstMonth)
+        books.budgets.set(cat("transport"), BudgetPeriod.MONTHLY, cad("120.00"), startMonth = firstMonth)
+        books.budgets.set(cat("utilities"), BudgetPeriod.MONTHLY, cad("250.00"), startMonth = firstMonth)
+        books.budgets.set(cat("housing"), BudgetPeriod.MONTHLY, cad("1450.00"), startMonth = firstMonth)
     }
 
     /** Bills from next month on (this month's are already entered), plus a few due within days. */

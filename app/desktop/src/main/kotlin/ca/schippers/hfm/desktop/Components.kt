@@ -125,7 +125,13 @@ fun <T> Picker(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var filter by remember(selected) { mutableStateOf<String?>(null) }
-    val text = filter ?: selected?.let(display).orEmpty()
+    // A null option (e.g. "Everyone", "(none)") shows its own label when nothing is chosen.
+    @Suppress("UNCHECKED_CAST")
+    val text = filter ?: when {
+        selected != null -> display(selected)
+        options.any { it == null } -> display(null as T)
+        else -> ""
+    }
     val shown = if (filter.isNullOrBlank()) options else options.filter { display(it).contains(filter!!, ignoreCase = true) }
     ExposedDropdownMenuBox(expanded = expanded && enabled, onExpandedChange = { if (enabled) expanded = it }, modifier = modifier) {
         OutlinedTextField(

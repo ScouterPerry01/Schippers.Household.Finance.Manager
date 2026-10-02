@@ -24,6 +24,8 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.material3)
     implementation(libs.kotlinx.coroutines.swing)
+    implementation(libs.fastexcel)
+    implementation(libs.openpdf)
     testImplementation(kotlin("test"))
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
@@ -68,4 +70,5 @@ tasks.register<JavaExec>("runDemo") {
     providers.gradleProperty("account").orNull?.let { systemProperty("hfm.demo.account", it) }
     providers.gradleProperty("section").orNull?.let { systemProperty("hfm.demo.section", it) }
     providers.gradleProperty("reconcile").orNull?.let { systemProperty("hfm.demo.reconcile", it) }
+    providers.gradleProperty("view").orNull?.let { systemProperty("hfm.demo.report", it) }
 }

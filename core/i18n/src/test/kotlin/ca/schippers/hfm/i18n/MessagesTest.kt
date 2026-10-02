@@ -36,6 +36,21 @@ class MessagesTest {
     }
 
     @Test
+    fun `plural messages use the typographic apostrophe`() {
+        // Inside {0,choice,...} a doubled '' is unescaped twice and the apostrophe is lost
+        // ("n''ont" shows as "nont"), so plural messages use the typographic apostrophe instead.
+        for (language in Language.entries) {
+            val stream = Messages::class.java.getResourceAsStream("/hfm/i18n/messages_${language.tag}.properties")!!
+            val bad = stream.reader(Charsets.UTF_8).readLines().filter { line ->
+                Regex("""\{[^{}]*,choice,[^{}]*''""").containsMatchIn(line)
+            }
+            assertEquals(emptyList(), bad, "plural messages with '' in $language")
+        }
+        assertEquals("1 opération n’a pas de catégorie", Messages.get(Language.FRENCH, "dashboard.review.uncategorized", 1))
+        assertTrue(!Messages.get(Language.FRENCH, "reminder.cancelBy", 3).contains("{"))
+    }
+
+    @Test
     fun `French accents and apostrophes survive`() {
         assertEquals("Gestionnaire des finances du ménage", Messages.get(Language.FRENCH, "app.name"))
         assertEquals("Nom d'utilisateur", Messages.get(Language.FRENCH, "unlock.login"))

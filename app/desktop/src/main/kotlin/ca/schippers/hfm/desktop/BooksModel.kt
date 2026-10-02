@@ -16,7 +16,7 @@ import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 
-enum class Section { ACCOUNTS, BILLS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS }
+enum class Section { DASHBOARD, ACCOUNTS, BILLS, BUDGETS, REPORTS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -28,7 +28,10 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     var revision by mutableIntStateOf(0)
         private set
     var error by mutableStateOf<String?>(null)
-    var section by mutableStateOf(Section.ACCOUNTS)
+    var section by mutableStateOf(Section.DASHBOARD)
+
+    /** Report choices, kept while moving between screens. */
+    val reportState = ReportState()
     var selectedAccountId by mutableStateOf<String?>(null)
 
     /** The statement being reconciled; the register is shown again when null. */

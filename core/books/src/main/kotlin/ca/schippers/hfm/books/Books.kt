@@ -61,6 +61,9 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
 
     internal fun now(): Long = clock()
 
+    /** Tags for projects and events (CAT-04). */
+    fun tags(): List<Tag> = core.tags().executeAsList().map { Tag(it.id, it.name) }
+
     /** Household-wide settings, such as saved CSV column mappings per institution (REC-01). */
     fun setting(key: String): String? = core.getSetting(key).executeAsOneOrNull()
 

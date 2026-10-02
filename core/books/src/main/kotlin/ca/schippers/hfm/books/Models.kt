@@ -57,6 +57,8 @@ data class Category(
     fun name(language: Language): String = if (language == Language.FRENCH) nameFr else nameEn
 }
 
+data class Tag(val id: String, val name: String)
+
 data class Payee(
     val id: String,
     val name: String,

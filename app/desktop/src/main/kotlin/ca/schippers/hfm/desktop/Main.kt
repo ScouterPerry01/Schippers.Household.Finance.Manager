@@ -26,6 +26,7 @@ fun main() = application {
                 val model = BooksModel(DemoHousehold.create(app.store), app)
                 model.selectedAccountId = model.books.accounts.list().firstOrNull { it.account.name == System.getProperty("hfm.demo.account") }?.account?.id
                 System.getProperty("hfm.demo.section")?.let { name -> Section.entries.firstOrNull { it.name == name }?.let { model.section = it } }
+                System.getProperty("hfm.demo.report")?.let { name -> ReportKind.entries.firstOrNull { it.name == name }?.let { model.reportState.kind = it } }
                 if (System.getProperty("hfm.demo.reconcile") == "true") {
                     model.selectedAccountId?.let { id ->
                         model.reconcilingStatementId = model.books.statements.statements(id).firstOrNull { it.status == StatementStatus.OPEN }?.id

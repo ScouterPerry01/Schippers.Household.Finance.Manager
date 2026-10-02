@@ -17,14 +17,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun MainScreen(model: BooksModel) {
     val reminders = remember(model.revision) { model.reminders() }
+    // FX-02: fetch missing Bank of Canada rates in the background; offline is fine (NFR-10).
+    LaunchedEffect(model) {
+        val added = withContext(Dispatchers.IO) { runCatching { model.books.rates.updateFromBankOfCanada(today(), Http::get) }.getOrDefault(0) }
+        if (added > 0) model.changed()
+    }
     Column(Modifier.fillMaxSize()) {
         // BILL-04: bills due soon, shown on every screen except Bills itself.
         if (reminders.isNotEmpty() && model.section != Section.BILLS) {
@@ -53,8 +61,12 @@ fun MainScreen(model: BooksModel) {
             VerticalDivider()
             Box(Modifier.fillMaxSize()) {
                 when (model.section) {
+                    Section.DASHBOARD -> DashboardScreen(model)
                     Section.ACCOUNTS -> AccountsScreen(model)
                     Section.BILLS -> BillsScreen(model)
+                    Section.BUDGETS -> BudgetsScreen(model)
+                    Section.REPORTS -> ReportsScreen(model, model.reportState)
+                    Section.RATES -> RatesScreen(model)
                     Section.CATEGORIES -> CategoriesScreen(model)
                     Section.PAYEES -> PayeesScreen(model)
                     Section.RULES -> RulesScreen(model)
