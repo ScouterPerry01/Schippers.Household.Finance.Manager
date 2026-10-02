@@ -24,6 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.books.RateService
+import ca.schippers.hfm.books.RateSource
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.MoneyFormat
@@ -52,20 +54,27 @@ object Http {
     }
 }
 
-/** FX-02: the exchange rates in use, the Bank of Canada download, and manual rates. */
+/** FX-02, FX-07, FX-08: the exchange rates in use, followed currencies, the downloads and manual rates. */
 @Composable
 fun RatesScreen(model: BooksModel) {
     val books = model.books
     val scope = rememberCoroutineScope()
     val today = today()
-    val currencies = remember(model.revision) { books.rates.neededCurrencies().sortedBy { it.code } }
+    val currencies = remember(model.revision) { books.rates.allNeeded().sortedBy { it.code } }
+    val followed = remember(model.revision) { books.rates.followed().toSet() }
+    val notOnBoc = remember(model.revision) { books.rates.notOnBankOfCanada() }
+    val openEnabled = remember(model.revision) { books.rates.openSourceEnabled }
     var selected by remember { mutableStateOf<Currency?>(null) }
     var status by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     var code by remember { mutableStateOf("") }
     var date by remember { mutableStateOf(today.toString()) }
     var rate by remember { mutableStateOf("") }
+    var toFollow by remember { mutableStateOf<java.util.Currency?>(null) }
     val locale = model.language.locale
+    val allCurrencies = remember {
+        java.util.Currency.getAvailableCurrencies().filter { it.defaultFractionDigits >= 0 && it.currencyCode != "CAD" }.sortedBy { it.currencyCode }
+    }
 
     Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -73,7 +82,7 @@ fun RatesScreen(model: BooksModel) {
             Button(enabled = !busy, onClick = {
                 busy = true
                 scope.launch {
-                    val result = withContext(Dispatchers.IO) { runCatching { books.rates.updateFromBankOfCanada(today, Http::get) } }
+                    val result = withContext(Dispatchers.IO) { runCatching { books.rates.updateAll(today, Http::get) } }
                     status = result.fold({ model.t("rates.updated", it) }, { model.t("rates.failed", it.message.orEmpty()) })
                     busy = false
                     model.changed()
@@ -84,19 +93,52 @@ fun RatesScreen(model: BooksModel) {
         status?.let { Text(it) }
         if (currencies.isEmpty()) Text(model.t("rates.none"))
         for (c in currencies) {
-            val cad = remember(model.revision, c) { books.rates.cadPerUnit(c, today) }
+            val latest = remember(model.revision, c) { books.rates.list(c, today.minus(DatePeriod(days = 30)), today).lastOrNull() }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(c.code, Modifier.width(80.dp))
-                Text(cad?.let { model.t("rates.value", it.stripTrailingZeros().toPlainString(), c.code) } ?: model.t("rates.missing"), Modifier.weight(1f))
+                Text(
+                    latest?.let { model.t("rates.value", shortRate(it.cadPerUnit), c.code) }
+                        ?: model.t(if (c in notOnBoc && !openEnabled) "rates.needsSecondSource" else "rates.missing"),
+                    Modifier.weight(1f),
+                )
+                Text(latest?.let { model.date(it.date) + " · " + sourceName(model, it.source) }.orEmpty(), Modifier.width(260.dp), style = MaterialTheme.typography.bodySmall)
+                if (c in followed) TextButton(onClick = { model.act { books.rates.unfollow(c) } }) { Text(model.t("rates.unfollow")) }
                 TextButton(onClick = { selected = c }) { Text(model.t("rates.history")) }
             }
         }
+
+        // FX-07: currencies to follow although no account uses them (travel, family abroad).
+        HorizontalDivider()
+        Text(model.t("rates.follow.title"), style = MaterialTheme.typography.titleMedium)
+        Text(model.t("rates.follow.explain"), style = MaterialTheme.typography.bodySmall)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            val shown = currencies.map { it.code }.toSet()
+            Picker(
+                model.t("rates.currency"), allCurrencies.filter { it.currencyCode !in shown }, toFollow,
+                { "${it.currencyCode} · ${it.getDisplayName(locale)}" }, Modifier.width(420.dp),
+            ) { toFollow = it }
+            OutlinedButton(enabled = toFollow != null, onClick = {
+                toFollow?.let { c -> model.act { books.rates.follow(Currency.of(c.currencyCode)) } }
+                toFollow = null
+            }) { Text(model.t("rates.follow")) }
+        }
+
+        // FX-08: the optional second source for currencies the Bank of Canada does not publish.
+        HorizontalDivider()
+        Text(model.t("rates.second.title"), style = MaterialTheme.typography.titleMedium)
+        LabeledCheckbox(model.t("rates.second.enable"), openEnabled) { on -> model.act { books.rates.openSourceEnabled = on } }
+        Text(model.t("rates.second.explain"), style = MaterialTheme.typography.bodySmall)
+        if (openEnabled) Text(RateService.OPEN_SOURCE_ATTRIBUTION, style = MaterialTheme.typography.bodySmall)
+        if (notOnBoc.isNotEmpty()) {
+            Text(model.t("rates.second.currencies", notOnBoc.sortedBy { it.code }.joinToString(", ") { it.code }), style = MaterialTheme.typography.bodySmall)
+        }
+
         HorizontalDivider()
         Text(model.t("rates.manual"), style = MaterialTheme.typography.titleMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             TextInput(model.t("rates.currency"), code, Modifier.width(140.dp)) { code = it.uppercase() }
             DateInput(model.t("report.date"), date, Modifier.width(170.dp)) { date = it }
-            TextInput(model.t("rates.cadPerUnit"), rate, Modifier.width(200.dp)) { rate = it }
+            TextInput(model.t("rates.cadPerUnit"), rate, Modifier.width(280.dp)) { rate = it }
             OutlinedButton(onClick = {
                 model.act {
                     val currency = runCatching { Currency.of(code) }.getOrElse { throw ValidationException("error.unknownCurrency") }
@@ -114,11 +156,16 @@ fun RatesScreen(model: BooksModel) {
             for (r in rows) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(r.date), Modifier.width(120.dp))
-                    Text(r.cadPerUnit.toPlainString(), Modifier.width(120.dp))
-                    Text(model.t(if (r.manual) "rates.sourceManual" else "rates.sourceBoc"), Modifier.width(180.dp), style = MaterialTheme.typography.bodySmall)
+                    Text(shortRate(r.cadPerUnit), Modifier.width(120.dp))
+                    Text(sourceName(model, r.source), Modifier.width(220.dp), style = MaterialTheme.typography.bodySmall)
                     if (r.manual) TextButton(onClick = { model.act { books.rates.deleteRate(c, r.date) } }) { Text(model.t("common.delete")) }
                 }
             }
         }
     }
 }
+
+private fun sourceName(model: BooksModel, source: RateSource): String = model.t("rates.source.${source.name}")
+
+/** Six significant digits are plenty to read a rate; the full value is kept for conversions. */
+private fun shortRate(value: java.math.BigDecimal): String = value.round(java.math.MathContext(6)).stripTrailingZeros().toPlainString()

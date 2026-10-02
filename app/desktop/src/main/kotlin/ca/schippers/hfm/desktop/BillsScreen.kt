@@ -379,8 +379,8 @@ private fun AmountDialog(model: BooksModel, o: Occurrence, onClose: () -> Unit) 
     }
 }
 
-/** Repetition choices offered in the bill editor (BILL-02). */
-private enum class Repeat(val recurrence: Recurrence?) {
+/** Repetition choices offered in the bill and event editors (BILL-02, CAL-02). */
+internal enum class Repeat(val recurrence: Recurrence?) {
     ONCE(Recurrence(Frequency.ONCE)),
     WEEKLY(Recurrence.WEEKLY),
     BI_WEEKLY(Recurrence.BI_WEEKLY),
@@ -411,8 +411,9 @@ private enum class Repeat(val recurrence: Recurrence?) {
     }
 }
 
-private fun describeRecurrence(model: BooksModel, bill: Bill): String {
-    val r = bill.recurrence
+private fun describeRecurrence(model: BooksModel, bill: Bill): String = describeRecurrence(model, bill.recurrence)
+
+internal fun describeRecurrence(model: BooksModel, r: Recurrence): String {
     val repeat = Repeat.of(r)
     val base = when (repeat) {
         Repeat.EVERY_N_DAYS, Repeat.EVERY_N_WEEKS, Repeat.EVERY_N_MONTHS -> model.t("repeat.${repeat.name}.n", r.interval)

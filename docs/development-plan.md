@@ -276,3 +276,5 @@ Based on the *Household Finance Manager — Software Requirements Specification*
 | Contributor agreement | Undecided; until then, code contributions are not accepted. Draft in `docs/legal/contributor-license-agreement-DRAFT.md` |
 | Backups | One encrypted `.hfmbak` per backup, checked after writing, restored into a new folder (ADR 0005) |
 | Phase 1 status (2026-10-02) | Complete. Deferred to later phases: REC-03 (one-to-many matching), REC-04 (FX fee posting), statement image with the report (needs the vault), BILL-03 (bill from a capture), 50,000-document part of NFR-02 |
+| Owner requests (2026-10-02) | Added before Phase 2 (see `docs/requirements-additions.md`): followed currencies and an optional second rate source, off by default (FX-07, FX-08); a calendar for appointments and events of any kind, with reminders (CAL-01 to CAL-06); a Health section per person (HLT-01 to HLT-07). Still to come: printable health summary (HLT-09) and the link to medical claims (HLT-08, Phase 4); calendar and reminders on the phone (Phase 2) |
+| Working language | Features are built and reviewed in English first, then French |

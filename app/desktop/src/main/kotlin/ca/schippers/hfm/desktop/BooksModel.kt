@@ -6,18 +6,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.ImportResult
+import ca.schippers.hfm.books.EventReminder
+import ca.schippers.hfm.books.GroupInfo
+import ca.schippers.hfm.books.RefillReminder
 import ca.schippers.hfm.books.Reminder
 import ca.schippers.hfm.books.SearchResults
 import ca.schippers.hfm.books.ReconciledChangeException
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.data.HouseholdSession
+import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.plus
 
-enum class Section { DASHBOARD, ACCOUNTS, BILLS, BUDGETS, REPORTS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, BACKUPS, SECURITY }
+enum class Section { DASHBOARD, ACCOUNTS, BILLS, CALENDAR, HEALTH, BUDGETS, REPORTS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, BACKUPS, SECURITY }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -85,6 +92,59 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
             else -> t("reminder.inDays", reminder.daysBefore)
         }
         return "${o.bill.name}: $whenText (${if (o.amountKnown) "" else "≈ "}${money(o.amount)})"
+    }
+
+    /** One line per reminder of any kind (bills, appointments, refills) and where it leads. */
+    data class ReminderLine(val key: String, val text: String, val section: Section)
+
+    fun reminderLines(): List<ReminderLine> {
+        val now = java.time.LocalDateTime.now().let { LocalDateTime(it.year, it.monthValue, it.dayOfMonth, it.hour, it.minute) }
+        val bills = reminders().map { ReminderLine("bill:${it.occurrence.bill.id}:${it.occurrence.dueDate}:${it.daysBefore}", describe(it), Section.BILLS) }
+        val events = runCatching { books.calendar.reminders(now) }.getOrDefault(emptyList()).map { r ->
+            val lead = r.occurrence.event.reminderMinutes.filter { r.minutesBefore <= it }.minOrNull()
+            ReminderLine("event:${r.occurrence.event.id}:${r.occurrence.date}:$lead", describe(r), Section.CALENDAR)
+        }
+        val refills = runCatching { books.health.refillReminders(today()) }.getOrDefault(emptyList())
+            .map { ReminderLine("refill:${it.medication.id}:${it.due}", describe(it), Section.HEALTH) }
+        return events + bills + refills
+    }
+
+    /** "Garage: winter tires: tomorrow at 09:30". */
+    fun describe(r: EventReminder): String {
+        val o = r.occurrence
+        val time = o.event.startTime?.let { "%02d:%02d".format(it.hour, it.minute) }
+        val whenText = when {
+            r.minutesBefore < 60 && time != null -> t("reminder.event.inMinutes", r.minutesBefore)
+            o.date == today() -> if (time != null) t("reminder.event.todayAt", time) else t("reminder.event.today")
+            o.date == today().plus(DatePeriod(days = 1)) -> if (time != null) t("reminder.event.tomorrowAt", time) else t("reminder.event.tomorrow")
+            else -> if (time != null) t("reminder.event.onAt", date(o.date), time) else t("reminder.event.on", date(o.date))
+        }
+        return "${o.event.title}: $whenText"
+    }
+
+    /** "Atorvastatin (Marie): refill due in 4 days". */
+    fun describe(r: RefillReminder): String {
+        val person = books.members.list(includeArchived = true).firstOrNull { it.id == r.medication.memberId }?.displayName
+        val base = when {
+            r.daysLeft < 0 -> t("reminder.refillOverdue", -r.daysLeft)
+            r.daysLeft == 0 -> t("reminder.refillToday")
+            else -> t("reminder.refillIn", r.daysLeft)
+        }
+        val renew = if (r.medication.needsRenewal) " · " + t("reminder.renew") else ""
+        return "${r.medication.name}${person?.let { " ($it)" }.orEmpty()}: $base$renew"
+    }
+
+    /** Account groups the user may edit, for "store in" choices (CAL-06). */
+    fun editableGroups(): List<GroupInfo> = books.groups().filter { it.level == PermissionLevel.EDIT }
+
+    /** The user's own private group if there is one, otherwise the first shared group. */
+    fun defaultGroupForPersonalRecords(): GroupInfo? =
+        editableGroups().let { groups -> groups.firstOrNull { it.ownerUserId == session.userId } ?: groups.firstOrNull() }
+
+    /** Creates "<name> - private" for personal records. Returns the new group's id. */
+    fun createPrivateGroup(): String? = act {
+        val name = session.core.coreQueries.userById(session.userId).executeAsOne().display_name
+        session.createGroup(t("group.privateName", name), private = true)
     }
 
     fun changed() {

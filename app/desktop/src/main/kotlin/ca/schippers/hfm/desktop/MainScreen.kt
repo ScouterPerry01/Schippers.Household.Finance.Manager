@@ -27,10 +27,10 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun MainScreen(model: BooksModel, app: AppState) {
-    val reminders = remember(model.revision) { model.reminders() }
+    val reminders = remember(model.revision) { model.reminderLines() }
     // FX-02: fetch missing Bank of Canada rates in the background; offline is fine (NFR-10).
     LaunchedEffect(model) {
-        val added = withContext(Dispatchers.IO) { runCatching { model.books.rates.updateFromBankOfCanada(today(), Http::get) }.getOrDefault(0) }
+        val added = withContext(Dispatchers.IO) { runCatching { model.books.rates.updateAll(today(), Http::get) }.getOrDefault(0) }
         if (added > 0) model.changed()
     }
     LaunchedEffect(model) {
@@ -38,14 +38,15 @@ fun MainScreen(model: BooksModel, app: AppState) {
         backupScheduler(model)
     }
     Column(Modifier.fillMaxSize()) {
-        // BILL-04: bills due soon, shown on every screen except Bills itself.
-        if (reminders.isNotEmpty() && model.section != Section.BILLS) {
+        // BILL-04, CAL-03, HLT-03: reminders, shown on every screen except the one they belong to.
+        val shown = reminders.filter { it.section != model.section }
+        if (shown.isNotEmpty()) {
             Surface(
                 color = MaterialTheme.colorScheme.tertiaryContainer,
-                modifier = Modifier.fillMaxWidth().clickable { model.section = Section.BILLS },
+                modifier = Modifier.fillMaxWidth().clickable { model.section = shown.first().section },
             ) {
                 Text(
-                    model.t("reminder.banner", reminders.size) + "  " + reminders.take(3).joinToString(" · ") { model.describe(it) },
+                    model.t("reminder.banner", shown.size) + "  " + shown.take(3).joinToString(" · ") { it.text },
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -68,6 +69,8 @@ fun MainScreen(model: BooksModel, app: AppState) {
                     Section.DASHBOARD -> DashboardScreen(model)
                     Section.ACCOUNTS -> AccountsScreen(model)
                     Section.BILLS -> BillsScreen(model)
+                    Section.CALENDAR -> CalendarScreen(model)
+                    Section.HEALTH -> HealthScreen(model)
                     Section.BUDGETS -> BudgetsScreen(model)
                     Section.REPORTS -> ReportsScreen(model, model.reportState)
                     Section.RATES -> RatesScreen(model)

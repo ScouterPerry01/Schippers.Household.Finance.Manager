@@ -7,6 +7,19 @@ import ca.schippers.hfm.books.BillDraft
 import ca.schippers.hfm.books.BillKind
 import ca.schippers.hfm.books.BudgetPeriod
 import ca.schippers.hfm.books.PaymentMethod
+import ca.schippers.hfm.books.Allergy
+import ca.schippers.hfm.books.ConditionStatus
+import ca.schippers.hfm.books.EventCategory
+import ca.schippers.hfm.books.EventDraft
+import ca.schippers.hfm.books.HealthCondition
+import ca.schippers.hfm.books.HealthProvider
+import ca.schippers.hfm.books.HealthTest
+import ca.schippers.hfm.books.Immunization
+import ca.schippers.hfm.books.Medication
+import ca.schippers.hfm.books.Member
+import ca.schippers.hfm.books.ProviderKind
+import ca.schippers.hfm.books.Severity
+import kotlinx.datetime.LocalTime
 import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
 import ca.schippers.hfm.calc.schedule.Frequency
 import ca.schippers.hfm.calc.schedule.Recurrence
@@ -56,7 +69,7 @@ object DemoHousehold {
 
         val alex = books.members.create("Alex", MemberKind.ADULT)
         val sam = books.members.create("Sam", MemberKind.ADULT)
-        books.members.create("Léa", MemberKind.CHILD, LocalDate(2015, 6, 12))
+        val lea = books.members.create("Léa", MemberKind.CHILD, LocalDate(2015, 6, 12))
         val desjardins = books.institutions.create(Institution("", "Desjardins", institutionNumber = "815", transitNumber = "30123"))
         val bank = books.institutions.create(Institution("", "Banque Nationale", institutionNumber = "006"))
 
@@ -99,12 +112,40 @@ object DemoHousehold {
         books.transactions.transfer(TransferDraft(chequing.id, usd.id, today, cad("274.50"), Money.parse("200.00", Currency.USD), "Achat de dollars US"))
         importStatement(books, chequing, today)
         addBills(books, chequing, savings, visa, today)
+        addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
         val firstMonth = LocalDate(start.year, start.month, 1)
         books.budgets.set(cat("food"), BudgetPeriod.MONTHLY, cad("450.00"), rollover = true, startMonth = firstMonth)
         books.budgets.set(cat("food.restaurants"), BudgetPeriod.MONTHLY, cad("50.00"), startMonth = firstMonth)
         books.budgets.set(cat("transport"), BudgetPeriod.MONTHLY, cad("120.00"), startMonth = firstMonth)
         books.budgets.set(cat("utilities"), BudgetPeriod.MONTHLY, cad("250.00"), startMonth = firstMonth)
         books.budgets.set(cat("housing"), BudgetPeriod.MONTHLY, cad("1450.00"), startMonth = firstMonth)
+    }
+
+    /** Appointments of several kinds, and health records kept in Alex's private group. */
+    private fun addCalendarAndHealth(books: Books, shared: String, chequing: Account, alex: Member, sam: Member, lea: Member, today: LocalDate) {
+        fun day(n: Int) = today.plus(DatePeriod(days = n))
+        val private = books.session.createGroup("Alex Demo - privé", private = true)
+        val health = books.health
+        val pharmacy = health.saveProvider(HealthProvider("", shared, "Pharmacie Jean Coutu", ProviderKind.PHARMACY, "418-555-0100", "1200, boul. Charest", null, false))
+        val doctor = health.saveProvider(HealthProvider("", shared, "Dre Gagnon (GMF Limoilou)", ProviderKind.DOCTOR, "418-555-0142", null, null, false))
+        val dentist = health.saveProvider(HealthProvider("", shared, "Clinique dentaire Saint-Roch", ProviderKind.DENTIST, "418-555-0177", null, null, false))
+
+        val calendar = books.calendar
+        calendar.create(EventDraft(shared, "Pose des pneus d'hiver", EventCategory.VEHICLE, day(1), LocalTime(9, 30), 60, "Garage Tremblay", reminderMinutes = listOf(1440, 60)))
+        calendar.create(EventDraft(shared, "Rencontre conseillère Desjardins", EventCategory.FINANCIAL, day(6), LocalTime(14, 0), 45, "Caisse Desjardins", accountId = chequing.id))
+        calendar.create(EventDraft(shared, "Nettoyage dentaire", EventCategory.MEDICAL, day(9), LocalTime(10, 15), 60, memberId = lea.id, providerId = dentist.id))
+        calendar.create(EventDraft(private, "Bilan annuel", EventCategory.MEDICAL, day(14), LocalTime(8, 40), 30, memberId = alex.id, providerId = doctor.id))
+        calendar.create(EventDraft(shared, "Ramonage de la cheminée", EventCategory.HOME, day(20), reminderMinutes = listOf(2 * 1440)))
+        calendar.create(EventDraft(shared, "Cours de natation", EventCategory.PERSONAL, day(-3), LocalTime(18, 0), 60, memberId = lea.id, recurrence = Recurrence.WEEKLY, endDate = day(60), reminderMinutes = listOf(120)))
+
+        health.saveMedication(Medication("", private, alex.id, "Atorvastatine", "20 mg", "1 comprimé au coucher", doctor.id, pharmacy.id, "RX-448120", day(-400), null, 30, 2, day(-27), 5, true, null))
+        health.saveMedication(Medication("", private, alex.id, "Vitamine D", "1000 UI", "1 par jour", null, null, null, null, null, null, null, null, 5, true, null))
+        health.saveMedication(Medication("", shared, sam.id, "Salbutamol (inhalateur)", "100 mcg", "Au besoin", doctor.id, pharmacy.id, "RX-310077", day(-700), null, 90, 0, day(-60), 7, true, null))
+        health.saveCondition(HealthCondition("", private, alex.id, "Hypercholestérolémie", day(-420), ConditionStatus.MANAGED, doctor.id, null))
+        health.saveCondition(HealthCondition("", shared, sam.id, "Asthme", LocalDate(2009, 4, 1), ConditionStatus.MANAGED, doctor.id, null))
+        health.saveAllergy(Allergy("", shared, lea.id, "Arachides", "Urticaire", Severity.SEVERE, "Épipen dans le sac d'école"))
+        health.saveTest(HealthTest("", private, alex.id, "Bilan lipidique (LDL)", day(-35), "2,4", "mmol/L", "< 3,5", doctor.id, day(150), null))
+        health.saveImmunization(Immunization("", shared, lea.id, "Influenza", day(-340), pharmacy.id, day(25), null))
     }
 
     /** Bills from next month on (this month's are already entered), plus a few due within days. */

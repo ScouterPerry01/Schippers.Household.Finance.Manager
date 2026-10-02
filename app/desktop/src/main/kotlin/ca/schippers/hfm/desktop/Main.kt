@@ -47,13 +47,16 @@ fun main() = application {
     val trayState = rememberTrayState()
     Tray(icon = TrayIcon, state = trayState, tooltip = Messages.get(state.language, "app.name"))
     val main = state.screen as? Screen.Main
-    LaunchedEffect(main?.model, today()) {
+    LaunchedEffect(main?.model) {
         val model = main?.model ?: return@LaunchedEffect
-        val reminders = model.reminders()
-        if (reminders.isNotEmpty()) {
-            trayState.sendNotification(
-                Notification(model.t("reminder.banner", reminders.size), reminders.take(4).joinToString("\n") { model.describe(it) }),
-            )
+        // Checked every few minutes so timed appointments are announced on time; each reminder once.
+        val notified = HashSet<String>()
+        while (true) {
+            val fresh = model.reminderLines().filter { notified.add(it.key) }
+            if (fresh.isNotEmpty()) {
+                trayState.sendNotification(Notification(model.t("reminder.banner", fresh.size), fresh.take(4).joinToString("\n") { it.text }))
+            }
+            delay(5 * 60_000L)
         }
     }
     // SEC-02: lock after the chosen time without keyboard or mouse activity.
