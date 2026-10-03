@@ -17,7 +17,8 @@ permissions:
 
 env:
   APPIMAGETOOL_URL: https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
-  APPIMAGETOOL_SHA256: ''
+  # Pinned on first use (2026-10-03); a different file stops the release.
+  APPIMAGETOOL_SHA256: 46fdd785094c7f6e545b61afcfb0f3d98d8eab243f644b4b17698c01d06083d1
 
 jobs:
   version:
@@ -56,7 +57,7 @@ jobs:
         if: needs.version.outputs.dry == 'true'
         run: ./gradlew :tools:release:run --args="keygen $RUNNER_TEMP/dry-run.key" --console=plain
       - name: Tools for .rpm and minisign
-        run: sudo apt-get update && sudo apt-get install -y rpm minisign
+        run: sudo apt-get update && sudo apt-get install -y rpm minisign desktop-file-utils
       - name: Build .deb, .rpm and the app image
         run: ./gradlew :app:desktop:packageDeb :app:desktop:packageRpm :app:desktop:createDistributable --console=plain
       - name: Build the AppImage
