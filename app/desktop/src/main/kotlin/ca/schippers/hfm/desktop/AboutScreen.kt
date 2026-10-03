@@ -20,25 +20,90 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.i18n.Language
 import java.awt.Desktop
+import java.net.URI
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/** The app's version, and its update checks on Linux (DIST-05, SEC-08). */
+private const val REPOSITORY = "https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager"
+
+/** About, in the household's navigation. */
 @Composable
 fun AboutScreen(state: AppState) {
-    Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState())) { AboutContent(state) }
+}
+
+/**
+ * The version, updates (DIST-05, SEC-08), privacy (DIST-04, PRV-01 to PRV-03), the general tax and
+ * health notices (TAX-04), the licence and source code, support (DIST-06) and third-party notices.
+ * Also reachable from the welcome screen, before any household is open.
+ */
+@Composable
+fun AboutContent(state: AppState) {
+    var notices by remember { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(state.t("about.title"), style = MaterialTheme.typography.titleLarge)
         Text(state.t("about.version", AppVersion.current))
         Text(state.t("about.publisher"), style = MaterialTheme.typography.bodySmall)
         UpdatesCard(state)
+        Section(state.t("about.privacy.title")) {
+            Text(state.t("about.privacy.body"))
+            val policy = if (state.language == Language.FRENCH) "privacy-policy.fr.md" else "privacy-policy.md"
+            LinkButton(state.t("about.privacy.link"), "$REPOSITORY/blob/main/docs/legal/$policy")
+        }
+        Section(state.t("about.notice.title")) {
+            Text(state.t("about.notice.tax"))
+            Text(state.t("about.notice.health"))
+        }
+        Section(state.t("about.licence.title")) {
+            Text(state.t("about.licence.body"))
+            LinkButton(state.t("about.source.link"), REPOSITORY)
+        }
+        Section(state.t("about.support.title")) {
+            Text(state.t("about.support.body"))
+            LinkButton(state.t("about.issues.link"), "$REPOSITORY/issues")
+        }
+        Section(state.t("about.thirdParty.title")) {
+            TextButton(onClick = { notices = !notices }) {
+                Text(state.t(if (notices) "about.thirdParty.hide" else "about.thirdParty.show"))
+            }
+            if (notices) {
+                val text = remember {
+                    AppVersion::class.java.getResourceAsStream("/hfm/third-party-notices.txt")?.use { it.readBytes().toString(Charsets.UTF_8) }.orEmpty()
+                }
+                SelectionContainer { Text(text, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall) }
+            }
+        }
     }
+}
+
+@Composable
+private fun Section(title: String, content: @Composable () -> Unit) {
+    Card(Modifier.widthIn(max = 720.dp).fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            content()
+        }
+    }
+}
+
+/** Opens [url] in the browser; links go only to RANN's public GitHub pages. */
+@Composable
+private fun LinkButton(label: String, url: String) {
+    OutlinedButton(onClick = {
+        runCatching { if (Desktop.isDesktopSupported()) Desktop.getDesktop().browse(URI(url)) }
+    }) { Text(label) }
 }
 
 @Composable

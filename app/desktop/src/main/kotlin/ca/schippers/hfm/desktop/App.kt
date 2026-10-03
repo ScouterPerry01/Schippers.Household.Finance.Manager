@@ -84,6 +84,10 @@ fun App(state: AppState) {
                         Column(Modifier.widthIn(max = 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             when (screen) {
                                 Screen.Welcome -> WelcomeScreen(state)
+                                Screen.About -> {
+                                    TextButton(onClick = { state.screen = Screen.Welcome }) { Text(state.t("common.back")) }
+                                    AboutContent(state)
+                                }
                                 Screen.Create -> CreateScreen(state)
                                 is Screen.Unlock -> UnlockScreen(state, screen.dir)
                                 is Screen.Reset -> ResetScreen(state, screen.dir)
@@ -125,6 +129,7 @@ private fun WelcomeScreen(state: AppState) {
         modifier = Modifier.fillMaxWidth(),
     ) { Text(state.t("welcome.open")) }
     RestoreButton(state)
+    TextButton(onClick = { state.screen = Screen.About }) { Text(state.t("about.link")) }
     val recent = state.recentHouseholds
     if (recent.isNotEmpty()) {
         Text(state.t("welcome.recent"), style = MaterialTheme.typography.titleSmall)

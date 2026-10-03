@@ -459,6 +459,13 @@ private fun ReconciliationReport(model: BooksModel) {
 
 // --- Shared pieces --------------------------------------------------------------------------------
 
+/** Screens and reports whose tables hold tax figures: slips, capital gains, contribution room, medical credits. */
+private fun hasTaxFigures(model: BooksModel): Boolean = when (model.section) {
+    Section.INVESTMENTS, Section.PLANS, Section.MEDICAL -> true
+    Section.REPORTS -> model.reportState.kind in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.PLANS, ReportKind.FX, ReportKind.MEDICAL)
+    else -> false
+}
+
 @Composable
 fun Stat(label: String, value: String) {
     Column {
@@ -470,7 +477,9 @@ fun Stat(label: String, value: String) {
 /** The table view under every chart (accessibility and exact values), with export buttons (RPT-04). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TableView(model: BooksModel, table: ReportTable, startOpen: Boolean = false) {
+fun TableView(model: BooksModel, shown: ReportTable, startOpen: Boolean = false) {
+    // TAX-04: exports of tables with tax figures carry the notice too.
+    val table = if (hasTaxFigures(model)) shown.copy(notes = shown.notes + model.t("about.notice.tax")) else shown
     var open by remember(table.title) { mutableStateOf(startOpen) }
     val locale = model.language.locale
     FlowRow(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

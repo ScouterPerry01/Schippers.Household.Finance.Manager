@@ -35,6 +35,8 @@ internal fun RegisteredPlansReport(model: BooksModel, year: Int, memberId: Strin
 
     Text(model.t("report.PLANS"), style = MaterialTheme.typography.titleLarge)
     Text(model.t("plansReport.subtitle", year.toString()), style = MaterialTheme.typography.bodySmall)
+    // TAX-04: an organizational aid, not tax advice.
+    Text(model.t("plans.taxNotice"), style = MaterialTheme.typography.bodySmall)
     for (w in warnings) Text(model.t(w.key, *w.args.map { if (it is Money) model.money(it) else it }.toTypedArray()), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
 
     Section(model.t("plans.room"))

@@ -18,6 +18,9 @@ import java.util.prefs.Preferences
 sealed interface Screen {
     data object Welcome : Screen
     data object Create : Screen
+
+    /** About and privacy, before a household is open. */
+    data object About : Screen
     data class Unlock(val dir: Path) : Screen
     data class Reset(val dir: Path) : Screen
     data class ShowRecoveryKey(val session: HouseholdSession, val key: RecoveryKey) : Screen

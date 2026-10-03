@@ -74,6 +74,8 @@ fun PlansScreen(model: BooksModel) {
             Text(model.t("nav.plans"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
             Picker(model.t("loans.year"), (today().year + 1 downTo today().year - 6).toList(), year, { it.toString() }, Modifier.width(140.dp)) { year = it }
         }
+        // TAX-04: an organizational aid, not tax advice.
+        Text(model.t("plans.taxNotice"), style = MaterialTheme.typography.bodySmall)
         PrimaryTabRow(selectedTabIndex = tab, modifier = Modifier.padding(vertical = 8.dp)) {
             listOf("plans.room", "plans.withdrawals", "plans.resp", "plans.pensions", "plans.beneficiaries").forEachIndexed { i, key ->
                 Tab(tab == i, { tab = i }, text = { Text(model.t(key)) })

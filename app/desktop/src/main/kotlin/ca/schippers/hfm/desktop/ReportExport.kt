@@ -24,7 +24,14 @@ import javax.swing.JFileChooser
  * A report as rows and columns: the table view under every chart, and what is exported to CSV,
  * Excel and PDF or printed (RPT-04). Cells are text, [Money] or [LocalDate].
  */
-data class ReportTable(val title: String, val subtitle: String, val columns: List<String>, val rows: List<List<Any?>>) {
+/** [notes] are printed under the table in every export, such as the TAX-04 notice. */
+data class ReportTable(
+    val title: String,
+    val subtitle: String,
+    val columns: List<String>,
+    val rows: List<List<Any?>>,
+    val notes: List<String> = emptyList(),
+) {
     fun isNumeric(column: Int): Boolean = rows.any { it.getOrNull(column) is Money }
 }
 
@@ -81,6 +88,8 @@ object ReportExport {
             append('﻿')
             append(table.columns.joinToString(separator.toString(), transform = ::quote)).append("\r\n")
             for (row in table.rows) append(row.joinToString(separator.toString()) { quote(cell(it)) }).append("\r\n")
+            if (table.notes.isNotEmpty()) append("\r\n")
+            for (note in table.notes) append(quote(note)).append("\r\n")
         }
         file.writeText(text, Charsets.UTF_8)
     }
@@ -114,6 +123,7 @@ object ReportExport {
                     }
                 }
             }
+            table.notes.forEachIndexed { i, note -> sheet.value(5 + table.rows.size + i, 0, note) }
             table.columns.indices.forEach { sheet.width(it, if (table.isNumeric(it)) 16.0 else 28.0) }
             workbook.finish()
         }
@@ -139,6 +149,10 @@ object ReportExport {
             table.columns.indices.forEach { c -> pdfTable.addCell(cell(text(row.getOrNull(c), locale), body, table.isNumeric(c), shaded = false)) }
         }
         document.add(pdfTable)
+        for (note in table.notes) {
+            document.add(Paragraph(" "))
+            document.add(Paragraph(pdfText(note), FontFactory.getFont(FontFactory.HELVETICA, 8f)))
+        }
         document.close()
     }
 
