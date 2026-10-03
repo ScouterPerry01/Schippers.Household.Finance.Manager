@@ -66,6 +66,16 @@ fun MainScreen(model: BooksModel, app: AppState) {
         backupScheduler(model)
     }
     Column(Modifier.fillMaxSize()) {
+        // DIST-05: a newer version, until the user looks at it under About.
+        val update = app.updater.status as? UpdateStatus.Available
+        if (update != null && model.section != Section.ABOUT) {
+            Surface(
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                modifier = Modifier.fillMaxWidth().clickable { model.section = Section.ABOUT },
+            ) {
+                Text(model.t("update.banner", update.offer.version), modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+            }
+        }
         // BILL-04, CAL-03, HLT-03: reminders, shown on every screen except the one they belong to.
         val shown = reminders.filter { it.section != model.section }
         if (shown.isNotEmpty()) {
@@ -119,6 +129,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
                     Section.USERS -> UsersScreen(model)
                     Section.BACKUPS -> BackupsScreen(model)
                     Section.SECURITY -> SecurityScreen(model, app)
+                    Section.ABOUT -> AboutScreen(app)
                     Section.CATEGORIES -> CategoriesScreen(model)
                     Section.PAYEES -> PayeesScreen(model)
                     Section.RULES -> RulesScreen(model)

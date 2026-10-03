@@ -28,8 +28,10 @@ Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: wit
 | `core/ocr` | Text recognition interface and the field extractor shared with the phone |
 | `core/ocr-desktop` | PaddleOCR on ONNX Runtime and PDF reading, for the desktop |
 | `core/sync` | Pairing invitation, sealed transfer bundles and the phone's client |
+| `core/update` | Signed release list, version comparison and download checks, shared by the desktop and the phone (ADR 0008) |
 | `app/desktop` | Compose Desktop application, including the listener for phones |
-| `app/android` | Android companion: capture, encrypted queue, transfer, summaries |
+| `app/android` | Android companion: capture, encrypted queue, transfer, summaries; `play` and `github` flavours |
+| `tools/release` | Makes the release key pair and signs releases (run by the release workflow) |
 | `branding/` | The RANN's Roost logo, Store tiles and icons (not covered by the GPL; see its README) |
 | `spikes/` | Phase 0 feasibility experiments (not part of the build) |
 
@@ -47,7 +49,7 @@ Requirements: JDK 21. For the Android app, the Android SDK (API 37).
 ./gradlew :app:desktop:packageMsix  # Microsoft Store package (on Windows, with the Windows SDK)
 ./gradlew :app:desktop:packageMsi   # Windows installer for testing (on Windows)
 ./gradlew :app:desktop:packageDeb   # Linux package (on Linux)
-./gradlew :app:android:assembleDebug
+./gradlew :app:android:assembleGithubDebug   # phone app (the play flavour has no update check)
 ```
 
 The demo opens on any section with `-Psection=` (for example `DOCUMENTS`, `PHONES`, `USERS`, `VEHICLES`, `GOALS`, `LOANS`, `INVESTMENTS`, `PLANS`, `RATES`, `MEMBERS`), and on one account with `-Paccount=`. Its users are `demo` / `demo-password` (administrator) and `sam` / `sam-demo-password` (member).

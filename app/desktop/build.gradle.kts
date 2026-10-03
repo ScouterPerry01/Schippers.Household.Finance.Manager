@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":core:ocr-desktop"))
     implementation(project(":core:i18n"))
     implementation(project(":core:calc"))
+    implementation(project(":core:update"))
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.material3)
     implementation(libs.kotlinx.coroutines.swing)
@@ -153,6 +154,8 @@ tasks.register<JavaExec>("runDemo") {
     providers.gradleProperty("reconcile").orNull?.let { systemProperty("hfm.demo.reconcile", it) }
     providers.gradleProperty("view").orNull?.let { systemProperty("hfm.demo.report", it) }
     providers.gradleProperty("search").orNull?.let { systemProperty("hfm.demo.search", it) }
+    // A test release folder (update.json, its .minisig, release-key.pub, the files) for the update screens.
+    providers.gradleProperty("update").orNull?.let { systemProperty("hfm.demo.update", it) }
 }
 
 // Microsoft Store package (DIST-01): the same app image as the MSI, with the Store identity, the

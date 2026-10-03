@@ -116,3 +116,14 @@ Not covered yet: unlocking rules for locked-in plans (age 55 or 65, small balanc
 hardship), which differ by jurisdiction and are left to the institution; provincial grants that are
 suspended (Saskatchewan's SAGES).
 
+## Updates
+
+Details of SEC-08 and DIST-05 as built in Phase 4d (2026-10-03), beyond what the SRS states
+(ADR 0008).
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| UPD-01 | A copy that can check for updates asks once, on first start, whether to check once a day, saying what GitHub learns; nothing is requested before the answer. The choice can be changed later (About on the desktop, Settings on the phone). | Must |
+| UPD-02 | Only copies no store updates check: Linux .deb, .rpm and AppImage, and the Android build from GitHub Releases. The Microsoft Store, Flathub and Google Play builds never check. | Must |
+| UPD-03 | An update is offered only from a list signed with RANN's release key, and a download is kept only if it matches the signed size and SHA-256; anything else is refused and deleted. | Must |
+| UPD-04 | Every release file has a minisign signature and is listed in a signed SHA256SUMS, so a download can also be checked by hand. | Should |

@@ -1,0 +1,231 @@
+name: Release
+
+# SEC-08, DIST-01 to DIST-05 (ADR 0008). A tag v<version> builds every package on its own platform,
+# checks each installed package with the self-check, signs everything with RANN's release key and
+# creates a DRAFT GitHub release; the owner reviews and publishes it. The MSIX (Microsoft Store) and
+# the Google Play bundle are kept as workflow artifacts for the owner to upload to the stores.
+# Run by hand (workflow_dispatch) for a dry run: the same builds and checks with a throwaway key,
+# and nothing is published.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  APPIMAGETOOL_URL: https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
+  APPIMAGETOOL_SHA256: ''
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      dry: ${{ steps.v.outputs.dry }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        shell: bash
+        run: |
+          version=$(grep '^hfm.version=' gradle.properties | cut -d= -f2)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            [ "$GITHUB_REF_NAME" = "v$version" ] || { echo "Tag $GITHUB_REF_NAME does not match hfm.version $version"; exit 1; }
+            [ -f core/update/src/main/resources/hfm/update/release-key.pub ] || { echo "The release public key is not in the repository"; exit 1; }
+            echo "dry=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "dry=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  linux:
+    name: Linux packages
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Throwaway release key (dry run only)
+        if: needs.version.outputs.dry == 'true'
+        run: ./gradlew :tools:release:run --args="keygen $RUNNER_TEMP/dry-run.key" --console=plain
+      - name: Tools for .rpm and minisign
+        run: sudo apt-get update && sudo apt-get install -y rpm minisign
+      - name: Build .deb, .rpm and the app image
+        run: ./gradlew :app:desktop:packageDeb :app:desktop:packageRpm :app:desktop:createDistributable --console=plain
+      - name: Build the AppImage
+        shell: bash
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/appimagetool" "$APPIMAGETOOL_URL"
+          echo "appimagetool sha256: $(sha256sum "$RUNNER_TEMP/appimagetool" | cut -d' ' -f1)"
+          if [ -n "$APPIMAGETOOL_SHA256" ]; then echo "$APPIMAGETOOL_SHA256  $RUNNER_TEMP/appimagetool" | sha256sum -c -; fi
+          chmod +x "$RUNNER_TEMP/appimagetool"
+          app/desktop/packaging/linux/build-appimage.sh "${{ needs.version.outputs.version }}" "$RUNNER_TEMP/appimagetool" dist
+      - name: Collect
+        shell: bash
+        run: |
+          cp app/desktop/build/compose/binaries/main/deb/*.deb dist/
+          cp app/desktop/build/compose/binaries/main/rpm/*.rpm dist/
+          ls -la dist
+      - name: Self-check the installed .deb
+        shell: bash
+        run: |
+          sudo apt-get install -y ./dist/*.deb
+          dpkg -L ranns-roost | grep -E '\.desktop$|/bin/' || true
+          cat /opt/ranns-roost/lib/*.desktop 2>/dev/null || true
+          launcher=$(dpkg -L ranns-roost | grep '/bin/' | head -1)
+          JAVA_TOOL_OPTIONS="-Djava.awt.headless=true -Dhfm.selfcheck=$RUNNER_TEMP/deb-check.txt" "$launcher"
+          cat "$RUNNER_TEMP/deb-check.txt"
+      - name: Self-check the .rpm on Fedora
+        shell: bash
+        run: |
+          docker run --rm -v "$PWD/dist:/dist" -v "$RUNNER_TEMP:/out" fedora:latest bash -c '
+            dnf install -y /dist/*.rpm >/dev/null &&
+            launcher=$(rpm -ql ranns-roost | grep "/bin/" | head -1) &&
+            JAVA_TOOL_OPTIONS="-Djava.awt.headless=true -Dhfm.selfcheck=/out/rpm-check.txt" "$launcher"'
+          cat "$RUNNER_TEMP/rpm-check.txt"
+      - name: Self-check the AppImage
+        shell: bash
+        run: |
+          chmod +x dist/*.AppImage
+          APPIMAGE_EXTRACT_AND_RUN=1 JAVA_TOOL_OPTIONS="-Djava.awt.headless=true -Dhfm.selfcheck=$RUNNER_TEMP/appimage-check.txt" dist/*.AppImage
+          cat "$RUNNER_TEMP/appimage-check.txt"
+      - name: Signatures work with the minisign tool (dry run)
+        if: needs.version.outputs.dry == 'true'
+        shell: bash
+        run: |
+          ./gradlew :tools:release:installDist --console=plain
+          mkdir -p "$RUNNER_TEMP/sig" && cp dist/*.deb "$RUNNER_TEMP/sig/"
+          HFM_RELEASE_KEY="$(cat "$RUNNER_TEMP/dry-run.key")" tools/release/build/install/release/bin/release sign-release "${{ needs.version.outputs.version }}" "$RUNNER_TEMP/sig"
+          for f in "$RUNNER_TEMP"/sig/*; do
+            case "$f" in *.minisig) continue ;; esac
+            minisign -Vm "$f" -p core/update/src/main/resources/hfm/update/release-key.pub
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/
+
+  windows:
+    name: Microsoft Store package
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Throwaway release key (dry run only)
+        if: needs.version.outputs.dry == 'true'
+        shell: bash
+        run: ./gradlew :tools:release:run --args="keygen $(cygpath -m "$RUNNER_TEMP")/dry-run.key" --console=plain
+      - name: Build the MSIX
+        shell: bash
+        run: ./gradlew :app:desktop:packageMsix --console=plain
+      - name: Self-check the app image
+        shell: bash
+        run: |
+          JAVA_TOOL_OPTIONS="-Dhfm.selfcheck=$RUNNER_TEMP/win-check.txt" "app/desktop/build/msix/layout/RANN's Roost.exe"
+          cat "$RUNNER_TEMP/win-check.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: msix
+          path: app/desktop/build/compose/binaries/main/msix/*.msix
+
+  android:
+    name: Android
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Throwaway release key (dry run only)
+        if: needs.version.outputs.dry == 'true'
+        run: ./gradlew :tools:release:run --args="keygen $RUNNER_TEMP/dry-run.key" --console=plain
+      - name: Upload key
+        if: needs.version.outputs.dry == 'false'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+      - name: Build the GitHub APK and the Google Play bundle
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ "${{ needs.version.outputs.dry }}" = "false" ]; then export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"; fi
+          # The signing secrets must not be kept in a configuration cache entry.
+          ./gradlew :app:android:assembleGithubRelease :app:android:bundlePlayRelease --no-configuration-cache --console=plain
+          mkdir -p dist
+          cp app/android/build/outputs/apk/github/release/*.apk "dist/ranns-roost-mobile-${{ needs.version.outputs.version }}.apk"
+          cp app/android/build/outputs/bundle/playRelease/*.aab "dist/ranns-roost-mobile-${{ needs.version.outputs.version }}-play.aab"
+          ls -la dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: dist/
+
+  publish:
+    name: Sign and draft the release
+    needs: [version, linux, windows, android]
+    if: needs.version.outputs.dry == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Files for GitHub Releases
+        shell: bash
+        run: |
+          mkdir -p release
+          cp artifacts/linux/* release/
+          cp artifacts/android/*.apk release/
+          ls -la release
+      - name: Sign
+        shell: bash
+        env:
+          HFM_RELEASE_KEY: ${{ secrets.HFM_RELEASE_KEY }}
+        run: |
+          ./gradlew :tools:release:installDist --console=plain
+          v="${{ needs.version.outputs.version }}"
+          # Release notes in both languages, from docs/releases/<version>.en.md and .fr.md.
+          notes=()
+          if [ -f "docs/releases/$v.en.md" ] && [ -f "docs/releases/$v.fr.md" ]; then notes=("docs/releases/$v.en.md" "docs/releases/$v.fr.md"); fi
+          tools/release/build/install/release/bin/release sign-release "$v" release "${notes[@]}"
+      - name: Check the signatures with minisign
+        shell: bash
+        run: |
+          sudo apt-get update && sudo apt-get install -y minisign
+          for f in release/*; do
+            case "$f" in *.minisig) continue ;; esac
+            minisign -Vm "$f" -p core/update/src/main/resources/hfm/update/release-key.pub
+          done
+      - name: Draft the GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="${{ needs.version.outputs.version }}"
+          notes=docs/releases/$v.en.md; [ -f "$notes" ] || notes=/dev/null
+          gh release create "v$v" release/* --draft --title "RANN's Roost $v" --notes-file "$notes"

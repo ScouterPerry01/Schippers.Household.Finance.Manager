@@ -29,6 +29,8 @@ include(
     ":core:sync",
     ":core:ocr",
     ":core:ocr-desktop",
+    ":core:update",
     ":app:desktop",
     ":app:android",
+    ":tools:release",
 )

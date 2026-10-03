@@ -29,6 +29,9 @@ class AppState(
     val store: HouseholdStore = HouseholdStore(SqlCipherJdbcDriverFactory()),
     private val prefs: Preferences = Preferences.userRoot().node("ca/schippers/hfm"),
 ) {
+    /** DIST-05, SEC-08: update checks for Linux packages from GitHub Releases (per computer). */
+    val updater: Updater = Updater.create(prefs, System.getProperty("hfm.demo") == "true")
+
     var language: Language by mutableStateOf(
         prefs.get(PREF_LANGUAGE, null)?.let { tag -> Language.entries.firstOrNull { it.tag == tag } }
             ?: Language.of(Locale.getDefault()),

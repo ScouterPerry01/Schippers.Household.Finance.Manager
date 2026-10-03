@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=RANN's Roost
+GenericName=Household finances
+GenericName[fr]=Finances du ménage
+Comment=Household finances for Canada, on your own computer
+Comment[fr]=Les finances de votre ménage, sur votre propre ordinateur
+Exec=ranns-roost
+Icon=ranns-roost
+Categories=Office;Finance;
+Terminal=false

@@ -27,6 +27,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +45,7 @@ import ca.schippers.hfm.data.WrongPasswordException
 import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.security.RecoveryKey
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.awt.Toolkit
@@ -66,6 +68,14 @@ fun App(state: AppState) {
                 }
             },
         ) {
+            // DIST-05: asked once on first start; then checked at most once a day while open.
+            UpdateQuestion(state)
+            LaunchedEffect(state.updater, state.updater.enabled) {
+                while (true) {
+                    state.updater.checkIfDue()
+                    delay(60 * 60_000L)
+                }
+            }
             Column(Modifier.fillMaxSize()) {
                 TopBar(state)
                 when (val screen = state.screen) {
