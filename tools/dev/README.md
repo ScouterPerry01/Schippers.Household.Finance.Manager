@@ -10,3 +10,4 @@ Small scripts used while building and checking the app. They are not part of the
 
 Typical check of a screen: `./gradlew :app:desktop:runDemo -Plang=en -Psection=DOCUMENTS` in the background, then `shot.ps1`.
 Android: start the emulator (`pixel_7_-_api_36_0`), `adb install -r app/android/build/outputs/apk/debug/android-debug.apk`, and `adb exec-out screencap -p > phone.png` (from Git Bash, not PowerShell, which corrupts binary output).
+To pair the emulator with the demo (each demo run is a new household): run the demo with `-Psection=PHONES`, click "Pair a phone", then "Copy as text", and open the copied `hfmpair:` text on the phone with `adb shell am start -a android.intent.action.VIEW -d "'<text>'" ca.schippers.hfm.companion`. The phone's screen is 1080x2400 for `adb shell input tap`.

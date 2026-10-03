@@ -78,6 +78,19 @@ The vehicle part of section 11 (AST, WAR, INS, MNT), brought forward from Phase 
 | VEH-10 | Cost of ownership per vehicle and year by category, and cost per km (MNT-06). Logbook entries without a linked transaction are included so nothing is missed or counted twice. | Should |
 | VEH-11 | Due maintenance, renewals and warranty expiries appear in the reminders and the calendar (MNT-05). | Should |
 
+## Maintenance for every asset
+
+Details of section 11's maintenance requirements (MNT-01 to MNT-06) as built in Phase 4c
+(2026-10-03), beyond what the SRS states.
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| MNT-10 | An asset other than a vehicle may have a meter that counts engine hours or kilometres (an RV); its tasks can then repeat by use as well as by months, whichever comes first. | Should |
+| MNT-11 | Seasonal tasks (spring opening, winterization, tire swaps) come back every year on their date. | Should |
+| MNT-12 | The phone's meter form lists metered assets beside vehicles, in their own unit; the reading goes straight to the asset (MNT-03). | Should |
+| MNT-13 | Cost of ownership (MNT-06) adds each asset's share of the premiums of the policies that name it, split evenly between the things a policy covers; the purchase price is shown apart, not as a running cost. | Could |
+| MNT-14 | Maintenance due this month or overdue, on vehicles and other assets, is one list: on the desktop, in the reminders and calendar, and on the phone with a notification when a task becomes due soon or due (MNT-05). | Should |
+
 ## Categories
 
 | ID | Requirement | Priority |
