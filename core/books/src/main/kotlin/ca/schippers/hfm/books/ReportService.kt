@@ -285,6 +285,8 @@ class ReportService internal constructor(private val books: Books) {
         val book = books.investments.PriceBook()
         val securities = accounts.values.filter { it.type.kind == AccountKind.INVESTMENT && (accountIds == null || it.id in accountIds) && (currency == null || it.currency == currency) }
             .associate { it.id to books.investments.securitiesValues(it, sortedDates, book) }
+        // AST-03: assets marked for net worth, when the report covers the whole household in the base currency.
+        val owned = if (accountIds == null && currency == null) books.assets.netWorthValues(sortedDates) else null
         var next = 0
         val byDate = HashMap<LocalDate, NetWorthPoint>()
         for ((index, date) in sortedDates.withIndex()) {
@@ -304,6 +306,7 @@ class ReportService internal constructor(private val books: Books) {
                 val balance = converter.toBase(Money.ofMinor(minor + held, account.currency), date) ?: continue
                 if (account.type.kind.isLiability) liabilities -= balance else assets += balance
             }
+            owned?.let { assets += it[index] }
             byDate[date] = NetWorthPoint(date, assets, liabilities)
         }
         return Report(dates.map { byDate.getValue(it) }, converter.missing)

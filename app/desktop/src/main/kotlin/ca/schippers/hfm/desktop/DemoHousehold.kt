@@ -1,6 +1,15 @@
 package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Account
+import ca.schippers.hfm.books.ValueMethod
+import ca.schippers.hfm.books.PremiumFrequency
+import ca.schippers.hfm.books.PolicyKind
+import ca.schippers.hfm.books.PolicyBeneficiary
+import ca.schippers.hfm.books.InsurancePolicy
+import ca.schippers.hfm.books.AssetWarrantyKind
+import ca.schippers.hfm.books.AssetWarranty
+import ca.schippers.hfm.books.AssetKind
+import ca.schippers.hfm.books.Asset
 import ca.schippers.hfm.books.AccountDraft
 import ca.schippers.hfm.books.AllocationBy
 import ca.schippers.hfm.books.AllocationTarget
@@ -226,6 +235,7 @@ object DemoHousehold {
         addBills(books, chequing, savings, visa, today)
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
         addPetAndCarRecords(books, group, visa, rex, civic, today)
+        addAssets(books, group, visa, alex, sam, lea, civic, today)
         addInvestments(books, group, alex, sam, desjardins, today)
         addPlans(books, group, chequing, savings, alex, sam, lea, desjardins, today)
         addCrypto(books, group, chequing, alex, today)
@@ -549,6 +559,53 @@ object DemoHousehold {
         med.submit(inhaler.id, samPlan.id, day(-5))
         expense(sam, MedService.PHYSIOTHERAPY, -15, "95.00", "Physiothérapie (épaule)")
         expense(lea, MedService.EYE_EXAM, -340, "95.00", "Examen de la vue")
+    }
+
+    /** AST, WAR, INS: the house and what is in it, warranties, and the household's policies. */
+    private fun addAssets(books: Books, group: String, visa: Account, alex: Member, sam: Member, lea: Member, civic: Vehicle, today: LocalDate) {
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        fun day(n: Int) = today.plus(DatePeriod(days = n))
+        val assets = books.assets
+        val house = assets.save(
+            Asset(
+                "", group, AssetKind.HOME, "Maison (rue des Érables)", purchaseDate = LocalDate(2018, 6, 29), purchasePrice = cad("389000"),
+                valueMethod = ValueMethod.MANUAL, value = cad("515000"), valueDate = day(-60), location = "Québec", notes = "Évaluation municipale 2025 : 498 300 $",
+            ),
+        )
+        assets.save(
+            Asset(
+                "", group, AssetKind.HEATING_COOLING, "Thermopompe", house.id, "Mitsubishi", "MUZ-FS12", "MZ-221873", LocalDate(2022, 5, 10), "Climatisation Laval", cad("6850"),
+                location = "Extérieur", valueMethod = ValueMethod.DEPRECIATION, depreciationYears = 15,
+            ),
+        )
+        val fridgeBuy = books.transactions.create(TransactionDraft(visa.id, day(-45), cad("-1899.00"), "Brault & Martineau"))
+        val fridge = assets.save(
+            Asset(
+                "", group, AssetKind.APPLIANCE, "Réfrigérateur", house.id, "LG", "LRMVS3006S", "SN-77120", day(-45), "Brault & Martineau", cad("1899.00"), fridgeBuy.id, "Cuisine",
+                valueMethod = ValueMethod.DEPRECIATION, depreciationYears = 12,
+            ),
+        )
+        assets.saveWarranty(AssetWarranty("", group, fridge.id, AssetWarrantyKind.MANUFACTURER, "LG Canada", "Pièces et main-d'oeuvre", day(-45), day(320), phone = "1-888-542-2623"))
+        assets.saveWarranty(AssetWarranty("", group, fridge.id, AssetWarrantyKind.CARD_EXTENDED, "Visa Desjardins", cardAccountId = visa.id))
+        val tv = assets.save(Asset("", group, AssetKind.ELECTRONICS, "Téléviseur 65 po", house.id, "Samsung", "QN65Q80", purchaseDate = day(-700), purchasePrice = cad("1499.99"), location = "Salon"))
+        assets.saveWarranty(AssetWarranty("", group, tv.id, AssetWarrantyKind.EXTENDED, "Best Buy (plan de protection)", startDate = day(-700), endDate = day(30)))
+        assets.save(Asset("", group, AssetKind.SPORTS, "Kayaks (2)", purchaseDate = day(-420), purchasePrice = cad("1250"), location = "Chalet"))
+
+        val insurance = books.insurance
+        insurance.save(
+            InsurancePolicy(
+                "", group, PolicyKind.HOME, "Desjardins Assurances", "Courtier Morin", "H-2241897", alex.id, cad("1384"), deductible = cad("1000"),
+                coverage = cad("520000"), startDate = day(-340), renewalDate = day(25), assetIds = setOf(house.id),
+            ),
+        )
+        insurance.save(
+            InsurancePolicy("", group, PolicyKind.AUTO, "Desjardins Assurances", policyNumber = "A-7781020", premium = cad("96.50"), frequency = PremiumFrequency.MONTHLY, deductible = cad("500"), renewalDate = day(140), assetIds = setOf(civic.id)),
+        )
+        val life = insurance.save(
+            InsurancePolicy("", group, PolicyKind.LIFE, "Sun Life", policyNumber = "L-500212", insuredMemberId = alex.id, premium = cad("42.15"), frequency = PremiumFrequency.MONTHLY, coverage = cad("500000"), coverageNotes = "Temporaire 20 ans"),
+        )
+        insurance.saveBeneficiary(PolicyBeneficiary("", life.id, sam.displayName, sam.id, "Conjoint", BigDecimal(100)))
+        insurance.saveBeneficiary(PolicyBeneficiary("", life.id, lea.displayName, lea.id, "Enfant", BigDecimal(100), contingent = true))
     }
 
     /** Bills from next month on (this month's are already entered), plus a few due within days. */

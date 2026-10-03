@@ -1,0 +1,137 @@
+-- Version 14 to 15 (AST, WAR, INS): assets other than vehicles, warranties, insurance policies
+-- with what they cover, their premiums, beneficiaries and claims.
+
+-- AST-01 to AST-05: the home, appliances, RV, boat and everything else worth keeping track of
+-- (vehicles have their own tables). [parent_id] puts a furnace in its house (AST-02). The value is
+-- entered ([value_minor] on [value_date]) or worked out from the price, falling evenly to
+-- [residual_percent] over [depreciation_years] (AST-03); [in_net_worth] counts it in net worth.
+CREATE TABLE asset (
+    id TEXT NOT NULL PRIMARY KEY,
+    parent_id TEXT,
+    kind TEXT NOT NULL,
+    name TEXT NOT NULL,
+    make TEXT,
+    model TEXT,
+    serial_number TEXT,
+    purchase_date TEXT,
+    seller TEXT,
+    purchase_price_minor INTEGER,
+    currency TEXT NOT NULL DEFAULT 'CAD',
+    txn_id TEXT,
+    location TEXT,
+    owner_member_id TEXT,
+    value_method TEXT NOT NULL DEFAULT 'NONE' CHECK (value_method IN ('NONE', 'MANUAL', 'DEPRECIATION')),
+    value_minor INTEGER,
+    value_date TEXT,
+    depreciation_years INTEGER,
+    residual_percent TEXT,
+    in_net_worth INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'SOLD', 'GIVEN_AWAY', 'DISCARDED')),
+    disposal_date TEXT,
+    disposal_price_minor INTEGER,
+    disposal_txn_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX asset_parent ON asset(parent_id);
+
+-- WAR-01: a warranty or service plan for an asset or a vehicle ([asset_id] is either). A card's
+-- extended warranty names the card account; its months come from the card's benefit (CC-04).
+CREATE TABLE warranty (
+    id TEXT NOT NULL PRIMARY KEY,
+    asset_id TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('MANUFACTURER', 'EXTENDED', 'CARD_EXTENDED', 'SERVICE_CONTRACT', 'OTHER')),
+    provider TEXT,
+    coverage TEXT,
+    start_date TEXT,
+    end_date TEXT,
+    end_hours INTEGER,
+    phone TEXT,
+    card_account_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX warranty_asset ON warranty(asset_id);
+
+-- WAR-03: each claim made under a warranty.
+CREATE TABLE warranty_claim (
+    id TEXT NOT NULL PRIMARY KEY,
+    warranty_id TEXT NOT NULL REFERENCES warranty(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    problem TEXT NOT NULL,
+    outcome TEXT,
+    covered_minor INTEGER,
+    paid_minor INTEGER,
+    notes TEXT
+);
+
+-- INS-01: an insurance policy, with its premium, deductible, coverage and renewal.
+CREATE TABLE insurance_policy (
+    id TEXT NOT NULL PRIMARY KEY,
+    kind TEXT NOT NULL,
+    insurer TEXT NOT NULL,
+    broker TEXT,
+    policy_number TEXT,
+    insured_member_id TEXT,
+    premium_minor INTEGER,
+    premium_frequency TEXT NOT NULL DEFAULT 'ANNUAL' CHECK (premium_frequency IN ('MONTHLY', 'QUARTERLY', 'SEMI_ANNUAL', 'ANNUAL')),
+    deductible_minor INTEGER,
+    coverage_minor INTEGER,
+    coverage_notes TEXT,
+    start_date TEXT,
+    renewal_date TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- INS-02: the assets and vehicles a policy covers.
+CREATE TABLE policy_asset (
+    policy_id TEXT NOT NULL REFERENCES insurance_policy(id) ON DELETE CASCADE,
+    asset_id TEXT NOT NULL,
+    PRIMARY KEY (policy_id, asset_id)
+);
+
+-- INS-03: the premium of each term, year over year.
+CREATE TABLE policy_premium (
+    id TEXT NOT NULL PRIMARY KEY,
+    policy_id TEXT NOT NULL REFERENCES insurance_policy(id) ON DELETE CASCADE,
+    start_date TEXT NOT NULL,
+    premium_minor INTEGER NOT NULL,
+    notes TEXT
+);
+
+-- INS-05: who receives a life policy's benefit, and their share.
+CREATE TABLE policy_beneficiary (
+    id TEXT NOT NULL PRIMARY KEY,
+    policy_id TEXT NOT NULL REFERENCES insurance_policy(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    member_id TEXT,
+    relationship TEXT,
+    share_percent TEXT,
+    contingent INTEGER NOT NULL DEFAULT 0
+);
+
+-- INS-04: a claim on a policy (not medical), with the amounts and the payout.
+CREATE TABLE insurance_claim (
+    id TEXT NOT NULL PRIMARY KEY,
+    policy_id TEXT NOT NULL REFERENCES insurance_policy(id) ON DELETE CASCADE,
+    asset_id TEXT,
+    date TEXT NOT NULL,
+    description TEXT NOT NULL,
+    claim_number TEXT,
+    status TEXT NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'PAID', 'DENIED', 'CLOSED')),
+    claimed_minor INTEGER,
+    deductible_minor INTEGER,
+    paid_minor INTEGER,
+    paid_date TEXT,
+    txn_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);

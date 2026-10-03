@@ -320,6 +320,20 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 14 ledgers gain assets, warranties and insurance`() {
+        val file = temp.resolve("ledger14.db")
+        older("../data/src/main/sqldelight/ledger/schemas/14.db", file, 14).close()
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            val q = LedgerDatabase(driver).assetsQueries
+            q.upsertAsset("a", null, "HOME", "Maison", null, null, null, null, null, null, "CAD", null, null, null, "MANUAL", 65000000, null, null, null, 1, "ACTIVE", null, null, null, null, 0, 0)
+            q.upsertPolicy("p", "HOME", "Desjardins", null, null, null, 120000, "ANNUAL", null, null, null, null, "2026-11-01", 1, null, 0, 0)
+            q.addPolicyAsset("p", "a")
+            assertEquals(listOf("a"), q.policyAssets("p").executeAsList())
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()

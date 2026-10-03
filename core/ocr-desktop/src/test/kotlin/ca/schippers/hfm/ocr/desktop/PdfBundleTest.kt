@@ -29,4 +29,15 @@ class PdfBundleTest {
             assertTrue("Unsupported ?? text" in text, "characters the font lacks are replaced")
         }
     }
+
+    @Test
+    fun `home inventory with photos`() {
+        val items = (1..12).map { n -> listOf("Item $n", "Salon · 1 200,00 $") to listOf(jpeg(), jpeg()) }
+        val pdf = PdfPages.inventory("Inventaire du domicile", listOf("12 articles"), items)
+        Loader.loadPDF(pdf).use { doc ->
+            assertTrue(doc.numberOfPages > 1, "photos spill onto more pages")
+            val text = PDFTextStripper().getText(doc)
+            assertTrue("Inventaire du domicile" in text && "Item 12" in text)
+        }
+    }
 }

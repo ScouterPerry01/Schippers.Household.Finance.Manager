@@ -102,6 +102,57 @@ object PdfPages {
     }
 
     /**
+     * AST-04: a home inventory for an insurer after a loss: each item's description lines, then its
+     * photos, several to a page.
+     */
+    fun inventory(title: String, summary: List<String>, items: List<Pair<List<String>, List<ByteArray>>>): ByteArray = org.apache.pdfbox.pdmodel.PDDocument().use { doc ->
+        val font = org.apache.pdfbox.pdmodel.font.PDType1Font(org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA)
+        val bold = org.apache.pdfbox.pdmodel.font.PDType1Font(org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA_BOLD)
+        fun safe(text: String, f: org.apache.pdfbox.pdmodel.font.PDType1Font) = text.map { c -> if (runCatching { f.encode(c.toString()) }.isSuccess) c else '?' }.joinToString("")
+        val box = org.apache.pdfbox.pdmodel.common.PDRectangle.LETTER
+        var page = org.apache.pdfbox.pdmodel.PDPage(box).also { doc.addPage(it) }
+        var cs = org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page)
+        var y = box.height - 56f
+        fun newPage() {
+            cs.close()
+            page = org.apache.pdfbox.pdmodel.PDPage(box).also { doc.addPage(it) }
+            cs = org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page)
+            y = box.height - 56f
+        }
+        fun line(text: String, f: org.apache.pdfbox.pdmodel.font.PDType1Font, size: Float) {
+            if (y < 56f) newPage()
+            cs.beginText(); cs.setFont(f, size); cs.newLineAtOffset(56f, y); cs.showText(safe(text, f)); cs.endText()
+            y -= size + 4f
+        }
+        try {
+            line(title, bold, 14f)
+            summary.forEach { line(it, font, 10f) }
+            y -= 10f
+            for ((lines, photos) in items) {
+                if (y < 140f) newPage()
+                lines.forEachIndexed { i, t -> line(t, if (i == 0) bold else font, if (i == 0) 11f else 9f) }
+                // Photos in a row, up to 160 points tall.
+                var x = 56f
+                for (bytes in photos) {
+                    val image = runCatching { org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject.createFromByteArray(doc, bytes, "photo") }.getOrNull() ?: continue
+                    val scale = minOf(160f / image.height, 220f / image.width)
+                    val w = image.width * scale
+                    val h = image.height * scale
+                    if (x + w > box.width - 56f) { x = 56f; y -= 170f }
+                    if (y - h < 56f) { newPage(); x = 56f }
+                    cs.drawImage(image, x, y - h, w, h)
+                    x += w + 10f
+                }
+                if (photos.isNotEmpty()) y -= 170f
+                y -= 8f
+            }
+        } finally {
+            cs.close()
+        }
+        java.io.ByteArrayOutputStream().also { doc.save(it) }.toByteArray()
+    }
+
+    /**
      * MED-15: one PDF of supporting receipts: a cover page listing [cover] lines, then each
      * document in turn, PDFs page by page and images on a page of their own.
      */

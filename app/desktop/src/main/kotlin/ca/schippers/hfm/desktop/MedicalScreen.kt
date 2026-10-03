@@ -274,7 +274,7 @@ private fun PaymentDialog(model: BooksModel, claim: MedClaim, onClose: () -> Uni
 
 /** Receipts or an explanation of benefits: those attached, a file to add, or a capture from the review inbox (MED-05, MED-08). */
 @Composable
-private fun DocumentsBlock(model: BooksModel, entity: String, id: String, groupId: String, titleKey: String, vararg args: Any) {
+internal fun DocumentsBlock(model: BooksModel, entity: String, id: String, groupId: String, titleKey: String, vararg args: Any) {
     val books = model.books
     val attached = remember(model.revision, id) { books.medical.documents(entity, id) }
     val inbox = remember(model.revision) { books.documents.inbox() }

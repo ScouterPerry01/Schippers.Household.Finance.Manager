@@ -83,4 +83,19 @@ class SaveKeepsChildrenTest {
         books.medical.saveExpense(books.medical.expense(e.id).copy(description = "Obturation"))
         assertEquals(1, books.medical.expense(e.id).claims.size)
     }
+
+    @Test
+    fun `a policy keeps its premiums and beneficiaries, a warranty its claims`() {
+        val policy = books.insurance.save(InsurancePolicy("", group, PolicyKind.LIFE, "Sun Life", premium = cad("40")))
+        books.insurance.saveBeneficiary(PolicyBeneficiary("", policy.id, "Sam"))
+        books.insurance.save(books.insurance.policy(policy.id).copy(broker = "Courtier"))
+        assertEquals(1, books.insurance.beneficiaries(policy.id).size)
+        assertEquals(1, books.insurance.premiums(policy.id).size)
+
+        val fridge = books.assets.save(Asset("", group, AssetKind.APPLIANCE, "Frigo"))
+        val w = books.assets.saveWarranty(AssetWarranty("", group, fridge.id, AssetWarrantyKind.MANUFACTURER, "LG"))
+        books.assets.saveClaim(WarrantyClaim("", w.id, d("2026-05-01"), "Bruit"))
+        books.assets.saveWarranty(w.copy(phone = "1-888-000-0000"))
+        assertEquals(1, books.assets.claims(w.id).size)
+    }
 }
