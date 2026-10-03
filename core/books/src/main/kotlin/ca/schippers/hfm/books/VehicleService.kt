@@ -1,6 +1,9 @@
 package ca.schippers.hfm.books
 
 import ca.schippers.hfm.data.AccessDeniedException
+import ca.schippers.hfm.calc.schedule.DueState
+import ca.schippers.hfm.calc.schedule.DueStatus
+import ca.schippers.hfm.calc.schedule.MaintenanceSchedule
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.money.Currency
@@ -144,7 +147,12 @@ data class FuelStats(
 data class PaymentDraft(val accountId: String, val categoryId: String?, val payeeName: String? = null)
 
 /** VEH-11: a maintenance task due soon or overdue. */
-data class MaintenanceDue(val vehicle: Vehicle, val status: TaskStatus)
+data class MaintenanceDue(val vehicle: Vehicle, val status: TaskStatus) {
+    fun toUpkeep() = UpkeepDue(
+        vehicle.id, vehicle.name, true, status.task.id, status.task.name,
+        DueStatus(status.dueDate, status.dueOdometer, status.forecastDate, DueState.valueOf(status.state.name)), MeterUnit.KM,
+    )
+}
 
 /** VEH-10. */
 data class OwnershipCost(val costs: CostSummary, val distanceKm: Int?, val costPerKm: Money?)
@@ -222,14 +230,7 @@ class VehicleService internal constructor(private val books: Books) {
     /** Average distance per day over the last year of readings (at least two weeks apart), for forecasts. */
     fun kmPerDay(vehicleId: String): Double? = kmPerDay(readings(vehicleId))
 
-    private fun kmPerDay(readings: List<OdometerReading>): Double? {
-        val last = readings.maxByOrNull { it.odometer } ?: return null
-        val since = last.date.minus(DatePeriod(years = 1))
-        val first = readings.filter { it.date >= since }.minByOrNull { it.date } ?: return null
-        val days = first.date.daysUntil(last.date)
-        if (days < 14 || last.odometer <= first.odometer) return null
-        return (last.odometer - first.odometer).toDouble() / days
-    }
+    private fun kmPerDay(readings: List<OdometerReading>): Double? = MaintenanceSchedule.usagePerDay(readings.map { it.date to it.odometer })
 
     // --- Maintenance (VEH-05, VEH-06, VEH-11) ----------------------------------------------------
 
@@ -291,18 +292,8 @@ class VehicleService internal constructor(private val books: Books) {
             val lastDate = last?.let { LocalDate.parse(it.date) } ?: task.startDate ?: v.purchaseDate
             // A reading only matters for tasks that repeat by distance.
             val lastOdometer = (last?.odometer?.toInt() ?: task.startOdometer ?: v.purchaseOdometer).takeIf { task.intervalKm != null }
-            val dueDate = task.intervalMonths?.let { m -> lastDate?.plus(DatePeriod(months = m)) }
-            val dueOdometer = task.intervalKm?.let { km -> lastOdometer?.plus(km) }
-            val forecast = if (dueOdometer != null && current != null && rate != null && rate > 0) {
-                today.plus(DatePeriod(days = ((dueOdometer - current) / rate).toInt().coerceAtLeast(0)))
-            } else {
-                null
-            }
-            val overdue = (dueDate != null && dueDate <= today) || (dueOdometer != null && current != null && current >= dueOdometer)
-            val soon = (dueDate != null && today.daysUntil(dueDate) <= task.remindDays) ||
-                (dueOdometer != null && current != null && dueOdometer - current <= task.remindKm) ||
-                (forecast != null && today.daysUntil(forecast) <= task.remindDays)
-            TaskStatus(task, lastDate, lastOdometer, dueDate, dueOdometer, forecast, if (overdue) TaskState.DUE else if (soon) TaskState.SOON else TaskState.OK)
+            val s = MaintenanceSchedule.status(lastDate, lastOdometer, task.intervalMonths, task.intervalKm, current, rate, task.remindDays, task.remindKm, today)
+            TaskStatus(task, lastDate, lastOdometer, s.dueDate, s.dueUsage, s.forecastDate, TaskState.valueOf(s.state.name))
         }.sortedWith(compareBy(nullsLast()) { it.nextDate })
     }
 

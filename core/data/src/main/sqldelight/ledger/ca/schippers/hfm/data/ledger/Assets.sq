@@ -32,7 +32,9 @@ CREATE TABLE asset (
     disposal_txn_id TEXT,
     notes TEXT,
     created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+    updated_at INTEGER NOT NULL,
+    -- MNT-03: what its meter counts, if it has one: HOURS or KM.
+    meter TEXT
 );
 
 CREATE INDEX asset_parent ON asset(parent_id);
@@ -137,10 +139,40 @@ CREATE TABLE insurance_claim (
 );
 
 upsertAsset:
-INSERT OR REPLACE INTO asset(id, parent_id, kind, name, make, model, serial_number, purchase_date, seller, purchase_price_minor, currency, txn_id, location,
+-- Updates in place: INSERT OR REPLACE would delete the row first and, through ON DELETE
+-- CASCADE, everything that belongs to it.
+INSERT INTO asset(id, parent_id, kind, name, make, model, serial_number, purchase_date, seller, purchase_price_minor, currency, txn_id, location,
     owner_member_id, value_method, value_minor, value_date, depreciation_years, residual_percent, in_net_worth, status, disposal_date, disposal_price_minor,
-    disposal_txn_id, notes, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    disposal_txn_id, notes, created_at, updated_at, meter)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET
+    parent_id = excluded.parent_id,
+    kind = excluded.kind,
+    name = excluded.name,
+    make = excluded.make,
+    model = excluded.model,
+    serial_number = excluded.serial_number,
+    purchase_date = excluded.purchase_date,
+    seller = excluded.seller,
+    purchase_price_minor = excluded.purchase_price_minor,
+    currency = excluded.currency,
+    txn_id = excluded.txn_id,
+    location = excluded.location,
+    owner_member_id = excluded.owner_member_id,
+    value_method = excluded.value_method,
+    value_minor = excluded.value_minor,
+    value_date = excluded.value_date,
+    depreciation_years = excluded.depreciation_years,
+    residual_percent = excluded.residual_percent,
+    in_net_worth = excluded.in_net_worth,
+    status = excluded.status,
+    disposal_date = excluded.disposal_date,
+    disposal_price_minor = excluded.disposal_price_minor,
+    disposal_txn_id = excluded.disposal_txn_id,
+    notes = excluded.notes,
+    created_at = excluded.created_at,
+    updated_at = excluded.updated_at,
+    meter = excluded.meter;
 
 assets:
 SELECT * FROM asset ORDER BY name;

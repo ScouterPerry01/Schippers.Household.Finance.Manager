@@ -21,6 +21,7 @@ import ca.schippers.hfm.sync.RefAccount
 import ca.schippers.hfm.sync.RefBill
 import ca.schippers.hfm.sync.RefBudget
 import ca.schippers.hfm.sync.RefCategory
+import ca.schippers.hfm.sync.RefDue
 import ca.schippers.hfm.sync.RefPayee
 import ca.schippers.hfm.sync.RefPerson
 import ca.schippers.hfm.sync.RefVehicle
@@ -31,6 +32,7 @@ import ca.schippers.hfm.sync.SyncRequest
 import ca.schippers.hfm.sync.SyncResponse
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import java.math.BigDecimal
 import java.security.MessageDigest
@@ -177,7 +179,14 @@ class SyncService internal constructor(private val books: Books) {
         if (item.kind == CaptureKind.METER_READING) {
             // MNT-03: a reading is a fact, not a document to review.
             val vehicle = f.vehicleId ?: throw ValidationException("error.vehicleRequired")
-            books.vehicles.addReading(vehicle, f.date?.let(LocalDate::parse) ?: today, f.odometer ?: throw ValidationException("error.invalidNumber"), f.note)
+            val date = f.date?.let(LocalDate::parse) ?: today
+            val value = f.odometer ?: throw ValidationException("error.invalidNumber")
+            // The id is a vehicle's, or that of another asset with a meter.
+            if (books.vehicles.list(includeInactive = true).any { it.id == vehicle }) {
+                books.vehicles.addReading(vehicle, date, value, f.note)
+            } else {
+                books.assetMaintenance.addReading(vehicle, date, value, f.note)
+            }
             return null
         }
         val group = groupId ?: throw ValidationException("error.noEditableGroup")
@@ -227,15 +236,25 @@ class SyncService internal constructor(private val books: Books) {
             categories = books.categories.list().map { RefCategory(it.id, it.parentId, it.nameEn, it.nameFr, it.kind == CategoryKind.INCOME) },
             payees = books.payees.list().take(MAX_PAYEES).map { RefPayee(it.name, it.defaultCategoryId) },
             people = books.members.list().map { RefPerson(it.id, it.displayName, false) } + books.pets.list().map { RefPerson(it.id, it.name, true) },
-            vehicles = books.vehicles.list().map { RefVehicle(it.id, it.name, books.vehicles.latestOdometer(it.id)?.odometer) },
+            vehicles = books.vehicles.list().map { RefVehicle(it.id, it.name, books.vehicles.latestOdometer(it.id)?.odometer) } +
+                books.assets.list().mapNotNull { a -> a.meter?.let { RefVehicle(a.id, a.name, books.assetMaintenance.latestUsage(a.id), it.name) } },
             bills = books.bills.occurrences(today, today.plus(DatePeriod(days = 60))).filter { it.status == OccurrenceStatus.DUE && it.bill.kind == BillKind.BILL }.map {
                 RefBill(it.bill.name, it.dueDate.toString(), it.amount.toBigDecimal().toPlainString(), it.amount.currency.code, !it.amountKnown, it.bill.reminderDays)
             },
             budgets = budgets?.lines.orEmpty().filter { it.category.kind == CategoryKind.EXPENSE }.map {
                 RefBudget(it.category.name(ca.schippers.hfm.i18n.Language.ENGLISH), it.budgeted.toBigDecimal().toPlainString(), it.actual.toBigDecimal().toPlainString(), it.budgeted.currency.code)
             },
+            maintenance = maintenance(today),
             generatedAtMillis = now,
         )
+    }
+
+    /** MNT-05: overdue and soon due, and anything else next due by the end of the month. */
+    private fun maintenance(today: LocalDate): List<RefDue> {
+        val endOfMonth = LocalDate(today.year, today.month, 1).plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
+        return (books.upkeepDue(today) + books.upkeepBetween(today, endOfMonth, today)).distinctBy { it.taskId }.take(MAX_DUE).map { u ->
+            RefDue(u.taskId, u.subjectName, u.taskName, u.status.state.name, u.status.nextDate?.toString(), u.status.dueUsage, u.unit?.name)
+        }
     }
 
     /** Changes when anything the phone shows changes, but not merely with the time. */
@@ -258,5 +277,6 @@ class SyncService internal constructor(private val books: Books) {
         const val INVITATION_MILLIS = 10 * 60_000L
         private const val MAX_ITEMS = 50
         private const val MAX_PAYEES = 400
+        private const val MAX_DUE = 50
     }
 }

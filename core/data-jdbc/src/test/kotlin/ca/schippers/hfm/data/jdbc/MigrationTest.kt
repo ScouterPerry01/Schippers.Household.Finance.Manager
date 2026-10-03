@@ -326,10 +326,29 @@ class MigrationTest {
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
             val q = LedgerDatabase(driver).assetsQueries
-            q.upsertAsset("a", null, "HOME", "Maison", null, null, null, null, null, null, "CAD", null, null, null, "MANUAL", 65000000, null, null, null, 1, "ACTIVE", null, null, null, null, 0, 0)
+            q.upsertAsset("a", null, "HOME", "Maison", null, null, null, null, null, null, "CAD", null, null, null, "MANUAL", 65000000, null, null, null, 1, "ACTIVE", null, null, null, null, 0, 0, null)
             q.upsertPolicy("p", "HOME", "Desjardins", null, null, null, 120000, "ANNUAL", null, null, null, null, "2026-11-01", 1, null, 0, 0)
             q.addPolicyAsset("p", "a")
             assertEquals(listOf("a"), q.policyAssets("p").executeAsList())
+        }
+    }
+
+    @Test
+    fun `version 15 ledgers gain asset maintenance, kept when the asset is saved again`() {
+        val file = temp.resolve("ledger15.db")
+        older("../data/src/main/sqldelight/ledger/schemas/15.db", file, 15).close()
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            val db = LedgerDatabase(driver)
+            fun saveBoat() = db.assetsQueries.upsertAsset("b", null, "BOAT", "Bateau", null, null, null, null, null, null, "CAD", null, null, null, "NONE", null, null, null, null, 0, "ACTIVE", null, null, null, null, 0, 0, "HOURS")
+            saveBoat()
+            val q = db.assetMaintenanceQueries
+            q.upsertTask("t", "b", "Vidange", null, 12, 100, "2026-05-01", 0, 14, 10, 1, null)
+            q.insertReading("r", "b", "2026-08-01", 42, null)
+            saveBoat()
+            assertEquals(1, q.tasks("b").executeAsList().size)
+            assertEquals(1, q.readings("b").executeAsList().size)
+            assertEquals("HOURS", db.assetsQueries.assetById("b").executeAsOne().meter)
         }
     }
 

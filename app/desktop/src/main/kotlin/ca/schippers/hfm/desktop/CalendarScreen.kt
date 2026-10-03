@@ -131,7 +131,7 @@ private fun itemKey(item: CalendarItem): String = when (item) {
     is CalendarItem.Bill -> "b-${item.occurrence.bill.id}-${item.date}"
     is CalendarItem.Health -> "h-${item.due.javaClass.simpleName}-${item.due.memberId}-${item.date}-${healthTitle(item.due)}"
     is CalendarItem.Renewal -> "r-${item.renewal.kind}-${item.renewal.subjectId}-${item.date}-${item.renewal.detail}"
-    is CalendarItem.Maintenance -> "m-${item.due.status.task.id}-${item.date}"
+    is CalendarItem.Maintenance -> "m-${item.due.taskId}-${item.date}"
 }
 
 /** Names of people, providers and accounts, for the agenda lines. */
@@ -248,10 +248,11 @@ private fun AgendaRow(model: BooksModel, item: CalendarItem, names: Lookups, onE
                     val due = item.due
                     Text(model.t("calendar.maintenance"), Modifier.width(110.dp).padding(start = 12.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(due.status.task.name, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(due.vehicle.name, style = MaterialTheme.typography.bodySmall)
+                        Text(due.taskName, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(due.subjectName, style = MaterialTheme.typography.bodySmall)
                     }
-                    TextButton(onClick = { model.section = Section.VEHICLES }) { Text(model.t("calendar.open.VEHICLES")) }
+                    val section = if (due.vehicle) Section.VEHICLES else Section.ASSETS
+                    TextButton(onClick = { model.section = section }) { Text(model.t("calendar.open.${section.name}")) }
                 }
             }
         }
@@ -339,7 +340,7 @@ private fun MonthCellLine(model: BooksModel, item: CalendarItem, onEdit: (Calend
         is CalendarItem.Bill -> item.occurrence.bill.name to Modifier.clickable { model.section = Section.BILLS }
         is CalendarItem.Health -> model.t("healthDue.${item.due.javaClass.simpleName}", healthTitle(item.due)) to Modifier.clickable { model.section = Section.HEALTH }
         is CalendarItem.Renewal -> "${item.renewal.subjectName}: ${renewalTitle(model, item.renewal)}" to Modifier.clickable { model.section = model.renewalSection(item.renewal.kind) }
-        is CalendarItem.Maintenance -> "${item.due.vehicle.name}: ${item.due.status.task.name}" to Modifier.clickable { model.section = Section.VEHICLES }
+        is CalendarItem.Maintenance -> "${item.due.subjectName}: ${item.due.taskName}" to Modifier.clickable { model.section = if (item.due.vehicle) Section.VEHICLES else Section.ASSETS }
     }
     val faded = (item is CalendarItem.Event && item.occurrence.mark != null) || (item is CalendarItem.Bill && item.occurrence.status != OccurrenceStatus.DUE)
     Text(

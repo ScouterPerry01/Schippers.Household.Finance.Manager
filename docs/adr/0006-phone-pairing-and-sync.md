@@ -43,7 +43,7 @@ The development plan first proposed Ktor with TLS and mDNS discovery.
 - Typed fields win over what was read.
 
 **Reference data (SYNC-06, RPT-06, BILL-04):**
-- Each answer can carry accounts, categories, payees, people and pets, vehicles, bills due in the next 60 days, and this month's budgets.
+- Each answer can carry accounts, categories, payees, people and pets, vehicles and other assets with a meter (each with its unit, km or hours), bills due in the next 60 days, this month's budgets, and maintenance due this month or overdue (MNT-05). A meter reading from the phone names a vehicle or a metered asset.
 - It is sent only when its hash changed.
 
 **Users (HH-02, HH-11, HH-12):**
@@ -63,4 +63,4 @@ The development plan first proposed Ktor with TLS and mDNS discovery.
 - Plain HTTP needs `cleartextTrafficPermitted` on Android. This is acceptable because bodies are already end-to-end encrypted; the transport is never trusted.
 - Windows asks once whether the app may accept connections on private networks.
 - The phone must be on the same network as the computer. Cloud-folder and email transfer (§3.1, §3.2) can reuse the same sealed bundles later (Phase 5).
-- Tested: `SyncServiceTest` and `MultiUserTest` in `core/books`, and `SyncServerTest` (real HTTP on localhost) in `app/desktop`. On the Android emulator: pairing, reference data, and a quick expense reaching the desktop inbox.
+- Tested: `SyncServiceTest` and `MultiUserTest` in `core/books`, and `SyncServerTest` (real HTTP on localhost) in `app/desktop`. On the Android emulator: pairing, reference data, a quick expense reaching the desktop inbox, and (Phase 4c) the maintenance list and a boat's hour reading reaching the desktop.

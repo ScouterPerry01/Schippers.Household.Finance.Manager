@@ -8,7 +8,8 @@ import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.books.ImportResult
 import ca.schippers.hfm.books.EventReminder
 import ca.schippers.hfm.books.GroupInfo
-import ca.schippers.hfm.books.MaintenanceDue
+import ca.schippers.hfm.books.MeterUnit
+import ca.schippers.hfm.books.UpkeepDue
 import ca.schippers.hfm.books.RefillReminder
 import ca.schippers.hfm.books.Renewal
 import ca.schippers.hfm.books.RenewalKind
@@ -124,8 +125,8 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
             .map { ReminderLine("refill:${it.medication.id}:${it.due}", describe(it), Section.HEALTH) }
         val renewals = runCatching { books.renewals(today()) }.getOrDefault(emptyList())
             .map { ReminderLine("renewal:${it.kind}:${it.subjectId}:${it.date}:${it.detail}", describe(it), renewalSection(it.kind)) }
-        val maintenance = runCatching { books.vehicles.due(today()) }.getOrDefault(emptyList())
-            .map { ReminderLine("maintenance:${it.status.task.id}:${it.status.dueDate}:${it.status.dueOdometer}:${it.status.state}", describe(it), Section.VEHICLES) }
+        val maintenance = runCatching { books.upkeepDue(today()) }.getOrDefault(emptyList())
+            .map { ReminderLine("maintenance:${it.taskId}:${it.status.dueDate}:${it.status.dueUsage}:${it.status.state}", describe(it), if (it.vehicle) Section.VEHICLES else Section.ASSETS) }
         // INV-09, INV-10: over-contributions, RRIF and LIF minimums, RRSPs to convert.
         val plans = runCatching { books.plans.warnings(today()) }.getOrDefault(emptyList())
             .map { w -> ReminderLine("plan:${w.key}:${w.subjectId}", t(w.key, *w.args.map { a -> if (a is Money) money(a) else a }.toTypedArray()), Section.PLANS) }
@@ -133,11 +134,15 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     }
 
     /** "Civic: oil change due 2026-11-03 or at 55,700 km". */
-    fun describe(m: MaintenanceDue): String {
+    fun describe(m: UpkeepDue): String {
         val s = m.status
-        val due = listOfNotNull(s.dueDate?.let(::date), s.dueOdometer?.let { t("vehicles.km", String.format(language.locale, "%,d", it)) }).joinToString(" ${t("vehicles.or")} ")
-        return "${m.vehicle.name}: ${s.task.name} ${t("maintenance.${s.state}", due)}"
+        val due = listOfNotNull(s.dueDate?.let(::date), s.dueUsage?.let { usage(it, m.unit) }).joinToString(" ${t("vehicles.or")} ")
+        return "${m.subjectName}: ${m.taskName} ${t("maintenance.${s.state}", due)}"
     }
+
+    /** "55,700 km" or "120 h". */
+    fun usage(value: Int, unit: MeterUnit?): String =
+        t(if (unit == MeterUnit.HOURS) "maintenance.hours" else "vehicles.km", String.format(language.locale, "%,d", value))
 
     /** "Rex: municipal licence expires in 12 days". */
     fun describe(r: Renewal): String {

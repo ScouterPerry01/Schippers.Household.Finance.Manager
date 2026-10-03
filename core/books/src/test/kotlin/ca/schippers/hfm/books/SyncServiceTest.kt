@@ -127,6 +127,9 @@ class SyncServiceTest {
         val key = pairAsPhone(books.sync.invitation("Bureau", "127.0.0.1", 47311, now))
         val group = books.groups().single().id
         val civic = books.vehicles.save(Vehicle("", group, "Civic"))
+        // MNT-03, MNT-05: a boat with an hour meter, and a task that is overdue.
+        val boat = books.assets.save(Asset("", group, AssetKind.BOAT, "Ponton", meter = MeterUnit.HOURS))
+        books.assetMaintenance.saveTask(AssetTask("", boat.id, "Vidange", intervalMonths = 12, startDate = LocalDate(2024, 5, 1)))
         val response = send(
             key,
             SyncRequest(
@@ -136,11 +139,12 @@ class SyncServiceTest {
                     CaptureItem("bill", CaptureKind.BILL, now, pages = listOf("p1", "p2").map { SyncCrypto.b64(it.encodeToByteArray()) }),
                     CaptureItem("quick", CaptureKind.QUICK_EXPENSE, now, fields = CaptureFields(merchant = "Stationnement", amount = "6.50")),
                     CaptureItem("odo", CaptureKind.METER_READING, now, fields = CaptureFields(vehicleId = civic.id, odometer = 61_250)),
+                    CaptureItem("hours", CaptureKind.METER_READING, now, fields = CaptureFields(vehicleId = boat.id, odometer = 120)),
                     CaptureItem("bad", CaptureKind.METER_READING, now, fields = CaptureFields(odometer = 1)),
                 ),
             ),
         )
-        assertEquals(listOf("typed", "bill", "quick", "odo"), response.imported)
+        assertEquals(listOf("typed", "bill", "quick", "odo", "hours"), response.imported)
         assertEquals(listOf("bad"), response.failed.map { it.id })
         val typed = books.documents.inbox().first { it.notes == "Souper" }
         assertEquals("Metro", typed.merchant)
@@ -150,6 +154,10 @@ class SyncServiceTest {
         assertEquals("application/pdf", books.documents.inbox().first { it.kind == DocumentKind.BILL }.mimeType)
         assertEquals(Money.parse("6.50", Currency.CAD), books.documents.inbox().first { it.merchant == "Stationnement" }.amount)
         assertEquals(61_250, books.vehicles.latestOdometer(civic.id)?.odometer)
+        assertEquals(120, books.assetMaintenance.latestUsage(boat.id))
+        val reference = assertNotNull(response.reference)
+        assertEquals("HOURS", reference.vehicles.single { it.id == boat.id }.unit)
+        assertEquals("DUE", reference.maintenance.single { it.taskId.isNotEmpty() && it.subject == "Ponton" }.state)
     }
 
     @Test

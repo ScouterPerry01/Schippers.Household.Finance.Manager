@@ -50,6 +50,8 @@ data class Asset(
     val disposalPrice: Money? = null,
     val disposalTransactionId: String? = null,
     val notes: String? = null,
+    /** MNT-03: what its meter counts, if it has one. */
+    val meter: MeterUnit? = null,
 ) {
     val currency: Currency get() = purchasePrice?.currency ?: value?.currency ?: Currency.CAD
 
@@ -149,6 +151,7 @@ class AssetService internal constructor(private val books: Books) {
             a.seller.blankToNull(), a.purchasePrice?.minorUnits, a.currency.code, a.transactionId, a.location.blankToNull(), a.ownerMemberId, a.valueMethod.name,
             a.value?.minorUnits, a.valueDate?.toString(), a.depreciationYears?.toLong(), a.residualPercent?.stripTrailingZeros()?.toPlainString(),
             if (a.inNetWorth) 1 else 0, a.status.name, a.disposalDate?.toString(), a.disposalPrice?.minorUnits, a.disposalTransactionId, a.notes.blankToNull(), created, now,
+            a.meter?.name,
         )
         books.session.audit("UPDATE", "asset", id)
         return get(id)
@@ -302,6 +305,7 @@ class AssetService internal constructor(private val books: Books) {
             purchase_price_minor?.let { Money.ofMinor(it, c) }, txn_id, location, owner_member_id, ValueMethod.valueOf(value_method),
             value_minor?.let { Money.ofMinor(it, c) }, value_date?.let(LocalDate::parse), depreciation_years?.toInt(), residual_percent?.let(::BigDecimal),
             in_net_worth == 1L, AssetStatus.valueOf(status), disposal_date?.let(LocalDate::parse), disposal_price_minor?.let { Money.ofMinor(it, c) }, disposal_txn_id, notes,
+            meter?.let(MeterUnit::valueOf),
         )
     }
 

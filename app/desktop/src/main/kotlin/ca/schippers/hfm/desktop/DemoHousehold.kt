@@ -1,6 +1,8 @@
 package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Account
+import ca.schippers.hfm.books.MeterUnit
+import ca.schippers.hfm.books.AssetServiceRecord
 import ca.schippers.hfm.books.ValueMethod
 import ca.schippers.hfm.books.PremiumFrequency
 import ca.schippers.hfm.books.PolicyKind
@@ -590,6 +592,24 @@ object DemoHousehold {
         val tv = assets.save(Asset("", group, AssetKind.ELECTRONICS, "Téléviseur 65 po", house.id, "Samsung", "QN65Q80", purchaseDate = day(-700), purchasePrice = cad("1499.99"), location = "Salon"))
         assets.saveWarranty(AssetWarranty("", group, tv.id, AssetWarrantyKind.EXTENDED, "Best Buy (plan de protection)", startDate = day(-700), endDate = day(30)))
         assets.save(Asset("", group, AssetKind.SPORTS, "Kayaks (2)", purchaseDate = day(-420), purchasePrice = cad("1250"), location = "Chalet"))
+
+        // MNT: the home's usual tasks, with the furnace filter overdue, and a pontoon boat with an hour meter.
+        val upkeep = books.assetMaintenance
+        fun task(key: String) = ca.schippers.hfm.i18n.Messages.get(books.language, "assetTemplate.$key")
+        val homeTasks = upkeep.addStarterTasks(house.id, today, ::task).associateBy { it.templateKey }
+        upkeep.saveService(
+            AssetServiceRecord("", house.id, day(-100), diy = true, parts = "Filtre MERV 11 (16x25x1)", cost = cad("32.99"), taskIds = setOfNotNull(homeTasks["furnace_filter"]?.id)),
+        )
+        val boat = assets.save(
+            Asset("", group, AssetKind.BOAT, "Ponton Princecraft", null, "Princecraft", "Vectra 21", purchaseDate = day(-800), purchasePrice = cad("38500"), location = "Chalet", meter = MeterUnit.HOURS),
+        )
+        upkeep.addReading(boat.id, day(-150), 212)
+        upkeep.addReading(boat.id, day(-20), 268)
+        val boatTasks = upkeep.addStarterTasks(boat.id, today, ::task).associateBy { it.templateKey }
+        upkeep.saveService(
+            AssetServiceRecord("", boat.id, day(-140), 214, "Marina du Lac-Beauport", parts = "Huile 10W-30, filtre", cost = cad("189.50"), taskIds = setOfNotNull(boatTasks["engine_oil"]?.id, boatTasks["boat_launch"]?.id)),
+            PaymentDraft(visa.id, books.categories.list().first { it.systemKey == "leisure.cottage_rv" }.id, "Marina du Lac-Beauport"),
+        )
 
         val insurance = books.insurance
         insurance.save(

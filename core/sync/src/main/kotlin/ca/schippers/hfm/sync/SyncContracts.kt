@@ -119,6 +119,8 @@ data class ReferenceData(
     /** BILL-04 on the phone: bills due soon, for reminders. */
     val bills: List<RefBill> = emptyList(),
     val budgets: List<RefBudget> = emptyList(),
+    /** MNT-05 on the phone: maintenance due this month or overdue, on vehicles and other assets. */
+    val maintenance: List<RefDue> = emptyList(),
     val generatedAtMillis: Long = 0,
 )
 
@@ -134,11 +136,16 @@ data class RefPayee(val name: String, val categoryId: String?)
 @Serializable
 data class RefPerson(val id: String, val name: String, val pet: Boolean)
 
+/** A vehicle, or another asset with a meter (MNT-03); [unit] is what the reading counts: KM or HOURS. */
 @Serializable
-data class RefVehicle(val id: String, val name: String, val odometer: Int?)
+data class RefVehicle(val id: String, val name: String, val odometer: Int?, val unit: String = "KM")
 
 @Serializable
 data class RefBill(val name: String, val dueDate: String, val amount: String, val currency: String, val estimated: Boolean, val reminderDays: List<Int>)
+
+/** MNT-05: a task due soon ([state] SOON) or overdue (DUE), or next due this month (OK); [unit] counts [dueUsage]. */
+@Serializable
+data class RefDue(val taskId: String, val subject: String, val task: String, val state: String, val dueDate: String? = null, val dueUsage: Int? = null, val unit: String? = null)
 
 @Serializable
 data class RefBudget(val categoryName: String, val budget: String, val spent: String, val currency: String)

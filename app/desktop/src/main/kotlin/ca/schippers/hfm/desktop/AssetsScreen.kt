@@ -44,6 +44,7 @@ import ca.schippers.hfm.books.InsuranceClaim
 import ca.schippers.hfm.books.InsuranceClaimStatus
 import ca.schippers.hfm.books.InsurancePolicy
 import ca.schippers.hfm.books.InsuranceService
+import ca.schippers.hfm.books.MeterUnit
 import ca.schippers.hfm.books.PolicyBeneficiary
 import ca.schippers.hfm.books.PolicyKind
 import ca.schippers.hfm.books.PremiumFrequency
@@ -57,7 +58,7 @@ import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
 
-private enum class AssetsTab { ASSETS, COVERED, INSURANCE }
+private enum class AssetsTab { ASSETS, UPKEEP, COVERED, INSURANCE }
 
 /** AST, WAR and INS: the home and other assets, what covers them, and insurance policies. */
 @Composable
@@ -71,6 +72,11 @@ fun AssetsScreen(model: BooksModel) {
         }
         when (tab) {
             AssetsTab.ASSETS -> AssetsTabView(model)
+            AssetsTab.UPKEEP -> {
+                var open by remember { mutableStateOf<Asset?>(null) }
+                UpkeepTab(model) { open = it }
+                open?.let { a -> AssetDialog(model, a) { open = null } }
+            }
             AssetsTab.COVERED -> CoveredTab(model)
             AssetsTab.INSURANCE -> InsuranceTab(model)
         }
@@ -154,6 +160,7 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
     var disposalDate by remember { mutableStateOf(existing.disposalDate?.toString().orEmpty()) }
     var disposalPrice by remember { mutableStateOf(amt(existing.disposalPrice)) }
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
+    var meter by remember { mutableStateOf(existing.meter) }
     var saved by remember { mutableStateOf(existing.takeIf { it.id.isNotBlank() }) }
     var warranty by remember { mutableStateOf<AssetWarranty?>(null) }
     val linked = transactionId?.let { id -> remember(id) { runCatching { books.transactions.get(id) }.getOrNull() } }
@@ -197,6 +204,8 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextInput(model.t("assets.location"), location, Modifier.weight(1f)) { location = it }
                 Picker(model.t("assets.owner"), listOf(null) + members, members.firstOrNull { it.id == ownerId }, { it?.displayName ?: model.t("assets.household") }, Modifier.weight(1f)) { ownerId = it?.id }
+                // MNT-03: engine hours, or kilometres for an RV.
+                Picker(model.t("assets.meter"), listOf(null) + MeterUnit.entries, meter, { it?.let { u -> model.t("meterUnit.$u") } ?: model.t("common.none") }, Modifier.weight(1f)) { meter = it }
             }
             // AST-03: what it is worth.
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -230,7 +239,7 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
                                 location = location, ownerMemberId = ownerId, valueMethod = method, value = parseAmount(value, cad, locale), valueDate = today().takeIf { method == ValueMethod.MANUAL },
                                 depreciationYears = intOrNull(years), residualPercent = residual.trim().ifEmpty { null }?.let { runCatching { MoneyFormat.parseDecimal(it, locale) }.getOrElse { throw ValidationException("error.invalidNumber") } },
                                 inNetWorth = inNetWorth && method != ValueMethod.NONE, status = status, disposalDate = dateOrNull(disposalDate).takeIf { status != AssetStatus.ACTIVE },
-                                disposalPrice = parseAmount(disposalPrice, cad, locale).takeIf { status == AssetStatus.SOLD }, notes = notes,
+                                disposalPrice = parseAmount(disposalPrice, cad, locale).takeIf { status == AssetStatus.SOLD }, notes = notes, meter = meter,
                             ),
                         )
                     }?.let { saved = it }
@@ -254,6 +263,7 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
                 }
                 OutlinedButton(onClick = { warranty = AssetWarranty("", s.groupId, s.id, AssetWarrantyKind.MANUFACTURER, startDate = s.purchaseDate) }) { Text(model.t("assets.addWarranty")) }
                 DocumentsBlock(model, AssetService.ENTITY, s.id, s.groupId, "assets.photos")
+                AssetUpkeepBlock(model, s)
             }
         }
     }

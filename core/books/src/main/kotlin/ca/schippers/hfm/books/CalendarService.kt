@@ -84,8 +84,8 @@ sealed interface CalendarItem {
         override val date get() = due.date
     }
 
-    /** VEH-11: a maintenance task's next due date. */
-    data class Maintenance(val due: MaintenanceDue) : CalendarItem {
+    /** VEH-11, MNT-05: a maintenance task's next due date, on a vehicle or another asset. */
+    data class Maintenance(val due: UpkeepDue) : CalendarItem {
         override val date get() = due.status.nextDate!!
     }
 
@@ -172,7 +172,7 @@ class CalendarService internal constructor(private val books: Books) {
             books.bills.occurrences(from, to).map { CalendarItem.Bill(it) } +
             books.health.due(from, to).map { CalendarItem.Health(it) } +
             renewals(from, to).map { CalendarItem.Renewal(it) } +
-            books.vehicles.dueBetween(from, to, books.today()).map { CalendarItem.Maintenance(it) })
+            books.upkeepBetween(from, to, books.today()).map { CalendarItem.Maintenance(it) })
             .sortedBy { it.date }
 
     /** Renewal dates between [from] and [to], for the calendar. */

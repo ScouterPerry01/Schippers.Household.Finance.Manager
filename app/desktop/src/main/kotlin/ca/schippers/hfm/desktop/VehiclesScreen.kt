@@ -568,7 +568,7 @@ private fun TaskDialog(model: BooksModel, existing: MaintenanceTask, onClose: ()
 
 /** VEH-08: "also enter the payment" for service and fuel entries. */
 @Composable
-private fun PaymentFields(model: BooksModel, currency: Currency, defaultCategoryKey: String, state: PaymentState) {
+internal fun PaymentFields(model: BooksModel, currency: Currency, defaultCategoryKey: String, state: PaymentState) {
     val books = model.books
     val accounts = remember { books.accounts.list().map { it.account }.filter { it.currency == currency } }
     val tree = remember { books.categories.tree() }
@@ -585,7 +585,7 @@ private fun PaymentFields(model: BooksModel, currency: Currency, defaultCategory
     }
 }
 
-private class PaymentState {
+internal class PaymentState {
     var enabled by mutableStateOf(false)
     var accountId by mutableStateOf<String?>(null)
     var categoryId by mutableStateOf<String?>(null)

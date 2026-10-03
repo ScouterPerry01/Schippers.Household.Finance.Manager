@@ -2,6 +2,7 @@ package ca.schippers.hfm.books
 
 import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.calc.schedule.BusinessDays
+import ca.schippers.hfm.calc.schedule.DueState
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.data.HouseholdSession
 import ca.schippers.hfm.domain.AccessPolicy
@@ -57,6 +58,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val fxGains = FxGainService(this)
     val medical = MedicalService(this)
     val assets = AssetService(this)
+    val assetMaintenance = AssetMaintenanceService(this)
     val insurance = InsuranceService(this)
     val brokerage = BrokerageImportService(this)
     val plans = PlanService(this)
@@ -123,6 +125,16 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
      * card annual fees (CC-04), medical claims still to send (MED-09), warranties ending within 60
      * days (WAR-02) and insurance to renew (INS-03).
      */
+    /** MNT-05: maintenance due soon or overdue, on vehicles and other assets. */
+    fun upkeepDue(today: LocalDate): List<UpkeepDue> = (vehicles.due(today).map { it.toUpkeep() } + assetMaintenance.due(today))
+        .sortedWith(compareBy(nullsLast()) { it.status.nextDate })
+
+    /** MNT-05: every task next due between [from] and [to], on vehicles and other assets, for the calendar. */
+    fun upkeepBetween(from: LocalDate, to: LocalDate, today: LocalDate): List<UpkeepDue> =
+        (vehicles.list().flatMap { v -> vehicles.taskStatuses(v.id, today).map { MaintenanceDue(v, it).toUpkeep() } } + assetMaintenance.upkeep(today))
+            .filter { u -> u.status.nextDate?.let { it in from..to } == true }
+            .sortedWith(compareBy(nullsLast()) { it.status.nextDate })
+
     fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> =
         (pets.renewals(today, withinDays) + vehicles.renewals(today, withinDays) + loans.renewals(today, withinDays) + creditCards.renewals(today, withinDays) + medical.deadlines(today, withinDays) + assets.renewals(today, maxOf(withinDays, 60)) +
             insurance.renewals(today, withinDays)).sortedBy { it.date }
