@@ -63,6 +63,7 @@ import ca.schippers.hfm.books.Region
 import ca.schippers.hfm.books.Security
 import ca.schippers.hfm.books.SecurityKind
 import ca.schippers.hfm.books.TargetScope
+import ca.schippers.hfm.books.Transaction
 import ca.schippers.hfm.calc.loan.Compounding
 import ca.schippers.hfm.calc.loan.LoanPlan
 import ca.schippers.hfm.calc.loan.LoanProjection
@@ -85,6 +86,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.nio.file.Files
 
 /**
@@ -519,19 +521,28 @@ object DemoHousehold {
     /**
      * A bank statement for the joint account up to the end of last month, as if downloaded: most
      * lines match what was entered, Vidéotron posts 4 days late (so it is proposed for confirmation),
-     * and a monthly bank fee was never entered.
+     * a purchase in US dollars costs 2.5 % more than recorded (REC-04), and a monthly bank fee was
+     * never entered.
      */
     private fun importStatement(books: Books, account: Account, today: LocalDate) {
         val end = LocalDate(today.year, today.month, 1).minus(DatePeriod(days = 1))
+        books.transactions.create(
+            TransactionDraft(
+                account.id, end.minus(DatePeriod(days = 10)), Money.parse("-109.60", Currency.CAD), "Booking.com",
+                originalAmount = Money.parse("-80.00", Currency.USD), fxRate = BigDecimal("1.37"),
+            ),
+        )
         val recorded = books.transactions.register(account.id).map { it.transaction }.filter { it.date <= end }
         val payees = books.payees.list().associate { it.id to it.name }
         val fee = Money.parse("-4.95", Currency.CAD)
+        // The bank's conversion: 2.5 % on top of the rate entered.
+        fun posted(t: Transaction) = if (t.originalAmount != null) Money.of(t.amount.toBigDecimal().multiply(BigDecimal("1.025")), Currency.CAD, RoundingMode.HALF_UP) else t.amount
         val lines = recorded.mapIndexed { i, t ->
             val name = t.payeeId?.let(payees::get) ?: if (t.transfer != null) "VIREMENT" else "?"
             val shift = if (name.startsWith("Vidéotron")) 4 else 0
-            ImportedLine("D$i", t.date.plus(DatePeriod(days = shift)).let { if (it > end) end else it }, t.amount, name.uppercase(), null, null)
+            ImportedLine("D$i", t.date.plus(DatePeriod(days = shift)).let { if (it > end) end else it }, posted(t), name.uppercase(), null, null)
         } + ImportedLine("FEE", end, fee, "FRAIS MENSUELS DU FORFAIT", null, null)
-        val closing = account.openingBalance + recorded.map { it.amount }.fold(Money.zero(Currency.CAD), Money::plus) + fee
+        val closing = account.openingBalance + recorded.map(::posted).fold(Money.zero(Currency.CAD), Money::plus) + fee
         books.statements.import(
             account.id,
             ImportedStatement("OFX", "0045678", Currency.CAD, account.openingDate, end, account.openingBalance, closing, lines),

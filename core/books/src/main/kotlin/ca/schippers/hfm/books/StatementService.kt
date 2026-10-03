@@ -12,6 +12,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.math.BigDecimal
 import java.security.MessageDigest
 import kotlin.math.abs
 import ca.schippers.hfm.data.ledger.Statement as StatementRow
@@ -110,6 +111,11 @@ data class ImportSettings(
     val dateToleranceDays: Int = 5,
     /** Matches closer than this are accepted without asking. */
     val confidentDays: Int = 3,
+    /**
+     * REC-04: a purchase recorded in a foreign currency matches a line within this percentage of
+     * its amount (a 2.5 % conversion fee and the day's spread); it is always proposed, not linked.
+     */
+    val fxTolerancePercent: BigDecimal = BigDecimal("3.5"),
 )
 
 /**
@@ -169,6 +175,7 @@ class StatementService internal constructor(private val books: Books) {
                     return@forEachIndexed
                 }
                 val candidate = bestCandidate(q, accountId, line.date, line.amount, line.payee, settings, used)
+                    ?: fxCandidate(q, accountId, line.date, line.amount, settings, used)?.let { it to false }
                 when {
                     candidate != null && candidate.second -> {
                         used += candidate.first.id
@@ -217,6 +224,55 @@ class StatementService internal constructor(private val books: Books) {
         val similar = payee != null && similarPayee(payee, best.payee_text ?: best.payee_id?.let { id -> books.payees.list(true).firstOrNull { it.id == id }?.name })
         val confident = days <= settings.confidentDays && (candidates.size == 1 || similar)
         return best to confident
+    }
+
+    /**
+     * REC-04: the purchase in a foreign currency closest in amount to the line, within the
+     * tolerance and the date window, with the same sign.
+     */
+    private fun fxCandidate(q: LedgerQueries, accountId: String, date: LocalDate, amount: Money, settings: ImportSettings, used: Set<String>): TxnRow? {
+        val from = LocalDate.fromEpochDays(date.toEpochDays() - settings.dateToleranceDays)
+        val to = LocalDate.fromEpochDays(date.toEpochDays() + settings.dateToleranceDays)
+        return q.fxCandidates(accountId, from.toString(), to.toString()).executeAsList()
+            .filter { it.id !in used && withinFx(it.amount_minor, amount.minorUnits, settings) }
+            .minByOrNull { abs(it.amount_minor - amount.minorUnits) }
+            ?.let { q.txnById(it.id).executeAsOne() }
+    }
+
+    /** REC-04: whether [t], a purchase in a foreign currency, can be linked to a statement line of [amount]. */
+    fun isFxMatch(t: Transaction, amount: Money): Boolean =
+        t.originalAmount != null && t.transfer == null && t.amount.currency == amount.currency && withinFx(t.amount.minorUnits, amount.minorUnits, ImportSettings())
+
+    private fun withinFx(recorded: Long, statement: Long, settings: ImportSettings): Boolean {
+        if (recorded == 0L || (recorded > 0) != (statement > 0)) return false
+        val allowed = BigDecimal(abs(recorded)).multiply(settings.fxTolerancePercent).divide(BigDecimal(100))
+        return BigDecimal(abs(statement - recorded)) <= allowed
+    }
+
+    /**
+     * REC-04: the statement gives what a foreign purchase really cost. The transaction takes the
+     * statement's amount and the difference goes to the foreign exchange fee category; the rate
+     * recorded stays as entered.
+     */
+    private fun postFxFee(txnId: String, statementAmount: Money) {
+        val t = books.transactions.get(txnId)
+        val difference = statementAmount - t.amount
+        if (difference.isZero) return
+        validate(t.originalAmount != null && t.transfer == null, "error.linkAmount")
+        val fee = books.categories.list(includeArchived = true).firstOrNull { it.systemKey == "financial.fx_fees" }?.id
+        val splits = t.splits.map { SplitDraft(it.categoryId, it.amount, it.memo, it.memberId, it.taxFlag) }
+        val existing = splits.indexOfFirst { it.categoryId == fee && fee != null }
+        val adjusted = if (existing >= 0) {
+            splits.mapIndexed { i, s -> if (i == existing) s.copy(amount = s.amount + difference) else s }
+        } else {
+            splits + SplitDraft(fee, difference, books.text("generated.fxFee"))
+        }
+        val payee = t.payeeId?.let { id -> books.payees.list(true).firstOrNull { it.id == id }?.name } ?: t.payeeText
+        books.transactions.update(
+            txnId,
+            TransactionDraft(t.accountId, t.date, statementAmount, payee, adjusted, t.memo, t.memberId, t.cleared, t.originalAmount, t.fxRate, t.tagIds, t.assetId),
+        )
+        books.session.audit("UPDATE", "txn", txnId, "fx fee ${difference.toBigDecimal().toPlainString()}")
     }
 
     private fun linkTransaction(ledger: LedgerDatabase, txnId: String, externalId: String) {
@@ -296,9 +352,12 @@ class StatementService internal constructor(private val books: Books) {
         val (group, line, statement) = locateLine(lineId)
         validate(line.status == LineStatus.PROPOSED.name && line.txn_id != null, "error.lineState")
         val ledger = books.ledger(group)
+        val account = books.accounts.get(statement.account_id)
+        val txnId = line.txn_id!!
         ledger.transaction {
-            linkTransaction(ledger, line.txn_id!!, line.external_id)
-            ledger.ledgerQueries.setLineStatus(LineStatus.MATCHED.name, line.txn_id, lineId)
+            postFxFee(txnId, Money.ofMinor(line.amount_minor, account.currency))
+            linkTransaction(ledger, txnId, line.external_id)
+            ledger.ledgerQueries.setLineStatus(LineStatus.MATCHED.name, txnId, lineId)
         }
         books.session.audit("MATCH", "statement", statement.id, lineId)
     }
@@ -310,9 +369,12 @@ class StatementService internal constructor(private val books: Books) {
         val ledger = books.ledger(group)
         val txn = ledger.ledgerQueries.txnById(transactionId).executeAsOneOrNull()
         validate(txn != null && txn.account_id == statement.account_id, "error.lineState")
-        validate(txn!!.amount_minor == line.amount_minor, "error.linkAmount")
+        val foreign = txn!!.original_currency != null && txn.transfer_id == null
+        validate(txn.amount_minor == line.amount_minor || (foreign && withinFx(txn.amount_minor, line.amount_minor, ImportSettings())), "error.linkAmount")
         validate(txn.external_id == null, "error.alreadyLinked")
+        val account = books.accounts.get(statement.account_id)
         ledger.transaction {
+            postFxFee(transactionId, Money.ofMinor(line.amount_minor, account.currency))
             linkTransaction(ledger, transactionId, line.external_id)
             ledger.ledgerQueries.setLineStatus(LineStatus.MATCHED.name, transactionId, lineId)
         }

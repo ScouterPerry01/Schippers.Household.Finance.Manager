@@ -417,6 +417,13 @@ SELECT * FROM txn
 WHERE account_id = ? AND amount_minor = ? AND external_id IS NULL AND cleared != 'RECONCILED'
   AND date BETWEEN ? AND ?;
 
+-- REC-04: purchases recorded in a foreign currency, whose amount in the account's currency is only
+-- known for certain from the statement.
+fxCandidates:
+SELECT * FROM txn
+WHERE account_id = ? AND original_currency IS NOT NULL AND transfer_id IS NULL AND external_id IS NULL AND cleared != 'RECONCILED'
+  AND date BETWEEN ? AND ?;
+
 unreconciledThrough:
 SELECT * FROM txn WHERE account_id = ? AND cleared != 'RECONCILED' AND date <= ? ORDER BY date, created_at;
 

@@ -17,6 +17,7 @@ import kotlinx.datetime.LocalDate
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
+import java.math.BigDecimal
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -201,5 +202,40 @@ class StatementServiceTest {
         assertEquals("Café Olimpico", PayeeService.cleanName("Café Olimpico"))
         assertTrue(StatementService.similarPayee("IGA EXTRA #8123", "IGA"))
         assertFalse(StatementService.similarPayee("IGA", "Metro"))
+    }
+
+    /** REC-04: a purchase entered in US dollars matches the statement's amount, and the fee is posted. */
+    @Test
+    fun `foreign purchases match within the fee, which is posted`() {
+        val usd = { v: String -> Money.parse(v, Currency.USD) }
+        val amazon = books.transactions.create(
+            TransactionDraft(
+                account.id, march(20), cad("-137.25"), "Amazon.com", listOf(SplitDraft(cat("food.groceries"), cad("-137.25"))),
+                originalAmount = usd("-100.00"), fxRate = BigDecimal("1.3725"),
+            ),
+        )
+        fun statement(vararg lines: Pair<String, String>) = ImportedStatement(
+            "OFX", null, Currency.CAD, march(1), march(31), null, null,
+            lines.mapIndexed { i, (id, amount) -> ImportedLine(id, march(21 + i), cad(amount), "AMAZON.COM", null, null) },
+        )
+        // 2.5 % more than recorded: proposed, never linked without asking.
+        val result = books.statements.import(account.id, statement("X1" to "-140.68"))
+        assertEquals(1, result.proposed)
+        val line = books.statements.view(result.statementId).unresolved.single()
+        assertEquals(amazon.id, line.transactionId)
+        books.statements.confirm(line.id)
+        val t = books.transactions.get(amazon.id)
+        assertEquals(cad("-140.68"), t.amount)
+        assertEquals(usd("-100.00"), t.originalAmount, "the foreign amount and the rate stay as entered")
+        assertEquals(mapOf<String?, Money>(cat("food.groceries") to cad("-137.25"), cat("financial.fx_fees") to cad("-3.43")), t.splits.associate { it.categoryId to it.amount })
+        assertEquals(ClearedStatus.CLEARED, t.cleared)
+
+        // Too far from any foreign purchase: a new transaction.
+        val other = books.transactions.create(
+            TransactionDraft(account.id, march(25), cad("-50.00"), "Etsy", originalAmount = usd("-36.50"), fxRate = BigDecimal("1.37")),
+        )
+        val far = books.statements.import(account.id, statement("X2" to "-60.00"))
+        assertEquals(1, far.created)
+        assertEquals(cad("-50.00"), books.transactions.get(other.id).amount)
     }
 }

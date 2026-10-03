@@ -173,12 +173,20 @@ private fun RowScope.LineCells(model: BooksModel, line: StatementLine) {
 private fun UnresolvedLine(model: BooksModel, line: StatementLine, outstanding: List<Transaction>, payeeOf: (Transaction) -> String, open: Boolean) {
     val books = model.books
     val proposed = line.transactionId?.let { id -> runCatching { books.transactions.get(id) }.getOrNull() }
-    val candidates = outstanding.filter { it.amount == line.amount }
+    val candidates = outstanding.filter { it.amount == line.amount || books.statements.isFxMatch(it, line.amount) }
     Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Column(Modifier.padding(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) { LineCells(model, line) }
             if (proposed != null) {
                 Text(model.t("reconcile.proposed", model.date(proposed.date), payeeOf(proposed)), style = MaterialTheme.typography.bodySmall)
+                // REC-04: a purchase in a foreign currency costs what the statement says; the difference is the fee.
+                val original = proposed.originalAmount
+                if (original != null && proposed.amount != line.amount) {
+                    Text(
+                        model.t("reconcile.fxFee", model.money(original), model.money(proposed.amount), model.money(line.amount - proposed.amount)),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
             }
             if (open) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
