@@ -7,6 +7,7 @@ import ca.schippers.hfm.books.AllocationTarget
 import ca.schippers.hfm.books.AmountKind
 import ca.schippers.hfm.books.BillDraft
 import ca.schippers.hfm.books.BillKind
+import ca.schippers.hfm.books.BenefitKind
 import ca.schippers.hfm.books.BudgetPeriod
 import ca.schippers.hfm.books.PaymentMethod
 import ca.schippers.hfm.books.Allergy
@@ -39,6 +40,8 @@ import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
 import ca.schippers.hfm.calc.schedule.Frequency
 import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.books.Books
+import ca.schippers.hfm.books.CardBenefit
+import ca.schippers.hfm.books.CardHolder
 import ca.schippers.hfm.books.CreditCardTerms
 import ca.schippers.hfm.books.LoanDetails
 import ca.schippers.hfm.books.CryptoIncomeKind
@@ -123,7 +126,19 @@ object DemoHousehold {
         )
         val savings = books.accounts.create(AccountDraft(group, "Épargne", AccountType.HIGH_INTEREST_SAVINGS, Currency.CAD, cad("8000.00"), start, desjardins.id))
         val visa = books.accounts.create(AccountDraft(group, "Visa Desjardins", AccountType.CREDIT_CARD, Currency.CAD, cad("0"), start, desjardins.id, "4540123412341234"))
-        books.creditCards.saveTerms(visa.id, CreditCardTerms(cad("8000"), BigDecimal("0.1995"), statementDay = 20, dueDay = 10, minPaymentPercent = BigDecimal("0.05"), minPaymentFloor = cad("10")))
+        books.creditCards.saveTerms(
+            visa.id,
+            CreditCardTerms(
+                cad("8000"), BigDecimal("0.1995"), statementDay = 20, dueDay = 10, minPaymentPercent = BigDecimal("0.05"), minPaymentFloor = cad("10"),
+                annualFee = cad("110"), annualFeeDate = today.plus(DatePeriod(days = 20)).minus(DatePeriod(years = 1)),
+            ),
+        )
+        // CC-04, CC-05: Sam holds a supplementary card; the card's insurance as on its certificate.
+        books.creditCards.saveHolder(CardHolder("", visa.id, "Alex", alex.id, "1234", isPrimary = true))
+        val samCard = books.creditCards.saveHolder(CardHolder("", visa.id, "Sam", sam.id, "5678"))
+        books.creditCards.saveBenefit(CardBenefit("", visa.id, BenefitKind.PURCHASE_PROTECTION, days = 90, limit = cad("1000")))
+        books.creditCards.saveBenefit(CardBenefit("", visa.id, BenefitKind.EXTENDED_WARRANTY, months = 12, maxYears = 3))
+        books.creditCards.saveBenefit(CardBenefit("", visa.id, BenefitKind.TRAVEL_MEDICAL, days = 15, limit = cad("5000000"), notes = "Under 65"))
         val usd = books.accounts.create(AccountDraft(group, "Compte US", AccountType.CHEQUING, Currency.USD, Money.parse("500.00", Currency.USD), start, bank.id))
 
         // A cottage mortgage renewed two years ago, with its term ending soon (LN-01 to LN-04).
@@ -172,6 +187,7 @@ object DemoHousehold {
                 TransactionDraft(
                     visa.id, on(13), cad("-243.90"), "Costco",
                     listOf(SplitDraft(cat("food.groceries"), cad("-168.40")), SplitDraft(cat("health.otc"), cad("-42.50")), SplitDraft(cat("children.clothing"), cad("-33.00"))),
+                    cardHolderId = samCard.id,
                 ),
             )
             add(TransactionDraft(visa.id, on(21), cad("-64.15"), "Restaurant Chez Mimi", listOf(SplitDraft(cat("food.restaurants"), cad("-64.15")))))

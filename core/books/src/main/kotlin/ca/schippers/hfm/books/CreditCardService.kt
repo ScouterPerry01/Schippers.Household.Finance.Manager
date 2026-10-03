@@ -1,10 +1,15 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.data.ledger.CardsQueries
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.money.Money
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import java.math.BigDecimal
 
 /** CC-01 card terms. Rates are annual fractions (0.1999 = 19.99%). */
@@ -20,8 +25,54 @@ data class CreditCardTerms(
     val minPaymentPercent: BigDecimal? = null,
     val minPaymentFloor: Money? = null,
     val annualFee: Money? = null,
-    val primaryAccountId: String? = null,
+    /** CC-04: a date the annual fee is charged; it comes back every year. */
+    val annualFeeDate: LocalDate? = null,
+) {
+    /** The next annual fee date on or after [today]. */
+    fun nextAnnualFee(today: LocalDate): LocalDate? = annualFeeDate?.let { d ->
+        var next = d
+        while (next < today) next = next.plus(DatePeriod(years = 1))
+        next
+    }
+}
+
+/** CC-05: a person holding a card on the account: the main cardholder or a supplementary card. */
+data class CardHolder(
+    val id: String,
+    val accountId: String,
+    val name: String,
+    val memberId: String? = null,
+    val lastDigits: String? = null,
+    val isPrimary: Boolean = false,
+    val archived: Boolean = false,
 )
+
+/** CC-04: the card's insurance and protections. */
+enum class BenefitKind { PURCHASE_PROTECTION, EXTENDED_WARRANTY, PRICE_PROTECTION, TRAVEL_MEDICAL, TRIP_CANCELLATION, RENTAL_CAR, MOBILE_DEVICE, OTHER }
+
+/**
+ * One benefit. [days]: how long a purchase stays protected (purchase or price protection, mobile
+ * device) or the length of trip covered; [months]: what an extended warranty adds to the
+ * manufacturer's; [maxYears]: the longest manufacturer warranty it extends; [limit]: the most paid
+ * per claim.
+ */
+data class CardBenefit(
+    val id: String,
+    val accountId: String,
+    val kind: BenefitKind,
+    val description: String? = null,
+    val days: Int? = null,
+    val months: Int? = null,
+    val maxYears: Int? = null,
+    val limit: Money? = null,
+    val notes: String? = null,
+)
+
+/** CC-04: a benefit that covers a purchase, and until when ([until] null when it depends on the manufacturer's warranty). */
+data class Coverage(val benefit: CardBenefit, val until: LocalDate?)
+
+/** CC-05: what one card spent in a period (purchases less refunds), as a positive amount. */
+data class HolderSpending(val holder: CardHolder?, val spent: Money)
 
 /** CC-02 one statement cycle. [balance] is the amount owed, as a positive number. */
 data class CardStatement(
@@ -50,7 +101,7 @@ class CreditCardService internal constructor(private val books: Books) {
             row.min_payment_percent?.let(::BigDecimal),
             row.min_payment_floor_minor?.let { Money.ofMinor(it, c) },
             row.annual_fee_minor?.let { Money.ofMinor(it, c) },
-            row.primary_account_id,
+            row.annual_fee_date?.let(LocalDate::parse),
         )
     }
 
@@ -64,7 +115,7 @@ class CreditCardService internal constructor(private val books: Books) {
         books.ledger(group).ledgerQueries.upsertCreditCard(
             accountId, terms.creditLimit?.minorUnits, terms.purchaseRate?.toPlainString(), terms.cashAdvanceRate?.toPlainString(),
             terms.promoRate?.toPlainString(), terms.promoEnds?.toString(), terms.statementDay?.toLong(), terms.dueDay?.toLong(),
-            terms.minPaymentPercent?.toPlainString(), terms.minPaymentFloor?.minorUnits, terms.annualFee?.minorUnits, terms.primaryAccountId,
+            terms.minPaymentPercent?.toPlainString(), terms.minPaymentFloor?.minorUnits, terms.annualFee?.minorUnits, terms.annualFeeDate?.toString(),
         )
         books.session.audit("UPDATE", "credit_card", accountId)
     }
@@ -105,7 +156,162 @@ class CreditCardService internal constructor(private val books: Books) {
         )
     }
 
+    // --- Cardholders and supplementary cards (CC-05) ---------------------------------------------
+
+    fun holders(accountId: String, includeArchived: Boolean = false): List<CardHolder> {
+        val (group, _) = books.accounts.locate(accountId)
+        return books.ledger(group).cardsQueries.cardHolders(accountId).executeAsList().map {
+            CardHolder(it.id, it.account_id, it.name, it.member_id, it.last_digits, it.is_primary == 1L, it.archived == 1L)
+        }.filter { includeArchived || !it.archived }
+    }
+
+    /** Saves a cardholder; making one the main cardholder makes the others supplementary. */
+    fun saveHolder(holder: CardHolder): CardHolder {
+        val (group, account) = books.accounts.locate(holder.accountId)
+        books.require(group, PermissionLevel.EDIT)
+        validate(account.type.kind == AccountKind.CREDIT, "error.notCreditAccount")
+        validate(holder.name.isNotBlank(), "error.nameRequired")
+        validate(holder.lastDigits.isNullOrBlank() || holder.lastDigits.trim().matches(Regex("\\d{4}")), "error.lastDigits")
+        val q = books.ledger(group).cardsQueries
+        val id = holder.id.ifBlank { Ids.newId() }
+        val now = books.now()
+        val others = holders(holder.accountId, includeArchived = true).filter { it.id != id }
+        val primary = holder.isPrimary || others.none { it.isPrimary }
+        books.ledger(group).transaction {
+            if (primary) others.filter { it.isPrimary }.forEach { o -> write(q, o.copy(isPrimary = false), now) }
+            write(q, holder.copy(id = id, name = holder.name.trim(), lastDigits = holder.lastDigits.blankToNull(), isPrimary = primary), now)
+        }
+        books.session.audit("UPDATE", "card_holder", id)
+        return holders(holder.accountId, includeArchived = true).first { it.id == id }
+    }
+
+    private fun write(q: CardsQueries, h: CardHolder, now: Long) {
+        val created = q.cardHolderById(h.id).executeAsOneOrNull()?.created_at ?: now
+        q.upsertCardHolder(h.id, h.accountId, h.memberId, h.name, h.lastDigits, if (h.isPrimary) 1 else 0, if (h.archived) 1 else 0, created, now)
+    }
+
+    /** Removes a cardholder no transaction uses; one that was used is archived instead. */
+    fun deleteHolder(accountId: String, holderId: String) {
+        val (group, _) = books.accounts.locate(accountId)
+        books.require(group, PermissionLevel.EDIT)
+        val q = books.ledger(group).cardsQueries
+        if (q.cardHolderUseCount(holderId).executeAsOne() > 0) {
+            holders(accountId, includeArchived = true).firstOrNull { it.id == holderId }?.let { write(q, it.copy(archived = true, isPrimary = false), books.now()) }
+        } else {
+            q.deleteCardHolder(holderId)
+        }
+    }
+
+    /**
+     * Spending per card from [from] to [to]: purchases less refunds, payments left out. Lines with
+     * no card count for the main cardholder.
+     */
+    fun spendingByHolder(accountId: String, from: LocalDate, to: LocalDate): List<HolderSpending> {
+        val (group, account) = books.accounts.locate(accountId)
+        val holders = holders(accountId, includeArchived = true)
+        val primary = holders.firstOrNull { it.isPrimary }
+        val totals = books.ledger(group).cardsQueries.spendingByHolder(accountId, from.toString(), to.toString()).executeAsList()
+            .groupBy({ r -> holders.firstOrNull { it.id == r.card_holder_id } ?: primary }, { -(it.total ?: 0L) })
+        return totals.map { (h, list) -> HolderSpending(h, Money.ofMinor(list.sum(), account.currency)) }.sortedByDescending { it.spent }
+    }
+
+    // --- Benefits and the annual fee (CC-04) ------------------------------------------------
+
+    fun benefits(accountId: String): List<CardBenefit> {
+        val (group, account) = books.accounts.locate(accountId)
+        return books.ledger(group).cardsQueries.cardBenefits(accountId).executeAsList().map {
+            CardBenefit(
+                it.id, it.account_id, BenefitKind.valueOf(it.kind), it.description, it.days?.toInt(), it.months?.toInt(), it.max_years?.toInt(),
+                it.limit_minor?.let { m -> Money.ofMinor(m, account.currency) }, it.notes,
+            )
+        }
+    }
+
+    fun saveBenefit(benefit: CardBenefit): CardBenefit {
+        val (group, account) = books.accounts.locate(benefit.accountId)
+        books.require(group, PermissionLevel.EDIT)
+        validate(account.type.kind == AccountKind.CREDIT, "error.notCreditAccount")
+        listOfNotNull(benefit.days, benefit.months, benefit.maxYears).forEach { validate(it > 0, "error.invalidNumber") }
+        validate(benefit.limit == null || (benefit.limit.currency == account.currency && benefit.limit.isPositive), "error.currencyMismatch", account.currency.code)
+        val q = books.ledger(group).cardsQueries
+        val id = benefit.id.ifBlank { Ids.newId() }
+        val now = books.now()
+        val created = q.cardBenefitById(id).executeAsOneOrNull()?.created_at ?: now
+        q.upsertCardBenefit(
+            id, benefit.accountId, benefit.kind.name, benefit.description.blankToNull(), benefit.days?.toLong(), benefit.months?.toLong(), benefit.maxYears?.toLong(),
+            benefit.limit?.minorUnits, benefit.notes.blankToNull(), created, now,
+        )
+        books.session.audit("UPDATE", "card_benefit", id)
+        return benefit.copy(id = id)
+    }
+
+    fun deleteBenefit(accountId: String, benefitId: String) {
+        val (group, _) = books.accounts.locate(accountId)
+        books.require(group, PermissionLevel.EDIT)
+        books.ledger(group).cardsQueries.deleteCardBenefit(benefitId)
+    }
+
+    /**
+     * CC-04: the benefits that cover a purchase made with the card: purchase and price protection
+     * for their number of days, the extended warranty for the manufacturer's warranty plus its
+     * months. Trip and rental benefits depend on the trip, not the purchase, and are not listed.
+     */
+    fun coverage(transaction: Transaction, today: LocalDate): List<Coverage> {
+        if (!transaction.amount.isNegative || transaction.transfer != null) return emptyList()
+        val account = books.accounts.get(transaction.accountId)
+        if (account.type.kind != AccountKind.CREDIT) return emptyList()
+        return benefits(account.id).mapNotNull { b ->
+            when (b.kind) {
+                BenefitKind.PURCHASE_PROTECTION, BenefitKind.PRICE_PROTECTION, BenefitKind.MOBILE_DEVICE ->
+                    b.days?.let { transaction.date.plus(DatePeriod(days = it)) }?.takeIf { it >= today }?.let { Coverage(b, it) }
+                BenefitKind.EXTENDED_WARRANTY -> Coverage(b, null)
+                else -> null
+            }
+        }.sortedWith(compareBy({ it.until == null }, { it.until }))
+    }
+
+    /**
+     * CC-04: purchases of goods on the card still under purchase or price protection on [today],
+     * newest first. Food, fuel, services, bills and fees are left out: the protection covers items.
+     */
+    fun protectedPurchases(accountId: String, today: LocalDate): List<Pair<Transaction, List<Coverage>>> {
+        val longest = benefits(accountId).filter { it.kind in DATED }.mapNotNull { it.days }.maxOrNull() ?: return emptyList()
+        val (group, _) = books.accounts.locate(accountId)
+        val since = today.minus(DatePeriod(days = longest))
+        val categories = books.categories.list(includeArchived = true).associateBy { it.id }
+        fun notGoods(categoryId: String?): Boolean {
+            var c = categoryId?.let(categories::get) ?: return false
+            while (true) {
+                if (c.systemKey in NOT_GOODS) return true
+                c = c.parentId?.let(categories::get) ?: return false
+            }
+        }
+        return books.ledger(group).cardsQueries.purchasesSince(accountId, since.toString()).executeAsList()
+            .map { books.transactions.get(it.id) }
+            .filter { t -> t.splits.any { !notGoods(it.categoryId) } }
+            .map { t -> t to coverage(t, today).filter { it.until != null } }
+            .filter { it.second.isNotEmpty() }
+    }
+
+    /** CC-04: annual fees coming up within [withinDays], as reminders. */
+    fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> = books.accounts.list().map { it.account }
+        .filter { it.type.kind == AccountKind.CREDIT }
+        .mapNotNull { a ->
+            val next = terms(a.id)?.takeIf { it.annualFee?.isPositive == true }?.nextAnnualFee(today) ?: return@mapNotNull null
+            val days = today.daysUntil(next)
+            if (days > withinDays) null else Renewal(RenewalKind.CARD_ANNUAL_FEE, a.id, a.name, next, days)
+        }
+
     companion object {
+        private val DATED = setOf(BenefitKind.PURCHASE_PROTECTION, BenefitKind.PRICE_PROTECTION, BenefitKind.MOBILE_DEVICE)
+
+        /** Categories of things purchase protection does not cover: food, fuel, services, bills, fees. */
+        private val NOT_GOODS = setOf(
+            "housing", "utilities", "food", "transport", "insurance", "financial", "taxes", "travel", "education",
+            "health.pharmacy", "health.dental", "health.medical", "health.paramedical", "health.premiums",
+            "pets.food", "pets.vet", "pets.licence", "pets.insurance", "pets.boarding",
+        )
+
         /** The greater of the percentage and the floor, but never more than the balance owed. */
         fun minimumPayment(balance: Money, terms: CreditCardTerms): Money {
             if (!balance.isPositive) return Money.zero(balance.currency)

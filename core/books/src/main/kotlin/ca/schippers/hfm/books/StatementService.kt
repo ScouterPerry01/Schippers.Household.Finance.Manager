@@ -270,7 +270,7 @@ class StatementService internal constructor(private val books: Books) {
         val payee = t.payeeId?.let { id -> books.payees.list(true).firstOrNull { it.id == id }?.name } ?: t.payeeText
         books.transactions.update(
             txnId,
-            TransactionDraft(t.accountId, t.date, statementAmount, payee, adjusted, t.memo, t.memberId, t.cleared, t.originalAmount, t.fxRate, t.tagIds, t.assetId),
+            TransactionDraft(t.accountId, t.date, statementAmount, payee, adjusted, t.memo, t.memberId, t.cleared, t.originalAmount, t.fxRate, t.tagIds, t.assetId, t.cardHolderId),
         )
         books.session.audit("UPDATE", "txn", txnId, "fx fee ${difference.toBigDecimal().toPlainString()}")
     }

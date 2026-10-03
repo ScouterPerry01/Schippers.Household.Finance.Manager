@@ -1,0 +1,75 @@
+-- CC-05: the people who hold a card on the account: the main cardholder and supplementary cards,
+-- which share the account's statement. A transaction can say which card made it.
+CREATE TABLE card_holder (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    member_id TEXT,
+    name TEXT NOT NULL,
+    last_digits TEXT,
+    is_primary INTEGER NOT NULL DEFAULT 0,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX card_holder_account ON card_holder(account_id);
+
+-- CC-04: what the card's insurance and protections cover. [days] is how long a purchase stays
+-- protected (purchase and price protection) or the length of a trip covered; [months] what an
+-- extended warranty adds to the manufacturer's; [max_years] the longest manufacturer warranty it
+-- extends.
+CREATE TABLE card_benefit (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('PURCHASE_PROTECTION', 'EXTENDED_WARRANTY', 'PRICE_PROTECTION', 'TRAVEL_MEDICAL', 'TRIP_CANCELLATION', 'RENTAL_CAR', 'MOBILE_DEVICE', 'OTHER')),
+    description TEXT,
+    days INTEGER,
+    months INTEGER,
+    max_years INTEGER,
+    limit_minor INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX card_benefit_account ON card_benefit(account_id);
+
+upsertCardHolder:
+INSERT OR REPLACE INTO card_holder(id, account_id, member_id, name, last_digits, is_primary, archived, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+cardHolders:
+SELECT * FROM card_holder WHERE account_id = ? ORDER BY is_primary DESC, name;
+
+cardHolderById:
+SELECT * FROM card_holder WHERE id = ?;
+
+deleteCardHolder:
+DELETE FROM card_holder WHERE id = ?;
+
+cardHolderUseCount:
+SELECT count(*) FROM txn WHERE card_holder_id = ?;
+
+upsertCardBenefit:
+INSERT OR REPLACE INTO card_benefit(id, account_id, kind, description, days, months, max_years, limit_minor, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+cardBenefits:
+SELECT * FROM card_benefit WHERE account_id = ? ORDER BY kind;
+
+cardBenefitById:
+SELECT * FROM card_benefit WHERE id = ?;
+
+deleteCardBenefit:
+DELETE FROM card_benefit WHERE id = ?;
+
+setTxnCardHolder:
+UPDATE txn SET card_holder_id = ? WHERE id = ?;
+
+-- CC-05: what each card spent (purchases less refunds; payments and other transfers left out).
+spendingByHolder:
+SELECT card_holder_id, CAST(sum(amount_minor) AS INTEGER) AS total FROM txn
+WHERE account_id = ? AND date BETWEEN ? AND ? AND transfer_id IS NULL
+GROUP BY card_holder_id;
+
+-- CC-04: purchases made with the card since a date, to see what is still protected.
+purchasesSince:
+SELECT * FROM txn WHERE account_id = ? AND date >= ? AND amount_minor < 0 AND transfer_id IS NULL ORDER BY date DESC;

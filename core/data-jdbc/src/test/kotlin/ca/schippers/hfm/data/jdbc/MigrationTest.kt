@@ -288,6 +288,24 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 12 ledgers gain cardholders and card benefits`() {
+        val file = temp.resolve("ledger12.db")
+        older("../data/src/main/sqldelight/ledger/schemas/12.db", file, 12).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('v', 'Visa', 'CREDIT_CARD', 'CAD', '2020-01-01', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO txn(id, account_id, date, amount_minor, created_at, updated_at) VALUES ('t', 'v', '2026-01-10', -5000, 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            val db = LedgerDatabase(driver)
+            db.cardsQueries.upsertCardHolder("h", "v", null, "Sam", "1234", 0, 0, 0, 0)
+            db.cardsQueries.setTxnCardHolder("h", "t")
+            assertEquals("h", db.ledgerQueries.txnById("t").executeAsOne().card_holder_id)
+            db.cardsQueries.upsertCardBenefit("b", "v", "PURCHASE_PROTECTION", null, 90, null, null, null, null, 0, 0)
+            assertEquals(1, db.cardsQueries.cardBenefits("v").executeAsList().size)
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()

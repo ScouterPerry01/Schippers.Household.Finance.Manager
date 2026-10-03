@@ -17,7 +17,7 @@ Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: wit
 | `core/security` | Argon2id, AES-256-GCM, X25519 key sealing and pair keys, recovery keys; watch-only Bitcoin addresses from an extended public key |
 | `core/data` | Household folder format, key ring, encrypted document vault, SQLDelight schemas and upgrades |
 | `core/data-jdbc` | Encrypted SQLite (SQLCipher v4) driver for the desktop |
-| `core/books` | Bookkeeping services: accounts, transactions, reconciliation, bills, budgets, goals, loans and mortgages, investments and brokerage import, portfolio returns, market prices, crypto-assets, precious metals, registered plans and pensions, reports, calendar, health, pets, vehicles, documents, phone sync, Quicken import, users |
+| `core/books` | Bookkeeping services: accounts, transactions, credit cards with supplementary cards and benefits, reconciliation, bills, budgets, goals, loans and mortgages, investments and brokerage import, portfolio returns, market prices, crypto-assets, precious metals, registered plans and pensions, reports, calendar, health, pets, vehicles, documents, phone sync, Quicken import, users |
 | `core/i18n` | English and French text |
 | `core/importers` | Statement import (OFX/QFX/QBO, CSV), brokerage statements (OFX, broker CSV), crypto exchange histories (Kraken, Coinbase, Shakepay, Newton) and Quicken QIF |
 | `core/ocr` | Text recognition interface and the field extractor shared with the phone |

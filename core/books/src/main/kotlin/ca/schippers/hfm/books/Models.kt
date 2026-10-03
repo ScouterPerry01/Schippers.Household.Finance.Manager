@@ -143,6 +143,8 @@ data class Transaction(
     val createdBy: String?,
     /** INV-02: the investment transaction this cash line belongs to; it changes only from there. */
     val investmentId: String? = null,
+    /** CC-05: the card (main or supplementary) a credit card transaction was made with. */
+    val cardHolderId: String? = null,
 ) {
     val isSplit: Boolean get() = splits.size > 1
 }
@@ -161,6 +163,8 @@ data class TransactionDraft(
     val fxRate: BigDecimal? = null,
     val tags: Set<String> = emptySet(),
     val assetId: String? = null,
+    /** CC-05: the card it was made with, one of the account's cardholders. */
+    val cardHolderId: String? = null,
 )
 
 /**

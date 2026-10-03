@@ -1,0 +1,41 @@
+-- Version 12 to 13 (CC-04, CC-05): cardholders and supplementary cards, card benefits, the
+-- card each transaction was made with, and the date the annual fee is charged.
+
+-- CC-05: the people who hold a card on the account: the main cardholder and supplementary cards,
+-- which share the account's statement. A transaction can say which card made it.
+CREATE TABLE card_holder (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    member_id TEXT,
+    name TEXT NOT NULL,
+    last_digits TEXT,
+    is_primary INTEGER NOT NULL DEFAULT 0,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX card_holder_account ON card_holder(account_id);
+
+-- CC-04: what the card's insurance and protections cover. [days] is how long a purchase stays
+-- protected (purchase and price protection) or the length of a trip covered; [months] what an
+-- extended warranty adds to the manufacturer's; [max_years] the longest manufacturer warranty it
+-- extends.
+CREATE TABLE card_benefit (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('PURCHASE_PROTECTION', 'EXTENDED_WARRANTY', 'PRICE_PROTECTION', 'TRAVEL_MEDICAL', 'TRIP_CANCELLATION', 'RENTAL_CAR', 'MOBILE_DEVICE', 'OTHER')),
+    description TEXT,
+    days INTEGER,
+    months INTEGER,
+    max_years INTEGER,
+    limit_minor INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX card_benefit_account ON card_benefit(account_id);
+
+ALTER TABLE txn ADD COLUMN card_holder_id TEXT;
+ALTER TABLE credit_card ADD COLUMN annual_fee_date TEXT;

@@ -83,6 +83,8 @@ class EntryState {
     /** PET-05, VEH-09: the person or pet, and the vehicle, the transaction was for. */
     var forId by mutableStateOf<String?>(null)
     var assetId by mutableStateOf<String?>(null)
+    /** CC-05: the card (main or supplementary) a card purchase was made with. */
+    var cardHolderId by mutableStateOf<String?>(null)
 
     fun clear(keepDate: Boolean = true) {
         editing = null
@@ -96,6 +98,7 @@ class EntryState {
         otherAmount = ""
         forId = null
         assetId = null
+        cardHolderId = null
     }
 }
 
@@ -120,6 +123,8 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     val entry = remember(account.id) { EntryState() }
     var editingAccount by remember { mutableStateOf(false) }
     var editingCard by remember { mutableStateOf(false) }
+    var editingCards by remember { mutableStateOf(false) }
+    val holders = remember(model.revision, account.id) { if (account.type.kind == AccountKind.CREDIT) books.creditCards.holders(account.id) else emptyList() }
     var revealing by remember { mutableStateOf(false) }
     var confirmClose by remember { mutableStateOf(false) }
     var splitting by remember { mutableStateOf(false) }
@@ -150,6 +155,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
         entry.memo = txn.memo.orEmpty()
         entry.forId = txn.memberId
         entry.assetId = txn.assetId
+        entry.cardHolderId = txn.cardHolderId
         val magnitude = MoneyFormat.formatAmount(txn.amount.abs(), locale)
         entry.payment = if (txn.amount.isNegative) magnitude else ""
         entry.deposit = if (txn.amount.isNegative) "" else magnitude
@@ -216,6 +222,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
             OutlinedButton(onClick = { editingAccount = true }) { Text(model.t("account.edit")) }
             if (account.numberMasked != null) OutlinedButton(onClick = { revealing = true }) { Text(model.t("account.show")) }
             if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCard = true }) { Text(model.t("account.cardDetails")) }
+            if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCards = true }) { Text(model.t("cards.button")) }
             if (account.type.kind == AccountKind.LOAN) OutlinedButton(onClick = { model.section = Section.LOANS }) { Text(model.t("account.loanDetails")) }
             if (account.type.kind == AccountKind.INVESTMENT) OutlinedButton(onClick = { model.section = Section.INVESTMENTS }) { Text(model.t("account.holdings")) }
             if (account.status != AccountStatus.CLOSED) {
@@ -322,6 +329,13 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                         }
                     }
                 }
+                // CC-04: what the card's benefits still cover for this purchase.
+                entry.editing?.takeIf { holders.isNotEmpty() || account.type.kind == AccountKind.CREDIT }?.let { t ->
+                    val coverage = remember(model.revision, t.id) { books.creditCards.coverage(t, today()) }
+                    if (coverage.isNotEmpty()) {
+                        Text(coverage.joinToString(" · ") { coverageText(model, it) }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
+                    }
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                     if (entry.splits != null) {
                         OutlinedButton(onClick = { splitting = true }, modifier = Modifier.weight(1f).padding(top = 8.dp)) {
@@ -333,6 +347,12 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                         }) { entry.choice = it }
                     }
                     TextInput(model.t("register.memo"), entry.memo, Modifier.weight(1f)) { entry.memo = it }
+                    // CC-05: which card it was made with, once the card has a supplementary card.
+                    if (entry.choice !is CategoryChoice.TransferWith && (holders.size > 1 || (entry.cardHolderId != null && holders.isNotEmpty()))) {
+                        Picker(model.t("cards.card"), listOf(null) + holders, holders.firstOrNull { it.id == entry.cardHolderId }, { it?.let { h -> cardLabel(h) } ?: model.t("cards.mainCard") }, Modifier.width(190.dp)) {
+                            entry.cardHolderId = it?.id
+                        }
+                    }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                     AmountInput(model.t("register.payment"), entry.payment, account.currency, locale, Modifier.width(170.dp), model::money) {
@@ -376,6 +396,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     }
     if (editingAccount) AccountDialog(model, account) { editingAccount = false }
     if (editingCard) CardTermsDialog(model, account) { editingCard = false }
+    if (editingCards) CardsDialog(model, account) { editingCards = false }
     if (revealing) RevealNumberDialog(model, account) { revealing = false }
     if (confirmClose) {
         AlertDialog(
@@ -443,6 +464,7 @@ private fun buildSave(model: BooksModel, account: Account, entry: EntryState): (
         is CategoryChoice.Of -> listOf(SplitDraft(choice.category.id, amount))
         else -> emptyList()
     }
+    val original = editing?.originalAmount?.takeIf { editing.transfer == null }?.let { o -> if (o.isNegative == amount.isNegative) o else -o }
     val draft = TransactionDraft(
         account.id, date, amount, entry.payee.ifBlank { null }, splitDrafts, memo,
         memberId = entry.forId,
@@ -450,6 +472,10 @@ private fun buildSave(model: BooksModel, account: Account, entry: EntryState): (
         // The draft takes tag names; keep the tags the transaction already has.
         tags = editing?.tagIds?.let { ids -> model.books.tags().filter { it.id in ids }.map { it.name }.toSet() }.orEmpty(),
         assetId = entry.assetId,
+        // FX-03: an edit keeps the foreign amount; the rate is worked out again if the amount changed.
+        originalAmount = original,
+        fxRate = editing?.fxRate?.takeIf { original != null && editing.amount == amount },
+        cardHolderId = entry.cardHolderId,
     )
     return { confirm ->
         guard(confirm)
@@ -571,6 +597,7 @@ private fun CardTermsDialog(model: BooksModel, account: Account, onClose: () -> 
     var minPercent by remember { mutableStateOf(pct(existing.minPaymentPercent)) }
     var minFloor by remember { mutableStateOf(amt(existing.minPaymentFloor)) }
     var fee by remember { mutableStateOf(amt(existing.annualFee)) }
+    var feeDate by remember { mutableStateOf(existing.annualFeeDate?.toString().orEmpty()) }
 
     fun rate(text: String): BigDecimal? = text.trim().ifEmpty { null }?.let { MoneyFormat.parseDecimal(it, locale).movePointLeft(2) }
 
@@ -586,6 +613,7 @@ private fun CardTermsDialog(model: BooksModel, account: Account, onClose: () -> 
                     minPaymentPercent = rate(minPercent),
                     minPaymentFloor = parseAmount(minFloor, currency, locale),
                     annualFee = parseAmount(fee, currency, locale),
+                    annualFeeDate = feeDate.trim().ifEmpty { null }?.let(LocalDate::parse),
                 )
             }.getOrElse { throw ValidationException("error.invalidNumber") }
             books.creditCards.saveTerms(account.id, terms)
@@ -605,7 +633,10 @@ private fun CardTermsDialog(model: BooksModel, account: Account, onClose: () -> 
             TextInput(model.t("card.minPercent"), minPercent, Modifier.weight(1f)) { minPercent = it }
             AmountInput(model.t("card.minFloor"), minFloor, currency, locale, Modifier.weight(1f), model::money) { minFloor = it }
         }
-        AmountInput(model.t("card.annualFee"), fee, currency, locale, Modifier.fillMaxWidth(), model::money) { fee = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            AmountInput(model.t("card.annualFee"), fee, currency, locale, Modifier.weight(1f), model::money) { fee = it }
+            DateInput(model.t("card.annualFeeDate"), feeDate, Modifier.weight(1f)) { feeDate = it }
+        }
     }
 }
 

@@ -108,6 +108,7 @@ class TransactionService internal constructor(private val books: Books) {
                 null, null, books.userId, DESKTOP, now, now,
             )
             if (draft.assetId != null) ledger.ledgerQueries.setTxnAsset(draft.assetId, id)
+            if (draft.cardHolderId != null) ledger.cardsQueries.setTxnCardHolder(draft.cardHolderId, id)
             writeChildren(ledger, id, prepared)
             logChange(ledger, id, "CREATE", null, snapshot(ledger, id))
         }
@@ -132,6 +133,7 @@ class TransactionService internal constructor(private val books: Books) {
                 draft.memo?.ifBlank { null }, draft.memberId, draft.cleared.name, null, null, books.now(), transactionId,
             )
             ledger.ledgerQueries.setTxnAsset(draft.assetId, transactionId)
+            ledger.cardsQueries.setTxnCardHolder(draft.cardHolderId, transactionId)
             ledger.ledgerQueries.deleteSplits(transactionId)
             ledger.ledgerQueries.deleteTxnTags(transactionId)
             writeChildren(ledger, transactionId, prepared)
@@ -475,4 +477,5 @@ internal fun TxnRow.toTransaction(currency: Currency, splits: List<SplitRow>, ta
     tagIds = tagIds,
     createdBy = created_by,
     investmentId = investment_id,
+    cardHolderId = card_holder_id,
 )

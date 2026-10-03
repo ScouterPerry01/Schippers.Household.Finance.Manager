@@ -58,7 +58,9 @@ CREATE TABLE txn (
     -- returns of capital) move money between cash and holdings, so reports leave them out: they
     -- have no category lines at all, and the payee queries skip them.
     investment_id TEXT,
-    trade INTEGER NOT NULL DEFAULT 0
+    trade INTEGER NOT NULL DEFAULT 0,
+    -- CC-05: the card (main or supplementary) a credit card transaction was made with.
+    card_holder_id TEXT
 );
 
 CREATE INDEX txn_account_date ON txn(account_id, date, created_at, id);
@@ -194,8 +196,10 @@ CREATE TABLE credit_card (
     min_payment_percent TEXT,
     min_payment_floor_minor INTEGER,
     annual_fee_minor INTEGER,
-    -- Supplementary cards point to the main card's account (CC-05).
-    primary_account_id TEXT
+    -- Not used: supplementary cards are cardholders on the main card's account (card_holder).
+    primary_account_id TEXT,
+    -- CC-04: a date the annual fee is charged; it repeats every year.
+    annual_fee_date TEXT
 );
 
 -- CC-02: one row per statement cycle.
@@ -310,8 +314,8 @@ GROUP BY a.id;
 
 upsertCreditCard:
 INSERT OR REPLACE INTO credit_card(account_id, credit_limit_minor, purchase_rate, cash_advance_rate, promo_rate,
-    promo_ends, statement_day, due_day, min_payment_percent, min_payment_floor_minor, annual_fee_minor, primary_account_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    promo_ends, statement_day, due_day, min_payment_percent, min_payment_floor_minor, annual_fee_minor, primary_account_id, annual_fee_date)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?);
 
 creditCard:
 SELECT * FROM credit_card WHERE account_id = ?;
