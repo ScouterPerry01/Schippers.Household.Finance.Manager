@@ -83,8 +83,27 @@ CREATE INDEX inv_statement_account ON inv_statement(account_id, date);
 -- Securities and prices ----------------------------------------------------------------------------
 
 upsertSecurity:
-INSERT OR REPLACE INTO security(id, symbol, exchange, name, kind, currency, asset_class, region, multiplier, maturity, coupon_rate, notes, archived, created_at, updated_at, class_mix, region_mix)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+-- Updates in place: INSERT OR REPLACE would delete the row first and, through ON DELETE
+-- CASCADE, everything that belongs to it.
+INSERT INTO security(id, symbol, exchange, name, kind, currency, asset_class, region, multiplier, maturity, coupon_rate, notes, archived, created_at, updated_at, class_mix, region_mix)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET
+    symbol = excluded.symbol,
+    exchange = excluded.exchange,
+    name = excluded.name,
+    kind = excluded.kind,
+    currency = excluded.currency,
+    asset_class = excluded.asset_class,
+    region = excluded.region,
+    multiplier = excluded.multiplier,
+    maturity = excluded.maturity,
+    coupon_rate = excluded.coupon_rate,
+    notes = excluded.notes,
+    archived = excluded.archived,
+    created_at = excluded.created_at,
+    updated_at = excluded.updated_at,
+    class_mix = excluded.class_mix,
+    region_mix = excluded.region_mix;
 
 securities:
 SELECT * FROM security ORDER BY name;

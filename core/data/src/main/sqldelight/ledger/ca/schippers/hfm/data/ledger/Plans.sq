@@ -160,9 +160,25 @@ deleteGrant:
 DELETE FROM resp_grant WHERE id = ?;
 
 upsertPension:
-INSERT OR REPLACE INTO pension(id, member_id, kind, name, administrator, member_number, start_date, normal_retirement_age, indexed,
+-- Updates in place: INSERT OR REPLACE would delete the row first and, through ON DELETE
+-- CASCADE, everything that belongs to it.
+INSERT INTO pension(id, member_id, kind, name, administrator, member_number, start_date, normal_retirement_age, indexed,
     survivor_percent, account_id, payer, notes, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET
+    member_id = excluded.member_id,
+    kind = excluded.kind,
+    name = excluded.name,
+    administrator = excluded.administrator,
+    member_number = excluded.member_number,
+    start_date = excluded.start_date,
+    normal_retirement_age = excluded.normal_retirement_age,
+    indexed = excluded.indexed,
+    survivor_percent = excluded.survivor_percent,
+    account_id = excluded.account_id,
+    payer = excluded.payer,
+    notes = excluded.notes,
+    created_at = excluded.created_at;
 
 pensions:
 SELECT * FROM pension ORDER BY name;

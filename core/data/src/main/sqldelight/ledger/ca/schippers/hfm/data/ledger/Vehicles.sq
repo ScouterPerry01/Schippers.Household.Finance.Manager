@@ -109,10 +109,38 @@ CREATE INDEX service_record_vehicle ON service_record(vehicle_id, date);
 CREATE INDEX fuel_entry_vehicle ON fuel_entry(vehicle_id, date);
 
 upsertVehicle:
-INSERT OR REPLACE INTO vehicle(id, name, make, model, model_year, trim_level, colour, vin, plate, fuel_type, driver_member_id,
+-- Updates in place: INSERT OR REPLACE would delete the row first and, through ON DELETE
+-- CASCADE, everything that belongs to it.
+INSERT INTO vehicle(id, name, make, model, model_year, trim_level, colour, vin, plate, fuel_type, driver_member_id,
     purchase_date, purchase_price_minor, seller, purchase_odometer, currency, registration_renewal, insurer, policy_number,
     insurance_renewal, status, disposal_date, disposal_price_minor, notes, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET
+    name = excluded.name,
+    make = excluded.make,
+    model = excluded.model,
+    model_year = excluded.model_year,
+    trim_level = excluded.trim_level,
+    colour = excluded.colour,
+    vin = excluded.vin,
+    plate = excluded.plate,
+    fuel_type = excluded.fuel_type,
+    driver_member_id = excluded.driver_member_id,
+    purchase_date = excluded.purchase_date,
+    purchase_price_minor = excluded.purchase_price_minor,
+    seller = excluded.seller,
+    purchase_odometer = excluded.purchase_odometer,
+    currency = excluded.currency,
+    registration_renewal = excluded.registration_renewal,
+    insurer = excluded.insurer,
+    policy_number = excluded.policy_number,
+    insurance_renewal = excluded.insurance_renewal,
+    status = excluded.status,
+    disposal_date = excluded.disposal_date,
+    disposal_price_minor = excluded.disposal_price_minor,
+    notes = excluded.notes,
+    created_at = excluded.created_at,
+    updated_at = excluded.updated_at;
 
 deleteVehicle:
 DELETE FROM vehicle WHERE id = ?;
@@ -133,9 +161,23 @@ readings:
 SELECT * FROM vehicle_reading WHERE vehicle_id = ? ORDER BY date, odometer;
 
 upsertTask:
-INSERT OR REPLACE INTO maintenance_task(id, vehicle_id, name, template_key, interval_months, interval_km, start_date, start_odometer,
+-- Updates in place: INSERT OR REPLACE would delete the row first and, through ON DELETE
+-- CASCADE, everything that belongs to it.
+INSERT INTO maintenance_task(id, vehicle_id, name, template_key, interval_months, interval_km, start_date, start_odometer,
     remind_days, remind_km, active, notes)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET
+    vehicle_id = excluded.vehicle_id,
+    name = excluded.name,
+    template_key = excluded.template_key,
+    interval_months = excluded.interval_months,
+    interval_km = excluded.interval_km,
+    start_date = excluded.start_date,
+    start_odometer = excluded.start_odometer,
+    remind_days = excluded.remind_days,
+    remind_km = excluded.remind_km,
+    active = excluded.active,
+    notes = excluded.notes;
 
 deleteTask:
 DELETE FROM maintenance_task WHERE id = ?;
