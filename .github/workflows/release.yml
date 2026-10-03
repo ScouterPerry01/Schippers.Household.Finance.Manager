@@ -77,6 +77,8 @@ jobs:
       - name: Self-check the installed .deb
         shell: bash
         run: |
+          # A bare CI machine lacks the menu folders a desktop has; xdg-desktop-menu needs them.
+          sudo mkdir -p /usr/share/desktop-directories /usr/share/applications
           sudo apt-get install -y ./dist/*.deb
           dpkg -L ranns-roost | grep -E '\.desktop$|/bin/' || true
           cat /opt/ranns-roost/lib/*.desktop 2>/dev/null || true
@@ -87,6 +89,7 @@ jobs:
         shell: bash
         run: |
           docker run --rm -v "$PWD/dist:/dist" -v "$RUNNER_TEMP:/out" fedora:latest bash -c '
+            mkdir -p /usr/share/desktop-directories /usr/share/applications &&
             dnf install -y /dist/*.rpm >/dev/null &&
             launcher=$(rpm -ql ranns-roost | grep "/bin/" | head -1) &&
             JAVA_TOOL_OPTIONS="-Djava.awt.headless=true -Dhfm.selfcheck=/out/rpm-check.txt" "$launcher"'
