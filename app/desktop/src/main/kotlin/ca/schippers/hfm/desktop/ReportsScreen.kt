@@ -49,7 +49,10 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import java.time.format.DateTimeFormatter
 
-enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, DEBT, BUDGET, RECONCILIATION }
+enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, FX, DEBT, BUDGET, RECONCILIATION }
+/** FX-06: reports that can show one currency's accounts in their own amounts. */
+private val BY_CURRENCY = setOf(ReportKind.INCOME_EXPENSE, ReportKind.SPENDING_BY_CATEGORY, ReportKind.INCOME_BY_CATEGORY, ReportKind.SPENDING_BY_PAYEE, ReportKind.NET_WORTH)
+
 enum class RangePreset { THIS_MONTH, LAST_MONTH, THIS_YEAR, LAST_YEAR, LAST_12_MONTHS, CUSTOM }
 enum class Compare { NONE, PREVIOUS, LAST_YEAR }
 
@@ -65,6 +68,8 @@ class ReportState {
     var compare by mutableStateOf(Compare.NONE)
     /** The tax year of the investment income report: last year by default, as for filing. */
     var taxYear by mutableStateOf(today().year - 1)
+    /** FX-06: show only the accounts in this currency, in their own amounts; null for everything in the base currency. */
+    var currency by mutableStateOf<Currency?>(null)
     /** Drill path in the category reports: the category whose subcategories are shown. */
     var parent by mutableStateOf<Category?>(null)
     var drill by mutableStateOf<Pair<String, List<DrillRow>>?>(null)
@@ -96,7 +101,9 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
     val accountIds = remember(model.revision, state.groupId) {
         state.groupId?.let { g -> books.accounts.list(includeClosed = true).filter { it.account.groupId == g }.map { it.account.id }.toSet() }
     }
-    val filter = ReportFilter(from, to, accountIds, state.memberId, state.tagId)
+    val currencies = remember(model.revision) { books.accounts.list(includeClosed = true).map { it.account.currency }.filter { !it.isCrypto && it != books.reports.base }.distinct().sortedBy { it.code } }
+    val currency = state.currency?.takeIf { state.kind in BY_CURRENCY }
+    val filter = ReportFilter(from, to, accountIds, state.memberId, state.tagId, currency)
 
     Row(Modifier.fillMaxSize()) {
         Column(Modifier.width(230.dp).fillMaxHeight().padding(8.dp)) {
@@ -112,19 +119,24 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
         Column(Modifier.fillMaxSize().padding(12.dp)) {
             // Filters in one row above the chart.
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (state.kind == ReportKind.INVESTMENT_INCOME) {
+                if (state.kind == ReportKind.INVESTMENT_INCOME || state.kind == ReportKind.FX) {
                     Picker(model.t("income.year"), (today().year downTo today().year - 10).toList(), state.taxYear, { it.toString() }, Modifier.width(190.dp)) { state.taxYear = it }
                 }
-                if (state.kind !in setOf(ReportKind.RECONCILIATION, ReportKind.DEBT, ReportKind.INVESTMENT_INCOME)) {
+                if (state.kind !in setOf(ReportKind.RECONCILIATION, ReportKind.DEBT, ReportKind.INVESTMENT_INCOME, ReportKind.FX)) {
                     Picker(model.t("report.period"), RangePreset.entries, state.preset, { model.t("range.$it") }, Modifier.width(200.dp)) { state.preset = it }
                     if (state.preset == RangePreset.CUSTOM) {
                         DateInput(model.t("report.from"), state.customFrom, Modifier.width(150.dp)) { state.customFrom = it }
                         DateInput(model.t("report.to"), state.customTo, Modifier.width(150.dp)) { state.customTo = it }
                     }
                 }
-                if (groups.size > 1 && state.kind != ReportKind.INVESTMENT_INCOME) {
+                if (groups.size > 1 && state.kind != ReportKind.INVESTMENT_INCOME && state.kind != ReportKind.FX) {
                     Picker(model.t("report.accounts"), listOf(null) + groups, groups.firstOrNull { it.id == state.groupId }, { it?.name ?: model.t("report.allAccounts") }, Modifier.width(200.dp)) {
                         state.groupId = it?.id
+                    }
+                }
+                if (state.kind in BY_CURRENCY && currencies.isNotEmpty()) {
+                    Picker(model.t("report.currency"), listOf(null) + currencies, state.currency, { it?.let { c -> model.t("report.onlyCurrency", c.code) } ?: model.t("report.allInBase", books.reports.base.code) }, Modifier.width(220.dp)) {
+                        state.currency = it
                     }
                 }
                 if ((state.kind == ReportKind.PORTFOLIO || state.kind == ReportKind.INVESTMENT_INCOME) && members.isNotEmpty()) {
@@ -156,6 +168,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                     ReportKind.NET_WORTH -> NetWorthReport(model, filter)
                     ReportKind.PORTFOLIO -> PortfolioReport(model, filter, state.groupId)
                     ReportKind.INVESTMENT_INCOME -> InvestmentIncomeReport(model, state.taxYear, state.memberId)
+                    ReportKind.FX -> FxReport(model, state.taxYear)
                     ReportKind.DEBT -> DebtReport(model, filter.accountIds)
                     ReportKind.BUDGET -> BudgetReportView(model, LocalDate(to.year, to.month, 1), yearView = state.preset in setOf(RangePreset.THIS_YEAR, RangePreset.LAST_YEAR))
                     ReportKind.RECONCILIATION -> ReconciliationReport(model)
@@ -166,8 +179,11 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
     state.drill?.let { (title, rows) -> DrillDialog(model, title, rows) { state.drill = null } }
 }
 
+/** FX-06: the currency the report is in: the one chosen, or the base currency. */
+internal fun ReportFilter.cur(model: BooksModel): Currency = currency ?: model.books.reports.base
+
 internal fun subtitle(model: BooksModel, filter: ReportFilter, extra: String? = null): String =
-    listOfNotNull("${model.date(filter.from)} – ${model.date(filter.to)}", model.t("report.inCurrency", model.books.reports.base.code), extra).joinToString(" · ")
+    listOfNotNull("${model.date(filter.from)} – ${model.date(filter.to)}", model.t("report.inCurrency", filter.cur(model).code), extra).joinToString(" · ")
 
 internal fun BooksModel.axis(): (Double) -> String = { compactNumber(it, language.locale) }
 
@@ -206,14 +222,14 @@ private fun IncomeExpenseReport(model: BooksModel, state: ReportState, filter: R
     Text(model.t("report.INCOME_EXPENSE"), style = MaterialTheme.typography.titleLarge)
     Text(subtitle(model, filter), style = MaterialTheme.typography.bodySmall)
     MissingRates(model, report.missingRates)
-    val totalIncome = periods.fold(Money.zero(books.reports.base)) { a, p -> a + p.income }
-    val totalExpense = periods.fold(Money.zero(books.reports.base)) { a, p -> a + p.expense }
+    val totalIncome = periods.fold(Money.zero(filter.cur(model))) { a, p -> a + p.income }
+    val totalExpense = periods.fold(Money.zero(filter.cur(model))) { a, p -> a + p.expense }
     Row(horizontalArrangement = Arrangement.spacedBy(32.dp), modifier = Modifier.padding(vertical = 8.dp)) {
         Stat(model.t("report.income"), model.money(totalIncome))
         Stat(model.t("report.expense"), model.money(totalExpense))
         Stat(model.t("report.net"), model.money(totalIncome - totalExpense))
         comparison?.let { c ->
-            val net = c.fold(Money.zero(books.reports.base)) { a, p -> a + p.net }
+            val net = c.fold(Money.zero(filter.cur(model))) { a, p -> a + p.net }
             Stat(model.t("compare.${state.compare}"), model.money(net))
         }
     }
@@ -260,7 +276,7 @@ private fun CategoryReport(model: BooksModel, state: ReportState, filter: Report
         comparisonFilter(filter, state.compare)?.let { f -> books.reports.byCategory(f, kind, parent?.id).value.associate { it.category?.id to it.amount } }
     }
     val rows = report.value
-    val total = rows.fold(Money.zero(books.reports.base)) { a, r -> a + r.amount }
+    val total = rows.fold(Money.zero(filter.cur(model))) { a, r -> a + r.amount }
     val title = model.t(if (kind == CategoryKind.EXPENSE) "report.SPENDING_BY_CATEGORY" else "report.INCOME_BY_CATEGORY")
     fun name(c: Category?) = when {
         c == null -> model.t("register.uncategorized")
@@ -305,8 +321,8 @@ private fun CategoryReport(model: BooksModel, state: ReportState, filter: Report
         ReportTable(
             title + (parent?.let { " · " + it.name(model.language) } ?: ""), subtitle(model, filter),
             listOfNotNull(model.t("register.category"), model.t("register.amount"), comparison?.let { model.t("compare.${state.compare}") }),
-            rows.map { r -> listOfNotNull(name(r.category), r.amount, comparison?.let { it[r.category?.id] ?: Money.zero(books.reports.base) }) } +
-                listOf(listOfNotNull(model.t("report.total"), total, comparison?.let { c -> c.values.fold(Money.zero(books.reports.base)) { a, m -> a + m } })),
+            rows.map { r -> listOfNotNull(name(r.category), r.amount, comparison?.let { it[r.category?.id] ?: Money.zero(filter.cur(model)) }) } +
+                listOf(listOfNotNull(model.t("report.total"), total, comparison?.let { c -> c.values.fold(Money.zero(filter.cur(model))) { a, m -> a + m } })),
         ),
     )
 }
@@ -341,7 +357,7 @@ private fun PayeeReport(model: BooksModel, state: ReportState, filter: ReportFil
 private fun NetWorthReport(model: BooksModel, filter: ReportFilter) {
     val books = model.books
     val dates = remember(filter) { books.reports.monthEnds(filter.from, filter.to) }
-    val report = remember(model.revision, dates, filter.accountIds) { books.reports.netWorth(dates, filter.accountIds) }
+    val report = remember(model.revision, dates, filter.accountIds, filter.currency) { books.reports.netWorth(dates, filter.accountIds, filter.currency) }
     val points = report.value
     val locale = model.language.locale
     val labels = dates.map { java.time.LocalDate.of(it.year, it.month.ordinal + 1, 1).format(DateTimeFormatter.ofPattern("MMM yy", locale)) }
@@ -486,7 +502,7 @@ fun DrillDialog(model: BooksModel, title: String, rows: List<DrillRow>, onClose:
     val books = model.books
     val accounts = remember { books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name } }
     val categories = remember { books.categories.list(true).associateBy { it.id } }
-    val total = rows.mapNotNull { it.baseAmount }.fold(Money.zero(books.reports.base)) { a, m -> a + m }
+    val total = rows.mapNotNull { it.baseAmount }.let { amounts -> amounts.fold(Money.zero(amounts.firstOrNull()?.currency ?: books.reports.base)) { a, m -> a + m } }
     WideDialog(title, model.t("common.close"), onClose) {
             Column(Modifier.width(820.dp)) {
                 Text(model.t("report.drillSummary", rows.size, model.money(total)), style = MaterialTheme.typography.bodySmall)

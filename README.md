@@ -12,7 +12,7 @@ Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: wit
 | Module | Contents |
 |---|---|
 | `core/money` | Exact money type (minor units, never floating point), currencies, locale formatting and parsing |
-| `core/calc` | Financial calculations shared by both apps: amortization and loan schedules with prepayments, rate changes and what-ifs; adjusted cost base; time-weighted and money-weighted returns; allocation and rebalancing; T5, T3, RL-3 and RL-16 boxes; registered plan rules (RRIF minimums, LIF maximums by jurisdiction, TFSA and FHSA limits, RESP grants); precious metal weights and values; provinces and bank holidays; schedules for bills and events |
+| `core/calc` | Financial calculations shared by both apps: amortization and loan schedules with prepayments, rate changes and what-ifs; adjusted cost base; time-weighted and money-weighted returns; allocation and rebalancing; T5, T3, RL-3 and RL-16 boxes; foreign exchange gains with the $200 exemption; registered plan rules (RRIF minimums, LIF maximums by jurisdiction, TFSA and FHSA limits, RESP grants); precious metal weights and values; provinces and bank holidays; schedules for bills and events |
 | `core/domain` | Ids, roles, permissions, account types |
 | `core/security` | Argon2id, AES-256-GCM, X25519 key sealing and pair keys, recovery keys; watch-only Bitcoin addresses from an extended public key |
 | `core/data` | Household folder format, key ring, encrypted document vault, SQLDelight schemas and upgrades |
