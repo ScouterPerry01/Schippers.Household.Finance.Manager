@@ -52,10 +52,17 @@ object Http {
         require(url.startsWith("https://")) { "Only HTTPS is allowed" }
         val request = HttpRequest.newBuilder(URI(url)).timeout(Duration.ofSeconds(30)).header("Accept", "application/json")
             .header("User-Agent", "HouseholdFinanceManager/1.0").GET().build()
-        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-        check(response.statusCode() == 200) { "HTTP ${response.statusCode()}" }
-        return response.body()
+        val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
+        response.body().use { body ->
+            check(response.statusCode() == 200) { "HTTP ${response.statusCode()}" }
+            // A public service's answer is not trusted: anything larger than any real answer is refused.
+            val bytes = body.readNBytes(MAX_BYTES + 1)
+            check(bytes.size <= MAX_BYTES) { "Answer too large" }
+            return String(bytes, Charsets.UTF_8)
+        }
     }
+
+    private const val MAX_BYTES = 20 * 1024 * 1024
 }
 
 /** FX-02, FX-07, FX-08: the exchange rates in use, followed currencies, the downloads and manual rates. */

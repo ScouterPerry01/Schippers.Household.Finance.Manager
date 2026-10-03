@@ -380,11 +380,15 @@ class CryptoService internal constructor(private val books: Books) {
         val txs = LinkedHashMap<String, JsonObject>()
         for (a in addresses) {
             var last: String? = null
-            while (true) {
+            // The explorer's answers are not trusted: pages are capped, a page that repeats ends the
+            // walk, and only a well-formed transaction id goes into the next request.
+            var pages = 0
+            while (pages++ < MAX_PAGES) {
                 val page = Json.parseToJsonElement(fetch("$ESPLORA/address/$a/txs/chain" + (last?.let { "/$it" } ?: ""))).jsonArray.map { it.jsonObject }
                 page.forEach { txs[it["txid"]!!.jsonPrimitive.content] = it }
-                if (page.size < 25) break
-                last = page.last()["txid"]!!.jsonPrimitive.content
+                val next = page.lastOrNull()?.get("txid")?.jsonPrimitive?.content
+                if (page.size < 25 || next == null || next == last || !TXID.matches(next)) break
+                last = next
             }
         }
         var added = 0
@@ -423,7 +427,7 @@ class CryptoService internal constructor(private val books: Books) {
         for (chain in 0..1) {
             var gap = 0
             var i = 0
-            while (gap < GAP_LIMIT) {
+            while (gap < GAP_LIMIT && i < MAX_ADDRESSES) {
                 val address = key.address(chain, i++)
                 val stats = Json.parseToJsonElement(fetch("$ESPLORA/address/$address")).jsonObject
                 val count = stats["chain_stats"]?.jsonObject?.get("tx_count")?.jsonPrimitive?.long ?: 0L
@@ -435,6 +439,9 @@ class CryptoService internal constructor(private val books: Books) {
 
     companion object {
         const val ESPLORA = "https://mempool.space/api"
+        private const val MAX_PAGES = 400
+        private const val MAX_ADDRESSES = 10_000
+        private val TXID = Regex("[0-9a-f]{64}")
         const val GAP_LIMIT = 20
         private const val FEES = "financial.crypto_fees"
         private const val INCOME = "income.investment.crypto"

@@ -272,7 +272,8 @@ class StatementService internal constructor(private val books: Books) {
             txnId,
             TransactionDraft(t.accountId, t.date, statementAmount, payee, adjusted, t.memo, t.memberId, t.cleared, t.originalAmount, t.fxRate, t.tagIds, t.assetId, t.cardHolderId),
         )
-        books.session.audit("UPDATE", "txn", txnId, "fx fee ${difference.toBigDecimal().toPlainString()}")
+        // The audit log is in core.db, which every household user can read: no amounts (HH-11).
+        books.session.audit("UPDATE", "txn", txnId, "fx fee")
     }
 
     private fun linkTransaction(ledger: LedgerDatabase, txnId: String, externalId: String) {
@@ -476,7 +477,8 @@ class StatementService internal constructor(private val books: Books) {
             }
             ledger.ledgerQueries.undoStatement(reason.trim(), statementId)
         }
-        books.session.audit("UNDO_RECONCILE", "statement", statementId, reason.trim())
+        // The reason stays with the statement in the group's ledger; the shared audit log only records the undo (HH-11).
+        books.session.audit("UNDO_RECONCILE", "statement", statementId)
     }
 
     /** REC-09: the last reconciled statement date of every visible account (null if never). */

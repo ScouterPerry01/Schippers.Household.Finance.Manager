@@ -5,7 +5,7 @@ A personal, family and household finance application for Canada, in every provin
 - **Desktop app** (Windows and Linux) holds the household's books: accounts, transactions, reconciliation, bills, investments, registered plans, medical claims, assets and reports. All data stays on your own computer, encrypted.
 - **Android companion app** captures receipts, bills and expenses on the spot and sends them to the desktop over your home Wi-Fi.
 
-Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: with Phase 1, this is the first usable release. Phase 3 (wealth) in progress: loans and mortgages, investments with returns, asset allocation and tax slips, registered plans and pensions, market prices, crypto-assets and precious metals done. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
+Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: with Phase 1, this is the first usable release. **Phase 3 (wealth) complete**: loans and mortgages, investments with returns, asset allocation and tax slips, registered plans and pensions, market prices, crypto-assets, precious metals, foreign exchange gains, and card benefits. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
 
 ## Project layout
 

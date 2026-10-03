@@ -168,4 +168,22 @@ class CryptoServiceTest {
         assertEquals(41, statsCalls, "the used address, then 20 unused on each chain")
         assertEquals(Money.ofMinor(250000, Currency.BTC), balance(cold))
     }
+
+    /** The explorer is not trusted: a page that never ends, or a malformed id, stops the walk. */
+    @Test
+    fun `a misbehaving explorer cannot keep the sync going`() {
+        val cold = wallet("Cold storage")
+        val ours = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu"
+        crypto.saveDetails(WalletDetails(cold.id, cad("0"), watch = ours))
+        fun page(lastId: String) = (1..25).joinToString(",", "[", "]") { i ->
+            val id = if (i == 25) lastId else "%064x".format(i)
+            """{"txid":"$id","status":{"confirmed":false},"vin":[],"vout":[]}"""
+        }
+        var calls = 0
+        crypto.sync(cold.id) { calls++; page("f".repeat(64)) }
+        assertEquals(2, calls, "the same full page twice: stop")
+        calls = 0
+        crypto.sync(cold.id) { calls++; page("../../evil") }
+        assertEquals(1, calls, "an id that is not a transaction id is never put in a request")
+    }
 }
