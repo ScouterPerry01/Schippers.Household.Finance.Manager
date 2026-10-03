@@ -1,5 +1,10 @@
 # RANN's Roost
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="branding/logo/Rann_Roost_Kite_Left_Facing_White_Text.png">
+  <img src="branding/logo/Rann_Roost_Kite_Left_Facing.png" alt="RANN's Roost logo: a brahminy kite in flight" width="360">
+</picture>
+
 A personal, family and household finance application for Canada, in every province and territory, in English and French. Published by RANN; called Household Finance Manager until October 2026.
 
 - **Desktop app, RANN's Roost** (Windows and Linux) holds the household's books: accounts, transactions, reconciliation, bills, investments, registered plans, medical claims, assets and reports. All data stays on your own computer, encrypted.
@@ -25,6 +30,7 @@ Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: wit
 | `core/sync` | Pairing invitation, sealed transfer bundles and the phone's client |
 | `app/desktop` | Compose Desktop application, including the listener for phones |
 | `app/android` | Android companion: capture, encrypted queue, transfer, summaries |
+| `branding/` | The RANN's Roost logo, Store tiles and icons (not covered by the GPL; see its README) |
 | `spikes/` | Phase 0 feasibility experiments (not part of the build) |
 
 Architecture decisions are recorded in [docs/adr](docs/adr).
@@ -51,4 +57,8 @@ GitHub Issues, or email info-rann-apps@NorthMail.ca.
 
 ## Licence
 
-GPL-3.0-or-later. See [LICENSE](LICENSE). Code contributions are not accepted at this time; see [CONTRIBUTING.md](CONTRIBUTING.md).
+The source code is GPL-3.0-or-later. See [LICENSE](LICENSE).
+
+The names RANN, RANN's Roost and RANN's Roost Mobile and the logo are © Perry Schippers, trading as RANN, and are not covered by the GPL (section 7(e)); see [branding/README.md](branding/README.md). A modified version you publish needs its own name and icon.
+
+Code contributions are not accepted at this time; see [CONTRIBUTING.md](CONTRIBUTING.md).

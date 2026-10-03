@@ -7,8 +7,8 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.window.Notification
 import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.rememberTrayState
@@ -45,7 +45,7 @@ fun main() = application {
     }
     // BILL-04: a system notification with today's bill reminders, once per household and day.
     val trayState = rememberTrayState()
-    Tray(icon = TrayIcon, state = trayState, tooltip = Messages.get(state.language, "app.name"))
+    Tray(icon = AppIcon, state = trayState, tooltip = Messages.get(state.language, "app.name"))
     val main = state.screen as? Screen.Main
     LaunchedEffect(main?.model) {
         val model = main?.model ?: return@LaunchedEffect
@@ -82,11 +82,16 @@ fun main() = application {
             }
         },
         title = Messages.get(state.language, "app.name"),
+        icon = AppIcon,
         state = rememberWindowState(width = 1440.dp, height = 900.dp),
     ) {
         App(state)
     }
 }
 
-/** Placeholder tray icon until the application icon is designed. */
-private val TrayIcon = ColorPainter(Color(0xFF6750A4))
+/** The RANN's Roost head, for the window, taskbar and tray (branding/, not covered by the GPL). */
+private val AppIcon = BitmapPainter(
+    org.jetbrains.skia.Image.makeFromEncoded(
+        checkNotNull(object {}.javaClass.getResourceAsStream("/hfm/branding/icon.png")).use { it.readBytes() },
+    ).toComposeImageBitmap(),
+)

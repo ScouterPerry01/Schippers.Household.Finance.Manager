@@ -50,12 +50,14 @@ compose.desktop {
                 // Keep this fixed forever: Windows uses it to recognise upgrades of the same app.
                 upgradeUuid = "5f0b9a52-7c1e-4d0e-9a3c-2d1f6c8e4b17"
                 perUserInstall = true
+                iconFile.set(rootProject.file("branding/desktop/ranns-roost.ico"))
             }
             linux {
                 packageName = "ranns-roost"
                 // Dedicated support address (DIST-06).
                 debMaintainer = "RANN <info-rann-apps@NorthMail.ca>"
                 appCategory = "Office"
+                iconFile.set(rootProject.file("branding/desktop/ranns-roost.png"))
             }
         }
     }
