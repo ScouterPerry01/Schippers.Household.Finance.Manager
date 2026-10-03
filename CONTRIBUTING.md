@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in Household Finance Manager.
+Thank you for your interest in RANN's Roost.
 
 ## Before you start
 

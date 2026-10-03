@@ -39,20 +39,20 @@ compose.desktop {
         mainClass = "ca.schippers.hfm.desktop.MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
-            packageName = "HouseholdFinanceManager"
+            packageName = "RANN's Roost"
             packageVersion = "0.1.0"
-            description = "Household Finance Manager"
-            vendor = "Schippers"
+            description = "RANN's Roost: household finances for Canada"
+            vendor = "RANN"
             licenseFile.set(rootProject.file("LICENSE"))
             modules("java.sql", "java.prefs", "jdk.unsupported")
             windows {
-                menuGroup = "Household Finance Manager"
+                menuGroup = "RANN's Roost"
                 // Keep this fixed forever: Windows uses it to recognise upgrades of the same app.
                 upgradeUuid = "5f0b9a52-7c1e-4d0e-9a3c-2d1f6c8e4b17"
                 perUserInstall = true
             }
             linux {
-                packageName = "household-finance-manager"
+                packageName = "ranns-roost"
                 // Dedicated support address (DIST-06).
                 debMaintainer = "RANN <info-rann-apps@NorthMail.ca>"
                 appCategory = "Office"

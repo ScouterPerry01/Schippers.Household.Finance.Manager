@@ -12,7 +12,7 @@ public class C { [StructLayout(LayoutKind.Sequential)] public struct R { public 
 [DllImport("user32.dll", EntryPoint = "mouse_event")] public static extern void wheel(uint f, int x, int y, int d, IntPtr e);
 [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr h, IntPtr dc, uint f); }
 '@
-$p = Get-Process -Name java,javaw -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like '*Household Finance*' -or $_.MainWindowTitle -like '*finances du m*' } | Select-Object -First 1
+$p = Get-Process -Name java,javaw -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like 'RANN*s Roost*' } | Select-Object -First 1
 if (-not $p) { "no window"; exit 1 }
 $h = $p.MainWindowHandle
 $r = New-Object C+R; [C]::GetWindowRect($h, [ref]$r) | Out-Null

@@ -9,7 +9,7 @@ public class W { [StructLayout(LayoutKind.Sequential)] public struct R { public 
 '@
 $p = $null
 for ($i = 0; $i -lt $WaitSeconds -and -not $p; $i++) {
-    $p = Get-Process -Name java,javaw -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like '*Household Finance*' -or $_.MainWindowTitle -like '*finances du m*' } | Select-Object -First 1
+    $p = Get-Process -Name java,javaw -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like 'RANN*s Roost*' } | Select-Object -First 1
     if (-not $p) { Start-Sleep -Seconds 1 }
 }
 if (-not $p) { "no window"; exit 1 }

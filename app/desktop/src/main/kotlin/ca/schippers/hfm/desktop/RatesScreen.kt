@@ -51,7 +51,7 @@ object Http {
     fun get(url: String): String {
         require(url.startsWith("https://")) { "Only HTTPS is allowed" }
         val request = HttpRequest.newBuilder(URI(url)).timeout(Duration.ofSeconds(30)).header("Accept", "application/json")
-            .header("User-Agent", "HouseholdFinanceManager/1.0").GET().build()
+            .header("User-Agent", "RANNsRoost/1.0").GET().build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
         response.body().use { body ->
             check(response.statusCode() == 200) { "HTTP ${response.statusCode()}" }

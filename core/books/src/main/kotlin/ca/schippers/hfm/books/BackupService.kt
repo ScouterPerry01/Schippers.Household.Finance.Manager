@@ -140,8 +140,8 @@ class BackupService internal constructor(private val books: Books) {
         const val LAST_PROBLEM = "backup.lastProblem"
 
         val README = """
-            Household Finance Manager - full data export
-            ============================================
+            RANN's Roost - full data export
+            ===============================
 
             This archive contains all the data you could see when it was made, in open formats:
             one CSV file per table (UTF-8, comma separated) and one JSON file per database.

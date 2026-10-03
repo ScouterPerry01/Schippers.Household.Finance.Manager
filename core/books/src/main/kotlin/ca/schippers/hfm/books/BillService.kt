@@ -364,7 +364,7 @@ class BillService internal constructor(private val books: Books) {
 
     /** BILL-12: the bill calendar as an iCalendar file for the user's own calendar. */
     fun iCalendar(from: LocalDate, to: LocalDate, describe: (Occurrence) -> String): String = buildString {
-        append("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Schippers//Household Finance Manager//EN\r\nCALSCALE:GREGORIAN\r\n")
+        append("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//RANN//RANN's Roost//EN\r\nCALSCALE:GREGORIAN\r\n")
         for (o in occurrences(from, to).filter { it.status == OccurrenceStatus.DUE }) {
             val day = o.dueDate.toString().replace("-", "")
             val next = o.dueDate.plus(DatePeriod(days = 1)).toString().replace("-", "")

@@ -12,7 +12,7 @@
 
 ## Individual Contributor Licence Agreement
 
-**Project:** Household Finance Manager (the "Project")
+**Project:** RANN's Roost, formerly Household Finance Manager (the "Project")
 **Maintainer:** RANN, info-rann-apps@NorthMail.ca (the "Maintainer")
 
 Thank you for your interest in contributing to the Project. This agreement clarifies the rights

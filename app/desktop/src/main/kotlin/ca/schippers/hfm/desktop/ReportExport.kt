@@ -88,7 +88,7 @@ object ReportExport {
     /** Excel workbook with real numbers and dates, so the user can keep calculating. */
     fun xlsx(table: ReportTable, file: File, locale: Locale) {
         FileOutputStream(file).use { out ->
-            val workbook = Workbook(out, "Household Finance Manager", "1.0")
+            val workbook = Workbook(out, "RANN's Roost", "1.0")
             val sheet = workbook.newWorksheet(table.title.take(31).replace(Regex("""[\\/:*?\[\]]"""), "-"))
             sheet.value(0, 0, table.title)
             sheet.style(0, 0).bold().fontSize(14).set()
