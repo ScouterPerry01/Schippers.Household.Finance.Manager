@@ -5,7 +5,8 @@ set -euo pipefail
 version="$1"; tool="$2"; out="$3"
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$(cd "$here/../../../.." && pwd)"
-image="$root/app/desktop/build/compose/binaries/main/app/RANN's Roost"
+# The app image is the only folder there (named "RANN’s Roost" on Linux, see build.gradle.kts).
+image="$(find "$root/app/desktop/build/compose/binaries/main/app" -mindepth 1 -maxdepth 1 -type d | head -1)"
 appdir="$(mktemp -d)/RANNsRoost.AppDir"
 
 mkdir -p "$appdir"
@@ -15,7 +16,7 @@ cp "$root/branding/desktop/ranns-roost.png" "$appdir/ranns-roost.png"
 cat > "$appdir/AppRun" <<'RUN'
 #!/bin/sh
 here="$(dirname "$(readlink -f "$0")")"
-exec "$here/bin/RANN's Roost" "$@"
+exec "$(find "$here/bin" -maxdepth 1 -type f -perm -u+x | head -1)" "$@"
 RUN
 chmod +x "$appdir/AppRun"
 

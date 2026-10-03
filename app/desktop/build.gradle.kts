@@ -117,7 +117,9 @@ compose.desktop {
         mainClass = "ca.schippers.hfm.desktop.MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
-            packageName = "RANN's Roost"
+            // jpackage's Linux install scripts put the name in single quotes, which a plain apostrophe
+            // breaks; Linux packages use the typographic one (U+2019), which reads the same in menus.
+            packageName = if (hostOs == "Linux") "RANN\u2019s Roost" else "RANN's Roost"
             packageVersion = appVersion
             description = "RANN's Roost: household finances for Canada"
             vendor = "RANN"
