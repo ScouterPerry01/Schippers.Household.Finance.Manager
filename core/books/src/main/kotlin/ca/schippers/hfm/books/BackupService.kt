@@ -92,7 +92,8 @@ class BackupService internal constructor(private val books: Books) {
 
     /**
      * EXP-01: everything this user can see, in open formats: one CSV file per table and one JSON
-     * file per database, in a ZIP. The export is NOT encrypted; the user is warned before saving.
+     * file per database, and every document's original file, in a ZIP. The export is NOT
+     * encrypted; the user is warned before saving.
      */
     fun exportAll(target: Path) {
         val databases = books.session.readableTables()
@@ -117,8 +118,16 @@ class BackupService internal constructor(private val books: Books) {
                 zip.write(json.toString().toByteArray(Charsets.UTF_8))
                 zip.closeEntry()
             }
+            // The original files from the vault, one at a time, named by id so names never collide.
+            for (doc in books.documents.search(DocumentQuery(limit = Int.MAX_VALUE))) {
+                val name = doc.fileName?.replace(Regex("""[\\/:*?"<>|]"""), "-")?.takeIf { it.isNotBlank() } ?: "document"
+                zip.putNextEntry(ZipEntry("documents/${doc.id}-$name"))
+                zip.write(books.documents.content(doc.id))
+                zip.closeEntry()
+            }
         }
-        books.session.audit("EXPORT", "household", books.session.householdId, target.fileName.toString())
+        // The file name is the user's text, so it stays out of the shared audit log.
+        books.session.audit("EXPORT", "household", books.session.householdId, null)
     }
 
     private fun csv(columns: List<String>, rows: List<List<String?>>): String = buildString {
@@ -145,6 +154,8 @@ class BackupService internal constructor(private val books: Books) {
 
             This archive contains all the data you could see when it was made, in open formats:
             one CSV file per table (UTF-8, comma separated) and one JSON file per database.
+            The documents folder holds every document's original file, named by its id; the
+            document table says what each one is and what it is linked to.
 
             Amounts are in minor units (cents; satoshis for crypto-assets) in columns ending
             with "_minor", with the currency in a separate column. Dates are YYYY-MM-DD.

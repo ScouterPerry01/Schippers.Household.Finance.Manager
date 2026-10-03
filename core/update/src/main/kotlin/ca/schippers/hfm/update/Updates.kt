@@ -96,6 +96,8 @@ class UpdateCheck(private val publicKey: ReleaseSignature.PublicKey) {
         if (version <= Version.parse(current)) return null
         val file = parsed.files.firstOrNull { it.kind == channel.kind } ?: return null
         if (!file.url.startsWith("https://")) throw UpdateRejected("The download is not on a secure address")
+        // The name becomes a file on disk: never a path, even in a signed list.
+        if (!SAFE_NAME.matches(file.name)) throw UpdateRejected("The download's name is not a plain file name")
         if (file.size <= 0 || file.size > MAX_DOWNLOAD_BYTES || !SHA256.matches(file.sha256)) {
             throw UpdateRejected("The update list describes the download incorrectly")
         }
@@ -113,6 +115,7 @@ class UpdateCheck(private val publicKey: ReleaseSignature.PublicKey) {
         const val MAX_MANIFEST_BYTES = 256 * 1024
         const val MAX_DOWNLOAD_BYTES = 1024L * 1024 * 1024
         private val SHA256 = Regex("[0-9a-f]{64}")
+        private val SAFE_NAME = Regex("[A-Za-z0-9][A-Za-z0-9._+-]{0,199}")
 
         /** The check with RANN's release key, built into the app. */
         fun release(): UpdateCheck = UpdateCheck(ReleaseKey.publicKey)

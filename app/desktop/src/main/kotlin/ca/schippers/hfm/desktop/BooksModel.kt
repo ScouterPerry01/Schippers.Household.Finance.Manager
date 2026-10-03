@@ -71,6 +71,9 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     /** A transaction to open in the register's entry form (from search). */
     var focusTransactionId by mutableStateOf<String?>(null)
 
+    /** A document to open in the documents screen (from search). */
+    var focusDocumentId by mutableStateOf<String?>(null)
+
     /** A change that needs confirmation because it touches reconciled transactions. */
     var pendingReconciledChange by mutableStateOf<(() -> Unit)?>(null)
 

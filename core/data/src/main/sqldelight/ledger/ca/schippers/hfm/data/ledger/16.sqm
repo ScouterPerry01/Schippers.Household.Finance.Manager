@@ -1,0 +1,5 @@
+-- Version 16 to 17 (NFR-02): the document list is sorted by document date, or capture date when
+-- there is none. An index on that expression lets the newest documents be read directly instead of
+-- decrypting and sorting every document, recognized text and all (50,000 documents).
+
+CREATE INDEX document_newest ON document(coalesce(doc_date, date(captured_at / 1000, 'unixepoch')) DESC, captured_at DESC);

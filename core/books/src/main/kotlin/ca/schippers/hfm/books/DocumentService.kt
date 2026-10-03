@@ -161,7 +161,7 @@ class DocumentService internal constructor(private val books: Books) {
      * an administrator also those of shared groups.
      */
     fun inbox(): List<VaultDocument> = books.groups().flatMap { g ->
-        books.ledger(g).ledgerQueries.documentsByStatus(DocumentStatus.INBOX.name).executeAsList().filter { reviewsHere(g, it.captured_by) }.map { toDocument(g, it) }
+        toDocuments(g, books.ledger(g).ledgerQueries.documentsByStatus(DocumentStatus.INBOX.name).executeAsList().filter { reviewsHere(g, it.captured_by) })
     }.sortedByDescending { it.capturedAt }
 
     fun inboxCount(): Int = books.groups().sumOf { g ->
@@ -174,15 +174,18 @@ class DocumentService internal constructor(private val books: Books) {
     fun search(query: DocumentQuery): List<VaultDocument> {
         val pattern = query.text?.trim()?.takeIf { it.isNotEmpty() }?.let { "%" + it.replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%" }
         return books.groups().flatMap { g ->
-            books.ledger(g).ledgerQueries.searchDocuments(
-                pattern, query.from?.toString(), query.to?.toString(), query.minAmount?.minorUnits, query.maxAmount?.minorUnits, query.limit.toLong(),
-            ).executeAsList().map { toDocument(g, it) }
+            toDocuments(
+                g,
+                books.ledger(g).ledgerQueries.searchDocuments(
+                    pattern, query.from?.toString(), query.to?.toString(), query.minAmount?.minorUnits, query.maxAmount?.minorUnits, query.limit.toLong(),
+                ).executeAsList(),
+            )
         }.sortedWith(compareByDescending<VaultDocument> { it.date ?: dateOf(it.capturedAt) }.thenByDescending { it.capturedAt }).take(query.limit)
     }
 
     /** Documents attached to a record, for example a transaction's receipt. */
     fun documentsFor(entity: String, entityId: String): List<VaultDocument> = books.groups().flatMap { g ->
-        books.ledger(g).ledgerQueries.documentsFor(entity, entityId).executeAsList().map { toDocument(g, it) }
+        toDocuments(g, books.ledger(g).ledgerQueries.documentsFor(entity, entityId).executeAsList())
     }
 
     /** OCR-10: the same file, or another document with the same date and amount and a similar merchant. */
@@ -191,7 +194,7 @@ class DocumentService internal constructor(private val books: Books) {
         val date = doc.date ?: return emptyList()
         val amount = doc.amount ?: return emptyList()
         return books.groups().flatMap { g ->
-            books.ledger(g).ledgerQueries.similarDocuments(documentId, date.toString(), amount.minorUnits).executeAsList().map { toDocument(g, it) }
+            toDocuments(g, books.ledger(g).ledgerQueries.similarDocuments(documentId, date.toString(), amount.minorUnits).executeAsList())
         }.filter { other -> other.status != DocumentStatus.DISMISSED && similarNames(doc.merchant, other.merchant) }
             .map { PossibleDuplicate(it, it.sha256 == doc.sha256) }
     }
@@ -324,15 +327,25 @@ class DocumentService internal constructor(private val books: Books) {
         throw AccessDeniedException("Document not found or not accessible")
     }
 
-    private fun toDocument(group: GroupInfo, row: DocumentRow): VaultDocument {
+    private fun toDocument(group: GroupInfo, row: DocumentRow): VaultDocument =
+        toDocument(group, row, books.ledger(group).ledgerQueries.linksForDocument(row.id).executeAsList().map { DocumentLink(it.entity, it.entity_id) })
+
+    /** Several documents with their links read in a few queries, not one per document (NFR-02). */
+    private fun toDocuments(group: GroupInfo, rows: List<DocumentRow>): List<VaultDocument> {
+        val queries = books.ledger(group).ledgerQueries
+        val links = rows.map { it.id }.chunked(LINK_BATCH).flatMap { ids -> queries.linksForDocuments(ids).executeAsList() }
+            .groupBy({ it.document_id }, { DocumentLink(it.entity, it.entity_id) })
+        return rows.map { toDocument(group, it, links[it.id].orEmpty()) }
+    }
+
+    private fun toDocument(group: GroupInfo, row: DocumentRow, links: List<DocumentLink>): VaultDocument {
         val currency = row.currency?.let { runCatching { Currency.of(it) }.getOrNull() } ?: books.rates.baseCurrency
         return VaultDocument(
             row.id, group.id, row.file_name, row.title, DocumentStatus.valueOf(row.status), row.kind?.let { runCatching { DocumentKind.valueOf(it) }.getOrNull() },
             row.doc_date?.let(LocalDate::parse), row.merchant, row.amount_minor?.let { Money.ofMinor(it, currency) }, row.mime_type, row.sha256,
             row.page_count.toInt(), row.size_bytes, row.captured_at, row.captured_by, row.source_device, row.recognized_text,
             row.extraction?.let { runCatching { json.decodeFromString(StoredDraft.serializer(), it).toDraft() }.getOrNull() },
-            row.keep_forever == 1L, row.notes,
-            books.ledger(group).ledgerQueries.linksForDocument(row.id).executeAsList().map { DocumentLink(it.entity, it.entity_id) },
+            row.keep_forever == 1L, row.notes, links,
         )
     }
 
@@ -344,6 +357,9 @@ class DocumentService internal constructor(private val books: Books) {
         const val RETENTION_YEARS = 6
         private const val MAX_BYTES = 50 * 1024 * 1024
         private const val MAX_TEXT = 200_000
+
+        /** Ids per query when reading links, well under SQLite's limit on parameters. */
+        private const val LINK_BATCH = 500
 
         fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
 

@@ -4,10 +4,6 @@ import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.ocr.desktop.PaddleOcrEngine
 import ca.schippers.hfm.security.KdfParams
-import java.awt.Color
-import java.awt.Font
-import java.awt.RenderingHints
-import java.awt.image.BufferedImage
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.system.exitProcess
@@ -32,17 +28,9 @@ internal object PackagedSelfCheck {
         exitProcess(if (ok) 0 else 1)
     }
 
+    /** A receipt line saved as a picture, so the check needs no system fonts (a bare Linux has none). */
     private fun ocr(): String {
-        val image = BufferedImage(520, 90, BufferedImage.TYPE_INT_RGB)
-        image.createGraphics().apply {
-            setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
-            color = Color.WHITE
-            fillRect(0, 0, image.width, image.height)
-            color = Color.BLACK
-            font = Font(Font.SANS_SERIF, Font.BOLD, 40)
-            drawString("TOTAL 12.34", 30, 60)
-            dispose()
-        }
+        val image = checkNotNull(PackagedSelfCheck::class.java.getResourceAsStream("/hfm/selfcheck.png")).use { it.readBytes() }
         val text = PaddleOcrEngine().use { it.recognize(image).text }
         check("12.34" in text) { "OCR read \"$text\"" }
         return text

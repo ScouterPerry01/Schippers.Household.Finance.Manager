@@ -16,15 +16,19 @@ data class SearchResults(
     val categories: List<Category>,
     val bills: List<Bill>,
     val institutions: List<Institution>,
+    /** Documents whose recognized text, title, merchant, notes or file name match (TX-06). */
+    val documents: List<VaultDocument> = emptyList(),
 ) {
     val isEmpty: Boolean
-        get() = transactions.isEmpty() && accounts.isEmpty() && payees.isEmpty() && categories.isEmpty() && bills.isEmpty() && institutions.isEmpty()
+        get() = transactions.isEmpty() && accounts.isEmpty() && payees.isEmpty() && categories.isEmpty() && bills.isEmpty() &&
+            institutions.isEmpty() && documents.isEmpty()
 }
 
 /**
  * Global search (OTH-03, TX-06) across the records the user may see. Names match without regard
  * to case or accents ("epicerie" finds "Épicerie"). A number also finds transactions of that
- * amount, in or out. Text inside documents joins in Phase 2 with the document vault.
+ * amount, in or out. Documents match on the text read from them, their title, merchant, notes
+ * and file name, in the groups the user may see.
  */
 class SearchService internal constructor(private val books: Books) {
 
@@ -67,6 +71,7 @@ class SearchService internal constructor(private val books: Books) {
             categories = books.categories.list(includeArchived = true).filter { matches(it.nameEn) || matches(it.nameFr) },
             bills = books.bills.list(includeInactive = true).filter { matches(it.name) || matches(it.payeeName) },
             institutions = books.institutions.list().filter { matches(it.name) },
+            documents = books.documents.search(DocumentQuery(text = text, limit = limit)),
         )
     }
 

@@ -87,8 +87,10 @@ class BackupServiceTest {
             val marieBooks = Books(marie)
             val group = marie.createGroup("Marie private", private = true)
             marieBooks.accounts.create(AccountDraft(group, "Secret savings", AccountType.SAVINGS, Currency.CAD, Money.parse("99", Currency.CAD), LocalDate(2026, 1, 1)))
+            marieBooks.documents.import(group, "Marie's letter".toByteArray(), "letter.txt", "text/plain")
         }
         books = Books(store.unlock(home, "perry", "pw".toCharArray()))
+        val receipt = books.documents.import(books.groups().single().id, "receipt bytes".toByteArray(), "Costco: receipt.pdf", "application/pdf").document
 
         val file = temp.resolve("export.zip")
         books.backups.exportAll(file)
@@ -104,6 +106,10 @@ class BackupServiceTest {
             assertTrue(categories.contains("Épicerie"))
             val json = zip.getInputStream(zip.getEntry("core.json")).readBytes().decodeToString()
             assertTrue(json.contains("\"household\""))
+            // EXP-01: the original document files, decrypted, but only those this user may see.
+            val documents = names.filter { it.startsWith("documents/") }
+            assertEquals(listOf("documents/${receipt.id}-Costco- receipt.pdf"), documents)
+            assertEquals("receipt bytes", zip.getInputStream(zip.getEntry(documents.single())).readBytes().decodeToString())
         }
     }
 }

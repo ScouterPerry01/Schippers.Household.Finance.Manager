@@ -27,7 +27,7 @@ import kotlin.test.assertTrue
 import kotlin.time.measureTimedValue
 
 /**
- * NFR-02: 30 years of history, about 250,000 transactions, with screens opening in under 1 second
+ * NFR-02: 30 years of history, about 250,000 transactions and 50,000 documents, with screens opening in under 1 second
  * and reports in under 3 seconds. Run with `./gradlew :core:books:performanceTest`.
  * HFM_PERF_FACTOR relaxes the limits on slow machines (CI uses 3).
  */
@@ -90,6 +90,39 @@ class PerformanceTest {
         println("Generated $TRANSACTIONS transactions in $generation")
         val (_, investing) = measureTimedValue { investments(group.id) }
         println("Generated 30 years of investments in $investing")
+        val (_, filing) = measureTimedValue { documents(group.id) }
+        println("Generated $DOCUMENTS documents in $filing")
+    }
+
+    private val realDocuments = mutableListOf<String>()
+
+    /**
+     * NFR-02's 50,000 documents: a few hundred real files in the encrypted vault, the rest as rows
+     * with the text read from them, as receipts and bills over 30 years. Screens and searches read
+     * only the rows; a file is decrypted when it is opened.
+     */
+    private fun documents(groupId: String) {
+        val group = books.groups().single { it.id == groupId }
+        repeat(REAL_DOCUMENTS) { i ->
+            realDocuments += books.documents.import(groupId, ByteArray(40_000) { (it * 31 + i).toByte() }, "scan-$i.jpg", "image/jpeg").document.id
+        }
+        val ledger = books.ledger(group).ledgerQueries
+        val random = Random(7)
+        val days = (today.toEpochDays() - start.toEpochDays()).toInt()
+        val words = listOf("ÉPICERIE", "PHARMACIE", "QUINCAILLERIE", "GARAGE", "RESTAURANT", "HYDRO", "ASSURANCE", "TPS", "TVQ", "SOUS-TOTAL", "TOTAL", "MERCI")
+        books.ledger(group).transaction {
+            repeat(DOCUMENTS - REAL_DOCUMENTS) { i ->
+                val id = Ids.newId()
+                val date = LocalDate.fromEpochDays(start.toEpochDays() + random.nextInt(days))
+                val amount = random.nextLong(100, 40_000)
+                val text = (1..12).joinToString("\n") { "${words[random.nextInt(words.size)]} ${random.nextInt(1, 999)},${random.nextInt(10, 99)}" }
+                ledger.insertDocument(
+                    id, "$id.hfmdoc", "image/jpeg", Ids.newId(), 1, text, date.toEpochDays() * 86_400_000L, "perry", "phone",
+                    "IMG_$i.jpg", null, if (i % 2000 == 0) "INBOX" else "FILED", "RECEIPT", date.toString(), "Merchant ${i % 800}",
+                    amount, "CAD", null, "test", 200_000, 0, null, null,
+                )
+            }
+        }
     }
 
     private lateinit var portfolio: List<Account>
@@ -148,6 +181,12 @@ class PerformanceTest {
         val full = books.transactions.register(accounts[0].id)
         assertEquals(full.last().runningBalance, register.last().runningBalance, "the running balance counts the whole history")
         timed("search", 1000) { books.search.search("pharmacie") }
+        val documents = timed("documents, latest 500", 1000) { books.documents.search(DocumentQuery()) }
+        assertEquals(500, documents.size)
+        val found = timed("text inside 50,000 documents", 1000) { books.documents.search(DocumentQuery(text = "quincaillerie", limit = 200)) }
+        assertEquals(200, found.size)
+        timed("review inbox count", 1000) { books.documents.inboxCount() }
+        timed("open a document", 1000) { books.documents.content(realDocuments.last()) }
         timed("dashboard data", 1000) {
             books.reports.netWorth(books.reports.monthEnds(today.minus(DatePeriod(months = 11)), today))
             books.reports.byCategory(ReportFilter(LocalDate(today.year, today.month, 1), today))
@@ -174,5 +213,7 @@ class PerformanceTest {
 
     private companion object {
         const val TRANSACTIONS = 250_000
+        const val DOCUMENTS = 50_000
+        const val REAL_DOCUMENTS = 300
     }
 }

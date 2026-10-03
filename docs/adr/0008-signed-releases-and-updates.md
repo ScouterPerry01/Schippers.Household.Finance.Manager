@@ -25,10 +25,10 @@ Status: Accepted (Phase 4d, 2026-10-03)
 1. Fetch `releases/latest/download/update.json` and its signature over HTTPS (never redirected to plain HTTP; at most 256 KB). `latest` never points to a draft or pre-release.
 2. Verify the signature with the public key built into the app; the trusted comment must name `update.json`.
 3. Offer the release only if its version is newer than this copy and it has a file for this copy's kind.
-4. Download the file, refusing more bytes than announced, and keep it only if its size and SHA-256 match the signed manifest. Only then is it installed:
+4. Refuse a file name that is not a plain name (letters, digits and `._+-`), even in a signed list, since it becomes a file on disk. Download the file, refusing more bytes than announced, and keep it only if its size and SHA-256 match the signed manifest. Only then is it installed:
    - **AppImage:** the checked file replaces the running AppImage; the user restarts.
    - **.deb / .rpm:** the checked file is saved in Downloads and opened with the system's software installer; the terminal command is shown too.
-   - **APK (GitHub build):** handed to Android's package installer, which asks the user to confirm and also refuses an APK not signed like the installed app.
+   - **APK (GitHub build):** handed to Android's package installer, which asks the user to confirm and also refuses an APK not signed like the installed app. The installer's answer comes back to a receiver that is not exported, so no other app can make the companion start an intent of its choosing.
 
 **Which copies check.** Linux .deb, .rpm and AppImage installs, and the Android GitHub build. Not the Microsoft Store (MSIX), Flatpak or Google Play builds, which their stores update, nor a copy run from source. The Android app has two flavours with the same package `ca.schippers.hfm.companion`: `play` never checks and has no install permission; `github` checks and asks for `REQUEST_INSTALL_PACKAGES`.
 

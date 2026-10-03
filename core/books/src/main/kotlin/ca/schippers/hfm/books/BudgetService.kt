@@ -65,7 +65,8 @@ class BudgetService internal constructor(private val books: Books) {
         validate(!amount.isNegative, "error.billAmountPositive")
         val month = "%04d-%02d".format(startMonth.year, startMonth.month.ordinal + 1)
         books.core.upsertBudget(Ids.newId(), categoryId, period.name, amount.minorUnits, amount.currency.code, if (rollover) 1 else 0, month)
-        books.session.audit("SET_BUDGET", "category", categoryId, "$period $amount")
+        // The amount stays out of the shared audit log (core.db), which every user can read.
+        books.session.audit("SET_BUDGET", "category", categoryId, period.toString())
     }
 
     fun remove(categoryId: String) {

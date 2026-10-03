@@ -248,6 +248,8 @@ CREATE TABLE document (
 CREATE INDEX document_sha ON document(sha256);
 CREATE INDEX document_status ON document(status, captured_at);
 CREATE INDEX document_date ON document(doc_date);
+-- Version 17 (NFR-02): the documents list's order, so the newest are read without sorting them all.
+CREATE INDEX document_newest ON document(coalesce(doc_date, date(captured_at / 1000, 'unixepoch')) DESC, captured_at DESC);
 CREATE INDEX document_link_entity ON document_link(entity, entity_id);
 
 CREATE TABLE document_link (
@@ -680,6 +682,10 @@ DELETE FROM document_link WHERE document_id = ? AND entity = ? AND entity_id = ?
 
 linksForDocument:
 SELECT * FROM document_link WHERE document_id = ?;
+
+-- The links of a page of documents in one query, rather than one query per document (NFR-02).
+linksForDocuments:
+SELECT * FROM document_link WHERE document_id IN ?;
 
 documentsFor:
 SELECT d.* FROM document d JOIN document_link l ON l.document_id = d.id WHERE l.entity = ? AND l.entity_id = ? ORDER BY d.captured_at DESC;

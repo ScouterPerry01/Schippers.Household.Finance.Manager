@@ -77,6 +77,13 @@ fun DocumentsScreen(model: BooksModel) {
     val scope = rememberCoroutineScope()
     var tab by remember { mutableStateOf(DocumentsTab.INBOX) }
     var reviewing by remember { mutableStateOf<VaultDocument?>(null) }
+    // OTH-03: a document chosen in the search results opens here.
+    LaunchedEffect(model.focusDocumentId) {
+        model.focusDocumentId?.let { id ->
+            reviewing = runCatching { model.books.documents.get(id) }.getOrNull()
+            model.focusDocumentId = null
+        }
+    }
     var busy by remember { mutableStateOf(false) }
     var dragOver by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }

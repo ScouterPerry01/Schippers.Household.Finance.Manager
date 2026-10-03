@@ -6,6 +6,8 @@ import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
+import ca.schippers.hfm.ocr.OcrLine
+import ca.schippers.hfm.ocr.OcrResult
 import ca.schippers.hfm.security.KdfParams
 import kotlinx.datetime.LocalDate
 import org.junit.jupiter.api.AfterEach
@@ -65,6 +67,17 @@ class SearchServiceTest {
     fun `memos are searched and LIKE wildcards are literal`() {
         assertEquals(listOf("Café"), books.search.search("100% budget").transactions.map { it.payeeName })
         assertTrue(books.search.search("1_0").transactions.isEmpty())
+    }
+
+    @Test
+    fun `text read from documents is searched too (TX-06)`() {
+        val group = books.groups().single().id
+        val doc = books.documents.import(group, "photo".encodeToByteArray(), "IMG_7.jpg", "image/jpeg").document
+        val text = "QUINCAILLERIE BMR\nTEINTURE EXTERIEURE 48,99\nTOTAL 56,33"
+        books.documents.recordText(doc.id, 1, OcrResult(text.lines().map { OcrLine(it, 0.97f) }, 500), "test", d(20))
+        assertEquals(listOf(doc.id), books.search.search("teinture").documents.map { it.id })
+        assertEquals(listOf(doc.id), books.search.search("IMG_7").documents.map { it.id }, "file names are searched")
+        assertTrue(books.search.search("teinture").transactions.isEmpty())
     }
 
     @Test

@@ -84,6 +84,17 @@ class UpdateCheckTest {
     }
 
     @Test
+    fun `a file name that is a path is rejected, even when signed`() {
+        for (name in listOf("../../.bashrc", "/etc/passwd", ".hidden", "a b.deb")) {
+            val bytes = UpdateManifest(
+                version = "0.9.1", date = "2026-10-20",
+                files = listOf(UpdateFile("deb", name, "https://github.com/x/a.deb", 1234, sha)),
+            ).toJson().toByteArray()
+            assertFailsWith<UpdateRejected>(name) { check.evaluate(bytes, signed(bytes), "0.9.0", Channel.DEB) }
+        }
+    }
+
+    @Test
     fun `a download is checked against the signed size and hash`() {
         val file = UpdateFile("deb", "a.deb", "https://x", 1234, sha)
         UpdateCheck.verifyDownload(file, 1234, sha.uppercase())
