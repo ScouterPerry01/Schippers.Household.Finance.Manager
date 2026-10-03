@@ -44,7 +44,8 @@ Requirements: JDK 21. For the Android app, the Android SDK (API 37).
 ./gradlew :app:desktop:run          # run the desktop app
 ./gradlew :app:desktop:runDemo      # try it with a throw-away sample household (-Plang=fr for French)
 ./gradlew :core:books:performanceTest  # NFR-02: times screens and reports on 30 years of data
-./gradlew :app:desktop:packageMsi   # Windows installer (on Windows)
+./gradlew :app:desktop:packageMsix  # Microsoft Store package (on Windows, with the Windows SDK)
+./gradlew :app:desktop:packageMsi   # Windows installer for testing (on Windows)
 ./gradlew :app:desktop:packageDeb   # Linux package (on Linux)
 ./gradlew :app:android:assembleDebug
 ```

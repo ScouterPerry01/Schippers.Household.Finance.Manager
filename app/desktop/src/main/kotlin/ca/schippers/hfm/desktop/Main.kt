@@ -20,12 +20,21 @@ import ca.schippers.hfm.books.StatementStatus
 import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.i18n.Messages
 import kotlinx.coroutines.delay
+import java.util.prefs.Preferences
 
-fun main() = application {
+fun main() {
+    PackagedSelfCheck.runIfRequested()
+    desktopApp()
+}
+
+private fun desktopApp() = application {
     val state = remember {
-        AppState().also { app ->
+        // The demo keeps its own per-computer settings, so trying it never changes the real app's.
+        val demo = System.getProperty("hfm.demo") == "true"
+        val prefs = Preferences.userRoot().node(if (demo) "ca/schippers/hfm-demo" else "ca/schippers/hfm")
+        AppState(prefs = prefs).also { app ->
             // Demo mode (./gradlew :app:desktop:runDemo): a throw-away sample household.
-            if (System.getProperty("hfm.demo") == "true") {
+            if (demo) {
                 System.getProperty("hfm.demo.lang")?.let { tag ->
                     Language.entries.firstOrNull { it.tag == tag }?.let { app.switchLanguage(it, remember = false) }
                 }

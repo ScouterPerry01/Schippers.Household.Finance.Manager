@@ -51,5 +51,9 @@ OCR-01 and OCR-04: text recognition runs on the user's own device, in English an
   - It reads merchant, date, total, subtotal, GST/HST/QST/PST, currency, payment method, masked card digits, invoice and account numbers, and the due date, in English and French.
   - It checks the subtotal plus taxes against the total.
   - Each field gets a confidence; fields under 0.85 are marked for review.
-- **Still to do at packaging:** drop ONNX Runtime's libraries for other platforms (see Consequences).
+- **Packaging (done in Phase 4d, 2026-10-03):** see below.
 
+## Packaging (Phase 4d, 2026-10-03)
+
+- Each package is built on the platform it is for, so a Gradle artifact transform (`KeepHostNatives` in `app/desktop/build.gradle.kts`) keeps only the build machine's native libraries in the desktop app's classpath: ONNX Runtime goes from 55.6 MB to 6.3 MB (Windows x64), and the SQLite driver, which carries twenty platforms, from 16.2 MB to 1.0 MB. The Windows installer went from 165 MB to 101 MB.
+- `PackagedSelfCheck` proves an installed package still loads them: started with `JAVA_TOOL_OPTIONS=-Dhfm.selfcheck=<file>`, the app reads a generated receipt line with OCR, creates and reopens an encrypted household, writes the result and exits without a window. The release workflow runs it on every package.
