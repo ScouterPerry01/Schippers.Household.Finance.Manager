@@ -1,0 +1,89 @@
+-- Version 13 to 14 (MED-01 to MED-10): medical and dental plans, their coverage, medical
+-- expenses and the claims made for them.
+
+-- MED-01, MED-03: a health, dental, vision, travel or public plan. [member_id] is the plan member;
+-- the plan year starts on [year_start_month]/[year_start_day]; claims are due [claim_days] after the
+-- service (MED-09). A Health Spending Account has a yearly credit, [hsa_amount_minor].
+CREATE TABLE med_plan (
+    id TEXT NOT NULL PRIMARY KEY,
+    kind TEXT NOT NULL CHECK (kind IN ('GROUP_HEALTH', 'DENTAL', 'VISION', 'PRIVATE_HEALTH', 'TRAVEL', 'HSA', 'RAMQ', 'CDCP', 'OTHER')),
+    name TEXT NOT NULL,
+    insurer TEXT,
+    policy_number TEXT,
+    certificate_number TEXT,
+    member_id TEXT,
+    year_start_month INTEGER NOT NULL DEFAULT 1,
+    year_start_day INTEGER NOT NULL DEFAULT 1,
+    claim_days INTEGER NOT NULL DEFAULT 365,
+    hsa_amount_minor INTEGER,
+    active INTEGER NOT NULL DEFAULT 1,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- MED-01: the people a plan covers, and in what order it pays for each (1 = first: coordination
+-- of benefits between spouses' plans).
+CREATE TABLE med_plan_person (
+    plan_id TEXT NOT NULL REFERENCES med_plan(id) ON DELETE CASCADE,
+    member_id TEXT NOT NULL,
+    priority INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (plan_id, member_id)
+);
+
+-- MED-02: what a plan pays for one kind of service.
+CREATE TABLE med_coverage (
+    id TEXT NOT NULL PRIMARY KEY,
+    plan_id TEXT NOT NULL REFERENCES med_plan(id) ON DELETE CASCADE,
+    service TEXT NOT NULL,
+    percent TEXT NOT NULL,
+    deductible_minor INTEGER,
+    annual_max_minor INTEGER,
+    per_visit_max_minor INTEGER,
+    frequency_months INTEGER,
+    notes TEXT
+);
+
+CREATE INDEX med_coverage_plan ON med_coverage(plan_id);
+
+-- MED-06: one medical or dental expense, with the transaction that paid it and, for a
+-- prescription, the medication (HLT-08). [paid_date] is when it was paid, for the tax credit.
+CREATE TABLE med_expense (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    provider_id TEXT,
+    service TEXT NOT NULL,
+    service_date TEXT NOT NULL,
+    paid_date TEXT,
+    description TEXT,
+    amount_minor INTEGER NOT NULL,
+    transaction_id TEXT,
+    medication_id TEXT,
+    tax_eligible INTEGER NOT NULL DEFAULT 1,
+    closed INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX med_expense_date ON med_expense(service_date);
+CREATE INDEX med_expense_txn ON med_expense(transaction_id) WHERE transaction_id IS NOT NULL;
+
+-- MED-07: an expense claimed to one plan, with the amounts at each stage.
+CREATE TABLE med_claim (
+    id TEXT NOT NULL PRIMARY KEY,
+    expense_id TEXT NOT NULL REFERENCES med_expense(id) ON DELETE CASCADE,
+    plan_id TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('SUBMITTED', 'PAID', 'DENIED')),
+    submitted_date TEXT NOT NULL,
+    claimed_minor INTEGER NOT NULL,
+    paid_date TEXT,
+    paid_minor INTEGER,
+    reference TEXT,
+    transaction_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX med_claim_expense ON med_claim(expense_id);

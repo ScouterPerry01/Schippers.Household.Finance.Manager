@@ -49,7 +49,7 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import java.time.format.DateTimeFormatter
 
-enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, PLANS, FX, DEBT, BUDGET, RECONCILIATION }
+enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, PLANS, FX, MEDICAL, DEBT, BUDGET, RECONCILIATION }
 /** FX-06: reports that can show one currency's accounts in their own amounts. */
 private val BY_CURRENCY = setOf(ReportKind.INCOME_EXPENSE, ReportKind.SPENDING_BY_CATEGORY, ReportKind.INCOME_BY_CATEGORY, ReportKind.SPENDING_BY_PAYEE, ReportKind.NET_WORTH)
 
@@ -124,17 +124,17 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                 if (state.kind == ReportKind.PLANS) {
                     Picker(model.t("loans.year"), (today().year downTo today().year - 10).toList(), state.planYear, { it.toString() }, Modifier.width(140.dp)) { state.planYear = it }
                 }
-                if (state.kind == ReportKind.INVESTMENT_INCOME || state.kind == ReportKind.FX) {
+                if (state.kind == ReportKind.INVESTMENT_INCOME || state.kind == ReportKind.FX || state.kind == ReportKind.MEDICAL) {
                     Picker(model.t("income.year"), (today().year downTo today().year - 10).toList(), state.taxYear, { it.toString() }, Modifier.width(190.dp)) { state.taxYear = it }
                 }
-                if (state.kind !in setOf(ReportKind.RECONCILIATION, ReportKind.DEBT, ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS)) {
+                if (state.kind !in setOf(ReportKind.RECONCILIATION, ReportKind.DEBT, ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL)) {
                     Picker(model.t("report.period"), RangePreset.entries, state.preset, { model.t("range.$it") }, Modifier.width(200.dp)) { state.preset = it }
                     if (state.preset == RangePreset.CUSTOM) {
                         DateInput(model.t("report.from"), state.customFrom, Modifier.width(150.dp)) { state.customFrom = it }
                         DateInput(model.t("report.to"), state.customTo, Modifier.width(150.dp)) { state.customTo = it }
                     }
                 }
-                if (groups.size > 1 && state.kind !in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS)) {
+                if (groups.size > 1 && state.kind !in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL)) {
                     Picker(model.t("report.accounts"), listOf(null) + groups, groups.firstOrNull { it.id == state.groupId }, { it?.name ?: model.t("report.allAccounts") }, Modifier.width(200.dp)) {
                         state.groupId = it?.id
                     }
@@ -144,7 +144,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                         state.currency = it
                     }
                 }
-                if (state.kind in setOf(ReportKind.PORTFOLIO, ReportKind.INVESTMENT_INCOME, ReportKind.PLANS) && members.isNotEmpty()) {
+                if (state.kind in setOf(ReportKind.PORTFOLIO, ReportKind.INVESTMENT_INCOME, ReportKind.PLANS, ReportKind.MEDICAL) && members.isNotEmpty()) {
                     Picker(model.t("report.person"), listOf(null) + members, members.firstOrNull { it.id == state.memberId }, { it?.displayName ?: model.t("report.everyone") }, Modifier.width(180.dp)) {
                         state.memberId = it?.id
                     }
@@ -175,6 +175,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                     ReportKind.INVESTMENT_INCOME -> InvestmentIncomeReport(model, state.taxYear, state.memberId)
                     ReportKind.FX -> FxReport(model, state.taxYear)
                     ReportKind.PLANS -> RegisteredPlansReport(model, state.planYear, state.memberId)
+                    ReportKind.MEDICAL -> MedicalReport(model, state.taxYear, state.memberId)
                     ReportKind.DEBT -> DebtReport(model, filter.accountIds)
                     ReportKind.BUDGET -> BudgetReportView(model, LocalDate(to.year, to.month, 1), yearView = state.preset in setOf(RangePreset.THIS_YEAR, RangePreset.LAST_YEAR))
                     ReportKind.RECONCILIATION -> ReconciliationReport(model)

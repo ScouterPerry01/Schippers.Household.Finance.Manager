@@ -55,6 +55,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val allocation = AllocationService(this)
     val taxSlips = TaxSlipService(this)
     val fxGains = FxGainService(this)
+    val medical = MedicalService(this)
     val brokerage = BrokerageImportService(this)
     val plans = PlanService(this)
     val prices = PriceService(this)
@@ -117,10 +118,10 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     /**
      * Everything that must be renewed within [withinDays] of [today], or is overdue: pet licences and
      * insurance, vehicle papers and warranties, loan terms (each with its own lead time, LN-04) and
-     * card annual fees (CC-04).
+     * card annual fees (CC-04) and medical claims still to send (MED-09).
      */
     fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> =
-        (pets.renewals(today, withinDays) + vehicles.renewals(today, withinDays) + loans.renewals(today, withinDays) + creditCards.renewals(today, withinDays)).sortedBy { it.date }
+        (pets.renewals(today, withinDays) + vehicles.renewals(today, withinDays) + loans.renewals(today, withinDays) + creditCards.renewals(today, withinDays) + medical.deadlines(today, withinDays)).sortedBy { it.date }
 
     /** Tags for projects and events (CAT-04). */
     fun tags(): List<Tag> = core.tags().executeAsList().map { Tag(it.id, it.name) }

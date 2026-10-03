@@ -100,4 +100,51 @@ object PdfPages {
         }
         java.io.ByteArrayOutputStream().also { doc.save(it) }.toByteArray()
     }
+
+    /**
+     * MED-15: one PDF of supporting receipts: a cover page listing [cover] lines, then each
+     * document in turn, PDFs page by page and images on a page of their own.
+     */
+    fun bundle(title: String, cover: List<String>, documents: List<Pair<String, ByteArray>>): ByteArray = org.apache.pdfbox.pdmodel.PDDocument().use { doc ->
+        val font = org.apache.pdfbox.pdmodel.font.PDType1Font(org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA)
+        val bold = org.apache.pdfbox.pdmodel.font.PDType1Font(org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA_BOLD)
+        // The standard fonts cover Western European text; anything else is replaced so the page still prints.
+        fun safe(text: String, f: org.apache.pdfbox.pdmodel.font.PDType1Font) = text.map { c -> if (runCatching { f.encode(c.toString()) }.isSuccess) c else '?' }.joinToString("")
+        val lines = listOf(title) + cover
+        lines.chunked(48).forEachIndexed { pageIndex, chunk ->
+            val page = org.apache.pdfbox.pdmodel.PDPage(org.apache.pdfbox.pdmodel.common.PDRectangle.LETTER)
+            doc.addPage(page)
+            org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page).use { cs ->
+                var y = page.mediaBox.height - 56f
+                chunk.forEachIndexed { i, line ->
+                    val f = if (pageIndex == 0 && i == 0) bold else font
+                    cs.beginText()
+                    cs.setFont(f, if (pageIndex == 0 && i == 0) 14f else 10f)
+                    cs.newLineAtOffset(56f, y)
+                    cs.showText(safe(line, f))
+                    cs.endText()
+                    y -= if (pageIndex == 0 && i == 0) 24f else 14f
+                }
+            }
+        }
+        val opened = ArrayList<org.apache.pdfbox.pdmodel.PDDocument>()
+        try {
+            for ((mime, bytes) in documents) {
+                if (mime == "application/pdf") {
+                    val source = org.apache.pdfbox.Loader.loadPDF(bytes).also { opened += it }
+                    for (p in source.pages) doc.importPage(p)
+                } else {
+                    val image = org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject.createFromByteArray(doc, bytes, "receipt")
+                    val box = org.apache.pdfbox.pdmodel.common.PDRectangle.LETTER
+                    val scale = minOf((box.width - 72f) / image.width, (box.height - 72f) / image.height, 1f)
+                    val page = org.apache.pdfbox.pdmodel.PDPage(box)
+                    doc.addPage(page)
+                    org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page).use { it.drawImage(image, 36f, box.height - 36f - image.height * scale, image.width * scale, image.height * scale) }
+                }
+            }
+            java.io.ByteArrayOutputStream().also { doc.save(it) }.toByteArray()
+        } finally {
+            opened.forEach { it.close() }
+        }
+    }
 }

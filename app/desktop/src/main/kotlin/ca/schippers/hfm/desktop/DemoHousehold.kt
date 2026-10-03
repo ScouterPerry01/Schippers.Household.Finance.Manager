@@ -18,7 +18,13 @@ import ca.schippers.hfm.books.HealthCondition
 import ca.schippers.hfm.books.HealthProvider
 import ca.schippers.hfm.books.HealthTest
 import ca.schippers.hfm.books.Immunization
+import ca.schippers.hfm.books.MedCoverage
+import ca.schippers.hfm.books.MedExpense
+import ca.schippers.hfm.books.MedPlan
+import ca.schippers.hfm.books.MedPlanKind
+import ca.schippers.hfm.books.MedService
 import ca.schippers.hfm.books.Medication
+import ca.schippers.hfm.books.PlanPerson
 import ca.schippers.hfm.books.Member
 import ca.schippers.hfm.books.ProviderKind
 import ca.schippers.hfm.books.FuelEntry
@@ -502,6 +508,47 @@ object DemoHousehold {
         health.saveAllergy(Allergy("", shared, lea.id, "Arachides", "Urticaire", Severity.SEVERE, "Épipen dans le sac d'école"))
         health.saveTest(HealthTest("", private, alex.id, "Bilan lipidique (LDL)", day(-35), "2,4", "mmol/L", "< 3,5", doctor.id, day(150), null))
         health.saveImmunization(Immunization("", shared, lea.id, "Influenza", day(-340), pharmacy.id, day(25), null))
+
+        // MED-01 to MED-10: each spouse's employer plan, paying first for its own member.
+        val med = books.medical
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        fun pct(s: String) = BigDecimal(s)
+        val alexPlan = med.savePlan(
+            MedPlan(
+                "", shared, MedPlanKind.GROUP_HEALTH, "Assurance collective (Alex)", "SSQ Assurance", "G-48812", "C-0045123", alex.id,
+                people = listOf(PlanPerson(alex.id, 1), PlanPerson(lea.id, 1), PlanPerson(sam.id, 2)),
+            ),
+        )
+        val samPlan = med.savePlan(
+            MedPlan("", shared, MedPlanKind.GROUP_HEALTH, "Régime d'employeur (Sam)", "Beneva", "77105", "S-2231", sam.id, people = listOf(PlanPerson(sam.id, 1), PlanPerson(alex.id, 2), PlanPerson(lea.id, 2))),
+        )
+        listOf(
+            MedCoverage("", alexPlan.id, MedService.PRESCRIPTION, pct("80")),
+            MedCoverage("", alexPlan.id, MedService.DENTAL_PREVENTIVE, pct("90"), frequencyMonths = 9),
+            MedCoverage("", alexPlan.id, MedService.DENTAL_BASIC, pct("80"), annualMax = cad("1500")),
+            MedCoverage("", alexPlan.id, MedService.MASSAGE, pct("80"), perVisitMax = cad("60"), annualMax = cad("500")),
+            MedCoverage("", alexPlan.id, MedService.PHYSIOTHERAPY, pct("80"), annualMax = cad("600")),
+            MedCoverage("", alexPlan.id, MedService.EYE_EXAM, pct("100"), perVisitMax = cad("100"), frequencyMonths = 24),
+            MedCoverage("", alexPlan.id, MedService.EYEWEAR, pct("100"), annualMax = cad("200"), frequencyMonths = 24),
+        ).forEach { med.saveCoverage(it) }
+        med.saveCoverage(MedCoverage("", samPlan.id, MedService.PRESCRIPTION, pct("100"), deductible = cad("50")))
+        med.saveCoverage(MedCoverage("", samPlan.id, MedService.MASSAGE, pct("100"), annualMax = cad("300")))
+        med.saveCoverage(MedCoverage("", samPlan.id, MedService.DENTAL_BASIC, pct("50")))
+        fun expense(who: Member, service: MedService, days: Int, amount: String, what: String, provider: HealthProvider? = null) =
+            med.saveExpense(MedExpense("", shared, who.id, service, day(days), cad(amount), provider?.id, description = what))
+        // Paid by the first plan, nothing more to claim.
+        val cleaning = expense(lea, MedService.DENTAL_PREVENTIVE, -120, "185.00", "Nettoyage et examen", dentist)
+        med.recordPayment(med.submit(cleaning.id, alexPlan.id, day(-119)).id, day(-110), cad("166.50"))
+        val glasses = expense(alex, MedService.EYEWEAR, -380, "420.00", "Lunettes (Lunetterie New Look)")
+        med.recordPayment(med.submit(glasses.id, alexPlan.id, day(-379)).id, day(-370), cad("200.00"))
+        // Paid by Alex's plan; Sam's plan can take the rest.
+        val massage = expense(alex, MedService.MASSAGE, -40, "120.00", "Massothérapie")
+        med.recordPayment(med.submit(massage.id, alexPlan.id, day(-39)).id, day(-30), cad("60.00"))
+        // Waiting for payment, still to send, and one about to expire.
+        val inhaler = expense(sam, MedService.PRESCRIPTION, -5, "42.30", "Salbutamol", pharmacy)
+        med.submit(inhaler.id, samPlan.id, day(-5))
+        expense(sam, MedService.PHYSIOTHERAPY, -15, "95.00", "Physiothérapie (épaule)")
+        expense(lea, MedService.EYE_EXAM, -340, "95.00", "Examen de la vue")
     }
 
     /** Bills from next month on (this month's are already entered), plus a few due within days. */

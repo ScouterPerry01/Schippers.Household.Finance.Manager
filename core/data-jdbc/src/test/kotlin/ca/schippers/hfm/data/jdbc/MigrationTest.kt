@@ -306,6 +306,20 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 13 ledgers gain medical plans and claims`() {
+        val file = temp.resolve("ledger13.db")
+        older("../data/src/main/sqldelight/ledger/schemas/13.db", file, 13).close()
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            val q = LedgerDatabase(driver).medicalQueries
+            q.upsertPlan("p", "DENTAL", "Dental", null, null, null, null, 1, 1, 365, null, 1, null, 0, 0)
+            q.upsertExpense("e", "m", null, "DENTAL_BASIC", "2026-01-10", null, null, 12000, null, null, 1, 0, null, 0, 0)
+            q.upsertClaim("c", "e", "p", "SUBMITTED", "2026-01-11", 12000, null, null, null, null, null, 0, 0)
+            assertEquals(1, q.claimsForExpense("e").executeAsList().size)
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()
