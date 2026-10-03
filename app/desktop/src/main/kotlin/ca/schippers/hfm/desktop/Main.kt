@@ -98,9 +98,14 @@ private fun desktopApp() = application {
     }
 }
 
-/** The RANN's Roost head, for the window, taskbar and tray (branding/, not covered by the GPL). */
-private val AppIcon = BitmapPainter(
-    org.jetbrains.skia.Image.makeFromEncoded(
-        checkNotNull(object {}.javaClass.getResourceAsStream("/hfm/branding/icon.png")).use { it.readBytes() },
-    ).toComposeImageBitmap(),
-)
+/**
+ * The RANN's Roost head, for the window, taskbar and tray (branding/, not covered by the GPL).
+ * Loaded on first use, so the packaged self-check runs without the graphics libraries.
+ */
+private val AppIcon by lazy {
+    BitmapPainter(
+        org.jetbrains.skia.Image.makeFromEncoded(
+            checkNotNull(object {}.javaClass.getResourceAsStream("/hfm/branding/icon.png")).use { it.readBytes() },
+        ).toComposeImageBitmap(),
+    )
+}
