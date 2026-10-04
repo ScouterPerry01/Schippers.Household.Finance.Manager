@@ -113,6 +113,9 @@ class ClaudeProviderTest {
             assertFailsWith<AiFailure> { ClaudeProvider("k", serve(400, error.format("invalid_request_error", "Your credit balance is too low"))).read(request()) }.reason,
         )
         stop()
-        assertEquals(AiFailure.Reason.NETWORK, assertFailsWith<AiFailure> { ClaudeProvider("k", "http://127.0.0.1:1").read(request()) }.reason)
+        val closed = java.net.ServerSocket(0).use { it.localPort }
+        val started = System.nanoTime()
+        assertEquals(AiFailure.Reason.NETWORK, assertFailsWith<AiFailure> { ClaudeProvider("k", "http://127.0.0.1:$closed", java.time.Duration.ofSeconds(2)).read(request()) }.reason)
+        assertTrue(System.nanoTime() - started < 30_000_000_000L, "an unreachable service is reported within seconds")
     }
 }

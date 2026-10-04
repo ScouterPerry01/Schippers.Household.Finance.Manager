@@ -2,6 +2,7 @@ package ca.schippers.hfm.ai
 
 import com.anthropic.client.okhttp.AnthropicOkHttpClient
 import com.anthropic.core.JsonValue
+import com.anthropic.core.Timeout
 import com.anthropic.errors.AnthropicIoException
 import com.anthropic.errors.AnthropicServiceException
 import com.anthropic.errors.BadRequestException
@@ -31,7 +32,12 @@ import java.util.Base64
  * With Claude Opus 5.5 a refused request may be answered by another model the service chooses
  * (server-side fallback); the usage log records the model that answered.
  */
-class ClaudeProvider(private val apiKey: String, private val baseUrl: String? = null) : AiProvider {
+class ClaudeProvider(
+    private val apiKey: String,
+    private val baseUrl: String? = null,
+    /** How long to wait for the connection; an unreachable service is reported quickly. */
+    private val connectTimeout: Duration = Duration.ofSeconds(10),
+) : AiProvider {
 
     override val id = ID
 
@@ -39,7 +45,8 @@ class ClaudeProvider(private val apiKey: String, private val baseUrl: String? = 
         val client = AnthropicOkHttpClient.builder()
             .apiKey(apiKey)
             .apply { baseUrl?.let { baseUrl(it) } }
-            .timeout(Duration.ofMinutes(5))
+            // A long statement can take minutes to read; reaching the service should not.
+            .timeout(Timeout.builder().connect(connectTimeout).request(Duration.ofMinutes(5)).build())
             .maxRetries(2)
             .build()
         try {
