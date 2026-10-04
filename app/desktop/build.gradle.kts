@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":core:data-jdbc"))
     implementation(project(":core:books"))
     implementation(project(":core:ocr-desktop"))
+    implementation(project(":core:ai"))
     implementation(project(":core:i18n"))
     implementation(project(":core:calc"))
     implementation(project(":core:update"))
@@ -169,6 +170,8 @@ tasks.register<JavaExec>("runDemo") {
     providers.gradleProperty("search").orNull?.let { systemProperty("hfm.demo.search", it) }
     // A test release folder (update.json, its .minisig, release-key.pub, the files) for the update screens.
     providers.gradleProperty("update").orNull?.let { systemProperty("hfm.demo.update", it) }
+    // A local stand-in for the AI service, for trying AI reading without a key or cost.
+    providers.gradleProperty("aiUrl").orNull?.let { systemProperty("hfm.demo.aiUrl", it) }
 }
 
 // Microsoft Store package (DIST-01): the same app image as the MSI, with the Store identity, the

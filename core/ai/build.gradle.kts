@@ -16,3 +16,9 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.launcher)
 }
+
+// A test that hangs (a keyring prompt, a socket) fails after a minute with its name, instead of
+// holding a CI runner until GitHub stops it.
+tasks.test {
+    systemProperty("junit.jupiter.execution.timeout.default", "60s")
+}

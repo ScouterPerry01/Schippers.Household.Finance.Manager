@@ -41,14 +41,28 @@ class ClaudeProvider(
 
     override val id = ID
 
+    private fun client() = AnthropicOkHttpClient.builder()
+        .apiKey(apiKey)
+        .apply { baseUrl?.let { baseUrl(it) } }
+        // A long statement can take minutes to read; reaching the service should not.
+        .timeout(Timeout.builder().connect(connectTimeout).request(Duration.ofMinutes(5)).build())
+        .maxRetries(2)
+        .build()
+
+    /** Lists the models, which costs nothing, to tell whether the key works. */
+    override fun checkKey() {
+        val client = client()
+        try {
+            client.models().list()
+        } catch (e: Exception) {
+            throw failure(e)
+        } finally {
+            client.close()
+        }
+    }
+
     override fun read(request: AiRequest): AiReply {
-        val client = AnthropicOkHttpClient.builder()
-            .apiKey(apiKey)
-            .apply { baseUrl?.let { baseUrl(it) } }
-            // A long statement can take minutes to read; reaching the service should not.
-            .timeout(Timeout.builder().connect(connectTimeout).request(Duration.ofMinutes(5)).build())
-            .maxRetries(2)
-            .build()
+        val client = client()
         try {
             val blocks = request.pages.map { page ->
                 ContentBlockParam.ofImage(
@@ -79,29 +93,39 @@ class ClaudeProvider(
             val usage = message.usage()
             val input = usage.inputTokens() + usage.cacheCreationInputTokens().orElse(0L) + usage.cacheReadInputTokens().orElse(0L)
             return AiReply(text, message.model().asString(), input, usage.outputTokens())
-        } catch (e: AiFailure) {
-            throw e
-        } catch (e: UnauthorizedException) {
-            throw AiFailure(AiFailure.Reason.KEY, cause = e)
-        } catch (e: PermissionDeniedException) {
-            throw AiFailure(AiFailure.Reason.KEY, cause = e)
-        } catch (e: RateLimitException) {
-            throw AiFailure(AiFailure.Reason.LIMIT, cause = e)
-        } catch (e: BadRequestException) {
-            // No credit left is reported as a bad request; so is an image the service cannot read.
-            val credit = e.message?.contains("credit", ignoreCase = true) == true
-            throw AiFailure(if (credit) AiFailure.Reason.LIMIT else AiFailure.Reason.SERVICE, e.message, e)
-        } catch (e: AnthropicServiceException) {
-            throw AiFailure(AiFailure.Reason.SERVICE, e.message, e)
-        } catch (e: AnthropicIoException) {
-            throw AiFailure(AiFailure.Reason.NETWORK, e.message, e)
+        } catch (e: Exception) {
+            throw failure(e)
         } finally {
             client.close()
         }
     }
 
+    /** What went wrong, for the screen (most specific error first). */
+    private fun failure(e: Exception): AiFailure = when (e) {
+        is AiFailure -> e
+        is UnauthorizedException, is PermissionDeniedException -> AiFailure(AiFailure.Reason.KEY, cause = e)
+        is RateLimitException -> AiFailure(AiFailure.Reason.LIMIT, cause = e)
+        // No credit left is reported as a bad request; so is an image the service cannot read.
+        is BadRequestException -> AiFailure(if (e.message?.contains("credit", ignoreCase = true) == true) AiFailure.Reason.LIMIT else AiFailure.Reason.SERVICE, e.message, e)
+        is AnthropicServiceException -> AiFailure(AiFailure.Reason.SERVICE, e.message, e)
+        is AnthropicIoException -> AiFailure(AiFailure.Reason.NETWORK, e.message, e)
+        else -> AiFailure(AiFailure.Reason.SERVICE, e.message, e)
+    }
+
     companion object {
         const val ID = "anthropic"
+
+        /**
+         * For the packaged self-check, without sending anything: the SDK's client and its libraries
+         * load, and the Java runtime can make the TLS 1.3 connection with elliptic-curve keys.
+         */
+        fun selfCheck(): String {
+            AnthropicOkHttpClient.builder().apiKey("self-check").build().close()
+            javax.net.ssl.SSLContext.getInstance("TLSv1.3").init(null, null, null)
+            java.security.KeyPairGenerator.getInstance("EC").apply { initialize(256) }.generateKeyPair()
+            java.security.KeyPairGenerator.getInstance("X25519").generateKeyPair()
+            return "client ready, TLS 1.3"
+        }
         private const val MAX_TOKENS = 16_000L
         private const val FALLBACK_BETA = "server-side-fallback-2026-07-01"
 

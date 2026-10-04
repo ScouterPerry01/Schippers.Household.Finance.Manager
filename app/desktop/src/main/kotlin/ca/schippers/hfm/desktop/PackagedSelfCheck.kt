@@ -25,6 +25,7 @@ internal object PackagedSelfCheck {
         val ok = runCatching {
             lines += "ocr: " + ocr()
             lines += "heic: " + heic()
+            lines += "ai: " + ca.schippers.hfm.ai.ClaudeProvider.selfCheck()
             lines += "database: " + database()
         }.onFailure { lines += "FAILED: $it" }.isSuccess
         Files.write(report, lines + if (ok) "OK" else "FAILED")

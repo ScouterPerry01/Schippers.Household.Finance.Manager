@@ -14,6 +14,9 @@ interface AiProvider {
 
     /** Sends the pages and the schema once; throws [AiFailure]. */
     fun read(request: AiRequest): AiReply
+
+    /** Checks the key with a request that costs nothing; throws [AiFailure] when it does not work. */
+    fun checkKey()
 }
 
 /** What is sent: page images (JPEG, already cropped and blurred by the user), and the instructions and schema. */
@@ -40,6 +43,16 @@ data class AiModel(
     /** Whether a refused request may be answered by another model chosen by the service. */
     val fallbacks: Boolean,
 ) {
+    /**
+     * What a reading of [pages] (as sent, in pixels) is likely to cost, before sending: about one
+     * input token per 750 pixels, the instructions and schema, and the answer, longer for statements.
+     */
+    fun estimate(pages: List<Pair<Int, Int>>, typeId: String): BigDecimal {
+        val input = 1_500L + pages.sumOf { (w, h) -> w.toLong() * h / 750 }
+        val perPage = if (typeId.endsWith("statement")) 2_500L else 500L
+        return cost(input, 300L + perPage * pages.size)
+    }
+
     /** Estimated cost in US dollars, from the list price; the provider's bill is what counts. */
     fun cost(inputTokens: Long, outputTokens: Long): BigDecimal =
         (inputPerMillion * BigDecimal(inputTokens) + outputPerMillion * BigDecimal(outputTokens)).divide(MILLION, 4, RoundingMode.HALF_UP)

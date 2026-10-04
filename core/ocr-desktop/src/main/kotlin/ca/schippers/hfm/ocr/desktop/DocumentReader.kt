@@ -50,6 +50,19 @@ class DocumentReader(private val engine: PaddleOcrEngine) {
         else -> ImageLoader.decode(bytes)
     }?.let { scale(it, maxSide) }
 
+    /**
+     * Section 4.5: the pages to show before an AI reading and, once the user has cropped and
+     * blurred them, to send. An image is one page; a PDF gives up to [maxPages] pages at [dpi].
+     */
+    fun pageImages(bytes: ByteArray, maxPages: Int = 20, dpi: Float = AI_DPI): List<BufferedImage> = when (FileKind.of(bytes)) {
+        FileKind.PDF -> Loader.loadPDF(bytes).use { pdf ->
+            val renderer = PDFRenderer(pdf)
+            (0 until minOf(pdf.numberOfPages, maxPages)).map { renderer.renderImageWithDPI(it, dpi, ImageType.RGB) }
+        }
+        FileKind.UNSUPPORTED -> emptyList()
+        else -> listOfNotNull(ImageLoader.decode(bytes))
+    }
+
     private fun readPdf(bytes: ByteArray): ReadDocument = Loader.loadPDF(bytes).use { pdf ->
         val started = System.nanoTime()
         val text = PDFTextStripper().apply { sortByPosition = true }.getText(pdf)
@@ -84,6 +97,7 @@ class DocumentReader(private val engine: PaddleOcrEngine) {
         private const val MAX_OCR_PAGES = 5
         private const val OCR_DPI = 200f
         private const val PREVIEW_DPI = 110f
+        private const val AI_DPI = 150f
 
         fun png(img: BufferedImage): ByteArray = ByteArrayOutputStream().also { ImageIO.write(img, "png", it) }.toByteArray()
     }

@@ -129,6 +129,8 @@ class AiReadingTest {
             tasks += request.task
             return AiReply(queue.removeFirst(), "claude-opus-5-5", 2000, 300)
         }
+
+        override fun checkKey() {}
     }
 
     @Test

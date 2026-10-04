@@ -250,10 +250,10 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
         preview = withContext(Dispatchers.IO) { runCatching { DesktopOcr.reader.preview(books.documents.content(documentId))?.toComposeImageBitmap() }.getOrNull() }
     }
     val currency = doc.amount?.currency ?: books.rates.baseCurrency
-    var title by remember(documentId) { mutableStateOf(doc.title ?: doc.merchant.orEmpty()) }
-    var date by remember(documentId) { mutableStateOf((doc.date ?: dateOfMillis(doc.capturedAt)).toString()) }
-    var amount by remember(documentId) { mutableStateOf(doc.amount?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
-    var kind by remember(documentId) { mutableStateOf(doc.kind ?: DocumentKind.OTHER) }
+    var title by remember(documentId, doc.draft) { mutableStateOf(doc.title ?: doc.merchant.orEmpty()) }
+    var date by remember(documentId, doc.draft) { mutableStateOf((doc.date ?: dateOfMillis(doc.capturedAt)).toString()) }
+    var amount by remember(documentId, doc.draft) { mutableStateOf(doc.amount?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
+    var kind by remember(documentId, doc.draft) { mutableStateOf(doc.kind ?: DocumentKind.OTHER) }
     var keep by remember(documentId) { mutableStateOf(doc.keepForever) }
     var notes by remember(documentId) { mutableStateOf(doc.notes.orEmpty()) }
     var creating by remember { mutableStateOf(false) }
@@ -289,6 +289,7 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                     ReviewedField(model, draft?.total) { AmountInput(model.t("documents.total"), amount, currency, locale, it, model::money) { v -> amount = v } }
                 }
                 ExtractedDetails(model, doc)
+                AiPart(model, doc)
                 Duplicates(model, doc)
                 LabeledCheckbox(model.t("documents.keepForever"), keep) { keep = it }
                 TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
@@ -330,8 +331,63 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
 private fun <T> androidx.compose.foundation.layout.RowScope.ReviewedField(model: BooksModel, extracted: Extracted<T>?, content: @Composable (Modifier) -> Unit) {
     Column(Modifier.weight(1f)) {
         content(Modifier.fillMaxWidth())
+        if (extracted?.source == ca.schippers.hfm.ocr.FieldSource.CLOUD_AI) Text(model.t("ai.field"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
         if (extracted?.needsReview == true) Text(model.t("documents.check"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
     }
+}
+
+/**
+ * Section 4.5: reading the document with cloud AI, offered when the user turned it on, and pointed
+ * out when the fields read on this computer are uncertain (step 1).
+ */
+@Composable
+private fun AiPart(model: BooksModel, doc: VaultDocument) {
+    val settings = remember(model.revision) { model.books.ai.settings() }
+    if (!settings.enabled || doc.mimeType == "text/plain") return
+    val hasKey = remember(model.revision) { DesktopAi.key(model) != null }
+    val reading = remember(model.revision, doc.id) { runCatching { model.books.ai.reading(doc.id) }.getOrNull() }
+    val draft = doc.draft
+    val uncertain = draft?.total == null || listOfNotNull(draft.merchant, draft.date, draft.total).any { it.needsReview }
+    var asking by remember { mutableStateOf(false) }
+    var busy by remember { mutableStateOf(false) }
+    var failure by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (hasKey) {
+            OutlinedButton(enabled = !busy, onClick = {
+                failure = null
+                if (settings.confirmEach) {
+                    asking = true
+                } else {
+                    // AI-01: the user chose not to be asked; every page is sent as it is.
+                    busy = true
+                    scope.launch {
+                        val result = withContext(Dispatchers.IO) {
+                            runCatching {
+                                val type = DesktopAi.types().let { t -> t.get(ca.schippers.hfm.ai.DocumentType.idFor(doc.kind ?: DocumentKind.RECEIPT)) ?: t.types.first() }
+                                val pages = DesktopOcr.reader.pageImages(model.books.documents.content(doc.id))
+                                DesktopAi.read(model, doc.id, type, DesktopAi.prepare(pages, emptyList()))
+                            }
+                        }
+                        busy = false
+                        model.changed()
+                        result.onFailure { failure = model.aiFailure(it) }
+                    }
+                }
+            }) { Text(model.t("ai.readWithAi")) }
+        } else {
+            Text(model.t("ai.addKeyFirst"), style = MaterialTheme.typography.bodySmall)
+        }
+        val note = when {
+            busy -> model.t("ai.read.sending")
+            reading != null -> model.t("ai.readBy", ca.schippers.hfm.ai.AiModel.priceOf(reading.model, ca.schippers.hfm.ai.AiModel.DEFAULT).label, model.date(dateOfMillis(reading.readAt)))
+            uncertain -> model.t("ai.uncertain")
+            else -> null
+        }
+        note?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+    }
+    failure?.let { ErrorText(it) }
+    if (asking) AiReadDialog(model, doc) { asking = false }
 }
 
 @Composable
@@ -340,7 +396,8 @@ private fun ExtractedDetails(model: BooksModel, doc: VaultDocument) {
     val parts = listOfNotNull(
         draft.subtotal?.let { model.t("documents.subtotal", model.money(it.value)) },
         draft.taxes.takeIf { it.isNotEmpty() }?.joinToString(", ") { (name, v) -> "${model.t("taxName.$name")} ${model.money(v.value)}" },
-        draft.paymentMethod?.value,
+        // AI readings give a payment kind from the schema (cash, debit, credit...); on-device reading gives what was printed.
+        draft.paymentMethod?.value?.let { v -> if (v in AI_PAYMENTS) model.t("aiPayment.$v") else v },
         draft.cardLast4?.let { model.t("documents.card", it.value) },
         draft.invoiceNumber?.let { model.t("documents.invoiceNo", it.value) },
         draft.dueDate?.let { model.t("documents.dueOn", model.date(it.value)) },
@@ -491,3 +548,4 @@ private fun WatchFolderDialog(model: BooksModel, onClose: () -> Unit) {
 internal fun dateOfMillis(millis: Long): LocalDate =
     java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.systemDefault()).toLocalDate().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
 
+private val AI_PAYMENTS = setOf("cash", "debit", "credit", "gift_card", "other")

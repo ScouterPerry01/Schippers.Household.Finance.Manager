@@ -40,3 +40,13 @@ Each user's settings (on or off, ask before each document, model) are household 
 - The service may change: models are chosen by id, and the SDK's version is pinned in the version catalog.
 - Not checked in this project's tests: a real request to the service, which needs a key. `ClaudeProviderTest` checks the exact request the SDK sends and how answers and errors come back, against a local server; the owner makes the first real reading with their own key.
 - Tested: `AiReadingTest` (shipped types, schema checks, removed limits, user folder, sums, review fields, retry and give-up, usage, blurring, the key store with a real Windows Credential Manager entry), `ClaudeProviderTest`, `AiServiceTest` (settings per user, readings kept, usage per user and group, nothing private in the audit log), and the upgrade from ledger version 17.
+
+## Screens (5a.2, 2026-10-04)
+
+- **AI reading** (its own section, between Phones and Users): turning it on, asking before each document, the model with its list price, the key (saved, checked with a request that costs nothing, removed), the document types with the folder for added ones (`%APPDATA%\RANN's Roost\ai-types` or `~/.config/ranns-roost/ai-types`) and files that could not be used, and the usage log by month, year or everything with its total.
+- **Review dialog:** once AI reading is on, "Read with AI", with a note when the fields read on this computer are uncertain (section 4.5, step 1), and after a reading which model read it and when. Fields read by AI are marked "read by AI".
+- **Before sending (AI-04):** every page (an image, or each PDF page at 150 DPI, at most 20), the document type, tools to hide areas and to keep only part of a page, how many pages go to Anthropic for which model, and an estimated cost. Nothing is sent before Send. With "ask before each document" turned off, the pages are sent as they are.
+- **Errors** are told apart: wrong key, limit or no credit, no connection, refusal, too long, answer that could not be checked, other.
+- **Demo:** keys are kept in memory only, so trying the demo leaves nothing in the system's store; `-PaiUrl=` points it at `tools/dev/fake_anthropic.py`, a local stand-in, to try the screens without a key or cost.
+- **Packaged self-check:** the SDK's client builds and the bundled Java runtime can make a TLS 1.3 connection with elliptic-curve keys; nothing is sent.
+- **Checked** in the demo in English and French against the stand-in: the key check, the preview with a hidden area (the stand-in's copy of the picture showed the card number as flat blocks), the reading reaching the review fields marked as read by AI, and the usage log.

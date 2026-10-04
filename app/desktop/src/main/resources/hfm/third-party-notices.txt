@@ -23,6 +23,12 @@ ONNX Runtime (Microsoft)
   MIT License - https://github.com/microsoft/onnxruntime/blob/main/LICENSE
 PaddleOCR PP-OCRv5 models (PaddlePaddle Authors), converted to ONNX by RapidAI
   Apache License 2.0
+Anthropic Java SDK (cloud AI reading, when the user turns it on)
+  MIT License - https://github.com/anthropics/anthropic-sdk-java
+OkHttp and Okio (Square)
+  Apache License 2.0
+Jackson (FasterXML)
+  Apache License 2.0
 JNA (Java Native Access)
   Apache License 2.0 or GNU Lesser General Public License 2.1 - https://github.com/java-native-access/jna
 
