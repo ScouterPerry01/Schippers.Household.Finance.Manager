@@ -37,6 +37,9 @@ data class StoredAiReading(
     val readAt: Long,
 )
 
+/** OCR-03: an item of a receipt, as printed, and its share of the amount paid (taxes and tip shared out). */
+data class ItemShare(val description: String, val printed: Money, val share: Money)
+
 /** AI-06: one request in the usage log. */
 data class AiUsageEntry(
     val usedAt: Long,
@@ -141,6 +144,33 @@ class AiService internal constructor(private val books: Books) {
      */
     fun importStatement(documentId: String, accountId: String): ImportResult =
         books.statements.import(accountId, statement(documentId, accountId), books.documents.get(documentId).label, books.documents.content(documentId))
+
+    /**
+     * OCR-03: the items of a receipt or invoice read by AI, each with its share of [total] (the
+     * amount paid): the taxes, tip and rounding are shared out in proportion to each item's amount,
+     * and the last item takes what rounding leaves, so the shares add up to [total] exactly. Empty
+     * when the reading has fewer than two items or they add up to nothing.
+     */
+    fun itemShares(documentId: String, total: Money): List<ItemShare> {
+        val reading = reading(documentId)?.takeIf { it.typeId == "receipt" || it.typeId == "invoice" } ?: return emptyList()
+        val items = (Json.parseToJsonElement(reading.answer).jsonObject["line_items"] as? JsonArray).orEmpty().mapNotNull { e ->
+            val o = e as? JsonObject ?: return@mapNotNull null
+            val amount = (o["amount"] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toBigDecimalOrNull() ?: return@mapNotNull null
+            (o.text("description") ?: "?") to amount
+        }
+        val sum = items.fold(BigDecimal.ZERO) { a, (_, v) -> a + v }
+        if (items.size < 2 || sum.signum() == 0) return emptyList()
+        val target = total.toBigDecimal().abs()
+        val shares = ArrayList<ItemShare>()
+        var given = BigDecimal.ZERO
+        items.forEachIndexed { i, (description, amount) ->
+            val share = if (i == items.lastIndex) target - given
+            else (amount * target).divide(sum, total.currency.minorUnits, RoundingMode.HALF_UP)
+            given += share
+            shares += ItemShare(description, Money.of(amount, total.currency), Money.of(share, total.currency))
+        }
+        return shares
+    }
 
     /** AI-06: the signed-in user's requests between two instants (epoch milliseconds), newest first. */
     fun usage(fromMillis: Long, toMillis: Long): List<AiUsageEntry> = books.groups().flatMap { g ->

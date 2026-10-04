@@ -132,6 +132,27 @@ class AiServiceTest {
     }
 
     @Test
+    fun `a receipt's items share its taxes and add up to the amount paid`() {
+        Books(store.create(dir, "A", "perry", "Perry", "password1".toCharArray()).session).use { books ->
+            val group = books.groups().single().id
+            val doc = books.documents.import(group, "r".encodeToByteArray(), "r.jpg", "image/jpeg").document
+            val answer = """{"merchant":"Loblaws","date":"2026-09-06","currency":"CAD","total":187.32,"subtotal":179.43,"taxes":[{"name":"HST","amount":7.89}],
+                "line_items":[{"description":"MILK","amount":6.49},{"description":"CHICKEN","amount":17.98},{"description":"PRODUCE","amount":42.37},
+                {"description":"COUPON","amount":-2.00},{"description":"GROCERY","amount":114.59}]}"""
+            books.ai.saveReading(doc.id, "receipt", "hfm/receipt/v1", answer, true, "m", draft())
+            val shares = books.ai.itemShares(doc.id, Money.parse("187.32", Currency.CAD))
+            assertEquals(5, shares.size)
+            assertEquals(Money.parse("187.32", Currency.CAD), shares.map { it.share }.reduce(Money::plus), "exactly the amount paid")
+            assertEquals(Money.parse("6.78", Currency.CAD), shares[0].share, "6.49 plus its share of the tax")
+            assertTrue(shares[3].share.isNegative, "the coupon lowers the total")
+            assertEquals(Money.parse("6.49", Currency.CAD), shares[0].printed)
+            // Receipts with one item, and other documents, have nothing to split.
+            books.ai.saveReading(doc.id, "receipt", "hfm/receipt/v1", """{"merchant":"x","date":"2026-09-06","currency":"CAD","total":5,"line_items":[{"description":"a","amount":5}]}""", true, "m", draft())
+            assertEquals(emptyList(), books.ai.itemShares(doc.id, Money.parse("5", Currency.CAD)))
+        }
+    }
+
+    @Test
     fun `only statements can become statements`() {
         Books(store.create(dir, "A", "perry", "Perry", "password1".toCharArray()).session).use { books ->
             val group = books.groups().single().id

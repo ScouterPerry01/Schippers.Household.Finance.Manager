@@ -31,6 +31,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -56,6 +57,7 @@ import ca.schippers.hfm.books.TransactionDraft
 import ca.schippers.hfm.books.SplitDraft
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.books.VaultDocument
+import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import ca.schippers.hfm.ocr.DocumentKind
 import ca.schippers.hfm.ocr.Extracted
@@ -516,17 +518,26 @@ private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: S
     var forId by remember { mutableStateOf<String?>(null) }
     var assetId by remember { mutableStateOf<String?>(null) }
     val account = accounts.firstOrNull { it.id == accountId }
+    // OCR-03: the items of a receipt read by AI, each with its share of the taxes.
+    val shares = remember { parseAmount(amount, currency, locale)?.let { total -> runCatching { books.ai.itemShares(doc.id, total) }.getOrNull() }.orEmpty() }
+    var byItems by remember { mutableStateOf(false) }
+    val itemCategories = remember { mutableStateListOf<String?>().apply { repeat(shares.size) { add(null) } } }
     FormDialog(model.t("documents.newTransaction"), model.t("common.save"), model.t("common.cancel"), canSave = account != null, onDismiss = { onClose(false) }, onSave = {
         val ok = model.act {
             val value = parseAmount(amount, account!!.currency, locale) ?: throw ValidationException("error.amountRequired")
             val d = runCatching { LocalDate.parse(date.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
             // A receipt is money out; a refund slip would be entered from the register.
+            val splits = if (byItems && shares.isNotEmpty()) {
+                // Items with the same category become one split, noting what it covers.
+                shares.indices.groupBy { itemCategories[it] ?: categoryId }.map { (cat, items) ->
+                    SplitDraft(cat, -items.map { shares[it].share }.reduce(Money::plus), items.joinToString(", ") { shares[it].description }.take(250))
+                }
+            } else {
+                listOf(SplitDraft(categoryId, -value.abs()))
+            }
             books.documents.fileAsTransaction(
                 doc.id,
-                TransactionDraft(
-                    account.id, d, -value.abs(), (payeeDefault?.name ?: payee).ifBlank { null },
-                    listOf(SplitDraft(categoryId, -value.abs())), memberId = forId, assetId = assetId,
-                ),
+                TransactionDraft(account.id, d, -value.abs(), (payeeDefault?.name ?: payee).ifBlank { null }, splits, memberId = forId, assetId = assetId),
             )
         }
         if (ok != null) onClose(true)
@@ -538,6 +549,25 @@ private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: S
         }
         Picker(model.t("register.for"), listOf(null) + people, people.firstOrNull { it.id == forId }, { it?.name ?: model.t("register.forNobody") }) { forId = it?.id }
         if (vehicles.isNotEmpty()) Picker(model.t("register.vehicle"), listOf(null) + vehicles, vehicles.firstOrNull { it.first == assetId }, { it?.second ?: model.t("common.none") }) { assetId = it?.first }
+        if (shares.isNotEmpty()) {
+            LabeledCheckbox(model.t("documents.splitByItems", shares.size), byItems) { byItems = it }
+            if (byItems) {
+                Text(model.t("documents.splitByItemsHint"), style = MaterialTheme.typography.bodySmall)
+                Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    shares.forEachIndexed { i, s ->
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(s.description, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
+                            Text(model.money(s.share), Modifier.width(80.dp), style = MaterialTheme.typography.bodySmall)
+                            val chosen = itemCategories[i] ?: categoryId
+                            Picker(
+                                model.t("register.category"), listOf(null) + tree, tree.firstOrNull { it.first.id == chosen },
+                                { it?.first?.name(model.language) ?: model.t("register.uncategorized") }, Modifier.width(220.dp), indent = { it?.second ?: 0 },
+                            ) { itemCategories[i] = it?.first?.id }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
