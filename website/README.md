@@ -5,9 +5,9 @@ Content for the owner to publish on www.rann.ca. Not part of the apps' build.
 | File | Publish at |
 |---|---|
 | `rann-roost-en.html` | https://www.rann.ca/rann-apps/rann-roost |
-| `rann-roost-fr.html` | https://www.rann.ca/rann-apps/rann-roost/fr (assumed; change the links if the French page lives elsewhere) |
+| `rann-roost-fr.html` | https://www.rann.ca/rann-apps/rann-roost/rann-roost-fr |
 | `privacy-policy-en.md` | https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en |
-| `privacy-policy-fr.md` | https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr (assumed) |
+| `privacy-policy-fr.md` | https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr |
 | `images/` | Beside the home pages: they refer to `images/<file>` |
 
 - The apps (About on the desktop, Settings on the phone) and the store listings link to the two privacy policy addresses above, so they must stay stable. Change them in `AboutScreen.kt`, the phone's `strings.xml` and `docs/store/*.md` if the addresses change.
