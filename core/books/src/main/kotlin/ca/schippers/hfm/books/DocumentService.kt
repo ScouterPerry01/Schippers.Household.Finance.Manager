@@ -152,6 +152,21 @@ class DocumentService internal constructor(private val books: Books) {
         return get(documentId)
     }
 
+    /**
+     * Stores fields read another way, such as by cloud AI (section 4.5): they become the
+     * document's kind, date, merchant and amount, and its recognised text is kept.
+     */
+    internal fun recordDraft(documentId: String, draft: DocumentDraft, engineId: String): VaultDocument {
+        val (group, row) = locate(documentId)
+        books.require(group, PermissionLevel.CAPTURE_ONLY)
+        books.ledger(group).aiQueries.updateDocumentDraft(
+            draft.kind.name, draft.date?.value?.toString() ?: row.doc_date, draft.merchant?.value ?: row.merchant,
+            draft.total?.value?.minorUnits ?: row.amount_minor, (draft.total?.value?.currency ?: draft.currency).code,
+            json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft)), engineId, books.now(), documentId,
+        )
+        return get(documentId)
+    }
+
     // --- Reading --------------------------------------------------------------------------------
 
     fun get(documentId: String): VaultDocument = locate(documentId).let { (g, row) -> toDocument(g, row) }
@@ -319,7 +334,7 @@ class DocumentService internal constructor(private val books: Books) {
 
     // --- Helpers --------------------------------------------------------------------------------
 
-    private fun locate(documentId: String): Pair<GroupInfo, DocumentRow> {
+    internal fun locate(documentId: String): Pair<GroupInfo, DocumentRow> {
         for (group in books.groups()) {
             val row = books.ledger(group).ledgerQueries.documentById(documentId).executeAsOneOrNull() ?: continue
             return group to row

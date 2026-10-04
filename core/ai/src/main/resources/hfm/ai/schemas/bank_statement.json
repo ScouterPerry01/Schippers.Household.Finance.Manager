@@ -1,0 +1,71 @@
+{
+  "$id": "hfm/bank_statement/v1",
+  "title": "bank_statement",
+  "type": "object",
+  "properties": {
+    "institution": {
+      "type": "string"
+    },
+    "account_number_last_digits": {
+      "type": "string"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "opening_balance": {
+      "type": "number"
+    },
+    "closing_balance": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 code of the amounts, such as CAD or USD"
+    },
+    "transactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": {
+            "type": "string",
+            "description": "As printed"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Deposits positive, withdrawals negative"
+          },
+          "balance": {
+            "type": "number",
+            "description": "Running balance, if printed"
+          }
+        },
+        "required": [
+          "date",
+          "description",
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "institution",
+    "period_start",
+    "period_end",
+    "opening_balance",
+    "closing_balance",
+    "currency",
+    "transactions"
+  ],
+  "additionalProperties": false
+}

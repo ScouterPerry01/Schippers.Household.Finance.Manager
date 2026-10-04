@@ -1,0 +1,91 @@
+{
+  "$id": "hfm/card_statement/v1",
+  "title": "card_statement",
+  "type": "object",
+  "properties": {
+    "issuer": {
+      "type": "string",
+      "description": "Bank or card company"
+    },
+    "card_last4": {
+      "type": "string"
+    },
+    "statement_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "previous_balance": {
+      "type": "number"
+    },
+    "new_balance": {
+      "type": "number"
+    },
+    "minimum_payment": {
+      "type": "number"
+    },
+    "payment_due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "credit_limit": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 code of the amounts, such as CAD or USD"
+    },
+    "transactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Transaction date"
+          },
+          "posting_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": {
+            "type": "string",
+            "description": "As printed"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Purchases, fees and interest positive; payments and credits negative"
+          },
+          "foreign_amount": {
+            "type": "number"
+          },
+          "foreign_currency": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "description",
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "issuer",
+    "period_end",
+    "new_balance",
+    "currency",
+    "transactions"
+  ],
+  "additionalProperties": false
+}

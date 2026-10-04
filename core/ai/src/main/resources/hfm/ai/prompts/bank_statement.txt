@@ -1,0 +1,1 @@
+This is a bank account statement. List every transaction on every page, in order. Deposits are positive amounts and withdrawals negative.

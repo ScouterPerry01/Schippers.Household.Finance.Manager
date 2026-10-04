@@ -38,8 +38,8 @@ data class Extracted<T>(val value: T, val confidence: Float, val source: FieldSo
 
 enum class TaxName { GST, HST, QST, PST, OTHER }
 
-/** OCR-08 (first step): what kind of document this looks like. */
-enum class DocumentKind { RECEIPT, BILL, INVOICE, OTHER }
+/** OCR-08: what kind of document this is. */
+enum class DocumentKind { RECEIPT, BILL, INVOICE, OTHER, CARD_STATEMENT, BANK_STATEMENT, INVESTMENT_STATEMENT, PAY_STUB, EOB }
 
 /** OCR-02 fields of a receipt, bill or invoice; every value is confirmed by the user before it is booked. */
 data class DocumentDraft(

@@ -29,6 +29,7 @@ include(
     ":core:sync",
     ":core:ocr",
     ":core:ocr-desktop",
+    ":core:ai",
     ":core:update",
     ":app:desktop",
     ":app:android",

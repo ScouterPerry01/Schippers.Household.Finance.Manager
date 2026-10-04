@@ -1,0 +1,34 @@
+-- Version 17 to 18 (section 4.5, AI-05, AI-06): checked AI readings of documents and the usage log.
+
+-- The checked answer of the latest AI reading of a document: the fields the user reviews, and the
+-- lines (items, statement transactions) that later screens use.
+CREATE TABLE document_ai (
+    document_id TEXT NOT NULL PRIMARY KEY REFERENCES document(id) ON DELETE CASCADE,
+    -- The document type, such as receipt, and its schema version, such as hfm/receipt/v1 (AI-03).
+    type_id TEXT NOT NULL,
+    schema_version TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    -- Whether the amounts were checked and add up (AI-05).
+    checked INTEGER NOT NULL,
+    model TEXT NOT NULL,
+    read_at INTEGER NOT NULL,
+    read_by TEXT NOT NULL
+);
+
+-- AI-06: every request sent, with its estimated cost, including those whose answer was refused.
+CREATE TABLE ai_usage (
+    id TEXT NOT NULL PRIMARY KEY,
+    used_at INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    document_id TEXT REFERENCES document(id) ON DELETE SET NULL,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    type_id TEXT NOT NULL,
+    input_tokens INTEGER NOT NULL,
+    output_tokens INTEGER NOT NULL,
+    -- Estimated from the list price, in millionths of a US dollar.
+    cost_micro_usd INTEGER NOT NULL,
+    succeeded INTEGER NOT NULL
+);
+
+CREATE INDEX ai_usage_time ON ai_usage(used_at DESC);

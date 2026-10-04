@@ -26,6 +26,7 @@ Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: wit
 | `core/i18n` | English and French text |
 | `core/importers` | Statement import (OFX/QFX/QBO, CSV), brokerage statements (OFX, broker CSV), crypto exchange histories (Kraken, Coinbase, Shakepay, Newton) and Quicken QIF |
 | `core/ocr` | Text recognition interface and the field extractor shared with the phone |
+| `core/ai` | Cloud AI reading with the user's own key (ADR 0009): document schemas, Claude through Anthropic's SDK, checks on every answer, the key in the system's secret store |
 | `core/ocr-desktop` | PaddleOCR on ONNX Runtime, PDF reading and HEIC photos (libheif), for the desktop |
 | `core/sync` | Pairing invitation, sealed transfer bundles and the phone's client |
 | `core/update` | Signed release list, version comparison and download checks, shared by the desktop and the phone (ADR 0008) |

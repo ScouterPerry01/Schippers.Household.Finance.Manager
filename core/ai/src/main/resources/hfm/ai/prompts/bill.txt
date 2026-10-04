@@ -1,0 +1,1 @@
+This is a bill, such as electricity, phone, internet, insurance or property tax. amount_due is the total to pay by the due date.

@@ -1,0 +1,77 @@
+{
+  "$id": "hfm/eob/v1",
+  "title": "eob",
+  "type": "object",
+  "properties": {
+    "insurer": {
+      "type": "string"
+    },
+    "plan_number": {
+      "type": "string"
+    },
+    "member": {
+      "type": "string",
+      "description": "Plan member"
+    },
+    "claim_number": {
+      "type": "string"
+    },
+    "statement_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 code of the amounts, such as CAD or USD"
+    },
+    "lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "patient": {
+            "type": "string"
+          },
+          "service_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "service": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "amount_claimed": {
+            "type": "number"
+          },
+          "amount_eligible": {
+            "type": "number"
+          },
+          "amount_paid": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string",
+            "description": "Reason for any amount not paid"
+          }
+        },
+        "required": [
+          "service",
+          "amount_claimed",
+          "amount_paid"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "total_paid": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "insurer",
+    "lines",
+    "total_paid"
+  ],
+  "additionalProperties": false
+}

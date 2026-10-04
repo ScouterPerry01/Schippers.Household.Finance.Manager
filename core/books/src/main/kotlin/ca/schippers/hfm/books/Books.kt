@@ -67,6 +67,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val metals = MetalService(this)
     val loans = LoanService(this)
     val documents = DocumentService(this)
+    val ai = AiService(this)
     val sync = SyncService(this)
     val quicken = QifImportService(this)
     val users = UserService(this)

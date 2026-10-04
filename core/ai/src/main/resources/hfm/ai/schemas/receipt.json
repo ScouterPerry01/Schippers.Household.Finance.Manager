@@ -1,0 +1,112 @@
+{
+  "$id": "hfm/receipt/v1",
+  "title": "receipt",
+  "type": "object",
+  "properties": {
+    "merchant": {
+      "type": "string",
+      "description": "Store or business name"
+    },
+    "merchant_address": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 code of the amounts, such as CAD or USD"
+    },
+    "line_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "As printed"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Line total; discounts and returns are negative"
+          }
+        },
+        "required": [
+          "description",
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "subtotal": {
+      "type": "number"
+    },
+    "taxes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "GST",
+              "HST",
+              "QST",
+              "PST",
+              "OTHER"
+            ]
+          },
+          "rate_percent": {
+            "type": "number"
+          },
+          "amount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tip": {
+      "type": "number"
+    },
+    "total": {
+      "type": "number",
+      "description": "Amount paid"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "cash",
+        "debit",
+        "credit",
+        "gift_card",
+        "other"
+      ]
+    },
+    "card_last4": {
+      "type": "string",
+      "description": "Last four digits of the card, if printed"
+    },
+    "receipt_number": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "merchant",
+    "date",
+    "total",
+    "currency"
+  ],
+  "additionalProperties": false
+}

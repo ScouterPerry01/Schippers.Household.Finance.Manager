@@ -1,0 +1,1 @@
+This is an investment account statement. List every holding with its quantity and market value, and every activity line in the period.

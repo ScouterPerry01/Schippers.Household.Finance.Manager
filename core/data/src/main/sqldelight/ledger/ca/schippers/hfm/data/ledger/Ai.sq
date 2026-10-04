@@ -1,0 +1,55 @@
+-- Cloud AI reading (section 4.5, AI-05, AI-06; ledger version 18). Kept in each group's ledger, like
+-- the documents read, so a private group's readings and costs stay private (HH-11).
+
+-- The checked answer of the latest AI reading of a document: the fields the user reviews, and the
+-- lines (items, statement transactions) that later screens use.
+CREATE TABLE document_ai (
+    document_id TEXT NOT NULL PRIMARY KEY REFERENCES document(id) ON DELETE CASCADE,
+    -- The document type, such as receipt, and its schema version, such as hfm/receipt/v1 (AI-03).
+    type_id TEXT NOT NULL,
+    schema_version TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    -- Whether the amounts were checked and add up (AI-05).
+    checked INTEGER NOT NULL,
+    model TEXT NOT NULL,
+    read_at INTEGER NOT NULL,
+    read_by TEXT NOT NULL
+);
+
+-- AI-06: every request sent, with its estimated cost, including those whose answer was refused.
+CREATE TABLE ai_usage (
+    id TEXT NOT NULL PRIMARY KEY,
+    used_at INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    document_id TEXT REFERENCES document(id) ON DELETE SET NULL,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    type_id TEXT NOT NULL,
+    input_tokens INTEGER NOT NULL,
+    output_tokens INTEGER NOT NULL,
+    -- Estimated from the list price, in millionths of a US dollar.
+    cost_micro_usd INTEGER NOT NULL,
+    succeeded INTEGER NOT NULL
+);
+
+CREATE INDEX ai_usage_time ON ai_usage(used_at DESC);
+
+saveDocumentAi:
+INSERT INTO document_ai(document_id, type_id, schema_version, answer, checked, model, read_at, read_by)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(document_id) DO UPDATE SET type_id = excluded.type_id, schema_version = excluded.schema_version, answer = excluded.answer,
+    checked = excluded.checked, model = excluded.model, read_at = excluded.read_at, read_by = excluded.read_by;
+
+documentAi:
+SELECT * FROM document_ai WHERE document_id = ?;
+
+updateDocumentDraft:
+UPDATE document SET kind = ?, doc_date = ?, merchant = ?, amount_minor = ?, currency = ?, extraction = ?, ocr_engine = ?, updated_at = ?
+WHERE id = ?;
+
+insertAiUsage:
+INSERT INTO ai_usage(id, used_at, user_id, document_id, provider, model, type_id, input_tokens, output_tokens, cost_micro_usd, succeeded)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+aiUsageBetween:
+SELECT * FROM ai_usage WHERE used_at >= ? AND used_at < ? ORDER BY used_at DESC;

@@ -353,6 +353,26 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 17 ledgers keep their documents and gain AI readings and the usage log`() {
+        val file = temp.resolve("ledger17.db")
+        older("../data/src/main/sqldelight/ledger/schemas/17.db", file, 17).use { driver ->
+            driver.execute(null, "INSERT INTO document(id, vault_file, mime_type, sha256, captured_at, status) VALUES ('d', 'd', 'image/jpeg', 'x', 0, 'INBOX')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).aiQueries
+            q.saveDocumentAi("d", "receipt", "hfm/receipt/v1", "{}", 1, "claude-opus-5-5", 1, "u")
+            q.saveDocumentAi("d", "receipt", "hfm/receipt/v1", """{"total":1}""", 1, "claude-opus-5-5", 2, "u")
+            q.insertAiUsage("a", 1, "u", "d", "anthropic", "claude-opus-5-5", "receipt", 1500, 200, 10000, 1)
+            assertEquals("""{"total":1}""", q.documentAi("d").executeAsOne().answer)
+            driver.execute(null, "DELETE FROM document WHERE id = 'd'", 0)
+            assertEquals(null, q.documentAi("d").executeAsOneOrNull(), "the reading goes with its document")
+            assertEquals(null, q.aiUsageBetween(0, 10).executeAsOne().document_id, "the billed request stays in the log")
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()

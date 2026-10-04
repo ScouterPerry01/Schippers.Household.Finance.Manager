@@ -1,0 +1,108 @@
+{
+  "$id": "hfm/bill/v1",
+  "title": "bill",
+  "type": "object",
+  "properties": {
+    "biller": {
+      "type": "string",
+      "description": "Company sending the bill"
+    },
+    "account_number": {
+      "type": "string"
+    },
+    "bill_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "previous_balance": {
+      "type": "number"
+    },
+    "payments_received": {
+      "type": "number"
+    },
+    "new_charges": {
+      "type": "number"
+    },
+    "amount_due": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 code of the amounts, such as CAD or USD"
+    },
+    "line_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "As printed"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Line total; discounts and returns are negative"
+          }
+        },
+        "required": [
+          "description",
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "taxes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "GST",
+              "HST",
+              "QST",
+              "PST",
+              "OTHER"
+            ]
+          },
+          "rate_percent": {
+            "type": "number"
+          },
+          "amount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "biller",
+    "amount_due",
+    "currency"
+  ],
+  "additionalProperties": false
+}

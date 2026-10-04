@@ -1,0 +1,98 @@
+{
+  "$id": "hfm/invoice/v1",
+  "title": "invoice",
+  "type": "object",
+  "properties": {
+    "issuer": {
+      "type": "string",
+      "description": "Business that issued the invoice"
+    },
+    "invoice_number": {
+      "type": "string"
+    },
+    "invoice_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 code of the amounts, such as CAD or USD"
+    },
+    "line_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "As printed"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Line total; discounts and returns are negative"
+          }
+        },
+        "required": [
+          "description",
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "subtotal": {
+      "type": "number"
+    },
+    "taxes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "GST",
+              "HST",
+              "QST",
+              "PST",
+              "OTHER"
+            ]
+          },
+          "rate_percent": {
+            "type": "number"
+          },
+          "amount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "amount"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "total": {
+      "type": "number"
+    },
+    "tax_registration": {
+      "type": "string",
+      "description": "GST/HST or QST registration number, if printed"
+    }
+  },
+  "required": [
+    "issuer",
+    "total",
+    "currency"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,1 @@
+This is a credit card statement. List every transaction on every page, in order. Purchases, fees and interest are positive amounts; payments, refunds and credits are negative.
