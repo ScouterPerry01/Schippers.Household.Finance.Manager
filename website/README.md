@@ -20,6 +20,6 @@ How to use them:
 To keep in mind:
 - The apps (About on the desktop, Settings on the phone) and the store listings link to the two privacy policy addresses above, so they must stay stable. If they change, update `AboutScreen.kt`, the phone's `strings.xml` and `docs/store/*.md`.
 - Replace "Coming soon" with each store's link once the app is published there.
-- The English screenshots will be replaced when the English demo becomes an Ontario family with English names.
+- The screenshots come from the demo: in English an Ontario family (Ottawa), in French a Quebec family. Retake them from the demo when the screens change.
 - The privacy policy covers the apps. If the rann.ca site itself uses cookies or analytics (Google Sites can add Google Analytics), the site needs its own notice.
 - The logo, icon and screenshots are © Perry Schippers, trading as RANN, and are not covered by the GPL (see `branding/README.md`).

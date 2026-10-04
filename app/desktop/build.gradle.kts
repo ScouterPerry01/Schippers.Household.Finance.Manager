@@ -143,7 +143,8 @@ compose.desktop {
     }
 }
 
-// Opens a throw-away sample household: ./gradlew :app:desktop:runDemo [-Plang=fr] [-Paccount=Visa Desjardins] [-Psection=CATEGORIES]
+// Opens a throw-away sample household (an Ontario family in English, a Quebec family in French):
+// ./gradlew :app:desktop:runDemo [-Plang=fr] [-Paccount="TD Visa"] [-Psection=CATEGORIES]
 tasks.register<JavaExec>("runDemo") {
     group = "application"
     description = "Runs the desktop app with a temporary sample household"

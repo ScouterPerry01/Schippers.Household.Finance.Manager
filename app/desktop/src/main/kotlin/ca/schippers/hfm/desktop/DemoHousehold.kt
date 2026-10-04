@@ -111,15 +111,27 @@ import java.nio.file.Files
 
 /**
  * A sample household with a few months of made-up activity, created in a temporary folder.
- * Started with `./gradlew :app:desktop:runDemo`; never touches real households.
+ * Started with `./gradlew :app:desktop:runDemo`; never touches real households. In English it is
+ * a family in Ottawa, Ontario; in French a family in Quebec City, so each language's screenshots
+ * show names, places and taxes that fit it.
  */
 object DemoHousehold {
     const val LOGIN = "demo"
     const val PASSWORD = "demo-password"
 
+    /** Whether the household being built is the English one (Ontario). */
+    private var english = false
+
+    /** The French (Quebec) or English (Ontario) version of a name. */
+    private fun l(fr: String, en: String) = if (english) en else fr
+
     fun create(store: HouseholdStore, language: ca.schippers.hfm.i18n.Language = ca.schippers.hfm.i18n.Language.ENGLISH): HouseholdSession {
+        english = language == ca.schippers.hfm.i18n.Language.ENGLISH
         val dir = Files.createTempDirectory("hfm-demo").resolve("Demo.hfm")
-        val created = store.create(dir, "Famille Démo", LOGIN, "Alex Demo", PASSWORD.toCharArray())
+        val created = store.create(
+            dir, l("Famille Démo", "Demo Family"), LOGIN, "Alex Demo", PASSWORD.toCharArray(),
+            locale = l("fr-CA", "en-CA"), province = l("QC", "ON"),
+        )
         val books = Books(created.session).also { it.language = language }
         fill(books)
         return created.session
@@ -134,15 +146,15 @@ object DemoHousehold {
 
         val alex = books.members.create("Alex", MemberKind.ADULT, LocalDate(1984, 5, 14))
         val sam = books.members.create("Sam", MemberKind.ADULT, LocalDate(1986, 11, 2))
-        val lea = books.members.create("Léa", MemberKind.CHILD, LocalDate(2015, 6, 12))
-        val desjardins = books.institutions.create(Institution("", "Desjardins", institutionNumber = "815", transitNumber = "30123"))
-        val bank = books.institutions.create(Institution("", "Banque Nationale", institutionNumber = "006"))
+        val lea = books.members.create(l("Léa", "Maya"), MemberKind.CHILD, LocalDate(2015, 6, 12))
+        val desjardins = books.institutions.create(Institution("", l("Desjardins", "TD Canada Trust"), institutionNumber = l("815", "004"), transitNumber = l("30123", "01234")))
+        val bank = books.institutions.create(Institution("", l("Banque Nationale", "Tangerine"), institutionNumber = l("006", "614")))
 
         val chequing = books.accounts.create(
-            AccountDraft(group, "Compte conjoint", AccountType.CHEQUING, Currency.CAD, cad("2450.00"), start, desjardins.id, "815-30123-0045678", setOf(alex.id, sam.id)),
+            AccountDraft(group, l("Compte conjoint", "Joint chequing"), AccountType.CHEQUING, Currency.CAD, cad("2450.00"), start, desjardins.id, l("815-30123-0045678", "004-01234-5045678"), setOf(alex.id, sam.id)),
         )
-        val savings = books.accounts.create(AccountDraft(group, "Épargne", AccountType.HIGH_INTEREST_SAVINGS, Currency.CAD, cad("8000.00"), start, desjardins.id))
-        val visa = books.accounts.create(AccountDraft(group, "Visa Desjardins", AccountType.CREDIT_CARD, Currency.CAD, cad("0"), start, desjardins.id, "4540123412341234"))
+        val savings = books.accounts.create(AccountDraft(group, l("Épargne", "Savings"), AccountType.HIGH_INTEREST_SAVINGS, Currency.CAD, cad("8000.00"), start, desjardins.id))
+        val visa = books.accounts.create(AccountDraft(group, l("Visa Desjardins", "TD Visa"), AccountType.CREDIT_CARD, Currency.CAD, cad("0"), start, desjardins.id, "4540123412341234"))
         books.creditCards.saveTerms(
             visa.id,
             CreditCardTerms(
@@ -156,13 +168,13 @@ object DemoHousehold {
         books.creditCards.saveBenefit(CardBenefit("", visa.id, BenefitKind.PURCHASE_PROTECTION, days = 90, limit = cad("1000")))
         books.creditCards.saveBenefit(CardBenefit("", visa.id, BenefitKind.EXTENDED_WARRANTY, months = 12, maxYears = 3))
         books.creditCards.saveBenefit(CardBenefit("", visa.id, BenefitKind.TRAVEL_MEDICAL, days = 15, limit = cad("5000000"), notes = "Under 65"))
-        val usd = books.accounts.create(AccountDraft(group, "Compte US", AccountType.CHEQUING, Currency.USD, Money.parse("500.00", Currency.USD), start, bank.id))
+        val usd = books.accounts.create(AccountDraft(group, l("Compte US", "US dollar account"), AccountType.CHEQUING, Currency.USD, Money.parse("500.00", Currency.USD), start, bank.id))
 
         // A cottage mortgage renewed two years ago, with its term ending soon (LN-01 to LN-04).
         val firstPayment = LocalDate(start.year, start.month, 1).minus(DatePeriod(months = 22))
         val terms = LoanTerms(cad("148000"), BigDecimal("0.0489"), Compounding.SEMI_ANNUAL, 21 * 12, PaymentFrequency.MONTHLY)
         val owedAtStart = LoanProjection.project(LoanPlan(terms, firstPayment)).balanceOn(start.minus(DatePeriod(days = 1)))
-        val mortgage = books.accounts.create(AccountDraft(group, "Hypothèque du chalet", AccountType.MORTGAGE, Currency.CAD, -owedAtStart, start, desjardins.id, "MTG-7745120"))
+        val mortgage = books.accounts.create(AccountDraft(group, l("Hypothèque du chalet", "Cottage mortgage"), AccountType.MORTGAGE, Currency.CAD, -owedAtStart, start, desjardins.id, "MTG-7745120"))
         books.loans.save(
             LoanDetails(
                 mortgage.id, terms.principal, terms.annualRate, amortizationMonths = terms.amortizationMonths, firstPaymentDate = firstPayment,
@@ -173,16 +185,16 @@ object DemoHousehold {
         // A dog and a car (PET-01, VEH-01), created first so the monthly activity can refer to them.
         val rex = books.pets.save(
             Pet(
-                "", "Rex", Species.DOG, "Golden retriever", Sex.MALE, LocalDate(2021, 5, 3), neutered = true, colour = "Doré", microchip = "985141000123456",
-                licenceNumber = "2026-04127", licenceMunicipality = "Ville de Québec", licenceExpiry = today.plus(DatePeriod(days = 21)),
+                "", "Rex", Species.DOG, "Golden retriever", Sex.MALE, LocalDate(2021, 5, 3), neutered = true, colour = l("Doré", "Golden"), microchip = "985141000123456",
+                licenceNumber = "2026-04127", licenceMunicipality = l("Ville de Québec", "City of Ottawa"), licenceExpiry = today.plus(DatePeriod(days = 21)),
                 insurer = "Trupanion", policyNumber = "TP-88213", insuranceRenewal = today.plus(DatePeriod(months = 5)), ownerMemberId = lea.id,
             ),
         )
         val civic = books.vehicles.save(
             Vehicle(
-                "", group, "Civic", "Honda", "Civic", 2021, "EX", "Gris", "2HGFE2F59MH512345", "F42 KLM", FuelType.GASOLINE, sam.id,
-                LocalDate(2023, 4, 12), cad("24500"), "Honda de Sainte-Foy", 38_200, Currency.CAD, today.plus(DatePeriod(months = 7)),
-                "Desjardins Assurances", "AUT-5521873", today.plus(DatePeriod(days = 12)),
+                "", group, "Civic", "Honda", "Civic", 2021, "EX", l("Gris", "Grey"), "2HGFE2F59MH512345", l("F42 KLM", "CKMR 482"), FuelType.GASOLINE, sam.id,
+                LocalDate(2023, 4, 12), cad("24500"), l("Honda de Sainte-Foy", "Ottawa Honda"), 38_200, Currency.CAD, today.plus(DatePeriod(months = 7)),
+                l("Desjardins Assurances", "Intact Insurance"), "AUT-5521873", today.plus(DatePeriod(days = 12)),
             ),
         )
         var odometer = 61_200
@@ -194,12 +206,12 @@ object DemoHousehold {
         while (month <= today) {
             val m = month
             fun on(day: Int) = LocalDate(m.year, m.month, minOf(day, 28))
-            add(TransactionDraft(chequing.id, on(1), cad("3150.00"), "Employeur inc.", listOf(SplitDraft(cat("income.employment.salary"), cad("3150.00")))))
-            add(TransactionDraft(chequing.id, on(15), cad("3150.00"), "Employeur inc.", listOf(SplitDraft(cat("income.employment.salary"), cad("3150.00")))))
-            add(TransactionDraft(chequing.id, on(1), cad("-1450.00"), "Propriétaire", listOf(SplitDraft(cat("housing.rent"), cad("-1450.00")))))
-            add(TransactionDraft(chequing.id, on(12), cad("-132.48"), "Hydro-Québec", listOf(SplitDraft(cat("utilities.electricity"), cad("-132.48")))))
-            add(TransactionDraft(chequing.id, on(18), cad("-95.00"), "Vidéotron", listOf(SplitDraft(cat("utilities.internet"), cad("-95.00")))))
-            add(TransactionDraft(visa.id, on(6), cad("-187.32"), "IGA", listOf(SplitDraft(cat("food.groceries"), cad("-187.32")))))
+            add(TransactionDraft(chequing.id, on(1), cad("3150.00"), l("Employeur inc.", "Employer Inc."), listOf(SplitDraft(cat("income.employment.salary"), cad("3150.00")))))
+            add(TransactionDraft(chequing.id, on(15), cad("3150.00"), l("Employeur inc.", "Employer Inc."), listOf(SplitDraft(cat("income.employment.salary"), cad("3150.00")))))
+            add(TransactionDraft(chequing.id, on(1), cad("-1450.00"), l("Propriétaire", "Landlord"), listOf(SplitDraft(cat("housing.rent"), cad("-1450.00")))))
+            add(TransactionDraft(chequing.id, on(12), cad("-132.48"), l("Hydro-Québec", "Hydro Ottawa"), listOf(SplitDraft(cat("utilities.electricity"), cad("-132.48")))))
+            add(TransactionDraft(chequing.id, on(18), cad("-95.00"), l("Vidéotron", "Rogers"), listOf(SplitDraft(cat("utilities.internet"), cad("-95.00")))))
+            add(TransactionDraft(visa.id, on(6), cad("-187.32"), l("IGA", "Loblaws"), listOf(SplitDraft(cat("food.groceries"), cad("-187.32")))))
             add(
                 TransactionDraft(
                     visa.id, on(13), cad("-243.90"), "Costco",
@@ -207,7 +219,7 @@ object DemoHousehold {
                     cardHolderId = samCard.id,
                 ),
             )
-            add(TransactionDraft(visa.id, on(21), cad("-64.15"), "Restaurant Chez Mimi", listOf(SplitDraft(cat("food.restaurants"), cad("-64.15")))))
+            add(TransactionDraft(visa.id, on(21), cad("-64.15"), l("Restaurant Chez Mimi", "Riverside Diner"), listOf(SplitDraft(cat("food.restaurants"), cad("-64.15")))))
             // VEH-07, VEH-08: fill-ups entered from the fuel log, with their payments.
             for ((day, litres, cost) in listOf(Triple(8, "41.8", "68.55"), Triple(24, "39.6", "64.95"))) {
                 odometer += 640
@@ -218,10 +230,10 @@ object DemoHousehold {
                     )
                 }
             }
-            add(TransactionDraft(visa.id, on(4), cad("-74.99"), "Mondou", listOf(SplitDraft(cat("pets.food"), cad("-74.99"))), memberId = rex.id))
-            add(TransactionDraft(chequing.id, on(1), cad("-56.50"), "RTC", listOf(SplitDraft(cat("transport.transit.pass"), cad("-56.50"))), memberId = lea.id, memo = "Laissez-passer étudiant"))
+            add(TransactionDraft(visa.id, on(4), cad("-74.99"), l("Mondou", "Pet Valu"), listOf(SplitDraft(cat("pets.food"), cad("-74.99"))), memberId = rex.id))
+            add(TransactionDraft(chequing.id, on(1), cad("-56.50"), l("RTC", "OC Transpo"), listOf(SplitDraft(cat("transport.transit.pass"), cad("-56.50"))), memberId = lea.id, memo = l("Laissez-passer étudiant", "Student pass")))
             add(TransferDraft(chequing.id, visa.id, on(10), cad("566.57")))
-            add(TransferDraft(chequing.id, savings.id, on(16), cad("500.00"), memo = "Épargne mensuelle"))
+            add(TransferDraft(chequing.id, savings.id, on(16), cad("500.00"), memo = l("Épargne mensuelle", "Monthly savings")))
             month = month.plus(DatePeriod(months = 1))
         }
         // LN-02: the mortgage payments since the demo starts, each split from the balance owed.
@@ -232,7 +244,7 @@ object DemoHousehold {
         books.transactions.create(
             TransactionDraft(visa.id, today, cad("-137.25"), "Amazon.com", originalAmount = Money.parse("-100.00", Currency.USD)),
         )
-        books.transactions.transfer(TransferDraft(chequing.id, usd.id, today, cad("274.50"), Money.parse("200.00", Currency.USD), "Achat de dollars US"))
+        books.transactions.transfer(TransferDraft(chequing.id, usd.id, today, cad("274.50"), Money.parse("200.00", Currency.USD), l("Achat de dollars US", "US dollar purchase")))
         importStatement(books, chequing, today)
         addBills(books, chequing, savings, visa, today)
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
@@ -248,10 +260,10 @@ object DemoHousehold {
         books.users.setAccess(group, samUser, ca.schippers.hfm.domain.PermissionLevel.VIEW)
         // GOAL-01 to GOAL-04: three goals sharing the savings account.
         val goals = books.goals
-        goals.save(SavingsGoal("", savings.id, "Voyage en Gaspésie", cad("4000"), LocalDate(today.year + 1, 7, 1), cad("250"), Recurrence.MONTHLY, start.plus(DatePeriod(days = 15))))
-        val car = goals.save(SavingsGoal("", savings.id, "Remplacement de l'auto", cad("15000"), LocalDate(today.year + 3, 6, 1), cad("200"), Recurrence(Frequency.SEMI_MONTHLY, secondDay = 0), LocalDate(start.year, start.month, 15)))
-        goals.setAside(car.id, start, cad("3000"), "Départ")
-        val emergency = goals.save(SavingsGoal("", savings.id, "Fonds d'urgence", cad("6000")))
+        goals.save(SavingsGoal("", savings.id, l("Voyage en Gaspésie", "Trip to Newfoundland"), cad("4000"), LocalDate(today.year + 1, 7, 1), cad("250"), Recurrence.MONTHLY, start.plus(DatePeriod(days = 15))))
+        val car = goals.save(SavingsGoal("", savings.id, l("Remplacement de l'auto", "Replacement car"), cad("15000"), LocalDate(today.year + 3, 6, 1), cad("200"), Recurrence(Frequency.SEMI_MONTHLY, secondDay = 0), LocalDate(start.year, start.month, 15)))
+        goals.setAside(car.id, start, cad("3000"), l("Départ", "Starting amount"))
+        val emergency = goals.save(SavingsGoal("", savings.id, l("Fonds d'urgence", "Emergency fund"), cad("6000")))
         goals.setAside(emergency.id, start, cad("2500"))
         goals.postScheduled(today)
         val firstMonth = LocalDate(start.year, start.month, 1)
@@ -269,9 +281,23 @@ object DemoHousehold {
      */
     private fun addDocuments(books: Books, group: String, today: LocalDate) {
         val lastSixth = LocalDate(today.year, today.month, 6).let { if (it > today) it.minus(DatePeriod(months = 1)) else it }
-        val hydro = books.bills.list().first { it.name == "Hydro-Québec" }
+        val hydro = books.bills.list().first { it.name == l("Hydro-Québec", "Hydro Ottawa") }
         val due = books.bills.occurrences(today, today.plus(DatePeriod(days = 40)), setOf(hydro.id)).first().dueDate
-        val documents = listOf(
+        val documents = if (english) listOf(
+            "IMG_4127.jpg" to listOf(
+                "Loblaws", "1250 Main St W", "MILK 2% 4L          6.49", "WHOLE CHICKEN      17.98", "PRODUCE            42.37",
+                "GROCERY           112.59", "SUBTOTAL          179.43", "HST                 7.89", "TOTAL             187.32",
+                "VISA ************1234", "$lastSixth 17:42",
+            ),
+            "Hydro-Ottawa-bill.jpg" to listOf(
+                "Hydro Ottawa", "Your electricity bill", "Bill date: ${due.minus(DatePeriod(days = 21))}", "Account number: 6 1234 5678 9",
+                "Amount due \$138.91", "Due date: $due",
+            ),
+            "scan-0031.jpg" to listOf(
+                "Canadian Tire #412", "Receipt # 412-88213", "WASHER FLUID -40     5.99", "H11 BULB           24.99", "SUBTOTAL           30.98",
+                "HST                 4.03", "TOTAL              35.01", "INTERAC", "${today.minus(DatePeriod(days = 1))} 10:12",
+            ),
+        ) else listOf(
             "IMG_4127.jpg" to listOf(
                 "IGA Extra Famille Jodoin", "1250, boul. Charest Ouest", "LAIT 2% 4L          6,49", "POULET ENTIER      17,98", "FRUITS ET LEGUMES  42,37",
                 "EPICERIE          112,59", "SOUS-TOTAL        179,43", "TPS                 2,64", "TVQ                 5,25", "TOTAL             187,32",
@@ -320,9 +346,9 @@ object DemoHousehold {
         // The cash each account started with, so the demo's chequing account is not drawn on years before it opens.
         fun account(name: String, type: AccountType, owners: Set<String>, number: String, cash: String) =
             books.accounts.create(AccountDraft(group, name, type, Currency.CAD, cad(cash), opened, institution.id, number, owners))
-        val brokerage = account("Courtage Disnat", AccountType.BROKERAGE, setOf(alex.id, sam.id), "DIS-4471230", "22000")
-        val tfsa = account("CELI Alex", AccountType.TFSA, setOf(alex.id), "CELI-5512", "14000")
-        val rrsp = account("REER Sam", AccountType.RRSP, setOf(sam.id), "REER-8820", "6000")
+        val brokerage = account(l("Courtage Disnat", "Brokerage (TD)"), AccountType.BROKERAGE, setOf(alex.id, sam.id), "DIS-4471230", "22000")
+        val tfsa = account(l("CELI Alex", "TFSA Alex"), AccountType.TFSA, setOf(alex.id), l("CELI-5512", "TFSA-5512"), "14000")
+        val rrsp = account(l("REER Sam", "RRSP Sam"), AccountType.RRSP, setOf(sam.id), l("REER-8820", "RRSP-8820"), "6000")
         fun security(symbol: String, name: String, kind: SecurityKind, assetClass: AssetClass = AssetClass.EQUITY, region: Region = Region.CANADA) =
             inv.saveSecurity(Security("", symbol, "TSX", name, kind, Currency.CAD, assetClass, region))
         val xic = security("XIC", "iShares Core S&P/TSX Capped Composite", SecurityKind.ETF)
@@ -376,14 +402,14 @@ object DemoHousehold {
             books.prices.setSpot(Metal.GOLD, day, BigDecimal(3700 - m * 45))
             books.prices.setSpot(Metal.SILVER, day, BigDecimal("44.10").subtract(BigDecimal(m)))
         }
-        val safe = books.accounts.create(AccountDraft(group, "Métaux précieux", AccountType.PRECIOUS_METALS, Currency.CAD, cad("0"), LocalDate(2024, 1, 1), institution.id, ownerMemberIds = setOf(alex.id, sam.id)))
+        val safe = books.accounts.create(AccountDraft(group, l("Métaux précieux", "Precious metals"), AccountType.PRECIOUS_METALS, Currency.CAD, cad("0"), LocalDate(2024, 1, 1), institution.id, ownerMemberIds = setOf(alex.id, sam.id)))
         books.metals.save(
-            MetalItem("", safe.id, Metal.GOLD, MetalForm.COIN, "Feuille d'érable 1 oz", BigDecimal.ONE, WeightUnit.OZT, BigDecimal("0.9999"), 3, "", "Monnaie royale canadienne",
-                LocalDate(2024, 5, 14), cad("9480"), BigDecimal("3"), MetalStorage.BANK_BOX, "Desjardins, coffret 112", true, "Assurance habitation, avenant de 15 000 $"),
+            MetalItem("", safe.id, Metal.GOLD, MetalForm.COIN, l("Feuille d'érable 1 oz", "Maple Leaf 1 oz"), BigDecimal.ONE, WeightUnit.OZT, BigDecimal("0.9999"), 3, "", l("Monnaie royale canadienne", "Royal Canadian Mint"),
+                LocalDate(2024, 5, 14), cad("9480"), BigDecimal("3"), MetalStorage.BANK_BOX, l("Desjardins, coffret 112", "TD, safe deposit box 112"), true, l("Assurance habitation, avenant de 15 000 $", "Home insurance rider, $15,000")),
         )
         books.metals.save(
-            MetalItem("", safe.id, Metal.SILVER, MetalForm.ROUND, "Rondelles d'argent 1 oz", BigDecimal.ONE, WeightUnit.OZT, BigDecimal("0.999"), 25, dealer = "Silver Gold Bull",
-                purchaseDate = LocalDate(2025, 2, 3), cost = cad("1060"), storage = MetalStorage.HOME_SAFE, storageDetail = "Coffre du sous-sol"),
+            MetalItem("", safe.id, Metal.SILVER, MetalForm.ROUND, l("Rondelles d'argent 1 oz", "Silver rounds 1 oz"), BigDecimal.ONE, WeightUnit.OZT, BigDecimal("0.999"), 25, dealer = "Silver Gold Bull",
+                purchaseDate = LocalDate(2025, 2, 3), cost = cad("1060"), storage = MetalStorage.HOME_SAFE, storageDetail = l("Coffre du sous-sol", "Basement safe")),
         )
     }
 
@@ -402,7 +428,7 @@ object DemoHousehold {
         fun wallet(name: String, currency: Currency) =
             books.accounts.create(AccountDraft(group, name, AccountType.CRYPTO_WALLET, currency, Money.zero(currency), day(12), ownerMemberIds = setOf(alex.id)))
         val exchange = wallet("Shakepay BTC", Currency.BTC)
-        val cold = wallet("Ledger (stockage à froid)", Currency.BTC)
+        val cold = wallet(l("Ledger (stockage à froid)", "Ledger (cold storage)"), Currency.BTC)
         val ether = wallet("Ether", eth)
         val crypto = books.crypto
         for (m in listOf(3, 2, 1)) {
@@ -423,39 +449,39 @@ object DemoHousehold {
         fun cad(s: String) = Money.parse(s, Currency.CAD)
         val plans = books.plans
         val accounts = books.accounts.list().map { it.account }
-        val tfsa = accounts.first { it.name == "CELI Alex" }
-        val rrsp = accounts.first { it.name == "REER Sam" }
+        val tfsa = accounts.first { it.name == l("CELI Alex", "TFSA Alex") }
+        val rrsp = accounts.first { it.name == l("REER Sam", "RRSP Sam") }
         val year = today.year
         val thisYear = LocalDate(year, 1, 1)
         fun day(monthsAgo: Int) = today.minus(DatePeriod(months = monthsAgo))
 
         plans.saveRoom(RoomEntry("", alex.id, RoomPlan.TFSA, year, cad("31500")), group)
         plans.saveRoom(RoomEntry("", sam.id, RoomPlan.RRSP, year, cad("18500")), group)
-        books.transactions.transfer(TransferDraft(chequing.id, tfsa.id, day(1), cad("1000"), memo = "Cotisation CELI"))
-        books.transactions.transfer(TransferDraft(chequing.id, rrsp.id, maxOf(day(2), LocalDate(year, 3, 2)), cad("1500"), memo = "Cotisation REER"))
-        plans.saveBeneficiary(Beneficiary("", tfsa.id, BeneficiaryKind.SUCCESSOR_HOLDER, sam.displayName, sam.id, "Conjoint"))
-        plans.saveBeneficiary(Beneficiary("", rrsp.id, BeneficiaryKind.BENEFICIARY, alex.displayName, alex.id, "Conjoint", BigDecimal(100)))
+        books.transactions.transfer(TransferDraft(chequing.id, tfsa.id, day(1), cad("1000"), memo = l("Cotisation CELI", "TFSA contribution")))
+        books.transactions.transfer(TransferDraft(chequing.id, rrsp.id, maxOf(day(2), LocalDate(year, 3, 2)), cad("1500"), memo = l("Cotisation REER", "RRSP contribution")))
+        plans.saveBeneficiary(Beneficiary("", tfsa.id, BeneficiaryKind.SUCCESSOR_HOLDER, sam.displayName, sam.id, l("Conjoint", "Spouse")))
+        plans.saveBeneficiary(Beneficiary("", rrsp.id, BeneficiaryKind.BENEFICIARY, alex.displayName, alex.id, l("Conjoint", "Spouse"), BigDecimal(100)))
 
-        val resp = books.accounts.create(AccountDraft(group, "REEE Léa", AccountType.RESP, Currency.CAD, cad("6000"), thisYear.minus(DatePeriod(years = 3)), institution.id, "REEE-2231", setOf(alex.id, sam.id)))
+        val resp = books.accounts.create(AccountDraft(group, l("REEE Léa", "RESP Maya"), AccountType.RESP, Currency.CAD, cad("6000"), thisYear.minus(DatePeriod(years = 3)), institution.id, l("REEE-2231", "RESP-2231"), setOf(alex.id, sam.id)))
         plans.saveBeneficiary(Beneficiary("", resp.id, BeneficiaryKind.RESP_BENEFICIARY, lea.displayName, lea.id))
-        books.transactions.transfer(TransferDraft(savings.id, resp.id, maxOf(day(2), thisYear), cad("2500"), memo = "Cotisation REEE", memberId = lea.id))
+        books.transactions.transfer(TransferDraft(savings.id, resp.id, maxOf(day(2), thisYear), cad("2500"), memo = l("Cotisation REEE", "RESP contribution"), memberId = lea.id))
         plans.recordGrant(resp.id, lea.id, maxOf(day(1), thisYear), GrantKind.CESG, cad("500"))
 
         // A retired relative living with the household: a RRIF paying monthly, and the QPP.
-        val gilles = books.members.create("Gilles", MemberKind.ADULT, LocalDate(1952, 8, 20))
-        val rrif = books.accounts.create(AccountDraft(group, "FERR Gilles", AccountType.RRIF, Currency.CAD, cad("85000"), LocalDate(2018, 1, 1), institution.id, "FERR-1180", setOf(gilles.id)))
+        val gilles = books.members.create(l("Gilles", "Gordon"), MemberKind.ADULT, LocalDate(1952, 8, 20))
+        val rrif = books.accounts.create(AccountDraft(group, l("FERR Gilles", "RRIF Gordon"), AccountType.RRIF, Currency.CAD, cad("85000"), LocalDate(2018, 1, 1), institution.id, l("FERR-1180", "RRIF-1180"), setOf(gilles.id)))
         val qppCategory = books.categories.list().first { it.systemKey == "income.pension.qpp_cpp" }.id
         for (m in 1..today.month.ordinal + 1) {
             val date = LocalDate(year, m, 15)
             if (date > today) continue
-            books.transactions.transfer(TransferDraft(rrif.id, chequing.id, date, cad("500"), memo = "Retrait FERR"))
-            books.transactions.create(TransactionDraft(chequing.id, LocalDate(year, m, 25).let { if (it > today) date else it }, cad("812.40"), "Retraite Québec", listOf(SplitDraft(qppCategory, cad("812.40"))), memberId = gilles.id))
+            books.transactions.transfer(TransferDraft(rrif.id, chequing.id, date, cad("500"), memo = l("Retrait FERR", "RRIF withdrawal")))
+            books.transactions.create(TransactionDraft(chequing.id, LocalDate(year, m, 25).let { if (it > today) date else it }, cad("812.40"), l("Retraite Québec", "Service Canada"), listOf(SplitDraft(qppCategory, cad("812.40"))), memberId = gilles.id))
         }
-        plans.saveBeneficiary(Beneficiary("", rrif.id, BeneficiaryKind.BENEFICIARY, "Succession de Gilles", relationship = "Succession", sharePercent = BigDecimal(100)))
-        val qpp = plans.savePension(Pension("", gilles.id, PensionKind.QPP, "Rente de retraite du RRQ", "Retraite Québec", indexed = true, payer = "Retraite Québec"), group)
+        plans.saveBeneficiary(Beneficiary("", rrif.id, BeneficiaryKind.BENEFICIARY, l("Succession de Gilles", "Estate of Gordon"), relationship = l("Succession", "Estate"), sharePercent = BigDecimal(100)))
+        val qpp = plans.savePension(Pension("", gilles.id, if (english) PensionKind.CPP else PensionKind.QPP, l("Rente de retraite du RRQ", "CPP retirement pension"), l("Retraite Québec", "Service Canada"), indexed = true, payer = l("Retraite Québec", "Service Canada")), group)
         plans.saveStatement(qpp, PensionStatement("", qpp.id, year - 1, projectedAnnual = cad("9748.80")))
         val municipal = plans.savePension(
-            Pension("", sam.id, PensionKind.DEFINED_BENEFIT, "Régime de retraite des employés municipaux", "Ville de Québec", "RREM-44817", normalRetirementAge = 65, indexed = true, survivorPercent = BigDecimal(60)),
+            Pension("", sam.id, PensionKind.DEFINED_BENEFIT, l("Régime de retraite des employés municipaux", "OMERS Primary Pension Plan"), l("Ville de Québec", "City of Ottawa"), l("RREM-44817", "OM-44817"), normalRetirementAge = 65, indexed = true, survivorPercent = BigDecimal(60)),
             group,
         )
         plans.saveStatement(municipal, PensionStatement("", municipal.id, year - 1, cad("6200"), cad("14800"), cad("38200"), cad("96400"), cad("5150")))
@@ -467,58 +493,55 @@ object DemoHousehold {
         val vehicles = books.vehicles
         vehicles.saveWarranty(Warranty("", civic.id, WarrantyKind.POWERTRAIN, "Honda Canada", LocalDate(2021, 3, 1), today.plus(DatePeriod(days = 50)), 100_000, "1-888-946-6329"))
         vehicles.saveWarranty(Warranty("", civic.id, WarrantyKind.CORROSION, "Honda Canada", LocalDate(2021, 3, 1), LocalDate(2026, 3, 1).plus(DatePeriod(years = 2))))
-        val names = mapOf("oil" to "Vidange d'huile et filtre", "tire_rotation" to "Permutation des pneus", "winter_tires_on" to "Pose des pneus d'hiver",
-            "winter_tires_off" to "Retrait des pneus d'hiver", "brakes" to "Inspection des freins", "cabin_filter" to "Filtre à air de l'habitacle",
-            "engine_filter" to "Filtre à air du moteur", "inspection" to "Inspection annuelle")
         val start = today.minus(DatePeriod(months = 3))
-        val tasks = vehicles.addStarterTasks(civic.id, today) { names.getValue(it) }.associateBy { it.templateKey }
+        val tasks = vehicles.addStarterTasks(civic.id, today) { ca.schippers.hfm.i18n.Messages.get(books.language, "task.$it") }.associateBy { it.templateKey }
         // An oil change three months ago, with its payment; and a do-it-yourself filter change without one.
         vehicles.saveService(
-            ServiceRecord("", civic.id, start.plus(DatePeriod(days = 5)), 61_500, "Garage Tremblay", cost = cad("94.85"), taskIds = setOfNotNull(tasks["oil"]?.id, tasks["tire_rotation"]?.id)),
-            PaymentDraft(visa.id, cat("transport.maintenance"), "Garage Tremblay"),
+            ServiceRecord("", civic.id, start.plus(DatePeriod(days = 5)), 61_500, l("Garage Tremblay", "Main Street Auto"), cost = cad("94.85"), taskIds = setOfNotNull(tasks["oil"]?.id, tasks["tire_rotation"]?.id)),
+            PaymentDraft(visa.id, cat("transport.maintenance"), l("Garage Tremblay", "Main Street Auto")),
         )
-        vehicles.saveService(ServiceRecord("", civic.id, start.plus(DatePeriod(days = 40)), 63_300, diy = true, cost = cad("24.99"), notes = "Filtre Canadian Tire", taskIds = setOfNotNull(tasks["cabin_filter"]?.id)))
+        vehicles.saveService(ServiceRecord("", civic.id, start.plus(DatePeriod(days = 40)), 63_300, diy = true, cost = cad("24.99"), notes = l("Filtre Canadian Tire", "Canadian Tire filter"), taskIds = setOfNotNull(tasks["cabin_filter"]?.id)))
         books.transactions.create(
-            TransactionDraft(visa.id, start.plus(DatePeriod(days = 2)), cad("-1184.00"), "Desjardins Assurances", listOf(SplitDraft(cat("transport.insurance"), cad("-1184.00"))), assetId = civic.id),
+            TransactionDraft(visa.id, start.plus(DatePeriod(days = 2)), cad("-1184.00"), l("Desjardins Assurances", "Intact Insurance"), listOf(SplitDraft(cat("transport.insurance"), cad("-1184.00"))), assetId = civic.id),
         )
 
-        val vet = books.health.saveProvider(HealthProvider("", group, "Hôpital vétérinaire Charlesbourg", ProviderKind.VET, "418-555-0190", null, null, false))
-        books.health.saveProvider(HealthProvider("", group, "Toilettage Patte de velours", ProviderKind.GROOMER, "418-555-0133", null, null, false))
+        val vet = books.health.saveProvider(HealthProvider("", group, l("Hôpital vétérinaire Charlesbourg", "Riverside Animal Hospital"), ProviderKind.VET, l("418-555-0190", "613-555-0190"), null, null, false))
+        books.health.saveProvider(HealthProvider("", group, l("Toilettage Patte de velours", "Pampered Paws Grooming"), ProviderKind.GROOMER, l("418-555-0133", "613-555-0133"), null, null, false))
         books.transactions.create(
-            TransactionDraft(visa.id, start.plus(DatePeriod(days = 20)), cad("-287.40"), "Hôpital vétérinaire Charlesbourg", listOf(SplitDraft(cat("pets.vet"), cad("-287.40"))), memberId = rex.id),
+            TransactionDraft(visa.id, start.plus(DatePeriod(days = 20)), cad("-287.40"), l("Hôpital vétérinaire Charlesbourg", "Riverside Animal Hospital"), listOf(SplitDraft(cat("pets.vet"), cad("-287.40"))), memberId = rex.id),
         )
         books.transactions.create(
-            TransactionDraft(visa.id, LocalDate(today.year, 1, 15).let { if (it > today) start else it }, cad("-35.00"), "Ville de Québec", listOf(SplitDraft(cat("pets.licence"), cad("-35.00"))), memberId = rex.id),
+            TransactionDraft(visa.id, LocalDate(today.year, 1, 15).let { if (it > today) start else it }, cad("-35.00"), l("Ville de Québec", "City of Ottawa"), listOf(SplitDraft(cat("pets.licence"), cad("-35.00"))), memberId = rex.id),
         )
-        books.health.saveImmunization(Immunization("", group, rex.id, "Rage", start.plus(DatePeriod(days = 20)), vet.id, start.plus(DatePeriod(days = 20, years = 3)), null))
+        books.health.saveImmunization(Immunization("", group, rex.id, l("Rage", "Rabies"), start.plus(DatePeriod(days = 20)), vet.id, start.plus(DatePeriod(days = 20, years = 3)), null))
         books.health.saveImmunization(Immunization("", group, rex.id, "DHPP", start.plus(DatePeriod(days = 20)).minus(DatePeriod(years = 1)), vet.id, today.plus(DatePeriod(days = 18)), null))
-        books.calendar.create(EventDraft(group, "Toilettage de Rex", EventCategory.PET, today.plus(DatePeriod(days = 4)), LocalTime(13, 30), 90, "Patte de velours", memberId = rex.id))
+        books.calendar.create(EventDraft(group, l("Toilettage de Rex", "Rex's grooming"), EventCategory.PET, today.plus(DatePeriod(days = 4)), LocalTime(13, 30), 90, l("Patte de velours", "Pampered Paws"), memberId = rex.id))
     }
 
     /** Appointments of several kinds, and health records kept in Alex's private group. */
     private fun addCalendarAndHealth(books: Books, shared: String, chequing: Account, alex: Member, sam: Member, lea: Member, today: LocalDate) {
         fun day(n: Int) = today.plus(DatePeriod(days = n))
-        val private = books.session.createGroup("Alex Demo - privé", private = true)
+        val private = books.session.createGroup(l("Alex Demo - privé", "Alex Demo - private"), private = true)
         val health = books.health
-        val pharmacy = health.saveProvider(HealthProvider("", shared, "Pharmacie Jean Coutu", ProviderKind.PHARMACY, "418-555-0100", "1200, boul. Charest", null, false))
-        val doctor = health.saveProvider(HealthProvider("", shared, "Dre Gagnon (GMF Limoilou)", ProviderKind.DOCTOR, "418-555-0142", null, null, false))
-        val dentist = health.saveProvider(HealthProvider("", shared, "Clinique dentaire Saint-Roch", ProviderKind.DENTIST, "418-555-0177", null, null, false))
+        val pharmacy = health.saveProvider(HealthProvider("", shared, l("Pharmacie Jean Coutu", "Shoppers Drug Mart"), ProviderKind.PHARMACY, l("418-555-0100", "613-555-0100"), l("1200, boul. Charest", "1200 Bank St"), null, false))
+        val doctor = health.saveProvider(HealthProvider("", shared, l("Dre Gagnon (GMF Limoilou)", "Dr. Patel (Glebe Family Health Team)"), ProviderKind.DOCTOR, l("418-555-0142", "613-555-0142"), null, null, false))
+        val dentist = health.saveProvider(HealthProvider("", shared, l("Clinique dentaire Saint-Roch", "Elgin Street Dental"), ProviderKind.DENTIST, l("418-555-0177", "613-555-0177"), null, null, false))
 
         val calendar = books.calendar
-        calendar.create(EventDraft(shared, "Pose des pneus d'hiver", EventCategory.VEHICLE, day(1), LocalTime(9, 30), 60, "Garage Tremblay", reminderMinutes = listOf(1440, 60)))
-        calendar.create(EventDraft(shared, "Rencontre conseillère Desjardins", EventCategory.FINANCIAL, day(6), LocalTime(14, 0), 45, "Caisse Desjardins", accountId = chequing.id))
-        calendar.create(EventDraft(shared, "Nettoyage dentaire", EventCategory.MEDICAL, day(9), LocalTime(10, 15), 60, memberId = lea.id, providerId = dentist.id))
-        calendar.create(EventDraft(private, "Bilan annuel", EventCategory.MEDICAL, day(14), LocalTime(8, 40), 30, memberId = alex.id, providerId = doctor.id))
-        calendar.create(EventDraft(shared, "Ramonage de la cheminée", EventCategory.HOME, day(20), reminderMinutes = listOf(2 * 1440)))
-        calendar.create(EventDraft(shared, "Cours de natation", EventCategory.PERSONAL, day(-3), LocalTime(18, 0), 60, memberId = lea.id, recurrence = Recurrence.WEEKLY, endDate = day(60), reminderMinutes = listOf(120)))
+        calendar.create(EventDraft(shared, l("Pose des pneus d'hiver", "Winter tires on"), EventCategory.VEHICLE, day(1), LocalTime(9, 30), 60, l("Garage Tremblay", "Main Street Auto"), reminderMinutes = listOf(1440, 60)))
+        calendar.create(EventDraft(shared, l("Rencontre conseillère Desjardins", "Meeting with the TD advisor"), EventCategory.FINANCIAL, day(6), LocalTime(14, 0), 45, l("Caisse Desjardins", "TD branch, Bank St"), accountId = chequing.id))
+        calendar.create(EventDraft(shared, l("Nettoyage dentaire", "Dental cleaning"), EventCategory.MEDICAL, day(9), LocalTime(10, 15), 60, memberId = lea.id, providerId = dentist.id))
+        calendar.create(EventDraft(private, l("Bilan annuel", "Annual physical"), EventCategory.MEDICAL, day(14), LocalTime(8, 40), 30, memberId = alex.id, providerId = doctor.id))
+        calendar.create(EventDraft(shared, l("Ramonage de la cheminée", "Chimney sweep"), EventCategory.HOME, day(20), reminderMinutes = listOf(2 * 1440)))
+        calendar.create(EventDraft(shared, l("Cours de natation", "Swimming lessons"), EventCategory.PERSONAL, day(-3), LocalTime(18, 0), 60, memberId = lea.id, recurrence = Recurrence.WEEKLY, endDate = day(60), reminderMinutes = listOf(120)))
 
-        health.saveMedication(Medication("", private, alex.id, "Atorvastatine", "20 mg", "1 comprimé au coucher", doctor.id, pharmacy.id, "RX-448120", day(-400), null, 30, 2, day(-27), 5, true, null))
-        health.saveMedication(Medication("", private, alex.id, "Vitamine D", "1000 UI", "1 par jour", null, null, null, null, null, null, null, null, 5, true, null))
-        health.saveMedication(Medication("", shared, sam.id, "Salbutamol (inhalateur)", "100 mcg", "Au besoin", doctor.id, pharmacy.id, "RX-310077", day(-700), null, 90, 0, day(-60), 7, true, null))
-        health.saveCondition(HealthCondition("", private, alex.id, "Hypercholestérolémie", day(-420), ConditionStatus.MANAGED, doctor.id, null))
-        health.saveCondition(HealthCondition("", shared, sam.id, "Asthme", LocalDate(2009, 4, 1), ConditionStatus.MANAGED, doctor.id, null))
-        health.saveAllergy(Allergy("", shared, lea.id, "Arachides", "Urticaire", Severity.SEVERE, "Épipen dans le sac d'école"))
-        health.saveTest(HealthTest("", private, alex.id, "Bilan lipidique (LDL)", day(-35), "2,4", "mmol/L", "< 3,5", doctor.id, day(150), null))
+        health.saveMedication(Medication("", private, alex.id, l("Atorvastatine", "Atorvastatin"), "20 mg", l("1 comprimé au coucher", "1 tablet at bedtime"), doctor.id, pharmacy.id, "RX-448120", day(-400), null, 30, 2, day(-27), 5, true, null))
+        health.saveMedication(Medication("", private, alex.id, l("Vitamine D", "Vitamin D"), l("1000 UI", "1000 IU"), l("1 par jour", "1 a day"), null, null, null, null, null, null, null, null, 5, true, null))
+        health.saveMedication(Medication("", shared, sam.id, l("Salbutamol (inhalateur)", "Salbutamol (inhaler)"), "100 mcg", l("Au besoin", "As needed"), doctor.id, pharmacy.id, "RX-310077", day(-700), null, 90, 0, day(-60), 7, true, null))
+        health.saveCondition(HealthCondition("", private, alex.id, l("Hypercholestérolémie", "High cholesterol"), day(-420), ConditionStatus.MANAGED, doctor.id, null))
+        health.saveCondition(HealthCondition("", shared, sam.id, l("Asthme", "Asthma"), LocalDate(2009, 4, 1), ConditionStatus.MANAGED, doctor.id, null))
+        health.saveAllergy(Allergy("", shared, lea.id, l("Arachides", "Peanuts"), l("Urticaire", "Hives"), Severity.SEVERE, l("Épipen dans le sac d'école", "EpiPen in the school bag")))
+        health.saveTest(HealthTest("", private, alex.id, l("Bilan lipidique (LDL)", "Lipid panel (LDL)"), day(-35), l("2,4", "2.4"), "mmol/L", l("< 3,5", "< 3.5"), doctor.id, day(150), null))
         health.saveImmunization(Immunization("", shared, lea.id, "Influenza", day(-340), pharmacy.id, day(25), null))
 
         // MED-01 to MED-10: each spouse's employer plan, paying first for its own member.
@@ -527,12 +550,12 @@ object DemoHousehold {
         fun pct(s: String) = BigDecimal(s)
         val alexPlan = med.savePlan(
             MedPlan(
-                "", shared, MedPlanKind.GROUP_HEALTH, "Assurance collective (Alex)", "SSQ Assurance", "G-48812", "C-0045123", alex.id,
+                "", shared, MedPlanKind.GROUP_HEALTH, l("Assurance collective (Alex)", "Group benefits (Alex)"), l("SSQ Assurance", "Manulife"), "G-48812", "C-0045123", alex.id,
                 people = listOf(PlanPerson(alex.id, 1), PlanPerson(lea.id, 1), PlanPerson(sam.id, 2)),
             ),
         )
         val samPlan = med.savePlan(
-            MedPlan("", shared, MedPlanKind.GROUP_HEALTH, "Régime d'employeur (Sam)", "Beneva", "77105", "S-2231", sam.id, people = listOf(PlanPerson(sam.id, 1), PlanPerson(alex.id, 2), PlanPerson(lea.id, 2))),
+            MedPlan("", shared, MedPlanKind.GROUP_HEALTH, l("Régime d'employeur (Sam)", "Employer plan (Sam)"), l("Beneva", "Canada Life"), "77105", "S-2231", sam.id, people = listOf(PlanPerson(sam.id, 1), PlanPerson(alex.id, 2), PlanPerson(lea.id, 2))),
         )
         listOf(
             MedCoverage("", alexPlan.id, MedService.PRESCRIPTION, pct("80")),
@@ -549,18 +572,18 @@ object DemoHousehold {
         fun expense(who: Member, service: MedService, days: Int, amount: String, what: String, provider: HealthProvider? = null) =
             med.saveExpense(MedExpense("", shared, who.id, service, day(days), cad(amount), provider?.id, description = what))
         // Paid by the first plan, nothing more to claim.
-        val cleaning = expense(lea, MedService.DENTAL_PREVENTIVE, -120, "185.00", "Nettoyage et examen", dentist)
+        val cleaning = expense(lea, MedService.DENTAL_PREVENTIVE, -120, "185.00", l("Nettoyage et examen", "Cleaning and exam"), dentist)
         med.recordPayment(med.submit(cleaning.id, alexPlan.id, day(-119)).id, day(-110), cad("166.50"))
-        val glasses = expense(alex, MedService.EYEWEAR, -380, "420.00", "Lunettes (Lunetterie New Look)")
+        val glasses = expense(alex, MedService.EYEWEAR, -380, "420.00", l("Lunettes (Lunetterie New Look)", "Glasses (Bank Street Optical)"))
         med.recordPayment(med.submit(glasses.id, alexPlan.id, day(-379)).id, day(-370), cad("200.00"))
         // Paid by Alex's plan; Sam's plan can take the rest.
-        val massage = expense(alex, MedService.MASSAGE, -40, "120.00", "Massothérapie")
+        val massage = expense(alex, MedService.MASSAGE, -40, "120.00", l("Massothérapie", "Registered massage therapist"))
         med.recordPayment(med.submit(massage.id, alexPlan.id, day(-39)).id, day(-30), cad("60.00"))
         // Waiting for payment, still to send, and one about to expire.
         val inhaler = expense(sam, MedService.PRESCRIPTION, -5, "42.30", "Salbutamol", pharmacy)
         med.submit(inhaler.id, samPlan.id, day(-5))
-        expense(sam, MedService.PHYSIOTHERAPY, -15, "95.00", "Physiothérapie (épaule)")
-        expense(lea, MedService.EYE_EXAM, -340, "95.00", "Examen de la vue")
+        expense(sam, MedService.PHYSIOTHERAPY, -15, "95.00", l("Physiothérapie (épaule)", "Shoulder, after a fall"))
+        expense(lea, MedService.EYE_EXAM, -340, "95.00", l("Examen de la vue", "Optometrist, yearly exam"))
     }
 
     /** AST, WAR, INS: the house and what is in it, warranties, and the household's policies. */
@@ -570,62 +593,62 @@ object DemoHousehold {
         val assets = books.assets
         val house = assets.save(
             Asset(
-                "", group, AssetKind.HOME, "Maison (rue des Érables)", purchaseDate = LocalDate(2018, 6, 29), purchasePrice = cad("389000"),
-                valueMethod = ValueMethod.MANUAL, value = cad("515000"), valueDate = day(-60), location = "Québec", notes = "Évaluation municipale 2025 : 498 300 $",
+                "", group, AssetKind.HOME, l("Maison (rue des Érables)", "House (Maple Street)"), purchaseDate = LocalDate(2018, 6, 29), purchasePrice = cad("389000"),
+                valueMethod = ValueMethod.MANUAL, value = cad("515000"), valueDate = day(-60), location = l("Québec", "Ottawa"), notes = l("Évaluation municipale 2025 : 498 300 $", "MPAC assessment: $498,300"),
             ),
         )
         assets.save(
             Asset(
-                "", group, AssetKind.HEATING_COOLING, "Thermopompe", house.id, "Mitsubishi", "MUZ-FS12", "MZ-221873", LocalDate(2022, 5, 10), "Climatisation Laval", cad("6850"),
-                location = "Extérieur", valueMethod = ValueMethod.DEPRECIATION, depreciationYears = 15,
+                "", group, AssetKind.HEATING_COOLING, l("Thermopompe", "Heat pump"), house.id, "Mitsubishi", "MUZ-FS12", "MZ-221873", LocalDate(2022, 5, 10), l("Climatisation Laval", "Capital Heating & Cooling"), cad("6850"),
+                location = l("Extérieur", "Outside"), valueMethod = ValueMethod.DEPRECIATION, depreciationYears = 15,
             ),
         )
-        val fridgeBuy = books.transactions.create(TransactionDraft(visa.id, day(-45), cad("-1899.00"), "Brault & Martineau"))
+        val fridgeBuy = books.transactions.create(TransactionDraft(visa.id, day(-45), cad("-1899.00"), l("Brault & Martineau", "The Brick")))
         val fridge = assets.save(
             Asset(
-                "", group, AssetKind.APPLIANCE, "Réfrigérateur", house.id, "LG", "LRMVS3006S", "SN-77120", day(-45), "Brault & Martineau", cad("1899.00"), fridgeBuy.id, "Cuisine",
+                "", group, AssetKind.APPLIANCE, l("Réfrigérateur", "Refrigerator"), house.id, "LG", "LRMVS3006S", "SN-77120", day(-45), l("Brault & Martineau", "The Brick"), cad("1899.00"), fridgeBuy.id, l("Cuisine", "Kitchen"),
                 valueMethod = ValueMethod.DEPRECIATION, depreciationYears = 12,
             ),
         )
-        assets.saveWarranty(AssetWarranty("", group, fridge.id, AssetWarrantyKind.MANUFACTURER, "LG Canada", "Pièces et main-d'oeuvre", day(-45), day(320), phone = "1-888-542-2623"))
-        assets.saveWarranty(AssetWarranty("", group, fridge.id, AssetWarrantyKind.CARD_EXTENDED, "Visa Desjardins", cardAccountId = visa.id))
-        val tv = assets.save(Asset("", group, AssetKind.ELECTRONICS, "Téléviseur 65 po", house.id, "Samsung", "QN65Q80", purchaseDate = day(-700), purchasePrice = cad("1499.99"), location = "Salon"))
-        assets.saveWarranty(AssetWarranty("", group, tv.id, AssetWarrantyKind.EXTENDED, "Best Buy (plan de protection)", startDate = day(-700), endDate = day(30)))
-        assets.save(Asset("", group, AssetKind.SPORTS, "Kayaks (2)", purchaseDate = day(-420), purchasePrice = cad("1250"), location = "Chalet"))
+        assets.saveWarranty(AssetWarranty("", group, fridge.id, AssetWarrantyKind.MANUFACTURER, "LG Canada", l("Pièces et main-d'oeuvre", "Parts and labour"), day(-45), day(320), phone = "1-888-542-2623"))
+        assets.saveWarranty(AssetWarranty("", group, fridge.id, AssetWarrantyKind.CARD_EXTENDED, l("Visa Desjardins", "TD Visa"), cardAccountId = visa.id))
+        val tv = assets.save(Asset("", group, AssetKind.ELECTRONICS, l("Téléviseur 65 po", "65-inch TV"), house.id, "Samsung", "QN65Q80", purchaseDate = day(-700), purchasePrice = cad("1499.99"), location = l("Salon", "Living room")))
+        assets.saveWarranty(AssetWarranty("", group, tv.id, AssetWarrantyKind.EXTENDED, l("Best Buy (plan de protection)", "Best Buy (protection plan)"), startDate = day(-700), endDate = day(30)))
+        assets.save(Asset("", group, AssetKind.SPORTS, "Kayaks (2)", purchaseDate = day(-420), purchasePrice = cad("1250"), location = l("Chalet", "Cottage")))
 
         // MNT: the home's usual tasks, with the furnace filter overdue, and a pontoon boat with an hour meter.
         val upkeep = books.assetMaintenance
         fun task(key: String) = ca.schippers.hfm.i18n.Messages.get(books.language, "assetTemplate.$key")
         val homeTasks = upkeep.addStarterTasks(house.id, today, ::task).associateBy { it.templateKey }
         upkeep.saveService(
-            AssetServiceRecord("", house.id, day(-100), diy = true, parts = "Filtre MERV 11 (16x25x1)", cost = cad("32.99"), taskIds = setOfNotNull(homeTasks["furnace_filter"]?.id)),
+            AssetServiceRecord("", house.id, day(-100), diy = true, parts = l("Filtre MERV 11 (16x25x1)", "MERV 11 filter (16x25x1)"), cost = cad("32.99"), taskIds = setOfNotNull(homeTasks["furnace_filter"]?.id)),
         )
         val boat = assets.save(
-            Asset("", group, AssetKind.BOAT, "Ponton Princecraft", null, "Princecraft", "Vectra 21", purchaseDate = day(-800), purchasePrice = cad("38500"), location = "Chalet", meter = MeterUnit.HOURS),
+            Asset("", group, AssetKind.BOAT, l("Ponton Princecraft", "Princecraft pontoon"), null, "Princecraft", "Vectra 21", purchaseDate = day(-800), purchasePrice = cad("38500"), location = l("Chalet", "Cottage"), meter = MeterUnit.HOURS),
         )
         upkeep.addReading(boat.id, day(-150), 212)
         upkeep.addReading(boat.id, day(-20), 268)
         val boatTasks = upkeep.addStarterTasks(boat.id, today, ::task).associateBy { it.templateKey }
         upkeep.saveService(
-            AssetServiceRecord("", boat.id, day(-140), 214, "Marina du Lac-Beauport", parts = "Huile 10W-30, filtre", cost = cad("189.50"), taskIds = setOfNotNull(boatTasks["engine_oil"]?.id, boatTasks["boat_launch"]?.id)),
-            PaymentDraft(visa.id, books.categories.list().first { it.systemKey == "leisure.cottage_rv" }.id, "Marina du Lac-Beauport"),
+            AssetServiceRecord("", boat.id, day(-140), 214, l("Marina du Lac-Beauport", "Lakeside Marina"), parts = l("Huile 10W-30, filtre", "10W-30 oil, filter"), cost = cad("189.50"), taskIds = setOfNotNull(boatTasks["engine_oil"]?.id, boatTasks["boat_launch"]?.id)),
+            PaymentDraft(visa.id, books.categories.list().first { it.systemKey == "leisure.cottage_rv" }.id, l("Marina du Lac-Beauport", "Lakeside Marina")),
         )
 
         val insurance = books.insurance
         insurance.save(
             InsurancePolicy(
-                "", group, PolicyKind.HOME, "Desjardins Assurances", "Courtier Morin", "H-2241897", alex.id, cad("1384"), deductible = cad("1000"),
+                "", group, PolicyKind.HOME, l("Desjardins Assurances", "Intact Insurance"), l("Courtier Morin", "Wilson Insurance Brokers"), "H-2241897", alex.id, cad("1384"), deductible = cad("1000"),
                 coverage = cad("520000"), startDate = day(-340), renewalDate = day(25), assetIds = setOf(house.id),
             ),
         )
         insurance.save(
-            InsurancePolicy("", group, PolicyKind.AUTO, "Desjardins Assurances", policyNumber = "A-7781020", premium = cad("96.50"), frequency = PremiumFrequency.MONTHLY, deductible = cad("500"), renewalDate = day(140), assetIds = setOf(civic.id)),
+            InsurancePolicy("", group, PolicyKind.AUTO, l("Desjardins Assurances", "Intact Insurance"), policyNumber = "A-7781020", premium = cad("96.50"), frequency = PremiumFrequency.MONTHLY, deductible = cad("500"), renewalDate = day(140), assetIds = setOf(civic.id)),
         )
         val life = insurance.save(
-            InsurancePolicy("", group, PolicyKind.LIFE, "Sun Life", policyNumber = "L-500212", insuredMemberId = alex.id, premium = cad("42.15"), frequency = PremiumFrequency.MONTHLY, coverage = cad("500000"), coverageNotes = "Temporaire 20 ans"),
+            InsurancePolicy("", group, PolicyKind.LIFE, "Sun Life", policyNumber = "L-500212", insuredMemberId = alex.id, premium = cad("42.15"), frequency = PremiumFrequency.MONTHLY, coverage = cad("500000"), coverageNotes = l("Temporaire 20 ans", "20-year term")),
         )
-        insurance.saveBeneficiary(PolicyBeneficiary("", life.id, sam.displayName, sam.id, "Conjoint", BigDecimal(100)))
-        insurance.saveBeneficiary(PolicyBeneficiary("", life.id, lea.displayName, lea.id, "Enfant", BigDecimal(100), contingent = true))
+        insurance.saveBeneficiary(PolicyBeneficiary("", life.id, sam.displayName, sam.id, l("Conjoint", "Spouse"), BigDecimal(100)))
+        insurance.saveBeneficiary(PolicyBeneficiary("", life.id, lea.displayName, lea.id, l("Enfant", "Child"), BigDecimal(100), contingent = true))
     }
 
     /** Bills from next month on (this month's are already entered), plus a few due within days. */
@@ -637,25 +660,25 @@ object DemoHousehold {
             return if (thisMonth > today) thisMonth else thisMonth.plus(DatePeriod(months = 1))
         }
         val bills = books.bills
-        bills.create(BillDraft(BillKind.BILL, "Loyer", cad("1450.00"), chequing.id, Recurrence.MONTHLY, next(1), "Propriétaire", categoryId = cat("housing.rent"), paymentMethod = PaymentMethod.CHEQUE))
+        bills.create(BillDraft(BillKind.BILL, l("Loyer", "Rent"), cad("1450.00"), chequing.id, Recurrence.MONTHLY, next(1), l("Propriétaire", "Landlord"), categoryId = cat("housing.rent"), paymentMethod = PaymentMethod.CHEQUE))
         bills.create(
             BillDraft(
-                BillKind.BILL, "Hydro-Québec", cad("132.48"), chequing.id, Recurrence(Frequency.MONTHLY, adjust = BusinessDayAdjust.NEXT), next(12),
-                "Hydro-Québec", "6 1234 5678 9", AmountKind.VARIABLE, paymentMethod = PaymentMethod.PAD, categoryId = cat("utilities.electricity"),
+                BillKind.BILL, l("Hydro-Québec", "Hydro Ottawa"), cad("132.48"), chequing.id, Recurrence(Frequency.MONTHLY, adjust = BusinessDayAdjust.NEXT), next(12),
+                l("Hydro-Québec", "Hydro Ottawa"), "6 1234 5678 9", AmountKind.VARIABLE, paymentMethod = PaymentMethod.PAD, categoryId = cat("utilities.electricity"),
             ),
         )
-        bills.create(BillDraft(BillKind.BILL, "Vidéotron", cad("95.00"), chequing.id, Recurrence.MONTHLY, next(18), "Vidéotron", paymentMethod = PaymentMethod.PAD, categoryId = cat("utilities.internet")))
+        bills.create(BillDraft(BillKind.BILL, l("Vidéotron", "Rogers"), cad("95.00"), chequing.id, Recurrence.MONTHLY, next(18), l("Vidéotron", "Rogers"), paymentMethod = PaymentMethod.PAD, categoryId = cat("utilities.internet")))
         bills.create(
-            BillDraft(BillKind.BILL, "Assurance habitation", cad("1184.00"), chequing.id, Recurrence.ANNUAL, today.plus(DatePeriod(days = 5)), "Desjardins Assurances", categoryId = cat("housing.insurance")),
+            BillDraft(BillKind.BILL, l("Assurance habitation", "Home insurance"), cad("1184.00"), chequing.id, Recurrence.ANNUAL, today.plus(DatePeriod(days = 5)), l("Desjardins Assurances", "Intact Insurance"), categoryId = cat("housing.insurance")),
         )
         bills.create(
             BillDraft(
-                BillKind.BILL, "Diffusion en continu", cad("18.99"), visa.id, Recurrence.MONTHLY, today.plus(DatePeriod(days = 3)), "StreamCo",
+                BillKind.BILL, l("Diffusion en continu", "Streaming"), cad("18.99"), visa.id, Recurrence.MONTHLY, today.plus(DatePeriod(days = 3)), "StreamCo",
                 paymentMethod = PaymentMethod.CARD, categoryId = cat("utilities.tv_streaming"), isSubscription = true, cancelBy = today.plus(DatePeriod(days = 3)),
             ),
         )
-        bills.create(BillDraft(BillKind.INCOME, "Paie", cad("3150.00"), chequing.id, Recurrence(Frequency.SEMI_MONTHLY, secondDay = 1), next(15), "Employeur inc.", categoryId = cat("income.employment.salary")))
-        bills.create(BillDraft(BillKind.TRANSFER, "Épargne mensuelle", cad("500.00"), chequing.id, Recurrence.MONTHLY, next(16), transferAccountId = savings.id))
+        bills.create(BillDraft(BillKind.INCOME, l("Paie", "Pay"), cad("3150.00"), chequing.id, Recurrence(Frequency.SEMI_MONTHLY, secondDay = 1), next(15), l("Employeur inc.", "Employer Inc."), categoryId = cat("income.employment.salary")))
+        bills.create(BillDraft(BillKind.TRANSFER, l("Épargne mensuelle", "Monthly savings"), cad("500.00"), chequing.id, Recurrence.MONTHLY, next(16), transferAccountId = savings.id))
     }
 
     /**
@@ -678,15 +701,15 @@ object DemoHousehold {
         // The bank's conversion: 2.5 % on top of the rate entered.
         fun posted(t: Transaction) = if (t.originalAmount != null) Money.of(t.amount.toBigDecimal().multiply(BigDecimal("1.025")), Currency.CAD, RoundingMode.HALF_UP) else t.amount
         val lines = recorded.mapIndexed { i, t ->
-            val name = t.payeeId?.let(payees::get) ?: if (t.transfer != null) "VIREMENT" else "?"
-            val shift = if (name.startsWith("Vidéotron")) 4 else 0
+            val name = t.payeeId?.let(payees::get) ?: if (t.transfer != null) l("VIREMENT", "TRANSFER") else "?"
+            val shift = if (name.startsWith(l("Vidéotron", "Rogers"))) 4 else 0
             ImportedLine("D$i", t.date.plus(DatePeriod(days = shift)).let { if (it > end) end else it }, posted(t), name.uppercase(), null, null)
-        } + ImportedLine("FEE", end, fee, "FRAIS MENSUELS DU FORFAIT", null, null)
+        } + ImportedLine("FEE", end, fee, l("FRAIS MENSUELS DU FORFAIT", "MONTHLY PLAN FEE"), null, null)
         val closing = account.openingBalance + recorded.map(::posted).fold(Money.zero(Currency.CAD), Money::plus) + fee
         books.statements.import(
             account.id,
             ImportedStatement("OFX", "0045678", Currency.CAD, account.openingDate, end, account.openingBalance, closing, lines),
-            "releve-desjardins.ofx",
+            l("releve-desjardins.ofx", "td-statement.ofx"),
         )
     }
 }

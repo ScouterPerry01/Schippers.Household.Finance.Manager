@@ -54,7 +54,7 @@ Requirements: JDK 21. For the Android app, the Android SDK (API 37).
 ./gradlew :app:android:assembleGithubDebug   # phone app (the play flavour has no update check)
 ```
 
-The demo opens on any section with `-Psection=` (for example `DOCUMENTS`, `PHONES`, `USERS`, `VEHICLES`, `GOALS`, `LOANS`, `INVESTMENTS`, `PLANS`, `RATES`, `MEMBERS`), and on one account with `-Paccount=`. Its users are `demo` / `demo-password` (administrator) and `sam` / `sam-demo-password` (member).
+The demo opens on any section with `-Psection=` (for example `DOCUMENTS`, `PHONES`, `USERS`, `VEHICLES`, `GOALS`, `LOANS`, `INVESTMENTS`, `PLANS`, `RATES`, `MEMBERS`), and on one account with `-Paccount=` (with `-Psection=ACCOUNTS`). In English the sample household is a family in Ottawa, Ontario; in French (`-Plang=fr`) a family in Quebec City. Its users are `demo` / `demo-password` (administrator) and `sam` / `sam-demo-password` (member).
 
 ## Support
 
