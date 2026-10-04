@@ -520,7 +520,8 @@ private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: S
     var assetId by remember { mutableStateOf<String?>(null) }
     val account = accounts.firstOrNull { it.id == accountId }
     // OCR-03: the items of a receipt read by AI, each with its share of the taxes.
-    val shares = remember { parseAmount(amount, currency, locale)?.let { total -> runCatching { books.ai.itemShares(doc.id, total) }.getOrNull() }.orEmpty() }
+    val split = remember { parseAmount(amount, currency, locale)?.let { total -> runCatching { books.ai.itemSplit(doc.id, total) }.getOrNull() } }
+    val shares = split?.shares.orEmpty()
     var byItems by remember { mutableStateOf(false) }
     val itemCategories = remember { mutableStateListOf<String?>().apply { repeat(shares.size) { add(null) } } }
     FormDialog(model.t("documents.newTransaction"), model.t("common.save"), model.t("common.cancel"), canSave = account != null, onDismiss = { onClose(false) }, onSave = {
@@ -553,11 +554,13 @@ private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: S
         if (shares.isNotEmpty()) {
             LabeledCheckbox(model.t("documents.splitByItems", shares.size), byItems) { byItems = it }
             if (byItems) {
-                Text(model.t("documents.splitByItemsHint"), style = MaterialTheme.typography.bodySmall)
+                Text(model.t("documents.splitByItemsHint") + " " + model.t("documents.splitNote.${split?.note}"), style = MaterialTheme.typography.bodySmall)
                 Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     shares.forEachIndexed { i, s ->
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(s.description, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
+                            // The taxes the receipt marks on the line, in the user's words (TPS, TVQ in French).
+                            Text(s.taxes.sorted().joinToString(" ") { model.t("taxName.$it") }, Modifier.width(70.dp), style = MaterialTheme.typography.bodySmall)
                             Text(model.money(s.share), Modifier.width(80.dp), style = MaterialTheme.typography.bodySmall)
                             val chosen = itemCategories[i] ?: categoryId
                             Picker(

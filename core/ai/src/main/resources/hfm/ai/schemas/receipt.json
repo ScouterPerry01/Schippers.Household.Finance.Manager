@@ -1,5 +1,5 @@
 {
-  "$id": "hfm/receipt/v1",
+  "$id": "hfm/receipt/v2",
   "title": "receipt",
   "type": "object",
   "properties": {
@@ -36,6 +36,23 @@
           "amount": {
             "type": "number",
             "description": "Line total; discounts and returns are negative"
+          },
+          "taxes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "GST",
+                "HST",
+                "QST",
+                "PST"
+              ]
+            },
+            "description": "The sales taxes the receipt marks this line as subject to; empty when it is not taxed. Leave out when the receipt does not show which lines are taxed."
+          },
+          "tax_codes": {
+            "type": "string",
+            "description": "The tax code printed beside the line, as printed"
           }
         },
         "required": [

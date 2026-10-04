@@ -21,8 +21,9 @@ SAVE = sys.argv[2] if len(sys.argv) > 2 else None
 RECEIPT = {
     "merchant": "Loblaws", "merchant_address": "1250 Main St W", "date": "2026-09-06", "currency": "CAD",
     "line_items": [
-        {"description": "MILK 2% 4L", "amount": 6.49}, {"description": "WHOLE CHICKEN", "amount": 17.98},
-        {"description": "PRODUCE", "amount": 42.37}, {"description": "GROCERY", "amount": 112.59},
+        {"description": "MILK 2% 4L", "amount": 6.49, "taxes": []}, {"description": "WHOLE CHICKEN", "amount": 17.98, "taxes": []},
+        {"description": "PRODUCE", "amount": 42.37, "taxes": []}, {"description": "GROCERY", "amount": 51.90, "taxes": []},
+        {"description": "HOUSEHOLD", "amount": 60.69, "taxes": ["HST"], "tax_codes": "H"},
     ],
     "subtotal": 179.43, "taxes": [{"name": "HST", "amount": 7.89}], "total": 187.32,
     "payment_method": "credit", "card_last4": "1234",

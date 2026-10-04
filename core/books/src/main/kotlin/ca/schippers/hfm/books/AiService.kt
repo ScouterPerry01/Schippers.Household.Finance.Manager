@@ -37,9 +37,6 @@ data class StoredAiReading(
     val readAt: Long,
 )
 
-/** OCR-03: an item of a receipt, as printed, and its share of the amount paid (taxes and tip shared out). */
-data class ItemShare(val description: String, val printed: Money, val share: Money)
-
 /** AI-06: one request in the usage log. */
 data class AiUsageEntry(
     val usedAt: Long,
@@ -146,31 +143,28 @@ class AiService internal constructor(private val books: Books) {
         books.statements.import(accountId, statement(documentId, accountId), books.documents.get(documentId).label, books.documents.content(documentId))
 
     /**
-     * OCR-03: the items of a receipt or invoice read by AI, each with its share of [total] (the
-     * amount paid): the taxes, tip and rounding are shared out in proportion to each item's amount,
-     * and the last item takes what rounding leaves, so the shares add up to [total] exactly. Empty
-     * when the reading has fewer than two items or they add up to nothing.
+     * OCR-03: a receipt or invoice read by AI, split by its items, each with its share of [total]
+     * (the amount paid), by the receipt's tax codes when it shows them ([ItemSplitter]). Null when
+     * the reading has fewer than two items or they add up to nothing.
      */
-    fun itemShares(documentId: String, total: Money): List<ItemShare> {
-        val reading = reading(documentId)?.takeIf { it.typeId == "receipt" || it.typeId == "invoice" } ?: return emptyList()
-        val items = (Json.parseToJsonElement(reading.answer).jsonObject["line_items"] as? JsonArray).orEmpty().mapNotNull { e ->
+    fun itemSplit(documentId: String, total: Money): ItemSplit? {
+        val reading = reading(documentId)?.takeIf { it.typeId == "receipt" || it.typeId == "invoice" } ?: return null
+        val answer = Json.parseToJsonElement(reading.answer).jsonObject
+        val lines = (answer["line_items"] as? JsonArray).orEmpty().mapNotNull { e ->
             val o = e as? JsonObject ?: return@mapNotNull null
-            val amount = (o["amount"] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toBigDecimalOrNull() ?: return@mapNotNull null
-            (o.text("description") ?: "?") to amount
+            val amount = o.number("amount") ?: return@mapNotNull null
+            val taxes = (o["taxes"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull?.uppercase() }?.toSet()
+            ReceiptLine(o.text("description") ?: "?", amount, taxes)
         }
-        val sum = items.fold(BigDecimal.ZERO) { a, (_, v) -> a + v }
-        if (items.size < 2 || sum.signum() == 0) return emptyList()
-        val target = total.toBigDecimal().abs()
-        val shares = ArrayList<ItemShare>()
-        var given = BigDecimal.ZERO
-        items.forEachIndexed { i, (description, amount) ->
-            val share = if (i == items.lastIndex) target - given
-            else (amount * target).divide(sum, total.currency.minorUnits, RoundingMode.HALF_UP)
-            given += share
-            shares += ItemShare(description, Money.of(amount, total.currency), Money.of(share, total.currency))
-        }
-        return shares
+        val printed = (answer["taxes"] as? JsonArray).orEmpty().mapNotNull { e ->
+            val o = e as? JsonObject ?: return@mapNotNull null
+            val amount = o.number("amount") ?: return@mapNotNull null
+            (o.text("name")?.uppercase() ?: "OTHER") to amount
+        }.groupBy({ it.first }, { it.second }).mapValues { (_, v) -> v.fold(BigDecimal.ZERO, BigDecimal::add) }
+        return ItemSplitter.split(lines, printed, total)
     }
+
+    private fun JsonObject.number(key: String): BigDecimal? = (this[key] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toBigDecimalOrNull()
 
     /** AI-06: the signed-in user's requests between two instants (epoch milliseconds), newest first. */
     fun usage(fromMillis: Long, toMillis: Long): List<AiUsageEntry> = books.groups().flatMap { g ->

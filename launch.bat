@@ -1,0 +1,1 @@
+.\gradlew.bat :app:desktop:runDemo -Plang=en

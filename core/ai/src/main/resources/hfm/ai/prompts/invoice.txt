@@ -1,1 +1,1 @@
-This is an invoice from a business or tradesperson. List each line and each sales tax separately.
+This is an invoice from a business or tradesperson. List each line and each sales tax separately. For each line, give the sales taxes that apply to it when the invoice shows it (an empty list for an untaxed line); leave the field out when the invoice does not say.

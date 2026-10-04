@@ -286,7 +286,7 @@ object DemoHousehold {
         val documents = if (english) listOf(
             "IMG_4127.jpg" to listOf(
                 "Loblaws", "1250 Main St W", "MILK 2% 4L          6.49", "WHOLE CHICKEN      17.98", "PRODUCE            42.37",
-                "GROCERY           112.59", "SUBTOTAL          179.43", "HST                 7.89", "TOTAL             187.32",
+                "GROCERY            51.90", "HOUSEHOLD        H 60.69", "SUBTOTAL          179.43", "H = HST 13%         7.89", "TOTAL             187.32",
                 "VISA ************1234", "$lastSixth 17:42",
             ),
             "Hydro-Ottawa-bill.jpg" to listOf(

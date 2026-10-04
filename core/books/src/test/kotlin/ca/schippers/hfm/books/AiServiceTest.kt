@@ -132,7 +132,7 @@ class AiServiceTest {
     }
 
     @Test
-    fun `a receipt's items share its taxes and add up to the amount paid`() {
+    fun `a receipt's items share its taxes by its codes and add up to the amount paid`() {
         Books(store.create(dir, "A", "perry", "Perry", "password1".toCharArray()).session).use { books ->
             val group = books.groups().single().id
             val doc = books.documents.import(group, "r".encodeToByteArray(), "r.jpg", "image/jpeg").document
@@ -140,15 +140,24 @@ class AiServiceTest {
                 "line_items":[{"description":"MILK","amount":6.49},{"description":"CHICKEN","amount":17.98},{"description":"PRODUCE","amount":42.37},
                 {"description":"COUPON","amount":-2.00},{"description":"GROCERY","amount":114.59}]}"""
             books.ai.saveReading(doc.id, "receipt", "hfm/receipt/v1", answer, true, "m", draft())
-            val shares = books.ai.itemShares(doc.id, Money.parse("187.32", Currency.CAD))
+            // This reading has no tax codes (schema version 1): the tax is shared over every line.
+            val split = books.ai.itemSplit(doc.id, Money.parse("187.32", Currency.CAD))!!
+            assertEquals(SplitNote.NO_CODES, split.note)
+            val shares = split.shares
             assertEquals(5, shares.size)
             assertEquals(Money.parse("187.32", Currency.CAD), shares.map { it.share }.reduce(Money::plus), "exactly the amount paid")
-            assertEquals(Money.parse("6.78", Currency.CAD), shares[0].share, "6.49 plus its share of the tax")
             assertTrue(shares[3].share.isNegative, "the coupon lowers the total")
             assertEquals(Money.parse("6.49", Currency.CAD), shares[0].printed)
+            // With codes (schema version 2), only the taxed line carries the HST.
+            val coded = """{"merchant":"Loblaws","date":"2026-09-06","currency":"CAD","total":135.42,"taxes":[{"name":"HST","amount":7.89}],
+                "line_items":[{"description":"MILK","amount":6.49,"taxes":[]},{"description":"PAPER TOWELS","amount":60.69,"taxes":["HST"]},{"description":"PRODUCE","amount":60.35,"taxes":[]}]}"""
+            books.ai.saveReading(doc.id, "receipt", "hfm/receipt/v2", coded, true, "m", draft())
+            val byCodes = books.ai.itemSplit(doc.id, Money.parse("135.42", Currency.CAD))!!
+            assertEquals(SplitMethod.TAX_CODES, byCodes.method)
+            assertEquals(listOf("6.49", "68.58", "60.35"), byCodes.shares.map { it.share.toBigDecimal().toPlainString() })
             // Receipts with one item, and other documents, have nothing to split.
             books.ai.saveReading(doc.id, "receipt", "hfm/receipt/v1", """{"merchant":"x","date":"2026-09-06","currency":"CAD","total":5,"line_items":[{"description":"a","amount":5}]}""", true, "m", draft())
-            assertEquals(emptyList(), books.ai.itemShares(doc.id, Money.parse("5", Currency.CAD)))
+            assertEquals(null, books.ai.itemSplit(doc.id, Money.parse("5", Currency.CAD)))
         }
     }
 
