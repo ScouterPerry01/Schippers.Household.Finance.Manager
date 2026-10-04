@@ -168,4 +168,20 @@ class FieldExtractorTest {
     fun `US dollars`() {
         assertEquals(Currency.USD, FieldExtractor.extract(lines("Walmart Plattsburgh NY\nTOTAL USD 54.20"), today).currency)
     }
+
+    @Test
+    fun `statements, pay stubs and explanations of benefits are told apart, in English and French`() {
+        fun kind(vararg rows: String) = FieldExtractor.extract(rows.map { OcrLine(it, 0.97f) }, today).kind
+        assertEquals(DocumentKind.CARD_STATEMENT, kind("TD Visa", "Statement date 2026-09-20", "Previous balance 1,204.55", "New balance 980.10", "Minimum payment 10.00", "Credit limit 8,000.00"))
+        assertEquals(DocumentKind.CARD_STATEMENT, kind("Visa Desjardins", "Solde précédent 1 204,55", "Nouveau solde 980,10", "Paiement minimum 10,00", "Limite de crédit 8 000,00"))
+        assertEquals(DocumentKind.BANK_STATEMENT, kind("TD Canada Trust", "Account statement", "Opening balance 2,450.00", "Withdrawals  Deposits", "Closing balance 3,101.20"))
+        assertEquals(DocumentKind.BANK_STATEMENT, kind("Desjardins", "Relevé de compte", "Solde d’ouverture 2 450,00", "Retraits  Dépôts", "Solde de fermeture 3 101,20"))
+        assertEquals(DocumentKind.PAY_STUB, kind("Ville de Québec", "Talon de paie", "Salaire brut 3 150,00", "Retenues : impôt, RRQ, RQAP", "Salaire net 2 210,40"))
+        assertEquals(DocumentKind.PAY_STUB, kind("Employer Inc.", "Pay statement", "Gross pay 3,150.00", "Deductions: tax, CPP, EI premium", "Net pay 2,210.40", "Year to date 41,000.00"))
+        assertEquals(DocumentKind.EOB, kind("Manulife", "Explanation of benefits", "Claim number 88213", "Eligible amount 95.00", "Amount reimbursed 76.00"))
+        assertEquals(DocumentKind.EOB, kind("Canada Vie", "Relevé de prestations", "Numéro de demande 88213", "Montant admissible 95,00", "Montant remboursé 76,00"))
+        assertEquals(DocumentKind.INVESTMENT_STATEMENT, kind("TD Direct Investing", "Portfolio", "Holdings: XIC 300 units", "Book value 10,219.90", "Market value 11,955.00"))
+        // A receipt that mentions a balance stays a receipt.
+        assertEquals(DocumentKind.RECEIPT, kind("Starbucks", "CARD BALANCE 12.50", "New balance 7.90", "SUBTOTAL 4.60", "GST 0.23", "TOTAL 4.83"))
+    }
 }

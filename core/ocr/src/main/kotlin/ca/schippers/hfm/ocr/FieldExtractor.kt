@@ -210,9 +210,20 @@ object FieldExtractor {
     /** Where [label] ends in the original row text (the folded text has the same length). */
     private fun labelEnd(row: Row, label: String): Int = row.folded.indexOf(label) + label.length
 
+    /**
+     * OCR-08: the kind of document, from its wording in English or French. Statements, pay stubs
+     * and explanations of benefits need several of their typical phrases, so a receipt that
+     * mentions a balance is still a receipt.
+     */
     private fun kind(rows: List<Row>, hasDueDate: Boolean, hasTaxes: Boolean): DocumentKind {
         val text = rows.joinToString(" ") { it.folded }
+        fun hits(words: List<String>) = words.count { text.contains(it) }
         return when {
+            hits(EOB_WORDS) >= 2 -> DocumentKind.EOB
+            hits(PAY_STUB_WORDS) >= 3 -> DocumentKind.PAY_STUB
+            hits(INVESTMENT_WORDS) >= 3 -> DocumentKind.INVESTMENT_STATEMENT
+            hits(CARD_WORDS) >= 1 && hits(STATEMENT_WORDS) >= 1 -> DocumentKind.CARD_STATEMENT
+            hits(STATEMENT_WORDS) + hits(BANK_WORDS) >= 2 && hits(BANK_WORDS) >= 1 -> DocumentKind.BANK_STATEMENT
             hasDueDate || BILL_WORDS.any { text.contains(it) } -> if (text.contains("invoice") || text.contains("facture no")) DocumentKind.INVOICE else DocumentKind.BILL
             hasTaxes || RECEIPT_WORDS.any { text.contains(it) } || paymentMethod(rows) != null -> DocumentKind.RECEIPT
             else -> DocumentKind.OTHER
@@ -270,6 +281,27 @@ object FieldExtractor {
         "Gift card" to listOf("gift card", "carte-cadeau", "carte cadeau"),
     )
     private val BILL_WORDS = listOf("amount due", "montant du", "montant a payer", "payable avant", "date d'echeance", "due date", "billing period", "periode de facturation", "your bill", "votre facture")
+    private val EOB_WORDS = listOf(
+        "explanation of benefits", "releve de prestations", "statement of benefits", "eligible amount", "montant admissible",
+        "claim number", "numero de demande", "numero de la demande", "plan member", "coordination of benefits", "montant rembourse", "amount reimbursed",
+    )
+    private val PAY_STUB_WORDS = listOf(
+        "pay stub", "talon de paie", "pay statement", "releve de paie", "gross pay", "salaire brut", "net pay", "salaire net",
+        "deductions", "retenues", "year to date", "cumul annuel", "ei premium", "assurance-emploi", "rqap", "qpip", "pay period", "periode de paie",
+    )
+    private val INVESTMENT_WORDS = listOf(
+        "portfolio", "portefeuille", "holdings", "titres detenus", "book value", "valeur comptable", "market value", "valeur marchande",
+        "asset allocation", "repartition de l", "units", "unites", "investment statement", "releve de placement",
+    )
+    /** Words only a credit card statement uses. */
+    private val CARD_WORDS = listOf("minimum payment", "paiement minimum", "credit limit", "limite de credit", "available credit", "credit disponible")
+    /** Words of any account statement. */
+    private val STATEMENT_WORDS = listOf("previous balance", "solde precedent", "new balance", "nouveau solde", "statement period", "periode du releve", "statement date", "date du releve")
+    /** Words of a bank account statement. */
+    private val BANK_WORDS = listOf(
+        "opening balance", "closing balance", "solde d'ouverture", "solde de cloture", "solde d’ouverture", "solde de fermeture",
+        "account statement", "releve de compte", "bank statement", "releve bancaire", "withdrawals", "retraits", "deposits", "depots",
+    )
     private val RECEIPT_WORDS = listOf("receipt", "recu", "ticket de caisse", "caisse", "cashier", "caissier", "change", "monnaie")
     private val MONTHS = linkedMapOf(
         "jan" to 1, "fev" to 2, "feb" to 2, "mar" to 3, "avr" to 4, "apr" to 4, "mai" to 5, "may" to 5, "juin" to 6, "jun" to 6,

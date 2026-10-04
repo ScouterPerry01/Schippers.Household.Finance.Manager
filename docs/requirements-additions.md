@@ -127,3 +127,13 @@ Details of SEC-08 and DIST-05 as built in Phase 4d (2026-10-03), beyond what the
 | UPD-02 | Only copies no store updates check: Linux .deb, .rpm and AppImage, and the Android build from GitHub Releases. The Microsoft Store, Flathub and Google Play builds never check. | Must |
 | UPD-03 | An update is offered only from a list signed with RANN's release key, and a download is kept only if it matches the signed size and SHA-256; anything else is refused and deleted. | Must |
 | UPD-04 | Every release file has a minisign signature and is listed in a signed SHA256SUMS, so a download can also be checked by hand. | Should |
+
+## Navigation
+
+Owner's request (2026-10-04), to be built in Phase 5g with the other usability work.
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| NAV-01 | The desktop's sections are grouped under a few headings instead of one long list, with reference lists and setup (categories, payees, rules, institutions, phones, AI reading, users, backups, security, About) under Settings. | Should |
+| NAV-02 | Each user chooses the menu's place: a list on the left with collapsible groups, or a menu bar at the top with drop-down menus. The choice is remembered on that computer. | Should |
+| NAV-03 | Both menus show the same groups and the same counts (such as documents waiting for review), and work from the keyboard (NFR-08). | Should |
