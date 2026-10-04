@@ -23,6 +23,12 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
+      # HEIC photos are read with a decoder the user installs (ADR 0004); the Linux run tests with
+      # the distribution's libheif and HEVC plugin. Windows runners have no HEVC extension, so the
+      # missing-decoder path is tested there.
+      - name: HEIC decoder for the tests (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -q && sudo apt-get install -y -q libheif1 libheif-plugin-libde265
       - name: Test core libraries and build the desktop app
         run: ./gradlew test :app:desktop:jar --console=plain
       - name: Upload test reports

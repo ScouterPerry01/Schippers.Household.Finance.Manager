@@ -27,13 +27,13 @@ Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: wit
 | `core/importers` | Statement import (OFX/QFX/QBO, CSV), brokerage statements (OFX, broker CSV), crypto exchange histories (Kraken, Coinbase, Shakepay, Newton) and Quicken QIF |
 | `core/ocr` | Text recognition interface and the field extractor shared with the phone |
 | `core/ai` | Cloud AI reading with the user's own key (ADR 0009): document schemas, Claude through Anthropic's SDK, checks on every answer, the key in the system's secret store |
-| `core/ocr-desktop` | PaddleOCR on ONNX Runtime, PDF reading and HEIC photos (libheif), for the desktop |
+| `core/ocr-desktop` | PaddleOCR on ONNX Runtime, PDF reading and HEIC photos (with the decoder the user installs), for the desktop |
 | `core/sync` | Pairing invitation, sealed transfer bundles and the phone's client |
 | `core/update` | Signed release list, version comparison and download checks, shared by the desktop and the phone (ADR 0008) |
 | `app/desktop` | Compose Desktop application, including the listener for phones |
 | `app/android` | Android companion: capture, encrypted queue, transfer, summaries; `play` and `github` flavours |
 | `tools/release` | Makes the release key pair and signs releases (run by the release workflow) |
-| `tools/natives` | Builds the HEIC decoder library for Windows and Linux from pinned libheif sources |
+| `tools/natives` | Builds the small Windows helper that reads HEIC through Windows Imaging Component |
 | `website/` | Text and images for the home page and privacy policy on rann.ca (Google Sites), in English and French |
 | `branding/` | The RANN's Roost logo, Store tiles and icons (not covered by the GPL; see its README) |
 | `spikes/` | Phase 0 feasibility experiments (not part of the build) |

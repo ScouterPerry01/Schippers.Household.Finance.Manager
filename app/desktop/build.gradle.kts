@@ -57,6 +57,11 @@ abstract class KeepHostNatives : TransformAction<KeepHostNatives.Parameters> {
         @get:Input val nativeRoots: ListProperty<String>
         /** The folders to keep, e.g. "ai/onnxruntime/native/win-x64/". */
         @get:Input val keep: ListProperty<String>
+        /**
+         * Native files mixed with classes, as "root=name part": under the root, only files whose
+         * name contains the part are dropped (JNA keeps "com/sun/jna/<platform>/jnidispatch" beside its classes).
+         */
+        @get:Input val nativeFiles: ListProperty<String>
     }
 
     @get:InputArtifact abstract val input: Provider<FileSystemLocation>
@@ -65,7 +70,10 @@ abstract class KeepHostNatives : TransformAction<KeepHostNatives.Parameters> {
         val jar = input.get().asFile
         val roots = parameters.nativeRoots.get()
         val keep = parameters.keep.get()
-        fun dropped(name: String) = roots.any { name.startsWith(it) && name != it } && keep.none { name.startsWith(it) || it.startsWith(name) }
+        val files = parameters.nativeFiles.get().map { it.substringBefore('=') to it.substringAfter('=') }
+        fun kept(name: String) = keep.any { name.startsWith(it) || it.startsWith(name) }
+        fun dropped(name: String) =
+            (roots.any { name.startsWith(it) && name != it } || files.any { (root, part) -> name.startsWith(root) && part in name.substringAfterLast('/') }) && !kept(name)
         val hasNatives = ZipFile(jar).use { zip -> zip.entries().asSequence().any { dropped(it.name) } }
         if (!hasNatives) {
             outputs.file(input)
@@ -103,9 +111,11 @@ dependencies {
         to.attribute(hostNatives, true).attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "jar")
         parameters {
             nativeRoots.set(listOf("ai/onnxruntime/native/", "org/sqlite/native/", "hfm/heif/native/"))
+            nativeFiles.set(listOf("com/sun/jna/=jnidispatch"))
             val onnx = mapOf("Windows" to "win", "Mac" to "osx", "Linux" to "linux").getValue(hostOs) + "-" +
                 (if (hostArch == "aarch64") "aarch64" else "x64")
-            keep.set(listOf("ai/onnxruntime/native/$onnx/", "org/sqlite/native/$hostOs/$hostArch/", "hfm/heif/native/$hostOs/$hostArch/"))
+            val jna = mapOf("Windows" to "win32", "Mac" to "darwin", "Linux" to "linux").getValue(hostOs) + "-" + (if (hostArch == "aarch64") "aarch64" else "x86-64")
+            keep.set(listOf("ai/onnxruntime/native/$onnx/", "org/sqlite/native/$hostOs/$hostArch/", "hfm/heif/native/$hostOs/$hostArch/", "com/sun/jna/$jna/"))
         }
     }
 }

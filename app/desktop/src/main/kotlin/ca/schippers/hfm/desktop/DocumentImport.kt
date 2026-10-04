@@ -3,6 +3,7 @@ package ca.schippers.hfm.desktop
 import ca.schippers.hfm.books.DocumentService
 import ca.schippers.hfm.ocr.desktop.DocumentReader
 import ca.schippers.hfm.ocr.desktop.FileKind
+import ca.schippers.hfm.ocr.desktop.Heif
 import ca.schippers.hfm.ocr.desktop.PaddleOcrEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -20,8 +21,15 @@ object DesktopOcr {
 }
 
 /** What an import did, for the message shown afterwards. */
-data class ImportSummary(val added: Int, val alreadyInVault: Int, val unreadable: List<String>) {
-    operator fun plus(other: ImportSummary) = ImportSummary(added + other.added, alreadyInVault + other.alreadyInVault, unreadable + other.unreadable)
+data class ImportSummary(
+    val added: Int,
+    val alreadyInVault: Int,
+    val unreadable: List<String>,
+    /** HEIC photos kept in the vault but not read, for want of a HEIC decoder on this computer. */
+    val needHeicDecoder: List<String> = emptyList(),
+) {
+    operator fun plus(other: ImportSummary) =
+        ImportSummary(added + other.added, alreadyInVault + other.alreadyInVault, unreadable + other.unreadable, needHeicDecoder + other.needHeicDecoder)
 
     companion object {
         val NONE = ImportSummary(0, 0, emptyList())
@@ -39,6 +47,7 @@ suspend fun importFiles(model: BooksModel, files: List<Path>, groupId: String): 
     var added = 0
     var existing = 0
     val unreadable = ArrayList<String>()
+    val needDecoder = ArrayList<String>()
     for (file in files) {
         val bytes = runCatching { Files.readAllBytes(file) }.getOrNull()
         val kind = bytes?.let(FileKind::of)
@@ -55,13 +64,17 @@ suspend fun importFiles(model: BooksModel, files: List<Path>, groupId: String): 
             continue
         }
         added++
+        if (kind == FileKind.HEIC && !Heif.available) {
+            needDecoder += file.name
+            continue
+        }
         // A file that cannot be read still stays in the vault, for the user to fill in by hand.
         runCatching {
             val read = DesktopOcr.reader.read(bytes)
             model.books.documents.recordText(imported.document.id, read.pages, read.result, if (read.fromTextLayer) "pdf-text" else "paddle-ppocrv5-latin", today())
         }
     }
-    ImportSummary(added, existing, unreadable)
+    ImportSummary(added, existing, unreadable, needDecoder)
 }
 
 /** The group new documents go to: the shared group the user can add to, or else any. */
@@ -113,7 +126,11 @@ fun BooksModel.importMessage(s: ImportSummary): String = listOfNotNull(
     t("documents.imported", s.added),
     s.alreadyInVault.takeIf { it > 0 }?.let { t("documents.alreadyInVault", it) },
     s.unreadable.takeIf { it.isNotEmpty() }?.let { t("documents.unreadable", it.joinToString(", ")) },
+    s.needHeicDecoder.takeIf { it.isNotEmpty() }?.let { t("documents.heicNoDecoder", it.joinToString(", ")) + " " + heicDecoderHint() },
 ).joinToString(" ")
+
+/** How to install a HEIC decoder on this computer (ADR 0004). */
+fun BooksModel.heicDecoderHint(): String = t(if (Heif.platform == Heif.Platform.WINDOWS) "documents.heicHintWindows" else "documents.heicHintLinux")
 
 const val WATCH_FOLDER = "documents.watchFolder"
 const val WATCH_GROUP = "documents.watchGroup"

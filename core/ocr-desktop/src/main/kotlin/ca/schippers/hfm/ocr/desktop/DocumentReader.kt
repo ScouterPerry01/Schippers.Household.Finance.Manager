@@ -19,7 +19,7 @@ enum class FileKind(val mimeType: String) {
             bytes.size >= 5 && bytes.copyOfRange(0, 5).decodeToString() == "%PDF-" -> PDF
             bytes.size >= 3 && (bytes[0].toInt() and 0xFF) == 0xFF && (bytes[1].toInt() and 0xFF) == 0xD8 -> JPEG
             bytes.size >= 8 && (bytes[0].toInt() and 0xFF) == 0x89 && bytes.copyOfRange(1, 4).decodeToString() == "PNG" -> PNG
-            Heif.isHeic(bytes) -> if (Heif.available) HEIC else UNSUPPORTED
+            Heif.isHeic(bytes) -> HEIC
             ImageLoader.isImage(bytes) -> OTHER_IMAGE
             else -> UNSUPPORTED
         }
@@ -39,6 +39,7 @@ class DocumentReader(private val engine: PaddleOcrEngine) {
     fun read(bytes: ByteArray): ReadDocument = when (val kind = FileKind.of(bytes)) {
         FileKind.PDF -> readPdf(bytes)
         FileKind.UNSUPPORTED -> throw UnsupportedImageException()
+        FileKind.HEIC -> if (Heif.available) ReadDocument(kind, 1, engine.recognize(Heif.decode(bytes, 3200) ?: throw UnsupportedImageException()), fromTextLayer = false) else throw HeicDecoderMissingException()
         else -> ReadDocument(kind, 1, engine.recognize(ImageLoader.decode(bytes) ?: throw UnsupportedImageException()), fromTextLayer = false)
     }
 
@@ -155,9 +156,10 @@ object PdfPages {
 
     /**
      * MED-15: one PDF of supporting receipts: a cover page listing [cover] lines, then each
-     * document in turn, PDFs page by page and images on a page of their own.
+     * document in turn, PDFs page by page and images on a page of their own. A HEIC photo this
+     * computer cannot read gets a page saying [heicMissing] instead.
      */
-    fun bundle(title: String, cover: List<String>, documents: List<Pair<String, ByteArray>>): ByteArray = org.apache.pdfbox.pdmodel.PDDocument().use { doc ->
+    fun bundle(title: String, cover: List<String>, documents: List<Pair<String, ByteArray>>, heicMissing: String = "HEIC photo: no HEIC decoder installed"): ByteArray = org.apache.pdfbox.pdmodel.PDDocument().use { doc ->
         val font = org.apache.pdfbox.pdmodel.font.PDType1Font(org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA)
         val bold = org.apache.pdfbox.pdmodel.font.PDType1Font(org.apache.pdfbox.pdmodel.font.Standard14Fonts.FontName.HELVETICA_BOLD)
         // The standard fonts cover Western European text; anything else is replaced so the page still prints.
@@ -185,6 +187,12 @@ object PdfPages {
                 if (mime == "application/pdf") {
                     val source = org.apache.pdfbox.Loader.loadPDF(bytes).also { opened += it }
                     for (p in source.pages) doc.importPage(p)
+                } else if (Heif.isHeic(bytes) && !Heif.available) {
+                    val page = org.apache.pdfbox.pdmodel.PDPage(org.apache.pdfbox.pdmodel.common.PDRectangle.LETTER)
+                    doc.addPage(page)
+                    org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page).use { cs ->
+                        cs.beginText(); cs.setFont(font, 11f); cs.newLineAtOffset(56f, page.mediaBox.height - 72f); cs.showText(safe(heicMissing, font)); cs.endText()
+                    }
                 } else {
                     val image = pdfImage(doc, bytes, "receipt")
                     val box = org.apache.pdfbox.pdmodel.common.PDRectangle.LETTER
@@ -203,7 +211,7 @@ object PdfPages {
     /** An image for a PDF page; PDFBox does not read HEIC, so those photos go in as JPEG. */
     private fun pdfImage(doc: org.apache.pdfbox.pdmodel.PDDocument, bytes: ByteArray, name: String): org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject =
         if (FileKind.of(bytes) == FileKind.HEIC) {
-            org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory.createFromImage(doc, ImageLoader.decode(bytes) ?: throw UnsupportedImageException(), 0.9f)
+            org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory.createFromImage(doc, ImageLoader.decode(bytes) ?: throw HeicDecoderMissingException(), 0.9f)
         } else {
             org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject.createFromByteArray(doc, bytes, name)
         }

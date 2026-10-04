@@ -1,7 +1,6 @@
-# Rebuilds the HEIC decoder library (tools/natives) from the pinned libheif and libde265 sources,
-# for Windows x64 and Linux x86_64, and prints each file's SHA-256 so it can be compared with the
-# copies committed in core/ocr-desktop/src/main/resources/hfm/heif/native. Run by hand when the
-# versions in tools/natives/heif.env change; download the artifacts and commit them.
+# Rebuilds the Windows HEIC helper (tools/natives/wic, ADR 0004) and prints its SHA-256, to compare
+# with the copy committed in core/ocr-desktop/src/main/resources/hfm/heif/native. It contains no
+# codec: Windows decodes HEIC with the extensions the user installs. Run by hand after changing it.
 name: Native libraries
 
 on:
@@ -19,31 +18,13 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - name: Build hfmheif.dll
+      - name: Build hfmwic.dll
         shell: pwsh
         run: |
-          powershell -NoProfile -File tools/natives/build-heif.ps1 -Out out -Work "$env:RUNNER_TEMP\heif"
+          powershell -NoProfile -File tools/natives/build-wic.ps1 -Out out -Work "$env:RUNNER_TEMP\wic"
           if ($LASTEXITCODE -ne 0) { exit 1 }
-          Get-FileHash out/hfmheif.dll
+          Get-FileHash out/hfmwic.dll
       - uses: actions/upload-artifact@v4
         with:
-          name: heif-windows-x86_64
-          path: out/
-
-  linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-      - name: Build libhfmheif.so in the manylinux_2_28 container
-        run: |
-          docker run --rm -v "$PWD:/src" -v "$JAVA_HOME:/jdk:ro" -e JAVA_HOME=/jdk \
-            quay.io/pypa/manylinux_2_28_x86_64 /src/tools/natives/build-heif.sh /src/out
-          sha256sum out/libhfmheif.so
-      - uses: actions/upload-artifact@v4
-        with:
-          name: heif-linux-x86_64
+          name: hfmwic-windows-x86_64
           path: out/

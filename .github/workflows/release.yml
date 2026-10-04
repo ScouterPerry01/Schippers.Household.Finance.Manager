@@ -80,6 +80,8 @@ jobs:
           # A bare CI machine lacks the menu folders a desktop has; xdg-desktop-menu needs them.
           sudo mkdir -p /usr/share/desktop-directories /usr/share/applications
           sudo apt-get install -y ./dist/*.deb
+          # The HEIC decoder a user would install, so the self-check reads the HEIC picture (ADR 0004).
+          sudo apt-get install -y libheif1 libheif-plugin-libde265
           dpkg -L ranns-roost | grep -E '\.desktop$|/bin/' || true
           cat /opt/ranns-roost/lib/*.desktop 2>/dev/null || true
           launcher=$(dpkg -L ranns-roost | grep '/bin/' | head -1)

@@ -25,7 +25,7 @@ OCR-01 and OCR-04: text recognition runs on the user's own device, in English an
 - Loads models lazily and runs off the UI thread with at most 4 threads (8 was 3x slower).
 - Limits the long side of an image to 1600 px for detection.
 - Honours the EXIF orientation of photos and downscales large photos while decoding.
-- Decodes HEIC photos with libheif (added 2026-10-04, below); rejects WebP.
+- Decodes HEIC photos with the decoder the user installs (added 2026-10-04, below); rejects WebP.
 - Flags lines with confidence under 0.6 for review.
 
 **Tesseract:** not needed for accuracy. It may be added later only as a fallback in case the ONNX native library fails to load.
@@ -60,13 +60,16 @@ OCR-01 and OCR-04: text recognition runs on the user's own device, in English an
 
 ## HEIC photos (2026-10-04)
 
-CAP-03 lists HEIC, the format iPhones and many Android phones save photos in. ImageIO cannot read it, so until now the desktop asked for JPEG instead. Owner's decision (2026-10-03): decode it with libheif, bundled per platform like ONNX Runtime.
+CAP-03 lists HEIC, the format iPhones and many Android phones save photos in. ImageIO cannot read it.
 
-- **Library:** libheif 1.23.5 with libde265 1.1.3 (both LGPL-3.0), built from source archives pinned by SHA-256 (`tools/natives/heif.env`), as static libraries linked with a small JNI wrapper (`tools/natives/heif/hfm_heif.c`) into one file per platform: `hfmheif.dll` for Windows x64 (1.9 MB, static C runtime, needs only `KERNEL32.dll`) and `libhfmheif.so` for Linux x86_64 (4.1 MB, built in the manylinux_2_28 container, needs only glibc 2.25 symbols, the C++ runtime inside). Only the HEVC decoder is built in: no encoders, other codecs or plugin loading. A JNI wrapper was chosen over JNA, which would have added a library and its own native part for two functions.
-- **In the jar:** the libraries are kept in `core/ocr-desktop` under `hfm/heif/native/<OS>/<arch>/`, like the OCR models, so builds never depend on a download site. `KeepHostNatives` keeps only the target platform's copy in a package. At first use the library is copied into a new temporary folder that only the user can open, and loaded from there.
-- **Decoding:** files are recognised by an HEVC brand in their `ftyp` box (AVIF is not decoded). libheif applies the file's rotation and mirroring; pictures over 120 megapixels are refused, and larger photos are reduced in the native code to the loader's 3,200-pixel limit, so a 48-megapixel photo never becomes a 200 MB array. A damaged file is refused with an error, never a crash.
-- **Where HEIC is used:** import (file chooser, drag and drop, the watched folder), OCR, the document preview, saving a copy (`.heic`), and the PDFs built from documents (the home inventory and the medical receipts bundle), which embed HEIC photos as JPEG since PDFBox cannot read HEIC. The original file is what the vault keeps.
-- **Platforms without a library** (Linux on ARM): HEIC files are refused as unreadable, as before.
-- **Checked:** `HeifTest` (brand detection, rotation, reduction, damaged files, OCR from a HEIC photo, PDFs) runs in CI on Windows and Linux; the packaged self-check decodes `selfcheck.heic` and reads its text, on every package the release workflow builds. The test pictures were made with libheif's own encoder (x265).
-- **Rebuilding:** `tools/natives/README.md`, or the *Native libraries* workflow, run by hand.
-- **To keep in mind:** HEVC is covered by patent pools (Access Advance, Via LA). Free and open-source projects commonly ship libde265 (GIMP, ImageMagick, Krita), but Fedora leaves it out for this reason and Microsoft sells its HEVC extension. Whether a paid app needs a licence is a question for the owner, not a technical one.
+**Decision (owner, 2026-10-04): the user installs the HEVC decoder.** HEVC decoding is covered by patent pools (Access Advance, Via LA), and the licence attaches to the decoder. A first version bundled libheif with libde265; it was replaced the same day, so RANN's Roost ships no HEVC decoder:
+- **Windows:** a small JNI helper (`tools/natives/wic/hfm_wic.cpp`, 149 KB, no codec, only Windows libraries) asks Windows Imaging Component to decode. HEIC works once the user has installed Microsoft's HEIF Image Extensions and HEVC Video Extensions from the Microsoft Store (many computers have the HEVC extension from their manufacturer; otherwise Microsoft sells it). Microsoft carries the licence.
+- **Linux:** the app calls the distribution's `libheif.so.1` through JNA. HEIC works once the user has installed their distribution's HEIC support with its HEVC plugin (`libheif-plugin-libde265` on Debian and Ubuntu; `libheif-freeworld` from RPM Fusion on Fedora).
+
+**How the app behaves.**
+- HEIC counts as available only when a tiny HEIC picture kept in the app (`hfm/heif/probe.heic`, stored 64 x 32 with a quarter turn) decodes upright, so a decoder installed without its HEVC part is caught.
+- Files are recognised by an HEVC brand in their `ftyp` box (AVIF is not HEIC). Pictures over 120 megapixels are refused; larger photos are reduced while decoding to the loader's 3,200 pixels; a damaged file is refused, never a crash. The picture is decoded from memory, never from a temporary file.
+- A HEIC photo is always accepted into the vault (the original file is kept). Where it can be read, it is read, previewed, saved as `.heic` and put into the inventory and receipts PDFs as JPEG. Where it cannot, the import message, the preview and the receipts PDF say so and how to install the decoder; the photo can be read later, once it is installed.
+- The packaged self-check reports the decoder it found, or "not installed", which is not a failure; when there is one, it reads the receipt line from a HEIC picture.
+
+**Checked.** `HeifTest`: detection everywhere; decoding, rotation, reduction, damaged files, OCR and PDFs where a decoder exists; the missing-decoder behaviour where none does. On this project's Windows computer (with Microsoft's extensions) and in CI on Linux (which installs the distribution's packages for the test run only), the decoding tests run; GitHub's Windows runners have no HEVC extension and run the missing-decoder test. The release dry run installs the plugin before checking the installed .deb. The Linux path was also checked on Ubuntu 26.04 with libheif 1.21.2, with and without the plugin.

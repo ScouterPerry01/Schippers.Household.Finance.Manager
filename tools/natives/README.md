@@ -1,42 +1,25 @@
 # Native libraries
 
-## HEIC decoder (`hfmheif`)
+## HEIC on Windows (`hfmwic`)
 
-HEIC photos on the desktop (CAP-03, ADR 0004) are decoded by [libheif](https://github.com/strukturag/libheif)
-with [libde265](https://github.com/strukturag/libde265), both LGPL-3.0. They are built as static
-libraries and linked with `heif/hfm_heif.c`, a small JNI wrapper, into one library per platform that
-needs nothing beyond the operating system's C library:
+HEIC photos (CAP-03, ADR 0004) are read with a decoder the user installs, since HEVC decoding is
+covered by patent licences; RANN's Roost ships no HEVC decoder.
 
-| Platform | File in `core/ocr-desktop/src/main/resources/hfm/heif/native/` |
-|---|---|
-| Windows x64 | `Windows/x86_64/hfmheif.dll` (static C runtime) |
-| Linux x86_64 | `Linux/x86_64/libhfmheif.so` (glibc 2.28 or later; the C++ runtime is inside) |
+On Windows, `wic/hfm_wic.cpp` is a small JNI library that asks Windows Imaging Component to decode a
+picture from memory, turns it upright from its orientation, reduces it and returns its pixels. It
+contains no codec and links only Windows libraries: HEIC is read once the user has installed
+Microsoft's **HEIF Image Extensions** and **HEVC Video Extensions** from the Microsoft Store. The
+built file is `core/ocr-desktop/src/main/resources/hfm/heif/native/Windows/x86_64/hfmwic.dll`
+(149 KB, static C runtime, needs only `KERNEL32.dll` and `ole32.dll`).
 
-Only the HEVC decoder is built in: no encoders, no other codecs, no plugin loading. The versions and
-the SHA-256 of their source archives are pinned in `heif.env`; the scripts refuse a download that
-does not match.
-
-The app copies the library for its platform into a new private temporary folder and loads it from
-there (`Heif.kt`). Packaging keeps only the target platform's copy (`KeepHostNatives` in
-`app/desktop/build.gradle.kts`), and the packaged self-check decodes a HEIC picture.
+On Linux nothing is built: the app calls the distribution's `libheif.so.1` through JNA, with the HEVC
+plugin the user installs (for example `libheif-plugin-libde265` on Debian and Ubuntu, or
+`libheif-freeworld` from RPM Fusion on Fedora).
 
 ### Rebuilding
 
-- **Windows:** `powershell -File tools/natives/build-heif.ps1` (Visual Studio with C++, `JAVA_HOME` set).
-- **Linux:** in the manylinux_2_28 container, as the comment at the top of `build-heif.sh` shows.
-- **Both, on GitHub:** run the *Native libraries* workflow (`gh workflow run natives.yml`) and commit the two artifacts.
+- `powershell -File tools/natives/build-wic.ps1` (Visual Studio with C++, `JAVA_HOME` set), which writes straight into the resources folder above; or
+- the *Native libraries* workflow (`gh workflow run natives.yml`), then commit its artifact.
 
-Each script writes straight into the resources folder above. Run `./gradlew :core:ocr-desktop:test`
-afterwards (`HeifTest`).
-
-The committed copies were built on 2026-10-04 from libheif 1.23.5 and libde265 1.1.3, the DLL with
-MSVC 19.51 and the Linux library in `quay.io/pypa/manylinux_2_28_x86_64` (GCC 14):
-
-- `hfmheif.dll`: SHA-256 `76835311d6644bb9332b9892b55ddfd24452f8dbad1256b34762a39b91c36096`
-- `libhfmheif.so`: SHA-256 `d960d76d09931ae48429037dfe2016b36a007d625fe85db8123556d18a7dd9c1`
-
-### Licence
-
-libheif and libde265 are LGPL-3.0. Since they are linked statically, the LGPL asks that users can
-rebuild the app with a changed version: the application's source, `hfm_heif.c` and these scripts
-are all in this repository, so anyone can. The desktop's third-party notices name them.
+Then run `./gradlew :core:ocr-desktop:test` (`HeifTest`). The committed copy was built on
+2026-10-04 with MSVC 19.51: SHA-256 `dbf8e325b8678ee25403f407ca441a395ae5c3524578b12c68ae716c23f42f49`.

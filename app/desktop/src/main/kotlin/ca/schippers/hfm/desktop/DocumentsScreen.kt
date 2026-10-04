@@ -47,6 +47,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.ocr.desktop.Heif
 import ca.schippers.hfm.books.DocumentDetails
 import ca.schippers.hfm.books.DocumentEntity
 import ca.schippers.hfm.books.DocumentQuery
@@ -273,6 +274,7 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                     image != null -> Image(image, doc.label, Modifier.fillMaxWidth(), contentScale = ContentScale.FillWidth)
                     // CAP-07: a quick expense from the phone has no photo, only what was typed.
                     doc.mimeType == "text/plain" -> Text(model.t("documents.noPhoto"), Modifier.padding(16.dp))
+                    doc.mimeType == "image/heic" && !Heif.available -> Text(model.t("documents.heicNoPreview") + " " + model.heicDecoderHint(), Modifier.padding(16.dp))
                     else -> Text(model.t("documents.loadingPreview"), Modifier.padding(16.dp))
                 }
             }

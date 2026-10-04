@@ -23,10 +23,8 @@ ONNX Runtime (Microsoft)
   MIT License - https://github.com/microsoft/onnxruntime/blob/main/LICENSE
 PaddleOCR PP-OCRv5 models (PaddlePaddle Authors), converted to ONNX by RapidAI
   Apache License 2.0
-libheif and libde265 (struktur AG), for HEIC photos
-  GNU Lesser General Public License 3.0 - https://github.com/strukturag/libheif
-  Linked into one library with RANN's Roost's own code; the source and the build scripts are in
-  tools/natives of the application's repository, so it can be rebuilt with a changed libheif
+JNA (Java Native Access)
+  Apache License 2.0 or GNU Lesser General Public License 2.1 - https://github.com/java-native-access/jna
 
 Apache PDFBox
   Apache License 2.0

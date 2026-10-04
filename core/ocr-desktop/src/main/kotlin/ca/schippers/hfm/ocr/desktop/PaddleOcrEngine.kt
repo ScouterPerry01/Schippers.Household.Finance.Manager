@@ -355,4 +355,7 @@ class PaddleOcrEngine(private val threads: Int = Runtime.getRuntime().availableP
 }
 
 /** The file is not an image the desktop can read (WebP must be converted first). */
-class UnsupportedImageException : Exception("Unsupported image format")
+open class UnsupportedImageException(message: String = "Unsupported image format") : Exception(message)
+
+/** A HEIC photo, while no HEIC decoder is installed on this computer (ADR 0004). */
+class HeicDecoderMissingException : UnsupportedImageException("No HEIC decoder installed")

@@ -112,7 +112,7 @@ private fun BundleButton(model: BooksModel, label: String, window: Window, membe
             val cover = expenses.map { e ->
                 listOf(model.date(e.taxDate), names[e.memberId].orEmpty(), model.t("medService.${e.service}"), e.description.orEmpty(), model.money(e.outOfPocket)).joinToString("   ")
             } + "" + model.t("medicalReport.bundleTotal", model.money(Money.of(window.total, Currency.CAD)), docs.size)
-            val pdf = PdfPages.bundle(model.t("medicalReport.bundleTitle", model.date(window.start), model.date(window.end)), cover, docs.map { it.mimeType to books.documents.content(it.id) })
+            val pdf = PdfPages.bundle(model.t("medicalReport.bundleTitle", model.date(window.start), model.date(window.end)), cover, docs.map { it.mimeType to books.documents.content(it.id) }, model.t("documents.heicInBundle"))
             val file = chooser.selectedFile.let { if (it.extension.equals("pdf", true)) it else File(it.path + ".pdf") }
             file.writeBytes(pdf)
         }

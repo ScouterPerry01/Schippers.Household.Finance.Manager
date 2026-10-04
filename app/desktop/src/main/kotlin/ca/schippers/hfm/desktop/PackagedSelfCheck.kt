@@ -11,8 +11,9 @@ import kotlin.system.exitProcess
 
 /**
  * Checks that an installed package can still load its native libraries, since packaging keeps only
- * the target platform's (ADR 0004): text recognition (ONNX Runtime), HEIC photos (libheif) and an
- * encrypted household (SQLite3 Multiple Ciphers). Run by the release workflow on each package it builds, as
+ * the target platform's (ADR 0004): text recognition (ONNX Runtime), an encrypted household
+ * (SQLite3 Multiple Ciphers), and HEIC photos when the computer has a HEIC decoder (the user installs
+ * it; "not installed" is reported, not a failure). Run by the release workflow on each package it builds, as
  * `JAVA_TOOL_OPTIONS=-Dhfm.selfcheck=<report file>` before starting the installed app; it writes
  * the report and exits, without showing a window. No effect otherwise.
  */
@@ -38,12 +39,13 @@ internal object PackagedSelfCheck {
         return text
     }
 
-    /** The same receipt line saved as a HEIC photo, decoded by the bundled libheif and read. */
+    /** The same receipt line saved as a HEIC photo, read through the system's decoder when there is one. */
     private fun heic(): String {
+        if (!Heif.available) return Heif.describe()
         val image = checkNotNull(PackagedSelfCheck::class.java.getResourceAsStream("/hfm/selfcheck.heic")).use { it.readBytes() }
         val text = PaddleOcrEngine().use { it.recognize(image).text }
         check("12.34" in text) { "OCR read \"$text\" from the HEIC photo" }
-        return "libheif ${Heif.version()}, read \"$text\""
+        return "${Heif.describe()}, read \"$text\""
     }
 
     private fun database(): String {
