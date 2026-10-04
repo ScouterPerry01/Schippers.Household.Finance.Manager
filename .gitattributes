@@ -7,3 +7,6 @@
 **/src/test/resources/samples/** binary
 **/sqldelight/*/schemas/*.db binary
 *.onnx binary
+*.heic binary
+*.dll binary
+*.so binary

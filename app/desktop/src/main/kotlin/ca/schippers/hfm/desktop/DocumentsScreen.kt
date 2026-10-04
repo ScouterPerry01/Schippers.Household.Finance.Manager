@@ -453,7 +453,7 @@ private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: S
 }
 
 private fun saveCopy(model: BooksModel, doc: VaultDocument) {
-    val ext = when (doc.mimeType) { "application/pdf" -> "pdf"; "image/png" -> "png"; else -> "jpg" }
+    val ext = when (doc.mimeType) { "application/pdf" -> "pdf"; "image/png" -> "png"; "image/heic" -> "heic"; else -> "jpg" }
     val chooser = JFileChooser().apply {
         dialogTitle = model.t("documents.saveCopy")
         selectedFile = File(doc.fileName ?: "${doc.label}.$ext")

@@ -28,8 +28,8 @@ data class ImportSummary(val added: Int, val alreadyInVault: Int, val unreadable
     }
 }
 
-/** File types the desktop imports (CAP-03). HEIC photos must be saved as JPEG first. */
-val IMPORTABLE_EXTENSIONS = setOf("pdf", "jpg", "jpeg", "png", "bmp", "gif")
+/** File types the desktop imports (CAP-03). */
+val IMPORTABLE_EXTENSIONS = setOf("pdf", "jpg", "jpeg", "png", "heic", "heif", "bmp", "gif")
 
 /**
  * CAP-03, CAP-04: stores each file in the vault, reads its text on this computer and extracts its

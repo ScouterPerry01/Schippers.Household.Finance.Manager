@@ -354,5 +354,5 @@ class PaddleOcrEngine(private val threads: Int = Runtime.getRuntime().availableP
     }
 }
 
-/** The file is not an image the desktop can read (HEIC and WebP must be converted first). */
+/** The file is not an image the desktop can read (WebP must be converted first). */
 class UnsupportedImageException : Exception("Unsupported image format")

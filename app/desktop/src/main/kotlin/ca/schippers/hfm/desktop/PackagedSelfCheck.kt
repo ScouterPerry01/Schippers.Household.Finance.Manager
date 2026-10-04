@@ -2,6 +2,7 @@ package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
+import ca.schippers.hfm.ocr.desktop.Heif
 import ca.schippers.hfm.ocr.desktop.PaddleOcrEngine
 import ca.schippers.hfm.security.KdfParams
 import java.nio.file.Files
@@ -10,8 +11,8 @@ import kotlin.system.exitProcess
 
 /**
  * Checks that an installed package can still load its native libraries, since packaging keeps only
- * the target platform's (ADR 0004): text recognition (ONNX Runtime) and an encrypted household
- * (SQLite3 Multiple Ciphers). Run by the release workflow on each package it builds, as
+ * the target platform's (ADR 0004): text recognition (ONNX Runtime), HEIC photos (libheif) and an
+ * encrypted household (SQLite3 Multiple Ciphers). Run by the release workflow on each package it builds, as
  * `JAVA_TOOL_OPTIONS=-Dhfm.selfcheck=<report file>` before starting the installed app; it writes
  * the report and exits, without showing a window. No effect otherwise.
  */
@@ -22,6 +23,7 @@ internal object PackagedSelfCheck {
         val lines = mutableListOf<String>()
         val ok = runCatching {
             lines += "ocr: " + ocr()
+            lines += "heic: " + heic()
             lines += "database: " + database()
         }.onFailure { lines += "FAILED: $it" }.isSuccess
         Files.write(report, lines + if (ok) "OK" else "FAILED")
@@ -34,6 +36,14 @@ internal object PackagedSelfCheck {
         val text = PaddleOcrEngine().use { it.recognize(image).text }
         check("12.34" in text) { "OCR read \"$text\"" }
         return text
+    }
+
+    /** The same receipt line saved as a HEIC photo, decoded by the bundled libheif and read. */
+    private fun heic(): String {
+        val image = checkNotNull(PackagedSelfCheck::class.java.getResourceAsStream("/hfm/selfcheck.heic")).use { it.readBytes() }
+        val text = PaddleOcrEngine().use { it.recognize(image).text }
+        check("12.34" in text) { "OCR read \"$text\" from the HEIC photo" }
+        return "libheif ${Heif.version()}, read \"$text\""
     }
 
     private fun database(): String {

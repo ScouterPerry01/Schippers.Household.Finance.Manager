@@ -102,10 +102,10 @@ dependencies {
         from.attribute(hostNatives, false).attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "jar")
         to.attribute(hostNatives, true).attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "jar")
         parameters {
-            nativeRoots.set(listOf("ai/onnxruntime/native/", "org/sqlite/native/"))
+            nativeRoots.set(listOf("ai/onnxruntime/native/", "org/sqlite/native/", "hfm/heif/native/"))
             val onnx = mapOf("Windows" to "win", "Mac" to "osx", "Linux" to "linux").getValue(hostOs) + "-" +
                 (if (hostArch == "aarch64") "aarch64" else "x64")
-            keep.set(listOf("ai/onnxruntime/native/$onnx/", "org/sqlite/native/$hostOs/$hostArch/"))
+            keep.set(listOf("ai/onnxruntime/native/$onnx/", "org/sqlite/native/$hostOs/$hostArch/", "hfm/heif/native/$hostOs/$hostArch/"))
         }
     }
 }

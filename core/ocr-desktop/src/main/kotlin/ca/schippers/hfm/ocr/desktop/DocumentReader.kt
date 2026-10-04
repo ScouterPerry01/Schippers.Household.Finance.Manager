@@ -12,13 +12,14 @@ import javax.imageio.ImageIO
 
 /** What kind of file a document is, from its first bytes rather than its name. */
 enum class FileKind(val mimeType: String) {
-    PDF("application/pdf"), JPEG("image/jpeg"), PNG("image/png"), OTHER_IMAGE("image/*"), UNSUPPORTED("application/octet-stream");
+    PDF("application/pdf"), JPEG("image/jpeg"), PNG("image/png"), HEIC("image/heic"), OTHER_IMAGE("image/*"), UNSUPPORTED("application/octet-stream");
 
     companion object {
         fun of(bytes: ByteArray): FileKind = when {
             bytes.size >= 5 && bytes.copyOfRange(0, 5).decodeToString() == "%PDF-" -> PDF
             bytes.size >= 3 && (bytes[0].toInt() and 0xFF) == 0xFF && (bytes[1].toInt() and 0xFF) == 0xD8 -> JPEG
             bytes.size >= 8 && (bytes[0].toInt() and 0xFF) == 0x89 && bytes.copyOfRange(1, 4).decodeToString() == "PNG" -> PNG
+            Heif.isHeic(bytes) -> if (Heif.available) HEIC else UNSUPPORTED
             ImageLoader.isImage(bytes) -> OTHER_IMAGE
             else -> UNSUPPORTED
         }
@@ -134,7 +135,7 @@ object PdfPages {
                 // Photos in a row, up to 160 points tall.
                 var x = 56f
                 for (bytes in photos) {
-                    val image = runCatching { org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject.createFromByteArray(doc, bytes, "photo") }.getOrNull() ?: continue
+                    val image = runCatching { pdfImage(doc, bytes, "photo") }.getOrNull() ?: continue
                     val scale = minOf(160f / image.height, 220f / image.width)
                     val w = image.width * scale
                     val h = image.height * scale
@@ -185,7 +186,7 @@ object PdfPages {
                     val source = org.apache.pdfbox.Loader.loadPDF(bytes).also { opened += it }
                     for (p in source.pages) doc.importPage(p)
                 } else {
-                    val image = org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject.createFromByteArray(doc, bytes, "receipt")
+                    val image = pdfImage(doc, bytes, "receipt")
                     val box = org.apache.pdfbox.pdmodel.common.PDRectangle.LETTER
                     val scale = minOf((box.width - 72f) / image.width, (box.height - 72f) / image.height, 1f)
                     val page = org.apache.pdfbox.pdmodel.PDPage(box)
@@ -198,4 +199,12 @@ object PdfPages {
             opened.forEach { it.close() }
         }
     }
+
+    /** An image for a PDF page; PDFBox does not read HEIC, so those photos go in as JPEG. */
+    private fun pdfImage(doc: org.apache.pdfbox.pdmodel.PDDocument, bytes: ByteArray, name: String): org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject =
+        if (FileKind.of(bytes) == FileKind.HEIC) {
+            org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory.createFromImage(doc, ImageLoader.decode(bytes) ?: throw UnsupportedImageException(), 0.9f)
+        } else {
+            org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject.createFromByteArray(doc, bytes, name)
+        }
 }

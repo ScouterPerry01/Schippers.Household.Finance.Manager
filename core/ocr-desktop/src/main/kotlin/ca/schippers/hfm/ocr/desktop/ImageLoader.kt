@@ -8,9 +8,10 @@ import javax.imageio.ImageIO
 import javax.imageio.ImageReadParam
 
 /**
- * Decodes JPEG, PNG, BMP and GIF images (CAP-03). Phone photos are turned upright using their EXIF
- * orientation, which ImageIO ignores, and very large photos are reduced while decoding so a 50
- * megapixel picture does not need a gigabyte of memory. HEIC and WebP are not supported.
+ * Decodes JPEG, PNG, BMP, GIF and HEIC images (CAP-03). Phone photos are turned upright using their
+ * EXIF orientation, which ImageIO ignores (libheif turns HEIC photos itself), and very large photos
+ * are reduced while decoding so a 50 megapixel picture does not need a gigabyte of memory. WebP is
+ * not supported.
  */
 object ImageLoader {
 
@@ -18,6 +19,7 @@ object ImageLoader {
     private const val MAX_SIDE = 3200
 
     fun decode(bytes: ByteArray): BufferedImage? {
+        if (Heif.isHeic(bytes)) return Heif.decode(bytes, MAX_SIDE)
         val img = read(bytes) ?: return null
         return applyOrientation(img, exifOrientation(bytes))
     }
