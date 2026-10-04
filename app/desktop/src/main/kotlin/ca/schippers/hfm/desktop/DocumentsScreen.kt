@@ -282,14 +282,14 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                 val draft = doc.draft
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ReviewedField(model, draft?.merchant) { TextInput(model.t("documents.merchant"), title, it) { v -> title = v } }
-                    Picker(model.t("documents.kind"), DocumentKind.entries, kind, { model.t("documentKind.$it") }, Modifier.width(170.dp)) { kind = it }
+                    Picker(model.t("documents.kind"), DocumentKind.entries, kind, { model.t("documentKind.$it") }, Modifier.width(240.dp)) { kind = it }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ReviewedField(model, draft?.date) { DateInput(model.t("report.date"), date, it) { v -> date = v } }
                     ReviewedField(model, draft?.total) { AmountInput(model.t("documents.total"), amount, currency, locale, it, model::money) { v -> amount = v } }
                 }
                 ExtractedDetails(model, doc)
-                AiPart(model, doc)
+                AiPart(model, doc, onClose)
                 Duplicates(model, doc)
                 LabeledCheckbox(model.t("documents.keepForever"), keep) { keep = it }
                 TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
@@ -341,7 +341,7 @@ private fun <T> androidx.compose.foundation.layout.RowScope.ReviewedField(model:
  * out when the fields read on this computer are uncertain (step 1).
  */
 @Composable
-private fun AiPart(model: BooksModel, doc: VaultDocument) {
+private fun AiPart(model: BooksModel, doc: VaultDocument, onClose: () -> Unit) {
     val settings = remember(model.revision) { model.books.ai.settings() }
     if (!settings.enabled || doc.mimeType == "text/plain") return
     val hasKey = remember(model.revision) { DesktopAi.key(model) != null }
@@ -387,7 +387,34 @@ private fun AiPart(model: BooksModel, doc: VaultDocument) {
         note?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
     }
     failure?.let { ErrorText(it) }
+    if (reading != null && reading.typeId in ca.schippers.hfm.books.AiService.STATEMENT_TYPES) StatementPart(model, doc, reading.typeId, onClose)
     if (asking) AiReadDialog(model, doc) { asking = false }
+}
+
+/**
+ * OCR-09: a bank or card statement read by AI goes into an account as a statement, matched with
+ * what is already in the books, and opens in reconciliation (section 8).
+ */
+@Composable
+private fun StatementPart(model: BooksModel, doc: VaultDocument, typeId: String, onClose: () -> Unit) {
+    val kind = if (typeId == "card_statement") ca.schippers.hfm.domain.AccountKind.CREDIT else ca.schippers.hfm.domain.AccountKind.BANK
+    val accounts = remember(model.revision) { model.books.accounts.list().map { it.account }.filter { it.type.kind == kind && it.status != ca.schippers.hfm.domain.AccountStatus.CLOSED } }
+    if (accounts.isEmpty()) return
+    val digits = remember(doc.id, model.revision) { runCatching { model.books.ai.statement(doc.id, accounts.first().id).accountNumberHint }.getOrNull()?.filter(Char::isDigit) }
+    var account by remember(doc.id) {
+        mutableStateOf(accounts.firstOrNull { a -> digits != null && digits.length >= 3 && a.numberMasked?.filter(Char::isDigit)?.endsWith(digits.takeLast(4)) == true } ?: accounts.first())
+    }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Picker(model.t("ai.statementAccount"), accounts, account, { it.name }, Modifier.weight(1f)) { account = it }
+        Button(onClick = {
+            val result = model.act { model.books.ai.importStatement(doc.id, account.id) } ?: return@Button
+            model.lastImport = result
+            model.selectedAccountId = account.id
+            model.reconcilingStatementId = result.statementId
+            model.section = Section.ACCOUNTS
+            onClose()
+        }) { Text(model.t("ai.reconcileStatement")) }
+    }
 }
 
 @Composable
@@ -428,6 +455,9 @@ private fun FilingActions(model: BooksModel, doc: VaultDocument, saveDetails: ()
         Text(model.t("documents.attachedTo"), style = MaterialTheme.typography.labelLarge)
         for (l in linked) Text(l, style = MaterialTheme.typography.bodySmall)
     }
+    // A statement, pay stub or explanation of benefits is not one transaction: it is filed as is,
+    // or (statements read by AI) reconciled above.
+    if (doc.kind in SUMMARY_KINDS) return
     Text(model.t("documents.fileIt"), style = MaterialTheme.typography.labelLarge)
     if (bill != null) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -549,3 +579,6 @@ internal fun dateOfMillis(millis: Long): LocalDate =
     java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.systemDefault()).toLocalDate().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
 
 private val AI_PAYMENTS = setOf("cash", "debit", "credit", "gift_card", "other")
+
+/** Documents that summarise many transactions rather than record one. */
+private val SUMMARY_KINDS = setOf(DocumentKind.CARD_STATEMENT, DocumentKind.BANK_STATEMENT, DocumentKind.INVESTMENT_STATEMENT, DocumentKind.PAY_STUB, DocumentKind.EOB)

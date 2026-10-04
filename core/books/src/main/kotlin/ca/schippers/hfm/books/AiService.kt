@@ -2,7 +2,18 @@ package ca.schippers.hfm.books
 
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
+import ca.schippers.hfm.importers.ImportedLine
+import ca.schippers.hfm.importers.ImportedStatement
+import ca.schippers.hfm.money.Currency
+import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.ocr.DocumentDraft
+import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -96,6 +107,41 @@ class AiService internal constructor(private val books: Books) {
         }
     }
 
+    /**
+     * OCR-09: a bank or credit card statement read by AI, as a statement for [accountId], ready for
+     * import and reconciliation (section 8). Card statements print charges as positive amounts and
+     * the balance owed as positive; the books keep a card's charges and balance owed as negative.
+     */
+    fun statement(documentId: String, accountId: String): ImportedStatement {
+        val reading = reading(documentId) ?: throw ValidationException("error.aiNoStatement")
+        validate(reading.typeId in STATEMENT_TYPES, "error.aiNoStatement")
+        val (_, account) = books.accounts.locate(accountId)
+        val card = reading.typeId == "card_statement"
+        val answer = Json.parseToJsonElement(reading.answer).jsonObject
+        val currency = answer.text("currency")?.let { runCatching { Currency.of(it.uppercase()) }.getOrNull() } ?: account.currency
+        fun money(key: String, from: JsonObject = answer): Money? = (from[key] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toBigDecimalOrNull()
+            ?.let { Money.of(if (card) it.negate() else it, currency) }
+        fun date(key: String, from: JsonObject = answer) = from.text(key)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        val lines = (answer["transactions"] as? JsonArray).orEmpty().mapNotNull { e ->
+            val t = e as? JsonObject ?: return@mapNotNull null
+            val day = date("date", t) ?: return@mapNotNull null
+            val amount = money("amount", t) ?: return@mapNotNull null
+            ImportedLine(null, day, amount, t.text("description"), null, null)
+        }
+        return ImportedStatement(
+            "AI", answer.text(if (card) "card_last4" else "account_number_last_digits"), currency, date("period_start"), date("period_end"),
+            money(if (card) "previous_balance" else "opening_balance"), money(if (card) "new_balance" else "closing_balance"), lines,
+        )
+    }
+
+    /**
+     * OCR-09: imports the statement read from [documentId] into [accountId]: lines already in the
+     * books are matched, the rest added, as for a downloaded statement. The same document cannot
+     * be imported twice.
+     */
+    fun importStatement(documentId: String, accountId: String): ImportResult =
+        books.statements.import(accountId, statement(documentId, accountId), books.documents.get(documentId).label, books.documents.content(documentId))
+
     /** AI-06: the signed-in user's requests between two instants (epoch milliseconds), newest first. */
     fun usage(fromMillis: Long, toMillis: Long): List<AiUsageEntry> = books.groups().flatMap { g ->
         val q = books.ledger(g).aiQueries
@@ -107,4 +153,11 @@ class AiService internal constructor(private val books: Books) {
             )
         }
     }.sortedByDescending { it.usedAt }
+
+    private fun JsonObject.text(key: String): String? = (this[key] as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
+
+    companion object {
+        /** Document types whose readings can become a statement (OCR-09). */
+        val STATEMENT_TYPES = setOf("bank_statement", "card_statement")
+    }
 }

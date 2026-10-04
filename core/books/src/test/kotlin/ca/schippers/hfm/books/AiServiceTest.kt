@@ -104,5 +104,43 @@ class AiServiceTest {
         }
     }
 
+    @Test
+    fun `a card statement read by AI is imported, matched and cannot be imported twice`() {
+        Books(store.create(dir, "A", "perry", "Perry", "password1".toCharArray()).session).use { books ->
+            val group = books.groups().single().id
+            val visa = books.accounts.create(AccountDraft(group, "Visa", ca.schippers.hfm.domain.AccountType.CREDIT_CARD, Currency.CAD, Money.parse("0", Currency.CAD), LocalDate(2026, 8, 1)))
+            books.transactions.create(TransactionDraft(visa.id, LocalDate(2026, 9, 6), Money.parse("-187.32", Currency.CAD), "Loblaws"))
+            val doc = books.documents.import(group, "statement.pdf".encodeToByteArray(), "visa-sept.pdf", "application/pdf").document
+            val answer = """{"issuer":"TD","card_last4":"1234","period_start":"2026-08-21","period_end":"2026-09-20","previous_balance":0,"new_balance":251.47,
+                "currency":"CAD","transactions":[
+                  {"date":"2026-09-06","description":"LOBLAWS #1234","amount":187.32},
+                  {"date":"2026-09-12","description":"PETRO-CANADA","amount":68.55},
+                  {"date":"2026-09-15","description":"REFUND AMAZON","amount":-4.40}]}"""
+            books.ai.saveReading(doc.id, "card_statement", "hfm/card_statement/v1", answer, true, "claude-opus-5-5", DocumentDraft(DocumentKind.CARD_STATEMENT))
+
+            val statement = books.ai.statement(doc.id, visa.id)
+            assertEquals(listOf("-187.32", "-68.55", "4.40"), statement.lines.map { it.amount.toBigDecimal().toPlainString() }, "charges are negative in the books")
+            assertEquals(Money.parse("-251.47", Currency.CAD), statement.closingBalance)
+            assertEquals(LocalDate(2026, 9, 20), statement.periodEnd)
+
+            val result = books.ai.importStatement(doc.id, visa.id)
+            assertEquals(1, result.matched, "the Loblaws purchase already in the books")
+            assertEquals(2, result.created)
+            val again = kotlin.runCatching { books.ai.importStatement(doc.id, visa.id) }.exceptionOrNull()
+            assertTrue(again is ValidationException, "the same document is not imported twice: $again")
+        }
+    }
+
+    @Test
+    fun `only statements can become statements`() {
+        Books(store.create(dir, "A", "perry", "Perry", "password1".toCharArray()).session).use { books ->
+            val group = books.groups().single().id
+            val chequing = books.accounts.create(AccountDraft(group, "Chèques", ca.schippers.hfm.domain.AccountType.CHEQUING, Currency.CAD, Money.parse("0", Currency.CAD), LocalDate(2026, 8, 1)))
+            val doc = books.documents.import(group, "r".encodeToByteArray(), "r.jpg", "image/jpeg").document
+            books.ai.saveReading(doc.id, "receipt", "hfm/receipt/v1", """{"merchant":"x","date":"2026-09-01","total":1,"currency":"CAD"}""", true, "m", draft())
+            assertTrue(kotlin.runCatching { books.ai.statement(doc.id, chequing.id) }.exceptionOrNull() is ValidationException)
+        }
+    }
+
     private inline fun <T> Books.use(block: (Books) -> T): T = try { block(this) } finally { session.close() }
 }
