@@ -27,14 +27,29 @@ Le téléphone envoie les captures directement à votre ordinateur sur votre ré
 
 Toutes les demandes utilisent HTTPS. Chaque service voit l'adresse Internet de votre appareil, comme pour toute page Web, et applique sa propre politique de confidentialité.
 
-| Service | Quand | Ce qu'il apprend |
-|---|---|---|
-| Banque du Canada (banqueducanada.ca) | Automatiquement, quand votre ménage utilise une autre monnaie que le dollar canadien | Les codes de monnaie et les dates des taux de change nécessaires |
-| ExchangeRate-API (open.er-api.com) | Seulement si vous activez la seconde source de taux (désactivée par défaut) | Que des taux ont été demandés |
-| Yahoo Finance (finance.yahoo.com) | Seulement si vous activez les cours des titres ou des métaux (désactivés par défaut) | Les symboles des titres que vous détenez et les quatre symboles des métaux |
-| CoinGecko (coingecko.com) | Seulement si vous activez les cours des cryptoactifs (désactivés par défaut) | Les noms des cryptoactifs que vous détenez |
-| mempool.space | Seulement quand vous demandez de mettre à jour un portefeuille Bitcoin en lecture seule | Les adresses publiques de ce portefeuille |
-| GitHub (github.com) | Seulement sur les copies qui vérifient les mises à jour, seulement si vous l'avez accepté, au plus une fois par jour. Ce sont les paquets Linux et l'application Android téléchargée sur GitHub. | Qu'une copie de l'application vérifie les mises à jour; les mises à jour que vous choisissez de télécharger |
+**Banque du Canada** (banqueducanada.ca)
+- Quand : automatiquement, quand votre ménage utilise une autre monnaie que le dollar canadien.
+- Ce qu'elle apprend : les codes de monnaie et les dates des taux de change nécessaires.
+
+**ExchangeRate-API** (open.er-api.com)
+- Quand : seulement si vous activez la seconde source de taux (désactivée par défaut).
+- Ce qu'il apprend : que des taux ont été demandés.
+
+**Yahoo Finance** (finance.yahoo.com)
+- Quand : seulement si vous activez les cours des titres ou des métaux (désactivés par défaut).
+- Ce qu'il apprend : les symboles des titres que vous détenez et les quatre symboles des métaux.
+
+**CoinGecko** (coingecko.com)
+- Quand : seulement si vous activez les cours des cryptoactifs (désactivés par défaut).
+- Ce qu'il apprend : les noms des cryptoactifs que vous détenez.
+
+**mempool.space**
+- Quand : seulement quand vous demandez de mettre à jour un portefeuille Bitcoin en lecture seule.
+- Ce qu'il apprend : les adresses publiques de ce portefeuille.
+
+**GitHub** (github.com)
+- Quand : seulement sur les copies qui vérifient les mises à jour, seulement si vous l'avez accepté, et au plus une fois par jour. Ce sont les paquets Linux et l'application Android téléchargée sur GitHub.
+- Ce qu'il apprend : qu'une copie de l'application vérifie les mises à jour, et les mises à jour que vous choisissez de télécharger.
 
 Les versions du Microsoft Store et de Google Play ne consultent jamais GitHub : la boutique les met à jour.
 

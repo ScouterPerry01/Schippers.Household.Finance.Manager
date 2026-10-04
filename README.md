@@ -32,7 +32,7 @@ Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: wit
 | `app/desktop` | Compose Desktop application, including the listener for phones |
 | `app/android` | Android companion: capture, encrypted queue, transfer, summaries; `play` and `github` flavours |
 | `tools/release` | Makes the release key pair and signs releases (run by the release workflow) |
-| `website/` | The home page and privacy policy published on rann.ca, in English and French |
+| `website/` | Text and images for the home page and privacy policy on rann.ca (Google Sites), in English and French |
 | `branding/` | The RANN's Roost logo, Store tiles and icons (not covered by the GPL; see its README) |
 | `spikes/` | Phase 0 feasibility experiments (not part of the build) |
 

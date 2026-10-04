@@ -27,14 +27,29 @@ The phone sends captures straight to your computer over your home network. Every
 
 All requests use HTTPS. Each service sees your device's internet address, as for any web page, and applies its own privacy policy.
 
-| Service | When | What it learns |
-|---|---|---|
-| Bank of Canada (bankofcanada.ca) | Automatically, when your household uses a currency other than the Canadian dollar | The currency codes and dates of the exchange rates needed |
-| ExchangeRate-API (open.er-api.com) | Only if you turn on the second rate source (off by default) | That rates were requested |
-| Yahoo Finance (finance.yahoo.com) | Only if you turn on security or metal prices (off by default) | The symbols of the securities you hold, and the four metal symbols |
-| CoinGecko (coingecko.com) | Only if you turn on crypto-asset prices (off by default) | The names of the crypto-assets you hold |
-| mempool.space | Only when you ask to update a watch-only Bitcoin wallet | That wallet's public addresses |
-| GitHub (github.com) | Only on copies that check for updates, only if you agreed when asked, at most once a day. These are the Linux packages and the Android app downloaded from GitHub. | That a copy of the app is checking for updates; updates you choose to download |
+**Bank of Canada** (bankofcanada.ca)
+- When: automatically, when your household uses a currency other than the Canadian dollar.
+- What it learns: the currency codes and dates of the exchange rates needed.
+
+**ExchangeRate-API** (open.er-api.com)
+- When: only if you turn on the second rate source (off by default).
+- What it learns: that rates were requested.
+
+**Yahoo Finance** (finance.yahoo.com)
+- When: only if you turn on security or metal prices (off by default).
+- What it learns: the symbols of the securities you hold, and the four metal symbols.
+
+**CoinGecko** (coingecko.com)
+- When: only if you turn on crypto-asset prices (off by default).
+- What it learns: the names of the crypto-assets you hold.
+
+**mempool.space**
+- When: only when you ask to update a watch-only Bitcoin wallet.
+- What it learns: that wallet's public addresses.
+
+**GitHub** (github.com)
+- When: only on copies that check for updates, only if you agreed when asked, and at most once a day. These are the Linux packages and the Android app downloaded from GitHub.
+- What it learns: that a copy of the app is checking for updates, and the updates you choose to download.
 
 The Microsoft Store and Google Play versions never check GitHub: the store updates them.
 
