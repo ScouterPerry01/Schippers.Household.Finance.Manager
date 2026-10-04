@@ -1,0 +1,12 @@
+-- Version 18 to 19 (OCR-07): what the user corrected on documents from a merchant.
+
+CREATE TABLE merchant_memory (
+    -- The merchant as it was read, lower case, without accents, digits or punctuation, first words only.
+    read_key TEXT NOT NULL PRIMARY KEY,
+    -- The name the user gave it, the kind of document, and the category used when filing it.
+    merchant TEXT,
+    kind TEXT,
+    category_id TEXT,
+    uses INTEGER NOT NULL DEFAULT 1,
+    updated_at INTEGER NOT NULL
+);

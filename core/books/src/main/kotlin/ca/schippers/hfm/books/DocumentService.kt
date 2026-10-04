@@ -143,26 +143,60 @@ class DocumentService internal constructor(private val books: Books) {
     fun recordText(documentId: String, pages: Int, result: OcrResult, engineId: String, today: LocalDate): VaultDocument {
         val (group, row) = locate(documentId)
         books.require(group, PermissionLevel.CAPTURE_ONLY)
-        val draft = FieldExtractor.extract(result, today)
+        val extracted = FieldExtractor.extract(result, today)
+        val key = readKey(extracted.merchant?.value)
+        val draft = applyLearned(group, key, extracted)
         books.ledger(group).ledgerQueries.updateDocumentText(
             pages.toLong(), result.text.take(MAX_TEXT), draft.kind.name, draft.date?.value?.toString() ?: row.doc_date, draft.merchant?.value ?: row.merchant,
-            draft.total?.value?.minorUnits ?: row.amount_minor, (draft.total?.value?.currency ?: draft.currency).code, json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft)),
-            engineId, books.now(), documentId,
+            draft.total?.value?.minorUnits ?: row.amount_minor, (draft.total?.value?.currency ?: draft.currency).code,
+            json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft).copy(readKey = key)), engineId, books.now(), documentId,
         )
         return get(documentId)
+    }
+
+    // --- Learning from corrections (OCR-07) ------------------------------------------------------
+
+    /**
+     * The merchant as it was read, reduced so the same store reads the same way: lower case,
+     * without accents, digits or punctuation, its first three words. Null when too little is left.
+     */
+    internal fun readKey(merchant: String?): String? = merchant?.let { FieldExtractor.fold(it) }
+        ?.replace(Regex("[^a-z]+"), " ")?.split(' ')?.filter { it.length > 1 }?.take(3)?.joinToString(" ")?.takeIf { it.length >= 3 }
+
+    /** The merchant's name and document kind as the user last corrected them, if they did. */
+    private fun applyLearned(group: GroupInfo, key: String?, draft: DocumentDraft): DocumentDraft {
+        val memory = key?.let { books.ledger(group).learningQueries.merchantMemory(it).executeAsOneOrNull() } ?: return draft
+        return draft.copy(
+            merchant = memory.merchant?.let { Extracted(it, maxOf(LEARNED, draft.merchant?.confidence ?: 0f), draft.merchant?.source ?: FieldSource.ON_DEVICE) } ?: draft.merchant,
+            kind = memory.kind?.let { runCatching { DocumentKind.valueOf(it) }.getOrNull() } ?: draft.kind,
+        )
+    }
+
+    /** How the document's merchant was read, for learning from what the user changes. */
+    private fun storedKey(row: DocumentRow): String? = row.extraction?.let { runCatching { json.decodeFromString(StoredDraft.serializer(), it) }.getOrNull() }
+        ?.let { it.readKey ?: readKey(it.merchant?.v) }
+
+    /** OCR-07: the category last used when filing a document from this merchant. */
+    fun learnedCategory(documentId: String): String? {
+        val (group, row) = locate(documentId)
+        val key = storedKey(row) ?: return null
+        return books.ledger(group).learningQueries.merchantMemory(key).executeAsOneOrNull()?.category_id
+            ?.takeIf { id -> books.categories.list().any { it.id == id } }
     }
 
     /**
      * Stores fields read another way, such as by cloud AI (section 4.5): they become the
      * document's kind, date, merchant and amount, and its recognised text is kept.
      */
-    internal fun recordDraft(documentId: String, draft: DocumentDraft, engineId: String): VaultDocument {
+    internal fun recordDraft(documentId: String, read: DocumentDraft, engineId: String): VaultDocument {
         val (group, row) = locate(documentId)
         books.require(group, PermissionLevel.CAPTURE_ONLY)
+        val key = readKey(read.merchant?.value)
+        val draft = applyLearned(group, key, read)
         books.ledger(group).aiQueries.updateDocumentDraft(
             draft.kind.name, draft.date?.value?.toString() ?: row.doc_date, draft.merchant?.value ?: row.merchant,
             draft.total?.value?.minorUnits ?: row.amount_minor, (draft.total?.value?.currency ?: draft.currency).code,
-            json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft)), engineId, books.now(), documentId,
+            json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft).copy(readKey = key)), engineId, books.now(), documentId,
         )
         return get(documentId)
     }
@@ -219,6 +253,14 @@ class DocumentService internal constructor(private val books: Books) {
     fun update(documentId: String, details: DocumentDetails) {
         val (group, row) = locate(documentId)
         books.require(group, PermissionLevel.EDIT)
+        // OCR-07: a name or kind the user changed is remembered for the next documents read the same way.
+        storedKey(row)?.let { key ->
+            val read = toDocument(group, row).draft
+            val name = (details.merchant ?: details.title).blankToNull()
+            val renamed = name?.takeIf { it != read?.merchant?.value }
+            val rekinded = details.kind?.takeIf { it != read?.kind }?.name
+            if (renamed != null || rekinded != null) books.ledger(group).learningQueries.rememberMerchant(key, renamed, rekinded, null, books.now())
+        }
         with(details) {
             books.ledger(group).ledgerQueries.updateDocumentDetails(
                 title.blankToNull(), row.status, kind?.name, date?.toString(), merchant.blankToNull(), amount?.minorUnits, amount?.currency?.code ?: row.currency,
@@ -287,6 +329,11 @@ class DocumentService internal constructor(private val books: Books) {
     fun fileAsTransaction(documentId: String, draft: TransactionDraft): Transaction {
         val txn = books.transactions.create(draft)
         fileWithTransaction(documentId, txn.id)
+        // OCR-07: a single category is suggested next time; a receipt split by items is not one.
+        draft.splits.mapNotNull { it.categoryId }.distinct().singleOrNull()?.let { category ->
+            val (group, row) = locate(documentId)
+            storedKey(row)?.let { books.ledger(group).learningQueries.rememberMerchant(it, null, null, category, books.now()) }
+        }
         return txn
     }
 
@@ -373,6 +420,9 @@ class DocumentService internal constructor(private val books: Books) {
         private const val MAX_BYTES = 50 * 1024 * 1024
         private const val MAX_TEXT = 200_000
 
+        /** Confidence of a merchant name the user taught (OCR-07). */
+        private const val LEARNED = 0.95f
+
         /** Ids per query when reading links, well under SQLite's limit on parameters. */
         private const val LINK_BATCH = 500
 
@@ -410,6 +460,8 @@ internal data class StoredDraft(
     val invoiceNumber: StoredField? = null,
     val dueDate: StoredField? = null,
     val accountNumber: StoredField? = null,
+    /** OCR-07: how the merchant was read, before any learned correction. */
+    val readKey: String? = null,
 ) {
     fun toDraft(): DocumentDraft {
         val c = Currency.of(currency)

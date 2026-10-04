@@ -514,7 +514,8 @@ private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: S
         )
     }
     val payeeDefault = remember { books.payees.list().firstOrNull { ca.schippers.hfm.books.DocumentService.similarNames(it.name, payee) } }
-    var categoryId by remember { mutableStateOf(payeeDefault?.defaultCategoryId) }
+    // The payee's own category, else the one last used for documents from this merchant (OCR-07).
+    var categoryId by remember { mutableStateOf(payeeDefault?.defaultCategoryId ?: runCatching { books.documents.learnedCategory(doc.id) }.getOrNull()) }
     var forId by remember { mutableStateOf<String?>(null) }
     var assetId by remember { mutableStateOf<String?>(null) }
     val account = accounts.firstOrNull { it.id == accountId }

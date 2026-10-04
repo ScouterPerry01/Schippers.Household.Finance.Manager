@@ -163,4 +163,31 @@ class DocumentServiceTest {
         assertTrue(DocumentService.similarNames("HYDRO-QUÉBEC", "Hydro-Québec"))
         assertFalse(DocumentService.similarNames("Metro", "IGA"))
     }
+
+    @Test
+    fun `corrections teach the next documents from the same merchant (OCR-07)`() {
+        val first = importReceipt("photo-a".encodeToByteArray(), receipt.replace("IGA Extra Famille Jodoin", "IGA EXTRA FAMILLE #8213"))
+        assertEquals("IGA EXTRA FAMILLE #8213", first.merchant)
+        books.documents.update(first.id, DocumentDetails("IGA", DocumentKind.RECEIPT, first.date, "IGA", first.amount, false, null))
+        val groceries = books.categories.list().first { it.systemKey == "food.groceries" }.id
+        books.documents.fileAsTransaction(first.id, TransactionDraft(visa.id, d(9, 28), cad("-42.16"), "IGA", listOf(SplitDraft(groceries, cad("-42.16")))))
+
+        // Another branch: other digits, same words.
+        val second = importReceipt("photo-b".encodeToByteArray(), receipt.replace("IGA Extra Famille Jodoin", "IGA Extra Famille #1250"))
+        assertEquals("IGA", second.merchant, "the name the user gave")
+        assertEquals("IGA", second.draft!!.merchant!!.value)
+        assertEquals(groceries, books.documents.learnedCategory(second.id))
+
+        // Correcting the corrected name again still learns, since the key is how it was read.
+        books.documents.update(second.id, DocumentDetails("IGA Jodoin", DocumentKind.RECEIPT, second.date, "IGA Jodoin", second.amount, false, null))
+        val third = importReceipt("photo-c".encodeToByteArray(), receipt.replace("IGA Extra Famille Jodoin", "IGA EXTRA FAMILLE"))
+        assertEquals("IGA Jodoin", third.merchant)
+
+        // Another store is not affected, and a private group keeps its own memory.
+        assertEquals(null, books.documents.learnedCategory(importReceipt("photo-d".encodeToByteArray(), receipt.replace("IGA Extra Famille Jodoin", "Metro Plus Lebourgneuf")).id))
+        val own = books.session.createGroup("Perry - privé", private = true)
+        val private = books.documents.import(own, "photo-e".encodeToByteArray(), "p.jpg", "image/jpeg").document
+        val read = books.documents.recordText(private.id, 1, ocr(receipt.replace("IGA Extra Famille Jodoin", "IGA EXTRA FAMILLE #9")), "test", today)
+        assertEquals("IGA EXTRA FAMILLE #9", read.merchant)
+    }
 }

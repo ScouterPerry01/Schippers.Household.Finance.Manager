@@ -1,6 +1,6 @@
 # ADR 0009: Cloud AI reading
 
-Status: Accepted (Phase 5a, 2026-10-04). Foundations built in 5a.1; screens in 5a.2; line items, learning, document types and statements in 5a.3.
+Status: Accepted (Phase 5a, 2026-10-04). Built: foundations (5a.1), screens (5a.2), document types, statements, line items and learning (5a.3).
 
 ## Context
 
@@ -58,3 +58,7 @@ A bank or credit card statement read by AI can go straight into an account as a 
 ## Line items (OCR-03, 5a.3, 2026-10-04)
 
 A receipt or invoice read by AI with two items or more can become a split transaction: "Split by items" in "New transaction from this document" lists each item with its share of the amount paid (the taxes, tip and rounding shared out in proportion to each item's amount, the last item taking what rounding leaves, so the shares add up to the amount exactly) and a category for each, starting from the transaction's category. Items given the same category become one split, whose memo lists them. Tested by `AiServiceTest` and in the demo.
+
+## Learning from corrections (OCR-07, 5a.3, 2026-10-04)
+
+Not tied to AI: whatever read a document (the computer, the phone, or AI), a merchant name or document kind the user corrects, and the category used when filing it, are remembered for the merchant as it was read (ledger version 19, per group). The next document read the same way gets the corrected name and kind, and its new transaction starts from that category, after the payee's own. The key is kept with the document's draft, so correcting a corrected name keeps learning.

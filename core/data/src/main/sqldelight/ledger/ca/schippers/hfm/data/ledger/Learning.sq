@@ -1,0 +1,24 @@
+-- OCR-07 (ledger version 19): what the user corrected on documents from a merchant, so the next
+-- documents from it are read better. Kept in each group's ledger, like its documents (HH-11).
+CREATE TABLE merchant_memory (
+    -- The merchant as it was read, lower case, without accents, digits or punctuation, first words only.
+    read_key TEXT NOT NULL PRIMARY KEY,
+    -- The name the user gave it, the kind of document, and the category used when filing it.
+    merchant TEXT,
+    kind TEXT,
+    category_id TEXT,
+    uses INTEGER NOT NULL DEFAULT 1,
+    updated_at INTEGER NOT NULL
+);
+
+rememberMerchant:
+INSERT INTO merchant_memory(read_key, merchant, kind, category_id, uses, updated_at)
+VALUES (:readKey, :merchant, :kind, :categoryId, 1, :now)
+ON CONFLICT(read_key) DO UPDATE SET merchant = coalesce(excluded.merchant, merchant), kind = coalesce(excluded.kind, kind),
+    category_id = coalesce(excluded.category_id, category_id), uses = uses + 1, updated_at = excluded.updated_at;
+
+merchantMemory:
+SELECT * FROM merchant_memory WHERE read_key = ?;
+
+forgetMerchant:
+DELETE FROM merchant_memory WHERE read_key = ?;

@@ -373,6 +373,22 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 18 ledgers gain what was learned from corrections`() {
+        val file = temp.resolve("ledger18.db")
+        older("../data/src/main/sqldelight/ledger/schemas/18.db", file, 18).close()
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).learningQueries
+            q.rememberMerchant("iga extra famille", "IGA", null, null, 1)
+            q.rememberMerchant("iga extra famille", null, "RECEIPT", "cat", 2)
+            val m = q.merchantMemory("iga extra famille").executeAsOne()
+            assertEquals(listOf("IGA", "RECEIPT", "cat"), listOf(m.merchant, m.kind, m.category_id), "later corrections add to earlier ones")
+            assertEquals(2L, m.uses)
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()
