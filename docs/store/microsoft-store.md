@@ -4,8 +4,8 @@ Texts for Partner Center (DIST-01, DIST-07). Each field is marked with its Partn
 limit; `tools/dev/check_store_texts.py` checks the limits. Price, markets and age rating are the
 owner's choices in Partner Center.
 
-- Privacy policy URL: https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager/blob/main/docs/legal/privacy-policy.md
-- Website: https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager
+- Privacy policy URL: https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en (French: https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr)
+- Website: https://www.rann.ca/rann-apps/rann-roost (source code: https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager)
 - Support contact: info-rann-apps@NorthMail.ca
 - Category: Personal finance
 - Screenshots: `docs/store/screenshots/desktop-en/` and `desktop-fr/` (1440 × 900)

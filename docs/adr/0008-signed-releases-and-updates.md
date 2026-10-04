@@ -30,7 +30,7 @@ Status: Accepted (Phase 4d, 2026-10-03)
    - **.deb / .rpm:** the checked file is saved in Downloads and opened with the system's software installer; the terminal command is shown too.
    - **APK (GitHub build):** handed to Android's package installer, which asks the user to confirm and also refuses an APK not signed like the installed app. The installer's answer comes back to a receiver that is not exported, so no other app can make the companion start an intent of its choosing.
 
-**Which copies check.** Linux .deb, .rpm and AppImage installs, and the Android GitHub build. Not the Microsoft Store (MSIX), Flatpak or Google Play builds, which their stores update, nor a copy run from source. The Android app has two flavours with the same package `ca.schippers.hfm.companion`: `play` never checks and has no install permission; `github` checks and asks for `REQUEST_INSTALL_PACKAGES`.
+**Which copies check.** Linux .deb, .rpm and AppImage installs, and the Android GitHub build. Not the Microsoft Store (MSIX), Flatpak or Google Play builds, which their stores update, nor a copy run from source. The Android app has two flavours with the same package `ca.ranns.roost.mobile`: `play` never checks and has no install permission; `github` checks and asks for `REQUEST_INSTALL_PACKAGES`.
 
 **Asking first.** On a copy that checks, the first start asks whether to check once a day, saying what GitHub learns (the computer's or phone's internet address and that the app is in use) and that nothing about the household is sent. No request is made before the answer. The choice is per computer (desktop) or per phone, and can be changed under About (desktop) or Settings (phone).
 

@@ -37,6 +37,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 private const val REPOSITORY = "https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager"
+private const val WEBSITE = "https://www.rann.ca/rann-apps/rann-roost"
 
 /** About, in the household's navigation. */
 @Composable
@@ -59,8 +60,8 @@ fun AboutContent(state: AppState) {
         UpdatesCard(state)
         Section(state.t("about.privacy.title")) {
             Text(state.t("about.privacy.body"))
-            val policy = if (state.language == Language.FRENCH) "privacy-policy.fr.md" else "privacy-policy.md"
-            LinkButton(state.t("about.privacy.link"), "$REPOSITORY/blob/main/docs/legal/$policy")
+            val policy = if (state.language == Language.FRENCH) "privacy-policy-fr" else "privacy-policy-en"
+            LinkButton(state.t("about.privacy.link"), "$WEBSITE/$policy")
         }
         Section(state.t("about.notice.title")) {
             Text(state.t("about.notice.tax"))

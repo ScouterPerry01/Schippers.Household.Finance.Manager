@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RANN's Roost: household finances for Canada, on your own computer</title>
+<meta name="description" content="RANN's Roost keeps a Canadian household's complete finances on your own computer, encrypted, in English and French. Accounts, budgets, bills, investments, registered plans, mortgages, medical claims and everything you own.">
+<link rel="icon" type="image/png" href="images/rann-roost-icon.png">
+<link rel="alternate" hreflang="fr-CA" href="https://www.rann.ca/rann-apps/rann-roost/fr">
+<style>
+  :root { --sky: #3D8FCB; --ink: #1d2733; --muted: #5a6573; --line: #dde3ea; --bg: #ffffff; --soft: #f3f7fb; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.55; }
+  a { color: #1f6aa5; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+  header { background: var(--sky); color: #fff; }
+  header .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding-top: 28px; padding-bottom: 28px; }
+  header img { width: min(360px, 100%); height: auto; }
+  header .intro { flex: 1 1 320px; }
+  header h1 { margin: 0 0 8px; font-size: 1.9rem; line-height: 1.2; }
+  header p { margin: 0; font-size: 1.1rem; }
+  .lang { position: absolute; top: 12px; right: 20px; }
+  .lang a { color: #fff; font-weight: 600; text-decoration: none; }
+  section { padding: 36px 0; border-bottom: 1px solid var(--line); }
+  section:nth-of-type(even) { background: var(--soft); }
+  h2 { font-size: 1.45rem; margin: 0 0 14px; }
+  h3 { font-size: 1.1rem; margin: 18px 0 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 28px; }
+  ul { padding-left: 20px; margin: 6px 0; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; align-items: start; }
+  .shots figure { margin: 0; }
+  .shots img { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; }
+  .shots figcaption { color: var(--muted); font-size: 0.92rem; margin-top: 6px; }
+  .phone img { max-width: 260px; }
+  .get { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .get div { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  .note { color: var(--muted); font-size: 0.92rem; }
+  footer { padding: 26px 0 40px; color: var(--muted); font-size: 0.92rem; }
+</style>
+</head>
+<body>
+<header style="position: relative;">
+  <div class="lang"><a href="https://www.rann.ca/rann-apps/rann-roost/fr" hreflang="fr-CA" lang="fr-CA">Français</a></div>
+  <div class="wrap">
+    <img src="images/rann-roost-logo.png" alt="RANN's Roost logo: a brahminy kite in flight, with the words RANN and ROOST">
+    <div class="intro">
+      <h1>Your household's finances, on your own computer</h1>
+      <p>RANN's Roost keeps a Canadian household's complete finances in one place: private, encrypted, and in English and French, for every province and territory.</p>
+    </div>
+  </div>
+</header>
+
+<main>
+<section>
+  <div class="wrap">
+    <h2>Private by design</h2>
+    <p>Your data is encrypted with AES-256 and stays on your computer. There is no RANN account to create, no cloud, no advertising and no analytics. Optional price downloads stay off until you turn them on.</p>
+    <p>RANN's Roost does not connect to your bank: you import the statements your bank provides. Your banking passwords never go anywhere near it.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Everything in one place</h2>
+    <div class="grid">
+      <div>
+        <h3>Everyday books</h3>
+        <ul>
+          <li>Bank accounts, credit cards, cash and loans, in any currency, with Bank of Canada exchange rates</li>
+          <li>Import statements (OFX, QFX, QBO, CSV) and your history from Quicken, GnuCash or Moneydance</li>
+          <li>Reconcile each statement to the cent</li>
+          <li>Bills, subscriptions, budgets and savings goals, with reminders</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Investments and retirement</h3>
+        <ul>
+          <li>Adjusted cost base, capital gains, and investment income for your T3, T5, RL-3 and RL-16 slips</li>
+          <li>RRSP, TFSA, FHSA, RESP, RRIF, LIF and pensions, with contribution room and minimum withdrawals</li>
+          <li>Mortgages with Canadian semi-annual compounding, prepayments and renewals</li>
+          <li>Returns, asset allocation, crypto-assets and precious metals</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Home and health</h3>
+        <ul>
+          <li>Medical plans and claims, with coordination of benefits between spouses</li>
+          <li>Home inventory, vehicles, warranties, insurance and maintenance schedules</li>
+          <li>Health records, pets and a calendar for appointments and renewals</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The whole household</h3>
+        <ul>
+          <li>Several users, each with a password, and private account groups others cannot open</li>
+          <li>Reports with charts, exported to PDF, Excel or CSV</li>
+          <li>Encrypted backups, checked after every backup</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>A look inside</h2>
+    <div class="shots">
+      <figure><img src="images/desktop-en-dashboard.jpg" alt="The dashboard: net worth, cash available, debts, bills due and spending this month" loading="lazy"><figcaption>The dashboard at a glance</figcaption></figure>
+      <figure><img src="images/desktop-en-accounts.jpg" alt="A credit card's register with its transactions and running balance" loading="lazy"><figcaption>Accounts and registers</figcaption></figure>
+      <figure><img src="images/desktop-en-reports.jpg" alt="The income and expense report, with a chart by month" loading="lazy"><figcaption>Reports you can drill into and export</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>RANN's Roost Mobile, the free companion</h2>
+    <div class="shots">
+      <div>
+        <p>Photograph a receipt or bill on the spot: the phone finds the edges, straightens the page and reads the text itself. Captures wait on the phone, encrypted, and go straight to your computer over your home Wi-Fi, encrypted end to end. Nothing passes through RANN or anyone else.</p>
+        <p>The phone also shows this month's budgets, the bills coming due and the maintenance due on your home and vehicles.</p>
+      </div>
+      <figure class="phone"><img src="images/phone-en-capture.jpg" alt="RANN's Roost Mobile's capture screen, with buttons for a receipt, a bill, a quick expense and an odometer reading" loading="lazy"><figcaption>Capture on Android</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Get RANN's Roost</h2>
+    <div class="get">
+      <!-- Owner: replace "Coming soon" with each store's link once the app is published. -->
+      <div><h3>Windows</h3><p>From the Microsoft Store.</p><p class="note">Coming soon.</p></div>
+      <div><h3>Linux</h3><p>.deb, .rpm and AppImage packages.</p><p class="note">Coming soon.</p></div>
+      <div><h3>Android companion</h3><p>Free on Google Play. Requires RANN's Roost on your computer.</p><p class="note">Coming soon.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Free software, with support</h2>
+    <p>RANN's Roost is free software under the GNU General Public License (version 3 or later); its <a href="https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager">source code is on GitHub</a>. Anyone may build it from the source; the ready-to-install apps add signed builds, updates and support.</p>
+    <p>Questions and problems: <a href="mailto:info-rann-apps@NorthMail.ca">info-rann-apps@NorthMail.ca</a>, or an <a href="https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager/issues">issue on GitHub</a>.</p>
+    <p class="note">Tax figures in RANN's Roost are organizational aids, not tax advice. Health records are an organizational aid, not medical advice.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><a href="https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en">Privacy policy</a> · <a href="https://www.rann.ca/rann-apps/rann-roost/fr" hreflang="fr-CA" lang="fr-CA">Français</a></p>
+    <p>© 2026 Perry Schippers, trading as RANN. The RANN's Roost name and logo are not covered by the GPL.</p>
+  </div>
+</footer>
+</body>
+</html>

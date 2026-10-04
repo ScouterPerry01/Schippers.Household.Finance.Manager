@@ -3,7 +3,7 @@
 Texts for Play Console (DIST-03, DIST-07), checked by `tools/dev/check_store_texts.py`. The Play
 build is the `play` flavour: no update check and no permission to install packages (ADR 0008).
 
-- Privacy policy URL: https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager/blob/main/docs/legal/privacy-policy.md
+- Privacy policy URL: https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en (French: https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr)
 - Contact email: info-rann-apps@NorthMail.ca
 - Category: Finance. Price: free (decided in the SRS, 16.2).
 - App icon: `branding/store/play-icon-512.png`. Feature graphic: `branding/store/play-feature-1024x500.png`.
@@ -79,12 +79,22 @@ CONFIDENTIEL
 
 En français et en anglais, pour toutes les provinces et tous les territoires.
 
-## Data safety form (draft for the owner to confirm)
+## Data safety form
 
-These answers describe the app as built; the owner confirms them in Play Console against Google's
-current ML Kit and Play services disclosures.
+Answers for Play Console, following the owner's decision (2026-10-03) to keep Google's ML Kit and
+declare its diagnostics. Google's guidance: https://developers.google.com/ml-kit/android-data-disclosure
 
-- Data collected by the developer: none. Data shared with third parties by the developer: none.
-- Data leaving the phone: captures go only to the user's own paired computer on the local network, encrypted end to end; this is not collection by the developer.
-- Google libraries in the app: ML Kit text recognition, the ML Kit document scanner and the code scanner (Google Play services). Google documents what these SDKs collect for their own purposes (typically device and app information and performance metrics); declare it as Google's SDK data under "App info and performance" / "Device or other IDs" if Google's current disclosure says so.
-- Data encrypted in transit: yes. Users can request deletion: everything is on their own devices; uninstalling the app deletes the phone's data.
+- **Does the app collect or share user data?** Yes, through Google's ML Kit only. RANN itself collects and shares nothing.
+- **Data types to declare (collected, not shared):**
+  - App info and performance → *Diagnostics* (ML Kit's performance metrics, event types and error codes).
+  - Device or other IDs → *Device or other IDs* (ML Kit's per-installation identifier).
+- **For each type:**
+  - Purpose: *Analytics*.
+  - Processed ephemerally: no.
+  - Collection required: yes, since it cannot be turned off.
+- **Encrypted in transit:** yes (ML Kit uses HTTPS; the phone-to-computer transfer is encrypted end to end).
+- **Can users request deletion?** RANN holds no user data. Everything the app keeps is on the phone and is deleted when the app is uninstalled. Answer "No" to providing a way to request deletion, and explain this in the description field if Play Console asks.
+- **Not collected:** photos, files and documents. They are read on the phone and go only to the user's own paired computer, which is not collection by the developer.
+- **Not collected:** financial information, personal identifiers, location and contacts.
+
+Check Google's page above when filling in the form: it lists the exact categories for each ML Kit API, and Google may update it.
