@@ -32,7 +32,7 @@ Les alias peuvent être ajoutés une fois le bénéficiaire enregistré.
   - Quand une opération est créée à partir d'un reçu ou d'une facture dans [Documents](documents).
   - Sur le téléphone, qui reçoit chaque bénéficiaire avec sa catégorie par défaut.
 - **Archivé (masqué des listes)** : affiché pour un bénéficiaire déjà enregistré. Voir [Archiver un bénéficiaire](payees#archive-payee).
-- **Alias** : affiché pour un bénéficiaire déjà enregistré. Voir [Alias](payees#aliases).
+- **Alias** : affiché pour un bénéficiaire déjà enregistré : les alias du bénéficiaire en ordre alphabétique, ou « Aucun alias pour l'instant. ». En dessous, le champ **Alias** et **Ajouter l'alias** en ajoutent un. Voir [Alias](payees#aliases).
 - **Enregistrer** : enregistre le nom, la catégorie par défaut et la case Archivé. Rien n'est enregistré avant que vous cliquiez.
 
 ## Alias {#aliases}
@@ -43,7 +43,7 @@ Un alias est un bout de texte qui identifie ce bénéficiaire sur les relevés, 
 
 1. Choisissez le bénéficiaire dans la liste.
 2. Tapez le texte dans **Alias**.
-3. Cliquez sur **Ajouter l'alias**. Le champ se vide quand l'alias est enregistré.
+3. Cliquez sur **Ajouter l'alias**. Le champ se vide quand l'alias est enregistré, et l'alias s'ajoute à la liste au-dessus.
 
 Comment les alias sont reconnus :
 
@@ -54,7 +54,9 @@ Comment les alias sont reconnus :
 
 Les alias s'appliquent aux lignes de relevé importées à partir de ce moment et aux noms que vous tapez. Ils ne renomment pas les opérations déjà inscrites.
 
-> Remarque : L'écran ne montre pas la liste des alias d'un bénéficiaire et n'a aucun moyen d'en retirer un. Choisissez vos alias avec soin : un alias trop court, comme « CA », correspondrait à beaucoup trop de choses.
+> Remarque : Un alias ne peut pas être retiré une fois ajouté. Choisissez vos alias avec soin : un alias trop court, comme « CA », correspondrait à beaucoup trop de choses.
+
+Les administrateurs et les membres peuvent ajouter des bénéficiaires, les modifier et ajouter des alias. Les lecteurs voient la liste, les formulaires et les alias en gris, avec la remarque « À titre de lecteur, vous pouvez voir cette liste, mais pas la modifier. »
 
 > Conseil : Les alias donnent le bon nom ; les [Règles de catégorie](rules) donnent la bonne catégorie. Quand un même magasin vend des choses très différentes, utilisez une règle avec des limites de montant plutôt qu'une catégorie par défaut.
 

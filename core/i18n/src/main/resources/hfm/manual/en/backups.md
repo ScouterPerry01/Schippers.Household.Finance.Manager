@@ -34,7 +34,7 @@ At the top of the screen, the folder in use, or "No backup folder chosen."
 
 The schedule runs only while the household is open and unlocked: the app looks every 30 minutes whether a backup is due. If the computer was off, the backup is made soon after you next open the household.
 
-These settings belong to the household, not to the computer, and changes are recorded in the activity log.
+These settings belong to the household, not to the computer, and changes are recorded in the activity log. Only an administrator can change them: for other users the folder button, the schedule, the number to keep and **Save** are greyed out, with the note "Only an administrator can change where, how often and how many backups are kept. Anyone can back up now."
 
 > Tip: A cloud folder synchronized by OneDrive, Google Drive or Dropbox is an easy off-site copy. The backups stay encrypted there.
 

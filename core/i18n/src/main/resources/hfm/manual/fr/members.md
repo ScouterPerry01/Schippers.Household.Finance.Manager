@@ -19,7 +19,7 @@ Un membre du ménage est une personne, pas un compte de connexion. Un enfant peu
 L'écran a trois parties :
 
 - En haut, la **Province ou territoire** du ménage, avec une courte note sur ce qu'elle change.
-- À gauche, la liste des personnes, avec un bouton **Ajouter** au-dessus.
+- À gauche, la liste des personnes, avec un bouton **Ajouter** au-dessus pour les administrateurs.
 - À droite, le formulaire de la personne choisie, ou d'une nouvelle personne.
 
 ### Province ou territoire {#province}
@@ -118,6 +118,6 @@ Le lien est facultatif, et un membre n'a jamais besoin d'un utilisateur. Archive
 
 ## Qui peut modifier les membres du ménage {#permissions}
 
-Seul un administrateur peut ajouter, modifier ou archiver des membres du ménage et changer la province du ménage. Les autres utilisateurs peuvent voir la liste. Si un membre ou un lecteur essaie d'enregistrer, l'application refuse avec « Vous n'avez pas la permission de faire ceci. »
+Seul un administrateur peut ajouter, modifier ou archiver des membres du ménage et changer la province du ménage. Les autres utilisateurs peuvent voir la liste et ouvrir le formulaire de chaque personne, mais ses champs sont grisés, il n'y a pas de bouton **Ajouter** ni **Enregistrer**, et le formulaire indique « Seul un administrateur peut ajouter ou modifier les membres du ménage. »
 
 Chaque changement est inscrit dans le journal d'activité à l'écran [Utilisateurs](users).

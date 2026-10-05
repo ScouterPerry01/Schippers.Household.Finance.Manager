@@ -45,8 +45,9 @@ When nothing is selected, the form area says "Select a category to edit it, or a
 
 ### The category form {#category-fields}
 
-- **Name in English**: the name shown when the app is in English. Required, unless the French name is filled in: if you leave one name empty when creating a category, the other is used for both.
+- **Name in English**: the name shown when the app is in English. Required, unless the French name is filled in: if you leave one name empty, the other is used for both. **Save** stays greyed out while both are empty.
 - **Name in French**: the name shown when the app is in French.
+- **Inside**: shown for a category already saved. The category it sits under, or (top level). Only categories of the same kind are offered, and never the category itself or one inside it. See [Change a category](categories#change-category).
 - **Tax treatment**: (none), or one of the tax lines below. A new subcategory starts with its parent's treatment, which you can change. See [Tax treatment](categories#tax-treatment).
 - **Archived (hidden from lists)**: shown for a category already saved. See [Archive a category](categories#archive-category).
 - **Save**: saves the category. Nothing is saved until you click it.
@@ -73,10 +74,12 @@ A single split of a transaction can also carry its own tax treatment, which then
 ## Change a category {#change-category}
 
 1. Click the category in the list.
-2. Change its names, its tax treatment or its archived box.
+2. Change its names, where it sits (**Inside**), its tax treatment or its archived box.
 3. Click **Save**.
 
-A new name shows at once on every transaction, budget and report that uses the category, past ones included, and on the phone at its next update. A category cannot be moved under another parent, and there is no way to change its kind or its place in the list: to reorganize, create the category where you want it and archive the old one.
+A new name shows at once on every transaction, budget and report that uses the category, past ones included, and on the phone at its next update.
+
+To move a category, choose another category of the same kind in **Inside**, or (top level). Its subcategories move with it, and it goes last among its new neighbours. Transactions, budgets and reports keep using it; reports now count it under its new parent. An expense category cannot become an income category, or the reverse: to change its kind, create a new category and archive the old one.
 
 ## Archive a category {#archive-category}
 
@@ -101,3 +104,7 @@ An archived category is no longer offered in the category pickers (transactions,
 - [Taxes](taxes): donations and the tax package, through the tax treatment.
 - [Documents](documents): the category of a transaction made from a receipt.
 - The phone: categories for receipts captured on RANN's Roost Mobile. See [Phones](phones).
+
+## Who can change categories {#permissions}
+
+Administrators and members can add and change categories. Viewers see the list and each category's form greyed out, without the buttons to add or save, with the note "As a viewer, you can see this list but not change it."

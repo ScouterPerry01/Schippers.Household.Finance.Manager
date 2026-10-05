@@ -20,7 +20,7 @@ L'accès est protégé par le chiffrement, pas seulement par les écrans : chaqu
 
 - Administrateur : tout, y compris les utilisateurs et les réglages, et tous les groupes de comptes partagés. Les administrateurs ajoutent des utilisateurs, changent les rôles, fixent la province du ménage, modifient les membres du ménage et donnent accès aux groupes partagés. Ils ne voient pas un groupe privé à moins que son propriétaire ne leur donne accès.
 - Membre : ses propres comptes privés, et les groupes partagés qu'on lui donne. Un membre peut changer son propre nom et son mot de passe, et donner accès à ses propres groupes privés.
-- Lecteur : lecture seulement, dans les groupes qu'on lui donne. Même si on donne Saisie seulement ou Modification à un lecteur sur un groupe, il peut seulement le consulter.
+- Lecteur : lecture seulement, dans les groupes qu'on lui donne. À l'onglet Accès, un lecteur peut recevoir au plus Consultation. Un membre qui avait Saisie seulement ou Modification et devient lecteur peut seulement consulter ; le tableau affiche alors Consultation.
 
 Le ménage garde toujours au moins un administrateur actif. L'application refuse de changer le rôle du dernier administrateur ou de l'empêcher de se connecter, avec « Le ménage doit garder au moins un administrateur actif. »
 
@@ -67,6 +67,8 @@ Qui peut changer une case :
 - Le propriétaire d'un groupe privé peut changer les cases de son groupe.
 - Les autres voient les niveaux mais ne peuvent pas les changer.
 
+Dans la colonne d'un lecteur, le sélecteur offre seulement Aucun accès et Consultation.
+
 Un changement s'applique tout de suite, sans bouton Enregistrer, et il est inscrit dans le journal d'activité. Donner un niveau au-dessus de Aucun accès remet à l'utilisateur la clé du groupe ; choisir Aucun accès la lui retire.
 
 > Remarque : Retirer l'accès empêche la personne d'ouvrir le groupe à partir de ce moment. Cela ne peut pas reprendre ce qu'elle a déjà vu ou exporté pendant qu'elle y avait accès.
@@ -107,7 +109,7 @@ Seul un administrateur peut ajouter un utilisateur.
 - **Nom d'utilisateur** : ce que la personne tape pour se connecter, comme sam. Obligatoire, sans espaces. Il ne doit pas déjà être utilisé par un autre utilisateur, majuscules ou non. Il ne peut pas être changé plus tard.
 - **Rôle** : Administrateur, Membre ou Lecteur. La valeur par défaut est Membre. Une ligne sous les listes explique le rôle choisi. Voir [Rôles](users#roles).
 - **Cet utilisateur est le membre du ménage** : le [membre du ménage](members) qu'est cet utilisateur, ou (aucun). Facultatif. Il lie le compte de connexion à la personne ; l'onglet Utilisateurs affiche alors « est » et le nom de la personne.
-- **Nouveau mot de passe** : le mot de passe de l'utilisateur. L'indice donne la longueur minimale (au moins 8 caractères). Une phrase de quelques mots est facile à retenir et difficile à deviner.
+- **Nouveau mot de passe** : le mot de passe de l'utilisateur. L'indice donne la longueur minimale (au moins 12 caractères). Une phrase de quelques mots est facile à retenir et difficile à deviner.
 - **Nouveau mot de passe de nouveau** : le même mot de passe encore. Tant que les deux diffèrent, le champ indique « Les deux mots de passe sont différents. »
 - **Annuler** : ferme la fenêtre sans ajouter personne.
 
@@ -119,7 +121,8 @@ Un nouvel administrateur reçoit tout de suite les clés de tous les groupes de 
 
 Une fois l'utilisateur ajouté, la fenêtre « Clé de récupération de » suivie de son nom montre une longue clé en groupes de quatre caractères. Remettez cette clé à la personne pour qu'elle l'imprime ou la note et la garde en lieu sûr. C'est le seul moyen de revenir si son mot de passe est oublié, et elle ne sera plus affichée.
 
-- **Copier** : copie la clé, pour la coller dans un document à imprimer. Ne la gardez pas dans un fichier sur le même ordinateur.
+- **Imprimer** : imprime une page avec la clé, le nom du ménage et l'explication, par la fenêtre d'impression du système. La clé n'est pas enregistrée dans un fichier.
+- **Copier** : copie la clé, par exemple pour la coller dans un gestionnaire de mots de passe. Ne la gardez pas dans un fichier sur le même ordinateur.
 - **La clé est conservée** : ferme la fenêtre une fois la clé notée en lieu sûr.
 
 Voir [La clé de récupération](security#recovery-key) pour savoir comment la clé sert.
@@ -150,7 +153,7 @@ Chaque utilisateur peut changer son propre mot de passe.
 
 1. Cliquez sur **Changer mon mot de passe…** en haut de l'écran.
 2. Tapez votre **Mot de passe actuel**.
-3. Tapez le **Nouveau mot de passe**, d'au moins 8 caractères.
+3. Tapez le **Nouveau mot de passe**, d'au moins 12 caractères.
 4. Tapez-le de nouveau dans **Nouveau mot de passe de nouveau**.
 5. Cliquez sur **Enregistrer**. Le bouton devient disponible une fois les trois champs remplis et les deux nouveaux mots de passe identiques.
 

@@ -14,8 +14,8 @@ When you import a statement, each new line is checked against the rules, from to
 - Optionally fill in Amount at least and Amount at most, to limit the rule to a range. This helps when one store sells very different things, or when a deposit from your employer can be pay or an expense refund.
 - Click Save.
 
-## Review or remove a rule
+## Review, change, move or remove a rule
 
-Each rule in the list reads as the text, an arrow, and the category. Select a rule to see its amount limits. To remove it, click Delete. Removing a rule does not change transactions already imported.
+Each rule in the list reads as the text, an arrow, and the category. Select a rule to see its amount limits and payee, and to change them in the form below; it keeps its place. Move up and Move down change the order the rules are tried in: put specific rules above general ones. To remove a rule, click Delete. Removing a rule does not change transactions already imported.
 
 Payee aliases, on the Payees screen, clean up names; rules choose categories. The two work well together.

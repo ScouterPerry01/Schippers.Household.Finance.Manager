@@ -41,7 +41,9 @@ class PriceService internal constructor(private val books: Books) {
 
     fun enabled(feed: PriceFeed): Boolean = books.setting(KEY + feed.name) == "true"
 
+    /** M-77: only an administrator turns a feed on or off, since it sends what the household holds to that service. */
     fun setEnabled(feed: PriceFeed, on: Boolean) {
+        requireAdmin(books)
         books.putSetting(KEY + feed.name, on.toString())
         books.session.audit("UPDATE", "setting", KEY + feed.name, on.toString())
     }
@@ -120,7 +122,10 @@ class PriceService internal constructor(private val books: Books) {
     /** CoinGecko's name for a coin: the user's choice when set, else the usual one. */
     fun coinId(c: Currency): String? = books.setting(COIN_KEY + c.code)?.ifBlank { null } ?: COIN_IDS[c.code]
 
-    fun setCoinId(c: Currency, id: String?) = books.putSetting(COIN_KEY + c.code, id?.trim()?.lowercase().orEmpty())
+    fun setCoinId(c: Currency, id: String?) {
+        requireEditor(books)
+        books.putSetting(COIN_KEY + c.code, id?.trim()?.lowercase().orEmpty())
+    }
 
     private fun updateCrypto(today: LocalDate, fetch: (String) -> String, problems: MutableList<String>): Int = coinsHeld().sumOf { c ->
         val id = coinId(c) ?: run { problems += "${c.code}: no CoinGecko name"; return@sumOf 0 }
@@ -151,11 +156,15 @@ class PriceService internal constructor(private val books: Books) {
 
     /** A spot price entered by hand, in CAD per troy ounce; downloads never replace it. */
     fun setSpot(metal: Metal, date: LocalDate, cadPerOz: BigDecimal) {
+        requireEditor(books)
         validate(cadPerOz.signum() > 0, "error.invalidNumber")
         books.core.putSpot(metal.name, date.toString(), cadPerOz.normalized().toPlainString(), "MANUAL")
     }
 
-    fun deleteSpot(metal: Metal, date: LocalDate) = books.core.deleteSpot(metal.name, date.toString())
+    fun deleteSpot(metal: Metal, date: LocalDate) {
+        requireEditor(books)
+        books.core.deleteSpot(metal.name, date.toString())
+    }
 
     private fun updateMetals(today: LocalDate, fetch: (String) -> String, problems: MutableList<String>): Int = Metal.entries.sumOf { m ->
         val range = if (spot(m, today) == null) "1y" else "1mo"

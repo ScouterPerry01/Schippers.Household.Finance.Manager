@@ -75,6 +75,8 @@ fun RatesScreen(model: BooksModel) {
     val followed = remember(model.revision) { books.rates.followed().toSet() }
     val notOnBoc = remember(model.revision) { books.rates.notOnBankOfCanada() }
     val openEnabled = remember(model.revision) { books.rates.openSourceEnabled }
+    // M-77: viewers cannot change rates; only an administrator turns the second source on or off.
+    val canEdit = books.canEdit
     var selected by remember { mutableStateOf<Currency?>(null) }
     var status by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
@@ -113,7 +115,7 @@ fun RatesScreen(model: BooksModel) {
                     Modifier.weight(1f),
                 )
                 Text(latest?.let { model.date(it.date) + " · " + sourceName(model, it.source) }.orEmpty(), Modifier.width(260.dp), style = MaterialTheme.typography.bodySmall)
-                if (c in followed) TextButton(onClick = { model.act { books.rates.unfollow(c) } }) { Text(model.t("rates.unfollow")) }
+                if (c in followed) TextButton(enabled = canEdit, onClick = { model.act { books.rates.unfollow(c) } }) { Text(model.t("rates.unfollow")) }
                 TextButton(onClick = { selected = c }) { Text(model.t("rates.history")) }
             }
         }
@@ -126,7 +128,7 @@ fun RatesScreen(model: BooksModel) {
             val shown = currencies.map { it.code }.toSet()
             Picker(
                 model.t("rates.currency"), allCurrencies.filter { it.currencyCode !in shown }, toFollow,
-                { "${it.currencyCode} · ${it.getDisplayName(locale)}" }, Modifier.width(420.dp),
+                { "${it.currencyCode} · ${it.getDisplayName(locale)}" }, Modifier.width(420.dp), enabled = canEdit,
             ) { toFollow = it }
             OutlinedButton(enabled = toFollow != null, onClick = {
                 toFollow?.let { c -> model.act { books.rates.follow(Currency.of(c.currencyCode)) } }
@@ -137,7 +139,7 @@ fun RatesScreen(model: BooksModel) {
         // FX-08: the optional second source for currencies the Bank of Canada does not publish.
         HorizontalDivider()
         Text(model.t("rates.second.title"), style = MaterialTheme.typography.titleMedium)
-        LabeledCheckbox(model.t("rates.second.enable"), openEnabled) { on -> model.act { books.rates.openSourceEnabled = on } }
+        LabeledCheckbox(model.t("rates.second.enable"), openEnabled, enabled = books.users.isAdministrator) { on -> model.act { books.rates.openSourceEnabled = on } }
         Text(model.t("rates.second.explain"), style = MaterialTheme.typography.bodySmall)
         if (openEnabled) Text(RateService.OPEN_SOURCE_ATTRIBUTION, style = MaterialTheme.typography.bodySmall)
         if (notOnBoc.isNotEmpty()) {
@@ -147,10 +149,10 @@ fun RatesScreen(model: BooksModel) {
         HorizontalDivider()
         Text(model.t("rates.manual"), style = MaterialTheme.typography.titleMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextInput(model.t("rates.currency"), code, Modifier.width(140.dp)) { code = it.uppercase() }
-            DateInput(model.t("report.date"), date, Modifier.width(170.dp)) { date = it }
-            TextInput(model.t("rates.cadPerUnit"), rate, Modifier.width(280.dp)) { rate = it }
-            OutlinedButton(onClick = {
+            TextInput(model.t("rates.currency"), code, Modifier.width(140.dp), enabled = canEdit) { code = it.uppercase() }
+            DateInput(model.t("report.date"), date, Modifier.width(170.dp), enabled = canEdit) { date = it }
+            TextInput(model.t("rates.cadPerUnit"), rate, Modifier.width(280.dp), enabled = canEdit) { rate = it }
+            OutlinedButton(enabled = canEdit, onClick = {
                 model.act {
                     val currency = runCatching { Currency.of(code) }.getOrElse { throw ValidationException("error.unknownCurrency") }
                     val d = runCatching { LocalDate.parse(date.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
@@ -170,7 +172,7 @@ fun RatesScreen(model: BooksModel) {
                     Text(model.date(r.date), Modifier.width(120.dp))
                     Text(shortRate(r.cadPerUnit), Modifier.width(120.dp))
                     Text(sourceName(model, r.source), Modifier.width(220.dp), style = MaterialTheme.typography.bodySmall)
-                    if (r.manual) TextButton(onClick = { model.act { books.rates.deleteRate(c, r.date) } }) { Text(model.t("common.delete")) }
+                    if (r.manual && canEdit) TextButton(onClick = { model.act { books.rates.deleteRate(c, r.date) } }) { Text(model.t("common.delete")) }
                 }
             }
         }
@@ -192,6 +194,8 @@ private fun MarketPrices(model: BooksModel) {
     var busy by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf<String?>(null) }
     val coins = remember(model.revision) { books.prices.coinsHeld() }
+    // M-77: the feeds are the administrator's choice; viewers cannot change coin names or spot prices.
+    val canEdit = books.canEdit
     HorizontalDivider()
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(model.t("prices.title"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
@@ -211,7 +215,7 @@ private fun MarketPrices(model: BooksModel) {
     Text(model.t("prices.explain"), style = MaterialTheme.typography.bodySmall)
     for (feed in PriceFeed.entries) {
         val on = remember(model.revision, feed) { books.prices.enabled(feed) }
-        LabeledCheckbox(model.t("prices.feed.$feed"), on) { v -> model.act { books.prices.setEnabled(feed, v) } }
+        LabeledCheckbox(model.t("prices.feed.$feed"), on, enabled = books.users.isAdministrator) { v -> model.act { books.prices.setEnabled(feed, v) } }
     }
     Text(PriceService.ATTRIBUTION, style = MaterialTheme.typography.bodySmall)
     books.prices.lastUpdate()?.let { Text(model.t("prices.last", model.date(it)), style = MaterialTheme.typography.bodySmall) }
@@ -225,8 +229,8 @@ private fun MarketPrices(model: BooksModel) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(c.code, Modifier.width(80.dp))
                 Text(latest?.let { model.money(ca.schippers.hfm.money.Money.of(it.cadPerUnit, Currency.CAD)) + " · " + model.date(it.date) + " · " + sourceName(model, it.source) } ?: model.t("rates.missing"), Modifier.weight(1f))
-                TextInput(model.t("prices.coinId"), id, Modifier.width(260.dp)) { id = it }
-                TextButton(onClick = { model.act { books.prices.setCoinId(c, id) } }) { Text(model.t("common.save")) }
+                TextInput(model.t("prices.coinId"), id, Modifier.width(260.dp), enabled = canEdit) { id = it }
+                TextButton(enabled = canEdit, onClick = { model.act { books.prices.setCoinId(c, id) } }) { Text(model.t("common.save")) }
             }
         }
         Text(model.t("prices.coinsHint"), style = MaterialTheme.typography.bodySmall)
@@ -244,10 +248,10 @@ private fun MarketPrices(model: BooksModel) {
     var date by remember { mutableStateOf(today.toString()) }
     var price by remember { mutableStateOf("") }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Picker(model.t("prices.metal"), Metal.entries, metal, { model.t("metal.$it") }, Modifier.width(180.dp)) { metal = it }
-        DateInput(model.t("report.date"), date, Modifier.width(170.dp)) { date = it }
-        TextInput(model.t("prices.cadPerOz"), price, Modifier.width(240.dp)) { price = it }
-        OutlinedButton(onClick = {
+        Picker(model.t("prices.metal"), Metal.entries, metal, { model.t("metal.$it") }, Modifier.width(180.dp), enabled = canEdit) { metal = it }
+        DateInput(model.t("report.date"), date, Modifier.width(170.dp), enabled = canEdit) { date = it }
+        TextInput(model.t("prices.cadPerOz"), price, Modifier.width(240.dp), enabled = canEdit) { price = it }
+        OutlinedButton(enabled = canEdit, onClick = {
             model.act {
                 val d = runCatching { LocalDate.parse(date.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
                 val value = runCatching { MoneyFormat.parseDecimal(price, locale) }.getOrElse { throw ValidationException("error.invalidNumber") }

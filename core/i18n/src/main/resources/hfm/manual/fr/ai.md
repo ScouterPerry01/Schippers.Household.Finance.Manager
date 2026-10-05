@@ -29,7 +29,7 @@ Ce que ça coûte : chaque lecture coûte quelques cents à votre propre compte 
 
 ### Réglages {#settings}
 
-Ces réglages sont les vôtres : chaque utilisateur qui se connecte choisit pour lui-même, et ils suivent le ménage sur n'importe quel ordinateur.
+Ces réglages sont les vôtres : chaque utilisateur qui se connecte choisit pour lui-même, et ils suivent le ménage sur n'importe quel ordinateur. Un lecteur ne peut pas les changer : ils sont grisés, avec la remarque « À titre de lecteur, vous ne pouvez pas activer la lecture par IA : ses lectures sont enregistrées avec les documents, que les lecteurs ne peuvent pas modifier. »
 
 - **Lire les documents difficiles avec l'IA** : désactivé par défaut. Une fois activé, la révision d'un document offre **Lire avec l'IA** (ou, si vous n'avez pas encore de clé, « Pour lire avec l'IA, ajoutez votre clé sous Lecture par IA. »). Désactivé, rien n'est jamais envoyé, même avec une clé enregistrée. Les documents texte ne sont jamais offerts.
 - **Me montrer chaque document et me laisser en masquer des parties avant l'envoi** : activé par défaut. Activé, un clic sur **Lire avec l'IA** ouvre l'aperçu, où vous pouvez masquer des zones et rogner les pages avant de cliquer sur **Envoyer**. Désactivé, chaque page est envoyée telle quelle dès que vous cliquez sur **Lire avec l'IA**.

@@ -48,8 +48,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.awt.Font
+import java.awt.Graphics2D
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+import java.awt.print.Printable
+import java.awt.print.PrinterJob
 import java.nio.file.Files
 import java.nio.file.Path
 import javax.swing.JFileChooser
@@ -203,7 +207,8 @@ private fun CreateScreen(state: AppState) {
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
-    var province by remember { mutableStateOf(Province.QC) }
+    // M-69: no province until one is chosen, so nobody keeps Quebec's rules by mistake.
+    var province by remember { mutableStateOf<Province?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -225,7 +230,7 @@ private fun CreateScreen(state: AppState) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         OutlinedButton(onClick = { state.screen = Screen.Welcome }, enabled = !busy) { Text(state.t("common.back")) }
         Button(
-            enabled = !busy && parent != null && name.isNotBlank() && adminName.isNotBlank() && login.isNotBlank(),
+            enabled = !busy && parent != null && name.isNotBlank() && province != null && adminName.isNotBlank() && login.isNotBlank(),
             onClick = {
                 error = when {
                     password.length < AppState.MIN_PASSWORD_LENGTH -> state.t("create.password.tooShort", AppState.MIN_PASSWORD_LENGTH)
@@ -238,7 +243,7 @@ private fun CreateScreen(state: AppState) {
                     try {
                         val dir = parent!!.resolve("${name.trim()}.hfm")
                         val created = withContext(Dispatchers.IO) {
-                            state.store.create(dir, name, login, adminName, password.toCharArray(), locale = state.language.locale.toLanguageTag(), province = province.name)
+                            state.store.create(dir, name, login, adminName, password.toCharArray(), locale = state.language.locale.toLanguageTag(), province = province!!.name)
                         }
                         state.remember(dir)
                         state.screen = Screen.ShowRecoveryKey(created.session, created.recoveryKey)
@@ -265,11 +270,55 @@ private fun RecoveryKeyScreen(state: AppState, screen: Screen.ShowRecoveryKey) {
         }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        OutlinedButton(onClick = {
+            printRecoveryKey(state.t("recovery.title"), listOf(state.t("recovery.printFor", screen.session.dir.fileName.toString().removeSuffix(".hfm")), state.t("recovery.explain")), text)
+        }) { Text(state.t("recovery.print")) }
         OutlinedButton(onClick = { Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(text), null) }) {
             Text(state.t("recovery.copy"))
         }
         Button(onClick = { state.opened(screen.session) }) { Text(state.t("recovery.confirm")) }
     }
+}
+
+/**
+ * M-70, SEC-07: prints a recovery key through the system's print dialog. The page is drawn
+ * directly, so the key is never written to a file on this computer.
+ */
+internal fun printRecoveryKey(title: String, lines: List<String>, key: String) {
+    val job = PrinterJob.getPrinterJob()
+    job.jobName = title
+    job.setPrintable { graphics, format, page ->
+        if (page > 0) return@setPrintable Printable.NO_SUCH_PAGE
+        val g = graphics as Graphics2D
+        g.translate(format.imageableX, format.imageableY)
+        val width = format.imageableWidth.toInt()
+        var y = 0
+        fun draw(text: String, font: Font, separator: String = " ") {
+            g.font = font
+            val metrics = g.fontMetrics
+            var line = ""
+            for (word in text.split(separator)) {
+                val next = if (line.isEmpty()) word else line + separator + word
+                if (line.isNotEmpty() && metrics.stringWidth(next) > width) {
+                    y += metrics.height
+                    g.drawString(line, 0, y)
+                    line = word
+                } else {
+                    line = next
+                }
+            }
+            y += metrics.height
+            g.drawString(line, 0, y)
+            y += metrics.height / 2
+        }
+        draw(title, Font(Font.SANS_SERIF, Font.BOLD, 18))
+        y += 12
+        draw(key, Font(Font.MONOSPACED, Font.BOLD, 16), separator = "-")
+        y += 12
+        lines.forEach { draw(it, Font(Font.SANS_SERIF, Font.PLAIN, 11)) }
+        Printable.PAGE_EXISTS
+    }
+    if (job.printDialog()) job.print()
 }
 
 @Composable

@@ -31,7 +31,7 @@ Les règles ne changent jamais les opérations déjà inscrites. Ajouter ou supp
 
 ## L'écran Règles de catégorie {#screen}
 
-La gauche liste les règles, avec **Ajouter** au-dessus de la liste. Chaque règle se lit comme son texte entre guillemets, une flèche et sa catégorie, comme « HYDRO-QUEBEC » → Électricité. La liste est dans l'ordre où les règles sont essayées, c'est-à-dire l'ordre dans lequel elles ont été ajoutées.
+La gauche liste les règles, avec **Ajouter** au-dessus de la liste. Chaque règle se lit comme son texte entre guillemets, une flèche et sa catégorie, comme « HYDRO-QUEBEC » → Électricité. La liste est dans l'ordre où les règles sont essayées : une nouvelle règle va au bas de la liste, et **Monter** et **Descendre** changent sa place.
 
 La droite commence par le rappel « Quand la description d'une opération importée contient le texte, elle reçoit la catégorie. Les règles sont essayées de haut en bas. » En dessous se trouve la règle choisie, le formulaire d'une nouvelle règle, ou « Choisissez une règle, ou ajoutez-en une. »
 
@@ -40,39 +40,46 @@ La droite commence par le rappel « Quand la description d'une opération import
 1. Cliquez sur **Ajouter**.
 2. Tapez le texte dans **La description contient**.
 3. Choisissez la **Catégorie**.
-4. Au besoin, remplissez **Montant d'au moins** et **Montant d'au plus**.
-5. Cliquez sur **Enregistrer**. Le bouton devient disponible une fois le texte et la catégorie remplis.
+4. Si la ligne doit aussi recevoir un bénéficiaire précis, choisissez-le dans **Classer aussi sous le bénéficiaire**.
+5. Au besoin, remplissez **Montant d'au moins** et **Montant d'au plus**.
+6. Cliquez sur **Enregistrer**. Le bouton devient disponible une fois le texte et la catégorie remplis.
 
 ### Le formulaire de règle {#rule-fields}
 
 - **La description contient** : le texte à chercher dans la description de la banque, par exemple HYDRO-QUEBEC ou PAIE. Obligatoire. Les majuscules n'importent pas. Utilisez un bout de texte qui est toujours là et qui est assez précis : le nom sans numéros de magasin, villes ou dates.
 - **Catégorie** : la catégorie à donner. Obligatoire. Les catégories archivées ne sont pas offertes.
+- **Classer aussi sous le bénéficiaire** : facultatif. Un bénéficiaire à donner aussi à la ligne, quel que soit celui que ses alias trouveraient, comme Hydro-Québec pour chaque ligne qui contient HYDRO. Laissez (garder le bénéficiaire trouvé) pour que les alias et le texte de la banque nomment le bénéficiaire comme d'habitude. Les bénéficiaires archivés ne sont pas offerts.
 - **Montant d'au moins** : facultatif. La règle correspond seulement quand la grandeur du montant est au moins de cette somme. Tapé dans la devise de base du ménage (le dollar canadien dans la plupart des ménages).
 - **Montant d'au plus** : facultatif. La règle correspond seulement quand la grandeur du montant est au plus de cette somme. Quand les deux sont remplis, le minimum ne peut pas dépasser le maximum (« Le montant minimum est plus grand que le maximum. »).
-- **Enregistrer** : ajoute la règle au bas de la liste.
+- **Enregistrer** : ajoute une nouvelle règle au bas de la liste, ou enregistre les changements d'une règle, qui garde sa place.
 
 Une règle avec des limites de montant ne correspond qu'aux lignes dans la même devise que ses limites. Une règle sans limites correspond aux lignes de toutes les devises.
 
 > Conseil : Utilisez des limites de montant pour distinguer des lignes qui ont la même description. Par exemple, un dépôt de paie d'au moins 1 000 est du Salaire, alors qu'un dépôt plus petit du même employeur est un remboursement de dépenses.
 
-## Voir ou supprimer une règle {#rule-details}
+## Voir, modifier, déplacer ou supprimer une règle {#rule-details}
 
-Cliquez sur une règle dans la liste. La droite montre son résumé et, quand elle en a, ses limites (« Montant d'au moins » et « Montant d'au plus » avec leurs montants).
+Cliquez sur une règle dans la liste. La droite montre son résumé et, quand elle en a, ses limites (« Montant d'au moins » et « Montant d'au plus » avec leurs montants) et son bénéficiaire (« Bénéficiaire : » et le nom). En dessous se trouvent les boutons et, sous **Modifier**, le formulaire de règle rempli avec la règle.
 
+- **Monter** : essaie la règle une place plus tôt. Grisé pour la première règle.
+- **Descendre** : essaie la règle une place plus tard. Grisé pour la dernière règle.
 - **Supprimer** : retire la règle tout de suite, sans demander. Cela ne peut pas être annulé, mais vous pouvez ajouter la même règle de nouveau. Les opérations déjà importées gardent leurs catégories.
+- Le formulaire sous **Modifier** : changez le texte, la catégorie, le bénéficiaire ou les limites, puis cliquez sur **Enregistrer**. La règle garde sa place dans la liste.
 
-Les règles ne peuvent pas être modifiées ni déplacées. Pour en changer une, supprimez-la et ajoutez-la de nouveau ; elle va alors au bas de la liste.
+Les places restent numérotées dans l'ordre : déplacer ou supprimer une règle ne laisse jamais deux règles à la même place.
 
 ## L'ordre compte {#order}
 
 @index: priorité des règles; première correspondance
 
-La première règle qui correspond l'emporte. Comme les nouvelles règles vont au bas de la liste, ajoutez les règles précises avant les règles générales. Par exemple, ajoutez « COSTCO GAS » → Carburant avant « COSTCO » → Épicerie ; si « COSTCO » avait été ajoutée en premier, elle attraperait aussi les lignes de la station-service.
+La première règle qui correspond l'emporte : les règles précises doivent donc venir avant les règles générales. Par exemple, « COSTCO GAS » → Carburant doit être au-dessus de « COSTCO » → Épicerie ; sinon, « COSTCO » attraperait aussi les lignes de la station-service.
 
-Si une règle générale est déjà là, supprimez-la et ajoutez-la de nouveau après la règle précise.
+Les nouvelles règles vont au bas de la liste. Quand vous ajoutez une règle précise après une règle générale, choisissez-la et cliquez sur **Monter** jusqu'à ce qu'elle soit au-dessus de la règle générale.
 
 ## Règles et bénéficiaires {#rules-and-payees}
 
 - Les alias de bénéficiaire de l'écran [Bénéficiaires](payees) nettoient le nom d'une ligne importée. Les règles choisissent sa catégorie.
 - Une règle est essayée avant la catégorie par défaut du bénéficiaire, de sorte qu'une règle peut remplacer la catégorie par défaut pour certaines lignes, comme les gros achats dans un magasin dont la catégorie par défaut est Épicerie.
-- Chaque règle ajoutée, et chaque règle supprimée, est inscrite dans le journal d'activité de l'écran [Utilisateurs](users).
+- Le bénéficiaire d'une règle, quand elle en a un, l'emporte sur celui que les alias trouveraient.
+- Chaque règle ajoutée, modifiée, déplacée ou supprimée est inscrite dans le journal d'activité de l'écran [Utilisateurs](users).
+- Les administrateurs et les membres peuvent ajouter, modifier, déplacer et supprimer des règles. Les lecteurs voient la liste et chaque règle, sans les boutons.

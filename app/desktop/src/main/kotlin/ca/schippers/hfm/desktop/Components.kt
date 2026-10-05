@@ -72,7 +72,7 @@ fun TextInput(
  * [parseAmount] turns the text into money, or null when it is empty.
  */
 @Composable
-fun AmountInput(label: String, value: String, currency: Currency, locale: Locale, modifier: Modifier = Modifier, format: (Money) -> String, onChange: (String) -> Unit) {
+fun AmountInput(label: String, value: String, currency: Currency, locale: Locale, modifier: Modifier = Modifier, format: (Money) -> String, enabled: Boolean = true, onChange: (String) -> Unit) {
     val result = runCatching { parseAmount(value, currency, locale) }
     val supporting = when {
         value.isBlank() -> null
@@ -80,7 +80,7 @@ fun AmountInput(label: String, value: String, currency: Currency, locale: Locale
         AmountExpression.isExpression(value) -> "= ${result.getOrNull()?.let(format)}"
         else -> null
     }
-    TextInput(label, value, modifier, error = if (result.isFailure) supporting else null, supporting = supporting, onChange = onChange)
+    TextInput(label, value, modifier, error = if (result.isFailure) supporting else null, supporting = supporting, enabled = enabled, onChange = onChange)
 }
 
 fun parseAmount(text: String, currency: Currency, locale: Locale): Money? =
@@ -88,7 +88,7 @@ fun parseAmount(text: String, currency: Currency, locale: Locale): Money? =
 
 /** ISO date entry (2026-03-05, the Canadian standard in both languages); + and - change the day. */
 @Composable
-fun DateInput(label: String, value: String, modifier: Modifier = Modifier, hint: String? = null, onChange: (String) -> Unit) {
+fun DateInput(label: String, value: String, modifier: Modifier = Modifier, hint: String? = null, enabled: Boolean = true, onChange: (String) -> Unit) {
     val valid = runCatching { LocalDate.parse(value.trim()) }.isSuccess
     OutlinedTextField(
         value = value,
@@ -102,6 +102,7 @@ fun DateInput(label: String, value: String, modifier: Modifier = Modifier, hint:
         },
         label = { Text(label) },
         singleLine = true,
+        enabled = enabled,
         isError = value.isNotBlank() && !valid,
         supportingText = hint?.let { { Text(it) } },
         modifier = modifier,
@@ -182,9 +183,9 @@ fun SuggestInput(label: String, value: String, suggestions: List<String>, modifi
 }
 
 @Composable
-fun LabeledCheckbox(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+fun LabeledCheckbox(label: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(checked = checked, onCheckedChange = onChange)
+        Checkbox(checked = checked, onCheckedChange = onChange, enabled = enabled)
         Text(label)
     }
 }

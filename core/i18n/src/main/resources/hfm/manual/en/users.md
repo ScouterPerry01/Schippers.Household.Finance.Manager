@@ -20,7 +20,7 @@ Access is enforced by encryption, not only by the screens: each account group ha
 
 - Administrator: everything, including users and settings, and every shared account group. Administrators add users, change roles, set the household's province, edit household members and give access to shared groups. They do not see a private group unless its owner gives them access.
 - Member: their own private accounts, and the shared groups they are given. A member can change their own name and password, and give access to their own private groups.
-- Viewer: read only, in the groups they are given. Even if a viewer is given Capture only or Edit on a group, they can only view it.
+- Viewer: read only, in the groups they are given. On the Access tab a viewer can be given View at most. A member who had Capture only or Edit and becomes a viewer can only view; the table then shows View.
 
 The household always keeps at least one active administrator. The app refuses to change the role of the last administrator or to stop them from signing in, with "The household must keep at least one active administrator."
 
@@ -67,6 +67,8 @@ Who can change a cell:
 - The owner of a private group can change the cells of their group.
 - Others see the levels but cannot change them.
 
+In a viewer's column, the picker offers only No access and View.
+
 A change takes effect at once, without a Save button, and is recorded in the activity log. Giving a level above No access hands the user the group's key; setting No access takes the key away again.
 
 > Note: Taking access away stops the person from opening the group from then on. It cannot take back what they already saw or exported while they had access.
@@ -107,7 +109,7 @@ Only an administrator can add a user.
 - **Login name**: what the person types to sign in, such as sam. Required, without spaces. It must not already be used by another user, whatever the capitals. It cannot be changed later.
 - **Role**: Administrator, Member or Viewer. The default is Member. A line under the pickers explains the role chosen. See [Roles](users#roles).
 - **This user is the household member**: the [household member](members) this user is, or (none). Optional. It links the sign-in account to the person; the Users tab then shows "is" and the person's name.
-- **New password**: the user's password. The hint shows the minimum length (at least 8 characters). A passphrase of a few words is easy to remember and hard to guess.
+- **New password**: the user's password. The hint shows the minimum length (at least 12 characters). A passphrase of a few words is easy to remember and hard to guess.
 - **New password again**: the same password again. While the two differ, the field says "The two passwords are different."
 - **Cancel**: closes the dialog without adding anyone.
 
@@ -119,7 +121,8 @@ A new administrator receives the keys of every shared account group at once. A n
 
 After the user is added, the dialog "Recovery key for" and their name shows a long key in groups of four characters. Give this key to the person to print or write down and keep somewhere safe. It is the only way back in if their password is forgotten, and it is not shown again.
 
-- **Copy**: copies the key, so you can paste it into a document to print. Do not keep it in a file on the same computer.
+- **Print**: prints a page with the key, the household's name and the explanation, through the system's print dialog. The key is not saved in a file.
+- **Copy**: copies the key, for example to paste it into a password manager. Do not keep it in a file on the same computer.
 - **The key is saved**: closes the dialog once the key is safely written down.
 
 See [The recovery key](security#recovery-key) for how the key is used.
@@ -150,7 +153,7 @@ Every user can change their own password.
 
 1. Click **Change my password…** at the top of the screen.
 2. Type your **Current password**.
-3. Type the **New password**, at least 8 characters.
+3. Type the **New password**, at least 12 characters.
 4. Type it again in **New password again**.
 5. Click **Save**. It becomes available once the three fields are filled in and the two new passwords match.
 

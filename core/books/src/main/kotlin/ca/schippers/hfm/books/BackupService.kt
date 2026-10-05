@@ -37,7 +37,9 @@ class BackupService internal constructor(private val books: Books) {
         keep = books.setting(KEEP)?.toIntOrNull() ?: 10,
     )
 
+    /** M-77: where, how often and how many backups is the administrator's choice. */
     fun saveSettings(settings: BackupSettings) {
+        requireAdmin(books)
         validate(settings.keep in 1..365, "error.backupKeep")
         settings.dir?.let { books.putSetting(DIR, it.toAbsolutePath().toString()) }
         books.putSetting(FREQUENCY, settings.frequency.name)

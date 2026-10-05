@@ -45,7 +45,7 @@ The window shows a QR code on the left and, on the right:
 - the address and port the phone will use;
 - **Copy as text**: copies the pairing link to the clipboard, for a phone whose camera cannot read the screen. Send it to the phone in a way you trust and paste it into **Or paste the pairing text** on the phone.
 
-When the phone has paired, the window says "The phone is paired. You can close this window." and the phone appears in the list. **Close** closes the window; an unused code simply expires.
+When the phone has paired, the window says "The phone is paired. This window closes by itself.", closes two seconds later, and the phone appears in the list. **Close** closes the window at any time; an unused code simply expires.
 
 Each code works once. Opening the window again makes a new code; an earlier code stays valid until it expires.
 
@@ -126,4 +126,4 @@ Review each document on the **To review** tab: attach it to a transaction, recor
 
 ## What the phone receives {#sent-to-phone}
 
-After each transfer, the phone receives a fresh summary when anything in it changed: the household's name and language, the base currency, your accounts and balances, the categories, up to 400 payees, the members and pets, the vehicles and metered equipment with their latest readings, the bills due in the next 60 days with their reminder days, this month's budgets for spending categories, and the maintenance due this month. The phone shows it on its **Summary** tab and uses it for its reminders and pick lists. See [The Summary tab](phone-app#summary-tab).
+After each transfer, the phone receives a fresh summary when anything in it changed: the household's name, the language the app is shown in on this computer, the base currency, your accounts and balances, the categories, up to 400 payees, the members and pets, the vehicles and metered equipment with their latest readings, the bills due in the next 60 days with their reminder days, this month's budgets for spending categories, and the maintenance due this month. The phone shows it on its **Summary** tab and uses it for its reminders and pick lists. See [The Summary tab](phone-app#summary-tab).

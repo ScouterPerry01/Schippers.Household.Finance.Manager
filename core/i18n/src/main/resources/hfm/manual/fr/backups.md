@@ -34,7 +34,7 @@ En haut de l'écran, le dossier utilisé, ou « Aucun dossier de sauvegarde choi
 
 Le calendrier ne fonctionne que pendant que le ménage est ouvert et déverrouillé : l'application vérifie toutes les 30 minutes si une sauvegarde est due. Si l'ordinateur était éteint, la sauvegarde est faite peu après la prochaine ouverture du ménage.
 
-Ces réglages appartiennent au ménage, pas à l'ordinateur, et les changements sont inscrits dans le journal d'activité.
+Ces réglages appartiennent au ménage, pas à l'ordinateur, et les changements sont inscrits dans le journal d'activité. Seul un administrateur peut les changer : pour les autres utilisateurs, le bouton du dossier, la fréquence, le nombre à conserver et **Enregistrer** sont grisés, avec la remarque « Seul un administrateur peut changer l’emplacement, la fréquence et le nombre de sauvegardes conservées. Tout le monde peut sauvegarder maintenant. »
 
 > Conseil : Un dossier infonuagique synchronisé par OneDrive, Google Drive ou Dropbox est une copie hors site facile. Les sauvegardes y restent chiffrées.
 

@@ -58,9 +58,9 @@ class EstateTest {
         val dir = temp.resolve("P.hfm")
         val books = Books(store.create(dir, "P", "perry", "Perry", "password1".toCharArray()).session)
         val marieMember = books.members.create("Marie", MemberKind.ADULT).id
-        books.users.add("marie", "Marie", Role.MEMBER, "password2".toCharArray(), marieMember)
+        books.users.add("marie", "Marie", Role.MEMBER, "password2-long".toCharArray(), marieMember)
         books.session.close()
-        val marie = Books(store.unlock(dir, "marie", "password2".toCharArray()))
+        val marie = Books(store.unlock(dir, "marie", "password2-long".toCharArray()))
         val own = marie.session.createGroup("Marie - privé", private = true)
         marie.estate.save(marieMember, own, EstatePlan(willLocation = "My desk"))
         assertEquals("My desk", marie.estate.record(marieMember)!!.plan.willLocation)

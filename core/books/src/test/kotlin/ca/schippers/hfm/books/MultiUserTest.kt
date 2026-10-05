@@ -44,14 +44,14 @@ class MultiUserTest {
     }
 
     private fun perry() = Books(store.unlock(dir, "perry", "password1".toCharArray()))
-    private fun marie() = Books(store.unlock(dir, "marie", "password2".toCharArray()))
+    private fun marie() = Books(store.unlock(dir, "marie", "password2-long".toCharArray()))
 
     /** Perry (administrator) with a shared chequing account; Marie (member) with her own private card. */
     private fun household(): String {
         val books = Books(store.create(dir, "M", "perry", "Perry", "password1".toCharArray()).session)
         val shared = books.groups().single().id
         books.accounts.create(AccountDraft(shared, "Compte conjoint", AccountType.CHEQUING, Currency.CAD, cad("1000"), LocalDate(2026, 1, 1)))
-        val marie = books.users.add("marie", "Marie", Role.MEMBER, "password2".toCharArray()).userId
+        val marie = books.users.add("marie", "Marie", Role.MEMBER, "password2-long".toCharArray()).userId
         books.session.close()
         marie().use {
             val own = it.session.createGroup("Marie - privé", private = true)

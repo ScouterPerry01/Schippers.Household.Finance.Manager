@@ -19,7 +19,7 @@ A household member is a person, not a sign-in account. A child can be a member w
 The screen has three parts:
 
 - At the top, the household's **Province or territory**, with a short note on what it changes.
-- On the left, the list of people, with an **Add** button above it.
+- On the left, the list of people, with an **Add** button above it for administrators.
 - On the right, the form for the person selected, or for a new person.
 
 ### Province or territory {#province}
@@ -118,6 +118,6 @@ Linking is optional, and a member never needs a user. Archiving a member does no
 
 ## Who can change household members {#permissions}
 
-Only an administrator can add, change or archive household members and change the household's province. Other users can see the list. If a member or viewer tries to save, the app refuses with "You do not have permission to do this."
+Only an administrator can add, change or archive household members and change the household's province. Other users can see the list and open each person's form, but its fields are greyed out, there is no **Add** or **Save** button, and the form says "Only an administrator can add or change household members."
 
 Every change is recorded in the activity log on the [Users](users) screen.

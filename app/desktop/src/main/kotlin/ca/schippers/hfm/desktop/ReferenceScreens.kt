@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Category
+import ca.schippers.hfm.books.CategoryRule
 import ca.schippers.hfm.books.Institution
 import ca.schippers.hfm.books.Member
 import ca.schippers.hfm.books.Payee
@@ -39,6 +41,7 @@ import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.domain.MemberKind
 import ca.schippers.hfm.domain.TaxFlag
 import ca.schippers.hfm.money.Currency
+import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 
 /** A list on the left and an editor for the selected (or new) item on the right. */
@@ -100,26 +103,31 @@ fun CategoriesScreen(model: BooksModel) {
         addLabel = null, onAdd = {}, selectedKey = selectedId,
         onSelect = { selectedId = it.first.id; creating = null },
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { creating = null to CategoryKind.EXPENSE; selectedId = null }) { Text(model.t("category.addExpense")) }
-            OutlinedButton(onClick = { creating = null to CategoryKind.INCOME; selectedId = null }) { Text(model.t("category.addIncome")) }
-            if (selected != null) OutlinedButton(onClick = { creating = selected to selected.kind; selectedId = null }) { Text(model.t("category.addChild")) }
+        // M-77: the list is read only for a viewer.
+        if (books.canEdit) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { creating = null to CategoryKind.EXPENSE; selectedId = null }) { Text(model.t("category.addExpense")) }
+                OutlinedButton(onClick = { creating = null to CategoryKind.INCOME; selectedId = null }) { Text(model.t("category.addIncome")) }
+                if (selected != null) OutlinedButton(onClick = { creating = selected to selected.kind; selectedId = null }) { Text(model.t("category.addChild")) }
+            }
         }
         val target = creating
         when {
-            target != null -> CategoryForm(model, null, target.first, target.second) { id -> creating = null; selectedId = id }
-            selected != null -> CategoryForm(model, selected, null, selected.kind) { selectedId = it }
+            target != null -> CategoryForm(model, null, target.first, target.second, tree) { id -> creating = null; selectedId = id }
+            selected != null -> CategoryForm(model, selected, null, selected.kind, tree) { selectedId = it }
             else -> Text(model.t("category.select"))
         }
     }
 }
 
 @Composable
-private fun CategoryForm(model: BooksModel, existing: Category?, parent: Category?, kind: CategoryKind, onSaved: (String) -> Unit) {
+private fun CategoryForm(model: BooksModel, existing: Category?, parent: Category?, kind: CategoryKind, tree: List<Pair<Category, Int>>, onSaved: (String) -> Unit) {
+    val editable = model.books.canEdit
     var nameEn by remember(existing, parent) { mutableStateOf(existing?.nameEn.orEmpty()) }
     var nameFr by remember(existing, parent) { mutableStateOf(existing?.nameFr.orEmpty()) }
     var tax by remember(existing, parent) { mutableStateOf(existing?.taxFlag ?: parent?.taxFlag) }
     var archived by remember(existing) { mutableStateOf(existing?.archived ?: false) }
+    var parentId by remember(existing) { mutableStateOf(existing?.parentId) }
 
     Text(
         when {
@@ -129,21 +137,38 @@ private fun CategoryForm(model: BooksModel, existing: Category?, parent: Categor
         },
         style = MaterialTheme.typography.titleMedium,
     )
-    TextInput(model.t("category.nameEn"), nameEn) { nameEn = it }
-    TextInput(model.t("category.nameFr"), nameFr) { nameFr = it }
-    Picker(model.t("category.tax"), listOf<TaxFlag?>(null) + TaxFlag.entries, tax, { it?.let { f -> model.t("tax.$f") } ?: model.t("common.none") }) { tax = it }
-    if (existing != null) LabeledCheckbox(model.t("category.archived"), archived) { archived = it }
-    Button(onClick = {
-        val id = model.act {
-            if (existing == null) {
-                model.books.categories.create(parent?.id, nameEn, nameFr, kind, tax).id
-            } else {
-                model.books.categories.update(existing.copy(nameEn = nameEn, nameFr = nameFr, taxFlag = tax, archived = archived))
-                existing.id
-            }
+    TextInput(model.t("category.nameEn"), nameEn, enabled = editable) { nameEn = it }
+    TextInput(model.t("category.nameFr"), nameFr, enabled = editable) { nameFr = it }
+    if (existing != null) {
+        // M-75: another parent of the same kind, never the category itself or one inside it.
+        val inside = remember(tree, existing) {
+            val ids = mutableSetOf(existing.id)
+            tree.forEach { (c, _) -> if (c.parentId in ids) ids += c.id }
+            ids
         }
-        if (id != null) onSaved(id)
-    }) { Text(model.t("common.save")) }
+        val parents = listOf<Pair<Category, Int>?>(null) + tree.filter { (c, _) -> c.kind == existing.kind && c.id !in inside }
+        Picker(
+            model.t("category.parent"), parents, tree.firstOrNull { it.first.id == parentId },
+            { it?.first?.name(model.language) ?: model.t("category.topLevel") }, indent = { it?.second ?: 0 }, enabled = editable,
+        ) { parentId = it?.first?.id }
+    }
+    Picker(model.t("category.tax"), listOf<TaxFlag?>(null) + TaxFlag.entries, tax, { it?.let { f -> model.t("tax.$f") } ?: model.t("common.none") }, enabled = editable) { tax = it }
+    if (existing != null) LabeledCheckbox(model.t("category.archived"), archived, enabled = editable) { archived = it }
+    if (editable) {
+        Button(enabled = nameEn.isNotBlank() || nameFr.isNotBlank(), onClick = {
+            val id = model.act {
+                if (existing == null) {
+                    model.books.categories.create(parent?.id, nameEn, nameFr, kind, tax).id
+                } else {
+                    model.books.categories.update(existing.copy(parentId = parentId, nameEn = nameEn, nameFr = nameFr, taxFlag = tax, archived = archived))
+                    existing.id
+                }
+            }
+            if (id != null) onSaved(id)
+        }) { Text(model.t("common.save")) }
+    } else {
+        Text(model.t("common.readOnlyViewer"), style = MaterialTheme.typography.bodySmall)
+    }
 }
 
 // --- Payees (section 7.4) ----------------------------------------------------------------------
@@ -159,7 +184,7 @@ fun PayeesScreen(model: BooksModel) {
 
     ListEditor(
         model.t("nav.payees"), payees, key = { it.id }, label = { it.name }, dimmed = { it.archived },
-        addLabel = model.t("common.add"), onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
+        addLabel = model.t("common.add").takeIf { books.canEdit }, onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
         onSelect = { selectedId = it.id; creating = false },
     ) {
         if (creating || selected != null) {
@@ -172,36 +197,48 @@ fun PayeesScreen(model: BooksModel) {
 
 @Composable
 private fun PayeeForm(model: BooksModel, existing: Payee?, tree: List<Pair<Category, Int>>, onSaved: (String) -> Unit) {
+    val editable = model.books.canEdit
     var name by remember(existing) { mutableStateOf(existing?.name.orEmpty()) }
     var categoryId by remember(existing) { mutableStateOf(existing?.defaultCategoryId) }
     var archived by remember(existing) { mutableStateOf(existing?.archived ?: false) }
     var alias by remember(existing) { mutableStateOf("") }
 
-    TextInput(model.t("payee.name"), name) { name = it }
+    TextInput(model.t("payee.name"), name, enabled = editable) { name = it }
     Picker(
         model.t("payee.defaultCategory"), listOf<Pair<Category, Int>?>(null) + tree, tree.firstOrNull { it.first.id == categoryId },
-        { it?.first?.name(model.language) ?: model.t("common.none") }, indent = { it?.second ?: 0 },
+        { it?.first?.name(model.language) ?: model.t("common.none") }, indent = { it?.second ?: 0 }, enabled = editable,
     ) { categoryId = it?.first?.id }
     if (existing != null) {
-        LabeledCheckbox(model.t("category.archived"), archived) { archived = it }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextInput(model.t("payee.alias"), alias, Modifier.weight(1f), supporting = model.t("payee.alias.hint")) { alias = it }
-            OutlinedButton(onClick = { if (model.act { model.books.payees.addAlias(existing.id, alias) } != null) alias = "" }) {
-                Text(model.t("payee.addAlias"))
+        LabeledCheckbox(model.t("category.archived"), archived, enabled = editable) { archived = it }
+        // M-74: the payee's aliases, listed.
+        val aliases = remember(model.revision, existing) { model.books.payees.aliases(existing.id) }
+        Text(model.t("payee.aliases"), style = MaterialTheme.typography.titleSmall)
+        if (aliases.isEmpty()) Text(model.t("payee.noAliases"), style = MaterialTheme.typography.bodySmall)
+        for (a in aliases) Text(a.pattern)
+        if (editable) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                TextInput(model.t("payee.alias"), alias, Modifier.weight(1f), supporting = model.t("payee.alias.hint")) { alias = it }
+                OutlinedButton(onClick = { if (model.act { model.books.payees.addAlias(existing.id, alias) } != null) alias = "" }) {
+                    Text(model.t("payee.addAlias"))
+                }
             }
         }
     }
-    Button(onClick = {
-        val id = model.act {
-            if (existing == null) {
-                model.books.payees.create(name, categoryId).id
-            } else {
-                model.books.payees.update(existing.copy(name = name, defaultCategoryId = categoryId, archived = archived))
-                existing.id
+    if (editable) {
+        Button(onClick = {
+            val id = model.act {
+                if (existing == null) {
+                    model.books.payees.create(name, categoryId).id
+                } else {
+                    model.books.payees.update(existing.copy(name = name, defaultCategoryId = categoryId, archived = archived))
+                    existing.id
+                }
             }
-        }
-        if (id != null) onSaved(id)
-    }) { Text(model.t("common.save")) }
+            if (id != null) onSaved(id)
+        }) { Text(model.t("common.save")) }
+    } else {
+        Text(model.t("common.readOnlyViewer"), style = MaterialTheme.typography.bodySmall)
+    }
 }
 
 // --- Institutions (ACC-01) ---------------------------------------------------------------------
@@ -215,7 +252,7 @@ fun InstitutionsScreen(model: BooksModel) {
 
     ListEditor(
         model.t("nav.institutions"), institutions, key = { it.id }, label = { it.name },
-        addLabel = model.t("common.add"), onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
+        addLabel = model.t("common.add").takeIf { model.books.canEdit }, onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
         onSelect = { selectedId = it.id; creating = false },
     ) {
         if (creating || selected != null) {
@@ -228,16 +265,21 @@ fun InstitutionsScreen(model: BooksModel) {
 
 @Composable
 private fun InstitutionForm(model: BooksModel, existing: Institution?, onSaved: (String) -> Unit) {
+    val editable = model.books.canEdit
     var value by remember(existing) { mutableStateOf(existing ?: Institution("", "")) }
-    TextInput(model.t("institution.name"), value.name) { value = value.copy(name = it) }
-    TextInput(model.t("institution.branch"), value.branch.orEmpty()) { value = value.copy(branch = it) }
+    TextInput(model.t("institution.name"), value.name, enabled = editable) { value = value.copy(name = it) }
+    TextInput(model.t("institution.branch"), value.branch.orEmpty(), enabled = editable) { value = value.copy(branch = it) }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        TextInput(model.t("institution.number"), value.institutionNumber.orEmpty(), Modifier.weight(1f)) { value = value.copy(institutionNumber = it) }
-        TextInput(model.t("institution.transit"), value.transitNumber.orEmpty(), Modifier.weight(1f)) { value = value.copy(transitNumber = it) }
+        TextInput(model.t("institution.number"), value.institutionNumber.orEmpty(), Modifier.weight(1f), enabled = editable) { value = value.copy(institutionNumber = it) }
+        TextInput(model.t("institution.transit"), value.transitNumber.orEmpty(), Modifier.weight(1f), enabled = editable) { value = value.copy(transitNumber = it) }
     }
-    TextInput(model.t("institution.website"), value.website.orEmpty()) { value = value.copy(website = it) }
-    TextInput(model.t("institution.phone"), value.phone.orEmpty()) { value = value.copy(phone = it) }
-    TextInput(model.t("account.notes"), value.notes.orEmpty(), singleLine = false) { value = value.copy(notes = it) }
+    TextInput(model.t("institution.website"), value.website.orEmpty(), enabled = editable) { value = value.copy(website = it) }
+    TextInput(model.t("institution.phone"), value.phone.orEmpty(), enabled = editable) { value = value.copy(phone = it) }
+    TextInput(model.t("account.notes"), value.notes.orEmpty(), singleLine = false, enabled = editable) { value = value.copy(notes = it) }
+    if (!editable) {
+        Text(model.t("common.readOnlyViewer"), style = MaterialTheme.typography.bodySmall)
+        return
+    }
     Button(onClick = {
         val cleaned = value.copy(
             branch = value.branch?.ifBlank { null }, institutionNumber = value.institutionNumber?.ifBlank { null },
@@ -273,7 +315,7 @@ fun MembersScreen(model: BooksModel) {
             ListEditor(
                 model.t("nav.members"), members, key = { it.id },
                 label = { listOfNotNull(it.displayName, model.t("memberKind.${it.kind}"), it.province?.let { p -> model.t("province.$p") }).joinToString(" · ") }, dimmed = { it.archived },
-                addLabel = model.t("common.add"), onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
+                addLabel = model.t("common.add").takeIf { model.books.users.isAdministrator }, onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
                 onSelect = { selectedId = it.id; creating = false },
             ) {
                 if (creating || selected != null) {
@@ -293,15 +335,21 @@ private fun MemberForm(model: BooksModel, existing: Member?, onSaved: (String) -
     var birth by remember(existing) { mutableStateOf(existing?.birthDate?.toString().orEmpty()) }
     var archived by remember(existing) { mutableStateOf(existing?.archived ?: false) }
     var province by remember(existing) { mutableStateOf(existing?.province) }
+    // M-76: only an administrator changes household members; others see the form read only.
+    val editable = model.books.users.isAdministrator
 
-    TextInput(model.t("member.name"), name) { name = it }
-    Picker(model.t("member.kind"), MemberKind.entries, kind, { model.t("memberKind.$it") }) { kind = it }
-    DateInput(model.t("member.birthDate"), birth, Modifier.fillMaxWidth()) { birth = it }
+    TextInput(model.t("member.name"), name, enabled = editable) { name = it }
+    Picker(model.t("member.kind"), MemberKind.entries, kind, { model.t("memberKind.$it") }, enabled = editable) { kind = it }
+    DateInput(model.t("member.birthDate"), birth, Modifier.fillMaxWidth(), enabled = editable) { birth = it }
     Picker(
         model.t("member.province"), listOf<Province?>(null) + Province.entries.sortedBy { model.t("province.$it") }, province,
-        { it?.let { p -> model.t("province.$p") } ?: model.t("member.provinceHousehold") },
+        { it?.let { p -> model.t("province.$p") } ?: model.t("member.provinceHousehold") }, enabled = editable,
     ) { province = it }
-    if (existing != null) LabeledCheckbox(model.t("category.archived"), archived) { archived = it }
+    if (existing != null) LabeledCheckbox(model.t("category.archived"), archived, enabled = editable) { archived = it }
+    if (!editable) {
+        Text(model.t("member.readOnly"), style = MaterialTheme.typography.bodySmall)
+        return
+    }
     Button(onClick = {
         val id = model.act {
             val birthDate = birth.trim().ifEmpty { null }?.let {
@@ -330,44 +378,70 @@ fun RulesScreen(model: BooksModel) {
     var creating by remember { mutableStateOf(false) }
     val selected = rules.firstOrNull { it.id == selectedId }
 
+    val payees = remember(model.revision) { books.payees.list() }
+    val payeeNames = remember(model.revision) { books.payees.list(includeArchived = true).associate { it.id to it.name } }
+
     ListEditor(
         model.t("nav.rules"), rules, key = { it.id },
         label = { r -> model.t("rule.summary", r.payeeContains, names[r.categoryId] ?: "?") },
-        addLabel = model.t("common.add"), onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
+        addLabel = model.t("common.add").takeIf { books.canEdit }, onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
         onSelect = { selectedId = it.id; creating = false },
     ) {
         Text(model.t("rule.explain"), style = MaterialTheme.typography.bodySmall)
         when {
-            creating -> RuleForm(model, tree) { creating = false; selectedId = it }
+            creating -> RuleForm(model, null, tree, payees) { creating = false; selectedId = it }
             selected != null -> {
                 Text(model.t("rule.summary", selected.payeeContains, names[selected.categoryId] ?: "?"), style = MaterialTheme.typography.titleMedium)
-                listOfNotNull(selected.amountMin?.let { model.t("rule.min") + " " + model.money(it) }, selected.amountMax?.let { model.t("rule.max") + " " + model.money(it) })
-                    .forEach { Text(it) }
-                OutlinedButton(onClick = { if (model.act { books.rules.delete(selected.id) } != null) selectedId = null }) { Text(model.t("common.delete")) }
+                listOfNotNull(
+                    selected.amountMin?.let { model.t("rule.min") + " " + model.money(it) }, selected.amountMax?.let { model.t("rule.max") + " " + model.money(it) },
+                    selected.payeeId?.let { payeeNames[it] }?.let { model.t("rule.payeeIs", it) },
+                ).forEach { Text(it) }
+                if (books.canEdit) {
+                    // M-73: the order the rules are tried in.
+                    val index = rules.indexOfFirst { it.id == selected.id }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(enabled = index > 0, onClick = { model.act { books.rules.move(selected.id, up = true) } }) { Text(model.t("rule.moveUp")) }
+                        OutlinedButton(enabled = index < rules.size - 1, onClick = { model.act { books.rules.move(selected.id, up = false) } }) { Text(model.t("rule.moveDown")) }
+                        OutlinedButton(onClick = { if (model.act { books.rules.delete(selected.id) } != null) selectedId = null }) { Text(model.t("common.delete")) }
+                    }
+                    HorizontalDivider(Modifier.padding(vertical = 8.dp))
+                    Text(model.t("common.edit"), style = MaterialTheme.typography.titleSmall)
+                    RuleForm(model, selected, tree, payees) { selectedId = it }
+                }
             }
             else -> Text(model.t("rule.select"))
         }
     }
 }
 
+/** A new rule, or the changes to [existing] (M-73), with the payee it may also set. */
 @Composable
-private fun RuleForm(model: BooksModel, tree: List<Pair<Category, Int>>, onSaved: (String) -> Unit) {
+private fun RuleForm(model: BooksModel, existing: CategoryRule?, tree: List<Pair<Category, Int>>, payees: List<Payee>, onSaved: (String) -> Unit) {
     val locale = model.language.locale
     val currency = remember { Currency.of(model.session.core.coreQueries.household().executeAsOne().base_currency) }
-    var contains by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf<Pair<Category, Int>?>(null) }
-    var min by remember { mutableStateOf("") }
-    var max by remember { mutableStateOf("") }
+    val ruleCurrency = existing?.let { it.amountMin?.currency ?: it.amountMax?.currency } ?: currency
+    var contains by remember(existing) { mutableStateOf(existing?.payeeContains.orEmpty()) }
+    var category by remember(existing) { mutableStateOf(tree.firstOrNull { it.first.id == existing?.categoryId }) }
+    var payeeId by remember(existing) { mutableStateOf(existing?.payeeId) }
+    var min by remember(existing) { mutableStateOf(existing?.amountMin?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
+    var max by remember(existing) { mutableStateOf(existing?.amountMax?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
 
     TextInput(model.t("rule.contains"), contains, supporting = model.t("rule.contains.hint")) { contains = it }
     Picker(model.t("register.category"), tree, category, { it.first.name(model.language) }, indent = { it.second }) { category = it }
+    Picker(model.t("rule.payee"), listOf<Payee?>(null) + payees, payees.firstOrNull { it.id == payeeId }, { it?.name ?: model.t("rule.payeeKeep") }) { payeeId = it?.id }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        AmountInput(model.t("rule.min"), min, currency, locale, Modifier.weight(1f), model::money) { min = it }
-        AmountInput(model.t("rule.max"), max, currency, locale, Modifier.weight(1f), model::money) { max = it }
+        AmountInput(model.t("rule.min"), min, ruleCurrency, locale, Modifier.weight(1f), model::money) { min = it }
+        AmountInput(model.t("rule.max"), max, ruleCurrency, locale, Modifier.weight(1f), model::money) { max = it }
     }
     Button(enabled = contains.isNotBlank() && category != null, onClick = {
         val rule = model.act {
-            model.books.rules.create(contains, category!!.first.id, parseAmount(min, currency, locale), parseAmount(max, currency, locale))
+            val low = parseAmount(min, ruleCurrency, locale)
+            val high = parseAmount(max, ruleCurrency, locale)
+            if (existing == null) {
+                model.books.rules.create(contains, category!!.first.id, low, high, payeeId)
+            } else {
+                model.books.rules.update(existing.id, contains, category!!.first.id, low, high, payeeId)
+            }
         }
         if (rule != null) onSaved(rule.id)
     }) { Text(model.t("common.save")) }

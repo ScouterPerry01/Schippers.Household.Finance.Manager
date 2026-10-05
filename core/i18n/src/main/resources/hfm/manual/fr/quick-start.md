@@ -34,7 +34,7 @@ Sur une copie Linux installée à partir d'un paquet .deb ou .rpm ou d'une AppIm
 2. Cliquez sur **Choisir un dossier…** et choisissez où le ménage sera rangé, par exemple votre dossier Documents. L'application y crée un dossier au nom du ménage.
 3. Remplissez le formulaire :
   - **Nom du ménage** : un nom pour le ménage, comme Famille Tremblay.
-  - **Province ou territoire** : où vous habitez. Ce choix fixe les jours fériés bancaires, les catégories par défaut, les subventions provinciales et les formulaires fiscaux. Il est réglé sur Québec au départ ; changez-le si vous habitez ailleurs.
+  - **Province ou territoire** : où vous habitez. Ce choix fixe les jours fériés bancaires, les catégories par défaut, les subventions provinciales et les formulaires fiscaux. Rien n'est choisi au départ : choisissez le vôtre.
   - **Votre nom** : votre nom tel qu'il paraît dans l'application.
   - **Nom d'utilisateur** : le nom court que vous taperez pour vous connecter, sans espaces.
   - **Mot de passe principal** et **Confirmer le mot de passe principal** : au moins 12 caractères, tapés deux fois.
@@ -50,7 +50,7 @@ L'écran suivant, **Votre clé de récupération**, présente une longue clé fa
 
 > Important : aucun serveur ne peut réinitialiser votre mot de passe. Si vous l'oubliez, cette clé est le seul moyen de retrouver l'accès à votre ménage. Personne, pas même RANN, ne peut récupérer vos données sans elle.
 
-1. Notez la clé, ou cliquez sur **Copier** et collez-la dans un document que vous imprimez. Rangez-la en lieu sûr, loin de cet ordinateur.
+1. Cliquez sur **Imprimer** pour l'imprimer, ou notez-la. Rangez le papier en lieu sûr, loin de cet ordinateur.
 2. Cliquez sur **J'ai conservé ma clé de récupération**. Le ménage s'ouvre au tableau de bord.
 
 ## Étape 4 : Suivre le guide des premiers pas {#guide}

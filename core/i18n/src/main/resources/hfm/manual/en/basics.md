@@ -40,13 +40,13 @@ This screen makes a new, empty household. The province, your name and your passw
 
 - **Choose folder…**: required. Opens a folder chooser for the Location: the folder where the household will be kept, such as Documents. The chosen path is shown beside the button. The app makes a new folder inside it named after the household with .hfm at the end (Tremblay Family.hfm). That folder must not already exist with files in it; if it does, choose another location or another name.
 - **Household name**: required. The household's name, used for the folder's name and shown to the phones you pair. Avoid characters your system does not allow in folder names, such as / or :.
-- **Province or territory**: where the household lives. Its rules apply: bank holidays used to move bill dates, default categories, provincial RESP grants, the rules of locked-in plans and the provincial tax forms. It starts on Quebec; choose yours. It can be changed later under [Household members](members), and a person who lives elsewhere can have their own.
+- **Province or territory**: where the household lives. Its rules apply: bank holidays used to move bill dates, default categories, provincial RESP grants, the rules of locked-in plans and the provincial tax forms. Required: nothing is chosen at first, so pick yours. It can be changed later under [Household members](members), and a person who lives elsewhere can have their own.
 - **Your name**: required. Your name as shown in the app, for example in the activity log and the user list.
 - **Login name**: required. The name you type to sign in. Keep it short and without spaces. It cannot be changed later.
 - **Master password**: required, at least 12 characters. A passphrase of a few words is easy to remember and hard to guess. It protects the household's encryption keys: it is never stored, and no one can reset it for you.
 - **Confirm master password**: the same password again, to catch typing mistakes.
 - **Back**: returns to Welcome without creating anything.
-- **Create household**: available once the folder, the household name, your name and the login name are filled in. If the password is shorter than 12 characters the screen says "Use at least 12 characters."; if the two passwords differ it says "The passwords do not match." Otherwise the app creates the household, which takes a few seconds (a circle turns while it works).
+- **Create household**: available once the folder, the household name, the province or territory, your name and the login name are filled in. If the password is shorter than 12 characters the screen says "Use at least 12 characters."; if the two passwords differ it says "The passwords do not match." Otherwise the app creates the household, which takes a few seconds (a circle turns while it works).
 
 The new household uses the Canadian dollar as its base currency. It starts with one shared account group and you as its only user, an Administrator. The household is created in the language the app is using.
 
@@ -58,7 +58,8 @@ Right after a household is created, this screen shows your recovery key: 54 lett
 
 There is no server that can reset your password. If you forget it, this key is the only way back into your household. Print it or write it down and keep it somewhere safe, away from this computer.
 
-- **Copy**: copies the key to the clipboard, so you can paste it into a document to print or into a password manager. Clear the clipboard afterwards if others use this computer.
+- **Print**: opens the system's print dialog and prints a page with the key, the household's name and why to keep it. The page goes straight to the printer: the key is not saved in a file on this computer.
+- **Copy**: copies the key to the clipboard, so you can paste it into a password manager. Clear the clipboard afterwards if others use this computer.
 - **I have saved my recovery key**: opens the household. The key is not shown again.
 
 > Important: each user has their own recovery key. When an administrator adds a user under [Users](users), that user's key is shown once in the same way, to be given to them.

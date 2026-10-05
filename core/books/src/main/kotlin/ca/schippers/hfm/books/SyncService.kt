@@ -262,7 +262,8 @@ class SyncService internal constructor(private val books: Books) {
         val budgets = runCatching { books.budgets.month(LocalDate(today.year, today.month, 1)) }.getOrNull()
         return ReferenceData(
             householdName = books.core.household().executeAsOne().name,
-            language = books.setting("ui.language") ?: "en",
+            // M-79: the language the desktop is shown in, which the app sets on the books.
+            language = books.language.tag,
             baseCurrency = base.code,
             accounts = books.accounts.list().map { RefAccount(it.account.id, it.account.name, it.account.type.name, it.account.currency.code, it.balance.toBigDecimal().toPlainString()) },
             categories = books.categories.list().map { RefCategory(it.id, it.parentId, it.nameEn, it.nameFr, it.kind == CategoryKind.INCOME) },

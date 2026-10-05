@@ -31,7 +31,7 @@ Rules never change transactions already in the books. Adding, or deleting, a rul
 
 ## The Category rules screen {#screen}
 
-The left side lists the rules, with **Add** above the list. Each rule reads as its text in quotation marks, an arrow, and its category, such as "HYDRO-QUEBEC" → Electricity. The list is in the order the rules are tried, which is the order they were added.
+The left side lists the rules, with **Add** above the list. Each rule reads as its text in quotation marks, an arrow, and its category, such as "HYDRO-QUEBEC" → Electricity. The list is in the order the rules are tried: a new rule goes to the bottom, and **Move up** and **Move down** change its place.
 
 The right side begins with the reminder "When an imported transaction's description contains the text, it gets the category. Rules are tried from top to bottom." Below it is the selected rule, the form for a new rule, or "Select a rule, or add a new one."
 
@@ -40,39 +40,46 @@ The right side begins with the reminder "When an imported transaction's descript
 1. Click **Add**.
 2. Type the text in **Description contains**.
 3. Pick the **Category**.
-4. If needed, fill in **Amount at least** and **Amount at most**.
-5. Click **Save**. It becomes available once the text and the category are filled in.
+4. If the line should also get a particular payee, pick it in **Also file under payee**.
+5. If needed, fill in **Amount at least** and **Amount at most**.
+6. Click **Save**. It becomes available once the text and the category are filled in.
 
 ### The rule form {#rule-fields}
 
 - **Description contains**: the text to look for in the bank's description, for example HYDRO-QUEBEC or PAIE. Required. Capitals do not matter. Use a piece that is always there and is specific enough: the name without store numbers, cities or dates.
 - **Category**: the category to give. Required. Archived categories are not offered.
+- **Also file under payee**: optional. A payee to give the line too, whatever its aliases would find, such as Hydro-Québec for every line containing HYDRO. Leave it at (keep the payee found) to let the aliases and the bank's text name the payee as usual. Archived payees are not offered.
 - **Amount at least**: optional. The rule matches only when the size of the amount is at least this much. Typed in the household's base currency (Canadian dollars in most households).
 - **Amount at most**: optional. The rule matches only when the size of the amount is at most this much. When both are filled in, the minimum cannot be larger than the maximum ("The minimum amount is larger than the maximum.").
-- **Save**: adds the rule at the bottom of the list.
+- **Save**: adds a new rule at the bottom of the list, or saves the changes to a rule, which keeps its place.
 
 A rule with amount limits matches only lines in the same currency as its limits. A rule with no limits matches lines in every currency.
 
 > Tip: Use amount limits to tell apart lines with the same description. For example, a payroll deposit of at least 1,000 is Salary and wages, while a smaller one from the same employer is an expense refund.
 
-## See or delete a rule {#rule-details}
+## See, change, move or delete a rule {#rule-details}
 
-Click a rule in the list. The right side shows its summary and, when it has them, its limits ("Amount at least" and "Amount at most" with their amounts).
+Click a rule in the list. The right side shows its summary and, when it has them, its limits ("Amount at least" and "Amount at most" with their amounts) and its payee ("Payee:" and the name). Below are the buttons and, under **Edit**, the rule form filled in with the rule.
 
+- **Move up**: tries the rule one place sooner. Greyed out for the first rule.
+- **Move down**: tries the rule one place later. Greyed out for the last rule.
 - **Delete**: removes the rule at once, without asking. It cannot be undone, but you can add the same rule again. Transactions already imported keep their categories.
+- The form under **Edit**: change the text, category, payee or limits, then click **Save**. The rule keeps its place in the list.
 
-Rules cannot be edited or moved. To change one, delete it and add it again; it then goes to the bottom of the list.
+The places stay numbered in order: moving or deleting a rule never leaves two rules in the same place.
 
 ## Order matters {#order}
 
 @index: rule priority; first match
 
-The first rule that matches wins. Because new rules go to the bottom, add the specific rules before the general ones. For example, add "COSTCO GAS" → Fuel before "COSTCO" → Groceries; if "COSTCO" was added first, it would also catch the gas station lines.
+The first rule that matches wins, so specific rules must come before general ones. For example, "COSTCO GAS" → Fuel must be above "COSTCO" → Groceries; otherwise "COSTCO" would also catch the gas station lines.
 
-If a general rule is already there, delete it and add it again after the specific one.
+New rules go to the bottom. When you add a specific rule after a general one, select it and click **Move up** until it is above the general rule.
 
 ## Rules and payees {#rules-and-payees}
 
 - Payee aliases on [Payees](payees) clean up the name of an imported line. Rules choose its category.
 - A rule is tried before the payee's default category, so a rule can override the default for some lines, such as large purchases at a store whose default is Groceries.
-- Every rule you add, and every rule you delete, is recorded in the activity log on the [Users](users) screen.
+- A rule's payee, when it has one, wins over the payee the aliases would find.
+- Every rule you add, change, move or delete is recorded in the activity log on the [Users](users) screen.
+- Administrators and members can add, change, move and delete rules. Viewers see the list and each rule, without the buttons.

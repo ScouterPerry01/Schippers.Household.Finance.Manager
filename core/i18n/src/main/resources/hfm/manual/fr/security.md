@@ -63,8 +63,8 @@ Un utilisateur qu'on a empêché de se connecter à l'écran [Utilisateurs](user
 @index: règles des mots de passe; longueur du mot de passe; phrase de passe; mot de passe fort
 
 - Le premier administrateur choisit le mot de passe principal à la création du ménage : au moins 12 caractères, tapés deux fois (**Mot de passe principal**, **Confirmer le mot de passe principal**).
-- Les utilisateurs ajoutés plus tard reçoivent un mot de passe choisi au moment de l'ajout, et chacun peut changer le sien : les écrans demandent au moins 8 caractères.
-- Un nouveau mot de passe fixé avec la clé de récupération demande au moins 12 caractères.
+- Les utilisateurs ajoutés plus tard reçoivent un mot de passe choisi au moment de l'ajout, et chacun peut changer le sien : au moins 12 caractères là aussi.
+- Un nouveau mot de passe fixé avec la clé de récupération demande aussi au moins 12 caractères.
 
 Une phrase de passe de quelques mots sans lien entre eux, comme « érable canot jeudi lanterne », est facile à retenir et difficile à deviner. Ne réutilisez pas le mot de passe d'un site Web.
 
@@ -81,7 +81,8 @@ Chaque utilisateur a une clé de récupération : un long code en groupes de qua
 
 À l'écran « Votre clé de récupération » :
 
-- **Copier** : copie la clé, pour la coller dans un document à imprimer.
+- **Imprimer** : imprime la clé par la fenêtre d'impression du système, sans l'enregistrer dans un fichier.
+- **Copier** : copie la clé, pour la coller dans un gestionnaire de mots de passe.
 - **J'ai conservé ma clé de récupération** : ouvre le ménage. Ne cliquez qu'une fois la clé imprimée ou notée.
 
 Comment la garder :

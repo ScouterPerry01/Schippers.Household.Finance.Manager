@@ -68,18 +68,27 @@ class UserService internal constructor(private val books: Books) {
         return books.groups().map { g ->
             val explicit = books.core.permissionsForGroup(g.id).executeAsList().associate { it.user_id to PermissionLevel.valueOf(it.level) }
             val levels = users.associate { u ->
-                u.id to when {
+                val level = when {
                     g.ownerUserId == u.id -> PermissionLevel.EDIT
                     g.ownerUserId == null && u.role == Role.ADMINISTRATOR -> PermissionLevel.EDIT
                     else -> explicit[u.id] ?: PermissionLevel.NONE
                 }
+                // M-78: a viewer's access stops at View, whatever was granted before.
+                u.id to if (u.role == Role.VIEWER) minOf(level, PermissionLevel.VIEW) else level
             }
             GroupAccess(g, g.ownerUserId, levels)
         }
     }
 
-    /** Gives [userId] a level on a group; only the owner of a private group or an administrator may. */
-    fun setAccess(groupId: String, userId: String, level: PermissionLevel) = guard { session.setPermission(groupId, userId, level) }
+    /**
+     * Gives [userId] a level on a group; only the owner of a private group or an administrator may.
+     * M-78: a viewer can be given View at most.
+     */
+    fun setAccess(groupId: String, userId: String, level: PermissionLevel) {
+        val target = list().firstOrNull { it.id == userId }
+        validate(target?.role != Role.VIEWER || level <= PermissionLevel.VIEW, "error.viewerViewOnly")
+        guard { session.setPermission(groupId, userId, level) }
+    }
 
     /**
      * HH-13: the activity log. Administrators see everyone's; others see their own. Changes to
@@ -114,7 +123,8 @@ class UserService internal constructor(private val books: Books) {
 
     companion object {
         const val HOUSEHOLD = "household"
-        const val MIN_PASSWORD = 8
+        /** M-72: the same minimum everywhere a password is chosen, as when the household is created. */
+        const val MIN_PASSWORD = 12
 
         /** The actions recorded in the activity log, each with a name in both languages. */
         val ACTIONS = listOf(

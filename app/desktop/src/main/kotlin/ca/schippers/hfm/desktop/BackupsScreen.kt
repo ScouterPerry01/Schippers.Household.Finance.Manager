@@ -71,22 +71,25 @@ fun BackupsScreen(model: BooksModel) {
         Text(model.t("nav.backups"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("backup.explain"), style = MaterialTheme.typography.bodySmall)
 
+        // M-77: the folder, frequency and number kept are the administrator's choice.
+        val admin = books.users.isAdministrator
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(settings.dir?.toString() ?: model.t("backup.noFolder"), Modifier.weight(1f))
-            OutlinedButton(onClick = {
+            OutlinedButton(enabled = admin, onClick = {
                 chooseDirectory(model.t("backup.chooseFolder"))?.let { dir -> model.act { books.backups.saveSettings(settings.copy(dir = dir)) } }
             }) { Text(model.t("backup.chooseFolder")) }
         }
         Text(model.t("backup.folderHint"), style = MaterialTheme.typography.bodySmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Picker(model.t("backup.frequency"), BackupFrequency.entries, settings.frequency, { model.t("backupFrequency.$it") }, Modifier.width(220.dp)) {
+            Picker(model.t("backup.frequency"), BackupFrequency.entries, settings.frequency, { model.t("backupFrequency.$it") }, Modifier.width(220.dp), enabled = admin) {
                 model.act { books.backups.saveSettings(settings.copy(frequency = it)) }
             }
-            TextInput(model.t("backup.keep"), keep, Modifier.width(200.dp)) { keep = it }
-            OutlinedButton(onClick = {
+            TextInput(model.t("backup.keep"), keep, Modifier.width(200.dp), enabled = admin) { keep = it }
+            OutlinedButton(enabled = admin, onClick = {
                 model.act { books.backups.saveSettings(settings.copy(keep = keep.trim().toIntOrNull() ?: throw ValidationException("error.backupKeep"))) }
             }) { Text(model.t("common.save")) }
         }
+        if (!admin) Text(model.t("backup.adminOnly"), style = MaterialTheme.typography.bodySmall)
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Button(enabled = !busy && settings.dir != null, onClick = ::runBackup) { Text(model.t(if (busy) "backup.running" else "backup.now")) }

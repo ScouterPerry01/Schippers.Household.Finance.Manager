@@ -31,6 +31,9 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val userId: String get() = session.userId
     val role: Role by lazy { session.role }
 
+    /** M-77: false for a viewer, for whom the household's lists and settings are read only. */
+    val canEdit: Boolean get() = role != Role.VIEWER
+
     val members = MemberService(this)
     val institutions = InstitutionService(this)
     val categories = CategoryService(this)

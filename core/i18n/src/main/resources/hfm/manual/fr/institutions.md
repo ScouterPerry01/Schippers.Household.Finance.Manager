@@ -53,3 +53,5 @@ Il n'y a aucun moyen de supprimer une institution. Pour qu'un compte ne la nomme
 ## Partagées par le ménage {#shared}
 
 La liste des institutions est partagée par tout le ménage, quels que soient les groupes de comptes qui les utilisent : tous ceux qui se connectent voient les mêmes institutions. Chaque institution ajoutée ou modifiée est inscrite dans le journal d'activité de l'écran [Utilisateurs](users).
+
+Les administrateurs et les membres peuvent ajouter et modifier des institutions. Les lecteurs voient la liste et les formulaires en gris, sans **Ajouter** ni **Enregistrer**.

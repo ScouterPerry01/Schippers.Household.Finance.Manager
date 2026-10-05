@@ -119,6 +119,13 @@ Cliquez sur **Taux récents** sur la ligne d'une devise. Le bas de l'écran mont
 
 - **Supprimer** : affiché seulement pour les taux entrés à la main. Retire tout de suite le taux de ce jour. Les taux téléchargés ne peuvent pas être supprimés.
 
+## Qui peut changer les taux et les cours {#permissions}
+
+- Les administrateurs : tout cet écran, y compris activer la deuxième source de taux et chaque téléchargement de cours, puisque ceux-ci envoient des demandes à des services externes.
+- Les membres : suivre des devises, entrer et supprimer des taux, fixer les noms des cryptoactifs et entrer les prix des métaux. Les interrupteurs de téléchargement sont grisés.
+- Les lecteurs : voir les taux et les cours ; tout le reste est grisé.
+- Tout le monde : **Mettre à jour les taux** et **Mettre à jour les cours**, qui téléchargent seulement ce qui est déjà activé.
+
 ## Confidentialité {#privacy}
 
 La Banque du Canada et ExchangeRate-API ne reçoivent qu'une demande pour la liste des taux. Les services de cours reçoivent les symboles de ce que vous détenez, seulement pour les sources que vous avez activées. Voir [Confidentialité et vos données](privacy-data).
