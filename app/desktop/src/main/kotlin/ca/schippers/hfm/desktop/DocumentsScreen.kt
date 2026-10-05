@@ -292,6 +292,7 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                 }
                 ExtractedDetails(model, doc)
                 AiPart(model, doc, kind, onClose)
+                VoicePart(model, doc)
                 Duplicates(model, doc)
                 LabeledCheckbox(model.t("documents.keepForever"), keep) { keep = it }
                 TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
@@ -429,6 +430,29 @@ private fun PayStubPart(model: BooksModel, doc: VaultDocument, onClose: () -> Un
     if (open) {
         val read = remember(doc.id) { model.books.ai.payStub(doc.id, ca.schippers.hfm.money.Currency.CAD) }
         PayStubDialog(model, null, read, doc.id) { done -> open = false; if (done) onClose() }
+    }
+}
+
+/** CAP-08: the spoken note recorded with a capture on the phone, played on this computer. */
+@Composable
+private fun VoicePart(model: BooksModel, doc: VaultDocument) {
+    val voices = remember(model.revision, doc.id) { model.books.documents.voiceNotes(doc.id) }
+    if (voices.isEmpty()) return
+    var playing by remember { mutableStateOf<javax.sound.sampled.Clip?>(null) }
+    androidx.compose.runtime.DisposableEffect(doc.id) { onDispose { playing?.close() } }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (v in voices) {
+            OutlinedButton(onClick = {
+                playing?.let { it.close(); playing = null; return@OutlinedButton }
+                model.act {
+                    val stream = javax.sound.sampled.AudioSystem.getAudioInputStream(java.io.ByteArrayInputStream(model.books.documents.content(v.id)))
+                    val clip = javax.sound.sampled.AudioSystem.getClip().apply { open(stream); start() }
+                    clip.addLineListener { e -> if (e.type == javax.sound.sampled.LineEvent.Type.STOP) { clip.close(); playing = null } }
+                    playing = clip
+                }
+            }) { Text(model.t(if (playing != null) "documents.voiceStop" else "documents.voicePlay")) }
+        }
+        Text(model.t("documents.voiceHint"), style = MaterialTheme.typography.bodySmall)
     }
 }
 

@@ -171,6 +171,9 @@ class SyncService internal constructor(private val books: Books) {
             }
             runCatching { receive(device.group_id ?: defaultGroup(), deviceId, item, converter, today) }
                 .onSuccess { documentId ->
+                    // CAP-08: the spoken note is kept beside the document it belongs to.
+                    val voice = item.voice
+                    if (voice != null && documentId != null) runCatching { books.documents.attachVoice(documentId, SyncCrypto.unb64(voice), deviceId) }
                     books.core.insertSyncItem(item.id, deviceId, item.kind.name, now, documentId, "IMPORTED")
                     imported += item.id
                     added++

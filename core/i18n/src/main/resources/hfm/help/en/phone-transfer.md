@@ -27,3 +27,5 @@ Captures never go straight into the books. They wait on the To review tab of Doc
 ## A lost phone
 
 On Phones, click Remove beside the phone. It can no longer send anything.
+
+A capture from the phone can carry a voice note: Play the voice note in its review window plays it.

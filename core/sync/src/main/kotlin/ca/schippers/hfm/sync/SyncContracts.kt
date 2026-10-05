@@ -69,6 +69,8 @@ data class CaptureItem(
     val fileName: String? = null,
     val ocrLines: List<OcrText> = emptyList(),
     val fields: CaptureFields = CaptureFields(),
+    /** CAP-08: a spoken note, as a WAV file in base64 (mono, 16 kHz); its words are in the note when dictated. */
+    val voice: String? = null,
 )
 
 @Serializable

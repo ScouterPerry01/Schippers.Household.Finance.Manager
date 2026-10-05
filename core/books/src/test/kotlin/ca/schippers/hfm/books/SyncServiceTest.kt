@@ -87,6 +87,19 @@ class SyncServiceTest {
     )
 
     @Test
+    fun `a spoken note comes with its capture and is kept beside it`() {
+        val key = pairAsPhone(books.sync.invitation("Bureau", "127.0.0.1", 47311, now))
+        val wav = "RIFF....WAVEfmt fake".encodeToByteArray()
+        val withVoice = receipt.copy(voice = SyncCrypto.b64(wav), fields = CaptureFields(note = "Lunch with a client, split with Paul"))
+        assertEquals(listOf("item-1"), send(key, SyncRequest(now, listOf(withVoice))).imported)
+        val doc = books.documents.inbox().single()
+        val voice = books.documents.voiceNotes(doc.id).single()
+        assertEquals("audio/wav", voice.mimeType)
+        assertTrue(books.documents.content(voice.id).contentEquals(wav))
+        assertEquals("Lunch with a client, split with Paul", doc.notes, "the dictated words are the note")
+    }
+
+    @Test
     fun `a request can come as a file, and the reply goes back as one`() {
         val key = pairAsPhone(books.sync.invitation("Bureau", "127.0.0.1", 47311, now))
         val desktop = PairedDesktop(books.sync.desktopId, "Famille S", "127.0.0.1", 47311, "pixel-8", SyncCrypto.b64(key))

@@ -40,6 +40,7 @@ The development plan first proposed Ktor with TLS and mDNS discovery.
   - a quick expense without a photo becomes a short note;
   - an odometer reading is applied to the vehicle directly.
 - The phone's OCR text is used. Without it, the desktop reads the file itself.
+- A spoken note (CAP-08, Phase 5h) travels with its item as a WAV file (16-bit mono, 16 kHz, at most a minute) and is kept in the vault, filed and linked to the item's document; dictated words are in the note itself.
 - Typed fields win over what was read.
 
 **Reference data (SYNC-06, RPT-06, BILL-04):**

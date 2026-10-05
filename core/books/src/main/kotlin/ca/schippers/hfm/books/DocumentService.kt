@@ -26,6 +26,9 @@ enum class DocumentStatus { INBOX, FILED, DISMISSED }
 /** What a document can be attached to (section 4.4). */
 object DocumentEntity {
     const val TRANSACTION = "txn"
+
+    /** CAP-08: a spoken note, linked to the document it was recorded with. */
+    const val VOICE = "voice"
     const val BILL = "bill"
     const val VEHICLE = "vehicle"
     const val SERVICE = "service"
@@ -129,6 +132,21 @@ class DocumentService internal constructor(private val books: Books) {
         )
         return DocumentImport(get(id), alreadyInVault = false)
     }
+
+    /**
+     * CAP-08: keeps a spoken note (a WAV file from the phone) in the vault beside [documentId], filed
+     * at once so it never waits in the review inbox on its own.
+     */
+    fun attachVoice(documentId: String, wav: ByteArray, sourceDevice: String = DESKTOP): VaultDocument {
+        val (group, _) = locate(documentId)
+        val voice = import(group.id, wav, "voice-note.wav", "audio/wav", sourceDevice).document
+        link(voice.id, DocumentEntity.VOICE, documentId)
+        setStatus(voice.id, DocumentStatus.FILED)
+        return voice
+    }
+
+    /** CAP-08: the spoken notes kept with a document. */
+    fun voiceNotes(documentId: String): List<VaultDocument> = documentsFor(DocumentEntity.VOICE, documentId)
 
     /** The original file, decrypted. */
     fun content(documentId: String): ByteArray {

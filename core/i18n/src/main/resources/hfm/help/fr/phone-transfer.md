@@ -27,3 +27,5 @@ Les saisies n’entrent jamais directement dans les comptes. Elles attendent dan
 ## Un téléphone perdu
 
 Dans Téléphones, cliquez sur Retirer à côté du téléphone. Il ne peut plus rien envoyer.
+
+Une capture du téléphone peut avoir une note vocale : Écouter la note vocale, dans sa fenêtre de vérification, la fait entendre.
