@@ -86,6 +86,10 @@ private fun desktopApp() = application {
             if (event.type == KeyEventType.KeyDown && event.isCtrlPressed && event.key == Key.F && state.screen is Screen.Main) {
                 runCatching { state.searchFocus.requestFocus() }
                 true
+            } else if (event.type == KeyEventType.KeyDown && event.key == Key.F1 && state.helpTopic == null) {
+                // NFR-12: F1 opens the help on the topic for the screen shown.
+                state.openHelp()
+                true
             } else {
                 false
             }

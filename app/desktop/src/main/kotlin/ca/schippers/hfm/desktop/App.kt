@@ -56,7 +56,22 @@ import javax.swing.JFileChooser
 
 @Composable
 fun App(state: AppState) {
-    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
+    // NFR-08: the theme and text size chosen on this computer.
+    val dark = when (state.theme) {
+        ThemeChoice.SYSTEM -> isSystemInDarkTheme()
+        ThemeChoice.LIGHT -> false
+        ThemeChoice.DARK -> true
+    }
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalDarkTheme provides dark,
+        androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(density.density, density.fontScale * state.textScale),
+    ) { AppContent(state, dark) }
+}
+
+@Composable
+private fun AppContent(state: AppState, dark: Boolean) {
+    MaterialTheme(colorScheme = if (dark) darkColorScheme() else lightColorScheme()) {
         Surface(
             Modifier.fillMaxSize().pointerInput(state) {
                 // Any mouse activity counts as use, for auto-lock (SEC-02).
@@ -112,11 +127,13 @@ private fun TopBar(state: AppState) {
                 Text(if (language == Language.ENGLISH) "English" else "Français")
             }
         }
-        (state.screen as? Screen.Main)?.let { main ->
-            SearchBox(state, main.model)
+        (state.screen as? Screen.Main)?.let { main -> SearchBox(state, main.model) }
+        TextButton(onClick = state::openHelp, modifier = Modifier.padding(start = 8.dp)) { Text(state.t("help.button")) }
+        if (state.screen is Screen.Main) {
             OutlinedButton(onClick = state::lock, modifier = Modifier.padding(start = 8.dp)) { Text(state.t("common.lock")) }
         }
     }
+    state.helpTopic?.let { topic -> HelpPanel(state, topic) { state.helpTopic = null } }
 }
 
 @Composable

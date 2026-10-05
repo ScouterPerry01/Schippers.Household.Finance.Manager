@@ -81,6 +81,7 @@ fun DashboardScreen(model: BooksModel) {
 
     Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(model.t("nav.dashboard"), style = MaterialTheme.typography.titleLarge)
+        GettingStarted(model)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             val net = data.netWorth.lastOrNull()
             val monthAgo = data.netWorth.getOrNull(data.netWorth.size - 2)

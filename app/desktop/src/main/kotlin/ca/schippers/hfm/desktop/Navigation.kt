@@ -41,7 +41,7 @@ enum class NavGroup(val sections: List<Section>) {
     SETTINGS(
         listOf(
             Section.MEMBERS, Section.USERS, Section.CATEGORIES, Section.PAYEES, Section.RULES, Section.INSTITUTIONS,
-            Section.RATES, Section.PHONES, Section.AI, Section.BACKUPS, Section.SECURITY, Section.ABOUT,
+            Section.RATES, Section.PHONES, Section.AI, Section.BACKUPS, Section.SECURITY, Section.DISPLAY, Section.ABOUT,
         ),
     ),
     ;
@@ -63,7 +63,8 @@ private fun BooksModel.navLabel(section: Section, counts: Map<Section, Int>): St
 fun SideMenu(model: BooksModel, app: AppState, counts: Map<Section, Int>) {
     val user = model.books.userId
     var closed by remember(user) { mutableStateOf(app.closedMenuGroups(user)) }
-    Column(Modifier.width(210.dp).fillMaxHeight().verticalScroll(rememberScrollState()).padding(8.dp)) {
+    // NFR-08: wider with larger text, so names stay on one line.
+    Column(Modifier.width(210.dp * app.textScale.coerceAtLeast(1f)).fillMaxHeight().verticalScroll(rememberScrollState()).padding(8.dp)) {
         NavigationDrawerItem(label = { Text(model.navLabel(Section.DASHBOARD, counts)) }, selected = model.section == Section.DASHBOARD, onClick = { model.section = Section.DASHBOARD })
         for (group in NavGroup.entries) {
             val open = group !in closed || NavGroup.of(model.section) == group

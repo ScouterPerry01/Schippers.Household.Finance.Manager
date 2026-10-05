@@ -72,7 +72,7 @@ class ChartColors(val dark: Boolean) {
 
 @Composable
 fun chartColors(): ChartColors {
-    val dark = isSystemInDarkTheme()
+    val dark = LocalDarkTheme.current
     return remember(dark) { ChartColors(dark) }
 }
 

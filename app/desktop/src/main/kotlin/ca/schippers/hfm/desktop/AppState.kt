@@ -43,6 +43,32 @@ class AppState(
 
     var screen: Screen by mutableStateOf(Screen.Welcome)
 
+    /** NFR-08: light, dark or as the system is; a per-computer setting. */
+    var theme: ThemeChoice by mutableStateOf(runCatching { ThemeChoice.valueOf(prefs.get(PREF_THEME, ThemeChoice.SYSTEM.name)) }.getOrDefault(ThemeChoice.SYSTEM))
+        private set
+
+    /** NFR-08: text size, as a share of the normal size; a per-computer setting. */
+    var textScale: Float by mutableStateOf(prefs.getFloat(PREF_TEXT_SCALE, 1f).coerceIn(TEXT_SCALES.first(), TEXT_SCALES.last()))
+        private set
+
+    fun chooseTheme(choice: ThemeChoice) {
+        theme = choice
+        prefs.put(PREF_THEME, choice.name)
+    }
+
+    fun chooseTextScale(scale: Float) {
+        textScale = scale
+        prefs.putFloat(PREF_TEXT_SCALE, scale)
+    }
+
+    /** NFR-12: the help topic shown, or null when the help is closed. */
+    var helpTopic by mutableStateOf<String?>(null)
+
+    /** NFR-12: opens the help on the topic for where the user is. */
+    fun openHelp() {
+        helpTopic = (screen as? Screen.Main)?.model?.section?.helpId ?: ca.schippers.hfm.i18n.HelpGuide.GENERAL.first()
+    }
+
     /** Focus target for Ctrl+F (OTH-03). */
     val searchFocus = FocusRequester()
 
@@ -128,6 +154,8 @@ class AppState(
         const val MIN_PASSWORD_LENGTH = 12
         private const val PREF_MENU_TOP = "nav.menuTop"
         private const val PREF_MENU_CLOSED = "nav.menuClosed"
+        private const val PREF_THEME = "theme"
+        private const val PREF_TEXT_SCALE = "textScale"
         private const val PREF_LANGUAGE = "language"
         private const val PREF_AUTO_LOCK = "autoLockMinutes"
         const val DEFAULT_AUTO_LOCK = 10
@@ -135,3 +163,12 @@ class AppState(
         private const val MAX_RECENT = 5
     }
 }
+
+/** NFR-08: the colours: as the system is, or always light or dark. */
+enum class ThemeChoice { SYSTEM, LIGHT, DARK }
+
+/** NFR-08: the text sizes offered. */
+val TEXT_SCALES = listOf(0.9f, 1f, 1.15f, 1.3f, 1.5f)
+
+/** Whether the dark colours are in use, for drawings (charts) that pick their own. */
+val LocalDarkTheme = androidx.compose.runtime.staticCompositionLocalOf { false }
