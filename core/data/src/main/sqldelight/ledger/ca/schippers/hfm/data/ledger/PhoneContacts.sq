@@ -1,0 +1,26 @@
+-- Contacts made on a paired phone (CON-07), waiting in the ledger of the group the phone's
+-- captures go to until the user adds them as contacts, adds them to an existing one, or discards
+-- them. Nothing becomes a contact without that review.
+
+CREATE TABLE phone_contact (
+    id TEXT NOT NULL PRIMARY KEY,
+    device_id TEXT NOT NULL,
+    received_at INTEGER NOT NULL,
+    -- The contact as the phone sent it (JSON): name, kinds, what for, phones, emails, address, notes.
+    content TEXT NOT NULL
+);
+
+phoneContacts:
+SELECT * FROM phone_contact ORDER BY received_at, id;
+
+phoneContactById:
+SELECT * FROM phone_contact WHERE id = ?;
+
+insertPhoneContact:
+INSERT OR IGNORE INTO phone_contact(id, device_id, received_at, content) VALUES (?, ?, ?, ?);
+
+deletePhoneContact:
+DELETE FROM phone_contact WHERE id = ?;
+
+countPhoneContacts:
+SELECT count(*) FROM phone_contact;

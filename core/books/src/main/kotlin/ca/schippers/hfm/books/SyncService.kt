@@ -82,7 +82,8 @@ interface CaptureConverter {
  * The desktop's side of phone capture (section 3): pairing by QR code (SYNC-03), receiving items
  * exactly once with an acknowledgement (SYNC-02, SYNC-04), removing a lost phone (SYNC-08), the
  * reference data sent back (SYNC-06), and several phones per desktop (SYNC-07). Received items
- * land in the review inbox (SYNC-05), never straight in the books.
+ * land in the review inbox (SYNC-05), and contacts made on the phone in their own review list
+ * (CON-07), never straight in the books.
  */
 class SyncService internal constructor(private val books: Books) {
 
@@ -184,6 +185,20 @@ class SyncService internal constructor(private val books: Books) {
                 }
                 .onFailure { failed += SyncFailure(item.id, it.message ?: it.javaClass.simpleName) }
         }
+        // CON-07: contacts made on the phone wait for review; a contact already received is acknowledged again.
+        for (contact in request.contacts.take(MAX_ITEMS)) {
+            if (books.core.syncItemById(contact.id).executeAsOneOrNull() != null) {
+                imported += contact.id
+                continue
+            }
+            runCatching { books.phoneContacts.receive(device.group_id ?: defaultGroup() ?: throw ValidationException("error.noEditableGroup"), deviceId, contact, now) }
+                .onSuccess {
+                    books.core.insertSyncItem(contact.id, deviceId, CaptureKind.CONTACT.name, now, null, "IMPORTED")
+                    imported += contact.id
+                    added++
+                }
+                .onFailure { failed += SyncFailure(contact.id, it.message ?: it.javaClass.simpleName) }
+        }
         books.core.deviceSeen(now, added.toLong(), deviceId)
         val reference = reference(today, now)
         val version = version(reference)
@@ -210,6 +225,8 @@ class SyncService internal constructor(private val books: Books) {
     /** Stores one captured item; returns the document it became, if any. */
     private fun receive(groupId: String?, deviceId: String, item: CaptureItem, converter: CaptureConverter, today: LocalDate): String? {
         val f = item.fields
+        // Contacts travel apart from captures (SyncRequest.contacts); this kind only marks them in the phone's queue.
+        require(item.kind != CaptureKind.CONTACT) { "A contact is not a capture" }
         if (item.kind == CaptureKind.METER_READING) {
             // MNT-03: a reading is a fact, not a document to review.
             val vehicle = f.vehicleId ?: throw ValidationException("error.vehicleRequired")
@@ -286,6 +303,7 @@ class SyncService internal constructor(private val books: Books) {
             },
             maintenance = maintenance(today),
             generatedAtMillis = now,
+            contacts = runCatching { books.phoneContacts.forPhone() }.getOrDefault(emptyList()),
         )
     }
 
