@@ -38,6 +38,10 @@ import ca.schippers.hfm.books.DonationReceipt
 import ca.schippers.hfm.books.Instalment
 import ca.schippers.hfm.books.InstalmentService
 import ca.schippers.hfm.books.InstalmentState
+import ca.schippers.hfm.books.PackageItem
+import ca.schippers.hfm.books.PackageLine
+import ca.schippers.hfm.books.PersonPackage
+import ca.schippers.hfm.books.TaxPackage
 import ca.schippers.hfm.books.SlipChecklistService
 import ca.schippers.hfm.books.SlipStatus
 import ca.schippers.hfm.books.SlipType
@@ -48,9 +52,9 @@ import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 
-private enum class TaxesTab { SLIPS, DONATIONS, INSTALMENTS }
+private enum class TaxesTab { SLIPS, DONATIONS, INSTALMENTS, YEAR_END }
 
-/** Phase 5b: the tax year in one place: the slips (TAX-01), donations and their receipts (OTH-01), instalments (TAX-03). */
+/** Phase 5b: the tax year in one place: the slips (TAX-01), donations and their receipts (OTH-01), instalments (TAX-03) and the year-end package (TAX-02). */
 @Composable
 fun TaxesScreen(model: BooksModel) {
     var tab by remember { mutableStateOf(TaxesTab.SLIPS) }
@@ -64,6 +68,7 @@ fun TaxesScreen(model: BooksModel) {
             TaxesTab.SLIPS -> SlipsTab(model)
             TaxesTab.DONATIONS -> DonationsTab(model)
             TaxesTab.INSTALMENTS -> InstalmentsTab(model)
+            TaxesTab.YEAR_END -> PackageTab(model)
         }
     }
 }
@@ -334,4 +339,120 @@ private fun InstalmentDialog(model: BooksModel, year: Int, plan: InstalmentPlan,
             AmountInput(model.t("instalments.due", model.date(InstalmentService.dueDate(year, i))), amounts[i], currency, locale, Modifier.fillMaxWidth(), model::money) { amounts[i] = it }
         }
     }
+}
+
+// --- Year-end package (TAX-02) -----------------------------------------------------------------------
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PackageTab(model: BooksModel) {
+    val books = model.books
+    val locale = model.language.locale
+    val thisYear = today().year
+    var year by remember { mutableStateOf(taxSeasonYear()) }
+    val pkg = remember(model.revision, year) { books.taxPackage.build(year) }
+    var who by remember(year) { mutableStateOf(pkg.people.firstOrNull()?.memberId) }
+    val person = pkg.people.firstOrNull { it.memberId == who } ?: pkg.people.firstOrNull()
+    var message by remember { mutableStateOf<String?>(null) }
+
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Picker(model.t("taxes.year"), (thisYear downTo thisYear - 6).toList(), year, { it.toString() }, Modifier.width(190.dp)) { year = it }
+        if (pkg.people.isNotEmpty()) {
+            Picker(model.t("report.person"), pkg.people, person, { model.personName(it.memberId) }, Modifier.width(220.dp)) { who = it.memberId }
+        }
+    }
+    Text(model.t("package.hint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
+    if (person == null) {
+        Text(model.t("package.none"), Modifier.padding(vertical = 12.dp))
+        return
+    }
+    val table = packageTable(model, year, person)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(vertical = 4.dp)) {
+        androidx.compose.material3.Button(onClick = {
+            model.act { exportPackageFolder(model, pkg) }?.let { dir -> message = model.t("package.exported", dir.path) }
+        }) { Text(model.t("package.exportFolder")) }
+        for (format in ExportFormat.entries) {
+            OutlinedButton(onClick = { model.act { ReportExport.save(table, format, locale, model.t("report.export")) } }) { Text(model.t("report.export.$format")) }
+        }
+    }
+    message?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+    LazyColumn(Modifier.padding(top = 8.dp)) {
+        person.lines.groupBy { it.item.section }.forEach { (section, lines) ->
+            item(key = "s/$section") {
+                Text(model.t("packageSection.$section"), fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+            }
+            items(lines, key = { "${it.item}/${it.detail}" }) { l ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(model.t("packageItem.${l.item}"), Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(packageDetail(model, l).orEmpty(), Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
+                    Text(l.item.line.orEmpty(), Modifier.width(110.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                    MoneyText(model, l.amount, modifier = Modifier.width(140.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End)
+                }
+                HorizontalDivider()
+            }
+        }
+        item(key = "notes") {
+            Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                for (note in table.notes) Text(note, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
+}
+
+/** A line's detail in the user's language: a payer as is, an instalment's authority or a sales tax by name. */
+private fun packageDetail(model: BooksModel, l: PackageLine): String? = when (l.item) {
+    PackageItem.INSTALMENTS -> l.detail?.let { model.t("taxAuthority.$it") }
+    PackageItem.SALES_TAX_PAID -> l.detail?.let { model.t("taxName.$it") }
+    else -> l.detail
+}
+
+/** One person's package as a table, for PDF, Excel or CSV; the notes say what is still missing and what to check. */
+private fun packageTable(model: BooksModel, year: Int, p: PersonPackage): ReportTable {
+    val notes = buildList {
+        if (p.missingSlips.isNotEmpty()) add(model.t("package.missing", p.missingSlips.joinToString(", ") { "${model.t("slipType.${it.type}")} (${it.issuer})" }))
+        if (p.lines.any { it.item == PackageItem.RRSP_CONTRIBUTIONS }) add(model.t("package.rrspNote", year.toString(), (year + 1).toString()))
+        if (p.province == ca.schippers.hfm.calc.Province.QC) add(model.t("package.quebecNote"))
+        add(model.t("package.notice"))
+    }
+    return ReportTable(
+        model.t("package.title", model.personName(p.memberId), year.toString()),
+        model.t("package.subtitle", model.date(today())),
+        listOf(model.t("package.column.section"), model.t("package.column.item"), model.t("package.column.detail"), model.t("package.column.line"), model.t("package.column.amount")),
+        p.lines.map { l -> listOf(model.t("packageSection.${l.item.section}"), model.t("packageItem.${l.item}"), packageDetail(model, l), l.item.line, l.amount) },
+        notes,
+    )
+}
+
+/**
+ * The package for an accountant: a folder with each person's summary (PDF and Excel) and a copy of
+ * the slips and receipts filed for them. Returns the folder, or null when cancelled.
+ */
+private fun exportPackageFolder(model: BooksModel, pkg: TaxPackage): java.io.File? {
+    val chooser = javax.swing.JFileChooser().apply {
+        dialogTitle = model.t("package.exportFolder")
+        fileSelectionMode = javax.swing.JFileChooser.DIRECTORIES_ONLY
+    }
+    if (chooser.showSaveDialog(null) != javax.swing.JFileChooser.APPROVE_OPTION) return null
+    fun safe(name: String) = name.replace(Regex("""[\\/:*?"<>|]"""), "-").trim().take(120)
+    val dir = java.io.File(chooser.selectedFile, safe(model.t("package.folder", pkg.year.toString()))).apply { mkdirs() }
+    val locale = model.language.locale
+    for (p in pkg.people) {
+        val name = safe(model.personName(p.memberId))
+        val table = packageTable(model, pkg.year, p)
+        ReportExport.write(table, ExportFormat.PDF, java.io.File(dir, "$name.pdf"), locale)
+        ReportExport.write(table, ExportFormat.XLSX, java.io.File(dir, "$name.xlsx"), locale)
+        if (p.documents.isEmpty()) continue
+        val docs = java.io.File(dir, name).apply { mkdirs() }
+        val used = HashSet<String>()
+        for (d in p.documents) {
+            val doc = model.books.documents.get(d.documentId)
+            val ext = doc.fileName?.substringAfterLast('.', "")?.takeIf { it.isNotEmpty() } ?: doc.mimeType.substringAfter('/').replace("jpeg", "jpg")
+            var file = safe(d.name)
+            var n = 2
+            while (!used.add(file.lowercase())) file = safe(d.name) + " ($n)".also { n++ }
+            java.io.File(docs, "$file.$ext").writeBytes(model.books.documents.content(d.documentId))
+        }
+    }
+    runCatching { java.awt.Desktop.getDesktop().open(dir) }
+    return dir
 }

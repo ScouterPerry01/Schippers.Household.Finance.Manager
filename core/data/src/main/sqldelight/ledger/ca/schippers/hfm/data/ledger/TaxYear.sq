@@ -56,3 +56,11 @@ SELECT t.date, t.payee_text, coalesce(s.member_id, t.member_id) AS member_id, s.
 FROM txn_split s JOIN txn t ON t.id = s.txn_id
 WHERE t.account_id = ? AND t.date >= ? AND t.date <= ? AND s.category_id = ?
 ORDER BY t.date;
+
+-- TAX-02: every split between two dates, with whom it is for and its transaction's whole amount
+-- (positive for a pay deposit), outside transfers.
+packageSplits:
+SELECT t.id AS txn_id, t.account_id, t.date, t.payee_text, coalesce(s.member_id, t.member_id) AS member_id, s.category_id, s.tax_flag, s.amount_minor,
+    t.amount_minor AS txn_amount_minor
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE t.date >= ? AND t.date <= ? AND t.transfer_id IS NULL;
