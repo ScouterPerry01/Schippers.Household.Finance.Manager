@@ -120,7 +120,7 @@ class MigrationTest {
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).loansQueries
             q.upsertLoan("m", 50000000, "0.05", "FIXED", "SEMI_ANNUAL", 300, "MONTHLY", "2026-02-01", null, null, "2031-01-01", 120, 25000, null, null, null, null)
-            q.insertLoanChange("c", "m", "2027-01-01", "PREPAYMENT", 1000000, null, 0, null, null, 0)
+            q.insertLoanChange("c", "m", "2027-01-01", "PREPAYMENT", 1000000, null, 0, null, null, 0, 0, null)
             assertEquals("2031-01-01", q.loan("m").executeAsOne().term_end)
             driver.execute(null, "PRAGMA foreign_keys = ON", 0)
             driver.execute(null, "DELETE FROM account WHERE id = 'm'", 0)
@@ -535,6 +535,24 @@ class MigrationTest {
             SchemaManager.prepare(driver, CoreDatabase.Schema, file)
             driver.execute(null, "INSERT INTO pet(id, name, species, created_at, updated_at) VALUES ('rex', 'Rex', 'DOG', 0, 0)", 0)
             assertEquals(1L, count(driver, "SELECT count(*) FROM pet"))
+        }
+    }
+
+    @Test
+    fun `version 25 ledgers keep their donation receipts and gain receipts per gift`() {
+        val file = temp.resolve("ledger25.db")
+        older("../data/src/main/sqldelight/ledger/schemas/25.db", file, 25).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('a', 'Chequing', 'CHEQUING', 'CAD', '2026-01-01', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO txn(id, account_id, date, amount_minor, created_at, updated_at) VALUES ('t', 'a', '2026-05-09', -30000, 0, 0)", 0)
+            driver.execute(null, "INSERT INTO donation(txn_id, charity, eligible_minor, received) VALUES ('t', 'Hospital Foundation', 15000, 1)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).donationQueries
+            assertEquals(15000L, q.donationsFor(listOf("t")).executeAsOne().eligible_minor, "the receipt kept for the whole payment stays")
+            q.upsertDonationReceipt("t", "sam", "CHARITABLE", "Hospital Foundation", null, "S-1", 12000, 1)
+            assertEquals("S-1", q.donationReceiptsFor(listOf("t")).executeAsOne().receipt_number)
         }
     }
 }
