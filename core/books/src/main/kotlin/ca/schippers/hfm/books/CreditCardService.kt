@@ -11,6 +11,7 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 /** CC-01 card terms. Rates are annual fractions (0.1999 = 19.99%). */
 data class CreditCardTerms(
@@ -33,6 +34,29 @@ data class CreditCardTerms(
         var next = d
         while (next < today) next = next.plus(DatePeriod(years = 1))
         next
+    }
+
+    /** CC-01: what can still be spent when [owed] is owed (negative once over the limit); null without a limit. */
+    fun availableCredit(owed: Money): Money? = creditLimit?.let { it - owed }
+
+    /** CC-01: the share of the limit in use when [owed] is owed, in whole percent; null without a limit. */
+    fun limitUsedPercent(owed: Money): Int? = creditLimit?.let { CreditCardService.limitUsedPercent(owed, it) }
+
+    /**
+     * CC-01: the payment due dates from [from] to [to], from the due day; in a shorter month the
+     * payment is due on its last day.
+     */
+    fun dueDates(from: LocalDate, to: LocalDate): List<LocalDate> {
+        val day = dueDay ?: return emptyList()
+        val result = ArrayList<LocalDate>()
+        var month = LocalDate(from.year, from.month, 1)
+        while (month <= to) {
+            val last = month.plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1)).day
+            val due = LocalDate(month.year, month.month, minOf(day, last))
+            if (due in from..to) result += due
+            month = month.plus(DatePeriod(months = 1))
+        }
+        return result
     }
 }
 
@@ -293,16 +317,33 @@ class CreditCardService internal constructor(private val books: Books) {
             .filter { it.second.isNotEmpty() }
     }
 
-    /** CC-04: annual fees coming up within [withinDays], as reminders. */
+    /**
+     * CC-04: annual fees coming up within [withinDays], as reminders; CC-01: payments due within
+     * [PAYMENT_LEAD_DAYS] (or [withinDays] if shorter) on cards that are owed something.
+     */
     fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> = books.accounts.list().map { it.account }
         .filter { it.type.kind == AccountKind.CREDIT }
         .mapNotNull { a ->
             val next = terms(a.id)?.takeIf { it.annualFee?.isPositive == true }?.nextAnnualFee(today) ?: return@mapNotNull null
             val days = today.daysUntil(next)
             if (days > withinDays) null else Renewal(RenewalKind.CARD_ANNUAL_FEE, a.id, a.name, next, days)
+        } + paymentsDue(today, today.plus(DatePeriod(days = minOf(withinDays, PAYMENT_LEAD_DAYS))), today)
+
+    /**
+     * CC-01: the payment due dates between [from] and [to] of every open card with a due day that
+     * is owed something on [today], for the calendar and the reminders.
+     */
+    fun paymentsDue(from: LocalDate, to: LocalDate, today: LocalDate = books.today()): List<Renewal> = books.accounts.list()
+        .filter { it.account.type.kind == AccountKind.CREDIT && it.balanceToday.isNegative }
+        .flatMap { s ->
+            val terms = terms(s.account.id) ?: return@flatMap emptyList()
+            terms.dueDates(from, to).map { Renewal(RenewalKind.CARD_PAYMENT_DUE, s.account.id, s.account.name, it, today.daysUntil(it)) }
         }
 
     companion object {
+        /** CC-01: how many days before a card payment is due it appears among the reminders. */
+        const val PAYMENT_LEAD_DAYS = 7
+
         private val DATED = setOf(BenefitKind.PURCHASE_PROTECTION, BenefitKind.PRICE_PROTECTION, BenefitKind.MOBILE_DEVICE)
 
         /** Categories of things purchase protection does not cover: food, fuel, services, bills, fees. */
@@ -311,6 +352,11 @@ class CreditCardService internal constructor(private val books: Books) {
             "health.pharmacy", "health.dental", "health.medical", "health.paramedical", "health.premiums",
             "pets.food", "pets.vet", "pets.licence", "pets.insurance", "pets.boarding",
         )
+
+        /** CC-01: [owed] as a whole percentage of [limit] (none below zero); null for a limit of zero. */
+        fun limitUsedPercent(owed: Money, limit: Money): Int? = limit.takeIf { it.isPositive }?.let {
+            maxOf(0, owed.toBigDecimal().movePointRight(2).divide(it.toBigDecimal(), 0, RoundingMode.HALF_UP).toInt())
+        }
 
         /** The greater of the percentage and the floor, but never more than the balance owed. */
         fun minimumPayment(balance: Money, terms: CreditCardTerms): Money {

@@ -120,7 +120,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
                     Section.AI -> AiScreen(model)
                     Section.TAXES -> TaxesScreen(model)
                     Section.ESTATE -> EstateScreen(model)
-                    Section.DISPLAY -> DisplayScreen(app)
+                    Section.DISPLAY -> DisplayScreen(app, model)
                     Section.FAMILY -> FamilyScreen(model)
                     Section.SIDE -> SideIncomeScreen(model)
                     Section.TRIPS -> TripsScreen(model)

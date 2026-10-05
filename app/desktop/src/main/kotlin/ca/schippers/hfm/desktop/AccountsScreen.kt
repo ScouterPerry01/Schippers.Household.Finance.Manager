@@ -54,7 +54,7 @@ fun AccountsScreen(model: BooksModel) {
     val invested = remember(model.revision) {
         runCatching { model.books.investments.allHoldings(today()).associate { it.account.id to it.totalValue } }.getOrDefault(emptyMap())
     }
-    val shown = summaries.map { s -> invested[s.account.id]?.let { s.copy(balance = it) } ?: s }
+    val shown = summaries.map { s -> invested[s.account.id]?.let { s.copy(balance = it, balanceToday = it) } ?: s }
     if (model.selectedAccountId != null && summaries.none { it.account.id == model.selectedAccountId }) model.selectedAccountId = null
 
     Row(Modifier.fillMaxSize()) {
@@ -116,18 +116,24 @@ private fun AccountRow(model: BooksModel, summary: AccountSummary, lastReconcile
                 color = if (behind) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
             )
         }
-        MoneyText(model, summary.balance, bold = selected)
+        // ACC-01: the balance today, and beside it the balance after post-dated transactions when it differs.
+        Column(horizontalAlignment = Alignment.End) {
+            MoneyText(model, summary.balanceToday, bold = selected)
+            if (summary.hasPostDated) {
+                Text(model.t("accounts.postDated", model.money(summary.balance)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            }
+        }
     }
 }
 
-/** Net total of the listed accounts, per currency (liabilities are negative balances). */
+/** Net total of the listed accounts today, per currency (liabilities are negative balances). */
 @Composable
 private fun Totals(model: BooksModel, summaries: List<AccountSummary>) {
     Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         for ((currency, list) in summaries.groupBy { it.account.currency }.toSortedMap(compareBy { it.code })) {
             Row {
                 Text(model.t("accounts.total", currency.code), Modifier.weight(1f), fontWeight = FontWeight.Bold)
-                MoneyText(model, list.map { it.balance }.sum(currency), bold = true)
+                MoneyText(model, list.map { it.balanceToday }.sum(currency), bold = true)
             }
         }
     }

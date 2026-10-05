@@ -37,6 +37,7 @@ Marquées **Renouvellement**, les dates où quelque chose expire ou doit être r
 - l’immatriculation, l’assurance ou la fin de garantie d’un véhicule ([Véhicules](vehicles)) ;
 - la fin du terme d’un prêt ou d’une hypothèque ([Prêts et hypothèques](loans)) ;
 - les frais annuels d’une carte de crédit ([Comptes](accounts)) ;
+- l’échéance du paiement d’une carte de crédit, chaque mois tant que la carte a un solde dû ([Détails de la carte de crédit](accounts#card-details)) ;
 - une réclamation d’assurance à envoyer ([Réclamations médicales](medical)) ;
 - la fin de la garantie d’un bien de la maison, ou le renouvellement d’une police d’assurance ([Maison et biens](assets)) ;
 - un acompte provisionnel d’impôt ([Impôts](taxes)).

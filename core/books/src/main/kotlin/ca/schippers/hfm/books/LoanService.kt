@@ -95,6 +95,8 @@ data class DebtLine(
     val payoffDate: LocalDate?,
     val interestRemaining: Money?,
     val termEnd: LocalDate?,
+    /** CC-01: for a card or line of credit, the yearly rate on cash advances. */
+    val cashAdvanceRate: BigDecimal? = null,
 )
 
 /** LN-01 to LN-06: loan and mortgage terms, schedules, payments, prepayments, renewals and what-ifs. */
@@ -311,7 +313,7 @@ class LoanService internal constructor(private val books: Books) {
         .filter { it.account.type.kind.isLiability }
         .map { summary ->
             val account = summary.account
-            val owed = -summary.balance
+            val owed = -summary.balanceToday
             when (account.type.kind) {
                 AccountKind.LOAN -> {
                     val status = details(account.id)?.let { runCatching { status(account.id, today) }.getOrNull() }
@@ -320,7 +322,7 @@ class LoanService internal constructor(private val books: Books) {
                 else -> {
                     val terms = runCatching { books.creditCards.terms(account.id) }.getOrNull()
                     val minimum = terms?.let { CreditCardService.minimumPayment(owed, it) }
-                    DebtLine(account, owed, terms?.purchaseRate, minimum?.takeIf { it.isPositive }, null, null, null)
+                    DebtLine(account, owed, terms?.purchaseRate, minimum?.takeIf { it.isPositive }, null, null, null, terms?.cashAdvanceRate)
                 }
             }
         }

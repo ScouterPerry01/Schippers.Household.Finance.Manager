@@ -656,7 +656,7 @@ fun RewardsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TextInput(model.t("rewards.earnRate"), rate, Modifier.weight(1f)) { rate = it }
-            TextInput(model.t("rewards.unitValue"), value, Modifier.weight(1f)) { value = it }
+            TextInput(model.t("rewards.unitValue", account.currency.code), value, Modifier.weight(1f)) { value = it }
         }
         if (program != null) {
             Text(
@@ -674,13 +674,14 @@ fun RewardsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
                     TextButton(onClick = { model.act { books.rewards.deleteEntry(account.id, e.id) } }) { Text("✕") }
                 }
             }
-            Text(model.t("rewards.newEntry"), style = MaterialTheme.typography.titleSmall)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DateInput(model.t("report.date"), day, Modifier.width(160.dp)) { day = it }
-                Picker(model.t("allowance.kind"), RewardKind.entries, kind, { model.t("rewardKind.$it") }, Modifier.weight(1f)) { kind = it }
-                TextInput(model.t("rewards.units"), units, Modifier.width(120.dp)) { units = it }
-            }
-            if (kind == RewardKind.REDEEMED) AmountInput(model.t("rewards.redeemedFor"), worth, account.currency, locale, Modifier.fillMaxWidth(), model::money) { worth = it }
         }
+        // A first entry can go in with the program: Save keeps the program, then adds the entry.
+        Text(model.t("rewards.newEntry"), style = MaterialTheme.typography.titleSmall)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            DateInput(model.t("report.date"), day, Modifier.width(160.dp)) { day = it }
+            Picker(model.t("allowance.kind"), RewardKind.entries, kind, { model.t("rewardKind.$it") }, Modifier.weight(1f)) { kind = it }
+            TextInput(model.t("rewards.units"), units, Modifier.width(120.dp)) { units = it }
+        }
+        if (kind == RewardKind.REDEEMED) AmountInput(model.t("rewards.redeemedFor"), worth, account.currency, locale, Modifier.fillMaxWidth(), model::money) { worth = it }
     }
 }

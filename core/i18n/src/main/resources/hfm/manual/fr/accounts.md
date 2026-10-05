@@ -23,7 +23,7 @@ Les comptes sont regroupés sous des titres par nature, toujours dans cet ordre 
 
 - le nom du compte, en gras pour le compte choisi, suivi de (Fermé) pour un compte fermé ;
 - sous le nom, Rapproché au suivi de la date du dernier relevé rapproché, ou Jamais rapproché. La date passe au rouge quand le dernier rapprochement date de plus de 45 jours, pour vous rappeler de rapprocher le prochain relevé. Les mêmes comptes figurent dans le tableau de bord sous À vérifier ;
-- à droite, le solde, en comptant toutes les opérations inscrites (postdatées comprises). Les soldes négatifs sont en rouge. Les cartes de crédit, marges de crédit, prêts et prêts hypothécaires ont normalement un solde négatif, puisque c’est de l’argent dû.
+- à droite, le solde d’aujourd’hui : les opérations datées après aujourd’hui (un chèque postdaté, un paiement inscrit d’avance) ne comptent pas encore. Quand un compte en a, une ligne plus petite sous le solde donne le solde une fois qu’elles comptent, comme 1 250,00 $ avec les postdatées. Les soldes négatifs sont en rouge. Les cartes de crédit, marges de crédit, prêts et prêts hypothécaires ont normalement un solde négatif, puisque c’est de l’argent dû.
 
 Les comptes de placement sont affichés à leur pleine valeur : les liquidités du compte plus les titres à leur valeur marchande. Dans le registre d’un compte de placement, le solde ne comprend que les liquidités.
 
@@ -31,7 +31,7 @@ Cliquez sur une ligne pour ouvrir le registre de ce compte. Choisir un autre com
 
 ### Totaux {#totals}
 
-Au bas de la colonne, une ligne par devise, comme Total CAD et Total USD, additionne les soldes des comptes listés dans cette devise. Les dettes étant négatives, chaque ligne donne ce que vous possédez moins ce que vous devez dans cette devise. Les comptes de devises différentes ne sont jamais additionnés ici ; la Valeur nette du tableau de bord donne le total du ménage dans la devise de base.
+Au bas de la colonne, une ligne par devise, comme Total CAD et Total USD, additionne les soldes d’aujourd’hui des comptes listés dans cette devise (les opérations postdatées ne comptent pas). Les dettes étant négatives, chaque ligne donne ce que vous possédez moins ce que vous devez dans cette devise. Les comptes de devises différentes ne sont jamais additionnés ici ; la Valeur nette du tableau de bord donne le total du ménage dans la devise de base.
 
 ### Afficher les comptes fermés {#show-closed-accounts}
 
@@ -151,7 +151,13 @@ Un compte fermé garde toutes ses opérations, ses relevés et ses rapports. Il 
 
 > Conseil : Virez tout solde restant avant de fermer un compte, pour que son solde soit nul.
 
-> Remarque : Le registre d’un compte fermé n’affiche plus **Fermer le compte**. Aucun bouton ne rouvre un compte ; un compte fermé peut toujours être affiché, ouvert et consulté.
+> Remarque : Le registre d’un compte fermé affiche **Rouvrir le compte** au lieu de **Fermer le compte** (voir [Rouvrir un compte](accounts#reopen-account)).
+
+### Rouvrir un compte {#reopen-account}
+
+@index: rouvrir un compte; fermé par erreur; reprendre un compte fermé
+
+Pour reprendre un compte fermé, cochez **Afficher les comptes fermés**, ouvrez son registre et choisissez **Rouvrir le compte**. C’est immédiat, sans question : le compte revient dans la liste des comptes, les totaux, les tuiles du tableau de bord et les comptes vers lesquels vous pouvez faire un virement, avec tout son historique. Vous pouvez le fermer de nouveau en tout temps.
 
 ## Le registre {#register}
 
@@ -163,8 +169,9 @@ Le registre est la liste des opérations d’un compte, la plus ancienne en haut
 
 En haut : le nom du compte, puis son type, sa devise et son numéro masqué (par exemple Compte chèques · CAD · •••• 1234). À droite :
 
-- **Solde** : le solde en comptant toutes les opérations, d’aujourd’hui et à venir (une opération postdatée compte déjà).
+- **Solde** : le solde d’aujourd’hui, en comptant toutes les opérations datées d’aujourd’hui ou avant. Quand des opérations sont datées après aujourd’hui, une ligne dessous indique Après les opérations postdatées : avec le solde une fois qu’elles comptent. Le solde courant de la dernière colonne du registre compte toutes les lignes, postdatées comprises.
 - **Compensé** : le solde d’ouverture plus seulement les opérations marquées compensées ou rapprochées. Il devrait égaler ce que montre la banque une fois tout passé. Le rapprochement compare ce montant au relevé.
+- Crédit disponible : pour une carte ou une marge de crédit qui a une limite de crédit (voir [Détails de la carte de crédit](accounts#card-details)), ce qui peut encore être dépensé et la part de la limite utilisée, comme Crédit disponible : 3 800,00 $ (24 % de la limite utilisée). Il est en rouge quand le solde dépasse la limite.
 
 ### Boutons au-dessus du registre {#register-buttons}
 
@@ -179,6 +186,7 @@ Les boutons affichés dépendent du compte :
 - **Détails du prêt** : prêts et prêts hypothécaires seulement ; ouvre Prêts et hypothèques.
 - **Titres détenus** : comptes de placement seulement ; ouvre Placements.
 - **Fermer le compte** : seulement tant que le compte est ouvert (voir [Fermer un compte](accounts#close-account)).
+- **Rouvrir le compte** : seulement pour un compte fermé (voir [Rouvrir un compte](accounts#reopen-account)).
 
 ### Colonnes {#register-columns}
 
@@ -236,6 +244,7 @@ Les boutons à droite du formulaire :
 - **Ventiler…** : répartit l’opération entre plusieurs catégories (pas offert pour un virement).
 - **Talon de paie…** : dans un compte bancaire, à l’entrée d’une nouvelle opération, entre une paie d’après son talon (voir [Paie selon le talon de paie](accounts#pay-stub)).
 - **Taxes de vente…** et **Remboursement…** : pendant la modification d’une opération existante (voir [Taxes de vente sur un achat](accounts#sales-tax) et [Inscrire un remboursement](accounts#refund)).
+- **Historique…** : pendant une modification, l’historique des modifications de l’opération (voir [Historique des modifications](accounts#transaction-history)).
 - **Supprimer** : pendant une modification (voir [Modifier ou supprimer une opération](accounts#edit-transaction)).
 - **Annuler** : vide le formulaire, comme Échap.
 - **Enregistrer** : enregistre, comme Entrée.
@@ -261,10 +270,16 @@ Les règles de [Règles de catégorie](rules) classent les lignes de relevé imp
 
 Cliquez sur une opération dans le registre : le titre du formulaire devient Modification de l’opération et les champs sont chargés. Changez ce qu’il faut et enregistrez. L’opération garde sa marque de compensation et ses étiquettes. Une opération inscrite dans une devise étrangère garde son montant d’origine ; si vous changez le montant, son taux est recalculé.
 
-- **Supprimer** : supprime l’opération aussitôt, sans demander (sauf si elle est rapprochée). Supprimer un côté d’un virement supprime les deux côtés. Les lignes d’une opération de placement ne peuvent pas être supprimées ici.
+- **Supprimer** : demande d’abord Supprimer cette opération (…)? C’est irréversible., en nommant sa date, son bénéficiaire et son montant ; pour un virement, elle précise que le virement est supprimé des deux comptes. **Supprimer** confirme ; **Annuler** la garde. Une opération rapprochée demande ensuite une deuxième confirmation (voir [Modifier une opération rapprochée](accounts#reconciled-changes)). Supprimer un côté d’un virement supprime les deux côtés. Les lignes d’une opération de placement ne peuvent pas être supprimées ici.
 - **Annuler** ou Échap : laisse l’opération telle quelle et vide le formulaire.
 
 Changer la catégorie d’un virement pour une catégorie ordinaire (ou l’inverse) remplace l’opération : l’ancienne est retirée et une nouvelle est enregistrée.
+
+### Historique des modifications {#transaction-history}
+
+@index: historique; piste de vérification; qui l’a modifiée; journal des modifications
+
+Chaque opération garde la trace de chaque modification : sa création, chaque changement, et qui l’a fait. Cliquez sur l’opération dans le registre, puis sur **Historique…**. La fenêtre Historique des modifications énumère les modifications, de la plus ancienne à la plus récente. Chacune indique la date et l’heure, l’utilisateur qui l’a faite et ce qui a été fait (Créé ou Modifié), puis l’opération telle qu’elle était après la modification : date, bénéficiaire, montant, catégorie (ou (ventilée), ou Virement), note, et c ou R quand elle était compensée ou rapprochée. Sous un changement, une ligne grise, Avant :, donne l’opération telle qu’elle était. Marquer une opération compensée ou rapprochée est aussi une modification. **Fermer** ferme la fenêtre. L’historique lui-même ne peut pas être modifié.
 
 ### Modifier une opération rapprochée {#reconciled-changes}
 
@@ -284,7 +299,7 @@ Un virement déplace de l’argent entre deux de vos comptes : payer la carte de
 4. Si l’autre compte est dans une autre devise, remplissez **Montant en {devise}** avec ce que l’autre côté a reçu ou payé.
 5. Enregistrez.
 
-Modifier un côté modifie les deux. Changer l’autre compte dans Catégorie déplace le virement vers le nouveau compte. Un virement ne garde que sa date, son montant et sa note : il n’a ni catégorie, ni personne, ni véhicule, un bénéficiaire tapé n’est pas conservé, et il ne peut pas être ventilé.
+Modifier un côté modifie les deux. Changer l’autre compte dans Catégorie déplace le virement vers le nouveau compte. Un virement garde sa date, son montant, son bénéficiaire et sa note : il n’a ni catégorie, ni personne, ni véhicule, et il ne peut pas être ventilé. Un bénéficiaire tapé pour un virement, comme le nom de la banque, est conservé comme texte des deux côtés ; il n’est pas ajouté à la liste des bénéficiaires.
 
 > Conseil : Quand le même virement paraît sur les relevés des deux comptes, importez les deux relevés : le deuxième import jumelle le virement déjà inscrit au lieu de l’ajouter deux fois.
 
@@ -301,6 +316,8 @@ Choisissez **Ventiler…** dans le formulaire. La fenêtre Ventiler l’opérati
 - **Montant** : le montant de cette partie, en nombre positif ; il prend le sens de l’opération (paiement ou dépôt).
 
 À l’ouverture, la première ligne contient le montant entier (et la catégorie, si elle était choisie) et une ligne vide attend en dessous. **Ajouter une ligne** ajoute une ligne déjà remplie avec ce qui reste. Sous les lignes, Reste : indique ce qui reste à répartir, en rouge tant que ce n’est pas zéro. **Enregistrer** est offert quand les parties égalent exactement l’opération. Les lignes sans montant sont laissées de côté.
+
+Certaines lignes de ventilation portent plus que ce que la fenêtre affiche : les lignes d’une paie entrée d’après un talon de paie sont chacune marquées pour la personne payée, et une ligne peut porter son propre traitement fiscal. Elles sont conservées quand vous changez la ventilation et l’enregistrez de nouveau.
 
 Si vous ouvrez la ventilation avant de taper un paiement ou un dépôt, la fenêtre affiche Total : à la place, et le total des parties devient le montant de l’opération (en paiement, sauf si un dépôt était tapé).
 
@@ -507,11 +524,11 @@ Pour un relevé sur papier ou en PDF que vous ne pouvez pas importer, choisissez
 
 @index: annuler un rapprochement; rouvrir un relevé
 
-Quand une période rapprochée se révèle fausse, choisissez **Annuler le rapprochement** sur le relevé rapproché le plus récent. Seul le plus récent peut être annulé. La fenêtre Annuler le dernier rapprochement explique que les opérations de ce rapprochement redeviennent compensées et peuvent donc être modifiées, et que la raison est conservée dans le journal d’activité.
+Quand une période rapprochée se révèle fausse, choisissez **Annuler le rapprochement** sur le relevé rapproché le plus récent. Seul le plus récent peut être annulé. La fenêtre Annuler le dernier rapprochement explique que les opérations de ce rapprochement redeviennent compensées et peuvent donc être modifiées, et que le relevé redevient En cours, pour être rapproché de nouveau. La raison est conservée avec le relevé.
 
 - **Raison** : pourquoi vous l’annulez. Obligatoire ; le bouton **Annuler le rapprochement** reste grisé tant qu’elle n’est pas remplie.
 
-Le relevé paraît ensuite comme Annulé, avec la raison. Pour rapprocher de nouveau cette période, entrez-la comme relevé papier : le même fichier ne peut pas être importé une deuxième fois.
+Le relevé reste dans la liste comme Annulé, avec la raison, comme trace de ce qui avait été rapproché. À côté, le même relevé reparaît En cours, avec la même date, le même solde de clôture et les mêmes lignes, toujours jumelées à leurs opérations. Corrigez ce qui était faux, puis choisissez **Continuer** (ou **Rapprocher…** dans le registre) et terminez de nouveau le rapprochement. Inutile d’importer de nouveau le fichier, ce qui serait refusé : Ce fichier de relevé a déjà été importé dans ce compte.
 
 ## Détails de la carte de crédit {#card-details}
 
@@ -519,11 +536,11 @@ Le relevé paraît ensuite comme Annulé, avec la raison. Pour rapprocher de nou
 
 Dans un compte de crédit, **Détails de la carte** ouvre Détails de la carte de crédit. Tous les champs sont facultatifs. Les taux se tapent en pourcentage, comme 19,99.
 
-- **Limite de crédit** : la limite de la carte, dans la devise du compte. Conservée pour référence.
+- **Limite de crédit** : la limite de la carte, dans la devise du compte. Avec elle, le registre affiche le crédit disponible et la part de la limite utilisée, et la tuile Dû sur crédit et prêts du tableau de bord donne le crédit encore disponible sur toutes les cartes qui ont une limite.
 - **Taux sur les achats (%)** : le taux d’intérêt annuel sur les achats. C’est le taux affiché pour la carte dans le rapport Sommaire des dettes.
-- **Taux sur les avances de fonds (%)** : le taux annuel sur les avances de fonds. Conservé pour référence.
+- **Taux sur les avances de fonds (%)** : le taux annuel sur les avances de fonds. Il est affiché pour la carte dans le rapport Sommaire des dettes.
 - **Jour du relevé (1-31)** : le jour du mois où le relevé est produit. Conservé pour référence.
-- **Jour d’échéance du paiement (1-31)** : le jour du mois où le paiement est dû. Conservé pour référence ; pour un rappel de paiement, inscrivez le paiement dans [Factures](bills).
+- **Jour d’échéance du paiement (1-31)** : le jour du mois où le paiement est dû. Tant que la carte a un solde dû, chaque échéance figure dans le [Calendrier](calendar) comme paiement dû, et elle paraît parmi les rappels à partir de 7 jours avant, en ramenant à Comptes. Dans un mois plus court, le paiement est dû le dernier jour du mois. Pour que le paiement lui-même soit préparé et marqué payé, inscrivez-le dans [Factures](bills).
 - **Paiement minimum (% du solde)** : la part du solde que l’émetteur demande chaque mois, comme 3.
 - **Paiement minimum (au moins)** : le plus petit paiement minimum, comme 10. Le paiement minimum est le plus grand du pourcentage et de ce montant, sans jamais dépasser le solde. Il est affiché pour la carte dans le rapport Sommaire des dettes.
 - **Frais annuels** : les frais annuels de la carte.
@@ -589,17 +606,19 @@ Le programme :
 - **Programme** : le nom du programme de récompenses. Obligatoire pour pouvoir enregistrer.
 - **Gagné en** : Points, Remise en argent ou Milles.
 - **Gagné par dollar dépensé** : combien de points, de milles ou de dollars de remise chaque dollar dépensé rapporte, comme 1,5 ou 0,02. Facultatif ; avec lui, l’application estime les gains de l’année.
-- **Valeur d’une unité, en dollars** : ce que vaut un point ou un mille à l’échange, comme 0,01. Facultatif ; avec elle, l’application affiche la valeur du solde. Pour une remise en argent, entrez 1.
+- **Valeur d’une unité, en CAD** : ce que vaut un point ou un mille à l’échange, dans la devise du compte, que le libellé nomme (CAD, USD…), comme 0,01. Facultatif ; avec elle, l’application affiche la valeur du solde. Pour une remise en argent, entrez 1.
 
 Une fois le programme enregistré, la fenêtre affiche aussi :
 
 - une ligne de sommaire : Solde (gains et ajustements moins échanges), valeur (le solde fois la valeur d’une unité) et environ combien ont été gagnés cette année (les dépenses de l’année sur la carte fois le taux de gain, à titre d’estimation) ;
-- les douze dernières inscriptions, avec leur date, leur type, leur valeur et leur nombre ; **✕** supprime une inscription ;
-- Une nouvelle inscription, pour noter ce qu’indique un relevé :
-  - **Date** : la date de l’inscription ; par défaut, aujourd’hui.
-  - **Quoi** : Gagnés, Échangés ou Ajustement.
-  - **Combien** : le nombre de points, de milles ou de dollars de remise, plus que zéro.
-  - **Échangés contre (valeur)** : pour Échangés seulement, ce que vous avez obtenu en échange, dans la devise du compte.
+- les douze dernières inscriptions, avec leur date, leur type, leur valeur et leur nombre ; **✕** supprime une inscription.
+
+En dessous, Une nouvelle inscription note ce qu’indique un relevé. Elle est là dès le départ : un nouveau programme et sa première inscription s’enregistrent ensemble.
+
+- **Date** : la date de l’inscription ; par défaut, aujourd’hui.
+- **Quoi** : Gagnés, Échangés ou Ajustement.
+- **Combien** : le nombre de points, de milles ou de dollars de remise, plus que zéro.
+- **Échangés contre (valeur)** : pour Échangés seulement, ce que vous avez obtenu en échange, dans la devise du compte.
 
 **Enregistrer** enregistre le programme et, quand Combien est rempli, ajoute l’inscription. **Fermer** quitte sans enregistrer.
 
@@ -621,10 +640,11 @@ Choisissez où va chaque compte Quicken : un nouveau compte, ou un compte exista
 Puis une ligne par compte Quicken, avec son nom et son nombre d’opérations :
 
 - la case au début : cochez pour importer le compte ; décochez pour le laisser de côté. Les virements vers un compte laissé de côté deviennent des lignes ordinaires non catégorisées, avec le nom de l’autre compte dans la note.
-- **Importer dans** : Un nouveau compte, ou l’un de vos comptes dans la même devise. L’application propose un compte existant du même nom.
+- **Importer dans** : Un nouveau compte, ou n’importe lequel de vos comptes, chacun avec sa devise, comme Compte conjoint (CAD). L’application propose un compte existant du même nom. Les montants du fichier sont pris dans la devise du compte choisi.
 - **Type** : pour un nouveau compte, son type. L’application en propose un d’après la nature et le nom du compte Quicken (un compte Quicken nommé CELI ou TFSA devient un CELI, par exemple) ; vérifiez-le, puisqu’il ne pourra plus changer.
+- **Devise (p. ex. CAD, USD, BTC)** : pour un nouveau compte, sa devise : la devise de base du ménage, sauf si vous la changez, par exemple pour USD dans le cas d’un compte en dollars américains. La saisie passe en majuscules ; un code inconnu est marqué Code de devise inconnu. Elle ne pourra pas changer non plus.
 
-Les nouveaux comptes sont créés dans la devise de base du ménage, avec le solde d’ouverture de Quicken et la date de leur première opération. **Importer** lance l’importation ; le bouton reste grisé tant qu’un ordre des dates et un groupe ne sont pas choisis et qu’au moins un compte n’est pas coché. Pendant l’importation, il affiche Importation…
+Les nouveaux comptes sont créés dans la devise choisie, avec le solde d’ouverture de Quicken et la date de leur première opération. **Importer** lance l’importation ; le bouton reste grisé tant qu’un ordre des dates et un groupe ne sont pas choisis et qu’au moins un compte n’est pas coché. Pendant l’importation, il affiche Importation…
 
 ### Après l’importation {#quicken-results}
 

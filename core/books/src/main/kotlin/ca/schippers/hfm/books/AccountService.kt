@@ -13,22 +13,30 @@ import ca.schippers.hfm.data.ledger.Account as AccountRow
 /** Accounts across every account group the user can see (ACC-01 to ACC-05). */
 class AccountService internal constructor(private val books: Books) {
 
-    /** All visible accounts with their balances. Closed accounts are hidden unless asked for (ACC-05). */
-    fun list(includeClosed: Boolean = false): List<AccountSummary> = books.groups().flatMap { group ->
-        val ledger = books.ledger(group).ledgerQueries
-        val owners = ledger.accountOwners().executeAsList().groupBy({ it.account_id }, { it.member_id })
-        val balances = ledger.balances().executeAsList().associateBy { it.id }
-        ledger.accounts().executeAsList()
-            .map { it.toAccount(group.id, owners[it.id].orEmpty().toSet()) }
-            .filter { includeClosed || it.status != AccountStatus.CLOSED }
-            .map { account ->
-                val b = balances[account.id]
-                AccountSummary(
-                    account,
-                    Money.ofMinor(b?.balance ?: account.openingBalance.minorUnits, account.currency),
-                    Money.ofMinor(b?.cleared_balance ?: account.openingBalance.minorUnits, account.currency),
-                )
-            }
+    /**
+     * All visible accounts with their balances, with and without post-dated transactions. Closed
+     * accounts are hidden unless asked for (ACC-05).
+     */
+    fun list(includeClosed: Boolean = false): List<AccountSummary> {
+        val today = books.today().toString()
+        return books.groups().flatMap { group ->
+            val ledger = books.ledger(group).ledgerQueries
+            val owners = ledger.accountOwners().executeAsList().groupBy({ it.account_id }, { it.member_id })
+            val balances = ledger.balances().executeAsList().associateBy { it.id }
+            val throughToday = ledger.balancesThrough(today).executeAsList().associate { it.account_id to (it.total ?: 0L) }
+            ledger.accounts().executeAsList()
+                .map { it.toAccount(group.id, owners[it.id].orEmpty().toSet()) }
+                .filter { includeClosed || it.status != AccountStatus.CLOSED }
+                .map { account ->
+                    val b = balances[account.id]
+                    AccountSummary(
+                        account,
+                        Money.ofMinor(b?.balance ?: account.openingBalance.minorUnits, account.currency),
+                        Money.ofMinor(b?.cleared_balance ?: account.openingBalance.minorUnits, account.currency),
+                        Money.ofMinor(account.openingBalance.minorUnits + (throughToday[account.id] ?: 0L), account.currency),
+                    )
+                }
+        }
     }
 
     fun get(accountId: String): Account = locate(accountId).second
@@ -80,6 +88,9 @@ class AccountService internal constructor(private val books: Books) {
 
     /** Closes an account: history is kept, but it is hidden from day-to-day views (ACC-05). */
     fun close(accountId: String) = update(get(accountId).copy(status = AccountStatus.CLOSED))
+
+    /** Reopens a closed account: it comes back in the lists, totals and transfer choices (ACC-05). */
+    fun reopen(accountId: String) = update(get(accountId).copy(status = AccountStatus.OPEN))
 
     /** The full account number, only after the user re-enters their password (SEC-04). */
     fun revealNumber(accountId: String, password: CharArray): String? {

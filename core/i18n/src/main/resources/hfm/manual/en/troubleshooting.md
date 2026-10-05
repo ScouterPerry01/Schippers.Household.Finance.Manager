@@ -86,7 +86,7 @@ See [Common controls](basics#controls).
 
 @index: reconciled transaction; locked statement
 
-This question appears when you change a transaction that is part of a completed reconciliation. If you go ahead with **Change it**, the account no longer agrees with that statement, and the change is recorded in the history. If the reconciliation itself was wrong, undo it instead: under the account's **Statements**, **Undo reconciliation** reopens the most recent one (give a reason; only the most recent can be undone). See [Accounts](accounts).
+This question appears when you change a transaction that is part of a completed reconciliation. If you go ahead with **Change it**, the account no longer agrees with that statement, and the change is recorded in the history. If the reconciliation itself was wrong, undo it instead: under the account's **Statements**, **Undo reconciliation** reopens the most recent one (give a reason; only the most recent can be undone): the statement goes back to In progress, to be reconciled again. See [Accounts](accounts).
 
 ## Importing statements {#importing}
 

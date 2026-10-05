@@ -29,6 +29,7 @@ import ca.schippers.hfm.books.QifAccountPlan
 import ca.schippers.hfm.books.QifImportResult
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.importers.DateOrder
+import ca.schippers.hfm.money.Currency
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -109,13 +110,25 @@ private fun PlanRow(model: BooksModel, plan: QifAccountPlan, existing: List<Acco
             Text(plan.qifName, fontWeight = FontWeight.Medium)
             Text(model.t("quicken.lines", plan.transactions), style = MaterialTheme.typography.bodySmall)
         }
-        val choices = listOf<Account?>(null) + existing.filter { it.currency == plan.currency }
-        Picker(model.t("quicken.into"), choices, existing.firstOrNull { it.id == plan.targetAccountId }, { it?.name ?: model.t("quicken.newAccount") }, Modifier.weight(1f), enabled = plan.include) {
-            onChange(plan.copy(targetAccountId = it?.id))
+        // Any account can receive the history: its amounts are taken in that account's currency.
+        Picker(
+            model.t("quicken.into"), listOf<Account?>(null) + existing, existing.firstOrNull { it.id == plan.targetAccountId },
+            { it?.let { a -> "${a.name} (${a.currency.code})" } ?: model.t("quicken.newAccount") }, Modifier.weight(1f), enabled = plan.include,
+        ) {
+            onChange(plan.copy(targetAccountId = it?.id, currency = it?.currency ?: plan.currency))
         }
         if (plan.targetAccountId == null) {
             Picker(model.t("account.type"), AccountType.entries, plan.newType, { model.t("accountType.$it") }, Modifier.weight(1f), enabled = plan.include) {
                 onChange(plan.copy(newType = it))
+            }
+            // OTH-05: the currency of the new account, the base currency unless changed.
+            var code by remember(plan.qifName) { mutableStateOf(plan.currency.code) }
+            TextInput(
+                model.t("account.currency"), code, Modifier.width(200.dp), enabled = plan.include,
+                error = if (runCatching { Currency.of(code) }.isFailure) model.t("error.unknownCurrency") else null,
+            ) { typed ->
+                code = typed.uppercase()
+                runCatching { Currency.of(code) }.getOrNull()?.let { onChange(plan.copy(currency = it)) }
             }
         }
     }

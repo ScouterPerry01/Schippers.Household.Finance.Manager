@@ -57,7 +57,7 @@ The next screen, **Your recovery key**, shows a long key made of letters and dig
 
 @index: Getting started guide; setup steps
 
-The Dashboard shows a **Getting started** card with five steps: the people, the accounts, the bills and pay, a first statement and the phone. Each step has a button that opens the right screen, and the next step to do is in bold. The card counts what is done and disappears once the first four steps are done. **Hide this guide** removes it for you.
+The Dashboard shows a **Getting started** card with five steps: the people, the accounts, the bills and pay, a first statement and the phone. Each step has a button that opens the right screen, and the next step to do is in bold. The card counts what is done and disappears once the first four steps are done. **Hide this guide** removes it for you; **Show the Getting started guide again**, under Display and accessibility, brings it back.
 
 The steps below follow the same order.
 

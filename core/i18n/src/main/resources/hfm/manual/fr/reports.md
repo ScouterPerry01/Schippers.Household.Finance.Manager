@@ -451,11 +451,11 @@ Voir [Véhicules](vehicles) et [Maison et biens](assets) pour les tâches et les
 
 @index: dette; ce que nous devons; prêts; hypothèque; solde de carte de crédit; date de remboursement
 
-Tous les prêts, hypothèques, marges de crédit et cartes ouverts, à la date du jour, du plus grand au plus petit. **Comptes**, **Choisir des comptes…** et **Personne** (les comptes dont cette personne est titulaire) le restreignent.
+Tous les prêts, hypothèques, marges de crédit et cartes ouverts, à la date du jour (les opérations datées après aujourd’hui ne comptent pas), du plus grand au plus petit. **Comptes**, **Choisir des comptes…** et **Personne** (les comptes dont cette personne est titulaire) le restreignent.
 
 - **Total dû** par devise, et **Intérêts à payer sur les prêts** quand les modalités des prêts sont connues.
-- Le tableau : **Comptes**, **Type**, **Solde dû**, **Taux**, **Versement**, **Remboursé le** (la date de remboursement prévue), **Intérêts à payer** et **Fin du terme**.
-- Pour un prêt ou une hypothèque, le taux, le versement, la date de remboursement et les intérêts restants viennent de ses modalités dans l’écran Prêts et hypothèques (voir [Prêts et hypothèques](loans)). Pour une carte ou une marge de crédit, le taux est le taux des achats et le versement est le paiement minimum, selon les modalités de la carte.
+- Le tableau : **Comptes**, **Type**, **Solde dû**, **Taux**, **Taux des avances de fonds**, **Versement**, **Remboursé le** (la date de remboursement prévue), **Intérêts à payer** et **Fin du terme**.
+- Pour un prêt ou une hypothèque, le taux, le versement, la date de remboursement et les intérêts restants viennent de ses modalités dans l’écran Prêts et hypothèques (voir [Prêts et hypothèques](loans)). Pour une carte ou une marge de crédit, le taux est le taux des achats, le taux des avances de fonds a sa propre colonne, et le versement est le paiement minimum, tous selon les modalités de la carte (voir [Détails de la carte de crédit](accounts#card-details)).
 
 « Aucune dette. Bravo. » paraît quand rien n’est dû.
 

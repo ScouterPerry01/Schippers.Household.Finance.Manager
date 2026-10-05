@@ -46,6 +46,16 @@ Everything works from the keyboard:
 
 Screen readers (Narrator or NVDA on Windows, Orca on Linux) read the labels of fields and buttons, and say whether a menu group is open or closed. See [Keyboard shortcuts](shortcuts) for the full list.
 
+### Getting started guide {#getting-started-guide}
+
+@index: show the guide again; onboarding; Getting started
+
+When you have hidden the Dashboard's Getting started guide, this screen shows Getting started guide with a button:
+
+- **Show the Getting started guide again**: brings the guide back on your Dashboard and opens the Dashboard. The guide then stays until its first four steps are done, as before; if they are already done, there is nothing left for it to show. See [Getting started guide](dashboard#getting-started-guide).
+
+Unlike the other settings on this screen, this one is kept in the household, for you only. The part is not shown while the guide is not hidden.
+
 ## The menu {#menu}
 
 @index: navigation; menu position; side menu; top menu; menu bar

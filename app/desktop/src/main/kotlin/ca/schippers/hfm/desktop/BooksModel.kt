@@ -165,7 +165,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     fun renewalSection(kind: RenewalKind): Section = when (kind) {
         RenewalKind.PET_LICENCE, RenewalKind.PET_INSURANCE -> Section.PETS
         RenewalKind.LOAN_RENEWAL -> Section.LOANS
-        RenewalKind.CARD_ANNUAL_FEE -> Section.ACCOUNTS
+        RenewalKind.CARD_ANNUAL_FEE, RenewalKind.CARD_PAYMENT_DUE -> Section.ACCOUNTS
         RenewalKind.MEDICAL_CLAIM -> Section.MEDICAL
         RenewalKind.ASSET_WARRANTY, RenewalKind.INSURANCE_RENEWAL -> Section.ASSETS
         RenewalKind.TAX_INSTALMENT -> Section.TAXES

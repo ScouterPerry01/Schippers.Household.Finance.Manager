@@ -115,7 +115,7 @@ Click a category's bar to open its budget form. Change the amount, the period, t
 ## Currencies {#currencies}
 @index: foreign currency; exchange rate; base currency
 
-Budgets are in the household's base currency. Transactions in other currencies (a US dollar account, for example) are converted at the exchange rates in the app. When a rate is missing, a red line says "No exchange rate for ...: those amounts are left out. Add a rate under Exchange rates." See [Rates and prices](rates).
+Budgets are in the household's base currency. Transactions in other currencies (a US dollar account, for example) are converted at the exchange rates in the app. When a rate is missing, a red line says "No exchange rate for ...: those amounts are left out. Add a rate under Rates and prices." See [Rates and prices](rates).
 
 ## Where budgets appear elsewhere {#elsewhere}
 

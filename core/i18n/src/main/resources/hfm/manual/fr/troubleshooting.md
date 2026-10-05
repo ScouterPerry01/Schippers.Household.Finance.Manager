@@ -86,7 +86,7 @@ Voir [Les commandes courantes](basics#controls).
 
 @index: opération rapprochée; relevé verrouillé
 
-Cette question paraît quand vous modifiez une opération qui fait partie d'un rapprochement terminé. Si vous allez de l'avant avec **Modifier**, le compte ne concorde plus avec ce relevé, et la modification est inscrite dans l'historique. Si c'est le rapprochement lui-même qui était faux, annulez-le plutôt : dans les **Relevés** du compte, **Annuler le rapprochement** rouvre le plus récent (donnez une raison ; seul le plus récent peut être annulé). Voir [Comptes](accounts).
+Cette question paraît quand vous modifiez une opération qui fait partie d'un rapprochement terminé. Si vous allez de l'avant avec **Modifier**, le compte ne concorde plus avec ce relevé, et la modification est inscrite dans l'historique. Si c'est le rapprochement lui-même qui était faux, annulez-le plutôt : dans les **Relevés** du compte, **Annuler le rapprochement** rouvre le plus récent (donnez une raison ; seul le plus récent peut être annulé) : le relevé redevient En cours, pour être rapproché de nouveau. Voir [Comptes](accounts).
 
 ## L'importation des relevés {#importing}
 

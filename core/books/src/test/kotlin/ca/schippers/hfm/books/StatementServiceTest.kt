@@ -112,6 +112,31 @@ class StatementServiceTest {
     }
 
     @Test
+    fun `an undone reconciliation can be reconciled again`() {
+        val result = books.statements.import(account.id, parsed(), "march.ofx", ofx.toByteArray())
+        books.statements.finish(result.statementId)
+        val reopened = books.statements.undo(result.statementId, "Typed the wrong closing balance")
+
+        // The undone statement stays in the history; an open copy takes its place, lines and all.
+        val statuses = books.statements.statements(account.id).associate { it.id to it.status }
+        assertEquals(mapOf(result.statementId to StatementStatus.UNDONE, reopened to StatementStatus.OPEN), statuses)
+        assertEquals("Typed the wrong closing balance", books.statements.statement(result.statementId).undoReason)
+        val view = books.statements.view(reopened)
+        assertEquals(books.statements.view(result.statementId).lines.map { it.transactionId to it.status }, view.lines.map { it.transactionId to it.status })
+        assertEquals(march(31), view.statement.periodEnd)
+        assertTrue(view.canFinish, "nothing changed: the difference is still zero")
+
+        books.statements.finish(reopened)
+        assertEquals(StatementStatus.RECONCILED, books.statements.statement(reopened).status)
+        assertTrue(books.transactions.register(account.id).all { it.transaction.cleared == ClearedStatus.RECONCILED })
+        assertEquals(march(31), books.statements.lastReconciled()[account.id])
+
+        // The file itself still counts as imported.
+        val again = runCatching { books.statements.import(account.id, parsed(), "march.ofx", ofx.toByteArray()) }
+        assertEquals("error.statementAlreadyImported", (again.exceptionOrNull() as ValidationException).key)
+    }
+
+    @Test
     fun `the same file or overlapping lines are never imported twice`() {
         books.statements.import(account.id, parsed(), "march.ofx", ofx.toByteArray())
         val again = runCatching { books.statements.import(account.id, parsed(), "march.ofx", ofx.toByteArray()) }

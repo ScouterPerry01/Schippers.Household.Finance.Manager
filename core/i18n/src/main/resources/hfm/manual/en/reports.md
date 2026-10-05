@@ -451,11 +451,11 @@ See [Vehicles](vehicles) and [Home and assets](assets) for the tasks and service
 
 @index: debt; what we owe; loans; mortgage; credit card balance; payoff date
 
-Every open loan, mortgage, line of credit and card, as of today, largest first. **Accounts**, **Choose accounts…** and **Person** (the accounts that person owns) narrow it.
+Every open loan, mortgage, line of credit and card, as of today (transactions dated after today are not counted), largest first. **Accounts**, **Choose accounts…** and **Person** (the accounts that person owns) narrow it.
 
 - **Total owed** per currency, and **Interest to pay on loans** where loan terms are known.
-- The table: **Accounts**, **Type**, **Owed**, **Rate**, **Payment**, **Paid off** (the expected payoff date), **Interest to pay** and **Term ends**.
-- For a loan or mortgage, the rate, payment, payoff date and remaining interest come from its terms on the Loans and mortgages screen (see [Loans and mortgages](loans)). For a card or line of credit, the rate is the purchase rate and the payment the minimum due, from the card's terms.
+- The table: **Accounts**, **Type**, **Owed**, **Rate**, **Cash advance rate**, **Payment**, **Paid off** (the expected payoff date), **Interest to pay** and **Term ends**.
+- For a loan or mortgage, the rate, payment, payoff date and remaining interest come from its terms on the Loans and mortgages screen (see [Loans and mortgages](loans)). For a card or line of credit, the rate is the purchase rate, the cash advance rate is its own column, and the payment is the minimum due, all from the card's terms (see [Credit card details](accounts#card-details)).
 
 "No debts. Well done." appears when nothing is owed.
 
