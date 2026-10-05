@@ -39,7 +39,10 @@ data class PeriodTotals(val start: LocalDate, val end: LocalDate, val income: Mo
 /** Spending (or income) of a category including its subcategories; [category] null is "uncategorized". */
 data class CategoryAmount(val category: Category?, val amount: Money, val hasChildren: Boolean)
 
-data class PayeeAmount(val payeeId: String?, val name: String, val amount: Money)
+data class PayeeAmount(val payeeId: String?, val name: String, val amount: Money) {
+    /** What the row is grouped by, to match it with the same payee in a comparison. */
+    val key: String get() = ReportService.payeeKey(payeeId, name)
+}
 
 data class NetWorthPoint(val date: LocalDate, val assets: Money, val liabilities: Money) {
     val net: Money get() = assets - liabilities
@@ -233,12 +236,16 @@ class ReportService internal constructor(private val books: Books) {
 
     // --- Spending by payee ----------------------------------------------------------------------
 
-    /** Net amount per payee (spending positive), largest spending first. */
+    /**
+     * Net amount per payee (spending positive), largest spending first. Grouped as the custom
+     * report's payee rows are ([payeeKey]): by payee, or by the text typed when there is none.
+     */
     fun byPayee(filter: ReportFilter): Report<List<PayeeAmount>> {
         val converter = Converter(books.rates, filter.cur)
         val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
         val names = books.payees.list(includeArchived = true).associate { it.id to it.name }
-        val totals = HashMap<Pair<String?, String>, Money>()
+        val totals = HashMap<String, Money>()
+        val labels = HashMap<String, Pair<String?, String>>()
         for (group in books.groups()) {
             val q = books.ledger(group).ledgerQueries
             val from = filter.from.toString()
@@ -252,11 +259,12 @@ class ReportService internal constructor(private val books: Books) {
                 val account = accounts[r.accountId] ?: continue
                 if (!filter.wants(account)) continue
                 val amount = converter.toBase(Money.ofMinor(r.total ?: 0, account.currency), LocalDate.parse(r.date)) ?: continue
-                val key = r.payeeId to (r.payeeId?.let(names::get) ?: r.payeeText)
+                val key = payeeKey(r.payeeId, r.payeeText)
+                labels.getOrPut(key) { r.payeeId to (r.payeeId?.let(names::get) ?: r.payeeText.trim()) }
                 totals[key] = (totals[key] ?: Money.zero(filter.cur)) - amount
             }
         }
-        val rows = totals.map { (key, amount) -> PayeeAmount(key.first, key.second, amount) }
+        val rows = totals.map { (key, amount) -> labels.getValue(key).let { (id, name) -> PayeeAmount(id, name, amount) } }
             .filter { !it.amount.isZero }
             .sortedByDescending { it.amount }
         return Report(rows, converter.missing)
@@ -341,7 +349,7 @@ class ReportService internal constructor(private val books: Books) {
                 .filter { filter.wants(accounts[it.account_id]) }
                 .filter { if (uncategorized) it.category_id == null else inSubtree(it.category_id) }
                 .filter { payeeId == null || it.payee_id == payeeId }
-                .filter { payeeText == null || payeeId != null || (it.payee_id == null && it.payee_text.orEmpty() == payeeText) }
+                .filter { payeeText == null || payeeId != null || (it.payee_id == null && payeeKey(null, it.payee_text.orEmpty()) == payeeKey(null, payeeText)) }
                 .mapNotNull { r ->
                     val account = accounts[r.account_id] ?: return@mapNotNull null
                     val date = LocalDate.parse(r.date)
@@ -355,6 +363,14 @@ class ReportService internal constructor(private val books: Books) {
     fun uncategorizedCount(): Long = books.groups().sumOf { books.ledger(it).ledgerQueries.uncategorizedCount().executeAsOne() }
 
     companion object {
+        /**
+         * How every report groups payees: by the payee when the transaction has one (so a payee's
+         * other spellings count with it), otherwise by the text typed, ignoring capitals and
+         * spaces around it.
+         */
+        internal fun payeeKey(payeeId: String?, payeeText: String?): String =
+            payeeId?.let { "id:$it" } ?: ("text:" + payeeText.orEmpty().trim().lowercase())
+
         /** Calendar periods covering [from]..[to], clipped to the range. */
         fun periods(from: LocalDate, to: LocalDate, granularity: Granularity): List<Pair<LocalDate, LocalDate>> {
             val months = when (granularity) {

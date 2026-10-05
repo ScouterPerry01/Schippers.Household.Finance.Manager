@@ -243,7 +243,7 @@ Sending the claim, closing the expense, or recording the last plan's payment end
 ## The medical expense tax credit {#tax-credit}
 @index: METC; line 33099; line 33199; line 381; medical expense credit; CRA; Revenu Québec
 
-The **Medical expenses** report under [Reports](reports) gathers the year's figures for the non-refundable medical expense tax credit. It shows the year's costs, reimbursements and out-of-pocket amounts per person, a table of every expense, and then the credit.
+The **Medical expenses** report under [Reports](reports) gathers the year's figures for the non-refundable medical expense tax credit. It shows the costs, reimbursements and out-of-pocket amounts of the expenses paid in the year, per person, a table of every expense with its date paid and date of service, and then the credit. The year-end package on the Taxes screen uses the same figures (see [Year-end package](taxes#year-end-package)).
 
 In short, as the report explains: federally (line 33099) and in Quebec (line 381), expenses paid in any 12 consecutive months ending in the year can be claimed, once. The household's own expenses (spouses and children under 18) are claimed together, usually by one spouse; an adult dependant's are claimed separately (federal line 33199). Only the amount above a threshold counts: 3 % of net income federally (or a set amount if lower), 3 % of family income in Quebec.
 
@@ -270,7 +270,7 @@ The best period always ends on the date of an expense in the year. When two peri
 When the report is for **Everyone** and the household has at least two adults, **Which spouse should claim?** compares the two:
 
 - **Net income, name**: each spouse's expected net income for the year (line 23600 of the return). Leave other adults empty. The books do not hold net income, so you type it in; it is not saved.
-- **CRA fixed amount, year**: the fixed amount the CRA sets each year. It is filled in for the years the app knows (2023 to 2025); enter it for later years from the CRA's website.
+- **CRA fixed amount, year**: the fixed amount the CRA sets each year. It is filled in for the years the app knows (2023 to 2026; $2,890 for 2026, as published by the CRA); enter it for later years from the CRA's website.
 
 With two incomes entered, the report shows for each spouse "Claimed by name: amount counts for the federal credit": the best period's total less 3 % of that spouse's net income, or less the fixed amount when that is lower. Then one of:
 

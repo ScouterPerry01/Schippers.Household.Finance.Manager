@@ -47,8 +47,8 @@ The row above the report holds the filters. Each report shows only the filters i
 - **Period**: the dates the report covers. Choose **This month** (the first of the month to today), **Last month** (the whole previous month), **This year** (January 1 to today), **Last year** (January 1 to December 31 of last year), **Last 12 months** (the first day of the month eleven months ago to today) or **Custom dates**. The default is **This year**. Used by Income and expense, Spending by category, Income by category, Spending by payee, Custom report, Net worth, Investment portfolio and Budget vs actual. Periods other than Custom dates move with the calendar: a saved report on **This month** always shows the current month.
 - **From**: shown with **Custom dates** only. The first day of the period, as YYYY-MM-DD. If the date cannot be read, the first day of the current month is used.
 - **To**: shown with **Custom dates** only. The last day of the period, as YYYY-MM-DD. If the date cannot be read, today is used.
-- **Accounts**: shown only when the household has more than one account group. **All accounts** covers every account you may see; choosing a group limits the report to the accounts in that group. Used by every report except Investment income and capital gains, Foreign exchange gains, Registered plans, Medical expenses, Assets and warranties, Maintenance and cost of ownership and Year in review. In the Investment portfolio, the group also chooses whose target allocation is used.
-- **Choose accounts…**: opens a list of accounts to pick from, for a report on some accounts only, such as the cottage's. Once accounts are chosen, the button reads, for example, **3 accounts chosen**. When an account group is chosen too, the report covers the accounts that are in both. See [Choose accounts](reports#choose-accounts). Not shown for Investment income, Foreign exchange, Registered plans, Medical expenses, Assets and warranties, Maintenance, Reconciliation status and Year in review.
+- **Account group**: shown only when the household has more than one account group. **All accounts** covers every account you may see; choosing a group limits the report to the accounts in that group. Used by every report except Investment income and capital gains, Foreign exchange gains, Registered plans, Medical expenses, Assets and warranties, Maintenance and cost of ownership, Year in review, Budget vs actual and Reconciliation status. In the Investment portfolio, the group also chooses whose target allocation is used.
+- **Choose accounts…**: opens a list of accounts to pick from, for a report on some accounts only, such as the cottage's. Once accounts are chosen, the button reads, for example, **3 accounts chosen**. When an account group is chosen too, the report covers the accounts that are in both. See [Choose accounts](reports#choose-accounts). Not shown for Investment income, Foreign exchange, Registered plans, Medical expenses, Assets and warranties, Maintenance, Year in review, Budget vs actual and Reconciliation status, which always cover every account.
 - **Person**: shown when household members are set up. **Everyone** is the default.
   - In the income and spending reports and the custom report, it keeps only the amounts entered for that person (the **For** field of a transaction or split line).
   - In Net worth and Debt summary, it keeps the accounts that person owns, alone or jointly.
@@ -56,11 +56,11 @@ The row above the report holds the filters. Each report shows only the filters i
   - In Investment income, Registered plans and Medical expenses, it shows only that person's part.
 - **Tag**: shown when tags exist, for the four income and spending reports and the custom report. **Any tag** is the default; choosing a tag keeps only the transactions with that tag.
 - **Currency**: shown for Income and expense, Spending by category, Income by category, Spending by payee and Net worth, when some accounts are in a currency other than the base currency (crypto-assets aside). **All accounts, in CAD** (or your base currency) converts every account to the base currency, at the exchange rate of each transaction's date. Choosing, for example, **USD accounts only** shows only the accounts in that currency, in their own amounts, with no conversion.
-- **Compare with**: shown for the four income and spending reports. **No comparison** is the default. **Previous period** compares with the period of the same length just before (for March 1 to 31, the 31 days before it). **Same period last year** compares with the same dates one year earlier. The comparison appears as an extra total in Income and expense, and as a "was" figure and an extra table column in the category reports. Spending by payee offers the choice but does not show a comparison.
+- **Compare with**: shown for the four income and spending reports. **No comparison** is the default. **Previous period** compares with the period of the same length just before (for March 1 to 31, the 31 days before it). **Same period last year** compares with the same dates one year earlier. The comparison appears as an extra total in Income and expense, and as a "was" figure and an extra table column in the category reports and Spending by payee.
 - **Year**: for Registered plans, Maintenance and cost of ownership, and Year in review. The current year or one of the ten before. The default is the current year (for Year in review, the current year so far).
 - **Tax year**: for Investment income and capital gains, Foreign exchange gains and Medical expenses. The current year or one of the ten before. The default is last year, the year usually being filed.
 
-> Note: The years chosen with **Year** and **Tax year** are kept while the app is open but are not part of a saved report.
+The years chosen with **Year** and **Tax year** are kept while the app is open, and are kept with a saved report too.
 
 ### Choose accounts {#choose-accounts}
 
@@ -117,7 +117,7 @@ The Investment portfolio also warns when a security has no price on some dates: 
 
 A saved report keeps your choices under a name, so you can come back to the same view in one click. Saved reports are your own: other users of the household do not see them.
 
-What is kept: the report, the period (or the custom dates), the account group, the chosen accounts, the person, the tag, the currency, the comparison and, for a custom report, its rows, columns, measure and chart. No amounts are kept: the report is worked out again from the books each time.
+What is kept: the report, the period (or the custom dates), the account group, the chosen accounts, the person, the tag, the currency, the comparison, the **Year** or **Tax year** of the reports that have one and, for a custom report, its rows, columns, measure and chart. A report saved before the year was kept opens with the year shown at the time. No amounts are kept: the report is worked out again from the books each time.
 
 ### Save the report {#save-dialog}
 
@@ -142,13 +142,11 @@ Saved reports are listed under **Saved reports** below the list of reports. A cl
 
 A scheduled custom report is written as a PDF into its folder after each month, quarter or year ends. It uses the saved filters, with the period just ended in place of the saved period.
 
-- The app checks when the household is opened, and every hour while it is open. A PDF is made for the most recent month, quarter or year that has ended and has not been made yet.
+- The app checks when the household is opened, and every hour while it is open. A PDF is made for each month, quarter or year that has ended since the last one made, oldest first: periods missed while the household was closed are made then, up to a year back. For anything older, run the report by hand with **Custom dates**.
 - The file is named after the report and the period, such as "Cottage 2026-09.pdf", "Cottage 2026-Q3.pdf" or "Cottage 2025.pdf". A file of the same name is replaced.
 - When reports are made, a line beside **Save this report…** lists them, such as "Scheduled reports made: Cottage 2026-09.pdf".
 - When a schedule is set or changed, it starts with the period that has just ended.
 - If the folder no longer exists (an unplugged drive, for example), nothing is written and the report is tried again later.
-
-> Note: The hint in the Save window says missed periods are made the next time the household is open. Only the most recent finished period is made then: if the household was not opened for several months, the earlier months are not made. Run the report by hand for those, with **Custom dates**.
 
 ## Income and spending reports {#income-spending}
 
@@ -198,10 +196,10 @@ The payees the most money went to in the period, after refunds.
 
 - The chart shows the 30 largest; the table lists every payee with net spending.
 - Payees from whom more came in than went out are not shown.
-- Payees are grouped by the payee chosen on the transaction, or else by the payee name as typed.
+- Payees are grouped by the payee of the transaction, so the other spellings matched to a payee count with it. A transaction with no payee is grouped by the name as typed, ignoring capitals and spaces around it. The custom report groups its **Payee** lines the same way.
+- With **Compare with**, each bar shows what was spent with that payee in the comparison period ("was …"), and the table has an extra column for it.
+- The table lists **Payee** and **Amount**, plus the comparison column when one is chosen, and a **Total**.
 - Click a payee to see its transactions.
-
-**Compare with** is offered but has no effect on this report.
 
 ## Custom report and year in review {#custom-and-review}
 
@@ -220,7 +218,7 @@ How the figures are worked out:
 
 - Transfers between your own accounts are left out. Uncategorized money out counts as spending and money in as income.
 - **Person** is the person a transaction line is for; lines for no one are under "Household".
-- **Payee** groups by the payee name as written, ignoring capitals; lines without one are under "No payee".
+- **Payee** groups as Spending by payee does: by the transaction's payee, or else by the name as typed, ignoring capitals; lines without one are under "No payee".
 - When **Tag** is the rows, a transaction with several tags counts under each of its tags, so the tag lines can add up to more than what was spent. Untagged lines are under "No tag".
 - Rows that are not time periods are sorted largest first. When there are more than 12, the eleven largest are kept and the rest are added together in a line "Other".
 - Time columns are in date order; other columns are sorted largest first.
@@ -272,7 +270,7 @@ What the household owns (assets) and owes (liabilities) at the end of each month
 
 @index: returns; rate of return; performance; time-weighted return; money-weighted return; TWR; MWR; investment report
 
-How the investment accounts did over the period, in the base currency, after fees and foreign tax. **Accounts**, **Choose accounts…** and **Person** choose the investment accounts; "No investment accounts in this selection." means none matched.
+How the investment accounts did over the period, in the base currency, after fees and foreign tax. **Account group**, **Choose accounts…** and **Person** choose the investment accounts; "No investment accounts in this selection." means none matched.
 
 The totals at the top:
 
@@ -297,7 +295,7 @@ The chart shows the accounts' value at each month end. Under it:
 This part of the Investment portfolio report divides the portfolio on the end date and compares it with a target.
 
 - **Divided by**: **Asset class** (equity, fixed income, cash and equivalents, real estate, commodities, other, and crypto-assets), **Region** (Canada, United States, international, emerging markets, global, other), **Currency** or **Account**.
-- **Set a target (household)**, or **Change the target (household)** once one exists: opens the target for the way the portfolio is divided. Whose target it is depends on the filters: the person chosen in **Person**, otherwise the account group chosen in **Accounts**, otherwise the household; the button names it. Not offered for **Account**. See [Target allocation](reports#target-allocation).
+- **Set a target (household)**, or **Change the target (household)** once one exists: opens the target for the way the portfolio is divided. Whose target it is depends on the filters: the person chosen in **Person**, otherwise the account group chosen in **Account group**, otherwise the household; the button names it. Not offered for **Account**. See [Target allocation](reports#target-allocation).
 
 The ranked bars show each part with its value, its share in percent and its target. With a target, a line says either that every part is within the tolerance, or which parts are further off. The table lists **Part**, **Market value**, **%**, and with a target **Target** and **Off by** (percentage points above or below).
 
@@ -393,9 +391,9 @@ An individual leaves out the first $200 of the year's net foreign exchange gain 
 
 Medical costs for the **Tax year**, what insurance paid back, and the medical expense tax credit. **Person** shows one person only.
 
-- **Costs**, **Reimbursed** and **Out of pocket**: totals of the expenses whose date of service is in the year.
+- **Costs**, **Reimbursed** and **Out of pocket**: totals of the expenses paid in the year (the date paid, or the date of service when no payment date was entered), the same date the tax credit uses.
 - The chart shows, per person, the reimbursed and out-of-pocket amounts.
-- The table lists each expense with **Date of service**, **Person treated**, **Kind of care**, **Description**, **Costs**, **Reimbursed** and **Out of pocket**.
+- The table lists each expense, in order of payment, with **Date paid**, **Date of service**, **Person treated**, **Kind of care**, **Description**, **Costs**, **Reimbursed** and **Out of pocket**.
 
 The medical expense tax credit:
 
@@ -414,7 +412,7 @@ Expenses already claimed in an earlier year cannot be claimed again. Expenses ar
 Under the household's best period, when **Person** is **Everyone** and the household has at least two adults, the report helps choose who claims the household's medical expenses.
 
 - **Net income, …**: one field per adult: the expected net income (line 23600 of the return). Enter the two spouses' incomes and leave anyone else empty. Nothing is saved; the fields are for this comparison only.
-- **CRA fixed amount, …**: the fixed amount for the year that caps the 3 % threshold. It is filled in for the years the app knows; otherwise enter it from the CRA.
+- **CRA fixed amount, …**: the fixed amount for the year that caps the 3 % threshold. It is filled in for the years the app knows (2023 to 2026; $2,890 for 2026); otherwise enter it from the CRA.
 
 Once two incomes are entered, a line per spouse says how much would count for the federal credit if they claimed (the expenses less the lower of 3 % of their net income and the fixed amount), followed by a conclusion: who should claim and how much more counts, that either spouse gives the same, or that the expenses are below both thresholds. In Quebec, a note says the provincial threshold uses family income, so it is the same whoever claims.
 
@@ -451,7 +449,7 @@ See [Vehicles](vehicles) and [Home and assets](assets) for the tasks and service
 
 @index: debt; what we owe; loans; mortgage; credit card balance; payoff date
 
-Every open loan, mortgage, line of credit and card, as of today (transactions dated after today are not counted), largest first. **Accounts**, **Choose accounts…** and **Person** (the accounts that person owns) narrow it.
+Every open loan, mortgage, line of credit and card, as of today (transactions dated after today are not counted), largest first. **Account group**, **Choose accounts…** and **Person** (the accounts that person owns) narrow it.
 
 - **Total owed** per currency, and **Interest to pay on loans** where loan terms are known.
 - The table: **Accounts**, **Type**, **Owed**, **Rate**, **Cash advance rate**, **Payment**, **Paid off** (the expected payoff date), **Interest to pay** and **Term ends**.
@@ -465,18 +463,20 @@ Every open loan, mortgage, line of credit and card, as of today (transactions da
 
 The budgets against what was actually spent and received.
 
-- With **Period** set to **This year** or **Last year**, the report shows that whole year. With any other period, it shows the month of the period's last day (for **Last 12 months**, the current month).
+- The report covers the **Period** chosen: what was spent and received from its first day to its last.
+- A monthly budget counts once for each calendar month the period touches: three times for a quarter, twelve times for a year. When the period is a single month, a monthly budget with rollover adds what was carried over from earlier months.
+- A yearly budget is for the calendar year. When the period is within one year, the whole yearly amount is compared with what was spent from January 1 to the period's last day. When the period runs over two years (such as **Last 12 months**), a twelfth of the yearly amount counts for each month.
 - For expenses: **Spent**, **Budgeted** and **Remaining**; for income: **Received**, **Budgeted** and **Remaining**.
-- A bar per budget shows the actual amount against a marker at the budget, with "… of …", and either "Over by …" (spending over budget, flagged) or "… left", including any amount carried over. In a month view, a yearly budget is marked "(yearly)".
+- A bar per budget shows the actual amount against a marker at the budget, with "… of …", and either "Over by …" (spending over budget, flagged) or "… left", including any amount carried over. Unless the period is a whole calendar year, a yearly budget is marked "(yearly)".
 - The table: **Category**, **Budgeted**, **Actual**, **Remaining**.
 
-The account filters do not change this report. Budgets are set on the Budgets screen, where clicking a bar changes the budget: see [Budgets](budgets).
+Budgets cover every account, so the account filters are not shown for this report. Budgets are set on the Budgets screen, where clicking a bar changes the budget: see [Budgets](budgets).
 
 ### Reconciliation status {#reconciliation-status}
 
 @index: reconcile; reconciliation; bank statement; uncleared
 
-Every open account with **Last reconciled** (or "Never reconciled"), **Days since**, **Statements in progress** (statements started but not finished) and **Not yet on a statement** (the balance less the cleared balance). Accounts should be reconciled with each statement; more than 45 days behind is worth catching up. The table is open from the start. See [Accounts](accounts) for reconciling.
+Every open account with **Last reconciled** (or "Never reconciled"), **Days since**, **Statements in progress** (statements started but not finished) and **Not yet on a statement** (the balance less the cleared balance). Accounts should be reconciled with each statement. An account last reconciled more than 45 days ago stands out: a red line above the table names it, such as "Chequing: last reconciled 52 days ago", and its **Flag** column in the table reads "More than 45 days". The table is open from the start. The report covers every open account, so the account filters are not shown. See [Accounts](accounts) for reconciling.
 
 ## Who can see what {#permissions}
 

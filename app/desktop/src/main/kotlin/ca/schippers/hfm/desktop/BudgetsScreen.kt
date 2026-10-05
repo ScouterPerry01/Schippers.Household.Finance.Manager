@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.BudgetLine
 import ca.schippers.hfm.books.BudgetPeriod
+import ca.schippers.hfm.books.BudgetReport
 import ca.schippers.hfm.books.Category
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.domain.CategoryKind
@@ -59,7 +60,8 @@ fun BudgetsScreen(model: BooksModel) {
             TextButton(onClick = { month = month.plus(DatePeriod(months = if (yearView) 12 else 1)) }) { Text("▶") }
             LabeledCheckbox(model.t("budget.yearView"), yearView) { yearView = it }
         }
-        BudgetReportView(model, month, yearView) { line -> editing = line.category to line }
+        val report = remember(model.revision, month, yearView) { if (yearView) model.books.budgets.year(month.year) else model.books.budgets.month(month) }
+        BudgetReportView(model, report, yearView) { line -> editing = line.category to line }
     }
 
     if (adding) {
@@ -71,9 +73,8 @@ fun BudgetsScreen(model: BooksModel) {
 
 /** Budget vs actual as bars with the budget as a target marker; also used by the Reports screen. */
 @Composable
-fun BudgetReportView(model: BooksModel, month: LocalDate, yearView: Boolean, onEdit: ((BudgetLine) -> Unit)? = null) {
+fun BudgetReportView(model: BooksModel, report: BudgetReport, yearView: Boolean, onEdit: ((BudgetLine) -> Unit)? = null) {
     val books = model.books
-    val report = remember(model.revision, month, yearView) { if (yearView) books.budgets.year(month.year) else books.budgets.month(month) }
     val base = books.reports.base
     val title = model.t("report.BUDGET")
     if (report.lines.isEmpty()) {

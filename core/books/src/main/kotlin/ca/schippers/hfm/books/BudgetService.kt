@@ -92,7 +92,20 @@ class BudgetService internal constructor(private val books: Books) {
         return report(start, end, monthlyFrom = start, annualFrom = start, monthsInPeriod = 12)
     }
 
-    private fun report(from: LocalDate, to: LocalDate, monthlyFrom: LocalDate, annualFrom: LocalDate, monthsInPeriod: Int): BudgetReport {
+    /**
+     * Budget vs actual for any period, as the reports screen chooses it: what came in or went out
+     * from [from] to [to]. Monthly budgets count once for each calendar month the period touches
+     * (with rollover when it is a single month). Annual budgets are for the calendar year: within
+     * one year they compare the year's amount with the year to [to], as the month view does; over
+     * a period spanning years, a twelfth of the amount counts for each month.
+     */
+    fun period(from: LocalDate, to: LocalDate): BudgetReport {
+        val months = (to.year - from.year) * 12 + (to.month.ordinal - from.month.ordinal) + 1
+        val oneYear = from.year == to.year
+        return report(from, to, monthlyFrom = from, annualFrom = if (oneYear) LocalDate(from.year, 1, 1) else from, monthsInPeriod = months, annualProrated = !oneYear)
+    }
+
+    private fun report(from: LocalDate, to: LocalDate, monthlyFrom: LocalDate, annualFrom: LocalDate, monthsInPeriod: Int, annualProrated: Boolean = false): BudgetReport {
         val budgets = list().associateBy { it.categoryId }
         if (budgets.isEmpty()) return BudgetReport(from, to, emptyList(), emptySet())
         val categories = books.categories.list(includeArchived = true).associateBy { it.id }
@@ -119,8 +132,14 @@ class BudgetService internal constructor(private val books: Books) {
             val sign = if (category.kind == CategoryKind.EXPENSE) -1L else 1L
             val annual = budget.period == BudgetPeriod.ANNUAL
             val actual = own(budget.categoryId, if (annual) annualActual else monthlyActual) * sign
-            val carried = if (budget.rollover && !annual && monthsInPeriod == 1) carryOver(budget, from, sign, categories, budgets) else Money.zero(base)
-            val budgeted = if (annual) budget.amount else budget.amount * monthsInPeriod.toLong()
+            val carried = if (budget.rollover && !annual && monthsInPeriod == 1) {
+                carryOver(budget, LocalDate(from.year, from.month, 1), sign, categories, budgets)
+            } else Money.zero(base)
+            val budgeted = when {
+                !annual -> budget.amount * monthsInPeriod.toLong()
+                annualProrated -> budget.amount.times(BigDecimal(monthsInPeriod).divide(BigDecimal(12), 10, RoundingMode.HALF_UP))
+                else -> budget.amount
+            }
             BudgetLine(category, budget, budgeted + carried, carried, actual)
         }.sortedWith(compareBy({ it.category.kind }, { -it.ratio }))
         return BudgetReport(from, to, lines, missing)

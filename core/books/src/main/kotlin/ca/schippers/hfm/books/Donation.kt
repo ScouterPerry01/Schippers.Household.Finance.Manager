@@ -33,8 +33,14 @@ data class Donation(
     val memo: String? = null,
     /** Given through payroll: the T4 slip (box 46) is the receipt. */
     val payroll: Boolean = false,
+    /**
+     * This entry's part of the receipt's eligible amount, when one transaction holds gifts by
+     * several people or of both kinds: the receipt is kept per transaction, so its eligible
+     * amount is shared in proportion to the gifts and counted once.
+     */
+    val eligibleShare: Money? = null,
 ) {
-    val eligible: Money get() = receipt?.eligible ?: amount
+    val eligible: Money get() = eligibleShare ?: receipt?.eligible ?: amount
 
     /** Received when marked so, when a document is filed with the transaction, or on the T4 for payroll gifts. */
     val hasReceipt: Boolean get() = receipt?.received == true || documents > 0 || payroll
@@ -71,6 +77,11 @@ class DonationService internal constructor(private val books: Books) {
                     val memo = splits.mapNotNull { it.memo }.distinct().joinToString(", ").ifEmpty { null }
                     Donation(txnId, g.id, txn.date, txn.payeeText, memberId, kind, amount, receipt, documents, memo, payroll = txn.amount.isPositive)
                 }
+                .groupBy { it.transactionId }.values.flatMap { entries ->
+                    val eligible = entries.first().receipt?.eligible
+                    if (entries.size == 1 || eligible == null) entries
+                    else entries.zip(eligible.allocate(entries.map { it.amount.toBigDecimal() })).map { (d, share) -> d.copy(eligibleShare = share) }
+                }
         }.sortedBy { it.date }
     }
 
@@ -90,11 +101,19 @@ class DonationService internal constructor(private val books: Books) {
         books.require(group, PermissionLevel.EDIT)
         val registration = receipt.registration?.uppercase()?.replace(Regex("[\\s-]"), "")?.ifEmpty { null }
         validate(registration == null || REGISTRATION.matches(registration), "error.donationRegistration")
-        receipt.eligible?.let { validate(it.currency == txn.amount.currency && !it.isNegative && it.minorUnits <= -txn.amount.minorUnits, "error.donationEligible") }
+        // The gift is the donation lines, not the transaction: a payroll gift is part of a deposit.
+        val gift = -txn.splits.filter { flagOf(it) != null }.sumOf { it.amount.minorUnits }
+        receipt.eligible?.let { validate(it.currency == txn.amount.currency && !it.isNegative && it.minorUnits <= gift, "error.donationEligible") }
         books.ledger(group).donationQueries.upsertDonation(
             transactionId, receipt.charity?.trim()?.ifEmpty { null }, registration, receipt.receiptNumber?.trim()?.ifEmpty { null },
             receipt.eligible?.minorUnits, if (receipt.received) 1 else 0,
         )
+    }
+
+    /** A split's donation kind: its own flag, or its category's; null when it is not a donation. */
+    private fun flagOf(split: Split): TaxFlag? {
+        val flag = split.taxFlag ?: split.categoryId?.let { id -> books.categories.list(includeArchived = true).firstOrNull { it.id == id }?.taxFlag }
+        return flag?.takeIf { it == TaxFlag.CHARITABLE || it == TaxFlag.POLITICAL }
     }
 
     private companion object {

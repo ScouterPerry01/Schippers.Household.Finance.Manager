@@ -66,6 +66,7 @@ class CustomReportService internal constructor(private val books: Books) {
         val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
         val members = books.members.list(includeArchived = true).associate { it.id to it.displayName }
         val tags = books.tags().associate { it.id to it.name }
+        val payees = books.payees.list(includeArchived = true).associate { it.id to it.name }
         val missing = HashSet<Currency>()
         val cache = HashMap<Pair<Currency, LocalDate>, java.math.BigDecimal?>()
         fun convert(m: Money, date: LocalDate): Money? {
@@ -90,6 +91,11 @@ class CustomReportService internal constructor(private val books: Books) {
                 if (layout.rows == ReportDimension.TAG || layout.columns == ReportDimension.TAG || filter.tagId != null) {
                     rows.map { it.txn_id }.distinct().associateWith { id -> books.ledger(g).ledgerQueries.tagsForTxn(id).executeAsList() }
                 } else emptyMap()
+            // Payees are grouped as in the spending by payee report: by payee, or by the text typed.
+            val payeeOf: Map<String, String?> =
+                if (layout.rows == ReportDimension.PAYEE || layout.columns == ReportDimension.PAYEE) {
+                    books.ledger(g).ledgerQueries.reportSplits(filter.from.toString(), filter.to.toString(), null, null).executeAsList().associate { it.txn_id to it.payee_id }
+                } else emptyMap()
             for (r in rows) {
                 val account = accounts[r.account_id] ?: continue
                 if (filter.accountIds != null && account.id !in filter.accountIds) continue
@@ -110,7 +116,9 @@ class CustomReportService internal constructor(private val books: Books) {
                     null -> listOf(PivotTable.TOTAL to labels("total"))
                     ReportDimension.CATEGORY -> listOf(r.category_id to categoryName(r.category_id))
                     ReportDimension.TOP_CATEGORY -> top(r.category_id).let { listOf(it to categoryName(it)) }
-                    ReportDimension.PAYEE -> listOf(r.payee_text?.trim()?.lowercase() to (r.payee_text?.trim()?.ifEmpty { null } ?: labels("noPayee")))
+                    ReportDimension.PAYEE -> payeeOf[r.txn_id].let { id ->
+                        listOf(ReportService.payeeKey(id, r.payee_text) to (id?.let(payees::get) ?: r.payee_text?.trim()?.ifEmpty { null } ?: labels("noPayee")))
+                    }
                     ReportDimension.ACCOUNT -> listOf(account.id to account.name)
                     ReportDimension.PERSON -> listOf(r.member_id to (r.member_id?.let(members::get) ?: labels("household")))
                     // A transaction with several tags counts under each.

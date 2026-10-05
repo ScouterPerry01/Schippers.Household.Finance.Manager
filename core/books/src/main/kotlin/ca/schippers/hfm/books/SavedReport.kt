@@ -26,6 +26,12 @@ data class ReportDefinition(
     val currency: String? = null,
     val compare: String? = null,
     val layout: CustomLayout? = null,
+    /** The tax year of the investment income, foreign exchange and medical expenses reports. */
+    val taxYear: Int? = null,
+    /** The year of the registered plans and maintenance reports. */
+    val planYear: Int? = null,
+    /** The year in review's year. */
+    val reviewYear: Int? = null,
 ) {
     fun toJson(): String = JSON.encodeToString(serializer(), this)
 
@@ -78,16 +84,35 @@ class SavedReportService internal constructor(private val books: Books) {
 
     fun delete(id: String) = q.deleteSavedReport(id, books.userId)
 
-    /** RPT-05: the scheduled reports with a finished period not made yet, as of [today]. */
-    fun due(today: LocalDate): List<Pair<SavedReport, ReportPeriod>> = list().mapNotNull { r ->
-        val schedule = r.schedule ?: return@mapNotNull null
-        val period = lastFinished(schedule, today)
-        if (period.id == r.lastPeriod) null else r to period
+    /**
+     * RPT-05: the scheduled reports with a finished period not made yet, as of [today], oldest
+     * period first: every period missed since the last one made, up to a year back. A new or
+     * changed schedule starts with the period that just ended.
+     */
+    fun due(today: LocalDate): List<Pair<SavedReport, ReportPeriod>> = list().flatMap { r ->
+        val schedule = r.schedule ?: return@flatMap emptyList()
+        val finished = finishedWithinAYear(schedule, today)
+        val last = r.lastPeriod
+        // Period ids of one schedule sort in time order ("2026-09", "2026-Q3", "2025").
+        val missed = if (last == null) finished.takeLast(1) else finished.filter { it.id > last }
+        missed.map { r to it }
     }
 
     fun markMade(id: String, period: ReportPeriod) = q.setReportRun(period.id, id)
 
     companion object {
+        /** The months, quarters or years that ended in the year before [today], oldest first. */
+        fun finishedWithinAYear(schedule: ReportSchedule, today: LocalDate): List<ReportPeriod> {
+            val since = today.minus(DatePeriod(years = 1))
+            val out = ArrayList<ReportPeriod>()
+            var period = lastFinished(schedule, today)
+            while (period.to >= since) {
+                out += period
+                period = lastFinished(schedule, period.from)
+            }
+            return out.reversed()
+        }
+
         /** The last month, quarter or year that ended before [today]. */
         fun lastFinished(schedule: ReportSchedule, today: LocalDate): ReportPeriod {
             val monthStart = LocalDate(today.year, today.month, 1)

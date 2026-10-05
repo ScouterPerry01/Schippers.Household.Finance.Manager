@@ -1,6 +1,7 @@
 package ca.schippers.hfm.books
 
 import ca.schippers.hfm.calc.Province
+import ca.schippers.hfm.calc.medical.Window
 import ca.schippers.hfm.calc.invest.SlipKind
 import ca.schippers.hfm.calc.invest.TaxSlips
 import ca.schippers.hfm.domain.TaxFlag
@@ -41,6 +42,7 @@ enum class PackageItem(val section: PackageSection, val line: String?) {
     MOVING(PackageSection.DEDUCTIONS, "21900"),
     EMPLOYMENT_EXPENSES(PackageSection.DEDUCTIONS, "22900"),
     MEDICAL(PackageSection.CREDITS, "33099"),
+    MEDICAL_DEPENDANT(PackageSection.CREDITS, "33199"),
     TUITION(PackageSection.CREDITS, "Schedule 11"),
     DONATIONS(PackageSection.CREDITS, "Schedule 9"),
     POLITICAL(PackageSection.CREDITS, "40900"),
@@ -225,11 +227,19 @@ class TaxPackageService internal constructor(private val books: Books) {
         }
     }
 
-    /** MED-12: each person's medical expenses over the best 12-month period ending in the year. */
+    /**
+     * MED-12, MED-14: the medical expenses as the medical expenses report claims them. The
+     * household's own (spouses and children) are claimed together, by one spouse, over the best
+     * 12-month period for all of them, so they are one line in the household's package; each adult
+     * dependant's best period is a line of its own (federal 33199) there too.
+     */
     private fun fromMedical(year: Int, add: (String?, PackageItem, String?, Money) -> Unit) {
-        for (p in books.medical.taxReport(year).people) {
-            val w = p.best ?: p.calendar
-            if (w.total.signum() > 0) add(p.member.id, PackageItem.MEDICAL, "${w.start} – ${w.end}", Money.of(w.total.setScale(2, RoundingMode.HALF_UP), cad))
+        fun money(w: Window) = Money.of(w.total.setScale(2, RoundingMode.HALF_UP), cad)
+        val report = books.medical.taxReport(year)
+        report.family?.let { w -> if (w.total.signum() > 0) add(null, PackageItem.MEDICAL, "${w.start} – ${w.end}", money(w)) }
+        for (p in report.people.filter { it.otherDependant }) {
+            val w = p.best ?: continue
+            if (w.total.signum() > 0) add(null, PackageItem.MEDICAL_DEPENDANT, "${p.member.displayName}: ${w.start} – ${w.end}", money(w))
         }
     }
 
@@ -243,10 +253,15 @@ class TaxPackageService internal constructor(private val books: Books) {
         for (d in books.donations.list(year).filter { it.memberId == memberId && it.documents > 0 }) {
             for (doc in books.documents.documentsFor(DocumentEntity.TRANSACTION, d.transactionId)) put(doc.id, "Donation - ${d.receipt?.charity ?: d.payee.orEmpty()} - ${d.date}")
         }
-        if (memberId != null) {
-            val people = books.medical.taxReport(year).people.firstOrNull { it.member.id == memberId }
-            for (e in people?.expenses.orEmpty()) {
-                for (doc in books.documents.documentsFor(MedicalService.EXPENSE, e.id)) put(doc.id, "Medical - ${e.description ?: e.service.name} - ${e.taxDate}")
+        // The medical receipts go with the household's package, for the periods its lines claim.
+        if (memberId == null) {
+            val report = books.medical.taxReport(year)
+            val claimed = listOfNotNull(report.family?.let { it to report.people.filter { p -> !p.otherDependant }.map { p -> p.member.id }.toSet() }) +
+                report.people.filter { it.otherDependant && it.best != null }.map { it.best!! to setOf(it.member.id) }
+            for ((window, people) in claimed) {
+                for (e in books.medical.expensesIn(window, people)) {
+                    for (doc in books.documents.documentsFor(MedicalService.EXPENSE, e.id)) put(doc.id, "Medical - ${e.description ?: e.service.name} - ${e.taxDate}")
+                }
             }
         }
         return docs.map { (id, name) -> PackageDocument(id, name) }

@@ -117,4 +117,40 @@ class CustomReportTest {
         books.savedReports.delete(report.id)
         assertTrue(books.savedReports.list().isEmpty())
     }
+
+    @Test
+    fun `every period missed while the household was closed is made, up to a year back`() {
+        val saved = books.savedReports.save(SavedReport("", "Cottage", """{"kind":"CUSTOM"}""", ReportSchedule.MONTHLY, temp.toString()))
+        books.savedReports.markMade(saved.id, SavedReportService.lastFinished(ReportSchedule.MONTHLY, LocalDate(2026, 6, 10)))
+        assertEquals(listOf("2026-06", "2026-07", "2026-08", "2026-09"), books.savedReports.due(LocalDate(2026, 10, 5)).map { it.second.id }, "oldest first")
+        // After more than a year away, only the last twelve months.
+        val late = books.savedReports.due(LocalDate(2028, 1, 15)).map { it.second.id }
+        assertEquals(12, late.size)
+        assertEquals("2027-01" to "2027-12", late.first() to late.last())
+
+        assertEquals(listOf("2025-Q4", "2026-Q1", "2026-Q2", "2026-Q3"), SavedReportService.finishedWithinAYear(ReportSchedule.QUARTERLY, LocalDate(2026, 10, 5)).map { it.id })
+        assertEquals(listOf("2025"), SavedReportService.finishedWithinAYear(ReportSchedule.YEARLY, LocalDate(2026, 10, 5)).map { it.id })
+    }
+
+    @Test
+    fun `a saved report keeps its year`() {
+        val d = ReportDefinition("MEDICAL", "THIS_YEAR", taxYear = 2024)
+        assertEquals(2024, ReportDefinition.fromJson(d.toJson())!!.taxYear)
+        assertEquals(null, ReportDefinition.fromJson("""{"kind":"PLANS","preset":"THIS_YEAR"}""")!!.planYear, "reports saved before keep the current year")
+    }
+
+    @Test
+    fun `payees are grouped the same way in the custom report and spending by payee`() {
+        val iga = books.payees.create("IGA")
+        books.payees.addAlias(iga.id, "IGA EXTRA")
+        spend(chequing, LocalDate(2026, 3, 2), "50.00", "food.groceries", payee = "IGA")
+        spend(chequing, LocalDate(2026, 3, 9), "30.00", "food.groceries", payee = "IGA EXTRA #8123")
+        val filter = ReportFilter(LocalDate(2026, 3, 1), LocalDate(2026, 3, 31))
+        val custom = books.customReports.run(filter, CustomLayout(ReportDimension.PAYEE, null), labels)
+        assertEquals(listOf("IGA" to cad("80.00")), custom.rows.map { it.label to custom.rowTotal(it) }, "the alias counts with its payee")
+        assertEquals(listOf("IGA" to cad("80.00")), books.reports.byPayee(filter).value.map { it.name to it.amount })
+        // Text with no payee: the same text in other capitals is one payee.
+        assertEquals(ReportService.payeeKey(null, " Corner Store"), ReportService.payeeKey(null, "corner store "))
+        assertTrue(ReportService.payeeKey(iga.id, "IGA") != ReportService.payeeKey(null, "IGA"))
+    }
 }

@@ -33,7 +33,7 @@ import javax.swing.JFileChooser
 
 /**
  * Section 12, medical expenses (MED-12, MED-14, MED-15): costs, reimbursements and out of pocket
- * per person for the year, the 12-month period ending in the year with the most eligible expenses
+ * per person for the expenses paid in the year, the 12-month period ending in the year with the most eligible expenses
  * for the credit, adult dependants apart, and the receipts as one PDF.
  */
 @OptIn(ExperimentalLayoutApi::class)
@@ -45,7 +45,8 @@ internal fun MedicalReport(model: BooksModel, year: Int, memberId: String?) {
     val all = remember(model.revision) { books.medical.expenses() }
     val tax = remember(model.revision, year) { books.medical.taxReport(year) }
     val members = remember(model.revision) { books.members.list(includeArchived = true) }
-    val inYear = all.filter { it.serviceDate.year == year && (memberId == null || it.memberId == memberId) }
+    // The year's expenses are those paid in it, the date the credit uses; the date of service is shown beside it.
+    val inYear = all.filter { it.taxDate.year == year && (memberId == null || it.memberId == memberId) }
     val byPerson = inYear.groupBy { it.memberId }
     fun name(id: String) = members.firstOrNull { it.id == id }?.displayName.orEmpty()
     fun sum(list: List<MedExpense>, f: (MedExpense) -> Money) = list.map(f).fold(zero, Money::plus)
@@ -72,8 +73,11 @@ internal fun MedicalReport(model: BooksModel, year: Int, memberId: String?) {
         model,
         ReportTable(
             model.t("report.MEDICAL") + " · $year", model.t("report.inCurrency", cad.code),
-            listOf(model.t("medical.serviceDate"), model.t("medical.patient"), model.t("medical.service"), model.t("medical.description"), model.t("medicalReport.costs"), model.t("medicalReport.reimbursed"), model.t("medicalReport.outOfPocket")),
-            inYear.sortedBy { it.serviceDate }.map { e -> listOf(e.serviceDate, name(e.memberId), model.t("medService.${e.service}"), e.description.orEmpty(), e.amount, e.reimbursed, e.outOfPocket) },
+            listOf(
+                model.t("medical.paidDate"), model.t("medical.serviceDate"), model.t("medical.patient"), model.t("medical.service"), model.t("medical.description"),
+                model.t("medicalReport.costs"), model.t("medicalReport.reimbursed"), model.t("medicalReport.outOfPocket"),
+            ),
+            inYear.sortedBy { it.taxDate }.map { e -> listOf(e.taxDate, e.serviceDate, name(e.memberId), model.t("medService.${e.service}"), e.description.orEmpty(), e.amount, e.reimbursed, e.outOfPocket) },
         ),
     )
 

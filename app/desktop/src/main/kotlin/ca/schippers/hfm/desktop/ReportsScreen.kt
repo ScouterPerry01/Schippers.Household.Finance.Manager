@@ -52,6 +52,11 @@ import java.time.format.DateTimeFormatter
 enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, CUSTOM, YEAR_IN_REVIEW, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, PLANS, FX, MEDICAL, ASSETS, MAINTENANCE, DEBT, BUDGET, RECONCILIATION }
 /** FX-06: reports that can show one currency's accounts in their own amounts. */
 private val BY_CURRENCY = setOf(ReportKind.INCOME_EXPENSE, ReportKind.SPENDING_BY_CATEGORY, ReportKind.INCOME_BY_CATEGORY, ReportKind.SPENDING_BY_PAYEE, ReportKind.NET_WORTH)
+/** RPT-07: reports that do not use the account group and the chosen accounts, so those choices are not shown. */
+private val NO_ACCOUNT_CHOICE = setOf(
+    ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE,
+    ReportKind.YEAR_IN_REVIEW, ReportKind.BUDGET, ReportKind.RECONCILIATION,
+)
 
 enum class RangePreset { THIS_MONTH, LAST_MONTH, THIS_YEAR, LAST_YEAR, LAST_12_MONTHS, CUSTOM }
 enum class Compare { NONE, PREVIOUS, LAST_YEAR }
@@ -168,12 +173,13 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                         DateInput(model.t("report.to"), state.customTo, Modifier.width(150.dp)) { state.customTo = it }
                     }
                 }
-                if (groups.size > 1 && state.kind !in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE, ReportKind.YEAR_IN_REVIEW)) {
-                    Picker(model.t("report.accounts"), listOf(null) + groups, groups.firstOrNull { it.id == state.groupId }, { it?.name ?: model.t("report.allAccounts") }, Modifier.width(200.dp)) {
+                // Budget vs actual and reconciliation status always cover every account, so they have no account choice.
+                if (groups.size > 1 && state.kind !in NO_ACCOUNT_CHOICE) {
+                    Picker(model.t("report.accountGroup"), listOf(null) + groups, groups.firstOrNull { it.id == state.groupId }, { it?.name ?: model.t("report.allAccounts") }, Modifier.width(200.dp)) {
                         state.groupId = it?.id
                     }
                 }
-                if (state.kind !in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE, ReportKind.RECONCILIATION, ReportKind.YEAR_IN_REVIEW)) {
+                if (state.kind !in NO_ACCOUNT_CHOICE) {
                     OutlinedButton(onClick = { choosingAccounts = true }, modifier = Modifier.padding(top = 8.dp)) {
                         Text(state.accountSet?.let { model.t("report.someAccounts", it.size) } ?: model.t("report.chooseAccounts"))
                     }
@@ -234,7 +240,11 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                     ReportKind.ASSETS -> AssetsReport(model)
                     ReportKind.MAINTENANCE -> MaintenanceReport(model, state.planYear)
                     ReportKind.DEBT -> DebtReport(model, filter.accountIds)
-                    ReportKind.BUDGET -> BudgetReportView(model, LocalDate(to.year, to.month, 1), yearView = state.preset in setOf(RangePreset.THIS_YEAR, RangePreset.LAST_YEAR))
+                    ReportKind.BUDGET -> {
+                        // The chosen period, whatever it is (a month, a year, the last 12 months, custom dates).
+                        val budget = remember(model.revision, from, to) { books.budgets.period(from, to) }
+                        BudgetReportView(model, budget, yearView = from == LocalDate(from.year, 1, 1) && to == LocalDate(from.year, 12, 31))
+                    }
                     ReportKind.RECONCILIATION -> ReconciliationReport(model)
                 }
             }
@@ -399,12 +409,20 @@ private fun CategoryReport(model: BooksModel, state: ReportState, filter: Report
 private fun PayeeReport(model: BooksModel, state: ReportState, filter: ReportFilter) {
     val books = model.books
     val report = remember(model.revision, filter) { books.reports.byPayee(filter) }
+    // RPT-02: the same payees in the period compared with.
+    val comparison = remember(model.revision, filter, state.compare) {
+        comparisonFilter(filter, state.compare)?.let { f -> books.reports.byPayee(f).value.associate { it.key to it.amount } }
+    }
     val spending = report.value.filter { it.amount.isPositive }
+    val zero = Money.zero(filter.cur(model))
+    val total = spending.fold(zero) { a, p -> a + p.amount }
     Text(model.t("report.SPENDING_BY_PAYEE"), style = MaterialTheme.typography.titleLarge)
     Text(subtitle(model, filter), style = MaterialTheme.typography.bodySmall)
     MissingRates(model, report.missingRates)
     RankedBars(
-        spending.take(30).map { RankedBar(it.name.ifBlank { "?" }, it.amount.d(), model.money(it.amount)) },
+        spending.take(30).map { p ->
+            RankedBar(p.name.ifBlank { "?" }, p.amount.d(), model.money(p.amount), note = comparison?.let { c -> model.t("report.versus", model.money(c[p.key] ?: zero)) })
+        },
         slot = 1,
         onClick = { i ->
             val p = spending[i]
@@ -413,7 +431,13 @@ private fun PayeeReport(model: BooksModel, state: ReportState, filter: ReportFil
     )
     TableView(
         model,
-        ReportTable(model.t("report.SPENDING_BY_PAYEE"), subtitle(model, filter), listOf(model.t("register.payee"), model.t("register.amount")), spending.map { listOf(it.name, it.amount) }),
+        ReportTable(
+            model.t("report.SPENDING_BY_PAYEE"), subtitle(model, filter),
+            listOfNotNull(model.t("register.payee"), model.t("register.amount"), comparison?.let { model.t("compare.${state.compare}") }),
+            spending.map { p -> listOfNotNull(p.name, p.amount, comparison?.let { it[p.key] ?: zero }) } +
+                // The comparison's total is its spending, as the rows above are.
+                listOf(listOfNotNull(model.t("report.total"), total, comparison?.let { c -> c.values.filter { it.isPositive }.fold(zero) { a, m -> a + m } })),
+        ),
     )
 }
 
@@ -491,23 +515,31 @@ private fun DebtReport(model: BooksModel, accountIds: Set<String>?) {
 @Composable
 private fun ReconciliationReport(model: BooksModel) {
     val books = model.books
-    val rows = remember(model.revision) {
+    // Accounts last reconciled more than this many days ago are flagged.
+    val behindAfter = 45
+    val accounts = remember(model.revision) {
         val last = books.statements.lastReconciled()
-        books.accounts.list().map { s ->
-            val statements = books.statements.statements(s.account.id)
-            val open = statements.count { it.status == StatementStatus.OPEN }
-            val reconciled = last[s.account.id]
-            val days = reconciled?.daysUntil(today())
-            listOf<Any?>(s.account.name, reconciled ?: model.t("accounts.neverReconciled"), days?.toString() ?: "", open.toString(), s.balance - s.clearedBalance)
-        }
+        books.accounts.list().map { s -> Triple(s, last[s.account.id], books.statements.statements(s.account.id).count { it.status == StatementStatus.OPEN }) }
+    }
+    val behind = accounts.mapNotNull { (s, reconciled, _) -> reconciled?.daysUntil(today())?.takeIf { it > behindAfter }?.let { s.account.name to it } }
+    val rows = accounts.map { (s, reconciled, open) ->
+        val days = reconciled?.daysUntil(today())
+        listOf<Any?>(
+            s.account.name, reconciled ?: model.t("accounts.neverReconciled"), days?.toString() ?: "", open.toString(), s.balance - s.clearedBalance,
+            if (days != null && days > behindAfter) model.t("report.behind") else "",
+        )
     }
     Text(model.t("report.RECONCILIATION"), style = MaterialTheme.typography.titleLarge)
     Text(model.t("report.reconciliationHint"), style = MaterialTheme.typography.bodySmall)
+    // The accounts behind stand out above the table, in the warning colour.
+    for ((name, days) in behind) {
+        Text(model.t("report.behindAccount", name, days), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 4.dp))
+    }
     TableView(
         model,
         ReportTable(
             model.t("report.RECONCILIATION"), model.date(today()),
-            listOf(model.t("nav.accounts"), model.t("report.lastReconciled"), model.t("report.daysSince"), model.t("report.openStatements"), model.t("report.uncleared")),
+            listOf(model.t("nav.accounts"), model.t("report.lastReconciled"), model.t("report.daysSince"), model.t("report.openStatements"), model.t("report.uncleared"), model.t("report.flag")),
             rows,
         ),
         startOpen = true,

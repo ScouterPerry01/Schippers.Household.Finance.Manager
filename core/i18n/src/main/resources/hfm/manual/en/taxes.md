@@ -123,12 +123,12 @@ The window shows the gift's date, payee and amount, then:
 - **Charity or party, as on the receipt**: the name to show and to give the accountant. It starts as the payee (or, for a payroll gift, the line's memo).
 - **Registration number**: for charitable gifts only. Nine digits, RR and four digits, such as 123456789RR0001; spaces and dashes are removed. Any other form is refused. Optional.
 - **Receipt number**: as printed. Optional.
-- **Eligible amount**: when you received something in return (a dinner, an auction prize), the receipt shows a smaller eligible amount: enter it. Leave it empty when the whole gift is eligible. It cannot be more than the gift. The eligible amount is what the totals and the year-end package count.
+- **Eligible amount**: when you received something in return (a dinner, an auction prize), the receipt shows a smaller eligible amount: enter it. Leave it empty when the whole gift is eligible. It cannot be more than the gift: the donation lines of the transaction, so for a gift through payroll the amount given, not the whole deposit. The eligible amount is what the totals and the year-end package count.
 - **Receipt received**: tick when you have the receipt. It starts ticked when a file is already attached to the transaction.
 - **Receipt files**: the receipt itself. **Attach a file…** stores a file in the vault and links it to the transaction; **From the review inbox** links a document waiting there. These files go into the folder for the accountant.
 - **Save**: saves the receipt details. **Cancel**: closes without saving them.
 
-The receipt details belong to the transaction: if one payment holds gifts for two people, both share the same receipt details. Saving needs the right to edit the account's group.
+The receipt details belong to the transaction: if one payment holds gifts for two people (or a charitable gift and a political one), both share the same receipt details, and a smaller eligible amount is shared between them in proportion to each gift, so it is counted once. When each person gets a receipt of their own, record the gifts as separate payments. Saving needs the right to edit the account's group.
 
 ## Instalments {#instalments}
 
@@ -193,7 +193,7 @@ Each line shows the item, where it comes from (a payer, an account, a period), t
 - Investments: **Taxable dividends** (12000, the grossed-up amounts of T5 boxes 11 and 25 and T3 boxes 32 and 50), **Interest and other investment income** (12100, from slips and from the **Interest** category), **Taxable capital gains** (12700: half of the net gains, including capital gains on slips, when positive), **Foreign tax paid** (form T2209). These come from the investment income report: see [Investment income and capital gains](reports#investment-income).
 - Self-employment: **Self-employment income** and **Self-employment expenses** (form T2125), from categories whose tax treatment is self-employment; **Sales tax paid on business expenses**, by tax, from the sales tax recorded on those expenses (see [Sales tax included](taxes#sales-tax)).
 - Deductions: **Pension plan contributions** (20700), **RRSP contributions** (20800, from contributions to RRSPs and from group RRSP deductions on pay), **FHSA contributions** (20805), **Union and professional dues** (21200), **Child care expenses** (21400), **Moving expenses** (21900), **Other employment expenses** (22900).
-- Credits: **Medical expenses** (33099, each person's best 12-month period, or the calendar year), **Tuition** (Schedule 11), **Charitable donations** (Schedule 9) and **Political contributions** (40900), at their eligible amounts.
+- Credits: **Medical expenses** (33099) as the Medical expenses report claims them: the expenses of the spouses and children together, over the household's best 12-month period, in the household's package, since one spouse claims them all; and **Medical expenses for an adult dependant** (33199), one line per adult dependant over their own best period, also in the household's package. The medical receipts of those periods go with the household's package in the folder for the accountant. Then **Tuition** (Schedule 11), **Charitable donations** (Schedule 9) and **Political contributions** (40900), at their eligible amounts.
 - Tax already paid: **Income tax deducted** (43700, income tax taken off pay; tax paid at filing is not counted) and **Instalments paid** (47600, by authority).
 
 The person for each amount is the person the transaction line is for, or else the account's only owner; otherwise it goes under the household.
@@ -279,7 +279,7 @@ The T5 and T3 amounts, and the capital gains, are worked out in the Investment i
 
 @index: medical expense credit; which spouse
 
-Medical expenses entered on the Medical claims screen (see [Medical claims](medical)) give the **Medical expenses** line of the package. The Medical expenses report finds the best 12-month period, makes one PDF of the receipts, and helps choose which spouse should claim: see [Medical expenses](reports#medical-expenses) and [Which spouse should claim](reports#who-claims).
+Medical expenses entered on the Medical claims screen (see [Medical claims](medical)) give the **Medical expenses** lines of the household's package, the same figures as the Medical expenses report. The report finds the best 12-month period, makes one PDF of the receipts, and helps choose which spouse should claim: see [Medical expenses](reports#medical-expenses) and [Which spouse should claim](reports#who-claims).
 
 ### Registered plan contributions {#plan-contributions}
 
