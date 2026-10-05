@@ -390,10 +390,10 @@ The deposit must be more than zero: deductions that add up to the gross pay or m
 **Sales tax…**, under an existing transaction in a register (not a transfer or an investment transaction), records the GST, HST, QST or PST the receipt shows.
 
 - **GST**, **HST**, **QST**, **PST**: the amounts on the receipt, without a minus sign. Leave the others empty.
-- **Calculate from the total**: proposes the taxes included in the transaction's amount, at the rates in effect on its date in the account owner's province (or the household's), from **Rates and rules**. Check them against the receipt before saving. See [Sales tax on a purchase](accounts#sales-tax).
+- **Calculate from the total**: proposes the taxes included in the transaction's amount, at the rates in effect on its date in the account owner's province (or the household's), from [Rates and rules](rates-rules). Check them against the receipt before saving. See [Sales tax on a purchase](accounts#sales-tax).
 - **Save**: saves them with the transaction. **Cancel**: closes.
 
-Sales tax rates by province: the HST (13 % in Ontario; 15 % in New Brunswick, Newfoundland and Labrador and Prince Edward Island; 14 % in Nova Scotia since April 1, 2025) replaces the GST; elsewhere the GST of 5 % applies, with the QST of 9.975 % in Quebec, a PST of 7 % in British Columbia or 6 % in Saskatchewan, or the RST of 7 % in Manitoba; Alberta and the territories have the GST only. These are the rates as of 2026; every rate and its history is kept, and can be changed, in **Rates and rules**.
+Sales tax rates by province: the HST (13 % in Ontario; 15 % in New Brunswick, Newfoundland and Labrador and Prince Edward Island; 14 % in Nova Scotia since April 1, 2025) replaces the GST; elsewhere the GST of 5 % applies, with the QST of 9.975 % in Quebec, a PST of 7 % in British Columbia or 6 % in Saskatchewan, or the RST of 7 % in Manitoba; Alberta and the territories have the GST only. These are the rates as of 2026; every rate and its history is kept, and can be changed, in [Rates and rules](rates-rules).
 
 The transaction's amount does not change. On expenses whose category's tax treatment is self-employment, the year-end package adds the sales taxes up as **Sales tax paid on business expenses**, by tax, which a registered business can claim as input tax credits. Leave it empty otherwise.
 

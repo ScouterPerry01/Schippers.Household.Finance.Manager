@@ -283,7 +283,7 @@ Quand un reçu ou une facture détaillée a été lu par l’IA et compte au moi
 
 - Chaque article montre sa description, les taxes qui lui sont associées sur le reçu, sa part du total et un choix de **Catégorie**. Un article laissé par défaut prend la catégorie choisie plus haut.
 - Les articles de la même catégorie forment une seule ventilation de l’opération, dont la note énumère les articles qu’elle couvre.
-- Les taxes sont réparties sur les articles : chaque taxe va aux articles que le reçu marque de son code. Les codes sont retenus quand chaque montant de taxe correspond à ce que donnent les articles marqués à un taux que cette taxe a quelque part au Canada à la date du reçu (tiré de **Taux et règles**). Si le reçu n’indique pas quels articles sont taxés, ou si ses codes de taxe ne correspondent pas à ses montants de taxe, les taxes sont réparties sur tous les articles en proportion, et une note le signale ; vérifiez les catégories que vous suivez de près.
+- Les taxes sont réparties sur les articles : chaque taxe va aux articles que le reçu marque de son code. Les codes sont retenus quand chaque montant de taxe correspond à ce que donnent les articles marqués à un taux que cette taxe a quelque part au Canada à la date du reçu (tiré de [Taux et règles](rates-rules)). Si le reçu n’indique pas quels articles sont taxés, ou si ses codes de taxe ne correspondent pas à ses montants de taxe, les taxes sont réparties sur tous les articles en proportion, et une note le signale ; vérifiez les catégories que vous suivez de près.
 - Une opération ventilée ainsi n’enseigne pas de catégorie unique pour le commerce.
 
 ### Classer sans joindre {#file-without-attaching}

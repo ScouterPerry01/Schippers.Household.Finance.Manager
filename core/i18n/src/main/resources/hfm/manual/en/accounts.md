@@ -335,7 +335,7 @@ To note the sales taxes a receipt shows, click the transaction in the register, 
 - **QST**: the Quebec sales tax.
 - **PST**: a provincial sales tax (the PST of British Columbia or Saskatchewan, or Manitoba's retail sales tax, RST).
 
-Above the amounts, a line shows the sales taxes in effect on the transaction's date in the province that applies, such as "Quebec, in effect on 2026-09-03: GST 5 %, QST 9.975 %". The province is that of the account's owners when they all have the same one, otherwise the household's. The rates come from **Rates and rules**, by date, so an older transaction uses the rates of its day.
+Above the amounts, a line shows the sales taxes in effect on the transaction's date in the province that applies, such as "Quebec, in effect on 2026-09-03: GST 5 %, QST 9.975 %". The province is that of the account's owners when they all have the same one, otherwise the household's. The rates come from [Rates and rules](rates-rules), by date, so an older transaction uses the rates of its day.
 
 - **Calculate from the total**: fills **GST**, **HST**, **QST** and **PST** with the taxes included in the transaction's amount at those rates, and empties the others. For example, $114.98 in Quebec in 2026 gives GST $5.00 and QST $9.98. The amounts are only proposed: check them against the receipt (items that are not taxed, such as basic groceries, make the real taxes smaller), change them if needed, then **Save**.
 

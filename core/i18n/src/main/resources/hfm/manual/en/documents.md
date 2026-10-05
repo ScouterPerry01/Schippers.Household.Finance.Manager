@@ -283,7 +283,7 @@ When a receipt or invoice was read by AI and has at least two items, the new tra
 
 - Each item shows its description, the taxes marked on it on the receipt, its share of the total, and a **Category** picker. An item left on the default uses the category chosen above.
 - Items with the same category become one split of the transaction, whose memo lists the items it covers.
-- Taxes are shared over the items: each tax goes to the items the receipt marks with it. The codes are trusted when each tax amount is what the marked items give at a rate that tax has somewhere in Canada on the receipt's date (from **Rates and rules**). If the receipt does not show which items are taxed, or its tax codes do not match its tax amounts, the taxes are shared over every item in proportion, and a note says so; check the categories you track closely.
+- Taxes are shared over the items: each tax goes to the items the receipt marks with it. The codes are trusted when each tax amount is what the marked items give at a rate that tax has somewhere in Canada on the receipt's date (from [Rates and rules](rates-rules)). If the receipt does not show which items are taxed, or its tax codes do not match its tax amounts, the taxes are shared over every item in proportion, and a note says so; check the categories you track closely.
 - A transaction split this way does not teach a single category for the store.
 
 ### File without attaching {#file-without-attaching}
