@@ -150,8 +150,11 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     /** "Rex: municipal licence expires in 12 days". */
     fun describe(r: Renewal): String {
         val whenText = if (r.daysLeft < 0) t("renewal.overdue", -r.daysLeft) else t("renewal.inDays", r.daysLeft)
-        return "${r.subjectName}: ${t("renewalKind.${r.kind}")}${r.detail?.let { " ($it)" }.orEmpty()} $whenText"
+        return "${r.subjectName.ifBlank { null }?.let { "$it: " }.orEmpty()}${t("renewalKind.${r.kind}")}${renewalDetail(r)?.let { " ($it)" }.orEmpty()} $whenText"
     }
+
+    /** A renewal's detail as shown; for a tax instalment, the authority named in the user's language. */
+    fun renewalDetail(r: Renewal): String? = if (r.kind == RenewalKind.TAX_INSTALMENT) r.detail?.let { t("taxAuthority.$it") } else r.detail
 
     fun renewalSection(kind: RenewalKind): Section = when (kind) {
         RenewalKind.PET_LICENCE, RenewalKind.PET_INSURANCE -> Section.PETS
@@ -159,6 +162,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         RenewalKind.CARD_ANNUAL_FEE -> Section.ACCOUNTS
         RenewalKind.MEDICAL_CLAIM -> Section.MEDICAL
         RenewalKind.ASSET_WARRANTY, RenewalKind.INSURANCE_RENEWAL -> Section.ASSETS
+        RenewalKind.TAX_INSTALMENT -> Section.TAXES
         else -> Section.VEHICLES
     }
 

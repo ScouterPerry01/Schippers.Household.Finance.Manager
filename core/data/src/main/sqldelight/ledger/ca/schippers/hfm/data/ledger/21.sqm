@@ -1,0 +1,22 @@
+-- Version 21 to 22: the tax slip checklist (TAX-01) and tax instalments (TAX-03).
+
+CREATE TABLE tax_slip_check (
+    tax_year INTEGER NOT NULL,
+    member_id TEXT NOT NULL DEFAULT '',
+    slip_key TEXT NOT NULL,
+    slip_type TEXT NOT NULL,
+    issuer TEXT NOT NULL,
+    status TEXT NOT NULL,
+    manual INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (tax_year, member_id, slip_key)
+);
+
+CREATE TABLE tax_instalment (
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    member_id TEXT NOT NULL DEFAULT '',
+    tax_year INTEGER NOT NULL,
+    authority TEXT NOT NULL,
+    due_date TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    PRIMARY KEY (account_id, member_id, tax_year, authority, due_date)
+);

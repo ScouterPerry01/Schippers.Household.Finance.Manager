@@ -432,6 +432,26 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 21 ledgers gain the slip checklist and tax instalments`() {
+        val file = temp.resolve("ledger21.db")
+        older("../data/src/main/sqldelight/ledger/schemas/21.db", file, 21).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_balance_minor, opening_date, created_at, updated_at) VALUES ('a', 'Chequing', 'CHEQUING', 'CAD', 0, '2026-01-01', 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).taxYearQueries
+            q.upsertSlipCheck(2026, "m", "t4:employer inc", "T4", "Employer Inc.", "EXPECTED", 0)
+            q.upsertSlipCheck(2026, "m", "t4:employer inc", "T4", "Employer Inc.", "RECEIVED", 0)
+            assertEquals("RECEIVED", q.slipChecks(2026).executeAsOne().status, "updated in place")
+            q.insertInstalment("a", "m", 2026, "CRA", "2026-03-15", 120000)
+            assertEquals(1, q.instalments(2026).executeAsList().size)
+            driver.execute(null, "DELETE FROM account WHERE id = 'a'", 0)
+            assertEquals(0, q.instalments(2026).executeAsList().size, "instalments go with their account")
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()

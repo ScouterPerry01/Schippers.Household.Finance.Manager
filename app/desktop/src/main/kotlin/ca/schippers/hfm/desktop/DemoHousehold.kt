@@ -6,6 +6,7 @@ import ca.schippers.hfm.books.DonationReceipt
 import ca.schippers.hfm.books.PayDeduction
 import ca.schippers.hfm.books.PayEarning
 import ca.schippers.hfm.books.PayStub
+import ca.schippers.hfm.books.TaxAuthority
 import ca.schippers.hfm.books.MeterUnit
 import ca.schippers.hfm.books.AssetServiceRecord
 import ca.schippers.hfm.books.ValueMethod
@@ -266,6 +267,11 @@ object DemoHousehold {
             )
             books.donations.setReceipt(gala.id, DonationReceipt(l("Fondation du CHU de Québec", "CHEO Foundation"), null, "2026-0412", cad("150.00"), received = true))
             add(TransactionDraft(chequing.id, LocalDate(today.year, 6, 2), cad("-100.00"), l("Association de circonscription", "Riding association"), listOf(SplitDraft(cat("gifts.political"), cad("-100.00"))), memberId = sam.id))
+        }
+        // TAX-03: Sam pays quarterly instalments on freelance income.
+        books.instalments.save(chequing.id, sam.id, today.year, TaxAuthority.CRA, List(4) { cad("450.00") })
+        for (month in listOf(3, 6, 9)) {
+            add(TransactionDraft(chequing.id, LocalDate(today.year, month, 14), cad("-450.00"), l("Receveur général du Canada", "Receiver General for Canada"), listOf(SplitDraft(cat("taxes.instalments"), cad("-450.00"))), memberId = sam.id))
         }
         // LN-02: the mortgage payments since the demo starts, each split from the balance owed.
         while (true) {

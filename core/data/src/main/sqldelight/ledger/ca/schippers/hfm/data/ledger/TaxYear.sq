@@ -1,0 +1,58 @@
+-- TAX-01 (ledger version 22): what the user said about the tax slips expected from the books, and
+-- the slips they added themselves. Slips the books expect are worked out each time; a row exists
+-- only once one is marked. member_id is '' for the household.
+CREATE TABLE tax_slip_check (
+    tax_year INTEGER NOT NULL,
+    member_id TEXT NOT NULL DEFAULT '',
+    slip_key TEXT NOT NULL,
+    slip_type TEXT NOT NULL,
+    issuer TEXT NOT NULL,
+    -- EXPECTED, RECEIVED or NOT_EXPECTED.
+    status TEXT NOT NULL,
+    manual INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (tax_year, member_id, slip_key)
+);
+
+-- TAX-03: the instalments one person owes the CRA or Revenu Québec for a year, as the reminder
+-- gives them, paid from one account.
+CREATE TABLE tax_instalment (
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    member_id TEXT NOT NULL DEFAULT '',
+    tax_year INTEGER NOT NULL,
+    authority TEXT NOT NULL,
+    due_date TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    PRIMARY KEY (account_id, member_id, tax_year, authority, due_date)
+);
+
+slipChecks:
+SELECT * FROM tax_slip_check WHERE tax_year = ?;
+
+upsertSlipCheck:
+INSERT INTO tax_slip_check(tax_year, member_id, slip_key, slip_type, issuer, status, manual) VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(tax_year, member_id, slip_key) DO UPDATE SET slip_type = excluded.slip_type, issuer = excluded.issuer, status = excluded.status;
+
+deleteSlipCheck:
+DELETE FROM tax_slip_check WHERE tax_year = ? AND member_id = ? AND slip_key = ?;
+
+instalments:
+SELECT * FROM tax_instalment WHERE tax_year = ? ORDER BY due_date;
+
+deleteInstalments:
+DELETE FROM tax_instalment WHERE account_id = ? AND member_id = ? AND tax_year = ? AND authority = ?;
+
+insertInstalment:
+INSERT INTO tax_instalment(account_id, member_id, tax_year, authority, due_date, amount_minor) VALUES (?, ?, ?, ?, ?, ?);
+
+-- Splits between two dates on the given categories, with whom they are for, to work out the slips expected.
+slipSourceSplits:
+SELECT t.account_id, t.date, t.payee_text, coalesce(s.member_id, t.member_id) AS member_id, s.category_id, s.amount_minor
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE t.date >= ? AND t.date <= ? AND t.transfer_id IS NULL AND s.category_id IN ?;
+
+-- Instalment payments: splits on the given category in one account between two dates.
+instalmentPayments:
+SELECT t.date, t.payee_text, coalesce(s.member_id, t.member_id) AS member_id, s.amount_minor
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE t.account_id = ? AND t.date >= ? AND t.date <= ? AND s.category_id = ?
+ORDER BY t.date;

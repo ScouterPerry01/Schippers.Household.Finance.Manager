@@ -159,7 +159,7 @@ private fun dayTitle(model: BooksModel, day: LocalDate): String {
 }
 
 /** "Municipal licence (Québec)". */
-private fun renewalTitle(model: BooksModel, r: Renewal): String = model.t("renewalKind.${r.kind}") + (r.detail?.let { " ($it)" }.orEmpty())
+private fun renewalTitle(model: BooksModel, r: Renewal): String = model.t("renewalKind.${r.kind}") + (model.renewalDetail(r)?.let { " ($it)" }.orEmpty())
 
 private fun time(t: LocalTime?): String? = t?.let { "%02d:%02d".format(it.hour, it.minute) }
 
