@@ -24,3 +24,7 @@ Cochez Conserver ce document pour les garanties et les preuves d’achat à gard
 ## Chercher et faire le ménage
 
 Tous les documents permet de chercher dans le texte et de filtrer par date et par montant. Enregistrer une copie… exporte un fichier. Anciens documents montre les documents classés de plus de six ans, la durée de conservation fiscale demandée par l’Agence du revenu du Canada. Rien n’est supprimé automatiquement, et les documents à conserver n’y apparaissent jamais.
+
+## Reçus par courriel
+
+Enregistrez un reçu reçu par courriel en fichier (.eml) depuis votre logiciel de courriel, puis importez-le, déposez-le ici ou placez-le dans le dossier surveillé. Ses pièces jointes PDF ou images deviennent des documents; un courriel sans pièce jointe est gardé en PDF de son texte, et le commerçant, la date et le total en sont lus. RANN’s Roost ne se connecte jamais à votre boîte de courriel.

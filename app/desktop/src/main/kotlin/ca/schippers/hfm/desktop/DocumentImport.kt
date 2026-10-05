@@ -1,6 +1,9 @@
 package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.DocumentService
+import ca.schippers.hfm.importers.EmailMessage
+import ca.schippers.hfm.ocr.OcrLine
+import ca.schippers.hfm.ocr.OcrResult
 import ca.schippers.hfm.ocr.desktop.DocumentReader
 import ca.schippers.hfm.ocr.desktop.FileKind
 import ca.schippers.hfm.ocr.desktop.Heif
@@ -40,7 +43,7 @@ data class ImportSummary(
 }
 
 /** File types the desktop imports (CAP-03), and the phone's transfer files (section 3.2). */
-val IMPORTABLE_EXTENSIONS = setOf("pdf", "jpg", "jpeg", "png", "heic", "heif", "bmp", "gif", ca.schippers.hfm.sync.BundleFile.EXTENSION)
+val IMPORTABLE_EXTENSIONS = setOf("pdf", "jpg", "jpeg", "png", "heic", "heif", "bmp", "gif", "eml", ca.schippers.hfm.sync.BundleFile.EXTENSION)
 
 /**
  * CAP-03, CAP-04: stores each file in the vault, reads its text on this computer and extracts its
@@ -52,30 +55,32 @@ suspend fun importFiles(model: BooksModel, files: List<Path>, groupId: String): 
     val unreadable = ArrayList<String>()
     val needDecoder = ArrayList<String>()
     val transfers = ArrayList<String>()
-    for (file in files) {
-        val bytes = runCatching { Files.readAllBytes(file) }.getOrNull()
-        // A phone's transfer file, saved from an email or copied by USB: its items go to the inbox.
-        if (bytes != null && file.extension.lowercase() == ca.schippers.hfm.sync.BundleFile.EXTENSION) {
-            transfers += model.transferMessage(file.name, model.syncServer.receiveFile(bytes))
-            continue
-        }
+    /** Stores one file and reads it; [text] is its text when already known (an email's), so it is not read again. */
+    fun importOne(name: String, bytes: ByteArray?, text: String? = null) {
         val kind = bytes?.let(FileKind::of)
         if (bytes == null || kind == null || kind == FileKind.UNSUPPORTED) {
-            unreadable += file.name
-            continue
+            unreadable += name
+            return
         }
-        val imported = runCatching { model.books.documents.import(groupId, bytes, file.name, kind.mimeType) }.getOrElse {
-            unreadable += file.name
-            continue
+        val imported = runCatching { model.books.documents.import(groupId, bytes, name, kind.mimeType) }.getOrElse {
+            unreadable += name
+            return
         }
         if (imported.alreadyInVault) {
             existing++
-            continue
+            return
         }
         added++
+        if (text != null) {
+            runCatching {
+                val lines = text.lines().map { it.trim() }.filter { it.isNotEmpty() }.map { OcrLine(it, 1f) }
+                model.books.documents.recordText(imported.document.id, 1, OcrResult(lines, 0), "email-text", today())
+            }
+            return
+        }
         if (kind == FileKind.HEIC && !Heif.available) {
-            needDecoder += file.name
-            continue
+            needDecoder += name
+            return
         }
         // A file that cannot be read still stays in the vault, for the user to fill in by hand.
         runCatching {
@@ -83,7 +88,47 @@ suspend fun importFiles(model: BooksModel, files: List<Path>, groupId: String): 
             model.books.documents.recordText(imported.document.id, read.pages, read.result, if (read.fromTextLayer) "pdf-text" else "paddle-ppocrv5-latin", today())
         }
     }
+    for (file in files) {
+        val bytes = runCatching { Files.readAllBytes(file) }.getOrNull()
+        // A phone's transfer file, saved from an email or copied by USB: its items go to the inbox.
+        if (bytes != null && file.extension.lowercase() == ca.schippers.hfm.sync.BundleFile.EXTENSION) {
+            transfers += model.transferMessage(file.name, model.syncServer.receiveFile(bytes))
+            continue
+        }
+        // CAP-06: an e-receipt saved from the email program: its PDF or picture attachments, or else the email itself.
+        if (bytes != null && file.extension.lowercase() == "eml") {
+            val email = runCatching { EmailMessage.parse(bytes) }.getOrNull()
+            if (email == null) {
+                unreadable += file.name
+                continue
+            }
+            val parts = email.attachments.filter { FileKind.of(it.content) != FileKind.UNSUPPORTED }
+            if (parts.isNotEmpty()) {
+                for (a in parts) importOne(a.fileName, a.content)
+            } else {
+                val header = listOfNotNull(email.subject, email.from, email.date)
+                importOne(file.name.substringBeforeLast('.') + ".pdf", emailPdf(header, email.text), (header + email.text).joinToString("\n"))
+            }
+            continue
+        }
+        importOne(file.name, bytes)
+    }
     ImportSummary(added, existing, unreadable, needDecoder, transfers)
+}
+
+/** CAP-06: an email without attachments as a PDF of its header and text, to keep in the vault. */
+private fun emailPdf(header: List<String>, text: String): ByteArray {
+    val out = java.io.ByteArrayOutputStream()
+    val document = org.openpdf.text.Document(org.openpdf.text.PageSize.LETTER, 42f, 42f, 42f, 42f)
+    org.openpdf.text.pdf.PdfWriter.getInstance(document, out)
+    document.open()
+    val bold = org.openpdf.text.FontFactory.getFont(org.openpdf.text.FontFactory.HELVETICA_BOLD, 10f)
+    val body = org.openpdf.text.FontFactory.getFont(org.openpdf.text.FontFactory.HELVETICA, 10f)
+    for (h in header) document.add(org.openpdf.text.Paragraph(h, bold))
+    document.add(org.openpdf.text.Paragraph(" "))
+    for (line in text.lines()) document.add(org.openpdf.text.Paragraph(line.ifBlank { " " }, body))
+    document.close()
+    return out.toByteArray()
 }
 
 /** The group new documents go to: the shared group the user can add to, or else any. */

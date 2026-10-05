@@ -24,3 +24,7 @@ Tick Keep this document for warranties and purchase receipts you want to keep fo
 ## Find and clean up
 
 All documents lets you search the text and filter by date and amount. Save a copy… exports a file. Old documents lists filed documents older than the six years the Canada Revenue Agency asks you to keep tax records. Nothing is deleted automatically, and documents marked to keep never appear there.
+
+## E-receipts from email
+
+Save an emailed receipt from your email program as a file (.eml) and import it, drop it here or put it in the watched folder. Its PDF or picture attachments come in as documents; an email without attachments is kept as a PDF of its text, and its merchant, date and total are read from it. RANN's Roost never signs in to your mailbox.
