@@ -1,0 +1,116 @@
+-- Contacts (CON-01 to CON-06): the household's banks, advisers, doctors, pharmacies, lawyers,
+-- contractors and other people and organizations, each with what it is for and whom it serves,
+-- and links to the records it concerns. Stored in the ledger of the account group the user
+-- chooses, like health records, so a private group keeps them from other users (HH-11).
+
+CREATE TABLE contact (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    -- 1 for a person, 0 for an organization.
+    person INTEGER NOT NULL DEFAULT 0,
+    -- A person's organization: another contact, possibly kept in another group.
+    organization_id TEXT,
+    job_title TEXT,
+    -- "What for", written by the user: shown wherever the contact is named or picked.
+    purpose TEXT,
+    -- The kinds (BANK, PHARMACY...) and the household members served, comma-separated.
+    kinds TEXT NOT NULL DEFAULT '',
+    member_ids TEXT NOT NULL DEFAULT '',
+    address TEXT,
+    website TEXT,
+    hours TEXT,
+    notes TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- Phone numbers, emails and account or client numbers, each with its label. A number keeps its
+-- masked form for display; the full value is shown only after the password (SEC-04).
+CREATE TABLE contact_detail (
+    id TEXT NOT NULL PRIMARY KEY,
+    contact_id TEXT NOT NULL REFERENCES contact(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('PHONE', 'EMAIL', 'NUMBER')),
+    label TEXT,
+    content TEXT NOT NULL,
+    masked TEXT,
+    position INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX contact_detail_contact ON contact_detail(contact_id);
+
+-- A contact's link, with its role, to a record kept anywhere in the household (an account, a
+-- policy, a medication, a payee...). The record may be in another group or in the core database.
+CREATE TABLE contact_link (
+    id TEXT NOT NULL PRIMARY KEY,
+    contact_id TEXT NOT NULL REFERENCES contact(id) ON DELETE CASCADE,
+    role TEXT NOT NULL,
+    target_type TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    UNIQUE (contact_id, role, target_type, target_id)
+);
+
+CREATE INDEX contact_link_target ON contact_link(target_type, target_id);
+
+-- Contacts ---------------------------------------------------------------------------------
+
+upsertContact:
+INSERT INTO contact(id, name, person, organization_id, job_title, purpose, kinds, member_ids, address, website, hours, notes, archived, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET
+    name = excluded.name, person = excluded.person, organization_id = excluded.organization_id, job_title = excluded.job_title,
+    purpose = excluded.purpose, kinds = excluded.kinds, member_ids = excluded.member_ids, address = excluded.address,
+    website = excluded.website, hours = excluded.hours, notes = excluded.notes, archived = excluded.archived,
+    updated_at = excluded.updated_at;
+
+contacts:
+SELECT * FROM contact ORDER BY name COLLATE NOCASE;
+
+contactById:
+SELECT * FROM contact WHERE id = ?;
+
+deleteContact:
+DELETE FROM contact WHERE id = ?;
+
+clearOrganization:
+UPDATE contact SET organization_id = NULL WHERE organization_id = ?;
+
+-- Details ----------------------------------------------------------------------------------
+
+details:
+SELECT * FROM contact_detail ORDER BY contact_id, position;
+
+detailsFor:
+SELECT * FROM contact_detail WHERE contact_id = ? ORDER BY position;
+
+upsertDetail:
+INSERT INTO contact_detail(id, contact_id, kind, label, content, masked, position) VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET kind = excluded.kind, label = excluded.label, content = excluded.content, masked = excluded.masked, position = excluded.position;
+
+deleteDetail:
+DELETE FROM contact_detail WHERE id = ?;
+
+detailValue:
+SELECT content FROM contact_detail WHERE id = ? AND contact_id = ?;
+
+-- Links ------------------------------------------------------------------------------------
+
+links:
+SELECT * FROM contact_link ORDER BY created_at;
+
+linksFor:
+SELECT * FROM contact_link WHERE contact_id = ? ORDER BY created_at;
+
+linksTo:
+SELECT * FROM contact_link WHERE target_type = ? AND target_id = ? ORDER BY created_at;
+
+insertLink:
+INSERT INTO contact_link(id, contact_id, role, target_type, target_id, created_at) VALUES (?, ?, ?, ?, ?, ?)
+ON CONFLICT(contact_id, role, target_type, target_id) DO NOTHING;
+
+deleteLink:
+DELETE FROM contact_link WHERE id = ?;
+
+moveLinks:
+UPDATE OR IGNORE contact_link SET contact_id = ? WHERE contact_id = ?;

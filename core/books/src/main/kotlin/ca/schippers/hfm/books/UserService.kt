@@ -164,7 +164,7 @@ class UserService internal constructor(private val books: Books) {
 
         /** What the actions apply to, each with a name in both languages. */
         val ENTITIES = listOf(
-            "account", "account_group", "app_user", "bill", "category", "category_rule", "credit_card", "device", "fx_rate", "household",
+            "account", "account_group", "app_user", "bill", "category", "category_rule", "contact", "credit_card", "device", "fx_rate", "household",
             "institution", "member", "pet", "qif", "statement", "txn",
         )
     }

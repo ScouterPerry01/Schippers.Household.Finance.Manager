@@ -564,7 +564,6 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(27L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).taxYearQueries
             assertEquals("RECEIVED", q.slipChecks(2025).executeAsOne().status, "the checklist stays")
@@ -574,6 +573,33 @@ class MigrationTest {
             assertEquals(380000L, q.estimateFigures("sam", 2025).executeAsList().first { it.figure == "TUITION_CARRIED" }.amount_minor, "updated in place")
             q.deleteEstimateFigure("sam", 2025, "EMPLOYMENT")
             assertEquals(1, q.estimateFigures("sam", 2025).executeAsList().size)
+        }
+    }
+
+    @Test
+    fun `version 27 ledgers keep their providers, contractors and policies and gain contacts`() {
+        val file = temp.resolve("ledger27.db")
+        older("../data/src/main/sqldelight/ledger/schemas/27.db", file, 27).use { driver ->
+            driver.execute(null, "INSERT INTO health_provider(id, name, kind, phone) VALUES ('p', 'Pharmacie Roy', 'PHARMACY', '418 555-0199')", 0)
+            driver.execute(null, "INSERT INTO contractor(id, name, trade) VALUES ('c', 'Plomberie Roy', 'Plumber')", 0)
+            driver.execute(null, "INSERT INTO tax_estimate_figure(member_id, tax_year, figure, amount_minor) VALUES ('sam', 2025, 'EMPLOYMENT', 5200000)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(28L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val db = LedgerDatabase(driver)
+            assertEquals("418 555-0199", db.healthQueries.providers().executeAsOne().phone, "providers stay")
+            assertEquals("Plumber", db.extrasQueries.contractors().executeAsOne().trade, "contractors stay")
+            assertEquals(1L, count(driver, "SELECT count(*) FROM tax_estimate_figure"))
+            val q = db.contactsQueries
+            q.upsertContact("k", "Pharmacie Roy", 0, null, null, "Sam's pharmacy", "PHARMACY", "sam", null, null, null, null, 0, 0, 0)
+            q.upsertDetail("d", "k", "NUMBER", "Client", "778899", "•••• 8899", 0)
+            q.insertLink("l", "k", "SAME_AS", "HEALTH_PROVIDER", "p", 0)
+            q.upsertContact("k", "Pharmacie Roy", 0, null, null, "Pharmacy", "PHARMACY", "sam", null, null, null, null, 0, 0, 1)
+            assertEquals(1L, count(driver, "SELECT count(*) FROM contact_link"), "saving the contact again keeps its links")
+            assertEquals(1L, count(driver, "SELECT count(*) FROM contact_detail"), "and its details")
+            assertEquals("k", q.linksTo("HEALTH_PROVIDER", "p").executeAsOne().contact_id)
         }
     }
 }

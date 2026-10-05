@@ -18,10 +18,12 @@ data class SearchResults(
     val institutions: List<Institution>,
     /** Documents whose recognized text, title, merchant, notes or file name match (TX-06). */
     val documents: List<VaultDocument> = emptyList(),
+    /** Contacts whose name, what-for line, details or notes match (CON-05). */
+    val contacts: List<Contact> = emptyList(),
 ) {
     val isEmpty: Boolean
         get() = transactions.isEmpty() && accounts.isEmpty() && payees.isEmpty() && categories.isEmpty() && bills.isEmpty() &&
-            institutions.isEmpty() && documents.isEmpty()
+            institutions.isEmpty() && documents.isEmpty() && contacts.isEmpty()
 }
 
 /**
@@ -72,6 +74,7 @@ class SearchService internal constructor(private val books: Books) {
             bills = books.bills.list(includeInactive = true).filter { matches(it.name) || matches(it.payeeName) },
             institutions = books.institutions.list().filter { matches(it.name) },
             documents = books.documents.search(DocumentQuery(text = text, limit = limit)),
+            contacts = books.contacts.list(ContactFilter(text = text, includeArchived = true)),
         )
     }
 
