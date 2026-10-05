@@ -8,12 +8,12 @@ For the phone side, see [RANN's Roost Mobile](phone-app). For a short walk-throu
 
 ## How phones and this computer work together {#how-it-works}
 
-- The computer is the master copy. The phone keeps only its captures waiting to be sent, and a summary from the computer.
+- The computer is the master copy. The phone keeps only its captures and new contacts waiting to be sent, and a summary and the contacts from the computer.
 - At home, the phone sends over your Wi-Fi directly to this computer. Nothing goes through the internet or any RANN server.
 - Everything between the phone and this computer is encrypted with a key the two made when they were paired. No other phone or computer can read it.
 - Phones can reach this computer only while the household is open in RANN's Roost. Locking the household or closing the app stops the listener; the phone keeps its captures and sends them later.
 - Away from home, the phone can leave its captures, still encrypted, in a folder of your own cloud storage, which this computer watches (see [Away from home](#away-from-home)).
-- What arrives never goes straight into your books. Receipts, bills, documents and quick expenses wait on the **To review** tab of [Documents](documents); odometer and hour readings are added to the vehicle or equipment directly.
+- What arrives never goes straight into your books. Receipts, bills, documents and quick expenses wait on the **To review** tab of [Documents](documents); odometer and hour readings are added to the vehicle or equipment directly; new contacts wait for review on the [Contacts](contacts#from-phone) screen.
 
 @index: encryption; Wi-Fi; local network; home network; privacy
 
@@ -78,7 +78,7 @@ The buttons:
 ### Phone dialog {#phone-dialog}
 
 - **Name**: the name shown on the card, such as "Alex's phone". Required.
-- **Store in**: the account group the phone's receipts, bills, documents and quick expenses are stored in. Only groups you can add to are offered; a private group shows "(private)" after its name. Changing it affects what the phone sends from now on; documents already received stay where they are.
+- **Store in**: the account group the phone's receipts, bills, documents and quick expenses are stored in, and where its new contacts wait for review. Only groups you can add to are offered; a private group shows "(private)" after its name. Changing it affects what the phone sends from now on; documents already received stay where they are.
 
 ## Away from home {#away-from-home}
 
@@ -120,10 +120,13 @@ While the household is open, RANN's Roost looks in the transfer folder every 20 
 - A quick expense without a photo becomes a short text document with the store, date, amount and note, to review like the others.
 - A voice note recorded with a capture is kept with its document; play it from the document's review window.
 - An odometer or hours reading is added to that vehicle's readings on the [Vehicles](vehicles) screen, or to that equipment's meter on [Home and assets](assets), with no review.
-- Each capture is received exactly once, even when the phone sends it again.
+- A contact added on the phone waits for review on the [Contacts](contacts#from-phone) screen, which shows **From the phone** and their number. Nothing becomes a contact until you add it, add its details to a contact you have, or discard it.
+- Each capture and each contact is received exactly once, even when the phone sends it again.
 
 Review each document on the **To review** tab: attach it to a transaction, record it on a bill, or file it.
 
 ## What the phone receives {#sent-to-phone}
 
-After each transfer, the phone receives a fresh summary when anything in it changed: the household's name, the language the app is shown in on this computer, the base currency, your accounts and balances, the categories, up to 400 payees, the members and pets, the vehicles and metered equipment with their latest readings, the bills due in the next 60 days with their reminder days, this month's budgets for spending categories, and the maintenance due this month. The phone shows it on its **Summary** tab and uses it for its reminders and pick lists. See [The Summary tab](phone-app#summary-tab).
+After each transfer, the phone receives a fresh summary when anything in it changed: the household's name, the language the app is shown in on this computer, the base currency, your accounts and balances, the categories, up to 400 payees, the members and pets, the vehicles and metered equipment with their latest readings, the bills due in the next 60 days with their reminder days, this month's budgets for spending categories, the maintenance due this month, and the contacts. The phone shows it on its **Summary** tab and uses it for its reminders and pick lists. See [The Summary tab](phone-app#summary-tab).
+
+The contacts are those the phone's owner can see on this computer, except archived ones: their name, organization or person, job title and organization, kinds, what for, the names of the people they serve, phones and emails with their labels, address, website, hours and notes. Account and client numbers are never sent, and neither are links to records. The phone shows them on its Contacts tab. See [Contacts sent to the phone](contacts#sent-to-phone).

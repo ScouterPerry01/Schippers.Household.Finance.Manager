@@ -53,6 +53,15 @@ Les lectures d’odomètre sautent cette étape : elles vont directement aux lec
 
 L’onglet **Résumé** du téléphone affiche les soldes de vos comptes, les factures à payer, les budgets du mois et l’entretien à faire, au dernier transfert. Voir [L’onglet Résumé](phone-app#summary-tab).
 
+## 7. Trouver un contact {#contacts}
+
+1. Sur le téléphone, ouvrez l’onglet **Contacts** : les contacts du ménage venus de votre ordinateur, sans les numéros de compte.
+2. Tapez une partie d’un nom, ou « pharmacie », dans **Chercher un contact**, ou choisissez un **Type**.
+3. Touchez un contact, puis un numéro de téléphone pour appeler, un courriel pour écrire, ou l’adresse pour la voir sur une carte.
+4. Vous avez rencontré quelqu’un? Touchez **Nouveau contact**, inscrivez le nom et ce que vous savez, puis **Enregistrer**. Sur l’ordinateur, il attend sous **Du téléphone** à l’écran Contacts jusqu’à ce que vous l’ajoutiez.
+
+Détails : [L’onglet Contacts](phone-app#contacts-tab) et [Les contacts venant du téléphone](contacts#from-phone).
+
 ## Si le téléphone est perdu {#lost}
 
 Sur l’ordinateur, allez à **Téléphones** et cliquez sur **Retirer** à côté du téléphone. Il ne peut plus rien envoyer ni recevoir. Le NIP de l’application protège aussi ce qu’il contient. Voir [La liste des téléphones](phones#phone-list).

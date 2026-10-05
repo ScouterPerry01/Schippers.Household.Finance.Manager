@@ -30,6 +30,12 @@
 2. Or, from the record's own screen (an account, a policy, a medication, a bill...), choose **Link a contact…**.
 3. From then on, the contact shows on the record's screen, and the record on the contact's page.
 
+## Step 5: take them on your phone {#phone}
+
+1. Pair RANN's Roost Mobile with this computer, if not done yet (see [Getting started with the phone app](start-phone)).
+2. After the next transfer, the phone's **Contacts** tab lists the contacts you can see here, without account or client numbers. Tap a phone number to call, an email to write, an address to see the map.
+3. Contacts you add on the phone with **New contact** come back here under **From the phone**: add each as a new contact, add its details to one you have, or discard it.
+
 ## Finding someone later {#find}
 
 Use the filters: **Kind** Bank for all your banks, **For whom** a child for everyone who looks after them, **Linked to** Insurance policy for your insurers and brokers. The search box at the top of the window finds contacts too.

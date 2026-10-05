@@ -22,7 +22,7 @@ Une personne peut faire partie d’une organisation : Marc Lavoie, conseiller en
 
 ## L’écran Contacts {#screen}
 
-Le haut de l’écran contient le titre, une boîte de recherche et, pour les utilisateurs qui peuvent ajouter des éléments, les boutons **Rassembler les contacts de l’application** et **Ajouter un contact**. En dessous se trouve la rangée de filtres. Le reste de l’écran est séparé en deux : la liste des contacts à gauche, et la page du contact choisi à droite. Quand rien n’est choisi, la droite indique « Choisissez un contact pour voir ses coordonnées et ce à quoi il est lié. »
+Le haut de l’écran contient le titre, une boîte de recherche et, pour les utilisateurs qui peuvent ajouter des éléments, les boutons **Rassembler les contacts de l’application** et **Ajouter un contact**. Quand des contacts ajoutés sur un téléphone attendent d’être vérifiés, **Du téléphone** et leur nombre viennent en premier (voir [Les contacts venant du téléphone](#from-phone)). En dessous se trouve la rangée de filtres. Le reste de l’écran est séparé en deux : la liste des contacts à gauche, et la page du contact choisi à droite. Quand rien n’est choisi, la droite indique « Choisissez un contact pour voir ses coordonnées et ce à quoi il est lié. »
 
 ### La liste {#list}
 
@@ -152,6 +152,35 @@ La fenêtre énumère ce qui peut devenir un contact, chaque ligne avec son nom,
 Chaque nouveau contact est lié à sa provenance, et plus encore : une banque aux comptes qu’elle détient (Banque pour, Prêteur pour un prêt ou une hypothèque, Société de placement pour un compte de placement ou un régime enregistré), une pharmacie et un médecin aux médicaments qu’ils préparent ou prescrivent, un assureur et un courtier à leur police, l’assureur d’un animal à cet animal, une personne à appeler aux papiers de la personne dans son rôle. Un élément déjà lié n’est pas proposé de nouveau ; quand tout a son contact, la fenêtre indique « Tout ce qui est dans l’application a déjà son contact. »
 
 > Conseil : Vérifiez les doublons probables avant de fusionner : deux personnes peuvent partager le téléphone d’une clinique sans être le même contact.
+
+## Les contacts et le téléphone {#phone}
+
+@index: contacts du téléphone; RANN’s Roost Mobile; contacts sur le téléphone; nouveau contact du téléphone
+
+### Les contacts envoyés au téléphone {#sent-to-phone}
+
+Un téléphone jumelé reçoit les contacts que son propriétaire peut voir ici, à chaque transfert quand ils ont changé, et les affiche dans son onglet Contacts (voir [L’onglet Contacts](phone-app#contacts-tab)). Pour chaque contact, il reçoit le nom, s’il s’agit d’une organisation ou d’une personne, le poste et l’organisation d’une personne, les types, le « pour quoi », les noms des personnes et des animaux qu’il sert, les téléphones et courriels avec leurs étiquettes, l’adresse, le site Web, les heures et les notes.
+
+- Les numéros de compte et de client ne sont jamais envoyés, même masqués. Ils restent sur cet ordinateur.
+- Les contacts archivés ne sont pas envoyés.
+- Les contacts d’un groupe privé ne vont qu’aux téléphones des utilisateurs qui peuvent ouvrir ce groupe ; le téléphone d’un autre utilisateur ne les reçoit jamais.
+- Les liens vers les éléments ne sont pas envoyés.
+
+Sur le téléphone, les contacts sont en lecture seule. Une modification faite ici arrive au téléphone à son prochain transfert.
+
+### Les contacts venant du téléphone {#from-phone}
+
+@index: vérifier les contacts du téléphone; Du téléphone
+
+Un contact ajouté sur le téléphone avec Nouveau contact arrive sur cet ordinateur avec les captures et attend d’être vérifié : rien n’est ajouté à vos contacts avant votre choix. Tant que des contacts attendent, le menu affiche leur nombre à côté de **Contacts**, et l’écran Contacts affiche **Du téléphone** avec le nombre en haut. Les contacts d’un téléphone attendent dans le groupe de comptes où vont les documents de ce téléphone (voir [Boîte du téléphone](phones#phone-dialog)) : ceux d’un membre restent donc dans son groupe privé. Ils sont listés pour les utilisateurs qui peuvent ajouter des éléments à ce groupe.
+
+**Du téléphone** ouvre la liste. Chaque contact affiche ce que le téléphone a envoyé : son nom, le « pour quoi », s’il s’agit d’une personne ou d’une organisation (et l’organisation d’une personne), ses types, ses téléphones et courriels avec leurs étiquettes, son adresse et ses notes, et quand il a été reçu et de quel téléphone. Pour chacun :
+
+- **Ajouter comme nouveau contact…** : ouvre le formulaire du contact rempli avec ce que le téléphone a envoyé, à compléter ou à corriger (les personnes qu’il sert, un site Web, les heures, des numéros de compte). **Enregistrer dans** commence par le groupe où le contact attend, si vous pouvez y ajouter des éléments, sinon par le groupe où vont la plupart des contacts. **Enregistrer** ajoute le contact et le retire de la liste ; **Annuler** le laisse en attente. L’organisation d’une personne est remplie quand un contact de ce nom existe ; sinon, son nom est mis dans les notes (« Organisation : ... »).
+- **Ajouter les coordonnées à** un contact : offert sous « Peut-être déjà un contact (même nom ou téléphone) : » quand un contact que vous pouvez modifier a le même nom (accents et majuscules ignorés) ou un numéro de téléphone en commun. Cela ajoute à ce contact les téléphones et courriels qu’il n’a pas encore, les types, et le « pour quoi », l’adresse et l’organisation s’il n’en a pas ; les notes du téléphone suivent celles du contact. Le contact garde son nom et son groupe. Le contact du téléphone quitte la liste.
+- **Écarter** : demande d’abord, puis retire le contact de la liste sans rien ajouter. Le téléphone n’en est pas avisé ; sa copie a déjà été supprimée quand cet ordinateur l’a reçue.
+
+Chaque contact d’un téléphone n’est reçu qu’une fois, même si le téléphone l’envoie de nouveau. Un contact sans nom est refusé, et le téléphone en affiche la raison dans son onglet Envois.
 
 ## Confidentialité {#privacy}
 

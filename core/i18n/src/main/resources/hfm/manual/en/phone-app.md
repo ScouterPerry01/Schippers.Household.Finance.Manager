@@ -1,8 +1,8 @@
 # RANN's Roost Mobile
 
-RANN's Roost Mobile is the companion app for Android phones. It photographs receipts, bills and other documents, records quick expenses and odometer readings, and sends them to RANN's Roost on your computer. In return it shows a summary of your balances, bills due, budgets and maintenance, and reminds you of bills and budgets.
+RANN's Roost Mobile is the companion app for Android phones. It photographs receipts, bills and other documents, records quick expenses and odometer readings, and sends them to RANN's Roost on your computer. In return it shows a summary of your balances, bills due, budgets and maintenance and the household's contacts, and reminds you of bills and budgets. Contacts you meet while out can be added on the phone and sent to the computer for review.
 
-The phone is not a second copy of your books: the computer is the master copy. The phone keeps only what is waiting to be sent and the latest summary from the computer. Under its icon, the app is called RANN's Roost.
+The phone is not a second copy of your books: the computer is the master copy. The phone keeps only what is waiting to be sent and the latest summary and contacts from the computer. Under its icon, the app is called RANN's Roost.
 
 For a short walk-through, see [Getting started with the phone app](start-phone). For the computer side, see [Phones](phones).
 
@@ -21,7 +21,7 @@ RANN's Roost Mobile comes in two editions that work the same way:
 
 @index: encryption; Android Keystore; backup; privacy
 
-- Everything the app keeps (its settings, the captures waiting to be sent and the summary) is encrypted with a key kept in the phone's secure key store. The key never leaves the phone.
+- Everything the app keeps (its settings, the captures and new contacts waiting to be sent, the summary and the contacts) is encrypted with a key kept in the phone's secure key store. The key never leaves the phone.
 - The app is excluded from Android's cloud backups, so none of it is copied to Google.
 - Captures go only to your computer, encrypted with the key made when you paired. Away from home, they may go through a folder of your own cloud storage, still encrypted.
 - The only other connection is the daily update check of the GitHub edition, if you allow it. It sends nothing about you or your household.
@@ -74,11 +74,12 @@ What stays: everything the computer already received, and the household on the c
 
 ## The main tabs {#tabs}
 
-Four tabs run along the bottom of the screen:
+Five tabs run along the bottom of the screen:
 
 - **Capture**: photograph or record something new. See [The Capture tab](#capture-tab).
 - **Sent**: what you captured and how far it got. See [The Sent tab](#sent-tab).
 - **Summary**: balances, bills, maintenance and budgets from your computer. See [The Summary tab](#summary-tab).
+- **Contacts**: the household's contacts from your computer, and new contacts to send. See [The Contacts tab](#contacts-tab).
 - **Settings**: pairing, the transfer folder, the lock and updates. See [The Settings tab](#settings-tab).
 
 When a newer version is available (GitHub edition), a band at the top of the other tabs says so; tap it to go to Settings.
@@ -231,7 +232,7 @@ On the computer, import the files with **Import a transfer file…** on the Phon
 
 ### The list of captures {#queue}
 
-Each capture shows its name (the store, or the kind of capture, or the vehicle and reading), its kind, the amount if any, and when it was captured. On the right, its status:
+Each capture shows its name (the store, or the kind of capture, or the vehicle and reading, or the name of a new contact), its kind, the amount if any, and when it was captured. On the right, its status:
 
 - **Waiting**: not yet received by the computer.
 - **Sent**: left in the transfer folder or shared as a file, waiting for the computer's confirmation.
@@ -262,6 +263,57 @@ The Summary shows figures from your computer, as of the last transfer: the house
 - **Budgets this month**: each spending category with a budget: what was spent of the budget, such as "$412.30 of $600.00".
 
 The figures do not change until the next transfer. Tap **Send now** on the Sent tab to refresh them.
+
+## The Contacts tab {#contacts-tab}
+
+@index: contacts; phone book; call; email; map; directions
+
+The Contacts tab shows the household's contacts from your computer: the banks, advisors, doctors, pharmacies, contractors and others you keep on the Contacts screen there. The phone receives the contacts you can see on the computer, not those kept in someone else's private group, and not archived contacts. Account and client numbers never come to the phone. The contacts are read-only here: change them on the computer, and the phone has the change after the next transfer (tap **Send now** on the Sent tab to fetch it).
+
+Before the first transfer, the tab says **Pair with your computer to see the household's contacts here.** You can still add a new contact; it waits on the phone.
+
+### The list {#contacts-list}
+
+- **New contact**: at the top, opens the [New contact](#new-contact) form.
+- **Search contacts**: finds contacts as you type, by name, what for, organization, job title, the people served, phone numbers, emails, address and notes. Accents and capitals are ignored, so "medecin" finds "Médecin". Digits find a phone number however it is written: "6135550101" finds "613 555-0101".
+- **Kind**: shows only the contacts of one kind, such as Pharmacy or Bank. The list offers only the kinds your contacts have. **All kinds** shows them all again.
+
+Each line shows the contact's name, its what-for line in colour, and its kinds; a person whose organization is not in the list also shows that organization. People who work at an organization are listed just under it, indented. Tap a line to open the contact's page. When nothing matches, the tab says **No contact matches.**
+
+### A contact's page {#contact-page}
+
+- **Back to the list**: returns to the list (Android's back gesture does the same).
+- The name, then **For:** and the what-for line, and the contact's kinds.
+- For a person: their job title and the organization they work at. Tap the organization to open its page.
+- **For the whole household**, or **For:** and the names of the people and pets it serves.
+- Each phone, with its label (such as Office or Cell) or **Phone**: tap it to open the phone's dialer with the number filled in. Nothing is dialled until you press call.
+- Each email, with its label or **Email**: tap it to start a message in your email app.
+- **Address**: tap it to look up the address in your map app.
+- **Website**: tap it to open the site in your browser.
+- **Hours** and **Notes**: shown as written on the computer.
+- **People**: on an organization's page, the people who work there; tap one to open their page.
+
+## New contact {#new-contact}
+
+@index: add a contact on the phone; new contact
+
+New contact records someone you meet while out, such as a plumber who just left a card. It is sent to your computer, which shows it for review before it becomes a contact: nothing is added to the household's contacts until you choose there. Only the name is required.
+
+- **Name**: the person's or organization's name, as you want to see it.
+- **Organization** or **Person**: what the contact is. Organization is chosen at first.
+- **Works at**: for a person, the organization they work at, picked from the organizations on the phone. **(none)** when it is not in the list.
+- **Organization, if not in the list**: for a person whose organization is not in the list, its name. On the computer, it becomes the person's organization when a contact of that name exists; otherwise it goes into the notes.
+- **Kind**: what the contact is, such as Contractor, Pharmacy or Bank. **(none)** leaves it for the computer.
+- **What for**: a few words to tell it apart, such as "Water heater" or "Sam's dermatologist".
+- **Phone** and its **Label (office, cell…)**: one line to start with. **Add a phone** adds another. Lines left empty are not sent.
+- **Email** and its **Label (office, cell…)**: the same for emails; **Add an email** adds another.
+- **Address** and **Notes**: free text, several lines if needed.
+- **Cancel**: closes without saving.
+- **Save**: puts the contact in the queue, with the captures, and sends it at once if the computer is in reach.
+
+A new contact goes the same ways as captures: over your home Wi-Fi, through the transfer folder, or in a file shared with **Share as a file…**. It is listed on the Sent tab as **New contact**, with the same statuses. When the computer has received it, the phone deletes its copy. A new contact does not show on the Contacts tab: once you add it on the computer, it comes back with the other contacts after the next transfer.
+
+> Note: a computer with an older version of RANN's Roost does not take contacts from the phone. They stay **Waiting** on the phone until the computer is updated.
 
 ## Notifications {#notifications}
 

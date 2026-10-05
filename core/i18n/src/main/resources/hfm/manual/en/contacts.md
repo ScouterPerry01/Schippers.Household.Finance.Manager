@@ -22,7 +22,7 @@ A person can belong to an organization contact: Jane Roy, financial advisor at R
 
 ## The Contacts screen {#screen}
 
-The top of the screen has the title, a search box and, for users who can add records, the buttons **Gather contacts from the app** and **Add a contact**. Below them is the row of filters. The rest of the screen is split in two: the list of contacts on the left, and the page of the contact chosen on the right. When nothing is chosen, the right side says "Choose a contact to see its details and what it is linked to."
+The top of the screen has the title, a search box and, for users who can add records, the buttons **Gather contacts from the app** and **Add a contact**. When contacts added on a phone wait for review, **From the phone** and their number come first (see [Contacts from the phone](#from-phone)). Below them is the row of filters. The rest of the screen is split in two: the list of contacts on the left, and the page of the contact chosen on the right. When nothing is chosen, the right side says "Choose a contact to see its details and what it is linked to."
 
 ### The list {#list}
 
@@ -152,6 +152,35 @@ The window lists what can become a contact, each line with its name, where it co
 Each new contact is linked to where it came from, and to more: a bank to the accounts it holds (Bank for, Lender for a loan or mortgage, Investment firm for an investment or registered plan account), a pharmacy and a doctor to the medications they fill or prescribe, an insurer and a broker to their policy, a pet's insurer to the pet, an estate contact to the person's papers in their role. A record already linked is not offered again; when everything has its contact, the window says "Everything in the app already has its contact."
 
 > Tip: Look over the likely duplicates before merging: two people can share a clinic's phone number without being the same contact.
+
+## Contacts and the phone {#phone}
+
+@index: phone contacts; RANN's Roost Mobile; contacts on the phone; new contact from the phone
+
+### Contacts sent to the phone {#sent-to-phone}
+
+A paired phone receives the contacts its owner can see here, with each transfer when they changed, and shows them on its Contacts tab (see [The Contacts tab](phone-app#contacts-tab)). For each contact it receives the name, whether it is an organization or a person, a person's job title and organization, the kinds, the what-for line, the names of the people and pets it serves, the phones and emails with their labels, the address, website, hours and notes.
+
+- Account and client numbers are never sent, not even masked. They stay on this computer.
+- Archived contacts are not sent.
+- Contacts in a private group go only to the phones of the users who can open that group; another user's phone never receives them.
+- Links to records are not sent.
+
+On the phone the contacts are read-only. A change made here reaches the phone at its next transfer.
+
+### Contacts from the phone {#from-phone}
+
+@index: review contacts from the phone; From the phone
+
+A contact added on the phone with New contact comes to this computer with the captures and waits for review: nothing is added to your contacts until you choose. While contacts wait, the menu shows their number beside **Contacts**, and the Contacts screen shows **From the phone** with the number at the top. Contacts from a phone wait in the account group where that phone's documents go (see [Phone dialog](phones#phone-dialog)), so a member's stay in their private group; they are listed for the users who can add records to that group.
+
+**From the phone** opens the list. Each contact shows what the phone sent: its name, what for, whether it is a person or an organization (and a person's organization), its kinds, its phones and emails with their labels, its address and notes, and when it was received and from which phone. For each one:
+
+- **Add as a new contact…**: opens the contact form filled in with what the phone sent, to complete or correct (add the people it serves, a website, the hours, account numbers). **Store in** starts with the group where the contact waits, when you can add records there, or else the group most contacts go in. **Save** adds the contact and takes it off the list; **Cancel** leaves it waiting. A person's organization is filled in when a contact of that name exists; otherwise its name is put in the notes ("Organization: ...").
+- **Add the details to** a contact: offered under "Perhaps already a contact (same name or phone):" when a contact you can change has the same name (accents and capitals ignored) or a phone number in common. It adds to that contact the phones and emails it does not have yet, the kinds, and the what-for line, address and organization if the contact has none; the phone's notes go after the contact's own. The contact keeps its name and group. The contact leaves the list.
+- **Discard**: asks first, then takes the contact off the list without adding anything. The phone is not told; its copy was already deleted when this computer received it.
+
+Each contact from a phone is received once, even if the phone sends it again. A contact without a name is refused, and the phone shows the reason on its Sent tab.
 
 ## Privacy {#privacy}
 

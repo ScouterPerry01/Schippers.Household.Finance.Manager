@@ -65,7 +65,9 @@ Les numéros de compte complets sont gardés chiffrés comme tout le reste, et l
 
 @index: stockage du téléphone; NIP
 
-RANN's Roost Mobile garde ses réglages, les listes qu'elle reçoit de l'ordinateur et sa file de saisies dans des fichiers chiffrés avec une clé conservée dans le matériel sécurisé du téléphone. Elle est verrouillée par un NIP, avec le déverrouillage par empreinte digitale ou par le visage si vous le choisissez, et elle est exclue des sauvegardes infonuagiques du téléphone. Un téléphone ne détient jamais les clés du ménage : il peut seulement envoyer des saisies et recevoir de courtes listes. Voir [RANN's Roost Mobile](phone-app).
+RANN's Roost Mobile garde ses réglages, les listes et les contacts qu'elle reçoit de l'ordinateur et sa file de saisies et de nouveaux contacts dans des fichiers chiffrés avec une clé conservée dans le matériel sécurisé du téléphone. Elle est verrouillée par un NIP, avec le déverrouillage par empreinte digitale ou par le visage si vous le choisissez, et elle est exclue des sauvegardes infonuagiques du téléphone. Un téléphone ne détient jamais les clés du ménage : il peut seulement envoyer des saisies et de nouveaux contacts, et recevoir de courtes listes. Voir [RANN's Roost Mobile](phone-app).
+
+Ce qui va au téléphone : le nom et la langue du ménage, la devise de base, les comptes et leurs soldes, les catégories, les bénéficiaires, les membres et les animaux, les véhicules et les équipements à compteur avec leurs lectures, les factures à payer dans les 60 prochains jours, les budgets et l'entretien du mois, et les contacts que son propriétaire peut voir (sauf les contacts archivés). Les numéros de compte complets, les numéros de compte et de client des contacts, les opérations, les documents et les dossiers de santé ne vont pas au téléphone. Seul ce que son propriétaire peut voir sur cet ordinateur va à un téléphone : les groupes privés d'un autre utilisateur, jamais. Voir [Ce que reçoit le téléphone](phones#sent-to-phone).
 
 ## Les mots de passe et la clé de récupération {#passwords}
 
@@ -155,7 +157,7 @@ La lecture par IA est désactivée tant que vous ne l'activez pas sous [Lecture 
 
 @index: Wi-Fi; synchronisation du téléphone; dossier de transfert; dossier infonuagique
 
-RANN's Roost Mobile ne parle qu'à cet ordinateur, par le Wi-Fi de la maison, de façon chiffrée entre les deux. Rien ne passe par Internet. Loin de la maison, le téléphone peut déposer ses saisies, chiffrées, dans un dossier de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud ; ce service ne voit que des fichiers illisibles. RANN n'a aucun compte auprès de ces services. Voir [Téléphones](phones).
+RANN's Roost Mobile ne parle qu'à cet ordinateur, par le Wi-Fi de la maison, de façon chiffrée entre les deux. Rien ne passe par Internet. Le téléphone envoie des saisies et de nouveaux contacts, et reçoit le résumé et les contacts décrits sous [Sur le téléphone](#on-the-phone). Loin de la maison, le téléphone peut déposer ses saisies et nouveaux contacts, chiffrés, dans un dossier de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud ; ce service ne voit que des fichiers illisibles. RANN n'a aucun compte auprès de ces services. Voir [Téléphones](phones).
 
 ### La vérification des mises à jour {#update-checks}
 
