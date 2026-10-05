@@ -82,8 +82,8 @@ Linking an asset to its purchase in your accounts keeps the proof of purchase at
 
 With **Falls each month from the price**:
 
-- **Over (years)**: how many years the value takes to fall to its lowest; 10 by default, from 1 to 100.
-- **Down to (% of price)**: the value it keeps at the end, as a percentage of the price; 0 by default, from 0 to 100.
+- **Over (years)**: how many years the value takes to fall to its lowest; 10 by default (set in [Rates and rules](rates-rules)), from 1 to 100.
+- **Down to (% of price)**: the value it keeps at the end, as a percentage of the price; 0 by default (also from [Rates and rules](rates-rules)), from 0 to 100.
 
 The value falls by the same amount each full month after the purchase, until it reaches that percentage of the price, and stays there. Example: a fridge bought $1,800 over 10 years down to 10 %: it loses $13.50 a month and is worth $180 after 10 years. A price is required with this method.
 
@@ -105,7 +105,7 @@ Once the asset is saved, **Warranties and coverage** lists what covers it, each 
 
 "No warranty recorded." when there is none. **Add a warranty** adds one.
 
-You are reminded 60 days before a warranty ends: the reminder appears at the top of the window and in the system notification, and leads to this screen. For a warranty limited by hours of use, the end is the earlier of its end date and the day the hour meter should reach the limit, at the asset's usual use per day (see [Meter readings](assets#meter)).
+You are reminded 60 days before a warranty ends (the default lead time, set in [Rates and rules](rates-rules)): the reminder appears at the top of the window and in the system notification, and leads to this screen. For a warranty limited by hours of use, the end is the earlier of its end date and the day the hour meter should reach the limit, at the asset's usual use per day (see [Meter readings](assets#meter)).
 
 ### Add or edit a warranty {#warranty-form}
 
@@ -174,7 +174,7 @@ An interval by hours or kilometres is only added when the asset's **Meter** coun
 - **Every (hours of use)** or **Every (km)**: shown with a meter. At least one interval is required.
 - **Last done on**: when it was last done, or the date to count from; today proposed. Once a service records the task, the latest such service is used.
 - **Hours when last done** or **Kilometres when last done**: shown with a meter; the latest reading proposed.
-- **Remind me (days before)**: 14 by default.
+- **Remind me (days before)**: 14 by default for a new task (set in [Rates and rules](rates-rules)).
 - **Remind me (hours before)** or **Remind me (km before)**: shown with a meter; 10 hours or 500 km by default.
 - **Notes**: the filter size, the part number.
 - **Active** (when editing): untick to pause the task.
@@ -317,7 +317,7 @@ The dialog is titled **Add a policy** or **Insurance policy**.
 - **Deductible**.
 - **Coverage limit** (or **Benefit amount** for a life kind): the most the policy pays.
 - **Coverage details**: for example "replacement cost, sewer backup included".
-- **Term starts** and **Renewal date**: the current term. The renewal date gives a reminder from 30 days before, until 30 days after. Correcting **Term starts** with the same premium moves the current term to the new date in **Premiums year over year** too.
+- **Term starts** and **Renewal date**: the current term. The renewal date gives a reminder from 30 days before, until 30 days after (the default, set in [Rates and rules](rates-rules)). Correcting **Term starts** with the same premium moves the current term to the new date in **Premiums year over year** too.
 - **What it covers**: not for life kinds. One box per asset still owned and per vehicle in use (marked "vehicle"). Tick what the policy covers. Covering a home also covers everything that is part of it.
 - **Active**: untick it when the policy ends; it is then left out of the uninsured check, the cost of ownership, the reminders and the emergency summary.
 - **Notes**.
@@ -375,6 +375,8 @@ This screen produces these reminders, shown at the top of the window and as a sy
 - a warranty ending within 60 days, by its end date or, for a limit of hours of use, by the day the meter should reach it;
 - an insurance policy to renew within 30 days, or up to 30 days late;
 - maintenance tasks **Due soon** or **Due now** on assets still owned.
+
+The 60 and 30 days are the defaults; they can be changed in [Rates and rules](rates-rules).
 
 Their dates also appear on the [Calendar](calendar).
 

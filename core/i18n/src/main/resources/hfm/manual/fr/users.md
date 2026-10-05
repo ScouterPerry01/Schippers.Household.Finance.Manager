@@ -109,7 +109,7 @@ Seul un administrateur peut ajouter un utilisateur.
 - **Nom d'utilisateur** : ce que la personne tape pour se connecter, comme sam. Obligatoire, sans espaces. Il ne doit pas déjà être utilisé par un autre utilisateur, majuscules ou non. Il ne peut pas être changé plus tard.
 - **Rôle** : Administrateur, Membre ou Lecteur. La valeur par défaut est Membre. Une ligne sous les listes explique le rôle choisi. Voir [Rôles](users#roles).
 - **Cet utilisateur est le membre du ménage** : le [membre du ménage](members) qu'est cet utilisateur, ou (aucun). Facultatif. Il lie le compte de connexion à la personne ; l'onglet Utilisateurs affiche alors « est » et le nom de la personne.
-- **Nouveau mot de passe** : le mot de passe de l'utilisateur. L'indice donne la longueur minimale (au moins 12 caractères). Une phrase de quelques mots est facile à retenir et difficile à deviner.
+- **Nouveau mot de passe** : le mot de passe de l'utilisateur. Il doit suivre les [règles des mots de passe](security#password-rules) du ménage : par défaut, au moins 12 caractères, sans le nom d'utilisateur. L'indice sous le champ dit ce que les règles demandent. Une phrase de quelques mots est facile à retenir et difficile à deviner. Un mot de passe qui ne respecte pas les règles est refusé avec ce qui lui manque, comme « Le mot de passe ne peut pas contenir le nom d'utilisateur. »
 - **Nouveau mot de passe de nouveau** : le même mot de passe encore. Tant que les deux diffèrent, le champ indique « Les deux mots de passe sont différents. »
 - **Annuler** : ferme la fenêtre sans ajouter personne.
 
@@ -153,7 +153,7 @@ Chaque utilisateur peut changer son propre mot de passe.
 
 1. Cliquez sur **Changer mon mot de passe…** en haut de l'écran.
 2. Tapez votre **Mot de passe actuel**.
-3. Tapez le **Nouveau mot de passe**, d'au moins 12 caractères.
+3. Tapez le **Nouveau mot de passe**. Il doit suivre les [règles des mots de passe](security#password-rules) du ménage (au moins 12 caractères par défaut), comme l'indique la ligne sous le champ.
 4. Tapez-le de nouveau dans **Nouveau mot de passe de nouveau**.
 5. Cliquez sur **Enregistrer**. Le bouton devient disponible une fois les trois champs remplis et les deux nouveaux mots de passe identiques.
 

@@ -41,7 +41,7 @@ The window shows a QR code on the left and, on the right:
 
 - the steps: on the phone, open RANN's Roost Mobile, tap **Pair with a computer** and scan the code; the phone's own camera app can also scan it and open RANN's Roost Mobile;
 - a reminder that the phone must be on the same Wi-Fi as this computer, and the Windows network question;
-- the time left: each code is valid for 10 minutes, then "This code has expired. Close and pair again.";
+- the time left: each code is valid for 10 minutes (the default, set in [Rates and rules](rates-rules)), then "This code has expired. Close and pair again.";
 - the address and port the phone will use;
 - **Copy as text**: copies the pairing link to the clipboard, for a phone whose camera cannot read the screen. Send it to the phone in a way you trust and paste it into **Or paste the pairing text** on the phone.
 

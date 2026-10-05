@@ -41,7 +41,7 @@ Marquées **Renouvellement**, les dates où quelque chose expire ou doit être r
 - une réclamation d’assurance à envoyer ([Réclamations médicales](medical)) ;
 - la fin de la garantie d’un bien de la maison, ou le renouvellement d’une police d’assurance ([Maison et biens](assets)) ;
 - un acompte provisionnel d’impôt ([Impôts](taxes)) ;
-- l’échéance d’une obligation ou d’un CPG que vous détenez, à partir de 30 jours avant et jusqu’à ce que son remboursement soit inscrit ([Placements](investments#security-dialog)).
+- l’échéance d’une obligation ou d’un CPG que vous détenez, à partir de 30 jours avant (par défaut, réglable dans [Taux et règles](rates-rules)) et jusqu’à ce que son remboursement soit inscrit ([Placements](investments#security-dialog)).
 
 Le bouton de la ligne ouvre l’écran où l’élément est géré, comme **Ouvrir les véhicules**, **Ouvrir les prêts** ou **Ouvrir les placements**.
 
@@ -118,7 +118,7 @@ Les boutons de la ligne d’un rendez-vous n’agissent que sur cette date. Pour
 - **15 minutes avant**
 - **1 heure avant**
 - **2 heures avant**
-- **1 jour avant** (cochée par défaut)
+- **1 jour avant** (cochée par défaut ; la valeur par défaut d’un nouvel événement est réglée dans [Taux et règles](rates-rules), et une valeur absente de cette liste y est ajoutée)
 - **2 jours avant**
 - **7 jours avant**
 

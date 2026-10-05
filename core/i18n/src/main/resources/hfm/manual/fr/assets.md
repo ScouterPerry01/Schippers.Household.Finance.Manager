@@ -82,8 +82,8 @@ Lier un bien à son achat dans vos comptes garde la preuve d’achat à portée 
 
 Avec **Baisse chaque mois à partir du prix** :
 
-- **Sur (années)** : en combien d’années la valeur descend à son plus bas ; 10 par défaut, de 1 à 100.
-- **Jusqu’à (% du prix)** : la valeur qu’il garde à la fin, en pourcentage du prix ; 0 par défaut, de 0 à 100.
+- **Sur (années)** : en combien d’années la valeur descend à son plus bas ; 10 par défaut (réglable dans [Taux et règles](rates-rules)), de 1 à 100.
+- **Jusqu’à (% du prix)** : la valeur qu’il garde à la fin, en pourcentage du prix ; 0 par défaut (aussi selon [Taux et règles](rates-rules)), de 0 à 100.
 
 La valeur baisse du même montant chaque mois complet après l’achat, jusqu’à atteindre ce pourcentage du prix, puis y reste. Exemple : un réfrigérateur acheté 1 800 $ sur 10 ans jusqu’à 10 % perd 13,50 $ par mois et vaut 180 $ après 10 ans. Un prix est obligatoire avec cette méthode.
 
@@ -105,7 +105,7 @@ Une fois le bien enregistré, **Garanties et couverture** énumère ce qui le co
 
 « Aucune garantie inscrite. » quand il n’y en a pas. **Ajouter une garantie** en ajoute une.
 
-Un rappel arrive 60 jours avant la fin d’une garantie : il paraît en haut de la fenêtre et dans la notification du système, et mène à cet écran. Pour une garantie limitée en heures d’utilisation, la fin est la plus proche de sa date de fin et du jour où le compteur d’heures devrait atteindre la limite, à l’utilisation habituelle par jour du bien (voir [Lectures du compteur](assets#meter)).
+Un rappel arrive 60 jours avant la fin d’une garantie (délai par défaut, réglable dans [Taux et règles](rates-rules)) : il paraît en haut de la fenêtre et dans la notification du système, et mène à cet écran. Pour une garantie limitée en heures d’utilisation, la fin est la plus proche de sa date de fin et du jour où le compteur d’heures devrait atteindre la limite, à l’utilisation habituelle par jour du bien (voir [Lectures du compteur](assets#meter)).
 
 ### Ajouter ou modifier une garantie {#warranty-form}
 
@@ -174,7 +174,7 @@ Un intervalle en heures ou en kilomètres n’est ajouté que si le **Compteur**
 - **Toutes les (heures d’utilisation)** ou **Tous les (km)** : affiché avec un compteur. Au moins un intervalle est obligatoire.
 - **Faite la dernière fois le** : quand elle a été faite la dernière fois, ou la date à partir de laquelle compter ; aujourd’hui proposé. Dès qu’un entretien inscrit la tâche, le plus récent de ces entretiens sert.
 - **Heures à la dernière fois** ou **Kilomètres à la dernière fois** : affiché avec un compteur ; la dernière lecture est proposée.
-- **Me le rappeler (jours avant)** : 14 par défaut.
+- **Me le rappeler (jours avant)** : 14 par défaut pour une nouvelle tâche (réglable dans [Taux et règles](rates-rules)).
 - **Me le rappeler (heures avant)** ou **Me le rappeler (km avant)** : affiché avec un compteur ; 10 heures ou 500 km par défaut.
 - **Notes** : format du filtre, numéro de pièce.
 - **Active** (en modification) : décochez-la pour mettre la tâche en pause.
@@ -317,7 +317,7 @@ La boîte s’intitule **Ajouter une police** ou **Police d’assurance**.
 - **Franchise**.
 - **Montant de garantie** (ou **Montant de la prestation** pour une assurance de personnes) : le plus que la police paie.
 - **Détails de la couverture** : par exemple « valeur à neuf, refoulement d’égout inclus ».
-- **Début du terme** et **Date de renouvellement** : le terme en cours. La date de renouvellement donne un rappel à partir de 30 jours avant, et jusqu’à 30 jours après. Corriger **Début du terme** avec la même prime déplace aussi le terme en cours à la nouvelle date dans **Primes d’une année à l’autre**.
+- **Début du terme** et **Date de renouvellement** : le terme en cours. La date de renouvellement donne un rappel à partir de 30 jours avant, et jusqu’à 30 jours après (par défaut, réglable dans [Taux et règles](rates-rules)). Corriger **Début du terme** avec la même prime déplace aussi le terme en cours à la nouvelle date dans **Primes d’une année à l’autre**.
 - **Ce qu’elle couvre** : pas pour les assurances de personnes. Une case par bien encore possédé et par véhicule en service (marqué « véhicule »). Cochez ce que la police couvre. Couvrir une maison couvre aussi tout ce qui en fait partie.
 - **Actif** : décochez-le quand la police prend fin ; elle est alors exclue de la vérification des biens non assurés, du coût de possession, des rappels et du sommaire d’urgence.
 - **Notes**.
@@ -375,6 +375,8 @@ Cet écran donne ces rappels, affichés en haut de la fenêtre et dans une notif
 - une garantie qui prend fin dans les 60 jours, par sa date de fin ou, pour une limite d’heures d’utilisation, par le jour où le compteur devrait l’atteindre ;
 - une police d’assurance à renouveler dans les 30 jours, ou jusqu’à 30 jours en retard ;
 - les tâches d’entretien **Bientôt** ou **À faire** sur les biens encore possédés.
+
+Les 60 et 30 jours sont les valeurs par défaut ; elles se changent dans [Taux et règles](rates-rules).
 
 Leurs dates paraissent aussi au [Calendrier](calendar).
 

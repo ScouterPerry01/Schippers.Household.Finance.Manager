@@ -154,7 +154,7 @@ The dialog is titled **Add a plan** or **Plan**.
 - **Plan member**: the household member who holds the plan, usually the employee, or "(none)". For your reference.
 - Who is covered and in what order: see [Who is covered and in what order](medical#coverage-order).
 - **Plan year starts (month)** and **Plan year starts (day)**: when the plan's year begins, for example 1 and 1 for a calendar year, or 7 and 1 for a plan that renews on July 1. The month is 1 to 12 and the day 1 to 28. Yearly maximums and deductibles start over on this date.
-- **Days to send a claim**: "After the date of service; often 365, or until a set date after the plan year ends." From 1 to 3650; 365 by default. The deadline of each expense is its date of service plus this number of days.
+- **Days to send a claim**: "After the date of service; often 365, or until a set date after the plan year ends." From 1 to 3650; 365 by default for a new plan (set in [Rates and rules](rates-rules)). The deadline of each expense is its date of service plus this number of days.
 - **Yearly credit**: only for a Health Spending Account. See [Health Spending Account](medical#hsa).
 - **Active**: ticked while the plan is in force. Untick it when the plan ends: it is no longer proposed for new claims, no longer counted in **Coverage left**, and shows "inactive" in the list. Its past claims are kept.
 - **Notes**.
@@ -240,7 +240,7 @@ Expenses earlier in the same plan year use up the deductible and the maximum fir
 ## Claim deadlines and reminders {#deadlines}
 @index: claim deadline; reminder; time limit
 
-The deadline to send an expense to the next plan is its date of service plus that plan's **Days to send a claim**. From 30 days before the deadline, until 30 days after it, an expense still to send appears in the reminders at the top of the window and in the system notification, as "claim to send" with the person, the description and the plan. Clicking the reminder opens the Medical claims screen. The deadline also appears on the [Calendar](calendar).
+The deadline to send an expense to the next plan is its date of service plus that plan's **Days to send a claim**. From 30 days before the deadline, until 30 days after it (the default, set in [Rates and rules](rates-rules)), an expense still to send appears in the reminders at the top of the window and in the system notification, as "claim to send" with the person, the description and the plan. Clicking the reminder opens the Medical claims screen. The deadline also appears on the [Calendar](calendar).
 
 Sending the claim, closing the expense, or recording the last plan's payment ends the reminder.
 

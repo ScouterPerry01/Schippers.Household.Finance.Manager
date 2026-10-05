@@ -22,7 +22,7 @@ When the household has no account yet, the list says No accounts yet. Add your f
 The accounts are grouped under headings by kind, always in this order: Banking, Credit, Loans, Investments and Assets. Each row shows:
 
 - the account name, in bold when it is the one selected, followed by (Closed) for a closed account;
-- under the name, Reconciled to followed by the date of the last reconciled statement, or Never reconciled. The date turns red when the last reconciliation is more than 45 days old, as a reminder to reconcile the next statement. The same accounts are listed on the Dashboard under Needs your attention;
+- under the name, Reconciled to followed by the date of the last reconciled statement, or Never reconciled. The date turns red when the last reconciliation is more than 45 days old (the default, set in [Rates and rules](rates-rules)), as a reminder to reconcile the next statement. The same accounts are listed on the Dashboard under Needs your attention;
 - on the right, the balance today: transactions dated after today (a post-dated cheque, a payment entered ahead) are not counted yet. When an account has such transactions, a smaller line under the balance gives the balance once they are counted, such as 1 250,00 $ after post-dated. Negative balances are in red. Credit cards, lines of credit, loans and mortgages normally show a negative balance, since it is money owed.
 
 Investment accounts are shown at their full value: the cash in the account plus the securities at their market value. In the register of an investment account, the balance is the cash only.
@@ -427,7 +427,7 @@ Importing records the statement and goes through its lines one by one:
 
 - A line already imported from an earlier statement (same bank number, or same date, amount and description) is marked Already imported and skipped, so overlapping downloads never create duplicates.
 - A line that matches a transaction you already recorded (for example a receipt sent from the phone, or a transaction typed by hand) is linked to it. A match needs the same amount within 5 days. When the dates are within 3 days and it is the only candidate, or the payee looks the same, the link is made at once (Matched) and the transaction becomes cleared. Otherwise the line is marked To confirm, for you to decide.
-- A purchase you recorded in a foreign currency can match a line that differs by up to 3.5 % (the conversion fee and the day's rate); such a match is always To confirm.
+- A purchase you recorded in a foreign currency can match a line that differs by up to 3.5 % by default (the conversion fee and the day's rate; set in [Rates and rules](rates-rules)); such a match is always To confirm.
 - Every other line becomes a new transaction, already cleared (Added). Its category comes from your [Category rules](rules), or else from the payee's default category, or else from the category the payee had last time.
 
 The same file cannot be imported twice into the same account: This statement file has already been imported into this account.
@@ -541,11 +541,11 @@ On a Credit account, **Card details** opens Credit card details. Every field is 
 - **Purchase rate (%)**: the yearly interest rate on purchases. It is the rate shown for the card in the Debt summary report.
 - **Cash advance rate (%)**: the yearly rate on cash advances. It is shown for the card in the Debt summary report.
 - **Statement day (1-31)**: the day of the month the statement is produced. Kept for reference.
-- **Payment due day (1-31)**: the day of the month the payment is due. While the card has a balance owing, each due date is on the [Calendar](calendar) as payment due, and it appears among the reminders from 7 days before, leading back to Accounts. In a shorter month, the payment is due on the month's last day. To have the payment itself prepared and marked paid, set it up under [Bills](bills).
+- **Payment due day (1-31)**: the day of the month the payment is due. While the card has a balance owing, each due date is on the [Calendar](calendar) as payment due, and it appears among the reminders from 7 days before (the default lead time in [Rates and rules](rates-rules)), leading back to Accounts. In a shorter month, the payment is due on the month's last day. To have the payment itself prepared and marked paid, set it up under [Bills](bills).
 - **Minimum payment (% of balance)**: the share of the balance the issuer asks for each month, such as 3.
 - **Minimum payment (at least)**: the smallest minimum payment, such as 10. The minimum payment is the larger of the percentage and this amount, but never more than the balance. It is shown for the card in the Debt summary report.
 - **Annual fee**: the yearly fee of the card.
-- **Fee charged on**: a date the annual fee is charged, as YYYY-MM-DD; it repeats every year. With an annual fee, a reminder appears 30 days before each anniversary, among the reminders and on the [Calendar](calendar), leading back to Accounts, so you can decide whether the card is still worth it.
+- **Fee charged on**: a date the annual fee is charged, as YYYY-MM-DD; it repeats every year. With an annual fee, a reminder appears 30 days before each anniversary (the renewal lead time in [Rates and rules](rates-rules)), among the reminders and on the [Calendar](calendar), leading back to Accounts, so you can decide whether the card is still worth it.
 
 Days must be between 1 and 31, and rates between 0 and 100 %. **Save** keeps the details; **Cancel** leaves them unchanged. The Debt summary report is under [Reports](reports).
 

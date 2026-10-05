@@ -2,6 +2,8 @@ package ca.schippers.hfm.books
 
 import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.calc.invest.SlipKind
+import ca.schippers.hfm.calc.rules.LeadTimes
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.money.Money
@@ -102,9 +104,10 @@ class SlipChecklistService internal constructor(private val books: Books) {
         val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
         for (g in books.groups()) {
             val rows = books.ledger(g).taxYearQueries.slipSourceSplits(LocalDate(year, 1, 1).toString(), LocalDate(year, 12, 31).toString(), wanted.keys).executeAsList()
-            // Bank interest: no T5 under $50 a year from one payer.
+            // Bank interest: no T5 under $50 a year from one payer (Rates and rules).
+            val t5From = Thresholds.t5Interest(LocalDate(year, 12, 31)).movePointRight(2).toLong()
             val interest = rows.filter { wanted[it.category_id] == "income.investment.interest" }.groupBy { it.member_id to it.payee_text.orEmpty() }
-                .filterValues { lines -> lines.sumOf { it.amount_minor } >= 5000 }.keys
+                .filterValues { lines -> lines.sumOf { it.amount_minor } >= t5From }.keys
             for (r in rows) {
                 val categoryKey = wanted[r.category_id] ?: continue
                 val (type, reason) = CATEGORY_SLIPS.getValue(categoryKey)
@@ -251,7 +254,7 @@ class InstalmentService internal constructor(private val books: Books) {
      * due date (March 15, June 15, September 15 and December 15), a zero leaving a date out.
      */
     fun save(accountId: String, memberId: String?, year: Int, authority: TaxAuthority, amounts: List<Money>) {
-        validate(amounts.size == DUE_DAYS.size, "error.instalmentAmounts")
+        validate(amounts.size == 4, "error.instalmentAmounts")
         val account = books.accounts.get(accountId)
         validate(amounts.all { it.currency == account.currency && !it.isNegative }, "error.instalmentAmounts")
         val group = books.group(account.groupId).also { books.require(it, PermissionLevel.EDIT) }
@@ -264,11 +267,15 @@ class InstalmentService internal constructor(private val books: Books) {
         }
     }
 
-    /** Instalments not yet paid, due within [withinDays] or overdue by up to 30 days, as reminders. */
+    /**
+     * Instalments not yet paid, due within [withinDays] or overdue by up to the instalment window of
+     * Rates and rules (30 days built in), as reminders.
+     */
     internal fun renewals(today: LocalDate, withinDays: Int): List<Renewal> {
+        val overdue = LeadTimes.instalment(today)
         val members = books.members.list(includeArchived = true).associateBy { it.id }
         return (schedule(today.year, today) + if (today.month == kotlinx.datetime.Month.JANUARY) schedule(today.year - 1, today) else emptyList())
-            .filter { it.state != InstalmentState.PAID && today.daysUntil(it.dueDate) in -30..withinDays }
+            .filter { it.state != InstalmentState.PAID && today.daysUntil(it.dueDate) in -overdue..withinDays }
             .map { i ->
                 // The detail is the authority's code; the apps name it in the user's language.
                 Renewal(RenewalKind.TAX_INSTALMENT, "${i.accountId}|${i.memberId.orEmpty()}|${i.authority}", i.memberId?.let { members[it]?.displayName }.orEmpty(),
@@ -277,10 +284,8 @@ class InstalmentService internal constructor(private val books: Books) {
     }
 
     companion object {
-        /** The months instalments are due in, each on the 15th. */
-        private val DUE_DAYS = listOf(3, 6, 9, 12)
-
-        fun dueDate(year: Int, index: Int): LocalDate = LocalDate(year, DUE_DAYS[index], 15)
+        /** The [index]th (0 to 3) instalment due date of [year]: March, June, September and December 15, as Rates and rules give them. */
+        fun dueDate(year: Int, index: Int): LocalDate = Thresholds.instalmentDueDates(year)[index]
 
         private val QUEBEC = Regex("revenu\\s*qu[eé]bec|\\bRQ\\b|minist[eè]re du revenu", RegexOption.IGNORE_CASE)
     }

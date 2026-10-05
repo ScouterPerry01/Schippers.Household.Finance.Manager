@@ -14,11 +14,11 @@ La barre de titre a deux boutons :
 
 En dessous se trouvent cinq onglets :
 
-- **À payer** : ce qui est en retard, à payer aujourd’hui et à payer dans les 30 prochains jours, avec les boutons pour payer, sauter ou entrer un montant, et chaque montant à côté du montant habituel.
+- **À payer** : ce qui est en retard, à payer aujourd’hui et à payer dans les 30 prochains jours (par défaut, réglable dans [Taux et règles](rates-rules)), avec les boutons pour payer, sauter ou entrer un montant, et chaque montant à côté du montant habituel.
 - **Toutes les factures** : chaque facture, revenu et virement que vous avez créé.
 - **Calendrier** : les échéances sur une vue du mois.
 - **Abonnements** : ce que coûte chaque abonnement par année.
-- **Prévision de trésorerie** : le solde prévu de chaque compte sur 30, 60 ou 90 jours.
+- **Prévision de trésorerie** : le solde prévu de chaque compte sur 30, 60 ou 90 jours ; 30 par défaut ([Taux et règles](rates-rules)).
 
 ## Factures, revenus et virements {#bill-types}
 @index: revenu récurrent; jour de paie; virement prévu; épargne automatique
@@ -89,7 +89,7 @@ Pour les factures variables et estimées, l’onglet **À payer** offre **Entrer
   - **Avancer au jour ouvrable précédent** : pour les paiements qui doivent arriver à temps, comme un prélèvement automatique traité le jour ouvrable précédent.
   - **Reporter au jour ouvrable suivant** : pour les dépôts, comme un jour de paie reporté au lundi.
 
-Les jours fériés bancaires sont les congés fédéraux observés par les banques, plus ceux de la province ou du territoire du ménage (par exemple la Fête nationale au Québec, le jour de la Famille ou le congé civique). Un congé qui tombe une fin de semaine est observé le jour de semaine suivant.
+Les jours fériés bancaires sont les congés fédéraux observés par les banques, plus ceux de la province ou du territoire du ménage (par exemple la Fête nationale au Québec, le jour de la Famille ou le congé civique). Un congé qui tombe une fin de semaine est observé le jour de semaine suivant. Les congés provinciaux observés dans chaque province ou territoire, et depuis quelle année, sont conservés dans [Taux et règles](rates-rules) : une province qui ajoute ou retire un congé peut y être inscrite avec sa date.
 
 ### Première et dernière échéances {#due-dates}
 
@@ -99,7 +99,7 @@ Les jours fériés bancaires sont les congés fédéraux observés par les banqu
 ### Rappels {#reminders}
 @index: rappel de facture; notification; alerte d’échéance
 
-- **Me le rappeler (jours avant)** : combien de jours avant chaque échéance vous voulez un rappel, séparés par des virgules, par exemple 7, 1 (par défaut). Chaque nombre va de 0 à 365. Laissez vide pour n’avoir aucun rappel à l’avance.
+- **Me le rappeler (jours avant)** : combien de jours avant chaque échéance vous voulez un rappel, séparés par des virgules, par exemple 7, 1 (par défaut pour une nouvelle facture, réglable dans [Taux et règles](rates-rules)). Chaque nombre va de 0 à 365. Laissez vide pour n’avoir aucun rappel à l’avance.
 
 Quoi que vous entriez ici, une facture à payer aujourd’hui ou en retard figure toujours dans les rappels. Voir [Rappels et notifications](bills#reminder-banner).
 
@@ -123,7 +123,7 @@ Quand vous modifiez une facture existante, **Historique des paiements**, au bas 
 
 - « habituellement … » : la moyenne des paiements précédents (jusqu’aux douze précédents) ;
 - « même mois l’an dernier … » : ce qui a été payé pour l’échéance du même mois un an plus tôt ;
-- « inhabituel », en rouge : le montant dépasse de plus d’un quart le montant habituel, avec au moins trois paiements antérieurs pour comparer.
+- « inhabituel », en rouge : le montant dépasse 125 % du montant habituel (le seuil par défaut, réglable dans [Taux et règles](rates-rules)), avec au moins trois paiements antérieurs pour comparer.
 
 « Aucun paiement inscrit pour l’instant. » signifie que la facture n’a jamais été marquée payée. L’historique vient des échéances marquées payées : il commence au premier paiement que vous marquez.
 
@@ -134,7 +134,7 @@ Quand vous modifiez une facture existante, **Historique des paiements**, au bas 
 
 - **En retard** : les échéances déjà passées, ni payées ni sautées, jusqu’à un an en arrière.
 - **À payer aujourd’hui**.
-- **30 prochains jours**.
+- **30 prochains jours** : le nombre de jours est le délai de l’agenda des factures dans [Taux et règles](rates-rules), 30 par défaut.
 - **Payées récemment** : les échéances des 31 derniers jours (et les suivantes) déjà marquées payées, de la plus récente à la plus ancienne.
 - **Sautées** : les échéances que vous avez sautées, d’il y a un an au plus jusqu’aux 30 prochains jours, de la plus récente à la plus ancienne. Affiché seulement s’il y en a.
 
@@ -146,7 +146,7 @@ Dès qu’une facture a déjà été payée, sa ligne compare aussi le montant a
 
 - « habituellement … » : la moyenne des paiements avant cette échéance (jusqu’aux douze derniers) ;
 - « même mois l’an dernier … » : ce qui a été payé pour l’échéance du même mois un an plus tôt ;
-- « Montant inhabituel : plus d’un quart au-dessus de l’habituel. », en rouge : le montant est connu (entré ou payé, pas seulement prévu) et dépasse de plus de 25 % le montant habituel, avec au moins trois paiements antérieurs pour comparer. Vérifiez la facture avant de la payer.
+- « Montant inhabituel : plus de 125 % de l’habituel. », en rouge : le montant est connu (entré ou payé, pas seulement prévu) et dépasse ce pourcentage du montant habituel (125 % sauf changement dans Taux et règles), avec au moins trois paiements antérieurs pour comparer. Vérifiez la facture avant de la payer.
 
 L’historique complet d’une facture est dans son formulaire. Voir [Historique des paiements](bills#payment-history).
 

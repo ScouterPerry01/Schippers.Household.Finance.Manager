@@ -86,7 +86,7 @@ Tous les montants des tuiles sont dans la devise de base du ménage. Les soldes 
 @index: budget; dépenses du mois; dépassement de budget
 
 - **Dépensé ce mois-ci** : cette tuile n’apparaît que si au moins une catégorie de dépenses a un budget. Elle montre ce qui a été dépensé ce mois-ci dans les catégories budgétées (sous-catégories comprises), avec une ligne de détail donnant le total budgété, par exemple sur 3 200,00 $ budgétés.
-  Quand une ou plusieurs catégories dépassent leur budget, le détail ajoute 1 catégorie dépasse le budget (ou le nombre de catégories), en rouge.
+  Quand une ou plusieurs catégories dépassent leur budget (au-delà du pourcentage d’alerte de budget de [Taux et règles](rates-rules), 100 % par défaut), le détail ajoute 1 catégorie dépasse le budget (ou le nombre de catégories), en rouge.
   Un clic sur la tuile ouvre Budgets. Voir [Budgets](budgets).
 
 ## À vérifier {#needs-attention}
@@ -100,7 +100,7 @@ Les lignes possibles, dans cet ordre :
 - Factures en retard, par exemple 1 facture est en retard ou 3 factures sont en retard : des factures impayées dont l’échéance est passée. Ouvre Factures, où vous inscrivez le paiement ou sautez l’échéance. Voir [Factures](bills).
 - Lignes de relevé, par exemple 2 lignes de relevé demandent une décision : des lignes importées, dans des relevés en cours de rapprochement, marquées À confirmer ou Aucune correspondance. Ouvre Comptes. Choisissez le compte, puis **Rapprocher…** pour les régler. Voir [Lignes à vérifier](accounts#reconcile-attention).
 - Catégories manquantes, par exemple 5 opérations n’ont pas de catégorie : des opérations dont au moins une ligne n’a pas de catégorie. Les virements entre vos comptes ne sont pas comptés, puisqu’ils n’ont jamais besoin de catégorie. Ouvre Comptes ; les registres affichent (non catégorisé) dans la colonne Catégorie. Les montants non catégorisés ne comptent dans aucun budget et paraissent comme (non catégorisé) dans les rapports : il vaut la peine de les corriger.
-- Comptes en retard, par exemple Compte chèques conjoint n’a pas été rapproché depuis plus de 45 jours : une ligne par compte dont le dernier relevé rapproché date de plus de 45 jours. Un compte jamais rapproché n’est pas listé ici ; l’écran Comptes l’indique plutôt par Jamais rapproché. Ouvre Comptes.
+- Comptes en retard, par exemple Compte chèques conjoint n’a pas été rapproché depuis plus de 45 jours : une ligne par compte dont le dernier relevé rapproché date de plus de 45 jours (par défaut, réglable dans [Taux et règles](rates-rules)). Un compte jamais rapproché n’est pas listé ici ; l’écran Comptes l’indique plutôt par Jamais rapproché. Ouvre Comptes.
 - Aucune sauvegarde réussie dans les 7 derniers jours : aucune sauvegarde n’a réussi depuis une semaine, ou aucune n’a jamais été faite. Ouvre Sauvegardes. Voir [Sauvegardes](backups).
 - Taux manquants, par exemple Aucun taux de change pour USD : ces montants sont exclus : des soldes, factures ou dépenses sont dans une devise sans taux connu, et ne sont donc pas dans les totaux ci-dessus. Ouvre Taux et cours, où vous ajoutez le taux. Voir [Taux et cours](rates).
 

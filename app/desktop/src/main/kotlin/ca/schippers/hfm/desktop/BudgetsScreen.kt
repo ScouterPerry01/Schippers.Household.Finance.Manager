@@ -101,7 +101,7 @@ fun BudgetReportView(model: BooksModel, report: BudgetReport, yearView: Boolean,
                     model.t("budget.of", model.money(l.actual), model.money(l.budgeted)),
                     target = l.budgeted.toBigDecimal().toDouble(),
                     note = when {
-                        kind == CategoryKind.EXPENSE && l.isOver -> model.t("budget.over", model.money(l.actual - l.budgeted))
+                        kind == CategoryKind.EXPENSE && l.actual > l.budgeted -> model.t("budget.over", model.money(l.actual - l.budgeted))
                         else -> model.t("budget.left", model.money(l.remaining)) + if (!l.carriedOver.isZero) " · " + model.t("budget.carried", model.money(l.carriedOver)) else ""
                     },
                     alert = kind == CategoryKind.EXPENSE && l.isOver,

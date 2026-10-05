@@ -352,7 +352,7 @@ object DemoHousehold {
         addMetals(books, group, alex, sam, desjardins, today)
         addDocuments(books, group, today)
         // HH-05: Sam signs in too, as a member who can view the shared accounts.
-        val samUser = books.users.add("sam", "Sam Demo", ca.schippers.hfm.domain.Role.MEMBER, "sam-demo-password".toCharArray(), sam.id).userId
+        val samUser = books.users.add("sam", "Sam Demo", ca.schippers.hfm.domain.Role.MEMBER, "member-demo-password".toCharArray(), sam.id).userId
         books.users.setAccess(group, samUser, ca.schippers.hfm.domain.PermissionLevel.VIEW)
         // GOAL-01 to GOAL-04: three goals sharing the savings account.
         val goals = books.goals

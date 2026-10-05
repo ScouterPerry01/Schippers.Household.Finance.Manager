@@ -204,7 +204,7 @@ private fun AddUserDialog(model: BooksModel, onClose: () -> Unit, onAdded: (Stri
             Picker(model.t("users.member"), listOf(null) + members, members.firstOrNull { it.id == memberId }, { it?.displayName ?: model.t("common.none") }, Modifier.weight(1f)) { memberId = it?.id }
         }
         Text(model.t("role.${role}.explain"), style = MaterialTheme.typography.bodySmall)
-        TextInput(model.t("users.password"), password, secret = true, supporting = model.t("users.passwordHint", UserService.MIN_PASSWORD)) { password = it }
+        TextInput(model.t("users.password"), password, secret = true, supporting = passwordRulesText(model.language, model.books.users.passwordRules())) { password = it }
         TextInput(model.t("users.passwordConfirm"), confirm, secret = true, error = if (confirm.isNotEmpty() && confirm != password) model.t("users.passwordMismatch") else null) { confirm = it }
     }
 }
@@ -271,7 +271,7 @@ private fun ChangePasswordDialog(model: BooksModel, onClose: () -> Unit) {
         if (model.act { model.books.users.changePassword(current.toCharArray(), next.toCharArray()) } != null) onClose()
     }) {
         TextInput(model.t("users.currentPassword"), current, secret = true) { current = it }
-        TextInput(model.t("users.password"), next, secret = true, supporting = model.t("users.passwordHint", UserService.MIN_PASSWORD)) { next = it }
+        TextInput(model.t("users.password"), next, secret = true, supporting = passwordRulesText(model.language, model.books.users.passwordRules())) { next = it }
         TextInput(model.t("users.passwordConfirm"), confirm, secret = true, error = if (confirm.isNotEmpty() && confirm != next) model.t("users.passwordMismatch") else null) { confirm = it }
         Text(model.t("users.passwordRecoveryNote"), style = MaterialTheme.typography.bodySmall)
     }

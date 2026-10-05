@@ -54,7 +54,7 @@ The app looks at the year's transactions, by payee and by person (the **For** fi
 - Pay on **Salary and wages**, **Bonuses and commissions** or **Employment income**: a T4, "T4, employment income", from the payee.
 - **Employer pension**: a T4A. **QPP / CPP**: a T4A(P). **Old Age Security**: a T4A(OAS). **RRIF and annuity payments**: a T4RIF.
 - **Employment Insurance** or **Employment Insurance / QPIP**: a T4E.
-- **Interest** of $50 or more in the year from the same payer: a T5. Below $50, no slip is expected.
+- **Interest** of $50 or more in the year from the same payer: a T5. Below $50, no slip is expected (the threshold is in [Rates and rules](rates-rules)).
 - **Tuition** paid: a T2202 from the school.
 - **Child care** paid, for a person who files in Quebec: an RL-24.
 - Money moved into an RRSP from outside the registered plans (a transfer from another account, or a deposit with no transfer and no category, such as cash imported from a brokerage file): an RRSP contribution receipt, for the owner (for a spousal RRSP, for the contributor). Money taken out of an RRSP: a T4RSP. Out of a RRIF, spousal RRIF or LIF: a T4RIF. Any transfer in or out of an FHSA: a T4FHSA. The issuer is the plan's institution, or the account name.
@@ -134,7 +134,7 @@ Each gift has its own receipt details: when one payment holds gifts for two peop
 
 @index: tax instalments; instalment payments; quarterly tax; CRA reminder; Revenu Québec; acomptes provisionnels
 
-Some people pay their income tax during the year in instalments instead of at filing: usually those whose tax owing at filing is more than $3,000 ($1,800 in Quebec) this year and in either of the two years before, such as retirees or the self-employed. The CRA and Revenu Québec send reminders with the amounts. Instalments are due March 15, June 15, September 15 and December 15; a payment made the next business day after a weekend or holiday is on time.
+Some people pay their income tax during the year in instalments instead of at filing: usually those whose tax owing at filing is more than $3,000 ($1,800 in Quebec) this year and in either of the two years before, such as retirees or the self-employed. The CRA and Revenu Québec send reminders with the amounts. Instalments are due March 15, June 15, September 15 and December 15 (dates kept in [Rates and rules](rates-rules)); a payment made the next business day after a weekend or holiday is on time.
 
 The **Instalments** tab lists the instalments of the tax year, grouped by person and authority, such as "Jean · Canada Revenue Agency". Click the heading, or **Change** beside it, to change them. Each instalment shows:
 
@@ -146,7 +146,7 @@ The **Instalments** tab lists the instalments of the tax year, grouped by person
 
 "No instalments for this year." means none were entered for the year shown.
 
-Instalments not fully paid that are due within 30 days, or up to 30 days late, appear among the app's reminders as "tax instalment", with the authority, and lead to this screen.
+Instalments not fully paid that are due within 30 days, or up to 30 days late (the default window, set in [Rates and rules](rates-rules)), appear among the app's reminders as "tax instalment", with the authority, and lead to this screen.
 
 ### Instalments for a year {#instalment-window}
 

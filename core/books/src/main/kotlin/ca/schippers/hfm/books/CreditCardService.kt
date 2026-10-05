@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.data.ledger.CardsQueries
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.Ids
@@ -319,15 +320,16 @@ class CreditCardService internal constructor(private val books: Books) {
 
     /**
      * CC-04: annual fees coming up within [withinDays], as reminders; CC-01: payments due within
-     * [PAYMENT_LEAD_DAYS] (or [withinDays] if shorter) on cards that are owed something.
+     * the card payment lead time of Rates and rules (or [withinDays] if shorter) on cards that are
+     * owed something.
      */
-    fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> = books.accounts.list().map { it.account }
+    fun renewals(today: LocalDate, withinDays: Int = LeadTimes.renewals(today)): List<Renewal> = books.accounts.list().map { it.account }
         .filter { it.type.kind == AccountKind.CREDIT }
         .mapNotNull { a ->
             val next = terms(a.id)?.takeIf { it.annualFee?.isPositive == true }?.nextAnnualFee(today) ?: return@mapNotNull null
             val days = today.daysUntil(next)
             if (days > withinDays) null else Renewal(RenewalKind.CARD_ANNUAL_FEE, a.id, a.name, next, days)
-        } + paymentsDue(today, today.plus(DatePeriod(days = minOf(withinDays, PAYMENT_LEAD_DAYS))), today)
+        } + paymentsDue(today, today.plus(DatePeriod(days = minOf(withinDays, LeadTimes.cardPayment(today)))), today)
 
     /**
      * CC-01: the payment due dates between [from] and [to] of every open card with a due day that
@@ -341,9 +343,6 @@ class CreditCardService internal constructor(private val books: Books) {
         }
 
     companion object {
-        /** CC-01: how many days before a card payment is due it appears among the reminders. */
-        const val PAYMENT_LEAD_DAYS = 7
-
         private val DATED = setOf(BenefitKind.PURCHASE_PROTECTION, BenefitKind.PRICE_PROTECTION, BenefitKind.MOBILE_DEVICE)
 
         /** Categories of things purchase protection does not cover: food, fuel, services, bills, fees. */

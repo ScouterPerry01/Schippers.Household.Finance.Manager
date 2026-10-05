@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.data.ledger.LedgerDatabase
 import ca.schippers.hfm.data.ledger.LedgerQueries
@@ -113,9 +114,10 @@ data class ImportSettings(
     val confidentDays: Int = 3,
     /**
      * REC-04: a purchase recorded in a foreign currency matches a line within this percentage of
-     * its amount (a 2.5 % conversion fee and the day's spread); it is always proposed, not linked.
+     * its amount (a 2.5 % conversion fee and the day's spread; Rates and rules, 3.5 % built in); it
+     * is always proposed, not linked.
      */
-    val fxTolerancePercent: BigDecimal = BigDecimal("3.5"),
+    val fxTolerancePercent: BigDecimal = Thresholds.statementFxPercent(),
 )
 
 /**

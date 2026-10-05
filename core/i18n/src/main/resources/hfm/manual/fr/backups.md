@@ -16,7 +16,7 @@ Les sauvegardes sont des copies de tout le ménage, faites automatiquement, vér
 
 ## Des sauvegardes automatiques dès le départ {#defaults}
 
-Un nouveau ménage est sauvegardé chaque jour dès le départ, dans un dossier à côté de lui nommé d'après le ménage suivi de « - backups », en gardant 10 versions. Cela protège contre les erreurs, mais pas contre la perte du disque : choisissez un dossier sur un autre disque dès que possible.
+Un nouveau ménage est sauvegardé chaque jour dès le départ, dans un dossier à côté de lui nommé d'après le ménage suivi de « - backups », en gardant 10 versions (valeurs par défaut, réglables dans [Taux et règles](rates-rules)). Cela protège contre les erreurs, mais pas contre la perte du disque : choisissez un dossier sur un autre disque dès que possible.
 
 ## Réglages de sauvegarde {#settings}
 
@@ -29,7 +29,7 @@ En haut de l'écran, le dossier utilisé, ou « Aucun dossier de sauvegarde choi
   - Chaque jour : une sauvegarde est faite quand la dernière sauvegarde réussie a au moins 20 heures.
   - Chaque semaine : quand la dernière sauvegarde réussie a au moins 7 jours.
   - Désactivées : aucune sauvegarde automatique. **Sauvegarder maintenant** fonctionne toujours.
-- **Versions à conserver** : combien de sauvegardes de ce ménage garder dans le dossier, de 1 à 365. La valeur par défaut est 10. Une fois qu'une nouvelle sauvegarde a réussi sa vérification, les plus anciennes au-delà de ce nombre sont supprimées. Les autres fichiers du dossier ne sont jamais touchés.
+- **Versions à conserver** : combien de sauvegardes de ce ménage garder dans le dossier, de 1 à 365. La valeur par défaut est 10, selon [Taux et règles](rates-rules). Une fois qu'une nouvelle sauvegarde a réussi sa vérification, les plus anciennes au-delà de ce nombre sont supprimées. Les autres fichiers du dossier ne sont jamais touchés.
 - **Enregistrer** : enregistre **Versions à conserver**. Un nombre hors de 1 à 365 est refusé (« Conservez de 1 à 365 versions. »).
 
 Le calendrier ne fonctionne que pendant que le ménage est ouvert et déverrouillé : l'application vérifie toutes les 30 minutes si une sauvegarde est due. Si l'ordinateur était éteint, la sauvegarde est faite peu après la prochaine ouverture du ménage.

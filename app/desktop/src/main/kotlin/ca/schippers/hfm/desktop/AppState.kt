@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.FocusRequester
+import ca.schippers.hfm.books.Passwords
 import ca.schippers.hfm.data.HouseholdSession
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
@@ -31,7 +32,8 @@ sealed interface Screen {
 
 /** UI state for the desktop app. Holds at most one unlocked household session. */
 class AppState(
-    val store: HouseholdStore = HouseholdStore(SqlCipherJdbcDriverFactory()),
+    // Rates and rules: new passwords use the household's Argon2id cost (security.argon2.*).
+    val store: HouseholdStore = HouseholdStore(SqlCipherJdbcDriverFactory(), newPasswordKdf = { Passwords.kdfForNewPasswords(today()) }),
     private val prefs: Preferences = Preferences.userRoot().node("ca/schippers/hfm"),
 ) {
     /** DIST-05, SEC-08: update checks for Linux packages from GitHub Releases (per computer). */
@@ -169,8 +171,6 @@ class AppState(
     }
 
     companion object {
-        /** M-72: the same minimum as for users added later and changed passwords. */
-        const val MIN_PASSWORD_LENGTH = ca.schippers.hfm.books.UserService.MIN_PASSWORD
         private const val PREF_MENU_TOP = "nav.menuTop"
         private const val PREF_MENU_CLOSED = "nav.menuClosed"
         private const val PREF_THEME = "theme"

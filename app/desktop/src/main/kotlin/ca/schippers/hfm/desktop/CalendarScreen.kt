@@ -474,7 +474,8 @@ internal fun EventDialog(model: BooksModel, existing: CalendarEvent?, draft: Eve
             }
             Text(model.t("calendar.reminders"), style = MaterialTheme.typography.labelLarge)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                for (m in REMINDER_CHOICES) {
+                // The household's default lead time (Rates and rules) is offered even when it is not a usual choice.
+                for (m in (REMINDER_CHOICES + start.reminderMinutes).distinct().sorted()) {
                     LabeledCheckbox(reminderLabel(model, m), m in reminders) { on -> reminders = if (on) reminders + m else reminders - m }
                 }
             }

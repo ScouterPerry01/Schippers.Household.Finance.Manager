@@ -72,7 +72,7 @@ Under **Refills**:
 - **Last filled**: the date the current supply was picked up. A new medication proposes today.
 - **Days of supply**: how many days the supply lasts, from 1 to 400. A new medication proposes 30. With **Last filled**, it gives the next refill date: last filled plus the days of supply.
 - **Refills remaining**: how many refills the prescription still allows, from 0 to 99. Leave it empty if you do not track it. At 0 the medication shows "Prescription needs renewal".
-- **Remind me (days before)**: "How many days before the supply runs out to remind you." From 0 to 60; 5 by default, and 5 again if left empty.
+- **Remind me (days before)**: "How many days before the supply runs out to remind you." From 0 to 60; 5 by default (set in [Rates and rules](rates-rules)), and the same again if left empty.
 - **Notes**: anything else, on several lines.
 - **Store in**: see [Who can see the records](health#privacy-groups).
 

@@ -1,6 +1,8 @@
 package ca.schippers.hfm.calc.schedule
 
 import ca.schippers.hfm.calc.Province
+import ca.schippers.hfm.calc.rules.RuleValue
+import ca.schippers.hfm.calc.rules.Rules
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -11,7 +13,8 @@ import kotlinx.datetime.plus
 /**
  * Days when Canadian banks do not process payments: weekends, the federal bank holidays, and the
  * holidays banks observe in the household's province or territory (PROV-02): Fête nationale in
- * Quebec, Family Day and its equivalents, the Civic Holiday and the territorial days. Used for
+ * Quebec, Family Day and its equivalents, the Civic Holiday and the territorial days, each a Rates
+ * and rules value per province (holidays.rules). Used for
  * "last business day" bills and to predict when a pre-authorized debit actually leaves the account
  * (BILL-02, BILL-07).
  *
@@ -43,23 +46,43 @@ object BusinessDays {
 
     private val cache = java.util.concurrent.ConcurrentHashMap<Pair<Province, Int>, Set<LocalDate>>()
 
-    fun holidays(year: Int, province: Province = this.province): Set<LocalDate> = cache.getOrPut(province to year) {
+    /** The household rule values the cache was built with; other values empty it. */
+    @Volatile
+    private var cachedFor: List<RuleValue>? = null
+
+    /**
+     * The bank holidays of [year] in [province]. Which provincial and territorial holidays are
+     * observed is a Rates and rules value per province (holiday.*), read on January 1 of [year], so
+     * a province adding or dropping a holiday is entered as a value from that year.
+     */
+    fun holidays(year: Int, province: Province = this.province): Set<LocalDate> {
+        val user = Rules.userValues
+        if (cachedFor !== user) {
+            cache.clear()
+            cachedFor = user
+        }
+        return cache.getOrPut(province to year) { compute(year, province) }
+    }
+
+    private fun compute(year: Int, province: Province): Set<LocalDate> {
         val easter = easterSunday(year)
-        buildSet {
-            add(observed(LocalDate(year, Month.JANUARY, 1)))
+        val jan1 = LocalDate(year, Month.JANUARY, 1)
+        fun observes(key: String) = Rules.valueOn(key, jan1, province)?.value == "true"
+        return buildSet {
+            add(observed(jan1))
             // Family Day, Louis Riel Day (MB), Islander Day (PE), Heritage Day (NS).
-            if (province in FAMILY_DAY) add(nthMonday(year, Month.FEBRUARY, 3))
+            if (observes("holiday.familyDay")) add(nthMonday(year, Month.FEBRUARY, 3))
             add(easter.minus(DatePeriod(days = 2))) // Good Friday
             add(mondayBefore(LocalDate(year, Month.MAY, 25))) // Victoria Day / Journée nationale des patriotes
-            if (province in setOf(Province.NT, Province.YT)) add(observed(LocalDate(year, Month.JUNE, 21))) // National Indigenous Peoples Day
-            if (province == Province.QC) add(observed(LocalDate(year, Month.JUNE, 24))) // Fête nationale du Québec
+            if (observes("holiday.indigenousPeoplesDay")) add(observed(LocalDate(year, Month.JUNE, 21)))
+            if (observes("holiday.fetNationale")) add(observed(LocalDate(year, Month.JUNE, 24)))
             add(observed(LocalDate(year, Month.JULY, 1))) // Canada Day
-            if (province == Province.NU) add(observed(LocalDate(year, Month.JULY, 9))) // Nunavut Day
+            if (observes("holiday.nunavutDay")) add(observed(LocalDate(year, Month.JULY, 9)))
             // Civic Holiday, under its provincial names (B.C. Day, Heritage Day, Saskatchewan Day, Natal Day...).
-            if (province in CIVIC_HOLIDAY) add(nthMonday(year, Month.AUGUST, 1))
-            if (province == Province.YT) add(nthMonday(year, Month.AUGUST, 3)) // Discovery Day
+            if (observes("holiday.civicHoliday")) add(nthMonday(year, Month.AUGUST, 1))
+            if (observes("holiday.discoveryDay")) add(nthMonday(year, Month.AUGUST, 3))
             add(nthMonday(year, Month.SEPTEMBER, 1)) // Labour Day
-            if (year >= 2021) add(observed(LocalDate(year, Month.SEPTEMBER, 30))) // Truth and Reconciliation
+            if (observes("holiday.truthReconciliation")) add(observed(LocalDate(year, Month.SEPTEMBER, 30)))
             add(nthMonday(year, Month.OCTOBER, 2)) // Thanksgiving
             add(observed(LocalDate(year, Month.NOVEMBER, 11))) // Remembrance Day
             val christmas = observed(LocalDate(year, Month.DECEMBER, 25))
@@ -69,9 +92,6 @@ object BusinessDays {
             add(boxing)
         }
     }
-
-    private val FAMILY_DAY = setOf(Province.AB, Province.BC, Province.MB, Province.NB, Province.NS, Province.ON, Province.PE, Province.SK)
-    private val CIVIC_HOLIDAY = setOf(Province.AB, Province.BC, Province.MB, Province.NB, Province.NS, Province.NT, Province.NU, Province.ON, Province.SK)
 
     /** Easter Sunday by the anonymous Gregorian algorithm. */
     fun easterSunday(year: Int): LocalDate {

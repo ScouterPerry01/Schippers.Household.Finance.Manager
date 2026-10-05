@@ -52,6 +52,7 @@ import ca.schippers.hfm.books.PremiumFrequency
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.books.ValueMethod
 import ca.schippers.hfm.books.WarrantyClaim
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
@@ -157,8 +158,8 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
     var ownerId by remember { mutableStateOf(existing.ownerMemberId) }
     var method by remember { mutableStateOf(existing.valueMethod) }
     var value by remember { mutableStateOf(amt(existing.value)) }
-    var years by remember { mutableStateOf(existing.depreciationYears?.toString() ?: "10") }
-    var residual by remember { mutableStateOf(existing.residualPercent?.stripTrailingZeros()?.toPlainString() ?: "0") }
+    var years by remember { mutableStateOf((existing.depreciationYears ?: Thresholds.depreciationYears(today())).toString()) }
+    var residual by remember { mutableStateOf((existing.residualPercent ?: Thresholds.depreciationResidualPercent(today())).stripTrailingZeros().toPlainString()) }
     var inNetWorth by remember { mutableStateOf(existing.inNetWorth) }
     var status by remember { mutableStateOf(existing.status) }
     var disposalDate by remember { mutableStateOf(existing.disposalDate?.toString().orEmpty()) }

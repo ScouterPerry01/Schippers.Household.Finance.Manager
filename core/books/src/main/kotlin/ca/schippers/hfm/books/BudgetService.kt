@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.money.Currency
@@ -36,7 +37,8 @@ data class BudgetLine(
 ) {
     val remaining: Money get() = budgeted - actual
     val ratio: Double get() = if (budgeted.isZero) (if (actual.isZero) 0.0 else Double.POSITIVE_INFINITY) else actual.toBigDecimal().toDouble() / budgeted.toBigDecimal().toDouble()
-    val isOver: Boolean get() = actual > budgeted
+    /** Spending is above the budget alert share of Rates and rules (100 % built in). */
+    val isOver: Boolean get() = actual.toBigDecimal() > budgeted.toBigDecimal().multiply(Thresholds.budgetAlert())
 }
 
 data class BudgetReport(val from: LocalDate, val to: LocalDate, val lines: List<BudgetLine>, val missingRates: Set<Currency>) {

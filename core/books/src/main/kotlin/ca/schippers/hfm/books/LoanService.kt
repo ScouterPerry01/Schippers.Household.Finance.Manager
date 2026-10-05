@@ -10,6 +10,7 @@ import ca.schippers.hfm.calc.loan.LoanProjection
 import ca.schippers.hfm.calc.loan.LoanTerms
 import ca.schippers.hfm.calc.loan.PaymentFrequency
 import ca.schippers.hfm.calc.loan.Projection
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.AccountStatus
 import ca.schippers.hfm.domain.AccountType
@@ -42,7 +43,7 @@ data class LoanDetails(
     val payment: Money? = null,
     val extraPerPayment: Money? = null,
     val termEnd: LocalDate? = null,
-    val renewalRemindDays: Int = 120,
+    val renewalRemindDays: Int = LeadTimes.loanRenewal(),
     val propertyTax: Money? = null,
     val insurance: Money? = null,
     val paymentAccountId: String? = null,
@@ -323,7 +324,7 @@ class LoanService internal constructor(private val books: Books) {
     }
 
     /** LN-04: renewals due within each loan's own reminder lead time, or within [withinDays], whichever is longer. */
-    fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> = accounts().mapNotNull { (summary, details) ->
+    fun renewals(today: LocalDate, withinDays: Int = LeadTimes.renewals(today)): List<Renewal> = accounts().mapNotNull { (summary, details) ->
         val end = details?.termEnd ?: return@mapNotNull null
         if (summary.account.status == AccountStatus.CLOSED) return@mapNotNull null
         val days = today.daysUntil(end)

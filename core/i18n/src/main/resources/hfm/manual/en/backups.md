@@ -16,7 +16,7 @@ Backups are copies of the whole household, made automatically, checked, and kept
 
 ## Automatic backups out of the box {#defaults}
 
-A new household is backed up every day from the start, into a folder beside it named after the household followed by " - backups", keeping 10 versions. That protects against mistakes, but not against losing the disk: choose a folder on another drive as soon as you can.
+A new household is backed up every day from the start, into a folder beside it named after the household followed by " - backups", keeping 10 versions (the defaults, which can be changed in [Rates and rules](rates-rules)). That protects against mistakes, but not against losing the disk: choose a folder on another drive as soon as you can.
 
 ## Backup settings {#settings}
 
@@ -29,7 +29,7 @@ At the top of the screen, the folder in use, or "No backup folder chosen."
   - Every day: a backup is made when the last successful one is at least 20 hours old.
   - Every week: when the last successful one is at least 7 days old.
   - Off: no automatic backups. **Back up now** still works.
-- **Versions to keep**: how many backups of this household to keep in the folder, from 1 to 365. The default is 10. Once a new backup has passed its check, the oldest ones beyond this number are deleted. Other files in the folder are never touched.
+- **Versions to keep**: how many backups of this household to keep in the folder, from 1 to 365. The default is 10, from [Rates and rules](rates-rules). Once a new backup has passed its check, the oldest ones beyond this number are deleted. Other files in the folder are never touched.
 - **Save**: saves **Versions to keep**. A number outside 1 to 365 is refused ("Keep between 1 and 365 versions.").
 
 The schedule runs only while the household is open and unlocked: the app looks every 30 minutes whether a backup is due. If the computer was off, the backup is made soon after you next open the household.

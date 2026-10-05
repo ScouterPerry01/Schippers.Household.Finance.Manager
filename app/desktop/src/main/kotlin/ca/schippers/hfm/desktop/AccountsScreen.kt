@@ -32,6 +32,7 @@ import ca.schippers.hfm.books.Account
 import ca.schippers.hfm.books.AccountDraft
 import ca.schippers.hfm.books.AccountSummary
 import ca.schippers.hfm.books.Institution
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.AccountStatus
 import ca.schippers.hfm.domain.AccountType
@@ -96,8 +97,8 @@ fun AccountsScreen(model: BooksModel) {
 @Composable
 private fun AccountRow(model: BooksModel, summary: AccountSummary, lastReconciled: LocalDate?) {
     val selected = model.selectedAccountId == summary.account.id
-    // REC-09: accounts more than 45 days behind are highlighted.
-    val behind = lastReconciled != null && lastReconciled.daysUntil(today()) > 45
+    // REC-09: accounts more than the Rates and rules days behind (45 built in) are highlighted.
+    val behind = lastReconciled != null && lastReconciled.daysUntil(today()) > Thresholds.reconcileBehind(today())
     Row(
         Modifier.fillMaxWidth().clickable {
             if (model.selectedAccountId != summary.account.id) model.reconcilingStatementId = null

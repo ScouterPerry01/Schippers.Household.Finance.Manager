@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.calc.schedule.DueState
 import ca.schippers.hfm.calc.schedule.DueStatus
 import ca.schippers.hfm.calc.schedule.MaintenanceSchedule
@@ -30,7 +31,7 @@ data class AssetTask(
     val intervalUsage: Int? = null,
     val startDate: LocalDate? = null,
     val startUsage: Int? = null,
-    val remindDays: Int = 14,
+    val remindDays: Int = LeadTimes.maintenance(),
     val remindUsage: Int = 10,
     val active: Boolean = true,
     val notes: String? = null,

@@ -46,6 +46,7 @@ import ca.schippers.hfm.books.MedService
 import ca.schippers.hfm.books.MedicalService
 import ca.schippers.hfm.books.PlanPerson
 import ca.schippers.hfm.books.ValidationException
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
@@ -436,7 +437,7 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
                         books.medical.savePlan(
                             existing.copy(
                                 id = saved?.id.orEmpty(), groupId = saved?.groupId ?: groupId, kind = kind, name = name, insurer = insurer, policyNumber = policy, certificateNumber = certificate, memberId = memberId,
-                                yearStartMonth = startMonth.trim().toIntOrNull() ?: 1, yearStartDay = startDay.trim().toIntOrNull() ?: 1, claimDays = claimDays.trim().toIntOrNull() ?: 365,
+                                yearStartMonth = startMonth.trim().toIntOrNull() ?: 1, yearStartDay = startDay.trim().toIntOrNull() ?: 1, claimDays = claimDays.trim().toIntOrNull() ?: LeadTimes.medicalPlanDeadline(),
                                 hsaAmount = if (kind == MedPlanKind.HSA) parseAmount(hsa, Currency.CAD, locale) else null, active = active, notes = notes,
                                 people = members.indices.filter { order[it] > 0 }.map { PlanPerson(members[it].id, order[it]) },
                             ),

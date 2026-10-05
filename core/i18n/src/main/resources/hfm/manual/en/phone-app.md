@@ -106,7 +106,7 @@ Messages:
 
 - **This is not a pairing code from RANN's Roost.**: the code or text is not a pairing code.
 - **Cannot reach the computer.**: check that both are on the same Wi-Fi, that the household is open on the computer, and that Windows allows RANN's Roost on private networks.
-- **The computer refused.**: the code may have expired (each lasts 10 minutes and works once). Show a new one on the computer.
+- **The computer refused.**: the code may have expired (each lasts 10 minutes by default and works once). Show a new one on the computer.
 
 The phone is paired to the user signed in on the computer at that moment. Pairing again, to the same or another computer, replaces the earlier pairing.
 

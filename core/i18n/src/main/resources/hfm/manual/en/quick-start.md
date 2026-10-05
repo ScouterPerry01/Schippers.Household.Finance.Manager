@@ -9,7 +9,7 @@ This chapter takes you from the first start of RANN's Roost to a working househo
 Have these at hand:
 
 - a place for the household on your computer, such as your Documents folder;
-- a password of at least 12 characters that you will remember (a few words in a row work well);
+- a password of at least 12 characters, without your login name, that you will remember (a few words in a row work well);
 - a printer or a pen and paper, for the recovery key;
 - the current balances of your bank accounts and cards;
 - a recent statement downloaded from your bank's website, as an OFX, QFX, QBO or CSV file (look for "Download transactions" or "Export" on the bank's site);
@@ -37,7 +37,7 @@ On a Linux copy installed from a .deb or .rpm package or an AppImage, the app fi
   - **Province or territory**: where you live. It sets bank holidays, default categories, provincial grants and tax forms. Nothing is chosen at first: pick yours.
   - **Your name**: how you appear in the app.
   - **Login name**: the short name you will type to sign in, without spaces.
-  - **Master password** and **Confirm master password**: at least 12 characters, typed twice.
+  - **Master password** and **Confirm master password**: at least 12 characters, without your login name, typed twice. These are the built-in [password rules](security#password-rules); an administrator can change them later.
 4. Click **Create household**.
 
 You are the household's administrator: you can do everything, including adding other users later. [Finding your way](basics#create-screen) describes every field of this screen.

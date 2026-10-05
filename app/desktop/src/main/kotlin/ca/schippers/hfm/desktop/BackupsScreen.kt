@@ -158,13 +158,17 @@ suspend fun backupScheduler(model: BooksModel) {
     }
 }
 
-/** Default for a new household: daily backups into a folder beside it (BAK-01), until the user picks another. */
+/**
+ * Default for a new household: backups into a folder beside it (BAK-01), as often and as many as
+ * Rates and rules say (daily, keeping 10, built in), until the user picks another.
+ */
 fun ensureBackupDefaults(model: BooksModel) {
     val books = model.books
     if (books.backups.settings().dir != null) return
     val dir = model.session.dir.toAbsolutePath()
     val folder: Path = dir.resolveSibling(dir.fileName.toString().removeSuffix(".hfm") + " - backups")
-    runCatching { books.backups.saveSettings(BackupSettings(folder, BackupFrequency.DAILY, 10)) }
+    val defaults = books.backups.settings()
+    runCatching { books.backups.saveSettings(BackupSettings(folder, defaults.frequency, defaults.keep)) }
 }
 
 private fun formatInstant(model: BooksModel, instant: Instant): String =

@@ -43,10 +43,10 @@ This screen makes a new, empty household. The province, your name and your passw
 - **Province or territory**: where the household lives. Its rules apply: bank holidays used to move bill dates, default categories, provincial RESP grants, the rules of locked-in plans and the provincial tax forms. Required: nothing is chosen at first, so pick yours. It can be changed later under [Household members](members), and a person who lives elsewhere can have their own.
 - **Your name**: required. Your name as shown in the app, for example in the activity log and the user list.
 - **Login name**: required. The name you type to sign in. Keep it short and without spaces. It cannot be changed later.
-- **Master password**: required, at least 12 characters. A passphrase of a few words is easy to remember and hard to guess. It protects the household's encryption keys: it is never stored, and no one can reset it for you.
+- **Master password**: required. The built-in [password rules](security#password-rules) apply, since the household does not exist yet: at least 12 characters, without the login name; the line under the field says so. An administrator can change the rules later for the whole household. A passphrase of a few words is easy to remember and hard to guess. It protects the household's encryption keys: it is never stored, and no one can reset it for you.
 - **Confirm master password**: the same password again, to catch typing mistakes.
 - **Back**: returns to Welcome without creating anything.
-- **Create household**: available once the folder, the household name, the province or territory, your name and the login name are filled in. If the password is shorter than 12 characters the screen says "Use at least 12 characters."; if the two passwords differ it says "The passwords do not match." Otherwise the app creates the household, which takes a few seconds (a circle turns while it works).
+- **Create household**: available once the folder, the household name, the province or territory, your name and the login name are filled in. If the password breaks the rules the screen says what it lacks, such as "The password needs at least 12 characters."; if the two passwords differ it says "The passwords do not match." Otherwise the app creates the household, which takes a few seconds (a circle turns while it works).
 
 The new household uses the Canadian dollar as its base currency. It starts with one shared account group and you as its only user, an Administrator. The household is created in the language the app is using.
 
@@ -88,7 +88,7 @@ Use this screen when a password is forgotten. It sets a new password using that 
 
 - **Login name**: the login name of the user whose password is forgotten.
 - **Recovery key**: that user's recovery key. Type it with or without the dashes and spaces, in capitals or not; the letters I and L are read as the digit 1 and the letter O as 0, so look-alikes do no harm. The last two characters are a check: a typing mistake is caught.
-- **New password**: the new password, at least 12 characters.
+- **New password**: the new password. It must follow the household's [password rules](security#password-rules) (at least 12 characters by default); they are checked once the key has opened the household, and a password that breaks them is refused with what it lacks.
 - **Confirm master password**: the new password again.
 - **Back**: returns to the Unlock screen.
 - **Reset password**: available once the login name and key are filled in. If the key is mistyped or does not belong to that user, the screen says "That recovery key is not valid." Otherwise the password is changed and the household opens.
@@ -307,7 +307,7 @@ While the app runs, its icon sits in the notification area of the taskbar (the s
 
 ### The Dashboard {#dashboard-attention}
 
-The Dashboard's Needs your attention list gathers other things to look at: overdue bills, statement lines that need a decision, transactions without a category, accounts not reconciled in more than 45 days and no successful backup in the last 7 days. See [Dashboard](dashboard).
+The Dashboard's Needs your attention list gathers other things to look at: overdue bills, statement lines that need a decision, transactions without a category, accounts not reconciled in more than 45 days (a figure you can change in [Rates and rules](rates-rules)) and no successful backup in the last 7 days. See [Dashboard](dashboard).
 
 ## Work done while the household is open {#background}
 

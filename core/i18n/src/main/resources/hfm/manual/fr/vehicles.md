@@ -46,7 +46,7 @@ Sous **Immatriculation et assurance** :
 - **Renouvellement de l’assurance** : quand la police d’assurance auto se renouvelle.
 - **Assureur** et **Numéro de police** : affichés dans l’aperçu avec le renouvellement de l’assurance.
 
-Chaque date donne une ligne dans l’aperçu, en gras dans les 30 jours qui précèdent et en rouge une fois passée, et un rappel à partir de 30 jours avant. Voir [Rappels et calendrier](vehicles#reminders).
+Chaque date donne une ligne dans l’aperçu, en gras dans les 30 jours qui précèdent et en rouge une fois passée, et un rappel à partir de 30 jours avant (délai de renouvellement par défaut, réglable dans [Taux et règles](rates-rules)). Voir [Rappels et calendrier](vehicles#reminders).
 
 > Conseil : Pour voir si le véhicule est couvert par une police, et pour garder les primes et les réclamations de la police, ajoutez la police auto à l’onglet **Assurances** de [Maison et biens](assets#insurance-tab) et cochez le véhicule sous **Ce qu’elle couvre**.
 
@@ -128,7 +128,7 @@ Les tâches sont triées par prochaine date. Les tâches en pause suivent, marqu
 
 - **Vidange d’huile et filtre** : aux 6 mois ou aux 8 000 km (pas pour un véhicule électrique).
 - **Permutation des pneus** : aux 12 mois ou aux 10 000 km.
-- **Pose des pneus d’hiver** : chaque année, le 15 novembre.
+- **Pose des pneus d’hiver** : chaque année, le 15 novembre, ou le 1er décembre au Québec (la province du conducteur, ou celle du ménage).
 - **Retrait des pneus d’hiver** : chaque année, le 15 avril.
 - **Inspection des freins** : aux 12 mois ou aux 20 000 km.
 - **Filtre à air de l’habitacle** : aux 12 mois ou aux 20 000 km.
@@ -137,7 +137,7 @@ Les tâches sont triées par prochaine date. Les tâches en pause suivent, marqu
 
 Elles partent d’aujourd’hui et de l’odomètre actuel, sauf les pneus d’hiver, qui reviennent à leur date. Modifiez chaque tâche selon le manuel du propriétaire, ou mettez en pause celles dont vous n’avez pas besoin.
 
-> Remarque : Au Québec, les pneus d’hiver sont obligatoires du 1er décembre au 15 mars.
+> Remarque : Au Québec, les pneus d’hiver sont obligatoires du 1er décembre au 15 mars (du 15 décembre avant 2019). Ailleurs, les dates sont des suggestions. Les deux dates, par province, sont dans [Taux et règles](rates-rules).
 
 ### Ajouter ou modifier une tâche {#task-form}
 
@@ -149,7 +149,7 @@ Elles partent d’aujourd’hui et de l’odomètre actuel, sauf les pneus d’h
 - **Aux (km)** : de 1 à 1 000 000. Au moins un des deux intervalles est obligatoire.
 - **Faite la dernière fois le** : quand la tâche a été faite la dernière fois avant que vous inscriviez les entretiens, ou la date à partir de laquelle compter. Une nouvelle tâche propose aujourd’hui. Dès qu’un entretien inscrit la tâche, le plus récent de ces entretiens sert plutôt.
 - **Faite la dernière fois à (km)** : l’odomètre à la dernière fois. Une nouvelle tâche propose l’odomètre actuel. Il ne sert que pour une tâche au kilométrage.
-- **Me le rappeler (jours avant)** : combien de jours avant la date d’échéance la tâche passe à **Bientôt** ; 14 par défaut.
+- **Me le rappeler (jours avant)** : combien de jours avant la date d’échéance la tâche passe à **Bientôt** ; 14 par défaut pour une nouvelle tâche ([Taux et règles](rates-rules)).
 - **Me le rappeler (km avant)** : combien de kilomètres avant la distance d’échéance la tâche passe à **Bientôt** ; 500 par défaut.
 - **Notes** : numéro de pièce, type d’huile, tout ce qui est utile.
 - **Active** (en modification) : décochez-la pour mettre en pause une tâche inutile pour l’instant. Une tâche en pause n’est jamais due et ne donne pas de rappel. Cochez-la de nouveau pour la reprendre.
@@ -268,8 +268,8 @@ Le rapport **Entretien et coût de possession** sous [Rapports](reports) réunit
 
 Pour chaque véhicule en service :
 
-- **Renouvellement de l’immatriculation** et **Renouvellement de l’assurance** : un rappel à partir de 30 jours avant la date, qui reste une fois la date passée jusqu’à ce que vous entriez la nouvelle date, par exemple « Civic : immatriculation (ABC 123) dans 12 jours ».
-- Garanties : un rappel à partir de 60 jours avant la date de fin, ou avant le jour où l’odomètre devrait atteindre la limite de kilométrage, selon ce qui arrive en premier, par exemple « Civic : fin de garantie (Honda · 100000 km) dans 40 jours ». Une garantie déjà passée sa date ou son kilométrage ne donne pas de rappel.
+- **Renouvellement de l’immatriculation** et **Renouvellement de l’assurance** : un rappel à partir de 30 jours avant la date (par défaut), qui reste une fois la date passée jusqu’à ce que vous entriez la nouvelle date, par exemple « Civic : immatriculation (ABC 123) dans 12 jours ».
+- Garanties : un rappel à partir de 60 jours avant la date de fin (par défaut, réglable dans [Taux et règles](rates-rules)), ou avant le jour où l’odomètre devrait atteindre la limite de kilométrage, selon ce qui arrive en premier, par exemple « Civic : fin de garantie (Honda · 100000 km) dans 40 jours ». Une garantie déjà passée sa date ou son kilométrage ne donne pas de rappel.
 - Entretien : les tâches **Bientôt** et **À faire**.
 
 Les rappels paraissent en haut de la fenêtre et dans une notification du système, et mènent à cet écran. Les dates de renouvellement, les fins de garantie et les échéances d’entretien paraissent aussi au [Calendrier](calendar).

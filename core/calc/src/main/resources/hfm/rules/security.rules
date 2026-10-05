@@ -1,1 +1,28 @@
 # Rates and rules: security. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
+# The household's password rules, set by an administrator (PasswordRules.kt), and the cost of the
+# key derivation for new passwords. The allowed ranges are in RuleLimits.kt.
+
+# The shortest password allowed (8 to 64).
+rule security.password.minLength NUMBER
+security.password.minLength | - | 2000-01-01 | 12 | RANN's Roost default (NIST SP 800-63B: at least 8)
+
+# Whether a password must have at least one capital letter, small letter, digit or symbol.
+rule security.password.capitals YES_NO
+security.password.capitals | - | 2000-01-01 | false | RANN's Roost default
+rule security.password.smallLetters YES_NO
+security.password.smallLetters | - | 2000-01-01 | false | RANN's Roost default
+rule security.password.digits YES_NO
+security.password.digits | - | 2000-01-01 | false | RANN's Roost default
+rule security.password.symbols YES_NO
+security.password.symbols | - | 2000-01-01 | false | RANN's Roost default
+
+# Whether a password may not contain the user's login name.
+rule security.password.notLoginName YES_NO
+security.password.notLoginName | - | 2000-01-01 | true | RANN's Roost default
+
+# Argon2id cost for passwords set from now on: memory in MiB (at least 19) and passes (at least 2).
+# Each password keeps the cost it was set with, so changing these never locks anyone out.
+rule security.argon2.memory NUMBER
+security.argon2.memory | - | 2000-01-01 | 64 | RANN's Roost default (OWASP Password Storage Cheat Sheet: at least 19 MiB, 2 passes)
+rule security.argon2.iterations NUMBER
+security.argon2.iterations | - | 2000-01-01 | 3 | RANN's Roost default (OWASP Password Storage Cheat Sheet: at least 19 MiB, 2 passes)

@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.AssetService
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.ocr.desktop.PdfPages
 import java.io.File
@@ -30,7 +31,7 @@ internal fun AssetsReport(model: BooksModel) {
     val assets = remember(model.revision) { books.assets.list() }
     val names = assets.associate { it.id to it.name }
     val coverage = remember(model.revision) { assets.associate { it.id to books.assets.coverage(it.id, today) } }
-    val expiring = remember(model.revision) { books.assets.renewals(today, 90) }
+    val expiring = remember(model.revision) { books.assets.renewals(today, LeadTimes.assetsReport(today)) }
     val uninsured = remember(model.revision) { books.insurance.uninsured(today) }
     val base = books.rates.baseCurrency
     val zero = Money.zero(base)

@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
@@ -350,9 +351,10 @@ class DocumentService internal constructor(private val books: Books) {
 
     /**
      * Transactions that may be the one this receipt or bill belongs to: the same amount, within
-     * [days] days of the document's date. The closest dates come first.
+     * [days] days of the document's date (the document match window of Rates and rules). The
+     * closest dates come first.
      */
-    fun matches(documentId: String, days: Int = 5): List<TransactionMatch> {
+    fun matches(documentId: String, days: Int = LeadTimes.documentMatch(books.today())): List<TransactionMatch> {
         val doc = get(documentId)
         val date = doc.date ?: return emptyList()
         val amount = doc.amount ?: return emptyList()
@@ -416,7 +418,8 @@ class DocumentService internal constructor(private val books: Books) {
         val doc = get(documentId)
         val amount = doc.amount ?: throw ValidationException("error.amountRequired")
         val target = doc.draft?.dueDate?.value ?: doc.date ?: dateOf(doc.capturedAt)
-        val occurrences = books.bills.occurrences(target.minus(DatePeriod(days = 45)), target.plus(DatePeriod(days = 45)), setOf(billId))
+        val window = LeadTimes.billMatch(target)
+        val occurrences = books.bills.occurrences(target.minus(DatePeriod(days = window)), target.plus(DatePeriod(days = window)), setOf(billId))
         val due = occurrences.minByOrNull { kotlin.math.abs(it.dueDate.toEpochDays() - target.toEpochDays()) }?.dueDate ?: throw ValidationException("error.noBillDate")
         books.bills.setAmount(billId, due, amount, documentId)
         link(documentId, DocumentEntity.BILL, billId)
@@ -427,10 +430,11 @@ class DocumentService internal constructor(private val books: Books) {
     // --- Retention (section 4.4) ----------------------------------------------------------------
 
     /**
-     * Filed documents older than the Canada Revenue Agency's six-year retention period, and not
-     * marked to keep, that may be discarded. Nothing is ever deleted automatically.
+     * Filed documents older than the retention period (Rates and rules; the Canada Revenue Agency's
+     * six years built in), and not marked to keep, that may be discarded. Nothing is ever deleted
+     * automatically.
      */
-    fun discardable(today: LocalDate, years: Int = RETENTION_YEARS): List<VaultDocument> {
+    fun discardable(today: LocalDate, years: Int = LeadTimes.documentRetention(today)): List<VaultDocument> {
         val before = today.minus(DatePeriod(years = years))
         return search(DocumentQuery(to = before, limit = 10_000)).filter { it.status == DocumentStatus.FILED && !it.keepForever }
     }
@@ -473,7 +477,6 @@ class DocumentService internal constructor(private val books: Books) {
 
     companion object {
         const val DESKTOP = "desktop"
-        const val RETENTION_YEARS = 6
         private const val MAX_BYTES = 50 * 1024 * 1024
         private const val MAX_TEXT = 200_000
 

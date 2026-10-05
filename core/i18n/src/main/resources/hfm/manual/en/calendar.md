@@ -41,7 +41,7 @@ Marked **Renewal**, dates when something expires or must be renewed, gathered fr
 - an insurance claim to send ([Medical claims](medical));
 - a warranty ending on a home item, or an insurance policy renewal ([Home and assets](assets));
 - a tax instalment ([Taxes](taxes));
-- a bond or GIC you hold reaching its maturity, from 30 days before until its redemption is recorded ([Investments](investments#security-dialog)).
+- a bond or GIC you hold reaching its maturity, from 30 days before (the default, set in [Rates and rules](rates-rules)) until its redemption is recorded ([Investments](investments#security-dialog)).
 
 The button on the line opens the screen where it is managed, such as **Open vehicles**, **Open loans** or **Open investments**.
 
@@ -118,7 +118,7 @@ The buttons on an appointment's line act on that one date only. For a repeating 
 - **15 minutes before**
 - **1 hour before**
 - **2 hours before**
-- **1 day before** (ticked by default)
+- **1 day before** (ticked by default; the default for a new event is set in [Rates and rules](rates-rules), and a default not in this list is added to it)
 - **2 days before**
 - **7 days before**
 

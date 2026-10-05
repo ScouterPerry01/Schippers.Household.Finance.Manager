@@ -68,7 +68,7 @@ Click **Enter terms** (or **Edit terms**). The window's first line reminds you h
 - **Lender's payment (if known)**: the payment on your agreement. Under the field, "Calculated:" shows the payment worked out from the terms as you type. If you enter the lender's payment, the schedule uses it; leave it empty to use the calculated one. Lenders round differently, so entering theirs keeps the schedule closest to their statements.
 - **Extra principal each payment**: an amount added to every payment that goes entirely to the principal. It shortens the loan and is counted in Saved by prepayments.
 - **Term ends (renewal date)**: for a mortgage, the end of the current term. It shows the Term ends figure, enables **Renew**, and gives a renewal reminder.
-- **Remind days before**: how long before the term end the reminder starts, 120 days by default, from 0 to 365. The reminder appears at least 30 days before in any case.
+- **Remind days before**: how long before the term end the reminder starts, 120 days by default (set in [Rates and rules](rates-rules)), from 0 to 365. The reminder appears at least 30 days before in any case (the renewal lead time).
 - **Property tax** and **Insurance**: under "Property tax and insurance collected with each payment, if any": the amounts your lender collects with each payment, per payment. They are added to Total withdrawn and charged to their categories when you record a payment.
 - **Paid from**: the bank or credit account the payments usually come from, in the loan's currency, or (none). It is the account chosen first when you record a payment or a prepayment.
 - **Notes**: free text, such as the lender's contact or the prepayment privileges of your mortgage.

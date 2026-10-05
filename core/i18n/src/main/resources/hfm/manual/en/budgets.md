@@ -36,7 +36,7 @@ Expenses and income are shown separately, expenses first. Above each part, three
 Each budgeted category has a bar. The bar's length is the actual amount; a marker shows the budget. The text reads "... of ...", the actual of the budgeted amount, and a note:
 
 - "... left": what remains for the period.
-- "Over by ...": for an expense category whose actual is more than its budget. The bar is shown as an alert.
+- "Over by ...": for an expense category whose actual is more than its budget. The bar is shown as an alert. It is also shown as an alert once spending passes the budget alert percentage of [Rates and rules](rates-rules): 100 % by default; at a lower percentage a budget is flagged before it is overspent.
 - "includes ... carried over": the part of the budget carried from earlier months, when carrying over is on.
 - "(yearly)" after the category name: a yearly budget seen in the month view. It compares the year to date with the full year's amount.
 

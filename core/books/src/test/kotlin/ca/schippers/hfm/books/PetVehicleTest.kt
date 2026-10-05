@@ -160,7 +160,7 @@ class PetVehicleTest {
         assertTrue("oil" in names && "winter_tires_on" in names)
         assertTrue(books.vehicles.addStarterTasks(v.id, d(10, 2)) { it }.isEmpty(), "not added twice")
         val winter = books.vehicles.taskStatuses(v.id, d(10, 2)).first { it.task.templateKey == "winter_tires_on" }
-        assertEquals(d(11, 15), winter.dueDate)
+        assertEquals(d(12, 1), winter.dueDate, "a Quebec household: winter tires are required from December 1 (Rates and rules)")
 
         val ev = books.vehicles.save(Vehicle("", group, "Ioniq", fuelType = FuelType.ELECTRIC))
         assertTrue(books.vehicles.addStarterTasks(ev.id, d(10, 2)) { it }.none { it.templateKey == "oil" })

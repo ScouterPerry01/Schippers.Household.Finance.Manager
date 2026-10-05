@@ -43,6 +43,8 @@ import ca.schippers.hfm.books.Occurrence
 import ca.schippers.hfm.books.OccurrenceStatus
 import ca.schippers.hfm.books.PaymentMethod
 import ca.schippers.hfm.books.ValidationException
+import ca.schippers.hfm.calc.rules.LeadTimes
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
 import ca.schippers.hfm.calc.schedule.Frequency
 import ca.schippers.hfm.calc.schedule.MonthDay
@@ -103,10 +105,10 @@ fun BillsScreen(model: BooksModel) {
 private fun AgendaTab(model: BooksModel, onPay: (Occurrence) -> Unit, onAmount: (Occurrence) -> Unit, onEdit: (Bill) -> Unit) {
     val books = model.books
     val today = today()
-    val agenda = remember(model.revision) { books.bills.agenda(today, 30) }
+    val agenda = remember(model.revision) { books.bills.agenda(today) }
     // BILL-07: payments that the forecast says would overdraw the paying account.
     val shortfalls = remember(model.revision) {
-        books.bills.forecast(today, 30).flatMap { f -> f.shortfalls.mapNotNull { it.occurrence?.let { o -> o.bill.id to o.dueDate } } }.toSet()
+        books.bills.forecast(today).flatMap { f -> f.shortfalls.mapNotNull { it.occurrence?.let { o -> o.bill.id to o.dueDate } } }.toSet()
     }
     val accounts = remember(model.revision) { books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name } }
     // BILL-09: each amount beside the usual one and the same month last year.
@@ -116,14 +118,14 @@ private fun AgendaTab(model: BooksModel, onPay: (Occurrence) -> Unit, onAmount: 
 
     LazyColumn {
         if (agenda.overdue.isEmpty() && agenda.dueToday.isEmpty() && agenda.upcoming.isEmpty()) {
-            item { Text(model.t("bills.nothingDue"), Modifier.padding(8.dp)) }
+            item { Text(model.t("bills.nothingDue", LeadTimes.billsAgenda(today)), Modifier.padding(8.dp)) }
         }
         listOf(
             "bills.overdue" to agenda.overdue,
             "bills.dueToday" to agenda.dueToday,
             "bills.upcoming" to agenda.upcoming,
         ).filter { it.second.isNotEmpty() }.forEach { (title, list) ->
-            item { GroupTitle(model.t(title, list.size)) }
+            item { GroupTitle(model.t(title, list.size, LeadTimes.billsAgenda(today))) }
             items(list, key = { "${it.bill.id}-${it.dueDate}" }) { o ->
                 OccurrenceRow(model, o, accounts, (o.bill.id to o.dueDate) in shortfalls, comparisons[o.bill.id to o.dueDate]) {
                     Button(onClick = { onPay(o) }) { Text(model.t(if (o.bill.kind == BillKind.INCOME) "bills.markReceived" else "bills.markPaid")) }
@@ -181,7 +183,7 @@ private fun OccurrenceRow(model: BooksModel, o: Occurrence, accounts: Map<String
                     style = MaterialTheme.typography.bodySmall,
                 )
                 comparison?.let { c -> comparisonText(model, c)?.let { Text(it, style = MaterialTheme.typography.bodySmall) } }
-                if (comparison?.unusual == true) Text(model.t("bills.unusual"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                if (comparison?.unusual == true) Text(model.t("bills.unusual", Thresholds.unusualBill(today()).movePointRight(2).stripTrailingZeros().toPlainString()), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 if (shortfall) Text(model.t("bills.shortfall"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
             Text(
@@ -351,11 +353,11 @@ private fun SubscriptionsTab(model: BooksModel, onEdit: (Bill) -> Unit) {
 
 @Composable
 private fun ForecastTab(model: BooksModel) {
-    var days by remember { mutableStateOf(30) }
+    var days by remember { mutableStateOf(LeadTimes.billsForecast(today())) }
     val forecast = remember(model.revision, days) { model.books.bills.forecast(today(), days) }
     Column {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (d in listOf(30, 60, 90)) {
+            for (d in (listOf(30, 60, 90) + LeadTimes.billsForecast(today())).distinct().sorted()) {
                 if (d == days) Button(onClick = {}) { Text(model.t("bills.days", d)) } else OutlinedButton(onClick = { days = d }) { Text(model.t("bills.days", d)) }
             }
         }
@@ -491,7 +493,7 @@ private fun BillDialog(model: BooksModel, existing: Bill?, onClose: () -> Unit) 
     var adjust by remember { mutableStateOf(existing?.recurrence?.adjust ?: BusinessDayAdjust.NONE) }
     var start by remember { mutableStateOf(existing?.startDate?.toString() ?: today().toString()) }
     var end by remember { mutableStateOf(existing?.endDate?.toString().orEmpty()) }
-    var reminders by remember { mutableStateOf(existing?.reminderDays?.joinToString(", ") ?: "7, 1") }
+    var reminders by remember { mutableStateOf((existing?.reminderDays ?: LeadTimes.newBill()).joinToString(", ")) }
     var subscription by remember { mutableStateOf(existing?.isSubscription ?: false) }
     var cancelBy by remember { mutableStateOf(existing?.cancelBy?.toString().orEmpty()) }
     var active by remember { mutableStateOf(existing?.active ?: true) }

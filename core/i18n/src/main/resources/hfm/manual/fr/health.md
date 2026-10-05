@@ -72,7 +72,7 @@ Sous **Renouvellements** :
 - **Dernière exécution** : la date où la provision actuelle a été récupérée. Un nouveau médicament propose aujourd’hui.
 - **Nombre de jours** : combien de jours dure la provision, de 1 à 400. Un nouveau médicament propose 30. Avec **Dernière exécution**, il donne la date du prochain renouvellement : dernière exécution plus le nombre de jours.
 - **Renouvellements restants** : combien de renouvellements l’ordonnance permet encore, de 0 à 99. Laissez vide si vous ne les suivez pas. À 0, le médicament affiche « Ordonnance à renouveler ».
-- **Me le rappeler (jours avant)** : « Combien de jours avant la fin des médicaments vous voulez un rappel. » De 0 à 60 ; 5 par défaut, et 5 de nouveau si laissé vide.
+- **Me le rappeler (jours avant)** : « Combien de jours avant la fin des médicaments vous voulez un rappel. » De 0 à 60 ; 5 par défaut (réglable dans [Taux et règles](rates-rules)), et la même valeur de nouveau si laissé vide.
 - **Notes** : tout le reste, sur plusieurs lignes.
 - **Enregistrer dans** : voir [Qui peut voir les dossiers](health#privacy-groups).
 

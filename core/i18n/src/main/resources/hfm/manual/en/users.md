@@ -109,7 +109,7 @@ Only an administrator can add a user.
 - **Login name**: what the person types to sign in, such as sam. Required, without spaces. It must not already be used by another user, whatever the capitals. It cannot be changed later.
 - **Role**: Administrator, Member or Viewer. The default is Member. A line under the pickers explains the role chosen. See [Roles](users#roles).
 - **This user is the household member**: the [household member](members) this user is, or (none). Optional. It links the sign-in account to the person; the Users tab then shows "is" and the person's name.
-- **New password**: the user's password. The hint shows the minimum length (at least 12 characters). A passphrase of a few words is easy to remember and hard to guess.
+- **New password**: the user's password. It must follow the household's [password rules](security#password-rules): by default at least 12 characters, without the login name. The hint under the field says what the rules ask for. A passphrase of a few words is easy to remember and hard to guess. A password that breaks the rules is refused with what it lacks, such as "The password may not contain the login name."
 - **New password again**: the same password again. While the two differ, the field says "The two passwords are different."
 - **Cancel**: closes the dialog without adding anyone.
 
@@ -153,7 +153,7 @@ Every user can change their own password.
 
 1. Click **Change my password…** at the top of the screen.
 2. Type your **Current password**.
-3. Type the **New password**, at least 12 characters.
+3. Type the **New password**. It must follow the household's [password rules](security#password-rules) (at least 12 characters by default), as the hint under the field says.
 4. Type it again in **New password again**.
 5. Click **Save**. It becomes available once the three fields are filled in and the two new passwords match.
 

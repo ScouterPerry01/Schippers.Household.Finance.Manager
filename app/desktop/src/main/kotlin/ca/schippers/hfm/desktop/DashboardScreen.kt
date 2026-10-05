@@ -30,6 +30,7 @@ import ca.schippers.hfm.books.OccurrenceStatus
 import ca.schippers.hfm.books.LineStatus
 import ca.schippers.hfm.books.ReportFilter
 import ca.schippers.hfm.books.StatementStatus
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.money.Currency
@@ -79,7 +80,7 @@ fun DashboardScreen(model: BooksModel) {
             spending = spending.value.take(5),
             unresolvedLines = unresolved,
             uncategorized = books.reports.uncategorizedCount(),
-            behind = summaries.filter { s -> last[s.account.id]?.let { it.daysUntil(today) > 45 } ?: false }.map { it.account.name },
+            behind = summaries.filter { s -> last[s.account.id]?.let { it.daysUntil(today) > Thresholds.reconcileBehind(today) } ?: false }.map { it.account.name },
             missingRates = missing.map { it.code }.sorted(),
             backupReminder = books.backups.needsReminder(java.time.Instant.now()),
         )
@@ -116,7 +117,7 @@ fun DashboardScreen(model: BooksModel) {
             if (data.overdue > 0) add(model.t("dashboard.review.overdue", data.overdue) to Section.BILLS)
             if (data.unresolvedLines > 0) add(model.t("dashboard.review.statementLines", data.unresolvedLines) to Section.ACCOUNTS)
             if (data.uncategorized > 0) add(model.t("dashboard.review.uncategorized", data.uncategorized) to Section.ACCOUNTS)
-            data.behind.forEach { add(model.t("dashboard.review.behind", it) to Section.ACCOUNTS) }
+            data.behind.forEach { add(model.t("dashboard.review.behind", it, Thresholds.reconcileBehind(today())) to Section.ACCOUNTS) }
             if (data.backupReminder) add(model.t("dashboard.review.backup") to Section.BACKUPS)
             if (data.missingRates.isNotEmpty()) add(model.t("report.missingRates", data.missingRates.joinToString()) to Section.RATES)
         }

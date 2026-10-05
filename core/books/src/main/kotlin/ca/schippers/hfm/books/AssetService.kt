@@ -1,6 +1,8 @@
 package ca.schippers.hfm.books
 
 import ca.schippers.hfm.calc.assets.Depreciation
+import ca.schippers.hfm.calc.rules.LeadTimes
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.calc.schedule.MaintenanceSchedule
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
@@ -69,7 +71,7 @@ data class Asset(
             ValueMethod.DEPRECIATION -> {
                 val price = purchasePrice ?: return null
                 val start = purchaseDate ?: return price
-                Depreciation.straightLine(price, start, depreciationYears ?: 10, residualPercent ?: BigDecimal.ZERO, date)
+                Depreciation.straightLine(price, start, depreciationYears ?: Thresholds.depreciationYears(date), residualPercent ?: Thresholds.depreciationResidualPercent(date), date)
             }
         }
     }
@@ -308,11 +310,11 @@ class AssetService internal constructor(private val books: Books) {
     }
 
     /**
-     * WAR-02: warranties ending within 60 days (by default), as reminders. A warranty limited by
+     * WAR-02: warranties ending within the warranty lead time of Rates and rules, as reminders. A warranty limited by
      * hours of use also ends on the day the hour meter should reach the limit, at the usual rate of
      * use; one whose hours are used up is over and no longer reminds.
      */
-    fun renewals(today: LocalDate, withinDays: Int = 60): List<Renewal> {
+    fun renewals(today: LocalDate, withinDays: Int = LeadTimes.warranty(today)): List<Renewal> {
         val assets = list().associateBy { it.id }
         return warranties().mapNotNull { w ->
             val a = assets[w.assetId] ?: return@mapNotNull null

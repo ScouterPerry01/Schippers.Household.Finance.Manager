@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.data.BackupInfo
 import ca.schippers.hfm.data.Backups
 import ca.schippers.hfm.data.EncryptedDriverFactory
@@ -33,9 +34,16 @@ class BackupService internal constructor(private val books: Books) {
 
     fun settings(): BackupSettings = BackupSettings(
         dir = books.setting(DIR)?.let { Path.of(it) },
-        frequency = books.setting(FREQUENCY)?.let { runCatching { BackupFrequency.valueOf(it) }.getOrNull() } ?: BackupFrequency.DAILY,
-        keep = books.setting(KEEP)?.toIntOrNull() ?: 10,
+        // Until the household chooses, the defaults of Rates and rules: daily, keeping 10.
+        frequency = books.setting(FREQUENCY)?.let { runCatching { BackupFrequency.valueOf(it) }.getOrNull() } ?: defaultFrequency(),
+        keep = books.setting(KEEP)?.toIntOrNull() ?: Thresholds.backupKeep(books.today()),
     )
+
+    private fun defaultFrequency(): BackupFrequency = when (Thresholds.backupEvery(books.today())) {
+        0 -> BackupFrequency.OFF
+        in 1..3 -> BackupFrequency.DAILY
+        else -> BackupFrequency.WEEKLY
+    }
 
     /** M-77: where, how often and how many backups is the administrator's choice. */
     fun saveSettings(settings: BackupSettings) {

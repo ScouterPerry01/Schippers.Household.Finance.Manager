@@ -106,7 +106,7 @@ Messages :
 
 - **Ce n’est pas un code de jumelage de RANN’s Roost.** : le code ou le texte n’est pas un code de jumelage.
 - **Impossible de joindre l’ordinateur.** : vérifiez que les deux sont sur le même Wi-Fi, que le ménage est ouvert sur l’ordinateur et que Windows autorise RANN’s Roost sur les réseaux privés.
-- **L’ordinateur a refusé.** : le code a peut-être expiré (chacun dure 10 minutes et ne sert qu’une fois). Affichez-en un nouveau sur l’ordinateur.
+- **L’ordinateur a refusé.** : le code a peut-être expiré (chacun dure 10 minutes par défaut et ne sert qu’une fois). Affichez-en un nouveau sur l’ordinateur.
 
 Le téléphone est jumelé à l’utilisateur connecté sur l’ordinateur à ce moment-là. Jumeler de nouveau, au même ordinateur ou à un autre, remplace le jumelage précédent.
 

@@ -149,7 +149,7 @@ Up to 500 documents are listed. Click **Open** on a line to open the document wi
 ## The Old documents tab {#old-documents-tab}
 @index: retention; how long to keep receipts; six years; CRA; Canada Revenue Agency; tax records
 
-The Canada Revenue Agency generally asks that tax records and the papers that support them be kept for six years. **Old documents** lists filed documents whose date is more than six years ago, so you can decide whether to delete them.
+The Canada Revenue Agency generally asks that tax records and the papers that support them be kept for six years. **Old documents** lists filed documents whose date is more than six years ago, so you can decide whether to delete them. Six years is the default retention period in [Rates and rules](rates-rules).
 
 - Documents still in **To review** never appear here.
 - Documents marked **Keep this document** never appear here.
@@ -235,7 +235,7 @@ The **File it with** section offers every way to file the document. Each filing 
 
 ### Attach to an existing transaction {#attach-to-transaction}
 
-The app lists up to four transactions that may be the one the document belongs to: the same amount, in the same currency, dated within five days of the document's date, closest first. Transfers between your own accounts, investment trades and transactions the document is already attached to are left out. Each line shows the date, the account, the payee and the amount.
+The app lists up to four transactions that may be the one the document belongs to: the same amount, in the same currency, dated within five days of the document's date (the default match window, set in [Rates and rules](rates-rules)), closest first. Transfers between your own accounts, investment trades and transactions the document is already attached to are left out. Each line shows the date, the account, the payee and the amount.
 
 - **Attach**: attaches the document to that transaction and files it. The transaction itself is not changed.
 
@@ -248,7 +248,7 @@ This is the usual choice when the transaction was already imported from your ban
 
 For a document of kind **Bill** or **Invoice**, the app looks for one of your bills that it belongs to: first by your account number with the biller (the last four digits), then by the store or biller name compared with the bill's payee and name. When it finds one, it shows "This looks like the bill ..." and:
 
-- **Record the amount on this bill**: records the document's total as the amount of that bill's due date closest to the document's due date (or its date), within 45 days, attaches the document to the bill and files it. The bill's To pay list then shows the real amount for that due date. See [Bills](bills).
+- **Record the amount on this bill**: records the document's total as the amount of that bill's due date closest to the document's due date (or its date), within 45 days (the default, set in [Rates and rules](rates-rules)), attaches the document to the bill and files it. The bill's To pay list then shows the real amount for that due date. See [Bills](bills).
 
 The bill must have a due date within 45 days of the document; otherwise an error says so. The document needs a total.
 
