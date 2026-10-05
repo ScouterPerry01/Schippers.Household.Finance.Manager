@@ -195,6 +195,33 @@ class HouseholdSession internal constructor(
         core.coreQueries.renameUser(displayName.trim(), targetUserId)
     }
 
+    /**
+     * M-71: changes a login name, the user's own or anyone's for an administrator. The name is in
+     * the core database and in the household's header (which unlock reads before any key is open),
+     * so both change together; it is not part of any encryption.
+     */
+    fun changeLoginName(targetUserId: String, loginName: String) {
+        checkOpen()
+        if (targetUserId != userId) requireAdministrator()
+        val name = loginName.trim()
+        require(name.isNotEmpty() && name.none(Char::isWhitespace)) { "A login name has no spaces" }
+        require(header.users.none { it.userId != targetUserId && it.loginName.equals(name, ignoreCase = true) }) { "The login name $name is already used" }
+        core.transaction {
+            core.coreQueries.setLoginName(name, targetUserId)
+            updateHeader(header.copy(users = header.users.map { if (it.userId == targetUserId) it.copy(loginName = name) else it }))
+        }
+        audit("RENAME_LOGIN", "app_user", targetUserId)
+    }
+
+    /** M-71: renames the household; for an administrator. The folder keeps its name. */
+    fun renameHousehold(name: String) {
+        checkOpen()
+        requireAdministrator()
+        require(name.isNotBlank()) { "A name is required" }
+        core.coreQueries.renameHousehold(name.trim())
+        audit("RENAME", "household", null)
+    }
+
     /** HH-09: the household member a user is, so their own accounts and phones are theirs. */
     fun linkMember(targetUserId: String, memberId: String?) {
         checkOpen()

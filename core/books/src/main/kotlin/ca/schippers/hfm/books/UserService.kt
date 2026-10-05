@@ -57,6 +57,14 @@ class UserService internal constructor(private val books: Books) {
         if (isAdministrator) session.linkMember(userId, memberId)
     }
 
+    /** M-71: a new login name for [userId]: the user's own, or anyone's for an administrator. */
+    fun changeLoginName(userId: String, loginName: String) {
+        validate(loginName.isNotBlank() && loginName.trim().none(Char::isWhitespace), "error.loginName")
+        validate(list().none { it.id != userId && it.loginName.equals(loginName.trim(), ignoreCase = true) }, "error.loginTaken")
+        if (list().first { it.id == userId }.loginName == loginName.trim()) return
+        guard { session.changeLoginName(userId, loginName) }
+    }
+
     fun changePassword(current: CharArray, newPassword: CharArray) {
         validate(newPassword.size >= MIN_PASSWORD, "error.passwordShort", MIN_PASSWORD)
         guard { session.changePassword(current, newPassword) }

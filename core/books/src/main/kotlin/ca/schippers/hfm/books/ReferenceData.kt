@@ -289,6 +289,12 @@ class PayeeService internal constructor(private val books: Books) {
         books.core.insertPayeeAlias(Ids.newId(), payeeId, pattern.trim())
     }
 
+    /** M-74: removes an alias; statement text it matched is no longer recognized as the payee. */
+    fun removeAlias(aliasId: String) {
+        requireEditor(books)
+        books.core.deletePayeeAlias(aliasId)
+    }
+
     /** Finds the payee for text typed or imported, by alias, then exact name. */
     fun match(text: String): Payee? {
         val trimmed = text.trim()

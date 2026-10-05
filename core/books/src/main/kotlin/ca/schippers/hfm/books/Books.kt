@@ -109,6 +109,16 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
         session.audit("UPDATE", "household", null, "province ${p.name}")
     }
 
+    /** The household's name, as given when it was created or renamed. */
+    val householdName: String get() = core.household().executeAsOne().name
+
+    /** M-71: renames the household; for an administrator. */
+    fun renameHousehold(name: String) {
+        requireAdmin(this)
+        validate(name.isNotBlank(), "error.nameRequired")
+        session.renameHousehold(name)
+    }
+
     init {
         BusinessDays.province = province
         categories.ensureDefaults()

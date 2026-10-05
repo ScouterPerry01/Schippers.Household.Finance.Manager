@@ -21,6 +21,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -214,7 +215,12 @@ private fun PayeeForm(model: BooksModel, existing: Payee?, tree: List<Pair<Categ
         val aliases = remember(model.revision, existing) { model.books.payees.aliases(existing.id) }
         Text(model.t("payee.aliases"), style = MaterialTheme.typography.titleSmall)
         if (aliases.isEmpty()) Text(model.t("payee.noAliases"), style = MaterialTheme.typography.bodySmall)
-        for (a in aliases) Text(a.pattern)
+        for (a in aliases) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(a.pattern, Modifier.weight(1f))
+                if (editable) TextButton(onClick = { model.act { model.books.payees.removeAlias(a.id) } }) { Text(model.t("payee.removeAlias")) }
+            }
+        }
         if (editable) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextInput(model.t("payee.alias"), alias, Modifier.weight(1f), supporting = model.t("payee.alias.hint")) { alias = it }
@@ -310,6 +316,16 @@ fun MembersScreen(model: BooksModel) {
                 if (it != province) model.act { model.books.setProvince(it) }
             }
             Text(model.t("household.provinceHint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+        }
+        // M-71: the household's name, which an administrator can change.
+        if (model.books.users.isAdministrator) {
+            var householdName by remember(model.revision) { mutableStateOf(model.books.householdName) }
+            Row(Modifier.padding(start = 12.dp, top = 8.dp, end = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                TextInput(model.t("create.name"), householdName, Modifier.width(360.dp)) { householdName = it }
+                OutlinedButton(onClick = { model.act { model.books.renameHousehold(householdName) } }, enabled = householdName.isNotBlank() && householdName.trim() != model.books.householdName) {
+                    Text(model.t("household.rename"))
+                }
+            }
         }
         Box(Modifier.weight(1f)) {
             ListEditor(

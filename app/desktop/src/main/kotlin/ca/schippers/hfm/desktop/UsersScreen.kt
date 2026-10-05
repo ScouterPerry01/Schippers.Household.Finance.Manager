@@ -214,12 +214,16 @@ private fun EditUserDialog(model: BooksModel, user: HouseholdUser, onClose: () -
     val books = model.books
     val members = remember { books.members.list() }
     var name by remember { mutableStateOf(user.displayName) }
+    // M-71: the login name can change: one's own, or anyone's for an administrator.
+    var login by remember { mutableStateOf(user.loginName) }
+    val canRenameLogin = user.isMe || books.users.isAdministrator
     var memberId by remember { mutableStateOf(user.memberId) }
     var role by remember { mutableStateOf(user.role) }
     var active by remember { mutableStateOf(user.active) }
-    FormDialog(model.t("users.edit"), model.t("common.save"), model.t("common.cancel"), canSave = name.isNotBlank(), onDismiss = onClose, onSave = {
+    FormDialog(model.t("users.edit"), model.t("common.save"), model.t("common.cancel"), canSave = name.isNotBlank() && login.isNotBlank(), onDismiss = onClose, onSave = {
         val ok = model.act {
             books.users.update(user.id, name, memberId)
+            if (canRenameLogin) books.users.changeLoginName(user.id, login)
             if (books.users.isAdministrator) {
                 if (role != user.role) books.users.setRole(user.id, role)
                 if (active != user.active) books.users.setActive(user.id, active)
@@ -228,6 +232,7 @@ private fun EditUserDialog(model: BooksModel, user: HouseholdUser, onClose: () -
         if (ok != null) onClose()
     }) {
         TextInput(model.t("users.name"), name) { name = it }
+        TextInput(model.t("unlock.login"), login, enabled = canRenameLogin, supporting = model.t("users.loginHint")) { login = it.trim() }
         if (books.users.isAdministrator) {
             Picker(model.t("users.member"), listOf(null) + members, members.firstOrNull { it.id == memberId }, { it?.displayName ?: model.t("common.none") }) { memberId = it?.id }
             Picker(model.t("users.role"), Role.entries, role, { model.t("role.$it") }, enabled = !user.isMe) { role = it }

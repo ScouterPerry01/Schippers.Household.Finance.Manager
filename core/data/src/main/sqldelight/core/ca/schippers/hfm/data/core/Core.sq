@@ -227,6 +227,9 @@ INSERT INTO household(id, name, base_currency, default_locale, created_at, provi
 setHouseholdProvince:
 UPDATE household SET province = ?;
 
+renameHousehold:
+UPDATE household SET name = ?;
+
 household:
 SELECT * FROM household LIMIT 1;
 
@@ -263,6 +266,9 @@ UPDATE app_user SET active = ? WHERE id = ?;
 
 renameUser:
 UPDATE app_user SET display_name = ? WHERE id = ?;
+
+setLoginName:
+UPDATE app_user SET login_name = ? WHERE id = ?;
 
 -- Institutions (ACC-01) --------------------------------------------------------------------
 
@@ -315,6 +321,9 @@ INSERT INTO payee_alias(id, payee_id, pattern) VALUES (?, ?, ?);
 
 payeeAliases:
 SELECT * FROM payee_alias;
+
+deletePayeeAlias:
+DELETE FROM payee_alias WHERE id = ?;
 
 -- Tags (CAT-04) ------------------------------------------------------------------------------
 
