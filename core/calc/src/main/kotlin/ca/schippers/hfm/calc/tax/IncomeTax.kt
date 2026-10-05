@@ -157,11 +157,11 @@ object IncomeTax {
             add(TaxLineKind.CPP to cppCredit)
             add(TaxLineKind.EI to v(TaxInput.EI_QPIP).max(BigDecimal.ZERO))
             add(TaxLineKind.PENSION to Rules.decimal("tax.fed.pension", on).min(v(TaxInput.PENSION).max(BigDecimal.ZERO)))
-            add(TaxLineKind.MEDICAL to medical(Rules.list("tax.fed.medical", on), v(TaxInput.MEDICAL), net))
+            add(TaxLineKind.MEDICAL to medical(federalMedical(on), v(TaxInput.MEDICAL), net))
         }
         val fedBasic = credits(
             TaxPart.FEDERAL, fedOnIncome, fedAmounts, Rules.decimal("tax.fed.creditRate", on),
-            Rules.list("tax.fed.donation", on), Rules.list("tax.fed.dividends", on), v(TaxInput.DONATIONS), net, fedBrackets.last().from,
+            Rules.list("tax.fed.donation", on), federalDividendCredits(on), v(TaxInput.DONATIONS), net, fedBrackets.last().from,
             v(TaxInput.ELIGIBLE_DIVIDENDS), v(TaxInput.OTHER_DIVIDENDS), lines,
             supplemental = Rules.valueOn("tax.fed.topUpCredit", on)?.let { Rules.list("tax.fed.topUpCredit", on) },
         )
@@ -366,6 +366,14 @@ object IncomeTax {
         (values[0] - (net - values[1]).max(BigDecimal.ZERO).multiply(values[2])).max(BigDecimal.ZERO)
 
     /** Medical expenses above the lesser of a rate of net income and a fixed amount (no fixed amount when only the rate is given). */
+    /** The federal medical threshold: the rate of net income, then the CRA's fixed amount (the Medical rules, shared with the medical report). */
+    internal fun federalMedical(on: LocalDate): List<BigDecimal> =
+        listOf(Rules.decimal("medical.threshold.rate", on), Rules.decimal("medical.threshold.max", on))
+
+    /** The federal dividend tax credit rates, eligible then other (the Investments rules, shared with the slips). */
+    private fun federalDividendCredits(on: LocalDate): List<BigDecimal> =
+        listOf(Rules.decimal("dividends.eligible.credit", on), Rules.decimal("dividends.other.credit", on))
+
     internal fun medical(values: List<BigDecimal>, expenses: BigDecimal, net: BigDecimal): BigDecimal {
         if (expenses.signum() <= 0) return BigDecimal.ZERO
         val floor = net.multiply(values[0]).let { f -> values.getOrNull(1)?.let { f.min(it) } ?: f }

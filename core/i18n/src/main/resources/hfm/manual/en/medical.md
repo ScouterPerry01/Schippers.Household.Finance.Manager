@@ -274,7 +274,7 @@ The best period always ends on the date of an expense in the year. When two peri
 When the report is for **Everyone** and the household has at least two adults, **Which spouse should claim?** compares the two:
 
 - **Net income, name**: each spouse's expected net income for the year (line 23600 of the return). Leave other adults empty. The books do not hold net income, so you type it in; it is not saved.
-- **CRA fixed amount, year**: the fixed amount the CRA sets each year. It is filled in from **Rates and rules** (Medical expenses: CRA fixed amount), where the CRA's amounts for 2023 to 2026 are built in ($2,890 for 2026). It is indexed each year, so a year without its own amount is left empty: type it here from the CRA's website, or have an administrator add it in Rates and rules from January 1 of its year so it is filled in from then on. The 3 % is a figure of Rates and rules too (Medical expenses: share of net income).
+- **CRA fixed amount, year**: the fixed amount the CRA sets each year. It is filled in from [Rates and rules](rates-rules) (Medical expenses: CRA fixed amount), where the CRA's amounts for 2023 to 2026 are built in ($2,890 for 2026). It is indexed each year, so a year without its own amount is left empty: type it here from the CRA's website, or have an administrator add it in Rates and rules from January 1 of its year so it is filled in from then on. The 3 % is a figure of Rates and rules too (Medical expenses: share of net income).
 
 With two incomes entered, the report shows for each spouse "Claimed by name: amount counts for the federal credit": the best period's total less 3 % of that spouse's net income, or less the fixed amount when that is lower. Then one of:
 

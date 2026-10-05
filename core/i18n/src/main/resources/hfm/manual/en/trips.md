@@ -61,7 +61,7 @@ The same dialog adds a trip (**Add a trip**) or changes one (**Edit the trip**).
 - **Person**: who made the trip, or **Household**. It decides which person's card the trip counts in and is suggested as the patient when adding it to medical expenses.
 - **Vehicle**: the vehicle used, or **No vehicle**. Only trips with a vehicle count towards that vehicle's work share. A new trip proposes the first vehicle in use. A saved trip keeps its own choice: **No vehicle** stays **No vehicle**, and a vehicle sold or retired since stays in the list for that trip.
 - **Notes**: anything to remember, such as the client or the reason for the visit.
-- When **Medical** is chosen, a reminder explains that a medical trip counts as a medical expense when the care is 40 km or more away, one way, and not available closer to home. The 40 km is a figure of **Rates and rules** (Medical travel: minimum distance), read for the trip's date.
+- When **Medical** is chosen, a reminder explains that a medical trip counts as a medical expense when the care is 40 km or more away, one way, and not available closer to home. The 40 km is a figure of [Rates and rules](rates-rules) (Medical travel: minimum distance), read for the trip's date.
 - **Delete**: shown when changing a trip. Asks "Delete the trip of date to destination?" and, once confirmed, deletes it. It cannot be undone. A medical expense made from the trip stays on the Medical claims screen.
 
 ## Medical travel {#medical-travel}
@@ -74,7 +74,7 @@ A **Medical** trip whose one-way distance is 40 km or more shows **Add to medica
 
 ### Add to medical expenses dialog {#to-medical-dialog}
 
-- The first line shows the trip's date and destination, followed by a reminder that the CRA publishes a rate per kilometre for each province and territory every year, and that the rate shown comes from **Rates and rules**.
+- The first line shows the trip's date and destination, followed by a reminder that the CRA publishes a rate per kilometre for each province and territory every year, and that the rate shown comes from [Rates and rules](rates-rules).
 - **Person**: the patient, whose medical expense it becomes. The trip's person by default, or else the first member of the household. The rate follows this person's province or territory (the household's, unless the person has their own), as the travel begins where they live.
 - Under the person, a line says where the rate comes from: the rate for the province in effect from a date, built in (with the CRA source) or the household's own; or that there is no rate for the province yet.
 - **Rate per kilometre**: in dollars, such as 0.62 or 0.605 (the CRA's rates can have a half cent). It is filled in with the Medical travel: rate per kilometre of Rates and rules for the trip's date and the person's province: the CRA publishes each year's rates early in the next year, so until then the last year's rate is shown. You can change it for this trip. A rate typed for a year in an earlier version of the app is still used for that year.

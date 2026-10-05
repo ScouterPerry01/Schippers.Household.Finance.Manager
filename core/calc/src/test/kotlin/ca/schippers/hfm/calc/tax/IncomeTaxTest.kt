@@ -113,7 +113,7 @@ class IncomeTaxTest {
 
     @Test
     fun `medical expenses count above the lesser of 3 percent and the fixed amount`() {
-        val rates = Rules.list("tax.fed.medical", LocalDate(2025, 1, 1))
+        val rates = IncomeTax.federalMedical(LocalDate(2025, 1, 1))
         assertEquals(0, d("1200").compareTo(IncomeTax.medical(rates, d("3000"), d("60000"))))
         assertEquals(0, d("166").compareTo(IncomeTax.medical(rates, d("3000"), d("200000"))))
         assertEquals(0, BigDecimal.ZERO.compareTo(IncomeTax.medical(rates, d("1000"), d("60000"))))

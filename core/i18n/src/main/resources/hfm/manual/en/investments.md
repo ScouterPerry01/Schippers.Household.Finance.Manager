@@ -287,7 +287,7 @@ Choose **Capital gains and ACB** at the bottom of the account list. This view wo
 
 - **Year**: the tax year to show, from this year back ten years.
 - **Net capital gain in** (the year): the gains minus the losses of the year, for all owners together.
-- **Taxable half**: the part of that net gain included in income: half, the capital gains inclusion rate of **Rates and rules**, applied to each sale at the rate in effect on its date.
+- **Taxable half**: the part of that net gain included in income: half, the capital gains inclusion rate of [Rates and rules](rates-rules), applied to each sale at the rate in effect on its date.
 
 The table "Capital gains and losses" for the year lists each disposition: **Date**, **Security**, **Owners**, **Quantity**, **Proceeds** (after commission), **ACB** (the cost of the units sold), **Gain** (a loss is negative), and a flag "possible superficial loss" when it applies. A return of capital that brings the cost below zero also appears here as a gain.
 
@@ -299,7 +299,7 @@ Use **Hide table** or **Show table** to fold it, the **CSV**, **Excel** and **PD
 
 @index: superficial loss; wash sale
 
-A loss is marked "possible superficial loss" when units of the same pool were bought within 30 days before or after the sale (the 30 days are a figure of **Rates and rules**). Under the tax rules such a loss may be denied and added to the cost of the new units instead. The app only flags it; it does not change the figures. Check before filing.
+A loss is marked "possible superficial loss" when units of the same pool were bought within 30 days before or after the sale (the 30 days are a figure of [Rates and rules](rates-rules)). Under the tax rules such a loss may be denied and added to the cost of the new units instead. The app only flags it; it does not change the figures. Check before filing.
 
 ### Adjusted cost base today {#acb-today}
 

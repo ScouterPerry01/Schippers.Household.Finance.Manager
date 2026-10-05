@@ -27,9 +27,7 @@ rule tax.fed.bpa LIST
 rule tax.fed.employmentAmount AMOUNT
 rule tax.fed.age LIST
 rule tax.fed.pension AMOUNT
-rule tax.fed.medical LIST
 rule tax.fed.donation LIST
-rule tax.fed.dividends LIST
 rule tax.fed.topUpCredit LIST
 rule tax.fed.quebecAbatement RATE
 rule tax.cpp LIST
@@ -71,13 +69,9 @@ tax.fed.age | - | 2025-01-01 | 9028; 45522; 0.15 | CRA, indexation adjustment fo
 tax.fed.age | - | 2026-01-01 | 9208; 46432; 0.15 | CRA, indexation adjustment for personal income tax amounts
 tax.fed.pension | - | 2024-01-01 | 2000 | CRA, T1 return 2024, line 31400
 tax.fed.pension | - | 2025-01-01 | 2000 | CRA, T1 return 2025, line 31400
-tax.fed.medical | - | 2024-01-01 | 0.03; 2759 | CRA, indexation adjustment for personal income tax amounts
-tax.fed.medical | - | 2025-01-01 | 0.03; 2834 | CRA, indexation adjustment for personal income tax amounts
-tax.fed.medical | - | 2026-01-01 | 0.03; 2890 | CRA, indexation adjustment for personal income tax amounts
 tax.fed.donation | - | 2024-01-01 | 200; 0.15; 0.29; 0.33 | CRA, Schedule 9 2024
 tax.fed.donation | - | 2025-01-01 | 200; 0.145; 0.29; 0.33 | CRA, Schedule 9 2025
 tax.fed.donation | - | 2026-01-01 | 200; 0.14; 0.29; 0.33 | Finance Canada, lowest rate and non-refundable credits (first $200 at the lowest rate)
-tax.fed.dividends | - | 2024-01-01 | 0.150198; 0.090301 | CRA, completing the T5 slip; Federal Worksheet 2024
 tax.fed.topUpCredit | - | 2025-01-01 | 57375; 0.005 | CRA, line 34990 top-up tax credit; Federal Worksheet 2025
 tax.fed.topUpCredit | - | 2026-01-01 | 58523; 0.01 | Finance Canada, top-up tax credit keeps 15 % above the first bracket (2025 to 2030)
 tax.fed.quebecAbatement | - | 2024-01-01 | 0.165 | Finance Canada, Quebec abatement; CRA T1 return for Quebec
