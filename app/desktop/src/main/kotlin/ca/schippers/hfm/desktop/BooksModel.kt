@@ -80,6 +80,10 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     /** A contact to show in the Contacts screen (from search or a record's screen). */
     var focusContactId by mutableStateOf<String?>(null)
 
+    /** A contractor to show in Home and assets (from a contact's page): its jobs when [focusContractorJobs], else its form. */
+    var focusContractorId by mutableStateOf<String?>(null)
+    var focusContractorJobs by mutableStateOf(false)
+
     /** A document to open in the documents screen (from search). */
     var focusDocumentId by mutableStateOf<String?>(null)
 

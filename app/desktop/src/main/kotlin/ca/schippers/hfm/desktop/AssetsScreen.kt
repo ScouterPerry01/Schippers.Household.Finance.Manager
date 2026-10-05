@@ -67,7 +67,7 @@ private enum class AssetsTab { ASSETS, UPKEEP, PROJECTS, CONTRACTORS, COVERED, I
 /** AST, WAR and INS: the home and other assets, what covers them, and insurance policies. */
 @Composable
 fun AssetsScreen(model: BooksModel) {
-    var tab by remember { mutableStateOf(AssetsTab.ASSETS) }
+    var tab by remember { mutableStateOf(if (model.focusContractorId != null) AssetsTab.CONTRACTORS else AssetsTab.ASSETS) }
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text(model.t("assets.title"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("assets.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)

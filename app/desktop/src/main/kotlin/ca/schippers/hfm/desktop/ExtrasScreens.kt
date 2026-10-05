@@ -251,6 +251,17 @@ internal fun ContractorsTab(model: BooksModel) {
     val list = remember(model.revision, showArchived) { books.contractors.list(showArchived) }
     var editing by remember { mutableStateOf<Contractor?>(null) }
     var jobsOf by remember { mutableStateOf<String?>(null) }
+    // From a contact's page: the contractor's form, or its jobs.
+    LaunchedEffect(model.focusContractorId) {
+        model.focusContractorId?.let { id ->
+            val c = books.contractors.list(includeArchived = true).firstOrNull { it.id == id }
+            if (c != null) {
+                if (c.archived) showArchived = true
+                if (model.focusContractorJobs) jobsOf = c.id else editing = c
+            }
+            model.focusContractorId = null
+        }
+    }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         Button(onClick = { editing = Contractor("", model.workGroup(), "") }) { Text(model.t("contractor.add")) }
         LabeledCheckbox(model.t("contractor.showArchived"), showArchived) { showArchived = it }
@@ -311,6 +322,8 @@ private fun ContractorJobsDialog(model: BooksModel, c: Contractor, onClose: () -
     var rating by remember { mutableStateOf<Int?>(null) }
     var asset by remember { mutableStateOf<ca.schippers.hfm.books.Asset?>(null) }
     var deleting by remember { mutableStateOf<ContractorJob?>(null) }
+    // The contractor's own contacts, shown on each job as "through the contractor".
+    val ofContractor = remember(model.revision, c.id) { runCatching { model.books.contacts.linkedTo(LinkTarget.CONTRACTOR, c.id) }.getOrDefault(emptyList()) }
     FormDialog(c.name, model.t("contractor.addJob"), model.t("common.close"), canSave = description.isNotBlank(), onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.contractors.saveJob(c, ContractorJob("", date(day), description, parseAmount(cost, model.books.reports.base, locale)?.abs(), rating, asset?.id))
@@ -323,6 +336,12 @@ private fun ContractorJobsDialog(model: BooksModel, c: Contractor, onClose: () -
                 Text(j.description + (j.rating?.let { " · " + "★".repeat(it) } ?: ""), Modifier.weight(1f))
                 j.cost?.let { MoneyText(model, it) }
                 TextButton(onClick = { deleting = j }) { Text("✕") }
+            }
+            Column(Modifier.padding(start = 100.dp, bottom = 6.dp)) {
+                LinkedContacts(
+                    model, LinkTarget.CONTRACTOR_JOB, j.id, suggestedName = c.name, groupId = c.groupId,
+                    through = ofContractor, throughNote = model.t("contacts.throughContractor"),
+                )
             }
         }
         Text(model.t("contractor.newJob"), style = MaterialTheme.typography.titleSmall)

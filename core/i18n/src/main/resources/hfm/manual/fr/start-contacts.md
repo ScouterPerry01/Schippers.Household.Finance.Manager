@@ -27,7 +27,7 @@
 ## Étape 4 : lier les contacts à vos éléments {#link}
 
 1. Sur la page d’un contact, choisissez **Lier à un élément…**, le rôle (Banque pour, Pharmacie pour, Liquidateur pour...) et l’élément.
-2. Ou, depuis l’écran de l’élément (un compte, une police, un médicament, une facture...), choisissez **Lier un contact…**.
+2. Ou, depuis l’écran de l’élément (un compte, une police, un médicament, une facture, un entrepreneur ou certains de ses travaux...), choisissez **Lier un contact…**.
 3. Dès lors, le contact s’affiche dans l’écran de l’élément, et l’élément sur la page du contact.
 
 ## Retrouver quelqu’un plus tard {#find}

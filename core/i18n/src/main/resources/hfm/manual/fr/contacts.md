@@ -4,7 +4,7 @@ Contacts réunit en un seul endroit les personnes et les organisations avec qui 
 
 Un ménage fait souvent affaire avec plusieurs banques, plusieurs médecins ou deux pharmacies. Chaque contact porte donc une courte ligne « pour quoi » que vous écrivez vous-même, comme REER et CELI ou dermatologue de Sam, ainsi que les personnes qu’il sert. Cette ligne suit le contact partout où il est nommé ou choisi : vous savez toujours lequel est lequel.
 
-Les contacts sont liés aux éléments qui les concernent : les comptes qu’une banque détient, les polices qu’un assureur couvre, les médicaments qu’une pharmacie prépare, les rendez-vous avec un médecin, les papiers de succession dont un liquidateur a besoin. La page d’un contact les énumère tous ; l’écran de chaque élément affiche ses contacts.
+Les contacts sont liés aux éléments qui les concernent : les comptes qu’une banque détient, les polices qu’un assureur couvre, les médicaments qu’une pharmacie prépare, les rendez-vous avec un médecin, l’entrepreneur qui a fait des travaux à la maison, les papiers de succession dont un liquidateur a besoin. La page d’un contact les énumère tous ; l’écran de chaque élément affiche ses contacts.
 
 ## Ce que contient un contact {#about-contacts}
 
@@ -37,7 +37,7 @@ Cliquez sur un contact pour afficher sa page à droite.
 - **Chercher un contact** : trouve les contacts dont le nom, la ligne pour quoi, la fonction, l’organisation, l’adresse, le site Web, les heures, les notes, les numéros de téléphone ou les courriels contiennent le texte tapé. Les accents et les majuscules ne comptent pas : « medecin » trouve « Médecin de famille ». Des chiffres trouvent aussi un numéro de téléphone écrit avec des espaces ou des tirets.
 - **Type** : n’affiche que les contacts d’un type, comme Banque ou Pharmacie. Tous les types les affiche tous.
 - **Pour qui** : n’affiche que les contacts qui servent une personne ou un animal, par exemple tous ceux qui s’occupent de Léa. Tout le monde les affiche tous. Un contact qui sert tout le ménage (personne de coché) ne figure pas sous une personne.
-- **Lié à** : n’affiche que les contacts liés à un type d’élément, comme Compte ou Police d’assurance. N’importe quoi les affiche tous.
+- **Lié à** : n’affiche que les contacts liés à un type d’élément, comme Compte, Police d’assurance, Entrepreneur ou Travaux d’un entrepreneur. N’importe quoi les affiche tous.
 - **Afficher les archivés** : ajoute à la liste les contacts marqués Archivé.
 - **Effacer les filtres** : apparaît quand un filtre ou une recherche est utilisé ; les vide tous.
 
@@ -66,11 +66,11 @@ Les numéros de compte et de client sont conservés en entier mais affichés mas
 
 ### Liens {#linked-records}
 
-@index: liens; banque pour; prêteur pour; assureur pour; pharmacie pour; liquidateur pour
+@index: liens; banque pour; prêteur pour; assureur pour; pharmacie pour; liquidateur pour; a fait les travaux; fait par
 
-Chaque lien a un rôle, comme Banque pour, Prêteur pour, Société de placement pour, Conseiller pour, Assureur pour, Courtier pour, Pharmacie pour, Prescripteur pour, Rendez-vous, Facturier pour, Vétérinaire pour, Garage pour, Service pour, Correspond à (l’institution, le professionnel, l’entrepreneur ou le bénéficiaire d’où vient le contact), les rôles de succession (Liquidateur pour, Notaire pour...) et Aussi lié à. Sous chaque rôle, chaque élément est montré avec son type et son nom, comme Compte · Compte conjoint.
+Chaque lien a un rôle, comme Banque pour, Prêteur pour, Société de placement pour, Conseiller pour, Assureur pour, Courtier pour, Pharmacie pour, Prescripteur pour, Rendez-vous, Facturier pour, Vétérinaire pour, Garage pour, Service pour, A fait les travaux (des travaux d’un entrepreneur), Correspond à (l’institution, le professionnel, l’entrepreneur ou le bénéficiaire d’où vient le contact), les rôles de succession (Liquidateur pour, Notaire pour...) et Aussi lié à. Sous chaque rôle, chaque élément est montré avec son type et son nom, comme Compte · Compte conjoint. Des travaux d’un entrepreneur montrent leur description, leur date, leur coût et l’entrepreneur, comme Travaux d’un entrepreneur · Réparation de la toiture · 2026-05-04 · 1 200,00 $ · Toitures Laval.
 
-- Cliquez sur un élément pour ouvrir l’écran où il est conservé : un compte s’ouvre dans Comptes, Prêts et hypothèques ou Placements selon son type ; une police, un bien ou un entrepreneur ouvre Maison et biens ; un médicament ouvre Santé sur la personne qui le prend ; un rendez-vous ouvre le Calendrier ; et ainsi de suite.
+- Cliquez sur un élément pour ouvrir l’écran où il est conservé : un compte s’ouvre dans Comptes, Prêts et hypothèques ou Placements selon son type ; une police ou un bien ouvre Maison et biens ; un entrepreneur ouvre son formulaire dans l’onglet Entrepreneurs de Maison et biens, et des travaux ouvrent ceux de leur entrepreneur ; un médicament ouvre Santé sur la personne qui le prend ; un rendez-vous ouvre le Calendrier ; et ainsi de suite.
 - **Retirer le lien** : retire ce lien seulement. Le contact et l’élément restent.
 - **Lier à un élément…** : ouvre le formulaire de lien.
 
@@ -79,7 +79,7 @@ Seuls les éléments que vous avez le droit de voir sont énumérés. Un lien ve
 ### Lier à un élément {#link-record}
 
 - **Rôle** : ce que le contact est pour l’élément, comme Banque pour ou Pharmacie pour. Le premier rôle proposé suit les types du contact.
-- **Type d’élément** : affiché quand le rôle convient à plusieurs types d’éléments, comme Service pour un bien, un véhicule ou un animal.
+- **Type d’élément** : affiché quand le rôle convient à plusieurs types d’éléments, comme Service pour un bien, un véhicule ou un animal. Les types d’éléments sont Institution, Bénéficiaire, Compte, Police d’assurance, Professionnel de la santé, Médicament, Rendez-vous ou événement, Entrepreneur, Travaux d’un entrepreneur, Facture, Animal, Véhicule, Bien et Papiers de succession. Un contact peut être lié à un entrepreneur dans son ensemble (Correspond à, Aussi lié à) ou à certains de ses travaux (A fait les travaux, Aussi lié à).
 - L’élément lui-même : la liste des éléments de ce type que vous pouvez voir, avec une recherche à mesure que vous tapez. « Rien de ce type pour l’instant. » s’il n’y en a aucun.
 - **Lier** : enregistre le lien. Lier deux fois le même contact au même élément dans le même rôle ne change rien.
 
@@ -116,7 +116,7 @@ Plusieurs écrans montrent maintenant les contacts liés à leurs éléments, av
 
 - [Comptes](accounts) : le formulaire du compte (Modifier le compte) montre les contacts du compte, et le registre les montre sous le nom du compte, comme Banque · Desjardins · Compte conjoint, Visa, placements et hypothèque du chalet.
 - [Prêts et hypothèques](loans) et [Placements](investments) : sous le nom du compte, avec **Lier un contact…**.
-- [Maison et biens](assets) : le formulaire d’un bien, celui d’une police d’assurance et celui d’un entrepreneur.
+- [Maison et biens](assets) : le formulaire d’un bien, celui d’une police d’assurance, celui d’un entrepreneur et chacun de ses travaux (Fait par). Un contact lié à l’entrepreneur dans son ensemble est montré sous chacun de ses travaux avec « par l’entremise de l’entrepreneur », sans lien à lui (voir [Les contacts des travaux](assets#job-contacts)).
 - [Santé](health) : le formulaire d’un professionnel et celui d’un médicament (Pharmacie, Prescripteur).
 - [Calendrier](calendar) : le formulaire d’un rendez-vous, une fois celui-ci enregistré.
 - [Factures](bills) : le formulaire d’une facture.

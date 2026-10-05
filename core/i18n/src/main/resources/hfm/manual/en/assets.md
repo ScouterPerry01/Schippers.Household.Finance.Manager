@@ -285,6 +285,17 @@ Click a contractor to open a dialog with its name, listing its jobs: date, descr
 
 Like project costs, jobs are a record only; they do not enter payments in an account.
 
+### A job's contacts {#job-contacts}
+
+@index: done by; who did the job; job contact
+
+Under each job, Contacts lists the contacts linked to that job, such as Done by · Marc Roy, for when a particular person at the company did the work. Click a contact to open its page in [Contacts](contacts).
+
+- **Link a contact…**: links a contact to this job, in the role Done by or Linked; **New contact…** in the same form creates one and links it.
+- **Remove link**: removes that link only.
+
+A contact linked to the contractor as a whole (in the contractor's form) is shown under every job with "through the contractor"; it is not linked to each job again. Deleting a job also removes its links; the contacts stay.
+
 ## Is it covered? tab {#covered-tab}
 @index: warranty lookup; find item; serial number search
 
@@ -392,6 +403,6 @@ Under [Reports](reports):
 
 @index: contact; linked contact; Link a contact
 
-The forms of a saved asset, insurance policy and contractor end with Contacts. An asset shows who services or insures it (Service, Insurer). A policy shows its Insurer, Broker and Advisor as contacts, with their phones; the Insurer and Broker typed as text on the policy stay as they are. A contractor shows the contact made for it (Contact).
+The forms of a saved asset, insurance policy and contractor end with Contacts. An asset shows who services or insures it (Service, Insurer). A policy shows its Insurer, Broker and Advisor as contacts, with their phones; the Insurer and Broker typed as text on the policy stay as they are. A contractor shows the contact made for it (Contact); each of its jobs shows its own contacts (see [A job's contacts](assets#job-contacts)).
 
 Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

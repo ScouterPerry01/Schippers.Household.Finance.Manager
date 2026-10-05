@@ -27,7 +27,7 @@
 ## Step 4: link contacts to your records {#link}
 
 1. On a contact's page, choose **Link to a record…**, pick the role (Bank for, Pharmacy for, Executor for...) and the record.
-2. Or, from the record's own screen (an account, a policy, a medication, a bill...), choose **Link a contact…**.
+2. Or, from the record's own screen (an account, a policy, a medication, a bill, a contractor or one of its jobs...), choose **Link a contact…**.
 3. From then on, the contact shows on the record's screen, and the record on the contact's page.
 
 ## Finding someone later {#find}

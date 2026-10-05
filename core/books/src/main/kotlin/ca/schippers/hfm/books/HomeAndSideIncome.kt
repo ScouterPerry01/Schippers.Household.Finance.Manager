@@ -68,7 +68,13 @@ class ContractorService internal constructor(private val books: Books) {
         return list(true).first { it.id == id }
     }
 
-    fun delete(c: Contractor) = books.ledger(books.editable(c.groupId)).extrasQueries.deleteContractor(c.id)
+    /** Deletes a contractor with its jobs, and the contacts' links to them (the contacts stay). */
+    fun delete(c: Contractor) {
+        val jobs = list(true).firstOrNull { it.id == c.id }?.jobs.orEmpty().map { it.id }
+        books.ledger(books.editable(c.groupId)).extrasQueries.deleteContractor(c.id)
+        books.contacts.forgetLinks(LinkTarget.CONTRACTOR, listOf(c.id))
+        books.contacts.forgetLinks(LinkTarget.CONTRACTOR_JOB, jobs)
+    }
 
     fun saveJob(c: Contractor, job: ContractorJob): ContractorJob {
         validate(job.description.isNotBlank(), "error.jobDescription")
@@ -80,7 +86,11 @@ class ContractorService internal constructor(private val books: Books) {
         return job.copy(id = id)
     }
 
-    fun deleteJob(c: Contractor, jobId: String) = books.ledger(books.editable(c.groupId)).extrasQueries.deleteContractorJob(jobId)
+    /** Deletes a job and the contacts' links to it (CON-04); the contacts stay. */
+    fun deleteJob(c: Contractor, jobId: String) {
+        books.ledger(books.editable(c.groupId)).extrasQueries.deleteContractorJob(jobId)
+        books.contacts.forgetLinks(LinkTarget.CONTRACTOR_JOB, listOf(jobId))
+    }
 }
 
 // --- Home improvement projects (MNT-09) --------------------------------------------------------------

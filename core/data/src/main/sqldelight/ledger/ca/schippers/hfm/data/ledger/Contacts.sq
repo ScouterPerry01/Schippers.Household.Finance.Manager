@@ -112,5 +112,8 @@ ON CONFLICT(contact_id, role, target_type, target_id) DO NOTHING;
 deleteLink:
 DELETE FROM contact_link WHERE id = ?;
 
+deleteLinksTo:
+DELETE FROM contact_link WHERE target_type = ? AND target_id = ?;
+
 moveLinks:
 UPDATE OR IGNORE contact_link SET contact_id = ? WHERE contact_id = ?;

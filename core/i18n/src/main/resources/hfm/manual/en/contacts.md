@@ -4,7 +4,7 @@ Contacts keeps, in one place, the people and organizations your household deals 
 
 A household often deals with several banks, several doctors or two pharmacies. Each contact therefore carries a short "what for" line you write yourself, such as RRSP and TFSA or Sam's dermatologist, and the people it serves. That line follows the contact everywhere it is named or picked, so you always know which one is which.
 
-Contacts are linked to the records they concern: the accounts a bank holds, the policies an insurer covers, the medications a pharmacy fills, the appointments with a doctor, the estate papers an executor needs. A contact's page lists all of them; each record's own screen shows its contacts.
+Contacts are linked to the records they concern: the accounts a bank holds, the policies an insurer covers, the medications a pharmacy fills, the appointments with a doctor, the contractor who did a job on the house, the estate papers an executor needs. A contact's page lists all of them; each record's own screen shows its contacts.
 
 ## What a contact holds {#about-contacts}
 
@@ -37,7 +37,7 @@ Click a contact to show its page on the right.
 - **Search contacts**: finds the contacts whose name, what-for line, job title, organization, address, website, hours, notes, phone numbers or emails contain the text typed. Accents and capitals are ignored: "medecin" finds "Médecin de famille". Digits also find a phone number written with spaces or dashes.
 - **Kind**: shows only the contacts of one kind, such as Bank or Pharmacy. All kinds shows them all.
 - **For whom**: shows only the contacts that serve one person or pet, such as everyone who looks after Léa. Everyone shows them all. A contact that serves the whole household (no one ticked) is not listed under a person.
-- **Linked to**: shows only the contacts linked to a kind of record, such as Account or Insurance policy. Anything shows them all.
+- **Linked to**: shows only the contacts linked to a kind of record, such as Account, Insurance policy, Contractor or Contractor's job. Anything shows them all.
 - **Show archived**: also lists the contacts marked Archived.
 - **Clear filters**: appears when a filter or a search is used; empties them all.
 
@@ -66,11 +66,11 @@ Account and client numbers are kept in full but shown masked, with only the last
 
 ### Linked records {#linked-records}
 
-@index: links; bank for; lender for; insurer for; pharmacy for; executor for
+@index: links; bank for; lender for; insurer for; pharmacy for; executor for; did the job; done by
 
-Each link has a role, such as Bank for, Lender for, Investment firm for, Advisor for, Insurer for, Broker for, Pharmacy for, Prescriber for, Appointments, Biller for, Veterinarian for, Garage for, Service for, Same as (the institution, provider, contractor or payee the contact was made from), the estate roles (Executor for, Notary for...) and Also linked to. Under each role, every record is shown with its kind and name, such as Account · Joint chequing.
+Each link has a role, such as Bank for, Lender for, Investment firm for, Advisor for, Insurer for, Broker for, Pharmacy for, Prescriber for, Appointments, Biller for, Veterinarian for, Garage for, Service for, Did the job (a contractor's job), Same as (the institution, provider, contractor or payee the contact was made from), the estate roles (Executor for, Notary for...) and Also linked to. Under each role, every record is shown with its kind and name, such as Account · Joint chequing. A contractor's job shows its description, date, cost and contractor, such as Contractor's job · Roof repair · 2026-05-04 · $1,200.00 · Toitures Laval.
 
-- Click a record to open the screen where it is kept: an account opens in Accounts, Loans and mortgages or Investments according to its type; a policy, an asset or a contractor opens Home and assets; a medication opens Health on the person who takes it; an appointment opens the Calendar; and so on.
+- Click a record to open the screen where it is kept: an account opens in Accounts, Loans and mortgages or Investments according to its type; a policy or an asset opens Home and assets; a contractor opens its form on the Contractors tab of Home and assets, and a contractor's job opens that contractor's jobs; a medication opens Health on the person who takes it; an appointment opens the Calendar; and so on.
 - **Remove link**: removes that link only. The contact and the record stay.
 - **Link to a record…**: opens the link form.
 
@@ -79,7 +79,7 @@ Only records you are allowed to see are listed. A link to a record kept in anoth
 ### Link to a record {#link-record}
 
 - **Role**: what the contact is to the record, such as Bank for or Pharmacy for. The first role offered follows the contact's kinds.
-- **Kind of record**: shown when the role fits several kinds of records, such as Service for an asset, a vehicle or a pet.
+- **Kind of record**: shown when the role fits several kinds of records, such as Service for an asset, a vehicle or a pet. The kinds of records are Institution, Payee, Account, Insurance policy, Health provider, Medication, Appointment or event, Contractor, Contractor's job, Bill, Pet, Vehicle, Asset and Estate papers. A contact can be linked to a contractor as a whole (Same as, Also linked to) or to one of its jobs (Did the job, Also linked to).
 - The record itself: the list of records of that kind that you can see, with a search as you type. "Nothing of this kind yet." when there are none.
 - **Link**: saves the link. Linking the same contact to the same record in the same role twice changes nothing.
 
@@ -116,7 +116,7 @@ Many screens now show the contacts linked to their records, with each contact's 
 
 - [Accounts](accounts): the account form (Edit account) shows the account's contacts, and the register shows them under the account's name, such as Bank · TD Canada Trust · Joint chequing, Visa and cottage mortgage.
 - [Loans and mortgages](loans) and [Investments](investments): under the account's name, with **Link a contact…**.
-- [Home and assets](assets): the asset form, the insurance policy form, and the contractor form.
+- [Home and assets](assets): the asset form, the insurance policy form, the contractor form, and each job in a contractor's jobs (Done by). A contact linked to the contractor as a whole is shown on each of its jobs with "through the contractor", without a link of its own (see [A job's contacts](assets#job-contacts)).
 - [Health](health): the provider form and the medication form (Pharmacy, Prescriber).
 - [Calendar](calendar): the appointment form, once the appointment is saved.
 - [Bills](bills): the bill form.

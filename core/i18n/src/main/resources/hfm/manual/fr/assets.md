@@ -285,6 +285,17 @@ Cliquez sur un entrepreneur pour ouvrir une boîte à son nom, qui énumère ses
 
 Comme les coûts d’un projet, les travaux sont un simple historique ; ils n’inscrivent pas de paiement dans un compte.
 
+### Les contacts des travaux {#job-contacts}
+
+@index: fait par; qui a fait les travaux; contact des travaux
+
+Sous chaque ligne de travaux, Contacts énumère les contacts liés à ces travaux, comme Fait par · Marc Roy, quand une personne précise de l’entreprise a fait le travail. Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts).
+
+- **Lier un contact…** : lie un contact à ces travaux, dans le rôle Fait par ou Lié ; **Nouveau contact…**, dans le même formulaire, en crée un et le lie.
+- **Retirer le lien** : retire ce lien seulement.
+
+Un contact lié à l’entrepreneur dans son ensemble (dans le formulaire de l’entrepreneur) est montré sous tous ses travaux avec « par l’entremise de l’entrepreneur » ; il n’est pas lié de nouveau à chacun. Supprimer des travaux retire aussi leurs liens ; les contacts restent.
+
 ## Onglet Est-ce couvert ? {#covered-tab}
 @index: recherche de garantie; trouver un article; recherche par numéro de série
 
@@ -392,6 +403,6 @@ Sous [Rapports](reports) :
 
 @index: contact; contact lié; Lier un contact
 
-Les formulaires d’un bien, d’une police d’assurance et d’un entrepreneur enregistrés se terminent par Contacts. Un bien montre qui l’entretient ou l’assure (Service, Assureur). Une police montre son Assureur, son Courtier et son Conseiller comme contacts, avec leurs téléphones ; l’Assureur et le Courtier tapés en texte sur la police restent tels quels. Un entrepreneur montre le contact fait pour lui (Contact).
+Les formulaires d’un bien, d’une police d’assurance et d’un entrepreneur enregistrés se terminent par Contacts. Un bien montre qui l’entretient ou l’assure (Service, Assureur). Une police montre son Assureur, son Courtier et son Conseiller comme contacts, avec leurs téléphones ; l’Assureur et le Courtier tapés en texte sur la police restent tels quels. Un entrepreneur montre le contact fait pour lui (Contact) ; chacun de ses travaux montre ses propres contacts (voir [Les contacts des travaux](assets#job-contacts)).
 
 Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

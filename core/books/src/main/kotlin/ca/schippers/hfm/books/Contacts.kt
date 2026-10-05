@@ -4,6 +4,7 @@ import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
+import ca.schippers.hfm.money.MoneyFormat
 import ca.schippers.hfm.data.ledger.Contact as ContactRow
 
 /** CON-01: what a contact is; one contact can be several (a bank that is also the insurer). */
@@ -22,8 +23,11 @@ enum class DetailType { PHONE, EMAIL, NUMBER }
  */
 data class ContactDetail(val id: String = "", val type: DetailType, val label: String? = null, val value: String)
 
-/** CON-04: the kinds of records a contact can be linked to. */
-enum class LinkTarget { INSTITUTION, PAYEE, ACCOUNT, POLICY, HEALTH_PROVIDER, MEDICATION, EVENT, CONTRACTOR, BILL, PET, VEHICLE, ASSET, ESTATE }
+/**
+ * CON-04: the kinds of records a contact can be linked to. A contractor can be linked as a whole
+ * ([CONTRACTOR]) or through one of its jobs ([CONTRACTOR_JOB]: who did that job).
+ */
+enum class LinkTarget { INSTITUTION, PAYEE, ACCOUNT, POLICY, HEALTH_PROVIDER, MEDICATION, EVENT, CONTRACTOR, CONTRACTOR_JOB, BILL, PET, VEHICLE, ASSET, ESTATE }
 
 /**
  * CON-04: what a contact is to a linked record: "Bank for" an account, "Pharmacy for" a medication,
@@ -45,6 +49,7 @@ enum class LinkRole(val targets: Set<LinkTarget>, val kind: ContactKind? = null)
     VETERINARIAN(setOf(LinkTarget.PET), ContactKind.VETERINARIAN),
     GARAGE(setOf(LinkTarget.VEHICLE), ContactKind.CONTRACTOR),
     SERVICE(setOf(LinkTarget.ASSET, LinkTarget.VEHICLE, LinkTarget.PET), ContactKind.CONTRACTOR),
+    DONE_BY(setOf(LinkTarget.CONTRACTOR_JOB), ContactKind.CONTRACTOR),
     ESTATE_EXECUTOR(setOf(LinkTarget.ESTATE)),
     ESTATE_LIQUIDATOR(setOf(LinkTarget.ESTATE)),
     ESTATE_POWER_OF_ATTORNEY(setOf(LinkTarget.ESTATE)),
@@ -278,6 +283,18 @@ class ContactService internal constructor(private val books: Books) {
         books.ledger(group).contactsQueries.deleteLink(link.id)
     }
 
+    /**
+     * Removes every link to records that no longer exist (a deleted contractor or job), in all the
+     * groups the user can see, so no link is left pointing at nothing. The contacts stay.
+     */
+    internal fun forgetLinks(target: LinkTarget, targetIds: Collection<String>) {
+        if (targetIds.isEmpty()) return
+        for (g in books.groups()) {
+            val q = books.ledger(g).contactsQueries
+            q.transaction { targetIds.forEach { q.deleteLinksTo(target.name, it) } }
+        }
+    }
+
     /** The records of [target] the user can see, for the link picker. */
     fun candidates(target: LinkTarget): List<LinkCandidate> =
         names(target).map { (id, name) -> LinkCandidate(target, id, name) }.sortedBy { SearchService.fold(it.name) }
@@ -301,6 +318,7 @@ class ContactService internal constructor(private val books: Books) {
             }
             LinkTarget.EVENT -> books.calendar.list().associate { it.id to "${it.title} · ${it.startDate}" }
             LinkTarget.CONTRACTOR -> books.contractors.list(includeArchived = true).associate { it.id to (it.name + (it.trade?.let { t -> " · $t" }.orEmpty())) }
+            LinkTarget.CONTRACTOR_JOB -> books.contractors.list(includeArchived = true).flatMap { c -> c.jobs.map { j -> j.id to jobName(c, j) } }.toMap()
             LinkTarget.BILL -> books.bills.list(includeInactive = true).associate { it.id to it.name }
             LinkTarget.PET -> books.pets.list(includeArchived = true).associate { it.id to it.name }
             LinkTarget.VEHICLE -> books.vehicles.list(includeInactive = true).associate { it.id to it.name }
@@ -311,6 +329,10 @@ class ContactService internal constructor(private val books: Books) {
             }
         }
     }.getOrDefault(emptyMap())
+
+    /** "Roof repair · 2026-05-04 · $1,200.00 · Toitures Laval": a job with its date, cost and contractor. */
+    private fun jobName(c: Contractor, j: ContractorJob): String =
+        listOfNotNull(j.description, j.date.toString(), j.cost?.let { MoneyFormat.format(it, books.language.locale) }, c.name).joinToString(" · ")
 
     private fun whoNames(): Map<String, String> =
         books.members.list(includeArchived = true).associate { it.id to it.displayName } +

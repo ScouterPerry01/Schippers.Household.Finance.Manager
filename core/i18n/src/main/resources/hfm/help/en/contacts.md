@@ -19,7 +19,7 @@ Use the search box (accents and capitals do not matter) and the filters: Kind, F
 
 A contact's page lists every record it is linked to, grouped by role: Bank for, Lender for, Insurer for, Pharmacy for, Executor for... Click a record to open its screen. Link to a record… adds a link.
 
-The records' own screens show their contacts too, with a Link a contact… button: accounts, loans, investments, insurance policies, health providers, medications, appointments, bills, payees, institutions, pets, vehicles, assets, contractors and estate papers.
+The records' own screens show their contacts too, with a Link a contact… button: accounts, loans, investments, insurance policies, health providers, medications, appointments, bills, payees, institutions, pets, vehicles, assets, contractors and their jobs, and estate papers.
 
 ## Gather contacts from the app
 

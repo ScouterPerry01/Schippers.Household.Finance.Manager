@@ -131,6 +131,63 @@ class ContactsTest {
     }
 
     @Test
+    fun `a contact is linked to a whole contractor or to one of its jobs, and job links go with the job`() = household().use { books ->
+        val group = books.groups().single().id
+        val laval = books.contractors.save(Contractor("", group, "Toitures Laval", trade = "Roofer"))
+        val roof = books.contractors.saveJob(laval, ContractorJob("", LocalDate(2026, 5, 4), "Roof repair", cad("1200")))
+        val gutters = books.contractors.saveJob(laval, ContractorJob("", LocalDate(2026, 6, 1), "Gutters"))
+        val office = books.contacts.save(Contact("", group, "Toitures Laval", kinds = setOf(ContactKind.CONTRACTOR)))
+        val marc = books.contacts.save(Contact("", group, "Marc Roy", person = true, organizationId = office.id))
+
+        books.contacts.link(office.id, LinkRole.SAME_AS, LinkTarget.CONTRACTOR, laval.id)
+        books.contacts.link(marc.id, LinkRole.DONE_BY, LinkTarget.CONTRACTOR_JOB, roof.id)
+        books.contacts.link(marc.id, LinkRole.OTHER, LinkTarget.CONTRACTOR_JOB, gutters.id)
+        assertEquals(listOf(LinkRole.DONE_BY, LinkRole.OTHER), LinkRole.forTarget(LinkTarget.CONTRACTOR_JOB))
+        assertFailsWith<ValidationException> { books.contacts.link(marc.id, LinkRole.DONE_BY, LinkTarget.CONTRACTOR, laval.id) }
+
+        // On the job: only its own link; the contractor's contact stays on the contractor.
+        assertEquals(listOf("Marc Roy" to LinkRole.DONE_BY), books.contacts.linkedTo(LinkTarget.CONTRACTOR_JOB, roof.id).map { it.contact.name to it.link.role })
+        assertEquals(listOf("Toitures Laval"), books.contacts.linkedTo(LinkTarget.CONTRACTOR, laval.id).map { it.contact.name })
+        // On the contact's page: the job with its description, date, cost and contractor.
+        val onPage = books.contacts.links(marc.id).first { it.link.role == LinkRole.DONE_BY }
+        assertEquals(LinkTarget.CONTRACTOR_JOB, onPage.link.target)
+        assertTrue(onPage.name.startsWith("Roof repair · 2026-05-04 · ") && "1,200.00" in onPage.name && onPage.name.endsWith(" · Toitures Laval"), onPage.name)
+        assertTrue(books.contacts.candidates(LinkTarget.CONTRACTOR_JOB).any { it.id == gutters.id && it.name == "Gutters · 2026-06-01 · Toitures Laval" })
+        assertEquals(listOf("Marc Roy"), books.contacts.list(ContactFilter(target = LinkTarget.CONTRACTOR_JOB)).map { it.name })
+
+        // Deleting a job removes its links, not the contact.
+        books.contractors.deleteJob(laval, roof.id)
+        assertEquals(listOf(gutters.id), books.contacts.allLinks().filter { it.target == LinkTarget.CONTRACTOR_JOB }.map { it.targetId })
+        assertEquals("Marc Roy", books.contacts.get(marc.id).name)
+        // Deleting the contractor removes the links to it and to its jobs.
+        books.contractors.delete(books.contractors.list().single())
+        assertTrue(books.contacts.allLinks().isEmpty())
+        assertEquals(2, books.contacts.list().size)
+    }
+
+    @Test
+    fun `a job kept in a private group and its links stay out of other users' sight`() {
+        household().use { books ->
+            val marie = books.users.add("marie", "Marie", Role.MEMBER, "password2-long".toCharArray()).userId
+            books.session.setPermission(books.groups().single().id, marie, PermissionLevel.EDIT)
+        }
+        Books(store.unlock(dir, "marie", "password2-long".toCharArray())).use { marie ->
+            val shared = marie.groups().first { !it.isPrivate }.id
+            val own = marie.session.createGroup("Marie - privé", private = true)
+            val c = marie.contractors.save(Contractor("", own, "Dre Dentiste rénos"))
+            val job = marie.contractors.saveJob(c, ContractorJob("", LocalDate(2026, 3, 2), "Private renovation"))
+            val plumber = marie.contacts.save(Contact("", shared, "Plomberie Roy"))
+            marie.contacts.link(plumber.id, LinkRole.DONE_BY, LinkTarget.CONTRACTOR_JOB, job.id)
+            assertEquals(1, marie.contacts.links(plumber.id).size)
+        }
+        Books(store.unlock(dir, "perry", "password1".toCharArray())).use { perry ->
+            val plumber = perry.contacts.list().single()
+            assertTrue(perry.contacts.links(plumber.id).isEmpty(), "the private job is not shown on the shared contact")
+            assertTrue(perry.contacts.candidates(LinkTarget.CONTRACTOR_JOB).isEmpty())
+        }
+    }
+
+    @Test
     fun `existing records are gathered into contacts, with duplicates merged only when chosen`() = household().use { books ->
         val group = books.groups().single().id
         val sam = books.members.create("Sam", MemberKind.ADULT).id

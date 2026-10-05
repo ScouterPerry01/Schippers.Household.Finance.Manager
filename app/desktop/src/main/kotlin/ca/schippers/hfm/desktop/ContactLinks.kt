@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Contact
 import ca.schippers.hfm.books.ContactFilter
+import ca.schippers.hfm.books.LinkedContact
 import ca.schippers.hfm.books.LinkRole
 import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.SearchService
@@ -37,7 +38,9 @@ import ca.schippers.hfm.domain.AccountType
  * CON-04: the contacts of one record, on the record's own screen: "Bank: RBC Royal Bank · RRSP and
  * TFSA", each opening the contact's page, with a way to link a contact or create one. [roles] are
  * the roles offered, the most likely first; [suggestedName] and [memberIds] fill a new contact;
- * a record kept in a private group ([groupId]) gets its new contacts in that group too.
+ * a record kept in a private group ([groupId]) gets its new contacts in that group too. [through]
+ * are contacts linked to the record's parent (a job's contractor), shown with [throughNote] but not
+ * linked again; one also linked to the record itself is shown once, as its own link.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -51,19 +54,27 @@ fun LinkedContacts(
     groupId: String? = null,
     compact: Boolean = false,
     canLink: Boolean = true,
+    through: List<LinkedContact> = emptyList(),
+    throughNote: String = "",
 ) {
     if (targetId.isNullOrBlank()) return
     val linked = remember(model.revision, target, targetId) { runCatching { model.books.contacts.linkedTo(target, targetId) }.getOrDefault(emptyList()) }
+    val inherited = through.filter { t -> linked.none { it.contact.id == t.contact.id } }.distinctBy { it.contact.id }
     val editable = remember(model.revision) { model.editableGroups().map { it.id }.toSet() }
     var picking by remember { mutableStateOf(false) }
     if (picking) PickContactDialog(model, target, targetId, roles, suggestedName, memberIds, groupId) { picking = false }
     if (compact) {
         // One line under a record's title: "Lender · RBC Royal Bank · Mortgage", each opening the contact.
-        if (linked.isEmpty() && !(canLink && editable.isNotEmpty())) return
+        if (linked.isEmpty() && inherited.isEmpty() && !(canLink && editable.isNotEmpty())) return
         FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             for (l in linked) {
                 TextButton(onClick = { openContact(model, l.contact.id) }) {
                     Text(model.t("linkRoleShort.${l.link.role}") + " · " + l.contact.label, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+            for (l in inherited) {
+                TextButton(onClick = { openContact(model, l.contact.id) }) {
+                    Text(l.contact.label + " (" + throughNote + ")", style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
             if (canLink && editable.isNotEmpty()) TextButton(onClick = { picking = true }) { Text(model.t("contacts.linkContact"), style = MaterialTheme.typography.bodySmall) }
@@ -75,7 +86,7 @@ fun LinkedContacts(
             Text(model.t("contacts.linked"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
             if (editable.isNotEmpty()) TextButton(onClick = { picking = true }) { Text(model.t("contacts.linkContact")) }
         }
-        if (linked.isEmpty()) Text(model.t("contacts.noneLinked"), style = MaterialTheme.typography.bodySmall)
+        if (linked.isEmpty() && inherited.isEmpty()) Text(model.t("contacts.noneLinked"), style = MaterialTheme.typography.bodySmall)
         for (l in linked) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f).clickable { openContact(model, l.contact.id) }.padding(vertical = 2.dp)) {
@@ -84,6 +95,14 @@ fun LinkedContacts(
                     if (line.isNotEmpty()) Text(line, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 if (l.link.groupId in editable) TextButton(onClick = { model.act { model.books.contacts.unlink(l.link) } }) { Text(model.t("contacts.unlink")) }
+            }
+        }
+        // Contacts of the parent record: "Contact · Toitures Laval (through the contractor)", not linked again.
+        for (l in inherited) {
+            Column(Modifier.fillMaxWidth().clickable { openContact(model, l.contact.id) }.padding(vertical = 2.dp)) {
+                Text(model.t("linkRoleShort.${l.link.role}") + " · " + l.contact.name, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
+                val line = listOfNotNull(throughNote.ifEmpty { null }, l.contact.purpose, l.contact.phones.firstOrNull()?.value).joinToString(" · ")
+                if (line.isNotEmpty()) Text(line, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -170,7 +189,18 @@ fun openLinked(model: BooksModel, target: LinkTarget, targetId: String) {
                 else -> Section.ACCOUNTS
             }
         }
-        LinkTarget.POLICY, LinkTarget.ASSET, LinkTarget.CONTRACTOR -> Section.ASSETS
+        LinkTarget.POLICY, LinkTarget.ASSET -> Section.ASSETS
+        LinkTarget.CONTRACTOR -> {
+            model.focusContractorId = targetId
+            model.focusContractorJobs = false
+            Section.ASSETS
+        }
+        LinkTarget.CONTRACTOR_JOB -> {
+            // The job's contractor, with its jobs open.
+            model.focusContractorId = runCatching { model.books.contractors.list(includeArchived = true).firstOrNull { c -> c.jobs.any { it.id == targetId } }?.id }.getOrNull()
+            model.focusContractorJobs = true
+            Section.ASSETS
+        }
         LinkTarget.HEALTH_PROVIDER -> Section.HEALTH
         LinkTarget.MEDICATION -> {
             model.healthSubjectId = runCatching { model.books.health.medications().firstOrNull { it.id == targetId }?.memberId }.getOrNull()

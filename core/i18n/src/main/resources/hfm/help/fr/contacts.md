@@ -19,7 +19,7 @@ Utilisez la boîte de recherche (les accents et les majuscules ne comptent pas) 
 
 La page d’un contact énumère tout ce à quoi il est lié, par rôle : Banque pour, Prêteur pour, Assureur pour, Pharmacie pour, Exécuteur testamentaire pour... Cliquez sur un élément pour ouvrir son écran. Lier à un élément… ajoute un lien.
 
-Les écrans des éléments affichent aussi leurs contacts, avec un bouton Lier un contact… : comptes, prêts, placements, polices d’assurance, professionnels de la santé, médicaments, rendez-vous, factures, bénéficiaires, institutions, animaux, véhicules, biens, entrepreneurs et papiers de succession.
+Les écrans des éléments affichent aussi leurs contacts, avec un bouton Lier un contact… : comptes, prêts, placements, polices d’assurance, professionnels de la santé, médicaments, rendez-vous, factures, bénéficiaires, institutions, animaux, véhicules, biens, entrepreneurs et leurs travaux, et papiers de succession.
 
 ## Rassembler les contacts de l’application
 
