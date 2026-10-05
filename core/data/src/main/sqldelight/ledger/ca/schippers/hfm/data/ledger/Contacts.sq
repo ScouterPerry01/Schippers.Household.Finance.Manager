@@ -76,6 +76,10 @@ DELETE FROM contact WHERE id = ?;
 clearOrganization:
 UPDATE contact SET organization_id = NULL WHERE organization_id = ?;
 
+-- Merging two contacts: the people of the one removed now belong to the one kept.
+moveOrganization:
+UPDATE contact SET organization_id = :keptId WHERE organization_id = :removedId;
+
 -- Details ----------------------------------------------------------------------------------
 
 details:

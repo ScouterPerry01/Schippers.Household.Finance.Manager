@@ -8,7 +8,7 @@
 
 1. Open **Contacts**. The first time, the app offers to gather contacts from your institutions, health providers, contractors, insurance policies, pets' insurers and estate papers. If you closed the offer, choose **Gather contacts from the app**.
 2. Untick anything you do not want as a contact.
-3. Where lines are grouped as likely the same contact, tick **Make them one contact** only if they really are the same.
+3. Where lines are grouped as likely the same contact, tick **Make them one contact** only if they really are the same. Two contacts that turn out later to be the same can still be made one with **Merge with…** on a contact's page.
 4. Choose **Create the contacts**. Each one is linked to where it came from, and banks to the accounts they hold.
 
 ## Step 2: say what each one is for {#what-for}

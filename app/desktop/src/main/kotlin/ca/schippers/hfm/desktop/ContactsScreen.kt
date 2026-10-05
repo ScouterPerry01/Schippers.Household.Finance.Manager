@@ -173,6 +173,7 @@ private fun ContactPage(model: BooksModel, c: Contact, all: List<Contact>, peopl
     var linking by remember { mutableStateOf(false) }
     var revealing by remember { mutableStateOf<ContactDetail?>(null) }
     var deleting by remember { mutableStateOf(false) }
+    var merging by remember { mutableStateOf(false) }
     val organization = c.organizationId?.let { id -> all.firstOrNull { it.id == id } }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -180,6 +181,7 @@ private fun ContactPage(model: BooksModel, c: Contact, all: List<Contact>, peopl
             Text(c.name, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
             if (editable) {
                 TextButton(onClick = { onEdit(c) }) { Text(model.t("common.edit")) }
+                TextButton(onClick = { merging = true }) { Text(model.t("contacts.merge")) }
                 TextButton(onClick = { deleting = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
         }
@@ -244,6 +246,7 @@ private fun ContactPage(model: BooksModel, c: Contact, all: List<Contact>, peopl
     }
 
     if (linking) LinkRecordDialog(model, c) { linking = false }
+    if (merging) MergeContactDialog(model, c) { merging = false }
     revealing?.let { d -> RevealContactNumberDialog(model, c, d) { revealing = null } }
     if (deleting) {
         AskBeforeDeleting(model, model.t("contacts.deleteQuestion", c.name), { deleting = false }) { model.act { books.contacts.delete(c.id) } != null }

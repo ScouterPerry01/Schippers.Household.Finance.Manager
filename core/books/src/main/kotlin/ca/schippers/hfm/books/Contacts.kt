@@ -162,6 +162,54 @@ data class GatherProposal(val sources: List<GatherSource>, val existing: List<Co
  */
 data class GatherDecision(val sources: List<GatherSource>, val intoContactId: String? = null)
 
+/** A part of a contact that holds one value; merging two contacts keeps one side's value for each. */
+enum class MergeField { NAME, PERSON, WORKS_AT, WHAT_FOR, ADDRESS, WEBSITE, HOURS, NOTES, GROUP }
+
+/**
+ * What the user chose when merging two contacts: the fields in [fromOther] take the other
+ * contact's value, the rest keep the kept contact's. [MergeField.GROUP] in it stores the merged
+ * contact in the other contact's group. [MergeField.WORKS_AT] covers the organization and the job title.
+ */
+data class MergeChoices(val fromOther: Set<MergeField> = emptySet()) {
+    companion object {
+        /** The kept contact's values, except where only the other contact has one. */
+        fun suggested(keep: Contact, other: Contact): MergeChoices = MergeChoices(
+            setOf(MergeField.WORKS_AT, MergeField.WHAT_FOR, MergeField.ADDRESS, MergeField.WEBSITE, MergeField.HOURS, MergeField.NOTES)
+                .filter { f -> text(keep, f) == null && text(other, f) != null }.toSet(),
+        )
+
+        /** The value of a text field, or null when empty. */
+        fun text(c: Contact, f: MergeField): String? = when (f) {
+            MergeField.NAME -> c.name
+            MergeField.WORKS_AT -> c.organizationId ?: c.jobTitle
+            MergeField.WHAT_FOR -> c.purpose
+            MergeField.ADDRESS -> c.address
+            MergeField.WEBSITE -> c.website
+            MergeField.HOURS -> c.hours
+            MergeField.NOTES -> c.notes
+            MergeField.PERSON, MergeField.GROUP -> null
+        }?.trim()?.ifEmpty { null }
+    }
+}
+
+/** A contact the user may merge another with; [likelySame] when it has the same name or a same phone. */
+data class MergeCandidate(val contact: Contact, val likelySame: Boolean)
+
+/**
+ * What merging two contacts gives, before it is done: [merged] is the contact kept as it will be
+ * (numbers masked), with every link it will have that the user can see and the [people] of the
+ * other contact who will belong to it. [exposesPrivate] when a contact kept in a private group
+ * goes to another group, where everyone who can open that group will see its details.
+ */
+data class MergePreview(
+    val keep: Contact,
+    val other: Contact,
+    val merged: Contact,
+    val links: List<ResolvedLink>,
+    val people: List<Contact>,
+    val exposesPrivate: Boolean,
+)
+
 /**
  * The household's contacts (CON-01 to CON-06): who each is, what for and for whom, how to reach
  * them, and links to the records they concern. Stored in the ledger of the group the user chooses;
@@ -492,6 +540,134 @@ class ContactService internal constructor(private val books: Books) {
         return out.filter { it.privateGroupId == null || it.privateGroupId in editablePrivate }
     }
 
+    // --- Merging two contacts that already exist ------------------------------------------------
+
+    /**
+     * The contacts [contactId] can be merged with: those in groups the user may edit, the likely
+     * duplicates (same name, accents and case ignored, or a same phone number) first.
+     */
+    fun mergeCandidates(contactId: String): List<MergeCandidate> {
+        val contact = get(contactId)
+        val editable = books.groups().filter { it.level == PermissionLevel.EDIT }.map { it.id }.toSet()
+        val phones = contact.phones.mapNotNull { phoneKey(it.value) }.toSet()
+        return list(ContactFilter(includeArchived = true)).filter { it.id != contactId && it.groupId in editable }.map { c ->
+            MergeCandidate(c, SearchService.fold(c.name.trim()) == SearchService.fold(contact.name.trim()) || c.phones.any { phoneKey(it.value) in phones })
+        }.sortedWith(compareBy({ !it.likelySame }, { SearchService.fold(it.contact.name) }, { it.contact.id }))
+    }
+
+    /** What [merge] would give with these choices, for the user to look over first; nothing is changed. */
+    fun mergePreview(keepId: String, otherId: String, choices: MergeChoices): MergePreview {
+        val p = plan(keepId, otherId, choices)
+        val names = p.links.map { LinkTarget.valueOf(it.target_type) }.toSet().associateWith { names(it) }
+        val links = p.links.map { it.toLink(p.target.id) }.mapNotNull { l -> names[l.target]?.get(l.targetId)?.let { ResolvedLink(l, it) } }
+        val exposes = listOf(p.keepGroup, p.otherGroup).any { it.isPrivate && it.partitionId != p.target.partitionId }
+        return MergePreview(p.keep, p.other, p.merged, links, people(otherId).filter { it.id != keepId }, exposes)
+    }
+
+    /**
+     * Merges [otherId] into [keepId]: the fields the user chose, the kinds, people served, phones,
+     * emails and numbers of both (the same value only once), every link of both (the same link
+     * only once), and the people of the other organization. The merged contact is stored in the
+     * group chosen, moving it to another ledger if needed, and the other contact is deleted. Both
+     * contacts' groups must be editable. It cannot be undone; the activity log records both ids.
+     */
+    fun merge(keepId: String, otherId: String, choices: MergeChoices): Contact {
+        val p = plan(keepId, otherId, choices)
+        val c = p.merged
+        val now = books.now()
+        fun t(v: String?) = v?.trim()?.ifEmpty { null }
+        val db = books.ledger(p.target)
+        db.transaction {
+            val q = db.contactsQueries
+            // The other contact, when kept in the same ledger, goes first: what it holds is written below.
+            if (p.otherGroup.partitionId == p.target.partitionId) remove(q, otherId)
+            q.detailsFor(keepId).executeAsList().forEach { q.deleteDetail(it.id) }
+            q.linksFor(keepId).executeAsList().forEach { q.deleteLink(it.id) }
+            q.upsertContact(
+                keepId, c.name.trim(), if (c.person) 1 else 0, c.organizationId, t(c.jobTitle), t(c.purpose),
+                c.kinds.sorted().joinToString(",") { it.name }, c.memberIds.sorted().joinToString(","),
+                t(c.address), t(c.website), t(c.hours), t(c.notes), if (c.archived) 1 else 0, p.created, now,
+            )
+            p.details.forEachIndexed { i, d -> q.upsertDetail(d.id, keepId, d.kind, d.label, d.content, d.masked, i.toLong()) }
+            p.links.forEach { q.insertLink(it.id, keepId, it.role, it.target_type, it.target_id, it.created_at) }
+        }
+        // The copy left in the other ledger, when the two were kept apart.
+        if (p.keepGroup.partitionId != p.otherGroup.partitionId) {
+            val (group, id) = if (p.target.partitionId == p.keepGroup.partitionId) p.otherGroup to otherId else p.keepGroup to keepId
+            val q = books.ledger(group).contactsQueries
+            q.transaction { remove(q, id) }
+        }
+        // The other organization's people now belong to the one kept, wherever the user may change them.
+        books.groups().filter { it.level == PermissionLevel.EDIT }.forEach { books.ledger(it).contactsQueries.moveOrganization(keepId, otherId) }
+        books.session.audit("MERGE", "contact", keepId, "$otherId → $keepId")
+        return get(keepId)
+    }
+
+    /** Deletes a contact with its details and links. */
+    private fun remove(q: ca.schippers.hfm.data.ledger.ContactsQueries, id: String) {
+        q.detailsFor(id).executeAsList().forEach { q.deleteDetail(it.id) }
+        q.linksFor(id).executeAsList().forEach { q.deleteLink(it.id) }
+        q.deleteContact(id)
+    }
+
+    private class MergePlan(
+        val keepGroup: GroupInfo,
+        val otherGroup: GroupInfo,
+        val target: GroupInfo,
+        val keep: Contact,
+        val other: Contact,
+        val merged: Contact,
+        val created: Long,
+        val details: List<ca.schippers.hfm.data.ledger.Contact_detail>,
+        val links: List<ca.schippers.hfm.data.ledger.Contact_link>,
+    )
+
+    private fun plan(keepId: String, otherId: String, choices: MergeChoices): MergePlan {
+        validate(keepId != otherId, "error.contactMergeSelf")
+        val (keepGroup, keep) = locate(keepId)
+        val (otherGroup, other) = locate(otherId)
+        books.require(keepGroup, PermissionLevel.EDIT)
+        books.require(otherGroup, PermissionLevel.EDIT)
+        fun <T> pick(f: MergeField, kept: T, others: T): T = if (f in choices.fromOther) others else kept
+        val keepQ = books.ledger(keepGroup).contactsQueries
+        val otherQ = books.ledger(otherGroup).contactsQueries
+        // Phones, emails and numbers of both, each value once; a label missing on one is taken from the other.
+        val details = ArrayList<ca.schippers.hfm.data.ledger.Contact_detail>()
+        for (d in keepQ.detailsFor(keepId).executeAsList() + otherQ.detailsFor(otherId).executeAsList()) {
+            val i = details.indexOfFirst { it.kind == d.kind && detailKey(it.kind, it.content) == detailKey(d.kind, d.content) }
+            if (i < 0) details += d else if (details[i].label == null && d.label != null) details[i] = details[i].copy(label = d.label)
+        }
+        val links = (keepQ.linksFor(keepId).executeAsList() + otherQ.linksFor(otherId).executeAsList()).distinctBy { Triple(it.role, it.target_type, it.target_id) }
+        val person = pick(MergeField.PERSON, keep.person, other.person)
+        val worksAt = pick(MergeField.WORKS_AT, keep, other)
+        val merged = keep.copy(
+            groupId = pick(MergeField.GROUP, keepGroup, otherGroup).id,
+            name = pick(MergeField.NAME, keep.name, other.name),
+            person = person,
+            // A contact cannot belong to itself, nor to the contact merged into it.
+            organizationId = worksAt.organizationId.takeIf { person && it != keepId && it != otherId },
+            jobTitle = worksAt.jobTitle.takeIf { person },
+            purpose = pick(MergeField.WHAT_FOR, keep.purpose, other.purpose),
+            kinds = keep.kinds + other.kinds,
+            memberIds = keep.memberIds + other.memberIds,
+            details = details.map { it.toDetail() },
+            address = pick(MergeField.ADDRESS, keep.address, other.address),
+            website = pick(MergeField.WEBSITE, keep.website, other.website),
+            hours = pick(MergeField.HOURS, keep.hours, other.hours),
+            notes = pick(MergeField.NOTES, keep.notes, other.notes),
+            archived = keep.archived && other.archived,
+        )
+        val created = keepQ.contactById(keepId).executeAsOne().created_at
+        return MergePlan(keepGroup, otherGroup, pick(MergeField.GROUP, keepGroup, otherGroup), keep, other, merged, created, details, links)
+    }
+
+    /** What makes two phones, emails or numbers the same: the phone's digits, the email in any case, the number without spaces or dashes. */
+    private fun detailKey(kind: String, value: String): String = when (kind) {
+        DetailType.PHONE.name -> phoneKey(value) ?: value.trim()
+        DetailType.EMAIL.name -> value.trim().lowercase()
+        else -> value.filter(Char::isLetterOrDigit).uppercase()
+    }
+
     // --- Helpers --------------------------------------------------------------------------------
 
     private fun rows(g: GroupInfo): List<Contact> {
@@ -518,12 +694,15 @@ class ContactService internal constructor(private val books: Books) {
         id = id, groupId = groupId, name = name, person = person == 1L, organizationId = organization_id, jobTitle = job_title, purpose = purpose,
         kinds = kinds.split(',').filter { it.isNotBlank() }.mapNotNull { k -> runCatching { ContactKind.valueOf(k) }.getOrNull() }.toSet(),
         memberIds = member_ids.split(',').filter { it.isNotBlank() }.toSet(),
-        details = details.map { d ->
-            val type = DetailType.valueOf(d.kind)
-            ContactDetail(d.id, type, d.label, if (type == DetailType.NUMBER) d.masked ?: "••••" else d.content)
-        },
+        details = details.map { it.toDetail() },
         address = address, website = website, hours = hours, notes = notes, archived = archived == 1L,
     )
+
+    /** A stored detail as shown: a number masked. */
+    private fun ca.schippers.hfm.data.ledger.Contact_detail.toDetail(): ContactDetail {
+        val type = DetailType.valueOf(kind)
+        return ContactDetail(id, type, label, if (type == DetailType.NUMBER) masked ?: "••••" else content)
+    }
 
     private fun ca.schippers.hfm.data.ledger.Contact_link.toLink(groupId: String) =
         ContactLink(id, contact_id, groupId, LinkRole.valueOf(role), LinkTarget.valueOf(target_type), target_id)

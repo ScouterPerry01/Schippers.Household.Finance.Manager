@@ -24,3 +24,7 @@ The records' own screens show their contacts too, with a Link a contact… butto
 ## Gather contacts from the app
 
 The first time you open Contacts, and whenever you choose Gather contacts from the app, the app offers to make contacts from the institutions, health providers, contractors, insurers, brokers and estate contacts it already holds, each linked to where it came from. Records that look like the same contact (same name or phone) are shown together; tick Make them one contact to merge them. Nothing is moved or deleted.
+
+## Merge two contacts
+
+When the same contact exists twice, choose Merge with… on its page and pick the other one; likely duplicates (same name or phone) come first. For each field the two hold differently, choose which value to keep. Phones, emails, numbers, kinds, people served, links and an organization's people are combined, without duplicates. If the two are kept in different groups, Store in chooses where the merged contact goes, and the window warns when a private contact would become visible to others. The other contact is then deleted; this cannot be undone.

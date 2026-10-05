@@ -8,7 +8,7 @@
 
 1. Ouvrez **Contacts**. La première fois, l’application propose de rassembler les contacts de vos institutions, professionnels de la santé, entrepreneurs, polices d’assurance, assureurs des animaux et papiers de succession. Si vous avez fermé la proposition, choisissez **Rassembler les contacts de l’application**.
 2. Décochez ce que vous ne voulez pas comme contact.
-3. Là où des lignes sont regroupées comme étant probablement le même contact, cochez **En faire un seul contact** seulement si c’est vraiment le même.
+3. Là où des lignes sont regroupées comme étant probablement le même contact, cochez **En faire un seul contact** seulement si c’est vraiment le même. Deux contacts qui se révèlent plus tard être le même peuvent encore être réunis avec **Fusionner avec…** sur la page d’un contact.
 4. Choisissez **Créer les contacts**. Chacun est lié à sa provenance, et les banques aux comptes qu’elles détiennent.
 
 ## Étape 2 : dire à quoi sert chacun {#what-for}

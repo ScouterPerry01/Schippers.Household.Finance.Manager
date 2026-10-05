@@ -24,3 +24,7 @@ Les écrans des éléments affichent aussi leurs contacts, avec un bouton Lier u
 ## Rassembler les contacts de l’application
 
 La première fois que vous ouvrez Contacts, et chaque fois que vous choisissez Rassembler les contacts de l’application, l’application propose de créer des contacts à partir des institutions, professionnels de la santé, entrepreneurs, assureurs, courtiers et personnes à appeler qu’elle contient déjà, chacun lié à sa provenance. Ceux qui semblent être le même contact (même nom ou téléphone) sont présentés ensemble; cochez En faire un seul contact pour les fusionner. Rien n’est déplacé ni supprimé.
+
+## Fusionner deux contacts
+
+Quand le même contact existe en double, choisissez Fusionner avec… sur sa page et choisissez l’autre; les doublons probables (même nom ou téléphone) viennent en premier. Pour chaque champ que les deux remplissent différemment, choisissez la valeur à garder. Les téléphones, courriels, numéros, types, personnes servies, liens et personnes d’une organisation sont réunis, sans doublons. Si les deux sont conservés dans des groupes différents, Enregistrer dans choisit où va le contact fusionné, et la fenêtre avertit quand un contact privé deviendrait visible pour d’autres. L’autre contact est ensuite supprimé; cela ne peut pas être annulé.

@@ -47,7 +47,7 @@ Cliquez sur un contact pour afficher sa page à droite.
 
 La page montre, de haut en bas :
 
-- le nom, avec **Modifier** et **Supprimer** pour les utilisateurs qui peuvent modifier le contact;
+- le nom, avec **Modifier**, **Fusionner avec…** et **Supprimer** pour les utilisateurs qui peuvent modifier le contact;
 - la ligne pour quoi, sous la forme Pour : REER et CELI;
 - les types;
 - pour une personne, sa fonction et son organisation (cliquez sur l’organisation pour ouvrir sa page);
@@ -85,7 +85,64 @@ Seuls les éléments que vous avez le droit de voir sont énumérés. Un lien ve
 
 ### Supprimer un contact {#delete-contact}
 
-**Supprimer** demande d’abord : « Supprimer Marc Lavoie? Ses liens disparaissent avec lui ; les éléments liés restent tels quels. » Les personnes qui travaillaient dans une organisation supprimée restent, sans organisation. Cela ne peut pas être annulé. Pour écarter un contact sans le perdre, cochez plutôt **Archivé**.
+**Supprimer** demande d’abord : « Supprimer Marc Lavoie? Ses liens disparaissent avec lui ; les éléments liés restent tels quels. » Les personnes qui travaillaient dans une organisation supprimée restent, sans organisation. Cela ne peut pas être annulé. Pour écarter un contact sans le perdre, cochez plutôt **Archivé**. S’il est le même qu’un autre contact, fusionnez-les plutôt (voir [Fusionner deux contacts](contacts#merge)).
+
+## Fusionner deux contacts {#merge}
+
+@index: fusionner des contacts; doublons; combiner des contacts; même contact en double
+
+Quand la même banque, le même médecin ou le même entrepreneur se retrouve en deux contacts, par exemple l’un tapé à la main et l’autre rassemblé de l’application, **Fusionner avec…**, sur la page d’un contact, n’en fait qu’un. Le bouton est montré aux utilisateurs qui peuvent modifier le contact, et seuls les contacts conservés dans des groupes que vous pouvez modifier peuvent être fusionnés avec lui. Le contact dont vous venez est celui qui est gardé ; l’autre est supprimé une fois ses coordonnées déplacées.
+
+### Choisir l’autre contact {#merge-pick}
+
+La fenêtre, intitulée Fusionner suivi du nom du contact, énumère d’abord les autres contacts que vous pouvez modifier.
+
+- **Chercher un contact** : réduit la liste aux contacts dont le nom, la ligne pour quoi, les téléphones ou les courriels contiennent le texte tapé, sans tenir compte des accents ni des majuscules.
+- Probablement le même contact (même nom ou téléphone) : les contacts qui ont le même nom (sans tenir compte des accents ni des majuscules) ou un numéro de téléphone en commun viennent en premier, sous ce titre.
+- Autres contacts : tous les autres, par nom.
+
+Chaque ligne montre le nom, puis la ligne pour quoi, les types, le premier téléphone et le groupe où le contact est conservé. Cliquez sur le contact à fusionner. « Il n’y a aucun autre contact que vous pouvez modifier. » s’il n’y en a aucun.
+
+### Choisir ce qu’on garde {#merge-fields}
+
+Pour chaque champ que les deux contacts remplissent différemment, la fenêtre montre les deux valeurs côte à côte, le contact dont vous venez à gauche ; cliquez sur la valeur à garder. Un champ identique des deux côtés n’est pas montré. Au départ, les valeurs de gauche sont choisies, sauf là où seul l’autre contact a une valeur.
+
+- **Nom** : le nom du contact fusionné.
+- **Organisation ou personne** : si le contact fusionné est une organisation ou une personne.
+- **Travaille chez** : la fonction et l’organisation ensemble, pour une personne. Si la personne travaillait chez le contact avec lequel elle est fusionnée, elle ne fait plus partie d’aucune organisation.
+- **Pour quoi** : la ligne pour quoi.
+- **Adresse**, **Site Web** et **Heures d’ouverture** : chacun choisi séparément.
+- **Notes** : les notes d’un des contacts ; celles de l’autre n’y sont pas ajoutées.
+- **Enregistrer dans** : montré seulement quand les deux contacts sont conservés dans des groupes différents. Le groupe où le contact fusionné est conservé (voir [Contacts conservés dans des groupes différents](contacts#merge-groups)).
+
+Sous Réuni à partir des deux, la fenêtre montre ce qui est mis ensemble plutôt que choisi, tel que le contact fusionné l’aura :
+
+- Types : les types des deux contacts.
+- Pour tout le ménage, ou Pour : les personnes et les animaux servis par l’un ou l’autre contact.
+- Chaque téléphone, courriel et numéro de compte ou de client des deux, avec son libellé. Une valeur présente des deux côtés n’est gardée qu’une fois : les téléphones sont comparés par leurs chiffres (613 555-0101 et +1 (613) 555-0101 sont le même), les courriels sans tenir compte des majuscules, les numéros sans les espaces ni les tirets. Un libellé qui manque d’un côté est pris de l’autre. Les numéros de compte et de client restent masqués ; leur valeur complète est déplacée avec eux.
+- Liens : chaque lien des deux, avec son rôle, son type d’élément et son nom. Un lien que les deux contacts ont (même rôle et même élément) n’est gardé qu’une fois.
+- Personnes qui feront partie de : les personnes qui travaillaient dans l’autre organisation, et qui font désormais partie du contact fusionné.
+
+Le contact fusionné n’est archivé que si les deux l’étaient.
+
+### Contacts conservés dans des groupes différents {#merge-groups}
+
+@index: fusionner un contact privé; groupe privé
+
+Un contact est conservé dans le groupe choisi sous **Enregistrer dans**, et seuls les utilisateurs qui peuvent ouvrir ce groupe le voient. Fusionner deux contacts de groupes différents déplace donc les coordonnées et les liens de l’un vers l’autre groupe :
+
+- Si le contact fusionné est conservé dans le groupe partagé, un contact qui était conservé dans un groupe privé y devient visible. La fenêtre avertit alors, en rouge : « Un contact conservé dans un groupe privé sera enregistré dans » le groupe choisi, et « ses coordonnées et ses liens deviendront visibles pour tous ceux qui peuvent ouvrir ce groupe. » Vérifiez les notes et les numéros avant de fusionner.
+- Si vous choisissez votre groupe privé sous **Enregistrer dans**, le contact fusionné quitte le groupe partagé : les autres utilisateurs ne le voient plus, ni ses liens dans leurs écrans.
+
+Les liens suivent leur contact ; les éléments qu’ils visent restent où ils sont. Comme toujours, un lien ne s’affiche qu’aux utilisateurs qui peuvent voir à la fois le contact et l’élément.
+
+### Fusionner {#merge-confirm}
+
+- **Retour** : revient à la liste pour choisir un autre contact.
+- **Fusionner** : demande d’abord : « Fusionner » l’autre contact « avec » le contact fusionné, en précisant que l’autre contact est supprimé, que ses coordonnées, ses liens et ses personnes passent au contact fusionné, et que cela ne peut pas être annulé. **Fusionner** dans la question le fait ; **Annuler** revient à la fenêtre.
+- **Annuler** : ferme la fenêtre sans rien changer.
+
+Après la fusion, le contact dont vous venez reste, avec ses propres liens et tous ceux de l’autre contact ; l’autre contact disparaît de la liste, des écrans des éléments et de la recherche. La fusion est inscrite dans le journal d’activité de l’écran [Utilisateurs](users) comme Fusionné, avec les deux contacts.
 
 ## Ajouter ou modifier un contact {#contact-form}
 
@@ -102,7 +159,7 @@ Seuls les éléments que vous avez le droit de voir sont énumérés. Un lien ve
 - **Adresse** : plusieurs lignes.
 - **Site Web** et **Heures d’ouverture** : comme Lun-ven 8 h-17 h.
 - **Notes** : tout ce qui est utile. N’y inscrivez pas de mots de passe.
-- **Enregistrer dans** : le groupe de comptes où le contact est conservé. Par défaut, le groupe partagé du ménage, puisque la plupart des contacts servent tout le monde. Choisissez votre groupe privé pour un contact que vous voulez garder pour vous, comme votre propre thérapeute ; les autres utilisateurs ne le voient alors pas du tout. Il ne peut plus être changé une fois le contact enregistré. Si vous n’avez pas encore de groupe privé, **Créer mon groupe privé** en crée un.
+- **Enregistrer dans** : le groupe de comptes où le contact est conservé. Par défaut, le groupe partagé du ménage, puisque la plupart des contacts servent tout le monde. Choisissez votre groupe privé pour un contact que vous voulez garder pour vous, comme votre propre thérapeute ; les autres utilisateurs ne le voient alors pas du tout. Il ne peut plus être changé une fois le contact enregistré, sauf en le fusionnant avec un contact conservé dans un autre groupe (voir [Fusionner deux contacts](contacts#merge)). Si vous n’avez pas encore de groupe privé, **Créer mon groupe privé** en crée un.
 - **Archivé** : pour un contact enregistré. Un contact archivé garde ses liens, mais quitte la liste sauf si **Afficher les archivés** est coché.
 - **Enregistrer** : enregistre le contact. Rien n’est enregistré avant que vous cliquiez.
 
@@ -137,7 +194,7 @@ Les champs que ces écrans avaient déjà (le téléphone d’une institution, l
 
 ## Rassembler les contacts de l’application {#gather}
 
-@index: importer des contacts; fusionner des contacts; doublons; rassembler
+@index: importer des contacts; doublons au rassemblement; rassembler
 
 Avant cet écran, les coordonnées étaient réparties dans plusieurs écrans : institutions, professionnels de la santé, entrepreneurs, assureur et courtier de chaque police, assureurs des animaux et personnes à appeler des papiers de succession. **Rassembler les contacts de l’application** en fait des contacts sans rien déplacer ni supprimer. La première fois que vous ouvrez Contacts, s’il n’y a encore aucun contact, l’application le propose d’elle-même ; **Plus tard** ferme la proposition, et le bouton reste disponible.
 
@@ -151,12 +208,12 @@ La fenêtre énumère ce qui peut devenir un contact, chaque ligne avec son nom,
 
 Chaque nouveau contact est lié à sa provenance, et plus encore : une banque aux comptes qu’elle détient (Banque pour, Prêteur pour un prêt ou une hypothèque, Société de placement pour un compte de placement ou un régime enregistré), une pharmacie et un médecin aux médicaments qu’ils préparent ou prescrivent, un assureur et un courtier à leur police, l’assureur d’un animal à cet animal, une personne à appeler aux papiers de la personne dans son rôle. Un élément déjà lié n’est pas proposé de nouveau ; quand tout a son contact, la fenêtre indique « Tout ce qui est dans l’application a déjà son contact. »
 
-> Conseil : Vérifiez les doublons probables avant de fusionner : deux personnes peuvent partager le téléphone d’une clinique sans être le même contact.
+> Conseil : Vérifiez les doublons probables avant de fusionner : deux personnes peuvent partager le téléphone d’une clinique sans être le même contact. Les doublons laissés séparés maintenant, ou qui apparaissent plus tard, peuvent encore être réunis avec **Fusionner avec…** sur la page d’un contact (voir [Fusionner deux contacts](contacts#merge)).
 
 ## Confidentialité {#privacy}
 
 @index: contact privé; groupe de comptes; qui voit les contacts
 
-Les contacts sont conservés comme les renseignements de santé, dans le groupe de comptes choisi sous **Enregistrer dans**. Tous ceux qui peuvent ouvrir ce groupe voient le contact ; personne d’autre, pas même dans la recherche. Un lien peut viser un élément d’un autre groupe, des listes partagées du ménage (institutions, bénéficiaires) ou une personne ; il ne s’affiche qu’aux utilisateurs qui peuvent voir à la fois le contact et l’élément.
+Les contacts sont conservés comme les renseignements de santé, dans le groupe de comptes choisi sous **Enregistrer dans**. Tous ceux qui peuvent ouvrir ce groupe voient le contact ; personne d’autre, pas même dans la recherche. Un lien peut viser un élément d’un autre groupe, des listes partagées du ménage (institutions, bénéficiaires) ou une personne ; il ne s’affiche qu’aux utilisateurs qui peuvent voir à la fois le contact et l’élément. Fusionner un contact conservé dans un groupe privé dans un autre groupe y rend ses coordonnées visibles ; la fenêtre de fusion avertit d’abord (voir [Contacts conservés dans des groupes différents](contacts#merge-groups)).
 
-Chaque contact ajouté, modifié, supprimé ou dont le numéro est affiché est inscrit dans le journal d’activité de l’écran [Utilisateurs](users).
+Chaque contact ajouté, modifié, fusionné, supprimé ou dont le numéro est affiché est inscrit dans le journal d’activité de l’écran [Utilisateurs](users).
