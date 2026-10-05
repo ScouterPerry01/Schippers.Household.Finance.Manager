@@ -39,9 +39,10 @@ Marked **Renewal**, dates when something expires or must be renewed, gathered fr
 - a credit card's annual fee ([Accounts](accounts));
 - an insurance claim to send ([Medical claims](medical));
 - a warranty ending on a home item, or an insurance policy renewal ([Home and assets](assets));
-- a tax instalment ([Taxes](taxes)).
+- a tax instalment ([Taxes](taxes));
+- a bond or GIC you hold reaching its maturity, from 30 days before until its redemption is recorded ([Investments](investments#security-dialog)).
 
-The button on the line opens the screen where it is managed, such as **Open vehicles** or **Open loans**.
+The button on the line opens the screen where it is managed, such as **Open vehicles**, **Open loans** or **Open investments**.
 
 ### Maintenance {#maintenance}
 

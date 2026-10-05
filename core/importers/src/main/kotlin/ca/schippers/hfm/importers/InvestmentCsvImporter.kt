@@ -12,7 +12,8 @@ import java.util.Locale
  * Brokerage activity exports in CSV (INV-05), as Canadian brokers write them in English or French.
  * Columns are found by their headings (date, action, symbol, quantity, price, amount, commission),
  * so most files import without a column mapping. Rows whose action is not recognised are listed
- * as warnings rather than guessed.
+ * as warnings rather than guessed. Tax withheld on a row of its own (foreign withholding tax) is
+ * put on the income it was taken from, for the foreign tax credit (M-31).
  */
 class InvestmentCsvImporter : InvestmentImporter {
     override val id = "investment-csv"
@@ -57,6 +58,7 @@ class InvestmentCsvImporter : InvestmentImporter {
         val warnings = ArrayList<String>()
         val securities = LinkedHashMap<String, ImportedSecurity>()
         val actions = ArrayList<ImportedInvestmentAction>()
+        val withholdings = ArrayList<Withholding>()
         var currency: Currency? = null
         for ((index, row) in data.withIndex()) {
             fun cell(c: Int?) = c?.let { row.getOrNull(it)?.trim() }?.ifEmpty { null }
@@ -65,6 +67,11 @@ class InvestmentCsvImporter : InvestmentImporter {
                 ?.let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
             if (date == null) { warnings += "Line $line: no valid date, skipped."; continue }
             val actionText = cell(actionCol).orEmpty()
+            if (isTaxWithheld(actionText)) {
+                val withheld = number(cell(amountCol))?.abs()?.takeIf { it.signum() != 0 }
+                if (withheld != null) withholdings += Withholding(line, date, cell(symbolCol)?.uppercase() ?: cell(nameCol), withheld)
+                continue
+            }
             val action = actionOf(actionText)
             if (action == null) { warnings += "Line $line: action \"$actionText\" not recognised, skipped."; continue }
             if (currency == null) currency = cell(currencyCol)?.let { runCatching { Currency.of(it.uppercase()) }.getOrNull() }
@@ -86,6 +93,19 @@ class InvestmentCsvImporter : InvestmentImporter {
                 if (action == ImportedAction.REINVEST) ImportedAction.DIVIDEND else null, cell(nameCol)?.takeIf { symbol != null },
             )
         }
+        for (w in withholdings) {
+            // The income of the same day, for the same security when the row names one.
+            val named = w.key != null && w.key in securities
+            val income = actions.withIndex().lastOrNull { (_, a) ->
+                a.date == w.date && a.action in INCOME && (!named || a.securityKey == w.key) && (a.amount ?: BigDecimal.ZERO) >= (a.withheld ?: BigDecimal.ZERO) + w.amount
+            }
+            if (income != null) {
+                actions[income.index] = income.value.copy(withheld = (income.value.withheld ?: BigDecimal.ZERO) + w.amount)
+            } else {
+                warnings += "Line ${w.line}: tax withheld with no income of the same day to take it from; recorded as a fee."
+                actions += ImportedInvestmentAction(null, w.date, ImportedAction.FEE, null, null, null, w.amount, null, null, null, null, "Tax withheld")
+            }
+        }
         return listOf(
             ImportedInvestmentStatement(
                 "CSV", null, currency ?: options.defaultCurrency, actions.maxOfOrNull { it.date }, null, securities.values.toList(),
@@ -94,7 +114,11 @@ class InvestmentCsvImporter : InvestmentImporter {
         )
     }
 
+    /** A row of tax withheld, waiting to be put on its income. */
+    private data class Withholding(val line: Int, val date: LocalDate, val key: String?, val amount: BigDecimal)
+
     companion object {
+        private val INCOME = setOf(ImportedAction.DIVIDEND, ImportedAction.DISTRIBUTION, ImportedAction.INTEREST)
         private val DATE = listOf("trade date", "transaction date", "date de transaction", "date de l'operation", "date d'operation", "date", "settlement date")
         private val ACTION = listOf("action", "activity type", "transaction type", "type de transaction", "type d'operation", "activity", "operation", "type")
         private val SYMBOL = listOf("symbol", "symbole", "ticker")
@@ -108,6 +132,12 @@ class InvestmentCsvImporter : InvestmentImporter {
         /** Lower case, without accents or typographic apostrophes, for matching headings and actions. */
         fun fold(s: String): String = Normalizer.normalize(s, Normalizer.Form.NFD).replace(Regex("\\p{M}"), "").replace('’', '\'').lowercase().trim()
 
+        /** A row of tax withheld at source, such as US withholding tax on a dividend. */
+        fun isTaxWithheld(text: String): Boolean {
+            val t = fold(text)
+            return "withholding" in t || "foreign tax" in t || "tax withheld" in t || "impot etranger" in t || "retenue" in t
+        }
+
         /** Recognises the usual English and French action words; null when unsure. */
         fun actionOf(text: String): ImportedAction? {
             val t = fold(text)
@@ -116,7 +146,6 @@ class InvestmentCsvImporter : InvestmentImporter {
                 "reinv" in t || "drip" in t || "reinvest" in t -> ImportedAction.REINVEST
                 "return of capital" in t || "remboursement de capital" in t || t == "roc" -> ImportedAction.RETURN_OF_CAPITAL
                 "split" in t || "fractionnement" in t || "consolidation" in t -> ImportedAction.SPLIT
-                "withholding" in t || "foreign tax" in t || "impot etranger" in t || "retenue" in t -> ImportedAction.FEE
                 t.startsWith("buy") || "achat" in t || t == "bought" || "purchase" in t -> ImportedAction.BUY
                 t.startsWith("sell") || "vente" in t || t == "sold" -> ImportedAction.SELL
                 "distribution" in t -> ImportedAction.DISTRIBUTION

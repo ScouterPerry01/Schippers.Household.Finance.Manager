@@ -22,7 +22,7 @@ Les règles ont besoin de quelques renseignements saisis ailleurs :
 
 - Chaque régime est un compte dans [Comptes](accounts), du bon type (REER, REER de conjoint, FERR, FERR de conjoint, CRI, FRV, CELI, CELIAPP, REEE ou Régime de retraite) et avec son titulaire. Le titulaire détermine quels droits une cotisation utilise et quel âge fixe un retrait minimum.
 - La date de naissance et la province de chaque personne, dans [Membres du ménage](members). L’estimation du CELI commence l’année des 18 ans, les minimums des FERR et des FRV dépendent de l’âge, et les subventions des REEE dépendent de l’âge et de la province de l’enfant.
-- L’argent versé dans un régime s’inscrit comme un virement depuis un autre de vos comptes (chèques, épargne...), et l’argent retiré comme un virement vers un autre compte. C’est ce que l’écran compte comme cotisations et retraits.
+- L’argent versé dans un régime s’inscrit comme un virement depuis un autre de vos comptes (chèques, épargne...), et l’argent retiré comme un virement vers un autre compte. C’est ce que l’écran compte comme cotisations et retraits, avec les dépôts et retraits du registre du régime qui n’ont ni virement ni catégorie, comme l’encaisse importée d’un fichier de courtage.
 
 ## Onglet Droits de cotisation {#contribution-room}
 
@@ -56,7 +56,7 @@ Les droits REER ne sont jamais estimés : saisissez le maximum déductible au ti
 - Les droits de l’année sont le maximum déductible moins les cotisations inutilisées qui attendent déjà d’être déduites.
 - Les cotisations comptent du 61e jour de l’année (début mars) au 60e jour de l’année suivante, parce que les cotisations des 60 premiers jours d’une année peuvent être déduites pour l’année précédente.
 - L’argent qui vient d’un autre REER, d’un REER de conjoint, d’un FERR, d’un CELIAPP, d’un CRI, d’un FRV ou d’un régime de retraite est un transfert entre régimes, et non une cotisation ; il n’est pas compté.
-- Les cotisations à un REER de conjoint comptent dans les droits du conjoint cotisant choisi dans [Détails du régime](plans#plan-details). Sans cotisant, elles ne comptent pour personne.
+- Les cotisations à un REER de conjoint comptent dans les droits du conjoint cotisant choisi dans [Détails du régime](plans#plan-details). Un REER de conjoint a besoin de son cotisant : tant qu’il n’est pas choisi, une ligne en rouge en haut de cet onglet nomme le régime, avec un bouton **Détails du régime** pour le choisir, un rappel le demande aussi, et les cotisations du régime ne comptent pour personne.
 
 ### Comment les droits CELI sont calculés {#tfsa-room}
 
@@ -79,7 +79,7 @@ Les droits REER ne sont jamais estimés : saisissez le maximum déductible au ti
 
 ### Ce qui compte comme cotisation {#what-counts}
 
-Une cotisation est un virement vers un compte de régime depuis un autre de vos comptes. Les lignes inscrites au registre du régime sans virement (par exemple les dépôts importés d’un fichier de courtage) ne sont pas comptées. Les montants dans une autre devise sont convertis dans votre devise de base au taux du jour.
+Une cotisation est un virement vers un compte de régime depuis un autre de vos comptes. Un dépôt au registre du régime sans virement ni catégorie compte aussi : c’est ainsi qu’arrivent les dépôts d’encaisse importés d’un fichier de courtage. Pour un CELI, l’argent retiré compte de la même façon comme un retrait. Un dépôt qui a une catégorie, comme des intérêts, n’est pas une cotisation : pour exclure un dépôt sans catégorie, donnez-lui une catégorie. Les montants dans une autre devise sont convertis dans votre devise de base au taux du jour.
 
 > Conseil : S’il manque une cotisation dans la liste, ajoutez-la avec Cotisation hors des livres, ou inscrivez le dépôt comme un virement depuis le compte d’où il vient.
 
@@ -163,17 +163,16 @@ Un retrait est de l’argent sorti du régime vers un compte autre qu’un REER,
 
 **Détails du régime** s’ouvre à partir d’une fiche FERR ou FRV, ou de l’onglet Bénéficiaires pour un REER de conjoint, un FERR de conjoint, un REEE, un FERR, un FRV ou un CRI. Les champs affichés dépendent du régime :
 
-- **Cotisant** : REER de conjoint et FERR de conjoint : le conjoint qui cotise. Pour un REER de conjoint, ses cotisations utilisent les droits REER de cette personne.
+- **Cotisant** : REER de conjoint et FERR de conjoint : le conjoint qui cotise. Pour un REER de conjoint, ses cotisations utilisent les droits REER de cette personne, et le champ est obligatoire : il affiche « Choisir le cotisant » et **Enregistrer** reste indisponible tant qu’une personne n’est pas choisie. Pour un FERR de conjoint, il est facultatif.
 - **Souscripteur** : REEE : la personne qui a ouvert le REEE. Gardé pour référence.
 - **Loi applicable** : FRV et CRI : la loi sur les régimes de retraite qui régit l’argent immobilisé. C’est la loi de la province où l’argent a été gagné, ou la loi fédérale pour un employeur de compétence fédérale (banques, transport aérien, télécommunications...) ; elle peut différer de votre lieu de résidence actuel. « La province du titulaire » est le choix par défaut. Elle décide si un FRV a un maximum.
-- **Valeur au 1er janvier** (avec l’année, « (relevé) ») : FERR, FERR de conjoint et FRV : la valeur au 1er janvier selon le relevé du régime. Laissez vide pour utiliser la valeur des livres au 31 décembre. L’année est celle affichée à l’écran quand vous avez ouvert la fenêtre.
+- **Valeur au 1er janvier** (avec l’année, « (relevé) ») : FERR, FERR de conjoint et FRV : la valeur au 1er janvier selon le relevé du régime. Le champ affiche la valeur déjà inscrite pour cette année. Laissé vide, une valeur inscrite reste telle quelle ; si aucune n’a été inscrite, la valeur des livres au 31 décembre est utilisée. L’année est celle affichée à l’écran quand vous avez ouvert la fenêtre.
+- **Utiliser plutôt la valeur des livres au 31 décembre** : affiché quand une valeur a été inscrite pour l’année. Il oublie cette valeur (et les revenus de placement de l’an dernier gardés avec elle), pour que la valeur des livres serve de nouveau, et ferme la fenêtre.
 - **Âge utilisé pour le minimum** : FERR, FERR de conjoint et FRV : « Le titulaire », ou un autre membre du ménage, comme un conjoint plus jeune.
 - **Taux de référence (%)** : FRV seulement : le taux du maximum, 6 sauf si le taux des 15 premières années est plus élevé. Plus que 0 et moins que 25.
-- **Revenus de placement de l’an dernier** : FRV seulement : ce que le FRV a rapporté l’an dernier, qui peut relever le maximum.
+- **Revenus de placement de l’an dernier** : FRV seulement : ce que le FRV a rapporté l’an dernier, qui peut relever le maximum. Le champ affiche le montant déjà inscrit ; laissé vide, il reste tel quel. Il est gardé avec la valeur au 1er janvier : inscrivez aussi cette valeur, sinon l’application la demande.
 
 Cliquez sur **Enregistrer** ou sur **Annuler**.
-
-> Remarque : Le champ Revenus de placement de l’an dernier est vide chaque fois que la fenêtre s’ouvre. Si vous enregistrez la fenêtre de nouveau, saisissez-le de nouveau, sinon il est effacé. Vider le champ Valeur au 1er janvier retire aussi la valeur saisie pour cette année.
 
 ## Onglet REEE {#resp}
 
@@ -198,7 +197,7 @@ Une ligne par bénéficiaire :
 
 Sous le tableau, une ligne par enfant énumère les subventions qui restent à recevoir selon les règles, et une ligne en rouge demande la date de naissance d’un enfant quand elle manque. Le tableau se replie, s’exporte (CSV, Excel, PDF) et s’imprime.
 
-Une cotisation est un virement vers un REEE depuis un compte qui n’est pas un REEE. Quand l’opération nomme un membre du ménage qui est bénéficiaire de ce REEE, elle compte pour cet enfant ; sinon, elle est partagée également entre les bénéficiaires du régime.
+Une cotisation est un virement vers un REEE depuis un compte qui n’est pas un REEE, ou un dépôt au registre du REEE sans virement ni catégorie (comme l’encaisse importée d’un fichier de courtage). Quand l’opération nomme un membre du ménage qui est bénéficiaire de ce REEE, elle compte pour cet enfant ; sinon, elle est partagée également entre les bénéficiaires du régime.
 
 ### Comment les subventions sont calculées {#resp-grants-rules}
 
@@ -219,6 +218,10 @@ Quand une subvention arrive dans le REEE (elle figure sur le relevé du REEE), i
 - **Montant** : plus que zéro, dans la devise du REEE.
 
 Cliquez sur **Enregistrer**. La subvention compte comme reçue dans le tableau, et un dépôt est inscrit au registre du REEE dans la catégorie Subventions REEE, pour cet enfant.
+
+Sous les champs, **Subventions inscrites** énumère les subventions déjà inscrites dans le REEE choisi, de la plus récente à la plus ancienne : la date, la subvention, l’enfant et le montant. **Supprimer** à côté d’une subvention la retire avec son dépôt au registre, en une fois ; si le dépôt est rapproché, l’application demande d’abord. On ne peut pas l’annuler, sauf en inscrivant la subvention de nouveau.
+
+Supprimer plutôt le dépôt dans le registre du REEE demande « Supprimer le dépôt d’une subvention REEE » : **Supprimer les deux** retire le dépôt et la subvention, **Seulement le dépôt** garde la subvention, qui compte alors encore comme reçue, et **Annuler** ne change rien.
 
 ## Onglet Rentes {#pensions}
 
@@ -293,7 +296,8 @@ L’application ajoute des rappels, affichés avec les autres rappels et comme n
 - une personne dépasse son maximum déductible REER de plus de 2 000 $, ou ses droits CELI ou CELIAPP (en janvier et en février, le REER est vérifié pour l’année précédente) ;
 - à partir de novembre, un FERR ou un FRV a encore une partie de son minimum à retirer d’ici le 31 décembre ;
 - une personne qui a un REER ouvert atteint 71 ans cette année : il doit être converti en FERR ou en rente d’ici le 31 décembre ;
-- les cotisations au REEE d’un enfant dépassent le plafond à vie de 50 000 $.
+- les cotisations au REEE d’un enfant dépassent le plafond à vie de 50 000 $ ;
+- un REER de conjoint n’a pas de cotisant choisi dans Détails du régime.
 
 Cliquer sur un rappel ouvre cet écran.
 

@@ -4,6 +4,7 @@ import ca.schippers.hfm.calc.metals.WeightUnit
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.AccountType
+import ca.schippers.hfm.domain.ClearedStatus
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.security.KdfParams
@@ -80,6 +81,38 @@ class MetalServiceTest {
         assertEquals("metal:GOLD", gain.security.id)
         assertEquals(cad("500"), gain.disposition.gain)
         assertEquals(cad("0"), books.metals.value(safe.id, today))
+    }
+
+    @Test
+    fun `buying and selling move money through the accounts chosen (M-34)`() {
+        val chequing = books.accounts.create(AccountDraft(group, "Chèques", AccountType.CHEQUING, Currency.CAD, cad("10000"), d("2024-01-01")))
+        val savings = books.accounts.create(AccountDraft(group, "Épargne", AccountType.SAVINGS, Currency.CAD, cad("0"), d("2024-01-01")))
+        fun balance(a: Account) = books.accounts.list().first { it.account.id == a.id }.balance
+        val coin = MetalItem("", safe.id, Metal.GOLD, MetalForm.COIN, "Maple Leaf 1 oz", n("1"), WeightUnit.OZT, n("0.9999"), 2, dealer = "Monnaie royale", purchaseDate = d("2025-03-01"), cost = cad("6200"))
+        val saved = books.metals.save(coin, MetalMoney(paidFromAccountId = chequing.id))
+        assertEquals(cad("3800"), balance(chequing))
+        assertEquals(MetalMoney(chequing.id, null), books.metals.money(saved.id))
+        assertEquals(cad("3800") + cad("7399.26"), books.reports.netWorth(listOf(today)).value.single().assets, "the cash left, the metal's value came in")
+        val year = books.reports.incomeExpense(ReportFilter(d("2025-01-01"), d("2025-12-31")), Granularity.YEAR).value.single()
+        assertEquals(cad("0"), year.expense, "a purchase is not spending")
+
+        books.metals.save(saved.copy(cost = cad("6300")), MetalMoney(paidFromAccountId = chequing.id))
+        assertEquals(cad("3700"), balance(chequing), "the line follows the cost")
+        books.metals.save(saved.copy(cost = cad("6300"), notes = "coffret"))
+        assertEquals(cad("3700"), balance(chequing), "without accounts given, the account recorded stays")
+
+        val line = books.transactions.register(chequing.id).single().transaction
+        books.transactions.setCleared(line.id, ClearedStatus.RECONCILED)
+        assertFailsWith<ReconciledChangeException> { books.metals.save(saved.copy(cost = cad("6000")), MetalMoney(paidFromAccountId = chequing.id)) }
+        books.metals.sell(saved.id, safe.id, d("2026-09-15"), cad("7000"), depositedToAccountId = savings.id)
+        assertEquals(cad("7000"), balance(savings))
+        assertEquals(cad("3700"), balance(chequing), "the reconciled purchase is untouched")
+        assertFailsWith<ValidationException> { books.metals.save(saved.copy(cost = null), MetalMoney(paidFromAccountId = chequing.id)) }
+
+        assertFailsWith<ReconciledChangeException> { books.metals.delete(safe.id, saved.id) }
+        books.metals.delete(safe.id, saved.id, confirmReconciled = true)
+        assertEquals(cad("10000"), balance(chequing))
+        assertEquals(cad("0"), balance(savings))
     }
 
     @Test

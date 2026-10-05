@@ -124,8 +124,9 @@ class SlipChecklistService internal constructor(private val books: Books) {
         val all = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
         for (a in books.plans.registeredAccounts(includeClosed = true)) {
             val issuer = a.institutionId?.let(institutions::get) ?: a.name
-            val lines = books.transactions.register(a.id).map { it.transaction }.filter { it.date.year == year && it.transfer != null }
-            val outside = lines.filter { t -> all[t.transfer!!.otherAccountId]?.type?.isRegistered != true }
+            // M-32: cash imported from a brokerage file has no transfer, and still came from outside.
+            val lines = books.transactions.register(a.id).map { it.transaction }.filter { it.date.year == year && (it.transfer != null || books.plans.fromOutsideBooks(it)) }
+            val outside = lines.filter { t -> t.transfer == null || all[t.transfer.otherAccountId]?.type?.isRegistered != true }
             val owner = a.ownerMemberIds.singleOrNull()
             when (a.type) {
                 AccountType.RRSP, AccountType.SPOUSAL_RRSP -> {

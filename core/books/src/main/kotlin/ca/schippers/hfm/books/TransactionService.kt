@@ -461,6 +461,17 @@ class TransactionService internal constructor(private val books: Books) {
         }
     }
 
+    /** Deletes one cash line written for an investment transaction or a precious metal item (M-34), logged like any deletion. */
+    internal fun deleteInvestmentLine(group: GroupInfo, transactionId: String, confirmReconciled: Boolean) {
+        val ledger = books.ledger(group)
+        val row = ledger.ledgerQueries.txnById(transactionId).executeAsOneOrNull() ?: return
+        guardReconciled(row, confirmReconciled)
+        ledger.transaction {
+            logChange(ledger, row.id, "DELETE", snapshot(ledger, row.id), null)
+            ledger.ledgerQueries.deleteTxn(row.id)
+        }
+    }
+
     private fun guardReconciled(row: TxnRow, confirmed: Boolean) {
         if (row.cleared == ClearedStatus.RECONCILED.name && !confirmed) throw ReconciledChangeException()
     }

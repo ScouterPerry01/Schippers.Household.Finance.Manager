@@ -57,7 +57,7 @@ L’application examine les opérations de l’année, par bénéficiaire et par
 - Des **Intérêts** de 50 $ ou plus dans l’année du même payeur : un T5. Sous 50 $, aucun feuillet n’est attendu.
 - Des **Frais de scolarité** payés : un T2202 de l’établissement.
 - Des **Frais de garde** payés, pour une personne qui produit au Québec : un Relevé 24.
-- De l’argent versé dans un REER depuis l’extérieur des régimes enregistrés : un reçu de cotisation REER, pour le titulaire (pour un REER de conjoint, pour le cotisant). De l’argent retiré d’un REER : un T4RSP. D’un FERR, d’un FERR de conjoint ou d’un FRV : un T4RIF. Tout virement vers ou depuis un CELIAPP : un T4FHSA. L’émetteur est l’institution du régime, ou le nom du compte.
+- De l’argent versé dans un REER depuis l’extérieur des régimes enregistrés (un virement depuis un autre compte, ou un dépôt sans virement ni catégorie, comme l’encaisse importée d’un fichier de courtage) : un reçu de cotisation REER, pour le titulaire (pour un REER de conjoint, pour le cotisant). De l’argent retiré d’un REER : un T4RSP. D’un FERR, d’un FERR de conjoint ou d’un FRV : un T4RIF. Tout virement vers ou depuis un CELIAPP : un T4FHSA. L’émetteur est l’institution du régime, ou le nom du compte.
 - Des revenus de placement dans un compte non enregistré : un T5 de l’institution, ou un T3 de chaque fonds canadien, selon le rapport des revenus de placement (voir [Revenus de placement et gains en capital](reports#investment-income)).
 - Une vente de titres dans un compte de placement non enregistré : un T5008 pour chaque titulaire.
 

@@ -39,9 +39,10 @@ Marquées **Renouvellement**, les dates où quelque chose expire ou doit être r
 - les frais annuels d’une carte de crédit ([Comptes](accounts)) ;
 - une réclamation d’assurance à envoyer ([Réclamations médicales](medical)) ;
 - la fin de la garantie d’un bien de la maison, ou le renouvellement d’une police d’assurance ([Maison et biens](assets)) ;
-- un acompte provisionnel d’impôt ([Impôts](taxes)).
+- un acompte provisionnel d’impôt ([Impôts](taxes)) ;
+- l’échéance d’une obligation ou d’un CPG que vous détenez, à partir de 30 jours avant et jusqu’à ce que son remboursement soit inscrit ([Placements](investments#security-dialog)).
 
-Le bouton de la ligne ouvre l’écran où l’élément est géré, comme **Ouvrir les véhicules** ou **Ouvrir les prêts**.
+Le bouton de la ligne ouvre l’écran où l’élément est géré, comme **Ouvrir les véhicules**, **Ouvrir les prêts** ou **Ouvrir les placements**.
 
 ### L’entretien {#maintenance}
 

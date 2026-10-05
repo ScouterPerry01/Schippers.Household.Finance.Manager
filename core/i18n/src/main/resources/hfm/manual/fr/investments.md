@@ -70,7 +70,7 @@ Les montants sont dans la devise du compte. Un compte en dollars américains aff
 
 Une ligne par titre détenu aujourd’hui, par ordre de nom :
 
-- **Titre** : le symbole (ou le nom s’il n’y a pas de symbole), avec le nom complet en dessous.
+- **Titre** : le symbole (ou le nom s’il n’y a pas de symbole), avec le nom complet en dessous. Pour une obligation ou un CPG, une troisième ligne montre son coupon et sa date d’échéance quand ils sont inscrits sur le titre, par exemple « coupon 3,25 % · échéance le 2027-06-01 ».
 - **Quantité** : le nombre d’unités détenues, jusqu’à six décimales.
 - **Cours** : le dernier cours à la date d’aujourd’hui ou avant, dans la devise du titre, avec sa date en dessous ; « aucun cours » s’il n’y en a pas.
 - **Valeur marchande** : la quantité multipliée par le cours et par le multiplicateur de valeur du titre, dans la devise du compte ; un tiret s’il n’y a pas de cours.
@@ -152,11 +152,11 @@ Chaque opération de placement inscrit aussi ses lignes d’encaisse dans le reg
 
 Les achats, les ventes et les remboursements de capital sont des mouvements à l’intérieur de votre propre argent : les rapports et les budgets les excluent. Les revenus, l’impôt étranger et les frais sont catégorisés ; ils paraissent donc dans les rapports et les budgets comme tout autre revenu ou dépense.
 
-Modifier une opération réécrit ses lignes d’encaisse. Si ces lignes sont déjà rapprochées dans le registre, la modification est refusée.
+Modifier une opération réécrit ses lignes d’encaisse. Si ces lignes sont déjà rapprochées dans le registre, l’application demande d’abord « Modifier une opération rapprochée? », comme le registre : **Modifier** enregistre la modification (le compte ne concorde alors plus avec ce relevé, et la modification est gardée dans l’historique), **Annuler** laisse tout comme avant.
 
 ### Supprimer une opération {#delete-transaction}
 
-Cliquez sur **Supprimer** dans la fenêtre de l’opération. L’application demande « Supprimer cette opération ? » : elle est retirée avec ses lignes d’encaisse dans le registre. Cliquez sur **Supprimer** pour confirmer, ou sur **Annuler**. On ne peut l’annuler qu’en saisissant l’opération de nouveau. Une suppression qui laisserait, à une date donnée, plus d’unités vendues que détenues est refusée.
+Cliquez sur **Supprimer** dans la fenêtre de l’opération. L’application demande « Supprimer cette opération ? » : elle est retirée avec ses lignes d’encaisse dans le registre. Cliquez sur **Supprimer** pour confirmer, ou sur **Annuler**. Si ses lignes d’encaisse sont rapprochées, l’application demande ensuite « Modifier une opération rapprochée? » avant de supprimer. On ne peut l’annuler qu’en saisissant l’opération de nouveau. Une suppression qui laisserait, à une date donnée, plus d’unités vendues que détenues est refusée.
 
 ## Mettre à jour les cours {#update-prices}
 
@@ -186,12 +186,14 @@ Ce que fait l’importation :
 
 - Les titres du fichier sont associés à vos titres existants par leur symbole (et leur devise) ou par leur nom ; les autres sont créés. Un symbole comme XIC.TO est lu comme XIC à la Bourse de Toronto.
 - Les cours du fichier sont enregistrés comme cours importés. Ils ne remplacent jamais un cours que vous avez tapé.
-- Chaque opération devient une opération de placement : achats, ventes, dividendes, intérêts, distributions, revenus réinvestis, remboursements de capital, fractionnements, unités transférées en entrée ou en sortie, et frais. Les dépôts et retraits d’argent deviennent des lignes ordinaires du registre.
+- Chaque opération devient une opération de placement : achats, ventes, dividendes, intérêts, distributions, revenus réinvestis, remboursements de capital, fractionnements, unités transférées en entrée ou en sortie, et frais. Les dépôts et retraits d’argent deviennent des lignes ordinaires du registre, sans catégorie. Dans un régime enregistré, ils comptent comme cotisations et retraits (voir [Ce qui compte comme cotisation](plans#what-counts)) ; un dépôt déjà au registre à la même date pour le même montant, comme le virement que vous avez inscrit depuis votre banque, n’est pas ajouté de nouveau.
 - Chaque opération n’est importée qu’une fois. Les identifiants du fichier sont conservés (ou, à défaut, une empreinte de la ligne) ; importer le même fichier de nouveau n’ajoute donc rien en double.
 - Les unités transférées en entrée sont inscrites à la valeur marchande indiquée dans le fichier, avec une remarque : saisissez leur vraie valeur comptable si elle diffère, puisque le PBR en dépend.
 - Quand le fichier donne les titres détenus et l’encaisse à la date du relevé, ils sont enregistrés comme relevé sous l’onglet Relevés, pour que vous puissiez les comparer avec les livres.
 
 Les fichiers CSV sont lus d’après les titres de leurs colonnes, en français ou en anglais (date, opération ou type, symbole, description, quantité, prix ou cours, montant, commission, devise) ; la plupart des exportations de courtiers n’exigent donc aucun réglage. Les lignes dont l’opération n’est pas reconnue sont sautées et énumérées comme remarques plutôt que devinées.
+
+Une ligne d’impôt retenu (retenue d’impôt, impôt étranger, impôt des non-résidents) est mise sur le dividende, la distribution ou les intérêts du même jour, pour le même titre quand la ligne en nomme un, comme son **Impôt étranger retenu** : il est alors dans la catégorie Impôt étranger retenu et au rapport des revenus de placement, pour le crédit pour impôt étranger. S’il n’y a pas de tel revenu ce jour-là, la ligne est inscrite comme des frais et une remarque le dit ; ouvrez le revenu et déplacez le montant dans son champ Impôt étranger retenu.
 
 ### Résultat de l’importation {#import-results}
 
@@ -213,7 +215,7 @@ Vérifier un relevé compare ce que votre courtier dit que vous détenez avec ce
 Cliquez sur **Vérifier un relevé**. La fenêtre commence avec les chiffres des livres ; vous ne changez donc que ce qui diffère :
 
 - **Date du relevé** : la date pour laquelle le relevé a été établi. Aujourd’hui par défaut.
-- **Encaisse** : l’encaisse indiquée sur le relevé, dans la devise du compte.
+- **Encaisse** : l’encaisse indiquée sur le relevé, dans la devise du compte. Tant que vous n’y tapez rien, elle suit la date du relevé : elle montre l’encaisse des livres à la date choisie.
 - Un champ par titre détenu dans les livres à cette date, avec le nombre d’unités indiqué sur le relevé.
 
 Cliquez sur **Comparer** pour enregistrer le relevé et voir la comparaison, ou sur **Annuler**.
@@ -245,7 +247,7 @@ Les titres sont aussi créés pour vous quand vous inscrivez un achat avec **Nou
 - **Catégorie d’actif** : Actions, Revenu fixe, Encaisse et équivalents, Équilibré, Immobilier, Matières premières ou Autre. Sert à la répartition de l’actif du rapport Portefeuille de placements. Choisissez Équilibré pour un fonds qui détient à la fois des actions et des obligations, puis saisissez sa composition (voir [Composition d’un fonds](investments#fund-mix)).
 - **Région** : Canada, États-Unis, International, Marchés émergents, Mondial ou Autre. Sert à la répartition par région. Choisissez Mondial pour un fonds qui investit partout dans le monde, puis saisissez sa composition.
 - **Multiplicateur de valeur** : quantité multipliée par le cours et par le multiplicateur donne la valeur. 1 pour les actions et les parts de fonds, 100 pour les contrats d’option (un contrat porte sur 100 actions), 0,01 pour les obligations cotées par tranche de 100 de valeur nominale. Doit être plus que zéro. Il change les valeurs marchandes et le montant rempli pour les nouvelles opérations.
-- **Échéance** et **Taux (%)** : pour les obligations et les CPG seulement. La date d’échéance et le taux d’intérêt, gardés pour référence.
+- **Échéance** et **Taux (%)** : pour les obligations et les CPG seulement. La date d’échéance et le taux du coupon ou d’intérêt. Les deux s’affichent sous le titre dans l’onglet Titres détenus. Tant que le titre est détenu, son échéance paraît au [Calendrier](calendar#renewals) et comme rappel à partir de 30 jours avant, jusqu’à ce que le remboursement soit inscrit (comme une vente).
 - **Cours** : sous le titre Cours, un cours et sa **Date** (aujourd’hui par défaut). Si vous tapez un cours, il est inscrit à cette date quand vous enregistrez. Laissez vide pour n’en inscrire aucun.
 - **Notes** : un texte libre.
 - **Archivé (n’est plus utilisé)** : affiché quand vous modifiez un titre. Un titre archivé reste dans les livres et dans les opérations passées, mais n’est plus proposé quand vous ajoutez une opération.
@@ -377,8 +379,9 @@ Cliquez sur **Importer d’une plateforme…** au bas de la liste des comptes et
 La fenêtre montre le nom de la plateforme et le nombre d’opérations, puis un choix par devise trouvée :
 
 - **Encaisse de la plateforme en** (chaque devise, comme CAD) : le compte qui détient l’argent gardé à la plateforme. Choisissez un de vos comptes dans cette devise, ou laissez « Nouveau compte : » pour créer un compte d’encaisse nommé d’après la plateforme et la devise.
-- **Portefeuille pour** (chaque cryptoactif) : le portefeuille de ce cryptoactif. Choisissez un de vos portefeuilles pour ce cryptoactif, ou laissez « Nouveau compte : » pour en créer un, au nom du membre du ménage lié à votre utilisateur.
+- **Portefeuille pour** (chaque cryptoactif) : le portefeuille de ce cryptoactif. Choisissez un de vos portefeuilles pour ce cryptoactif, ou laissez « Nouveau compte : » pour en créer un.
 - **Enregistrer dans** : affiché quand vous pouvez modifier plus d’un groupe de comptes : où les nouveaux comptes sont créés.
+- **Titulaires des comptes créés** : affiché quand un nouveau compte sera créé : une case par membre du ménage. Les portefeuilles et comptes d’encaisse de la plateforme créés appartiennent aux personnes cochées ; le membre du ménage lié à votre utilisateur est coché au départ. Sans personne de coché, ils appartiennent au ménage. Les titulaires décident pour qui comptent les gains en capital des cryptoactifs ; vous pouvez les changer plus tard sous [Comptes](accounts).
 
 Cliquez sur **Importer** ou sur **Annuler**. Importer le même fichier de nouveau n’ajoute rien en double. Ensuite, les envois arrivés dans un autre de vos portefeuilles sont liés automatiquement. La fenêtre de résultat montre les opérations ajoutées, les portefeuilles créés, les envois liés et les remarques.
 
@@ -410,6 +413,7 @@ Le tableau énumère chaque article : **Article** (quantité × description, ave
 - **Pureté** : la fraction de métal pur, plus que 0 et au plus 1. 0,9999 pour 9999 de fin (par défaut), 0,999 pour 999, 0,925 pour l’argent sterling. Quantité × poids × pureté donne le métal pur évalué.
 - **Acheté le** : la date d’achat, aujourd’hui par défaut. L’article compte dans la valeur du compte à partir de cette date.
 - **Payé au total, prime comprise** : le coût total de la ligne, dans la devise du compte. C’est la valeur comptable, et le coût utilisé pour le gain en capital à la vente.
+- **Payé depuis** : le compte d’où le coût a été payé : un compte bancaire, d’encaisse, de carte de crédit ou autre dans la même devise, ou **Aucun compte** (par défaut). Avec un compte, le coût en sort à la date **Acheté le**, comme une ligne ayant le marchand (ou la description) comme bénéficiaire ; il faut une date d’achat et un montant de plus de zéro. Changer plus tard le coût, la date ou le compte déplace cette ligne avec eux.
 - **Prime ou escompte (%)** : combien au-dessus (+) ou au-dessous (-) de la valeur au comptant les pièces valent. Une pièce qui se vend 5 % au-dessus de la valeur du métal : 5 ; un rachat par le marchand à 2 % sous le cours : -2. Il rajuste la valeur marchande.
 - **Marchand** : où vous les avez achetées.
 - **Numéros de série** : des lingots ou des certificats.
@@ -420,7 +424,7 @@ Le tableau énumère chaque article : **Article** (quantité × description, ave
 
 Quand vous modifiez un article existant, la fenêtre montre aussi les champs de vente, les documents et **Supprimer** (voir ci-dessous). Cliquez sur **Enregistrer** (offert dès qu’il y a une description) ou sur **Annuler**.
 
-> Remarque : Inscrire un article ne déplace aucun argent. Inscrivez le paiement dans le registre du compte payeur si vous voulez qu’il y figure aussi.
+Les lignes inscrites dans les comptes choisis sont des déplacements à l’intérieur de votre propre argent, comme l’achat d’un titre : les rapports et les budgets les excluent, et elles ne changent qu’à partir de cette fenêtre. Avec **Aucun compte**, rien ne bouge : inscrivez le paiement vous-même si vous voulez qu’il figure dans les livres. Si une ligne est déjà rapprochée, l’application demande « Modifier une opération rapprochée? » avant de la changer.
 
 ### Vendre des pièces ou lingots {#metal-sale}
 
@@ -428,12 +432,13 @@ Ouvrez l’article et remplissez :
 
 - **Vendu le** : la date de la vente. À partir de cette date, l’article sort des avoirs et est énuméré sous Vendus.
 - **Produit** : ce que vous avez reçu. Avec une date et un produit, le gain ou la perte en capital (le produit moins le coût de l’article) paraît dans [Gains en capital et PBR](investments#capital-gains-acb).
+- **Vente déposée dans** : le compte où le produit a été déposé, ou **Aucun compte** (par défaut). Avec un compte, le produit y arrive à la date de la vente ; il faut une date de vente et un produit.
 
-Pour ne vendre qu’une partie d’une ligne, réduisez d’abord sa quantité et son coût, et ajoutez la partie vendue comme un article distinct. Selon les règles fiscales, des lingots identiques achetés à des moments différents sont mis en commun ; inscrire chaque achat comme un article distinct et le vendre en entier garde des chiffres proches. Comme pour les achats, inscrire une vente ne déplace aucun argent.
+Pour ne vendre qu’une partie d’une ligne, réduisez d’abord sa quantité et son coût, et ajoutez la partie vendue comme un article distinct. Selon les règles fiscales, des lingots identiques achetés à des moments différents sont mis en commun ; inscrire chaque achat comme un article distinct et le vendre en entier garde des chiffres proches. Avec **Aucun compte** dans Vente déposée dans, inscrire une vente ne déplace aucun argent.
 
 ### Certificats et photos {#metal-documents}
 
-Pour un article existant, **Certificats et photos** énumère les documents qui y sont liés. **Joindre un certificat ou une photo…** permet de choisir un fichier (un PDF ou une image) ; il est rangé dans le coffre à documents comme classé et lié à l’article. **Retirer** détache un document de l’article sans le supprimer du coffre. **Supprimer**, au bas, retire l’article lui-même aussitôt, sans confirmation.
+Pour un article existant, **Certificats et photos** énumère les documents qui y sont liés. **Joindre un certificat ou une photo…** permet de choisir un fichier (un PDF ou une image) ; il est rangé dans le coffre à documents comme classé et lié à l’article. **Retirer** détache un document de l’article sans le supprimer du coffre. **Supprimer**, au bas, retire l’article lui-même aussitôt, sans confirmation, avec les lignes de son achat et de sa vente dans les comptes choisis (une ligne rapprochée demande d’abord).
 
 ## Rapports de placement {#investment-reports}
 

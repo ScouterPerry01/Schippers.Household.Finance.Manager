@@ -116,6 +116,14 @@ private fun RoomTab(model: BooksModel, year: Int, onAction: (PlanAction) -> Unit
         Button(onClick = { onAction(PlanAction.Room(RoomPlan.RRSP, null, year)) }) { Text(model.t("plans.enterRoom")) }
         OutlinedButton(onClick = { onAction(PlanAction.Adjust(RoomPlan.RRSP, null)) }) { Text(model.t("plans.addOutside")) }
     }
+    // M-28: a spousal RRSP counts against its contributor's room, so it needs one.
+    val noContributor = remember(model.revision) { books.plans.spousalWithoutContributor() }
+    for (a in noContributor) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(model.t("planWarning.noContributor", a.name), Modifier.weight(1f), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            TextButton(onClick = { onAction(PlanAction.Details(a, year)) }) { Text(model.t("plans.details")) }
+        }
+    }
     if (rows.isEmpty()) Text(model.t("plans.noRoom"), Modifier.padding(8.dp))
     for (r in rows) RoomCard(model, r, onAction)
 }
@@ -406,10 +414,12 @@ private fun DetailsDialog(model: BooksModel, account: Account, year: Int, onClos
     var rate by remember { mutableStateOf(d.lifReferenceRate?.movePointRight(2)?.stripTrailingZeros()?.toPlainString().orEmpty()) }
     var jurisdiction by remember { mutableStateOf(d.jurisdiction) }
     val status = remember { model.books.plans.withdrawalStatus(account, year) }
+    // M-27: both fields show what is stored; left empty, they leave it as it is.
     var value by remember { mutableStateOf(if (status.valueEntered) status.valueJanuary1?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty() else "") }
-    var earnings by remember { mutableStateOf("") }
+    var earnings by remember { mutableStateOf(status.lastYearEarnings?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
     val withdrawals = account.type in setOf(AccountType.RRIF, AccountType.SPOUSAL_RRIF, AccountType.LIF)
-    FormDialog(model.t("plans.detailsOf", account.name), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
+    val needsContributor = account.type == AccountType.SPOUSAL_RRSP
+    FormDialog(model.t("plans.detailsOf", account.name), model.t("common.save"), model.t("common.cancel"), canSave = !needsContributor || contributor != null, onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.plans.saveDetails(
                 PlanDetails(account.id, contributor?.id, ageMember?.id, rate.trim().ifEmpty { null }?.let { MoneyFormat.parseDecimal(it, locale).movePointLeft(2) }, d.notes, jurisdiction),
@@ -420,7 +430,10 @@ private fun DetailsDialog(model: BooksModel, account: Account, year: Int, onClos
     }) {
         if (account.type in setOf(AccountType.SPOUSAL_RRSP, AccountType.SPOUSAL_RRIF, AccountType.RESP)) {
             Text(model.t(if (account.type == AccountType.RESP) "plans.subscriberHint" else "plans.contributorHint"), style = MaterialTheme.typography.bodySmall)
-            Picker(model.t(if (account.type == AccountType.RESP) "plans.subscriber" else "plans.contributor"), listOf<Member?>(null) + members, contributor, { it?.displayName ?: model.t("common.none") }) { contributor = it }
+            Picker(
+                model.t(if (account.type == AccountType.RESP) "plans.subscriber" else "plans.contributor"), (if (needsContributor) emptyList() else listOf<Member?>(null)) + members,
+                contributor, { it?.displayName ?: model.t(if (needsContributor) "plans.chooseContributor" else "common.none") },
+            ) { contributor = it }
         }
         if (account.type in setOf(AccountType.LIF, AccountType.LIRA)) {
             // PROV-05: the pension law the locked-in money answers to.
@@ -433,6 +446,9 @@ private fun DetailsDialog(model: BooksModel, account: Account, year: Int, onClos
         if (withdrawals) {
             Text(model.t("plans.valueHint", year.toString()), style = MaterialTheme.typography.bodySmall)
             AmountInput(model.t("plans.valueStatement", year.toString()), value, account.currency, locale, Modifier.fillMaxWidth(), model::money) { value = it }
+            if (status.valueEntered) {
+                TextButton(onClick = { if (model.act { model.books.plans.clearValueJanuary1(account.id, year) } != null) onClose() }) { Text(model.t("plans.useBooksValue")) }
+            }
             Picker(model.t("plans.ageOf"), listOf<Member?>(null) + members, ageMember, { it?.displayName ?: model.t("plans.ageOwner") }) { ageMember = it }
             if (account.type == AccountType.LIF) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -454,6 +470,9 @@ private fun GrantDialog(model: BooksModel, start: Account?, onClose: () -> Unit)
     var kind by remember { mutableStateOf(GrantKind.CESG) }
     var date by remember { mutableStateOf(today().toString()) }
     var amount by remember { mutableStateOf("") }
+    // M-29: the grants already recorded in the plan, each with Delete.
+    val recorded = remember(model.revision, account) { account?.let { model.books.plans.grants(it.id) }.orEmpty().asReversed() }
+    val names = remember { model.books.members.list(includeArchived = true).associate { it.id to it.displayName } }
     FormDialog(model.t("plans.recordGrant"), model.t("common.save"), model.t("common.cancel"), canSave = account != null && who != null, onDismiss = onClose, onSave = {
         val ok = model.act {
             val a = account!!
@@ -471,6 +490,17 @@ private fun GrantDialog(model: BooksModel, start: Account?, onClose: () -> Unit)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             DateInput(model.t("report.date"), date, Modifier.weight(1f)) { date = it }
             account?.let { AmountInput(model.t("register.amount"), amount, it.currency, locale, Modifier.weight(1f), model::money) { v -> amount = v } }
+        }
+        if (recorded.isNotEmpty()) Text(model.t("plans.grantsRecorded"), style = MaterialTheme.typography.labelLarge)
+        Column(Modifier.heightIn(max = 220.dp).verticalScroll(rememberScrollState())) {
+            for (g in recorded) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("${model.date(g.date)}  ${model.t("grantKind.${g.kind}")}  ${names[g.memberId].orEmpty()}  ${model.money(g.amount)}", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                    TextButton(onClick = {
+                        model.act(retryConfirmed = { model.books.plans.deleteGrant(g.accountId, g.id, confirmReconciled = true) }) { model.books.plans.deleteGrant(g.accountId, g.id) }
+                    }) { Text(model.t("common.delete")) }
+                }
+            }
         }
     }
 }

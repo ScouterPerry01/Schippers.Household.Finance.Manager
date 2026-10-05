@@ -253,7 +253,7 @@ private fun ChangesView(model: BooksModel, account: Account) {
         for (ch in changes.asReversed()) {
             Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(ch.date), Modifier.width(110.dp))
-                Text(model.t("loanChange.${ch.kind}"), Modifier.width(200.dp))
+                Text(model.t(if (ch.renewal) "loanChange.RENEWAL" else "loanChange.${ch.kind}"), Modifier.width(200.dp))
                 Text(
                     when (ch.kind) {
                         LoanChangeKind.RATE_CHANGE -> percent(ch.annualRate!!, model.language.locale) +

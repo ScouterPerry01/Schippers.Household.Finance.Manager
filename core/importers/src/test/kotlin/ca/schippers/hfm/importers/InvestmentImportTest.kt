@@ -111,6 +111,23 @@ class InvestmentImportTest {
     }
 
     @Test
+    fun `tax withheld goes on its income, not into fees (M-31)`() {
+        val csv = """
+            Transaction Date,Action,Symbol,Description,Quantity,Price,Net Amount,Currency
+            2026-03-15,Dividend,VTI,VANGUARD TOTAL STOCK MARKET ETF,0,0,50.00,USD
+            2026-03-15,Dividend,XEQT,ISHARES CORE EQUITY ETF,0,0,12.40,USD
+            2026-03-15,Non-resident withholding tax,VTI,VANGUARD TOTAL STOCK MARKET ETF,0,0,-7.50,USD
+            2026-04-01,Foreign tax,,US TAX,0,0,-3.00,USD
+        """.trimIndent()
+        val st = InvestmentCsvImporter().readInvestments(csv.byteInputStream()).single()
+        assertEquals(listOf(ImportedAction.DIVIDEND, ImportedAction.DIVIDEND, ImportedAction.FEE), st.actions.map { it.action })
+        assertEquals(BigDecimal("7.50"), st.actions.single { it.securityKey == "VTI" }.withheld, "on the VTI dividend")
+        assertEquals(null, st.actions.single { it.securityKey == "XEQT" }.withheld)
+        assertEquals(BigDecimal("3.00"), st.actions[2].amount, "no income that day: kept as a fee")
+        assertTrue(st.warnings.single().startsWith("Line 5"))
+    }
+
+    @Test
     fun `QIF security list`() {
         val qif = "!Type:Security\nNiShares XIC\nSXIC\nTStock\n^\nNFidelity Canadian\nSFID231\nTMutual Fund\n^\n"
         val file = QifParser.parse(qif)

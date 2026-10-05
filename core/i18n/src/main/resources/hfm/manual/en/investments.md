@@ -70,7 +70,7 @@ Amounts are in the account's currency. A U.S. dollar account shows U.S. dollars;
 
 One line per security held today, sorted by name:
 
-- **Security**: the symbol (or the name when there is no symbol), with the full name underneath.
+- **Security**: the symbol (or the name when there is no symbol), with the full name underneath. For a bond or GIC, a third line shows its coupon and maturity date when they are entered on the security, for example "coupon 3.25 % · matures 2027-06-01".
 - **Quantity**: the number of units held, up to six decimals.
 - **Price**: the latest price on or before today, in the security's currency, with its date underneath; "no price" when there is none.
 - **Market value**: quantity times price times the security's value multiplier, in the account's currency; a dash when there is no price.
@@ -152,11 +152,11 @@ Each investment transaction also writes its cash lines in the account's register
 
 Purchases, sales and returns of capital are moves within your own money: reports and budgets leave them out. Income, foreign tax and fees are categorized, so they appear in reports and budgets like any other income or expense.
 
-Changing a transaction rewrites its cash lines. If those lines are already reconciled in the register, the change is refused.
+Changing a transaction rewrites its cash lines. If those lines are already reconciled in the register, the app first asks "Change a reconciled transaction?", as the register does: **Change it** saves the change (the account then no longer agrees with that statement, and the change is kept in the history), **Cancel** leaves everything as it was.
 
 ### Delete a transaction {#delete-transaction}
 
-Click **Delete** in the transaction window. The app asks "Delete this transaction?": it is removed with its cash lines in the register. Click **Delete** to confirm or **Cancel**. This cannot be undone, except by entering the transaction again. A deletion that would leave more units sold than held at some date is refused.
+Click **Delete** in the transaction window. The app asks "Delete this transaction?": it is removed with its cash lines in the register. Click **Delete** to confirm or **Cancel**. If its cash lines are reconciled, the app then asks "Change a reconciled transaction?" before deleting. This cannot be undone, except by entering the transaction again. A deletion that would leave more units sold than held at some date is refused.
 
 ## Update prices {#update-prices}
 
@@ -186,12 +186,14 @@ What the import does:
 
 - Securities in the file are matched with the securities you already have by symbol (and currency), or by name; the others are created. A symbol such as XIC.TO is read as XIC on the Toronto exchange.
 - Prices in the file are stored as imported prices. They never replace a price you typed.
-- Each action becomes an investment transaction: buys, sells, dividends, interest, distributions, reinvested income, returns of capital, splits, units moved in or out, and fees. Cash deposits and withdrawals become ordinary lines in the register.
+- Each action becomes an investment transaction: buys, sells, dividends, interest, distributions, reinvested income, returns of capital, splits, units moved in or out, and fees. Cash deposits and withdrawals become ordinary lines in the register, with no category. In a registered plan they count as contributions and withdrawals (see [What counts as a contribution](plans#what-counts)); a deposit already in the register on the same date for the same amount, such as the transfer you recorded from your bank, is not added again.
 - Each action is imported once. The file's own identifiers are kept (or, without them, a fingerprint of the line), so importing the same file again adds nothing twice.
 - Units moved in are recorded at their market value in the file, with a note: enter their real book cost if it differs, because the ACB depends on it.
 - When the file includes the holdings and cash at the statement date, they are saved as a statement under the Statements tab so you can compare them with the books.
 
 CSV files are read by their column headings, in English or French (date, action or type, symbol, description, quantity, price, amount, commission, currency), so most brokerage exports need no setup. Rows whose action is not recognised are skipped and listed as notes rather than guessed.
+
+A row of tax withheld (withholding tax, foreign tax, non-resident tax) is put on the dividend, distribution or interest of the same day, for the same security when the row names one, as its **Foreign tax withheld**: it is then in the Foreign tax withheld category and on the investment income report, for the foreign tax credit. When there is no such income that day, the row is recorded as a fee and a note says so; open the income and move the amount to its Foreign tax withheld field.
 
 ### Import results {#import-results}
 
@@ -213,7 +215,7 @@ Checking a statement compares what your brokerage says you hold with what the bo
 Click **Check a statement**. The window starts with the books' figures, so you only change what differs:
 
 - **Statement date**: the date the statement was printed for. Today by default.
-- **Cash**: the cash shown on the statement, in the account's currency.
+- **Cash**: the cash shown on the statement, in the account's currency. Until you type in it, it follows the statement date: it shows the books' cash on the date chosen.
 - One field per security held in the books on that date, with the number of units shown on the statement.
 
 Click **Compare** to save the statement and see the comparison, or **Cancel**.
@@ -245,7 +247,7 @@ Securities are also created for you when you record a purchase with **New securi
 - **Asset class**: Equity, Fixed income, Cash and equivalents, Balanced, Real estate, Commodities or Other. Used by the asset allocation in the Investment portfolio report. Choose Balanced for a fund that holds both stocks and bonds, then enter its mix (see [Fund mix](investments#fund-mix)).
 - **Region**: Canada, United States, International, Emerging markets, Global or Other. Used by the allocation by region. Choose Global for a fund that invests worldwide, then enter its mix.
 - **Value multiplier**: quantity times price times multiplier gives the value. 1 for shares and fund units, 100 for option contracts (one contract covers 100 shares), 0.01 for bonds quoted per 100 of face value. Must be more than zero. It changes market values, and the amount filled in for new transactions.
-- **Maturity** and **Rate (%)**: for bonds and GICs only. The maturity date and the interest rate, kept for reference.
+- **Maturity** and **Rate (%)**: for bonds and GICs only. The maturity date and the coupon or interest rate. Both are shown under the security in the Holdings tab. While the security is held, its maturity appears on the [Calendar](calendar#renewals) and as a reminder from 30 days before, until the redemption is recorded (as a sale).
 - **Price**: under the Price heading, a price and its **Date** (today by default). If you type a price, it is recorded for that date when you save. Leave it empty to record none.
 - **Notes**: free text.
 - **Archived (no longer used)**: shown when you edit a security. An archived security stays in the books and in past transactions, but is no longer offered when you add a transaction.
@@ -377,8 +379,9 @@ Click **Import from an exchange…** at the bottom of the account list and choos
 The window shows the exchange's name and the number of transactions, then one choice per currency found:
 
 - **Exchange cash in** (each currency, such as CAD): the account that holds the money kept at the exchange. Choose one of your accounts in that currency, or leave "New account:" to create a cash account named after the exchange and the currency.
-- **Wallet for** (each coin): the wallet for that coin. Choose one of your crypto wallets for that coin, or leave "New account:" to create one, owned by the household member linked to your user.
+- **Wallet for** (each coin): the wallet for that coin. Choose one of your crypto wallets for that coin, or leave "New account:" to create one.
 - **Store in**: shown when you can edit more than one account group: where new accounts are created.
+- **Owners of the accounts created**: shown when a new account will be created: a box per household member. The wallets and exchange cash accounts created belong to the people ticked; the household member linked to your user is ticked to start. With no one ticked, they belong to the household. The owners decide whose capital gains the coins count for; you can change them later under [Accounts](accounts).
 
 Click **Import** or **Cancel**. Importing the same file again adds nothing twice. Afterwards, sends that arrived in another of your wallets are linked automatically. The result window shows the transactions added, the wallets created, the sends linked, and any notes.
 
@@ -410,6 +413,7 @@ The table lists each item: **Item** (quantity × description, with the metal, we
 - **Purity**: the fraction of pure metal, more than 0 and at most 1. 0.9999 for 9999 fine (the default), 0.999 for 999, 0.925 for sterling silver. Quantity × weight × purity gives the pure metal that is valued.
 - **Bought on**: the purchase date, today by default. The item counts in the account's value from that date.
 - **Paid in all, premium included**: the total cost of the line, in the account's currency. It is the book cost, and the cost used for the capital gain when you sell.
+- **Paid from**: the account the cost was paid from: a bank, cash, credit card or other account in the same currency, or **No account** (the default). With an account, the cost leaves it on the **Bought on** date, as a line with the dealer (or the description) as payee; it needs a purchase date and an amount over zero. Changing the cost, date or account later moves that line with it.
 - **Premium or discount (%)**: how far above (+) or below (-) the spot value the pieces are worth. A coin that sells for 5% over melt value is 5; a dealer's buy-back at 2% under spot is -2. It adjusts the market value.
 - **Dealer**: where you bought them.
 - **Serial numbers**: of bars or certificates.
@@ -420,7 +424,7 @@ The table lists each item: **Item** (quantity × description, with the metal, we
 
 When you edit an existing item, the window also shows the sale fields, the documents and **Delete** (see below). Click **Save** (available once there is a description) or **Cancel**.
 
-> Note: Recording an item does not move any money. Record the payment for it in the paying account's register if you want it there too.
+The lines written in the accounts chosen are moves within your own money, like the purchase of a security: reports and budgets leave them out, and they change only from this window. With **No account**, nothing moves: record the payment yourself if you want it in the books. If a line is already reconciled, the app asks "Change a reconciled transaction?" before changing it.
 
 ### Selling coins or bars {#metal-sale}
 
@@ -428,12 +432,13 @@ Open the item and fill in:
 
 - **Sold on**: the date of the sale. From that date the item leaves the holdings and is listed under Sold.
 - **Proceeds**: what you received. With a date and proceeds, the capital gain or loss (proceeds minus the item's cost) appears in [Capital gains and ACB](investments#capital-gains-acb).
+- **Sale deposited to**: the account the proceeds went into, or **No account** (the default). With an account, the proceeds arrive there on the sale date; it needs a sale date and proceeds.
 
-To sell only part of a line, first reduce its quantity and cost, and add the part sold as its own item. Under the tax rules, identical bullion bought at different times is pooled; recording each purchase as its own item and selling it whole keeps the figures close. As with purchases, recording a sale moves no money.
+To sell only part of a line, first reduce its quantity and cost, and add the part sold as its own item. Under the tax rules, identical bullion bought at different times is pooled; recording each purchase as its own item and selling it whole keeps the figures close. With **No account** in Sale deposited to, recording a sale moves no money.
 
 ### Certificates and photos {#metal-documents}
 
-For an existing item, **Certificates and photos** lists the documents linked to it. **Attach a certificate or photo…** lets you choose a file (a PDF or a picture); it is stored in the document vault as filed and linked to the item. **Remove** unlinks a document from the item without deleting it from the vault. **Delete** at the bottom removes the item itself at once, without a confirmation.
+For an existing item, **Certificates and photos** lists the documents linked to it. **Attach a certificate or photo…** lets you choose a file (a PDF or a picture); it is stored in the document vault as filed and linked to the item. **Remove** unlinks a document from the item without deleting it from the vault. **Delete** at the bottom removes the item itself at once, without a confirmation, with the lines of its purchase and sale in the accounts chosen (a reconciled line asks first).
 
 ## Investment reports {#investment-reports}
 

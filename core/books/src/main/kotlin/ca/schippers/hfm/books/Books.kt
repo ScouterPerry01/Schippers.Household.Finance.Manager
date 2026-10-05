@@ -156,7 +156,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
 
     fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> =
         (pets.renewals(today, withinDays) + vehicles.renewals(today, withinDays) + loans.renewals(today, withinDays) + creditCards.renewals(today, withinDays) + medical.deadlines(today, withinDays) + assets.renewals(today, maxOf(withinDays, 60)) +
-            insurance.renewals(today, withinDays) + instalments.renewals(today, withinDays)).sortedBy { it.date }
+            insurance.renewals(today, withinDays) + instalments.renewals(today, withinDays) + investments.maturities(today, withinDays)).sortedBy { it.date }
 
     /** Tags for projects and events (CAT-04). */
     fun tags(): List<Tag> = core.tags().executeAsList().map { Tag(it.id, it.name) }

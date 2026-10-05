@@ -5,6 +5,7 @@ import ca.schippers.hfm.calc.invest.normalized
 import ca.schippers.hfm.calc.metals.Metals
 import ca.schippers.hfm.calc.metals.WeightUnit
 import ca.schippers.hfm.domain.AccountType
+import ca.schippers.hfm.domain.ClearedStatus
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.money.Currency
@@ -48,6 +49,12 @@ data class MetalItem(
     val held: Boolean get() = disposalDate == null
 }
 
+/**
+ * M-34: the accounts an item's money moved through: [paidFromAccountId] paid its cost on the
+ * purchase date, [depositedToAccountId] received the proceeds of its sale. Null for none.
+ */
+data class MetalMoney(val paidFromAccountId: String? = null, val depositedToAccountId: String? = null)
+
 /** PM-02: an item's value on a date; null without a spot price. */
 data class MetalValuation(val item: MetalItem, val spot: SpotPrice?, val value: Money?) {
     val gain: Money? get() = value?.let { v -> item.cost?.let { v - it } }
@@ -63,7 +70,14 @@ class MetalService internal constructor(private val books: Books) {
         return books.ledger(group).metalsQueries.metalItems(accountId).executeAsList().map { it.toItem(account.currency) }.filter { includeSold || it.held }
     }
 
-    fun save(item: MetalItem): MetalItem {
+    /**
+     * Saves [item]. With [money] (M-34), the cost leaves the account paid from on the purchase date
+     * and the proceeds arrive in the account deposited to on the sale date, as lines that reports
+     * leave out (the metal's value counts instead); a null [money] keeps the accounts recorded, and
+     * the lines follow the item's dates and amounts. Lines already reconciled change only once
+     * [confirmReconciled].
+     */
+    fun save(item: MetalItem, money: MetalMoney? = null, confirmReconciled: Boolean = false): MetalItem {
         val (group, account) = books.accounts.locate(item.accountId)
         books.require(group, PermissionLevel.EDIT)
         validate(account.type == AccountType.PRECIOUS_METALS, "error.notMetalsAccount")
@@ -73,6 +87,7 @@ class MetalService internal constructor(private val books: Books) {
         listOfNotNull(item.cost, item.proceeds).forEach { validate(it.currency == account.currency && !it.isNegative, "error.currencyMismatch", account.currency.code) }
         val q = books.ledger(group).metalsQueries
         val id = item.id.ifBlank { Ids.newId() }
+        moveMoney(item.copy(id = id), account, money ?: money(id), confirmReconciled)
         val now = books.now()
         val created = q.metalItemById(id).executeAsOneOrNull()?.created_at ?: now
         val s = item.copy(id = id)
@@ -86,17 +101,70 @@ class MetalService internal constructor(private val books: Books) {
         return s
     }
 
-    /** Records the sale of an item; its capital gain or loss appears with the others. */
-    fun sell(itemId: String, accountId: String, date: LocalDate, proceeds: Money): MetalItem {
+    /**
+     * Records the sale of an item; its capital gain or loss appears with the others. With
+     * [depositedToAccountId], the proceeds arrive in that account (M-34).
+     */
+    fun sell(itemId: String, accountId: String, date: LocalDate, proceeds: Money, depositedToAccountId: String? = null): MetalItem {
         val item = items(accountId, includeSold = true).firstOrNull { it.id == itemId } ?: throw ValidationException("error.securityNotFound")
         validate(proceeds.isPositive, "error.amountPositive")
-        return save(item.copy(disposalDate = date, proceeds = proceeds))
+        val money = depositedToAccountId?.let { money(itemId).copy(depositedToAccountId = it) }
+        return save(item.copy(disposalDate = date, proceeds = proceeds), money)
     }
 
-    fun delete(accountId: String, itemId: String) {
+    /** Deletes an item and the money lines of its purchase and sale (M-34). */
+    fun delete(accountId: String, itemId: String, confirmReconciled: Boolean = false) {
         val (group, _) = books.accounts.locate(accountId)
         books.require(group, PermissionLevel.EDIT)
+        deleteLines(itemId, confirmReconciled)
         books.ledger(group).metalsQueries.deleteMetalItem(itemId)
+    }
+
+    /** M-34: the accounts the item's purchase was paid from and its sale deposited to. */
+    fun money(itemId: String): MetalMoney {
+        val lines = linkedLines(itemId)
+        return MetalMoney(lines.firstOrNull { it.amount_minor < 0 }?.account_id, lines.firstOrNull { it.amount_minor > 0 }?.account_id)
+    }
+
+    private fun linkedLines(itemId: String) = books.groups().flatMap { books.ledger(it).ledgerQueries.txnsForInvestment(itemId).executeAsList() }
+
+    private fun deleteLines(itemId: String, confirmReconciled: Boolean) {
+        for (g in books.groups()) {
+            if (books.ledger(g).ledgerQueries.txnsForInvestment(itemId).executeAsList().isNotEmpty()) books.transactions.deleteForInvestment(g, itemId, confirmReconciled)
+        }
+    }
+
+    /**
+     * Rewrites the item's money lines: the purchase (money out) and the sale (money in) each only
+     * when its account, date or amount differs from the line recorded.
+     */
+    private fun moveMoney(item: MetalItem, account: Account, money: MetalMoney, confirmReconciled: Boolean) {
+        data class Line(val accountId: String, val date: LocalDate, val amount: Money, val memo: String)
+        val purchase = money.paidFromAccountId?.let {
+            validate(item.cost?.isPositive == true && item.purchaseDate != null, "error.metalPaidNeedsCost")
+            Line(it, item.purchaseDate!!, -item.cost!!, books.text("generated.buy", item.description))
+        }
+        val sale = money.depositedToAccountId?.let {
+            validate(item.proceeds?.isPositive == true && item.disposalDate != null, "error.metalDepositNeedsSale")
+            Line(it, item.disposalDate!!, item.proceeds!!, books.text("generated.sell", item.description))
+        }
+        for (line in listOfNotNull(purchase, sale)) {
+            val (g, other) = books.accounts.locate(line.accountId)
+            books.require(g, PermissionLevel.EDIT)
+            validate(other.currency == account.currency && other.id != account.id, "error.currencyMismatch", account.currency.code)
+        }
+        val recorded = books.groups().flatMap { g -> books.ledger(g).ledgerQueries.txnsForInvestment(item.id).executeAsList().map { g to it } }
+        val changed = listOf(purchase to true, sale to false).filter { (line, out) ->
+            val side = recorded.map { it.second }.filter { (it.amount_minor < 0) == out }
+            if (line == null) side.isNotEmpty() else side.singleOrNull()?.let { it.account_id == line.accountId && it.date == line.date.toString() && it.amount_minor == line.amount.minorUnits } != true
+        }
+        val stale = changed.flatMap { (_, out) -> recorded.filter { (it.second.amount_minor < 0) == out } }
+        if (!confirmReconciled && stale.any { it.second.cleared == ClearedStatus.RECONCILED.name }) throw ReconciledChangeException()
+        stale.forEach { (g, row) -> books.transactions.deleteInvestmentLine(g, row.id, confirmReconciled = true) }
+        val payee = item.dealer?.ifBlank { null } ?: item.description
+        for (line in changed.mapNotNull { it.first }) {
+            books.transactions.createForInvestment(TransactionDraft(line.accountId, line.date, line.amount, payee, memo = line.memo), item.id, trade = true)
+        }
     }
 
     /** Each item held on [date] with its value from that day's spot price (or the latest before). */
