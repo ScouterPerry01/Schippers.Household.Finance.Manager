@@ -51,10 +51,10 @@ import ca.schippers.hfm.books.Trip
 import ca.schippers.hfm.books.TripPurpose
 import ca.schippers.hfm.books.TripService
 import ca.schippers.hfm.books.ValidationException
+import ca.schippers.hfm.books.VehicleStatus
 import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.i18n.Language
-import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 import java.io.File
@@ -86,6 +86,8 @@ fun TripsScreen(model: BooksModel) {
     val use = remember(model.revision, year) { books.trips.vehicleUse(year) }
     val vehicles = remember(model.revision) { books.vehicles.list(includeInactive = true).associate { it.id to it.name } }
     val totals = remember(trips) { books.trips.totals(year) }
+    // MED-11: the medical trips already added as a medical expense.
+    val inMedical = remember(model.revision, trips) { trips.filter { books.trips.qualifiesForMedical(it) && books.trips.medicalExpense(it) != null }.map { it.id }.toSet() }
     fun km(v: BigDecimal) = model.t("trips.km", java.text.NumberFormat.getNumberInstance(model.language.locale).apply { maximumFractionDigits = 1 }.format(v))
     Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(model.t("nav.trips"), style = MaterialTheme.typography.titleLarge)
@@ -129,7 +131,11 @@ fun TripsScreen(model: BooksModel) {
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
-                if (books.trips.qualifiesForMedical(t)) TextButton(onClick = { toMedical = t }) { Text(model.t("trips.toMedical")) }
+                if (t.id in inMedical) {
+                    TextButton(onClick = {}, enabled = false) { Text(model.t("trips.addedToMedical")) }
+                } else if (books.trips.qualifiesForMedical(t)) {
+                    TextButton(onClick = { toMedical = t }) { Text(model.t("trips.toMedical")) }
+                }
                 Text(km(t.km), Modifier.width(110.dp))
             }
             HorizontalDivider()
@@ -142,7 +148,8 @@ fun TripsScreen(model: BooksModel) {
 @Composable
 private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
     val members = remember { model.books.members.list() }
-    val vehicles = remember { model.books.vehicles.list() }
+    // The vehicles in use, and the trip's own vehicle even if sold or retired since.
+    val vehicles = remember { model.books.vehicles.list(includeInactive = true).filter { it.status == VehicleStatus.ACTIVE || it.id == t.vehicleId } }
     var day by remember { mutableStateOf(t.date.toString()) }
     var origin by remember { mutableStateOf(t.origin.orEmpty()) }
     var destination by remember { mutableStateOf(t.destination) }
@@ -150,8 +157,10 @@ private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
     var round by remember { mutableStateOf(t.roundTrip) }
     var purpose by remember { mutableStateOf(t.purpose) }
     var member by remember { mutableStateOf(members.firstOrNull { it.id == t.memberId }) }
-    var vehicle by remember { mutableStateOf(vehicles.firstOrNull { it.id == t.vehicleId } ?: vehicles.firstOrNull()) }
+    // A new trip proposes the first vehicle in use; a saved one keeps its own, or none.
+    var vehicle by remember { mutableStateOf(if (t.id.isBlank()) vehicles.firstOrNull { it.status == VehicleStatus.ACTIVE } else vehicles.firstOrNull { it.id == t.vehicleId }) }
     var notes by remember { mutableStateOf(t.notes.orEmpty()) }
+    var asking by remember { mutableStateOf(false) }
     FormDialog(model.t(if (t.id.isBlank()) "trips.add" else "trips.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.trips.save(t.copy(date = date(day), origin = origin, destination = destination, kmOneWay = decimal(km, "error.tripDistance"), roundTrip = round, purpose = purpose, memberId = member?.id, vehicleId = vehicle?.id, notes = notes))
@@ -176,7 +185,12 @@ private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
         }
         TextInput(model.t("calendar.notes"), notes) { notes = it }
         if (purpose == TripPurpose.MEDICAL) Text(model.t("trips.medicalHint", TripService.MEDICAL_MIN_KM), style = MaterialTheme.typography.bodySmall)
-        if (t.id.isNotBlank()) TextButton(onClick = { if (model.act { model.books.trips.delete(t) } != null) onClose() }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+        if (t.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("trips.delete.body", model.date(t.date), t.destination), onDismiss = { asking = false }) {
+            (model.act { model.books.trips.delete(t) } != null).also { if (it) onClose() }
+        }
     }
 }
 
@@ -269,6 +283,7 @@ private fun ContractorJobsDialog(model: BooksModel, c: Contractor, onClose: () -
     var cost by remember { mutableStateOf("") }
     var rating by remember { mutableStateOf<Int?>(null) }
     var asset by remember { mutableStateOf<ca.schippers.hfm.books.Asset?>(null) }
+    var deleting by remember { mutableStateOf<ContractorJob?>(null) }
     FormDialog(c.name, model.t("contractor.addJob"), model.t("common.close"), canSave = description.isNotBlank(), onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.contractors.saveJob(c, ContractorJob("", date(day), description, parseAmount(cost, model.books.reports.base, locale)?.abs(), rating, asset?.id))
@@ -280,7 +295,7 @@ private fun ContractorJobsDialog(model: BooksModel, c: Contractor, onClose: () -
                 Text(model.date(j.date), Modifier.width(100.dp))
                 Text(j.description + (j.rating?.let { " · " + "★".repeat(it) } ?: ""), Modifier.weight(1f))
                 j.cost?.let { MoneyText(model, it) }
-                TextButton(onClick = { model.act { model.books.contractors.deleteJob(c, j.id) }; onClose() }) { Text("✕") }
+                TextButton(onClick = { deleting = j }) { Text("✕") }
             }
         }
         Text(model.t("contractor.newJob"), style = MaterialTheme.typography.titleSmall)
@@ -293,6 +308,11 @@ private fun ContractorJobsDialog(model: BooksModel, c: Contractor, onClose: () -
             Picker(model.t("contractor.rating"), listOf(null, 1, 2, 3, 4, 5), rating, { it?.let { n -> "★".repeat(n) } ?: model.t("contractor.notRated") }, Modifier.weight(1f)) { rating = it }
         }
         if (homes.isNotEmpty()) Picker(model.t("contractor.asset"), listOf(null) + homes, asset, { it?.name ?: model.t("contractor.noAsset") }) { asset = it }
+    }
+    deleting?.let { j ->
+        AskBeforeDeleting(model, model.t("contractor.deleteJob.body", j.description, model.date(j.date)), onDismiss = { deleting = null }) {
+            (model.act { model.books.contractors.deleteJob(c, j.id) } != null).also { if (it) onClose() }
+        }
     }
 }
 
@@ -353,6 +373,7 @@ private fun ProjectDialog(model: BooksModel, p: HomeProject, homes: List<ca.schi
     var budget by remember { mutableStateOf(p.budget?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
     var capital by remember { mutableStateOf(p.capital) }
     var notes by remember { mutableStateOf(p.notes.orEmpty()) }
+    var asking by remember { mutableStateOf(false) }
     FormDialog(model.t(if (p.id.isBlank()) "project.add" else "project.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.homeProjects.save(p.copy(name = name, status = status, assetId = home?.id, start = optionalDate(start), end = optionalDate(end), budget = parseAmount(budget, p.currency, locale)?.abs(), capital = capital, notes = notes))
@@ -372,7 +393,12 @@ private fun ProjectDialog(model: BooksModel, p: HomeProject, homes: List<ca.schi
         LabeledCheckbox(model.t("project.capitalCheck"), capital) { capital = it }
         Text(model.t("project.capitalHint"), style = MaterialTheme.typography.bodySmall)
         TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
-        if (p.id.isNotBlank()) TextButton(onClick = { if (model.act { model.books.homeProjects.delete(p) } != null) onClose() }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+        if (p.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("project.delete.body", p.name), onDismiss = { asking = false }) {
+            (model.act { model.books.homeProjects.delete(p) } != null).also { if (it) onClose() }
+        }
     }
 }
 
@@ -384,6 +410,7 @@ private fun ProjectCostsDialog(model: BooksModel, p: HomeProject, onClose: () ->
     var description by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var contractor by remember { mutableStateOf<Contractor?>(null) }
+    var deleting by remember { mutableStateOf<ca.schippers.hfm.books.ProjectCost?>(null) }
     FormDialog(p.name, model.t("project.addCost"), model.t("common.close"), canSave = amount.isNotBlank(), onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.homeProjects.addCost(p, date(day), description, parseAmount(amount, p.currency, locale) ?: throw ValidationException("error.projectCost"), contractor?.id)
@@ -396,7 +423,7 @@ private fun ProjectCostsDialog(model: BooksModel, p: HomeProject, onClose: () ->
                 Text(model.date(c.date), Modifier.width(100.dp))
                 Text(c.description + (contractors.firstOrNull { it.id == c.contractorId }?.let { " · ${it.name}" } ?: ""), Modifier.weight(1f))
                 MoneyText(model, c.amount)
-                TextButton(onClick = { model.act { model.books.homeProjects.deleteCost(p, c.id) }; onClose() }) { Text("✕") }
+                TextButton(onClick = { deleting = c }) { Text("✕") }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -406,6 +433,11 @@ private fun ProjectCostsDialog(model: BooksModel, p: HomeProject, onClose: () ->
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             AmountInput(model.t("share.amount"), amount, p.currency, locale, Modifier.weight(1f), model::money) { amount = it }
             if (contractors.isNotEmpty()) Picker(model.t("project.contractor"), listOf(null) + contractors, contractor, { it?.name ?: "—" }, Modifier.weight(1f)) { contractor = it }
+        }
+    }
+    deleting?.let { c ->
+        AskBeforeDeleting(model, model.t("project.deleteCost.body", c.description, model.money(c.amount)), onDismiss = { deleting = null }) {
+            (model.act { model.books.homeProjects.deleteCost(p, c.id) } != null).also { if (it) onClose() }
         }
     }
 }
@@ -438,11 +470,13 @@ private fun InvoicesTab(model: BooksModel) {
     var editing by remember { mutableStateOf<Invoice?>(null) }
     var paying by remember { mutableStateOf<Invoice?>(null) }
     val outstanding = invoices.filter { it.status == InvoiceStatus.SENT }
+    // SAL-04: what is waiting to be paid, one total per currency.
+    val waiting = remember(invoices) { books.invoices.outstanding() }
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         Button(onClick = { editing = Invoice("", model.workGroup(), books.invoices.nextNumber(today().year), "", today(), books.reports.base, listOf(InvoiceLine("", "1", ""))) }) {
             Text(model.t("invoice.add"))
         }
-        if (outstanding.isNotEmpty()) Text(model.t("invoice.outstanding", outstanding.size, model.money(outstanding.fold(Money.zero(books.reports.base)) { a, i -> if (i.currency == a.currency) a + i.total else a })))
+        if (outstanding.isNotEmpty()) Text(model.t("invoice.outstanding", outstanding.size, waiting.joinToString(" + ") { model.money(it) }))
     }
     if (invoices.isEmpty()) Text(model.t("invoice.none"), Modifier.padding(vertical = 8.dp))
     Column(Modifier.verticalScroll(rememberScrollState()).padding(top = 8.dp)) {
@@ -481,6 +515,8 @@ private fun InvoiceDialog(model: BooksModel, i: Invoice, onClose: () -> Unit) {
     val locale = model.language.locale
     val members = remember { model.books.members.list() }
     var number by remember { mutableStateOf(i.number) }
+    // SAL-04: a new invoice's number follows the year of its issue date, as long as it is the one proposed.
+    var proposed by remember { mutableStateOf(i.number.takeIf { i.id.isBlank() }) }
     var customer by remember { mutableStateOf(i.customer) }
     var details by remember { mutableStateOf(i.customerDetails.orEmpty()) }
     var issue by remember { mutableStateOf(i.issueDate.toString()) }
@@ -492,6 +528,7 @@ private fun InvoiceDialog(model: BooksModel, i: Invoice, onClose: () -> Unit) {
     var qst by remember { mutableStateOf(i.taxes.firstOrNull { it.name == "QST" || it.name == "PST" }?.let { BigDecimal(it.rateBp).movePointLeft(2).stripTrailingZeros().toPlainString() }.orEmpty()) }
     var notes by remember { mutableStateOf(i.notes.orEmpty()) }
     val lines = remember { mutableStateListOf<LineRow>().apply { i.lines.forEach { add(LineRow(it.description, it.quantity, it.unitPrice)) } } }
+    var asking by remember { mutableStateOf(false) }
     FormDialog(model.t(if (i.id.isBlank()) "invoice.add" else "invoice.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
             fun bp(text: String) = text.trim().ifEmpty { null }?.let { decimal(it, "error.loanRate").movePointRight(2).toInt() }
@@ -513,7 +550,14 @@ private fun InvoiceDialog(model: BooksModel, i: Invoice, onClose: () -> Unit) {
             }
             TextInput(model.t("invoice.customerDetails"), details, singleLine = false) { details = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DateInput(model.t("invoice.issued"), issue, Modifier.weight(1f)) { issue = it }
+                DateInput(model.t("invoice.issued"), issue, Modifier.weight(1f)) {
+                    issue = it
+                    val year = runCatching { LocalDate.parse(it.trim()).year }.getOrNull()
+                    if (year != null && proposed != null && number == proposed) {
+                        proposed = model.books.invoices.nextNumber(year)
+                        number = proposed!!
+                    }
+                }
                 DateInput(model.t("invoice.due"), due, Modifier.weight(1f)) { due = it }
                 Picker(model.t("invoice.status"), InvoiceStatus.entries, status, { model.t("invoiceStatus.$it") }, Modifier.weight(1f)) { status = it }
             }
@@ -535,8 +579,31 @@ private fun InvoiceDialog(model: BooksModel, i: Invoice, onClose: () -> Unit) {
             }
             Text(model.t("invoice.taxHint"), style = MaterialTheme.typography.bodySmall)
             TextInput(model.t("invoice.notes"), notes, singleLine = false) { notes = it }
-            if (i.id.isNotBlank()) TextButton(onClick = { if (model.act { model.books.invoices.delete(i) } != null) onClose() }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+            if (i.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
         }
+    }
+    if (asking) InvoiceDeleteDialog(model, i, onDismiss = { asking = false }, onDeleted = onClose)
+}
+
+/** SAL-04: asks before deleting an invoice and, when its deposit is still in the books, whether it goes too. */
+@Composable
+private fun InvoiceDeleteDialog(model: BooksModel, i: Invoice, onDismiss: () -> Unit, onDeleted: () -> Unit) {
+    val books = model.books
+    val deposit = remember { books.invoices.deposit(i) }
+    val accounts = remember { books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name } }
+    var withDeposit by remember { mutableStateOf(false) }
+    AskBeforeDeleting(
+        model, model.t("invoice.delete.body", i.number, i.customer), onDismiss = onDismiss,
+        extra = {
+            if (deposit != null) {
+                LabeledCheckbox(model.t("invoice.delete.deposit", model.money(deposit.amount), model.date(deposit.date), accounts[deposit.accountId].orEmpty()), withDeposit) { withDeposit = it }
+                Text(model.t("invoice.delete.depositHint"), style = MaterialTheme.typography.bodySmall)
+            }
+        },
+    ) {
+        // A reconciled deposit is deleted only once the user confirms it.
+        (model.act(retryConfirmed = { books.invoices.delete(i, withDeposit = true, confirmReconciled = true); onDeleted() }) { books.invoices.delete(i, withDeposit) } != null)
+            .also { if (it) onDeleted() }
     }
 }
 
@@ -611,15 +678,26 @@ private fun RentalDialog(model: BooksModel, p: RentalProperty, onClose: () -> Un
     var address by remember { mutableStateOf(p.address.orEmpty()) }
     var share by remember { mutableStateOf(BigDecimal(p.shareBp).movePointLeft(2).stripTrailingZeros().toPlainString()) }
     var notes by remember { mutableStateOf(p.notes.orEmpty()) }
+    var asking by remember { mutableStateOf(false) }
+    var removeTag by remember { mutableStateOf(false) }
+    val tag = remember { model.books.tags().firstOrNull { it.id == p.tagId }?.name }
     FormDialog(model.t(if (p.id.isBlank()) "rental.add" else "rental.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act { model.books.rentals.save(p.copy(name = name, address = address, shareBp = decimal(share, "error.rentalShare").movePointRight(2).toInt(), notes = notes)) }
         if (ok != null) onClose()
     }) {
-        TextInput(model.t("rental.name"), name, supporting = if (p.id.isBlank()) model.t("rental.nameHint") else null) { name = it }
+        TextInput(model.t("rental.name"), name, supporting = model.t(if (p.id.isBlank()) "rental.nameHint" else "rental.renameHint")) { name = it }
         TextInput(model.t("rental.address"), address) { address = it }
         TextInput(model.t("rental.sharePercent"), share) { share = it }
         TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
-        if (p.id.isNotBlank()) TextButton(onClick = { if (model.act { model.books.rentals.delete(p) } != null) onClose() }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+        if (p.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+    }
+    if (asking) {
+        AskBeforeDeleting(
+            model, model.t("rental.delete.body", p.name), onDismiss = { asking = false },
+            extra = { if (tag != null) LabeledCheckbox(model.t("rental.delete.tag", tag), removeTag) { removeTag = it } },
+        ) {
+            (model.act { model.books.rentals.delete(p, removeTag) } != null).also { if (it) onClose() }
+        }
     }
 }
 
@@ -642,6 +720,7 @@ fun RewardsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
     var kind by remember { mutableStateOf(RewardKind.EARNED) }
     var worth by remember { mutableStateOf("") }
     fun n(v: BigDecimal) = String.format(locale, "%,.2f", v.toDouble()).removeSuffix(".00").removeSuffix(",00")
+    var deleting by remember { mutableStateOf<ca.schippers.hfm.books.RewardEntry?>(null) }
     FormDialog(model.t("rewards.title", account.name), model.t("common.save"), model.t("common.close"), canSave = name.isNotBlank(), onDismiss = onClose, onSave = {
         val ok = model.act {
             books.rewards.save(CardReward(account.id, account.groupId, name, unit, rate.trim().replace(',', '.').ifEmpty { null }?.toBigDecimalOrNull(), value.trim().replace(',', '.').ifEmpty { null }?.toBigDecimalOrNull()))
@@ -671,7 +750,7 @@ fun RewardsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
                     Text(model.date(e.date), Modifier.width(100.dp))
                     Text(model.t("rewardKind.${e.kind}") + (e.value?.let { " · ${model.money(it)}" } ?: "") + (e.notes?.let { " · $it" } ?: ""), Modifier.weight(1f))
                     Text(n(if (e.kind == RewardKind.REDEEMED) -e.units else e.units))
-                    TextButton(onClick = { model.act { books.rewards.deleteEntry(account.id, e.id) } }) { Text("✕") }
+                    TextButton(onClick = { deleting = e }) { Text("✕") }
                 }
             }
         }
@@ -683,5 +762,10 @@ fun RewardsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
             TextInput(model.t("rewards.units"), units, Modifier.width(120.dp)) { units = it }
         }
         if (kind == RewardKind.REDEEMED) AmountInput(model.t("rewards.redeemedFor"), worth, account.currency, locale, Modifier.fillMaxWidth(), model::money) { worth = it }
+    }
+    deleting?.let { e ->
+        AskBeforeDeleting(model, model.t("rewards.deleteEntry.body", model.t("rewardKind.${e.kind}"), n(e.units), model.date(e.date)), onDismiss = { deleting = null }) {
+            model.act { books.rewards.deleteEntry(account.id, e.id) } != null
+        }
     }
 }

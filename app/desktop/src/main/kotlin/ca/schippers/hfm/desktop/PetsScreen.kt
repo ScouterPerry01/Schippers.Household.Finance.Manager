@@ -53,7 +53,8 @@ fun PetsScreen(model: BooksModel) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(model.t("nav.pets"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
             LabeledCheckbox(model.t("pets.showArchived"), showArchived) { showArchived = it }
-            Button(onClick = { editing = Pet("", "", Species.DOG) }, modifier = Modifier.padding(start = 8.dp)) { Text(model.t("pets.add")) }
+            // HH-06: a viewer sees the pets but cannot change them.
+            if (books.pets.canChange) Button(onClick = { editing = Pet("", "", Species.DOG) }, modifier = Modifier.padding(start = 8.dp)) { Text(model.t("pets.add")) }
         }
         LazyColumn(Modifier.padding(top = 8.dp)) {
             if (pets.isEmpty()) item { Text(model.t("pets.none"), Modifier.padding(8.dp)) }
@@ -247,7 +248,7 @@ private fun PetDialog(model: BooksModel, existing: Pet, onClose: () -> Unit) {
             TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
             if (existing.id.isNotBlank()) {
                 LabeledCheckbox(model.t("pets.archivedField"), archived) { archived = it }
-                TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+                if (books.pets.canChange) TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
         }
     }

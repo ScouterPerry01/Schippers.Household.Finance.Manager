@@ -40,6 +40,7 @@ import ca.schippers.hfm.books.AssetService
 import ca.schippers.hfm.books.AssetStatus
 import ca.schippers.hfm.books.AssetWarranty
 import ca.schippers.hfm.books.AssetWarrantyKind
+import ca.schippers.hfm.books.CoverageStatus
 import ca.schippers.hfm.books.InsuranceClaim
 import ca.schippers.hfm.books.InsuranceClaimStatus
 import ca.schippers.hfm.books.InsurancePolicy
@@ -136,7 +137,8 @@ private fun AssetsTabView(model: BooksModel) {
 private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit) {
     val books = model.books
     val locale = model.language.locale
-    val cad = Currency.CAD
+    // AST-01: an asset's amounts are in the household's base currency (or the one it was saved in).
+    val cur = if (existing.id.isBlank()) books.rates.baseCurrency else existing.currency
     fun amt(m: Money?) = m?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()
     val others = remember { books.assets.list().filter { it.id != existing.id } }
     val members = remember { books.members.list() }
@@ -165,6 +167,7 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
     var meter by remember { mutableStateOf(existing.meter) }
     var saved by remember { mutableStateOf(existing.takeIf { it.id.isNotBlank() }) }
     var warranty by remember { mutableStateOf<AssetWarranty?>(null) }
+    var asking by remember { mutableStateOf(false) }
     val linked = transactionId?.let { id -> remember(id) { runCatching { books.transactions.get(id) }.getOrNull() } }
     val hits = remember(find) { if (find.trim().length < 2) emptyList() else books.search.search(find, locale, 30).transactions.filter { it.transaction.amount.isNegative } }
 
@@ -183,7 +186,7 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DateInput(model.t("assets.purchaseDate"), purchaseDate, Modifier.weight(1f)) { purchaseDate = it }
                 TextInput(model.t("assets.seller"), seller, Modifier.weight(1f)) { seller = it }
-                AmountInput(model.t("assets.price"), price, cad, locale, Modifier.weight(1f), model::money) { price = it }
+                AmountInput(model.t("assets.price"), price, cur, locale, Modifier.weight(1f), model::money) { price = it }
             }
             // AST-01: the purchase in the books, found by payee or memo.
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -213,7 +216,7 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Picker(model.t("assets.valueMethod"), ValueMethod.entries, method, { model.t("valueMethod.$it") }, Modifier.width(220.dp)) { method = it }
                 when (method) {
-                    ValueMethod.MANUAL -> AmountInput(model.t("assets.value"), value, cad, locale, Modifier.width(180.dp), model::money) { value = it }
+                    ValueMethod.MANUAL -> AmountInput(model.t("assets.value"), value, cur, locale, Modifier.width(180.dp), model::money) { value = it }
                     ValueMethod.DEPRECIATION -> {
                         TextInput(model.t("assets.years"), years, Modifier.width(120.dp)) { years = it }
                         TextInput(model.t("assets.residual"), residual, Modifier.width(150.dp)) { residual = it }
@@ -227,7 +230,7 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
                 Picker(model.t("assets.status"), AssetStatus.entries, status, { model.t("assetStatus.$it") }, Modifier.weight(1f)) { status = it }
                 if (status != AssetStatus.ACTIVE) {
                     DateInput(model.t("assets.disposalDate"), disposalDate, Modifier.weight(1f)) { disposalDate = it }
-                    if (status == AssetStatus.SOLD) AmountInput(model.t("assets.salePrice"), disposalPrice, cad, locale, Modifier.weight(1f), model::money) { disposalPrice = it }
+                    if (status == AssetStatus.SOLD) AmountInput(model.t("assets.salePrice"), disposalPrice, cur, locale, Modifier.weight(1f), model::money) { disposalPrice = it }
                 }
             }
             TextInput(model.t("account.notes"), notes, singleLine = false) { notes = it }
@@ -237,16 +240,16 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
                         books.assets.save(
                             existing.copy(
                                 id = saved?.id.orEmpty(), kind = kind, name = name, parentId = parentId, make = make, model = modelName, serialNumber = serial,
-                                purchaseDate = dateOrNull(purchaseDate), seller = seller, purchasePrice = parseAmount(price, cad, locale), transactionId = transactionId,
-                                location = location, ownerMemberId = ownerId, valueMethod = method, value = parseAmount(value, cad, locale), valueDate = today().takeIf { method == ValueMethod.MANUAL },
+                                purchaseDate = dateOrNull(purchaseDate), seller = seller, purchasePrice = parseAmount(price, cur, locale), transactionId = transactionId,
+                                location = location, ownerMemberId = ownerId, valueMethod = method, value = parseAmount(value, cur, locale), valueDate = today().takeIf { method == ValueMethod.MANUAL },
                                 depreciationYears = intOrNull(years), residualPercent = residual.trim().ifEmpty { null }?.let { runCatching { MoneyFormat.parseDecimal(it, locale) }.getOrElse { throw ValidationException("error.invalidNumber") } },
                                 inNetWorth = inNetWorth && method != ValueMethod.NONE, status = status, disposalDate = dateOrNull(disposalDate).takeIf { status != AssetStatus.ACTIVE },
-                                disposalPrice = parseAmount(disposalPrice, cad, locale).takeIf { status == AssetStatus.SOLD }, notes = notes, meter = meter,
+                                disposalPrice = parseAmount(disposalPrice, cur, locale).takeIf { status == AssetStatus.SOLD }, notes = notes, meter = meter,
                             ),
                         )
                     }?.let { saved = it }
                 }) { Text(model.t("common.save")) }
-                saved?.let { s -> TextButton(onClick = { model.act { books.assets.delete(s.id) }?.let { onClose() } }) { Text(model.t("common.delete")) } }
+                if (saved != null) TextButton(onClick = { asking = true }) { Text(model.t("common.delete")) }
             }
 
             saved?.let { s ->
@@ -257,10 +260,7 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
                 for (c in coverage) {
                     Row(Modifier.fillMaxWidth().let { m -> c.warranty?.let { w -> m.clickable { warranty = w } } ?: m }.padding(vertical = 3.dp)) {
                         Text(listOf(model.t(c.kindKey), c.label).filter { it.isNotBlank() }.joinToString(" · "), Modifier.weight(1f))
-                        Text(
-                            (c.until?.let { model.t(if (c.active) "assets.until" else "assets.ended", model.date(it)) } ?: model.t("assets.noEnd")),
-                            style = MaterialTheme.typography.bodySmall, color = if (c.active) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.outline,
-                        )
+                        Text(coverageEnd(model, c), style = MaterialTheme.typography.bodySmall, color = if (c.active) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.outline)
                     }
                 }
                 OutlinedButton(onClick = { warranty = AssetWarranty("", s.groupId, s.id, AssetWarrantyKind.MANUFACTURER, startDate = s.purchaseDate) }) { Text(model.t("assets.addWarranty")) }
@@ -270,6 +270,23 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
         }
     }
     warranty?.let { w -> WarrantyDialog(model, w) { warranty = null } }
+    saved?.let { s ->
+        if (asking) {
+            AskBeforeDeleting(model, model.t("assets.delete.asset", s.name), onDismiss = { asking = false }) {
+                (model.act { books.assets.delete(s.id) } != null).also { if (it) onClose() }
+            }
+        }
+    }
+}
+
+/** WAR-04: "until 2027-05-01", "ended 2026-01-31", "ended: 500 hours used", or "no end date". */
+private fun coverageEnd(model: BooksModel, c: CoverageStatus): String {
+    val until = c.until
+    return when {
+        c.usedUp -> model.t("assets.endedHours", c.warranty?.endHours ?: 0)
+        until != null -> model.t(if (c.active) "assets.until" else "assets.ended", model.date(until))
+        else -> model.t("assets.noEnd")
+    }
 }
 
 @Composable
@@ -290,6 +307,9 @@ private fun WarrantyDialog(model: BooksModel, existing: AssetWarranty, onClose: 
     var outcome by remember { mutableStateOf("") }
     var covered by remember { mutableStateOf("") }
     val claims = remember(model.revision, existing.id) { if (existing.id.isBlank()) emptyList() else books.assets.claims(existing.id) }
+    val base = books.rates.baseCurrency
+    var asking by remember { mutableStateOf(false) }
+    var deletingClaim by remember { mutableStateOf<WarrantyClaim?>(null) }
     WideDialog(model.t("assets.warranty"), model.t("common.close"), onClose) {
         Column(Modifier.width(640.dp).heightIn(max = 600.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -314,7 +334,7 @@ private fun WarrantyDialog(model: BooksModel, existing: AssetWarranty, onClose: 
                         books.assets.saveWarranty(existing.copy(kind = kind, provider = provider, coverage = coverage, startDate = dateOrNull(start), endDate = dateOrNull(end), endHours = intOrNull(hours), phone = phone, cardAccountId = cardId.takeIf { kind == AssetWarrantyKind.CARD_EXTENDED }, notes = notes))
                     }?.let { onClose() }
                 }) { Text(model.t("common.save")) }
-                if (existing.id.isNotBlank()) TextButton(onClick = { model.act { books.assets.deleteWarranty(existing.id) }; onClose() }) { Text(model.t("common.delete")) }
+                if (existing.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete")) }
             }
             if (existing.id.isNotBlank()) {
                 HorizontalDivider(Modifier.padding(vertical = 6.dp))
@@ -323,19 +343,29 @@ private fun WarrantyDialog(model: BooksModel, existing: AssetWarranty, onClose: 
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("${model.date(c.date)} · ${c.problem}" + (c.outcome?.let { " → $it" }.orEmpty()), Modifier.weight(1f))
                         c.covered?.let { Text(model.t("assets.coveredAmount", model.money(it)), style = MaterialTheme.typography.bodySmall) }
-                        TextButton(onClick = { model.act { books.assets.deleteClaim(existing.id, c.id) } }) { Text(model.t("common.delete")) }
+                        TextButton(onClick = { deletingClaim = c }) { Text(model.t("common.delete")) }
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     TextInput(model.t("assets.problem"), problem, Modifier.weight(1f)) { problem = it }
                     TextInput(model.t("assets.outcome"), outcome, Modifier.weight(1f)) { outcome = it }
-                    AmountInput(model.t("assets.coveredLabel"), covered, Currency.CAD, locale, Modifier.width(140.dp), model::money) { covered = it }
+                    AmountInput(model.t("assets.coveredLabel"), covered, base, locale, Modifier.width(140.dp), model::money) { covered = it }
                     OutlinedButton(onClick = {
-                        model.act { books.assets.saveClaim(WarrantyClaim("", existing.id, today(), problem, outcome, parseAmount(covered, Currency.CAD, locale))) }?.let { problem = ""; outcome = ""; covered = "" }
+                        model.act { books.assets.saveClaim(WarrantyClaim("", existing.id, today(), problem, outcome, parseAmount(covered, base, locale))) }?.let { problem = ""; outcome = ""; covered = "" }
                     }) { Text(model.t("assets.addClaim")) }
                 }
                 DocumentsBlock(model, AssetService.WARRANTY, existing.id, existing.groupId, "assets.proof")
             }
+        }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("assets.delete.warranty", model.t("assetWarranty.${existing.kind}")), onDismiss = { asking = false }) {
+            (model.act { books.assets.deleteWarranty(existing.id) } != null).also { if (it) onClose() }
+        }
+    }
+    deletingClaim?.let { c ->
+        AskBeforeDeleting(model, model.t("assets.delete.claim", c.problem, model.date(c.date)), onDismiss = { deletingClaim = null }) {
+            model.act { books.assets.deleteClaim(existing.id, c.id) } != null
         }
     }
 }
@@ -359,8 +389,7 @@ private fun CoveredTab(model: BooksModel) {
                 }
                 for (c in item.coverage) {
                     Text(
-                        listOf(model.t(c.kindKey), c.label).filter { it.isNotBlank() }.joinToString(" · ") + " · " +
-                            (c.until?.let { model.t(if (c.active) "assets.until" else "assets.ended", model.date(it)) } ?: model.t("assets.noEnd")),
+                        listOf(model.t(c.kindKey), c.label).filter { it.isNotBlank() }.joinToString(" · ") + " · " + coverageEnd(model, c),
                         style = MaterialTheme.typography.bodySmall, color = if (c.active) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
                     )
                 }
@@ -458,6 +487,8 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
     var share by remember { mutableStateOf("") }
     var contingent by remember { mutableStateOf(false) }
     var claim by remember { mutableStateOf<InsuranceClaim?>(null) }
+    var asking by remember { mutableStateOf(false) }
+    var deletingBeneficiary by remember { mutableStateOf<PolicyBeneficiary?>(null) }
     val lifeKinds = setOf(PolicyKind.LIFE, PolicyKind.DISABILITY, PolicyKind.CRITICAL_ILLNESS, PolicyKind.LONG_TERM_CARE)
 
     WideDialog(model.t(if (existing.id.isBlank()) "insurance.add" else "insurance.policy"), model.t("common.close"), onClose) {
@@ -504,7 +535,7 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
                         )
                     }?.let { saved = it }
                 }) { Text(model.t("common.save")) }
-                saved?.let { s -> TextButton(onClick = { model.act { books.insurance.delete(s.id) }?.let { onClose() } }) { Text(model.t("common.delete")) } }
+                if (saved != null) TextButton(onClick = { asking = true }) { Text(model.t("common.delete")) }
             }
 
             saved?.let { s ->
@@ -518,7 +549,7 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
                     AmountInput(model.t("insurance.newPremium"), renewPremium, cad, locale, Modifier.width(180.dp), model::money) { renewPremium = it }
                     OutlinedButton(onClick = {
                         model.act { books.insurance.renew(s.id, dateOrNull(renewTo) ?: throw ValidationException("error.invalidDate"), parseAmount(renewPremium, cad, locale)) }?.let { r ->
-                            saved = r; renewal = r.renewalDate?.toString().orEmpty(); premium = amt(r.premium); renewTo = ""; renewPremium = ""
+                            saved = r; start = r.startDate?.toString().orEmpty(); renewal = r.renewalDate?.toString().orEmpty(); premium = amt(r.premium); renewTo = ""; renewPremium = ""
                         }
                     }) { Text(model.t("insurance.renew")) }
                 }
@@ -530,7 +561,7 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
                     for (b in list) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(b.name + (b.sharePercent?.let { " · ${it.stripTrailingZeros().toPlainString()} %" }.orEmpty()) + if (b.contingent) " · " + model.t("insurance.contingent") else "", Modifier.weight(1f))
-                            TextButton(onClick = { model.act { books.insurance.deleteBeneficiary(s.id, b.id) } }) { Text(model.t("common.delete")) }
+                            TextButton(onClick = { deletingBeneficiary = b }) { Text(model.t("common.delete")) }
                         }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -560,6 +591,18 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
         }
     }
     claim?.let { c -> ClaimDialog(model, c, items) { claim = null } }
+    saved?.let { s ->
+        if (asking) {
+            AskBeforeDeleting(model, model.t("insurance.delete.policy", "${model.t("policyKind.${s.kind}")} · ${s.insurer}"), onDismiss = { asking = false }) {
+                (model.act { books.insurance.delete(s.id) } != null).also { if (it) onClose() }
+            }
+        }
+        deletingBeneficiary?.let { b ->
+            AskBeforeDeleting(model, model.t("insurance.delete.beneficiary", b.name), onDismiss = { deletingBeneficiary = null }) {
+                model.act { books.insurance.deleteBeneficiary(s.id, b.id) } != null
+            }
+        }
+    }
 }
 
 @Composable

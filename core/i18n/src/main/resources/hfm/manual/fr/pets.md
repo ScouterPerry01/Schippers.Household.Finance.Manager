@@ -10,6 +10,8 @@ En haut :
 - **Afficher les anciens animaux** : décoché par défaut. Cochez-le pour voir aussi les animaux marqués **N’est plus dans le ménage**.
 - **Ajouter un animal** : ouvre un formulaire vierge. Voir [Ajouter ou modifier un animal](pets#pet-form).
 
+Les animaux appartiennent à tout le ménage, pas à un groupe de comptes : tous les utilisateurs les voient. Les administrateurs et les membres peuvent les ajouter, les modifier et les supprimer. Un utilisateur au rôle **Lecteur** voit les fiches, mais n’a ni **Ajouter un animal** ni **Supprimer**, et l’enregistrement d’un changement donne une erreur. Voir [Utilisateurs](users).
+
 En dessous se trouve une fiche par animal. Quand il n’y en a aucun, l’écran indique « Aucun animal pour l’instant. »
 
 ## La fiche de l’animal {#pet-card}
@@ -80,7 +82,7 @@ Un animal marqué **N’est plus dans le ménage** est caché de l’écran, de 
 
 ## Supprimer un animal {#delete}
 
-**Supprimer** dans le formulaire demande « Supprimer nom? Les opérations inscrites pour cet animal sont conservées. » Une fois confirmé, l’animal est supprimé. Les opérations qui le nommaient restent dans leurs comptes. C’est définitif ; marquer l’animal comme n’étant plus dans le ménage est habituellement préférable, puisque son historique est conservé.
+**Supprimer** dans le formulaire (absent pour un lecteur) demande « Supprimer nom? Les opérations inscrites pour cet animal sont conservées. » Une fois confirmé, l’animal est supprimé. Les opérations qui le nommaient restent dans leurs comptes. C’est définitif ; marquer l’animal comme n’étant plus dans le ménage est habituellement préférable, puisque son historique est conservé.
 
 ## Dossier de santé {#health-records}
 @index: dossier vétérinaire; vaccins de l’animal; médicaments de l’animal

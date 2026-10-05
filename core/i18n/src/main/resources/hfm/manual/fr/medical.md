@@ -15,6 +15,8 @@ L’écran a trois onglets :
 
 Les montants de cet écran sont en dollars canadiens.
 
+Les régimes et les dépenses sont gardés dans un groupe de comptes, comme les dossiers de santé : quiconque peut ouvrir ce groupe peut les lire. Chaque nouveau régime ou nouvelle dépense affiche **Enregistrer dans** pour choisir le groupe ; un groupe privé peut ainsi les garder des autres utilisateurs du ménage. Voir [Qui peut voir les dossiers](health#privacy-groups).
+
 Un bon ordre pour commencer : ajoutez d’abord vos régimes, avec leur couverture, puis inscrivez les dépenses. Sans régime, chaque dépense est simplement fermée sans rien à réclamer, mais elle compte quand même pour le crédit d’impôt.
 
 ## Comment fonctionnent les réclamations {#how-claims-work}
@@ -58,12 +60,13 @@ La boîte s’intitule **Ajouter une dépense** ou **Dépense médicale**.
 - **Médicament** : affiché quand le type de soins est **Médicaments sur ordonnance** et que la personne a des médicaments à l’écran Santé. Il lie la dépense à ce médicament.
 - **Compte pour le crédit d’impôt pour frais médicaux** : coché par défaut. Décochez-le pour une dépense que l’ARC n’accepte pas (par exemple une intervention esthétique ou un produit sans ordonnance). Seules les dépenses cochées comptent dans les montants du crédit d’impôt et vont dans le PDF des reçus.
 - **Notes**.
+- **Enregistrer dans** : le groupe de comptes où la dépense et ses réclamations sont gardées. Le premier groupe partagé où vous pouvez ajouter est proposé ; un groupe marqué « (privé) » n’appartient qu’à vous. Il se choisit à l’ajout de la dépense et ne peut plus être changé une fois enregistré. Si vous n’avez pas encore de groupe privé, **Créer mon groupe privé** en crée un et le choisit. Vous ne voyez pas les dépenses du groupe privé d’un autre utilisateur, et elles ne comptent pas dans vos montants du crédit d’impôt.
 
 Boutons :
 
 - **Enregistrer** : enregistre la dépense. Une nouvelle dépense doit être enregistrée avant qu’on puisse y ajouter des réclamations et des reçus ; la partie des réclamations paraît alors en dessous.
 - **Fermer : plus rien à réclamer** (une fois enregistrée) : marque la dépense fermée, même si un régime pourrait encore être réclamé. Servez-vous-en quand vous décidez de ne pas réclamer, ou quand la réponse d’un régime a tout réglé. Il devient **Rouvrir**, qui enlève la marque.
-- **Supprimer** (une fois enregistrée) : supprime la dépense avec ses réclamations, tout de suite et sans confirmation. C’est définitif.
+- **Supprimer** (une fois enregistrée) : demande « Supprimer cette dépense (genre de soins, date) avec ses réclamations? Ses reçus restent dans Documents. » et, une fois confirmé, supprime la dépense avec ses réclamations. C’est définitif.
 - **Fermer** (en bas) : ferme la boîte. Les changements non enregistrés avec **Enregistrer** sont perdus.
 
 ### Les réclamations d’une dépense {#claims}
@@ -73,7 +76,7 @@ Une fois la dépense enregistrée, la partie **Réclamations** liste chaque réc
 - **Inscrire le paiement** : voir [Inscrire le paiement](medical#record-payment).
 - **Refusée** : marque la réclamation refusée aujourd’hui, sans rien de payé. Le régime suivant dans l’ordre est alors proposé.
 
-Chaque réclamation a aussi **Supprimer**, qui la supprime aussitôt, par exemple si elle a été entrée par erreur. La dépense propose alors de nouveau ce régime.
+Chaque réclamation a aussi **Supprimer**, par exemple si elle a été entrée par erreur. Il demande « Supprimer la réclamation à régime soumise le date? » et, une fois confirmé, la supprime. La dépense propose alors de nouveau ce régime.
 
 Sous les réclamations :
 
@@ -155,11 +158,12 @@ La boîte s’intitule **Ajouter un régime** ou **Régime**.
 - **Crédit annuel** : seulement pour un compte gestion-santé. Voir [Compte gestion-santé](medical#hsa).
 - **Actif** : coché tant que le régime est en vigueur. Décochez-le quand le régime prend fin : il n’est plus proposé pour les nouvelles réclamations, n’est plus compté dans **Couverture restante** et affiche « inactif » dans la liste. Ses réclamations passées sont conservées.
 - **Notes**.
+- **Enregistrer dans** : le groupe de comptes où le régime et sa couverture sont gardés, choisi à l’ajout du régime, comme pour une dépense. Un régime dans un groupe privé n’est réclamé que pour les dépenses des utilisateurs qui peuvent ouvrir ce groupe.
 
 Boutons :
 
 - **Enregistrer** : enregistre le régime. Un nouveau régime doit être enregistré avant qu’on puisse y ajouter une couverture et des brochures.
-- **Supprimer** (une fois enregistré) : supprime le régime aussitôt, sans confirmation. Un régime qui a déjà des réclamations ne peut pas être supprimé ; décochez plutôt **Actif**.
+- **Supprimer** (une fois enregistré) : demande « Supprimer le régime « nom » avec sa couverture? » et, une fois confirmé, le supprime. Un régime qui a déjà des réclamations ne peut pas être supprimé ; décochez plutôt **Actif**.
 - **Fermer** : ferme la boîte ; les changements non enregistrés sont perdus.
 
 ### Qui est couvert et dans quel ordre {#coverage-order}
@@ -192,7 +196,7 @@ La boîte **Couverture** :
 - **Maximum par visite** : le plus que le régime paie pour une dépense, par exemple 30 $ par massage. Facultatif.
 - **Maximum par année** : le plus que le régime paie dans une année du régime pour cette personne et ce type de soins, par exemple 500 $ de physiothérapie. Facultatif. Ce qui en reste paraît à l’onglet **Couverture restante**.
 - **Une fois tous les (mois)** : « Par exemple 24 pour un examen de la vue aux deux ans, 9 pour un rappel dentaire. » De 1 à 120. Facultatif. L’onglet **Couverture restante** montre alors quand le service est de nouveau couvert.
-- **Enregistrer**, **Annuler**, et **Supprimer** pour une ligne enregistrée (la suppression est immédiate).
+- **Enregistrer**, **Annuler**, et **Supprimer** pour une ligne enregistrée : il demande « Supprimer la couverture pour genre de soins? Le régime ne paie plus ce genre de soins. » et, une fois confirmé, supprime la ligne.
 
 ### Compte gestion-santé {#hsa}
 @index: compte de dépenses en soins de santé; compte mieux-être; CGS

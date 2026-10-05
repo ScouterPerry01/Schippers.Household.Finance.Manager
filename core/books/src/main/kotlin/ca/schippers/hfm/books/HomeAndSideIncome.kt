@@ -231,7 +231,15 @@ class InvoiceService internal constructor(private val books: Books) {
         return list().first { it.id == id }
     }
 
-    fun delete(i: Invoice) = books.ledger(books.editable(i.groupId)).extrasQueries.deleteInvoice(i.id)
+    /**
+     * Deletes the invoice; with [withDeposit], also the deposit recorded when it was marked paid
+     * ([deposit]), which is deleted first. [confirmReconciled] as for any transaction.
+     */
+    fun delete(i: Invoice, withDeposit: Boolean = false, confirmReconciled: Boolean = false) {
+        val group = books.editable(i.groupId)
+        if (withDeposit) deposit(i)?.let { books.transactions.delete(it.id, confirmReconciled) }
+        books.ledger(group).extrasQueries.deleteInvoice(i.id)
+    }
 
     /**
      * Marks the invoice paid on [date]; with [accountId], also records the deposit there, on
@@ -246,8 +254,32 @@ class InvoiceService internal constructor(private val books: Books) {
             )
             val taxes = i.taxes.mapNotNull { t -> runCatching { ca.schippers.hfm.ocr.TaxName.valueOf(t.name.uppercase()) }.getOrNull()?.let { it to i.tax(t) } }.toMap()
             if (taxes.isNotEmpty()) books.transactions.setSalesTaxes(txn.id, taxes)
+            books.putSetting("$DEPOSIT_KEY.${paid.id}", txn.id)
         }
         return paid
+    }
+
+    /**
+     * The deposit recorded when the invoice was marked paid, while it is still in the books. For an
+     * invoice paid before the deposit was remembered, the deposit [markPaid] wrote is looked for:
+     * on the paid date, for the total, with the invoice number as memo, in an account of its currency.
+     */
+    fun deposit(i: Invoice): Transaction? {
+        books.setting("$DEPOSIT_KEY.${i.id}")?.ifBlank { null }?.let { id -> return runCatching { books.transactions.get(id) }.getOrNull() }
+        val paid = i.paidDate ?: return null
+        return books.accounts.list(includeClosed = true).map { it.account }.filter { it.currency == i.currency }.firstNotNullOfOrNull { a ->
+            books.transactions.register(a.id).map { it.transaction }.firstOrNull { it.date == paid && it.amount == i.total && it.memo == i.number }
+        }
+    }
+
+    /** The total of the invoices sent and not yet paid, one amount per currency, the base currency first. */
+    fun outstanding(): List<Money> = list().filter { it.status == InvoiceStatus.SENT }.groupBy { it.currency }
+        .map { (cur, l) -> l.fold(Money.zero(cur)) { a, i -> a + i.total } }
+        .sortedWith(compareBy({ it.currency != books.reports.base }, { it.currency.code }))
+
+    private companion object {
+        /** The setting that remembers an invoice's deposit: `invoice.deposit.<invoice id>`. */
+        const val DEPOSIT_KEY = "invoice.deposit"
     }
 }
 
@@ -282,21 +314,40 @@ class RentalService internal constructor(private val books: Books) {
         }
     }
 
-    /** Saves the property; a new one gets a tag of its own name, for tagging its transactions. */
+    /**
+     * Saves the property; a new one gets a tag of its own name, for tagging its transactions. A
+     * renamed property renames its tag too, unless another tag already has the new name.
+     */
     fun save(p: RentalProperty): RentalProperty {
         validate(p.name.isNotBlank(), "error.nameRequired")
         validate(p.shareBp in 1..10_000, "error.rentalShare")
-        val group = books.editable(list().firstOrNull { it.id == p.id }?.groupId ?: p.groupId)
+        val name = p.name.trim()
+        val existing = list().firstOrNull { it.id == p.id }
+        val group = books.editable(existing?.groupId ?: p.groupId)
         val tagId = p.tagId.ifBlank {
-            books.core.insertTag(Ids.newId(), p.name.trim())
-            books.core.tagByName(p.name.trim()).executeAsOne().id
+            books.core.insertTag(Ids.newId(), name)
+            books.core.tagByName(name).executeAsOne().id
+        }
+        if (existing != null && existing.name != name) {
+            validate(books.core.tagByName(name).executeAsOneOrNull()?.let { it.id == tagId } ?: true, "error.rentalTagTaken", name)
+            books.core.renameTag(name, tagId)
         }
         val id = p.id.ifBlank { Ids.newId() }
-        books.ledger(group).extrasQueries.upsertRentalProperty(id, p.name.trim(), p.address?.trim()?.ifEmpty { null }, tagId, p.shareBp.toLong(), p.assetId, p.notes?.trim()?.ifEmpty { null })
+        books.ledger(group).extrasQueries.upsertRentalProperty(id, name, p.address?.trim()?.ifEmpty { null }, tagId, p.shareBp.toLong(), p.assetId, p.notes?.trim()?.ifEmpty { null })
         return list().first { it.id == id }
     }
 
-    fun delete(p: RentalProperty) = books.ledger(books.editable(p.groupId)).extrasQueries.deleteRentalProperty(p.id)
+    /**
+     * Deletes the property; its transactions stay. With [removeTag], its tag is removed as well, from
+     * the tag list and from every transaction that had it, unless another property uses the same tag.
+     */
+    fun delete(p: RentalProperty, removeTag: Boolean = false) {
+        books.ledger(books.editable(p.groupId)).extrasQueries.deleteRentalProperty(p.id)
+        if (removeTag && list().none { it.tagId == p.tagId }) {
+            books.groups().forEach { g -> books.ledger(g).ledgerQueries.deleteTagEverywhere(p.tagId) }
+            books.core.deleteTag(p.tagId)
+        }
+    }
 
     fun year(p: RentalProperty, year: Int, labels: (String) -> String, french: Boolean = false): RentalYear {
         val filter = ReportFilter(LocalDate(year, 1, 1), LocalDate(year, 12, 31), tagId = p.tagId)

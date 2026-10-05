@@ -612,7 +612,7 @@ Le programme :
 Une fois le programme enregistré, la fenêtre affiche aussi :
 
 - une ligne de sommaire : Solde (gains et ajustements moins échanges), valeur (le solde fois la valeur d’une unité) et environ combien ont été gagnés cette année (les dépenses de l’année sur la carte fois le taux de gain, à titre d’estimation) ;
-- les douze dernières inscriptions, avec leur date, leur type, leur valeur et leur nombre ; **✕** supprime une inscription.
+- les douze dernières inscriptions, avec leur date, leur type, leur valeur et leur nombre ; **✕** demande « Supprimer cette inscription (type, nombre, date)? » et, une fois confirmé, supprime l’inscription.
 
 En dessous, Une nouvelle inscription note ce qu’indique un relevé. Elle est là dès le départ : un nouveau programme et sa première inscription s’enregistrent ensemble.
 

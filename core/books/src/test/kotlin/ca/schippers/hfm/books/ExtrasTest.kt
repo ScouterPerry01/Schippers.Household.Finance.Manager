@@ -138,4 +138,57 @@ class ExtrasTest {
         assertEquals(BigDecimal("1500"), s.estimatedThisYear)
         assertFailsWith<ValidationException> { books.rewards.addEntry(visa.id, LocalDate(2026, 9, 2), BigDecimal("-5"), RewardKind.EARNED) }
     }
+
+    @Test
+    fun `a medical trip becomes a medical expense once, and again only once that expense is deleted`() {
+        val sam = books.members.create("Sam", MemberKind.ADULT).id
+        val trip = books.trips.save(Trip("", group, LocalDate(2026, 6, 7), "Ottawa Heart Institute", BigDecimal("95"), true, TripPurpose.MEDICAL, memberId = sam))
+        assertEquals(null, books.trips.medicalExpense(trip))
+        val expense = books.trips.addToMedical(trip, sam, cad("0.59"), group)
+        assertEquals(expense.id, books.trips.medicalExpense(trip)?.id)
+        assertFailsWith<ValidationException> { books.trips.addToMedical(trip, sam, cad("0.59"), group) }
+        assertEquals(1, books.medical.expenses().size)
+        books.medical.deleteExpense(expense.id)
+        assertEquals(null, books.trips.medicalExpense(trip))
+        books.trips.addToMedical(trip, sam, cad("0.61"), group)
+        assertEquals(cad("115.90"), books.medical.expenses().single().amount)
+    }
+
+    @Test
+    fun `deleting an invoice can take its deposit with it, and what is waiting is totalled per currency`() {
+        val usd = books.accounts.create(AccountDraft(group, "US", AccountType.CHEQUING, Currency.USD, Money.parse("0", Currency.USD), LocalDate(2026, 1, 1)))
+        fun invoice(number: String, currency: Currency, price: String) = books.invoices.save(
+            Invoice("", group, number, "Client", LocalDate(2026, 9, 1), currency, listOf(InvoiceLine("Work", "1", price)), InvoiceStatus.SENT),
+        )
+        val a = invoice("2026-001", Currency.CAD, "100.00")
+        invoice("2026-002", Currency.CAD, "50.00")
+        invoice("2026-003", Currency.USD, "80.00")
+        assertEquals(listOf(cad("150.00"), Money.parse("80.00", Currency.USD)), books.invoices.outstanding())
+
+        val paid = books.invoices.markPaid(a, LocalDate(2026, 9, 15), chequing.id)
+        val deposit = books.invoices.deposit(paid)!!
+        assertEquals(cad("100.00"), deposit.amount)
+        books.invoices.delete(paid)
+        assertEquals(1, books.transactions.register(chequing.id).size, "without asking, the deposit stays")
+
+        val b = books.invoices.markPaid(books.invoices.list().single { it.number == "2026-002" }, LocalDate(2026, 9, 20), chequing.id)
+        books.invoices.delete(b, withDeposit = true)
+        assertEquals(listOf(cad("100.00")), books.transactions.register(chequing.id).map { it.transaction.amount })
+        assertEquals(0, books.transactions.register(usd.id).size)
+    }
+
+    @Test
+    fun `a rental property's tag follows its name, and can go with it`() {
+        val duplex = books.rentals.save(RentalProperty("", group, "Duplex on Elm", "", "12 Elm St"))
+        val renamed = books.rentals.save(duplex.copy(name = "Duplex on Oak"))
+        assertEquals(duplex.tagId, renamed.tagId)
+        assertEquals("Duplex on Oak", books.tags().single { it.id == duplex.tagId }.name)
+        books.transactions.create(TransactionDraft(chequing.id, LocalDate(2026, 3, 1), cad("1500.00"), "Tenant", tags = setOf("Duplex on Oak")))
+        books.rentals.save(RentalProperty("", group, "Cottage", "", null))
+        assertFailsWith<ValidationException>("another tag already has the name") { books.rentals.save(renamed.copy(name = "cottage")) }
+
+        books.rentals.delete(renamed, removeTag = true)
+        assertTrue(books.tags().none { it.id == duplex.tagId })
+        assertTrue(books.transactions.register(chequing.id).single().transaction.tagIds.isEmpty(), "the transaction stays, without the tag")
+    }
 }

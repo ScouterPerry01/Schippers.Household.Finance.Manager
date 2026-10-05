@@ -38,7 +38,7 @@ Les déplacements de l’année sont listés du plus récent au plus ancien. Cha
 - la date ;
 - le point de départ et la destination (« Maison → Bureau du client »), avec **↺** pour un aller-retour ;
 - le motif, la personne, le véhicule et les notes ;
-- **Ajouter aux frais médicaux**, pour un déplacement **Médical** de 40 km ou plus aller simple (voir [Déplacements pour des soins](#medical-travel)) ;
+- **Ajouter aux frais médicaux**, pour un déplacement **Médical** de 40 km ou plus aller simple (voir [Déplacements pour des soins](#medical-travel)) ; une fois le déplacement ajouté, le bouton devient **Ajouté aux frais médicaux** et ne se clique plus ;
 - la distance, doublée pour un aller-retour.
 
 Cliquez sur un déplacement pour le modifier ou le supprimer. S’il n’y a aucun déplacement dans l’année, la liste le dit.
@@ -59,10 +59,10 @@ La même boîte ajoute un déplacement (**Ajouter un déplacement**) ou le modif
 - **Kilomètres aller simple** : la distance aller simple, par exemple 23,5 (le point fonctionne aussi). Obligatoire, plus grande que zéro et sous 10 000. Elle est gardée avec une décimale.
 - **Aller-retour** : coché quand vous êtes revenu par le même chemin ; le déplacement compte alors deux fois la distance. Coché par défaut.
 - **Personne** : qui a fait le déplacement, ou **Ménage**. Elle décide de la carte où le déplacement compte et est proposée comme patient quand on l’ajoute aux frais médicaux.
-- **Véhicule** : le véhicule utilisé, ou **Aucun véhicule**. Seuls les déplacements avec un véhicule comptent dans la part de travail de ce véhicule. Le premier véhicule est choisi par défaut.
+- **Véhicule** : le véhicule utilisé, ou **Aucun véhicule**. Seuls les déplacements avec un véhicule comptent dans la part de travail de ce véhicule. Un nouveau déplacement propose le premier véhicule en service. Un déplacement enregistré garde son propre choix : **Aucun véhicule** reste **Aucun véhicule**, et un véhicule vendu ou retiré depuis reste dans la liste pour ce déplacement.
 - **Notes** : ce qu’il faut retenir, comme le client ou le motif de la visite.
 - Quand **Médical** est choisi, un rappel explique qu’un déplacement médical compte comme dépense médicale quand les soins sont à 40 km ou plus, aller simple, et ne sont pas offerts plus près.
-- **Supprimer** : affiché en modification. Supprime aussitôt le déplacement, sans demander.
+- **Supprimer** : affiché en modification. Demande « Supprimer le déplacement du date vers destination? » et, une fois confirmé, le supprime. C’est sans retour. Une dépense médicale faite à partir du déplacement reste dans l’écran Réclamations médicales.
 
 ## Déplacements pour des soins {#medical-travel}
 
@@ -83,4 +83,4 @@ Un déplacement **Médical** dont la distance aller simple est de 40 km ou plus 
 1. garde le taux de cette année pour les prochains déplacements ;
 2. ajoute pour la personne, dans l’écran [Réclamations médicales](medical), une dépense médicale du type **Déplacements pour des soins**, datée et payée à la date du déplacement, égale au taux fois les kilomètres du déplacement (doublés pour un aller-retour), avec comme description la destination et la distance.
 
-La dépense compte ensuite dans la réclamation médicale comme toute autre. Chaque clic ajoute une nouvelle dépense : n’ajoutez donc chaque déplacement qu’une fois ; pour défaire l’ajout, supprimez la dépense dans l’écran Réclamations médicales.
+La dépense compte ensuite dans la réclamation médicale comme toute autre. Un déplacement n’est ajouté qu’une fois : son bouton devient alors **Ajouté aux frais médicaux**. Pour l’ajouter de nouveau, par exemple à un autre taux, supprimez d’abord la dépense dans l’écran Réclamations médicales ; le bouton revient.

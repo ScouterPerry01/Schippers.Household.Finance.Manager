@@ -89,7 +89,7 @@ L’application rassemble les lectures de quatre sources, affichées dans la lis
 - **plein** : l’odomètre d’un plein ou d’une recharge ;
 - **entretien** : l’odomètre d’un entretien.
 
-Seules les lectures entrées avec **Inscrire l’odomètre** ont un bouton **Supprimer** ; les autres se changent dans leur propre fiche.
+Seules les lectures entrées avec **Inscrire l’odomètre** ont un bouton **Supprimer**, qui demande d’abord « Supprimer la lecture de 52 300 km du date? » ; les autres se changent dans leur propre fiche.
 
 Les lectures servent à :
 
@@ -153,7 +153,7 @@ Elles partent d’aujourd’hui et de l’odomètre actuel, sauf les pneus d’h
 - **Me le rappeler (km avant)** : combien de kilomètres avant la distance d’échéance la tâche passe à **Bientôt** ; 500 par défaut.
 - **Notes** : numéro de pièce, type d’huile, tout ce qui est utile.
 - **Active** (en modification) : décochez-la pour mettre en pause une tâche inutile pour l’instant. Une tâche en pause n’est jamais due et ne donne pas de rappel. Cochez-la de nouveau pour la reprendre.
-- **Supprimer** (en modification) : supprime la tâche aussitôt. Les entretiens qui l’ont inscrite sont conservés.
+- **Supprimer** (en modification) : demande « Supprimer la tâche « nom »? Les entretiens déjà inscrits sont conservés. » et, une fois confirmé, supprime la tâche. Les entretiens qui l’ont inscrite sont conservés.
 
 ### Quand une tâche est due {#task-due}
 
@@ -190,7 +190,7 @@ Le formulaire s’intitule **Ajouter un entretien** ou **Modifier l’entretien*
 - **Coût** : ce qu’il a coûté, dans la devise du véhicule.
 - **Notes** : le travail fait, les pièces, le numéro de facture.
 - Paiement : voir [Inscrire aussi le paiement](vehicles#payment).
-- **Supprimer** (en modification) : supprime l’entretien aussitôt. Un paiement inscrit avec lui reste dans son compte.
+- **Supprimer** (en modification) : demande « Supprimer l’entretien du date? Un paiement inscrit avec lui reste dans son compte. » et, une fois confirmé, supprime l’entretien. Le paiement reste dans son compte.
 
 ### Inscrire aussi le paiement {#payment}
 @index: lier une opération; payer avec un compte
@@ -219,7 +219,7 @@ En haut, la consommation de la dernière année et le coût du carburant par kil
 - **Plein fait** (ou **Recharge complète**) : coché par défaut. « La consommation se calcule d’un plein à l’autre. » Décochez-le pour un plein partiel.
 - **Station**.
 - Paiement : comme pour un entretien, avec la catégorie carburant ou recharge électrique proposée. Voir [Inscrire aussi le paiement](vehicles#payment).
-- **Supprimer** (en modification) : supprime l’inscription aussitôt.
+- **Supprimer** (en modification) : demande « Supprimer l’inscription du date? Un paiement inscrit avec elle reste dans son compte. » et, une fois confirmé, supprime l’inscription.
 
 ### Consommation {#consumption}
 
@@ -228,7 +228,7 @@ En haut, la consommation de la dernière année et le coût du carburant par kil
 ## Onglet Garanties {#warranties-tab}
 @index: garantie du véhicule; groupe motopropulseur; garantie prolongée; corrosion; garantie de la batterie
 
-« Un rappel arrive 60 jours avant la fin d’une garantie, pour signaler les problèmes pendant qu’ils sont couverts. »
+« Un rappel arrive 60 jours avant la fin d’une garantie, pour signaler les problèmes pendant qu’ils sont couverts. » Une garantie se termine à sa date de fin ou, quand elle a une limite de kilométrage, le jour où l’odomètre devrait l’atteindre au kilométrage habituel par jour (d’après des lectures à au moins deux semaines d’écart dans la dernière année), selon ce qui arrive en premier. Une garantie limitée seulement en kilomètres donne ainsi un rappel elle aussi.
 
 Chaque garantie affiche son type et son fournisseur, sa date de fin, sa limite de kilométrage et son téléphone, avec **Toujours couvert** ou **Terminée**. Une garantie couvre encore tant que la date du jour ne dépasse pas sa date de fin et que l’odomètre n’a pas dépassé sa limite de kilométrage. **Ajouter une garantie** en ajoute une ; **Modifier** en ouvre une.
 
@@ -238,11 +238,11 @@ Chaque garantie affiche son type et son fournisseur, sa date de fin, sa limite d
 - **Garage ou fournisseur** : qui l’honore ; la marque est proposée.
 - **Début** : la date d’achat est proposée.
 - **Fin** : la date de fin.
-- **Jusqu’à (km)** : la limite de kilométrage, par exemple 100 000.
+- **Jusqu’à (km)** : la limite de kilométrage, par exemple 100 000. Dès que l’odomètre la dépasse, la garantie est **Terminée** et ne donne plus de rappel.
 - Au moins l’un de **Fin** et **Jusqu’à (km)** est obligatoire, et la fin ne peut pas précéder le début.
 - **Téléphone pour les réclamations**.
 - **Notes** : ce qu’elle couvre, la franchise.
-- **Supprimer** (en modification) : la supprime aussitôt.
+- **Supprimer** (en modification) : demande « Supprimer cette garantie (type)? » et, une fois confirmé, la supprime.
 
 Le rappel arrive à partir de 60 jours avant la date de **Fin** et jusqu’à cette date ; une garantie limitée seulement en kilomètres ne donne pas de rappel, alors surveillez l’odomètre.
 
@@ -269,7 +269,7 @@ Le rapport **Entretien et coût de possession** sous [Rapports](reports) réunit
 Pour chaque véhicule en service :
 
 - **Renouvellement de l’immatriculation** et **Renouvellement de l’assurance** : un rappel à partir de 30 jours avant la date, qui reste une fois la date passée jusqu’à ce que vous entriez la nouvelle date, par exemple « Civic : immatriculation (ABC 123) dans 12 jours ».
-- Garanties : un rappel à partir de 60 jours avant la date de fin.
+- Garanties : un rappel à partir de 60 jours avant la date de fin, ou avant le jour où l’odomètre devrait atteindre la limite de kilométrage, selon ce qui arrive en premier, par exemple « Civic : fin de garantie (Honda · 100000 km) dans 40 jours ». Une garantie déjà passée sa date ou son kilométrage ne donne pas de rappel.
 - Entretien : les tâches **Bientôt** et **À faire**.
 
 Les rappels paraissent en haut de la fenêtre et dans une notification du système, et mènent à cet écran. Les dates de renouvellement, les fins de garantie et les échéances d’entretien paraissent aussi au [Calendrier](calendar).

@@ -15,6 +15,8 @@ The screen has three tabs:
 
 Amounts on this screen are in Canadian dollars.
 
+Plans and expenses are kept in an account group, as health records are: whoever can open that group can read them. Each new plan or expense shows **Store in** to choose the group, so a private group can keep them from other users of the household. See [Who can see the records](health#privacy-groups).
+
 A good order to start: add your plans first, with their coverage, then record expenses. Without plans, every expense is simply closed with nothing to claim, but it still counts for the tax credit.
 
 ## How claims work {#how-claims-work}
@@ -58,12 +60,13 @@ The dialog is titled **Add an expense** or **Medical expense**.
 - **Medication**: shown when the kind of care is **Prescriptions** and the person has medications on the Health screen. It links the expense to that medication.
 - **Counts for the medical expense tax credit**: ticked by default. Untick it for an expense the CRA does not accept (for example a cosmetic procedure or a non-prescription product). Only ticked expenses count in the tax credit figures and go into the receipts PDF.
 - **Notes**.
+- **Store in**: the account group the expense and its claims are kept in. The first shared group you can add to is proposed; a group marked "(private)" is yours alone. It is chosen when the expense is added and cannot be changed once saved. When you have no private group yet, **Create my private group** makes one and chooses it. Expenses in another user's private group are not seen by you, nor counted in your tax credit figures.
 
 Buttons:
 
 - **Save**: saves the expense. A new expense must be saved before claims and receipts can be added; the claims part then appears below.
 - **Close: nothing more to claim** (once saved): marks the expense closed, even if a plan could still be claimed. Use it when you decide not to claim, or when a plan's answer settled everything. It becomes **Open again**, which removes the mark.
-- **Delete** (once saved): removes the expense with its claims, right away and without asking. It cannot be undone.
+- **Delete** (once saved): asks "Delete this expense (kind of care, date) with its claims? Its receipts stay in Documents." and, once confirmed, deletes the expense with its claims. It cannot be undone.
 - **Close** (at the bottom): closes the dialog. Changes not saved with **Save** are lost.
 
 ### Claims on an expense {#claims}
@@ -73,7 +76,7 @@ Once the expense is saved, the **Claims** part lists each claim: the plan and it
 - **Record the payment**: see [Record the payment](medical#record-payment).
 - **Refused**: marks the claim refused today, with nothing paid. The next plan in the order is then proposed.
 
-Every claim also has **Delete**, which removes it at once, for example if it was entered by mistake. The expense then goes back to proposing that plan.
+Every claim also has **Delete**, for example if it was entered by mistake. It asks "Delete the claim to plan submitted on date?" and, once confirmed, deletes it. The expense then goes back to proposing that plan.
 
 Below the claims:
 
@@ -155,11 +158,12 @@ The dialog is titled **Add a plan** or **Plan**.
 - **Yearly credit**: only for a Health Spending Account. See [Health Spending Account](medical#hsa).
 - **Active**: ticked while the plan is in force. Untick it when the plan ends: it is no longer proposed for new claims, no longer counted in **Coverage left**, and shows "inactive" in the list. Its past claims are kept.
 - **Notes**.
+- **Store in**: the account group the plan and its coverage are kept in, chosen when the plan is added, as for an expense. A plan in a private group is claimed only on expenses of the users who can open that group.
 
 Buttons:
 
 - **Save**: saves the plan. A new plan must be saved before coverage and booklets can be added.
-- **Delete** (once saved): removes the plan at once, without asking. A plan that already has claims cannot be deleted; untick **Active** instead.
+- **Delete** (once saved): asks "Delete the plan "name" with its coverage?" and, once confirmed, deletes it. A plan that already has claims cannot be deleted; untick **Active** instead.
 - **Close**: closes the dialog; changes not saved are lost.
 
 ### Who is covered and in what order {#coverage-order}
@@ -192,7 +196,7 @@ The **Coverage** dialog:
 - **Most per visit**: the most the plan pays for one expense, for example $30 per massage. Optional.
 - **Most per year**: the most the plan pays in a plan year for this person and this kind of care, for example $500 for physiotherapy. Optional. What is left appears on the **Coverage left** tab.
 - **Once every (months)**: "For example 24 for an eye exam every two years, 9 for a dental recall." From 1 to 120. Optional. The **Coverage left** tab then shows when the service is covered again.
-- **Save**, **Cancel**, and **Delete** for a saved line (it deletes at once).
+- **Save**, **Cancel**, and **Delete** for a saved line: it asks "Delete the coverage for kind of care? The plan no longer pays for this kind of care." and, once confirmed, deletes the line.
 
 ### Health Spending Account {#hsa}
 @index: health care spending account; HCSA; wellness account

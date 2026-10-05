@@ -1,6 +1,7 @@
 package ca.schippers.hfm.books
 
 import ca.schippers.hfm.calc.assets.Depreciation
+import ca.schippers.hfm.calc.schedule.MaintenanceSchedule
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.money.Currency
@@ -52,8 +53,11 @@ data class Asset(
     val notes: String? = null,
     /** MNT-03: what its meter counts, if it has one. */
     val meter: MeterUnit? = null,
+    /** The currency it was saved in; a new asset takes the household's base currency. */
+    val savedCurrency: Currency? = null,
 ) {
-    val currency: Currency get() = purchasePrice?.currency ?: value?.currency ?: Currency.CAD
+    /** The currency of its amounts (price, value, sale, upkeep costs). */
+    val currency: Currency get() = purchasePrice?.currency ?: value?.currency ?: disposalPrice?.currency ?: savedCurrency ?: Currency.CAD
 
     /** AST-03: what it is worth on [date]; nothing once disposed of, or before it was bought. */
     fun valueOn(date: LocalDate): Money? {
@@ -103,8 +107,18 @@ data class WarrantyClaim(
     val notes: String? = null,
 )
 
-/** WAR-04: one coverage of an item, and until when; [until] null when it has no end date. */
-data class CoverageStatus(val label: String, val kindKey: String, val until: LocalDate?, val active: Boolean, val warranty: AssetWarranty? = null)
+/**
+ * WAR-04: one coverage of an item, and until when; [until] null when it has no end date.
+ * [usedUp] when it ended because the item's meter passed the warranty's limit of use.
+ */
+data class CoverageStatus(
+    val label: String,
+    val kindKey: String,
+    val until: LocalDate?,
+    val active: Boolean,
+    val warranty: AssetWarranty? = null,
+    val usedUp: Boolean = false,
+)
 
 /** WAR-04: an asset or vehicle found by a search, and what still covers it. */
 data class CoveredItem(val id: String, val name: String, val isVehicle: Boolean, val coverage: List<CoverageStatus>) {
@@ -146,9 +160,11 @@ class AssetService internal constructor(private val books: Books) {
         val q = books.ledger(group).assetsQueries
         val now = books.now()
         val created = q.assetById(id).executeAsOneOrNull()?.created_at ?: now
+        val currency = listOfNotNull(a.purchasePrice, a.value, a.disposalPrice).firstOrNull()?.currency ?: a.savedCurrency ?: books.rates.baseCurrency
+        validate(listOfNotNull(a.purchasePrice, a.value, a.disposalPrice).all { it.currency == currency }, "error.currencyMismatch", currency.code)
         q.upsertAsset(
             id, a.parentId, a.kind.name, a.name.trim(), a.make.blankToNull(), a.model.blankToNull(), a.serialNumber.blankToNull(), a.purchaseDate?.toString(),
-            a.seller.blankToNull(), a.purchasePrice?.minorUnits, a.currency.code, a.transactionId, a.location.blankToNull(), a.ownerMemberId, a.valueMethod.name,
+            a.seller.blankToNull(), a.purchasePrice?.minorUnits, currency.code, a.transactionId, a.location.blankToNull(), a.ownerMemberId, a.valueMethod.name,
             a.value?.minorUnits, a.valueDate?.toString(), a.depreciationYears?.toLong(), a.residualPercent?.stripTrailingZeros()?.toPlainString(),
             if (a.inNetWorth) 1 else 0, a.status.name, a.disposalDate?.toString(), a.disposalPrice?.minorUnits, a.disposalTransactionId, a.notes.blankToNull(), created, now,
             a.meter?.name,
@@ -157,11 +173,16 @@ class AssetService internal constructor(private val books: Books) {
         return get(id)
     }
 
+    /** Deletes the asset with its warranties and their claims; its maintenance goes with it (MNT-03). */
     fun delete(id: String) {
         val a = get(id)
-        val q = books.ledger(editable(a.groupId)).assetsQueries
+        val ledger = books.ledger(editable(a.groupId))
+        val q = ledger.assetsQueries
         validate(q.childCount(id).executeAsOne() == 0L, "error.assetHasChildren")
-        q.deleteAsset(id)
+        ledger.transaction {
+            warranties(id).forEach { q.deleteWarranty(it.id) }
+            q.deleteAsset(id)
+        }
         books.session.audit("DELETE", "asset", id)
     }
 
@@ -219,8 +240,10 @@ class AssetService internal constructor(private val books: Books) {
 
     fun claims(warrantyId: String): List<WarrantyClaim> {
         val w = warranties().firstOrNull { it.id == warrantyId } ?: return emptyList()
+        // Claim amounts are kept in the household's base currency.
+        val base = books.rates.baseCurrency
         return books.ledger(books.group(w.groupId)).assetsQueries.warrantyClaims(warrantyId).executeAsList().map {
-            WarrantyClaim(it.id, it.warranty_id, LocalDate.parse(it.date), it.problem, it.outcome, it.covered_minor?.let { m -> Money.ofMinor(m, Currency.CAD) }, it.paid_minor?.let { m -> Money.ofMinor(m, Currency.CAD) }, it.notes)
+            WarrantyClaim(it.id, it.warranty_id, LocalDate.parse(it.date), it.problem, it.outcome, it.covered_minor?.let { m -> Money.ofMinor(m, base) }, it.paid_minor?.let { m -> Money.ofMinor(m, base) }, it.notes)
         }
     }
 
@@ -259,7 +282,8 @@ class AssetService internal constructor(private val books: Books) {
         val a = get(assetId)
         val own = warranties(assetId).sortedBy { it.kind.ordinal }.map { w ->
             val end = endOf(w)
-            CoverageStatus(listOfNotNull(w.provider, w.coverage).joinToString(" · "), "assetWarranty.${w.kind}", end, end == null || end >= today, w)
+            val usedUp = hoursUsedUp(a, w)
+            CoverageStatus(listOfNotNull(w.provider, w.coverage).joinToString(" · "), "assetWarranty.${w.kind}", end, (end == null || end >= today) && !usedUp, w, usedUp)
         }
         val card = a.transactionId?.let { id -> runCatching { books.transactions.get(id) }.getOrNull() }
             ?.let { t -> books.creditCards.coverage(t, today).filter { it.until != null } }.orEmpty()
@@ -283,16 +307,29 @@ class AssetService internal constructor(private val books: Books) {
         return (assets + vehicles).sortedBy { it.name.lowercase() }
     }
 
-    /** WAR-02: warranties ending within 60 days (by default), as reminders. */
+    /**
+     * WAR-02: warranties ending within 60 days (by default), as reminders. A warranty limited by
+     * hours of use also ends on the day the hour meter should reach the limit, at the usual rate of
+     * use; one whose hours are used up is over and no longer reminds.
+     */
     fun renewals(today: LocalDate, withinDays: Int = 60): List<Renewal> {
-        val names = list().associate { it.id to it.name }
+        val assets = list().associateBy { it.id }
         return warranties().mapNotNull { w ->
-            val name = names[w.assetId] ?: return@mapNotNull null
-            val end = endOf(w) ?: return@mapNotNull null
+            val a = assets[w.assetId] ?: return@mapNotNull null
+            if (hoursUsedUp(a, w)) return@mapNotNull null
+            val byHours = w.endHours?.takeIf { a.meter == MeterUnit.HOURS }?.let { limit ->
+                val readings = books.assetMaintenance.readings(a.id)
+                MaintenanceSchedule.limitReachedOn(limit, readings.maxOfOrNull { it.usage }, MaintenanceSchedule.usagePerDay(readings.map { it.date to it.usage }), today)
+            }
+            val end = listOfNotNull(endOf(w), byHours).minOrNull() ?: return@mapNotNull null
             val days = today.daysUntil(end)
-            if (days < 0 || days > withinDays) null else Renewal(RenewalKind.ASSET_WARRANTY, w.assetId, name, end, days, w.provider)
+            if (days < 0 || days > withinDays) null else Renewal(RenewalKind.ASSET_WARRANTY, w.assetId, a.name, end, days, w.provider)
         }
     }
+
+    /** WAR-01: a warranty limited by hours of use is used up once the asset's hour meter reaches the limit. */
+    private fun hoursUsedUp(a: Asset, w: AssetWarranty): Boolean =
+        w.endHours != null && a.meter == MeterUnit.HOURS && (books.assetMaintenance.latestUsage(a.id) ?: 0) >= w.endHours
 
     // --- Helpers ----------------------------------------------------------------------------------
 
@@ -305,7 +342,7 @@ class AssetService internal constructor(private val books: Books) {
             purchase_price_minor?.let { Money.ofMinor(it, c) }, txn_id, location, owner_member_id, ValueMethod.valueOf(value_method),
             value_minor?.let { Money.ofMinor(it, c) }, value_date?.let(LocalDate::parse), depreciation_years?.toInt(), residual_percent?.let(::BigDecimal),
             in_net_worth == 1L, AssetStatus.valueOf(status), disposal_date?.let(LocalDate::parse), disposal_price_minor?.let { Money.ofMinor(it, c) }, disposal_txn_id, notes,
-            meter?.let(MeterUnit::valueOf),
+            meter?.let(MeterUnit::valueOf), c,
         )
     }
 

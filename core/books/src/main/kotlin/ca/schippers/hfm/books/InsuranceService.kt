@@ -90,7 +90,13 @@ class InsuranceService internal constructor(private val books: Books) {
 
     fun policy(id: String): InsurancePolicy = policies().firstOrNull { it.id == id } ?: throw ValidationException("error.notFound")
 
-    fun save(p: InsurancePolicy): InsurancePolicy {
+    /**
+     * Saves the policy. A new premium, or a changed one, joins the premium history, dated from the
+     * term start; a corrected term start with the same premium moves that term in the history too.
+     */
+    fun save(p: InsurancePolicy): InsurancePolicy = write(p, correctsStart = true)
+
+    private fun write(p: InsurancePolicy, correctsStart: Boolean): InsurancePolicy {
         validate(p.insurer.isNotBlank(), "error.nameRequired")
         listOfNotNull(p.premium, p.deductible, p.coverage).forEach { validate(!it.isNegative, "error.amountPositive") }
         val group = editable(p.groupId)
@@ -110,6 +116,9 @@ class InsuranceService internal constructor(private val books: Books) {
             // INS-03: a new premium is kept in the history, dated from the term it starts.
             if (p.premium != null && (previous == null || previous.premium_minor != p.premium.minorUnits)) {
                 q.upsertPremium(Ids.newId(), id, (p.startDate ?: books.today()).toString(), p.premium.minorUnits, null)
+            } else if (correctsStart && previous?.start_date != null && p.startDate != null && previous.start_date != p.startDate.toString()) {
+                q.premiums(id).executeAsList().filter { it.start_date == previous.start_date }
+                    .forEach { q.upsertPremium(it.id, id, p.startDate.toString(), it.premium_minor, it.notes) }
             }
         }
         books.session.audit("UPDATE", "insurance_policy", id)
@@ -126,7 +135,7 @@ class InsuranceService internal constructor(private val books: Books) {
     fun renew(id: String, newRenewal: LocalDate, premium: Money?): InsurancePolicy {
         val p = policy(id)
         validate(p.renewalDate == null || newRenewal > p.renewalDate, "error.invalidDate")
-        val renewed = save(p.copy(startDate = p.renewalDate ?: p.startDate, renewalDate = newRenewal, premium = premium ?: p.premium))
+        val renewed = write(p.copy(startDate = p.renewalDate ?: p.startDate, renewalDate = newRenewal, premium = premium ?: p.premium), correctsStart = false)
         // The term starts at the old renewal date, even when the premium did not change.
         if (premium == null || premium == p.premium) {
             val q = books.ledger(books.group(p.groupId)).assetsQueries

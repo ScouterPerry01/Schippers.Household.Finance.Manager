@@ -16,7 +16,7 @@ L’écran a six onglets :
 - **Est-ce couvert ?** : trouvez un article et voyez tout de suite si une garantie ou une protection le couvre encore. Voir [Onglet Est-ce couvert ?](assets#covered-tab).
 - **Assurances** : polices habitation, auto, vie et autres, leurs primes, bénéficiaires et réclamations, et ce qu’aucune police ne couvre. Voir [Onglet Assurances](assets#insurance-tab).
 
-Les montants de cet écran sont en dollars canadiens, sauf ceux des projets et des travaux des entrepreneurs, qui sont dans la devise de base du ménage.
+Les montants de cet écran sont dans la devise de base du ménage, sauf ceux des polices d’assurance et de leurs réclamations, qui sont en dollars canadiens. Un bien enregistré auparavant garde la devise de ses montants.
 
 ## Onglet Biens {#assets-tab}
 
@@ -39,7 +39,7 @@ La boîte s’intitule **Ajouter un bien** ou **Bien**.
 - **Marque**, **Modèle** et **Numéro de série** : d’après l’étiquette ou la facture. On peut les chercher à l’onglet **Est-ce couvert ?**, et ils sont utiles pour une réclamation de garantie ou d’assurance.
 - **Acheté le** : la date d’achat. Elle fait commencer l’amortissement, et sert de point de départ aux tâches d’entretien jamais faites.
 - **Acheté chez** : le magasin ou le vendeur.
-- **Prix payé** : en dollars. Nécessaire pour l’amortissement et pour le prix de base d’une maison.
+- **Prix payé** : dans la devise de base du ménage. Nécessaire pour l’amortissement et pour le prix de base d’une maison.
 - L’achat dans les livres : voir [Trouver l’achat](assets#find-purchase).
 - **Emplacement (pièce, garage, chalet)** : où il se trouve. Aussi cherché par **Est-ce couvert ?**.
 - **Propriétaire** : un membre du ménage, ou **Le ménage** (par défaut).
@@ -51,7 +51,7 @@ La boîte s’intitule **Ajouter un bien** ou **Bien**.
 Boutons :
 
 - **Enregistrer** : enregistre le bien. Un nouveau bien doit être enregistré avant qu’on puisse y ajouter des garanties, des documents et de l’entretien ; ils paraissent alors en dessous.
-- **Supprimer** (une fois enregistré) : supprime le bien aussitôt, sans confirmation. C’est définitif. Le marquer vendu, donné ou jeté garde plutôt son historique.
+- **Supprimer** (une fois enregistré) : demande « Supprimer « nom » avec ses garanties, tâches d’entretien, entretiens et lectures du compteur? Les opérations qui y sont liées sont conservées. » et, une fois confirmé, supprime le bien avec tout cela. C’est définitif. Le marquer vendu, donné ou jeté garde plutôt son historique.
 - **Fermer** : ferme la boîte. Les changements non enregistrés avec **Enregistrer** sont perdus.
 
 Il faut la permission **Modification** sur le groupe du bien pour l’ajouter ou le changer.
@@ -98,14 +98,14 @@ La valeur baisse du même montant chaque mois complet après l’achat, jusqu’
 ### Garanties et couverture {#coverage}
 @index: garantie; protection des achats; garantie prolongée; avantages de la carte de crédit
 
-Une fois le bien enregistré, **Garanties et couverture** énumère ce qui le couvre, chaque élément avec « jusqu’au date », « terminée le date » ou « sans date de fin » :
+Une fois le bien enregistré, **Garanties et couverture** énumère ce qui le couvre, chaque élément avec « jusqu’au date », « terminée le date », « terminée : 500 heures d’utilisation atteintes » ou « sans date de fin » :
 
 - chaque garantie que vous avez ajoutée (cliquez pour l’ouvrir) ;
 - pour un bien dont l’achat est lié à un paiement par carte de crédit, les avantages de la carte qui s’appliquent, comme la **Protection des achats** ou la **Garantie prolongée**, tels qu’inscrits pour la carte sous [Comptes](accounts).
 
 « Aucune garantie inscrite. » quand il n’y en a pas. **Ajouter une garantie** en ajoute une.
 
-Un rappel arrive 60 jours avant la fin d’une garantie : il paraît en haut de la fenêtre et dans la notification du système, et mène à cet écran.
+Un rappel arrive 60 jours avant la fin d’une garantie : il paraît en haut de la fenêtre et dans la notification du système, et mène à cet écran. Pour une garantie limitée en heures d’utilisation, la fin est la plus proche de sa date de fin et du jour où le compteur d’heures devrait atteindre la limite, à l’utilisation habituelle par jour du bien (voir [Lectures du compteur](assets#meter)).
 
 ### Ajouter ou modifier une garantie {#warranty-form}
 
@@ -117,18 +117,18 @@ La boîte s’intitule **Garantie**.
 - **Ce qu’elle couvre** : par exemple « pièces et main-d’œuvre » ou « compresseur seulement ».
 - **Début** : la date d’achat est proposée.
 - **Fin** : la date de fin. Elle ne peut pas précéder le début. Laissez-la vide pour qu’une garantie prolongée de carte soit calculée, ou pour une garantie sans fin.
-- **Ou jusqu’à (heures d’utilisation)** : pour une garantie limitée en heures d’utilisation, telle qu’inscrite sur celle-ci. Elle est gardée pour mémoire ; l’état de couverture et le rappel suivent la date de fin.
+- **Ou jusqu’à (heures d’utilisation)** : pour une garantie limitée en heures d’utilisation, telle qu’inscrite sur celle-ci, par exemple 500. Elle compte quand le **Compteur** du bien est **Heures d’utilisation** : la garantie se termine quand la dernière lecture du compteur atteint la limite, même avant sa date de fin (« terminée : 500 heures d’utilisation atteintes »), et elle ne donne alors plus de rappel. Tant qu’elle court, le rappel arrive 60 jours avant le jour où le compteur devrait atteindre la limite à l’utilisation habituelle par jour, ce qui demande des lectures à au moins deux semaines d’écart. Avec seulement des heures et sans date de fin, le rappel a besoin de ces lectures.
 - **Numéro pour les réclamations**.
 - **Notes**.
-- **Enregistrer** ; **Supprimer** pour une garantie enregistrée (la suppression est immédiate).
+- **Enregistrer** ; **Supprimer** pour une garantie enregistrée : demande « Supprimer cette garantie (genre) avec ses réclamations? » et, une fois confirmé, supprime la garantie et ses réclamations.
 
 ### Réclamations de garantie {#warranty-claims}
 
-Une fois la garantie enregistrée, la boîte affiche ses **Réclamations**, chacune avec la date, le problème, le résultat et le montant couvert, et un **Supprimer**. Pour en ajouter une :
+Une fois la garantie enregistrée, la boîte affiche ses **Réclamations**, chacune avec la date, le problème, le résultat et le montant couvert, et un **Supprimer**, qui demande d’abord « Supprimer la réclamation « problème » du date? ». Pour en ajouter une :
 
 - **Problème** : ce qui s’est brisé. Obligatoire.
 - **Résultat** : par exemple « réparé » ou « remplacé ».
-- **Couvert** : le montant payé par la garantie.
+- **Couvert** : le montant payé par la garantie, dans la devise de base du ménage.
 - **Ajouter une réclamation** : l’inscrit, datée du jour.
 
 Sous les réclamations, **Preuve d’achat et documents de garantie** permet de joindre le reçu et la carte de garantie avec **Joindre un fichier…** ou **Depuis la boîte de révision**.
@@ -178,7 +178,7 @@ Un intervalle en heures ou en kilomètres n’est ajouté que si le **Compteur**
 - **Me le rappeler (heures avant)** ou **Me le rappeler (km avant)** : affiché avec un compteur ; 10 heures ou 500 km par défaut.
 - **Notes** : format du filtre, numéro de pièce.
 - **Active** (en modification) : décochez-la pour mettre la tâche en pause.
-- **Supprimer** (en modification) : la supprime aussitôt.
+- **Supprimer** (en modification) : demande « Supprimer la tâche « nom »? Les entretiens déjà inscrits sont conservés. » et, une fois confirmé, la supprime.
 
 ### Lectures du compteur {#meter}
 @index: compteur d’heures; heures moteur
@@ -200,7 +200,7 @@ Sous **Carnet d’entretien**, chaque entretien du bien, le plus récent d’abo
 - **Coût**.
 - **Notes**.
 - **Inscrire aussi le paiement dans un compte**, **Payé avec** et **Catégorie** : comme pour l’entretien d’un véhicule (voir [Inscrire aussi le paiement](vehicles#payment)). La catégorie proposée est l’entretien de la maison, ou la catégorie chalet et VR pour un chalet, un VR, un bateau ou une remorque. Le paiement est lié au bien.
-- **Supprimer** (en modification) : supprime l’entretien aussitôt ; un paiement inscrit avec lui reste dans son compte.
+- **Supprimer** (en modification) : demande « Supprimer l’entretien du date? Un paiement inscrit avec lui reste dans son compte. » et, une fois confirmé, le supprime ; le paiement reste dans son compte.
 
 ### Coût de possession {#ownership-cost}
 
@@ -238,11 +238,11 @@ En haut, **Ajouter un projet**. Pour chaque maison ou chalet qui a un prix payé
 - **Budget** : ce que vous prévoyez dépenser.
 - **Une amélioration en capital** : coché par défaut. « Un nouveau toit, un sous-sol fini ou un agrandissement est une amélioration en capital. Peindre ou réparer une fuite est une réparation. » Décochez-le pour une réparation.
 - **Notes**.
-- **Supprimer** (en modification) : supprime le projet aussitôt, sans confirmation. Il ne compte plus dans le prix de base.
+- **Supprimer** (en modification) : demande « Supprimer le projet « nom » avec ses coûts? Il ne compte plus dans le prix de base de la propriété. » et, une fois confirmé, le supprime avec ses coûts.
 
 ### Coûts d’un projet {#project-costs}
 
-Cliquez sur un projet pour ouvrir ses coûts. La ligne du haut indique « Dépensé montant sur un budget de montant ». Chaque coût affiche sa date, pour quoi, l’entrepreneur et le montant, avec **✕** pour le supprimer. Pour en ajouter un :
+Cliquez sur un projet pour ouvrir ses coûts. La ligne du haut indique « Dépensé montant sur un budget de montant ». Chaque coût affiche sa date, pour quoi, l’entrepreneur et le montant, avec **✕** pour le supprimer : il demande d’abord « Supprimer le coût « description » de montant? », et la fenêtre se ferme une fois le coût supprimé. Pour en ajouter un :
 
 - **Date** : aujourd’hui par défaut.
 - **Pour quoi** : par exemple « Bardeaux » ou « Acompte ». S’il est vide, le nom du projet sert.
@@ -274,7 +274,7 @@ En haut, **Ajouter un entrepreneur** et **Afficher les archivés**. Chaque entre
 
 ### Travaux et notes {#jobs}
 
-Cliquez sur un entrepreneur pour ouvrir une boîte à son nom, qui énumère ses travaux : date, description, étoiles et coût, avec **✕** pour en supprimer un. Sous **De nouveaux travaux** :
+Cliquez sur un entrepreneur pour ouvrir une boîte à son nom, qui énumère ses travaux : date, description, étoiles et coût, avec **✕** pour en supprimer un : il demande d’abord « Supprimer les travaux « travaux » du date? La note de l’entrepreneur est recalculée. », et la boîte se ferme une fois les travaux supprimés. Sous **De nouveaux travaux** :
 
 - **Date** : aujourd’hui par défaut.
 - **Travaux** : ce qui a été fait. Obligatoire.
@@ -292,7 +292,7 @@ Quand quelque chose brise, cherchez-le ici avant de payer une réparation.
 
 - **Trouver un article** : « Par nom, marque, modèle ou numéro de série ; véhicules compris. » L’emplacement d’un bien et le NIV d’un véhicule sont aussi cherchés. Laissez vide pour tout énumérer.
 
-Chaque article trouvé affiche son nom (« véhicule » pour un véhicule) et, en couleur, « sous garantie ou protection » ou « sans garantie ». En dessous, chaque garantie ou avantage de carte avec sa date de fin, ceux encore actifs en texte normal et ceux terminés en gris. Les biens qui ne sont plus possédés et les véhicules qui ne sont plus en service ne sont pas cherchés.
+Chaque article trouvé affiche son nom (« véhicule » pour un véhicule) et, en couleur, « sous garantie ou protection » ou « sans garantie ». En dessous, chaque garantie ou avantage de carte avec sa date de fin, ceux encore actifs en texte normal et ceux terminés en gris. Une garantie de bien dont les heures d’utilisation sont atteintes affiche « terminée : heures d’utilisation atteintes » ; une garantie de véhicule est terminée dès que l’odomètre dépasse ses kilomètres. Les biens qui ne sont plus possédés et les véhicules qui ne sont plus en service ne sont pas cherchés.
 
 Pour inscrire une réclamation de garantie, ouvrez le bien à l’onglet **Biens**, puis la garantie, et servez-vous de [Réclamations de garantie](assets#warranty-claims).
 
@@ -317,12 +317,12 @@ La boîte s’intitule **Ajouter une police** ou **Police d’assurance**.
 - **Franchise**.
 - **Montant de garantie** (ou **Montant de la prestation** pour une assurance de personnes) : le plus que la police paie.
 - **Détails de la couverture** : par exemple « valeur à neuf, refoulement d’égout inclus ».
-- **Début du terme** et **Date de renouvellement** : le terme en cours. La date de renouvellement donne un rappel à partir de 30 jours avant, et jusqu’à 30 jours après.
+- **Début du terme** et **Date de renouvellement** : le terme en cours. La date de renouvellement donne un rappel à partir de 30 jours avant, et jusqu’à 30 jours après. Corriger **Début du terme** avec la même prime déplace aussi le terme en cours à la nouvelle date dans **Primes d’une année à l’autre**.
 - **Ce qu’elle couvre** : pas pour les assurances de personnes. Une case par bien encore possédé et par véhicule en service (marqué « véhicule »). Cochez ce que la police couvre. Couvrir une maison couvre aussi tout ce qui en fait partie.
 - **Actif** : décochez-le quand la police prend fin ; elle est alors exclue de la vérification des biens non assurés, du coût de possession, des rappels et du sommaire d’urgence.
 - **Notes**.
 - **Enregistrer** : enregistre la police. Une nouvelle prime, ou un changement de prime, s’ajoute à l’historique des primes, daté du début du terme (ou du jour s’il n’y en a pas).
-- **Supprimer** (une fois enregistrée) : supprime la police aussitôt.
+- **Supprimer** (une fois enregistrée) : demande « Supprimer la police genre · assureur avec ses primes, réclamations et bénéficiaires? » et, une fois confirmé, la supprime avec tout cela.
 - **Fermer** : ferme la boîte ; les changements non enregistrés sont perdus.
 
 Une fois enregistrée, la boîte affiche aussi l’historique des primes, le renouvellement, les bénéficiaires (assurances de personnes), les réclamations et **Documents de la police**, où vous joignez le libellé de la police et la page des conditions particulières avec **Joindre un fichier…** ou **Depuis la boîte de révision**.
@@ -334,11 +334,11 @@ Une fois enregistrée, la boîte affiche aussi l’historique des primes, le ren
 
 - **Prochaine date de renouvellement** : la fin du nouveau terme. Obligatoire, et après la date de renouvellement actuelle.
 - **Nouvelle prime** : la prime du nouveau terme ; laissez vide si elle n’a pas changé.
-- **Renouveler** : le terme commence maintenant à l’ancienne date de renouvellement et finit à la nouvelle, la prime est mise à jour, et le terme s’ajoute à l’historique.
+- **Renouveler** : le terme commence maintenant à l’ancienne date de renouvellement et finit à la nouvelle, la prime est mise à jour, et le terme s’ajoute à l’historique. **Début du terme** et **Date de renouvellement** dans le formulaire montrent aussitôt le nouveau terme.
 
 ### Bénéficiaires {#beneficiaries}
 
-Pour une assurance de personnes, **Bénéficiaires** énumère qui reçoit la prestation, avec sa part et « subsidiaire » pour un bénéficiaire de remplacement, et un **Supprimer** pour chacun. Pour en ajouter un :
+Pour une assurance de personnes, **Bénéficiaires** énumère qui reçoit la prestation, avec sa part et « subsidiaire » pour un bénéficiaire de remplacement, et un **Supprimer** pour chacun, qui demande d’abord « Retirer nom des bénéficiaires? ». Pour en ajouter un :
 
 - **Nom** : obligatoire.
 - **Part (%)** : de plus de 0 à 100, ou vide.
@@ -372,7 +372,7 @@ Pour la planification successorale, les polices actives d’assurance vie, inval
 
 Cet écran donne ces rappels, affichés en haut de la fenêtre et dans une notification du système :
 
-- une garantie qui prend fin dans les 60 jours ;
+- une garantie qui prend fin dans les 60 jours, par sa date de fin ou, pour une limite d’heures d’utilisation, par le jour où le compteur devrait l’atteindre ;
 - une police d’assurance à renouveler dans les 30 jours, ou jusqu’à 30 jours en retard ;
 - les tâches d’entretien **Bientôt** ou **À faire** sur les biens encore possédés.
 

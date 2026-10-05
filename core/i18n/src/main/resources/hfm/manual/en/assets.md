@@ -16,7 +16,7 @@ The screen has six tabs:
 - **Is it covered?**: find an item and see at once whether a warranty or protection still covers it. See [Is it covered? tab](assets#covered-tab).
 - **Insurance**: home, auto, life and other policies, their premiums, beneficiaries and claims, and what no policy covers. See [Insurance tab](assets#insurance-tab).
 
-Amounts on this screen are in Canadian dollars, except projects and contractor jobs, which use the household's base currency.
+Amounts on this screen are in the household's base currency, except insurance policies and their claims, which are in Canadian dollars. An asset saved before keeps the currency of its amounts.
 
 ## Assets tab {#assets-tab}
 
@@ -39,7 +39,7 @@ The dialog is titled **Add an asset** or **Asset**.
 - **Make**, **Model** and **Serial number**: from the label or the invoice. They can be searched on the **Is it covered?** tab, and are useful for a warranty or insurance claim.
 - **Bought on**: the purchase date. It starts the depreciation, and is the starting point of maintenance tasks never done.
 - **Bought from**: the store or seller.
-- **Price paid**: in dollars. Needed for depreciation and for a home's cost base.
+- **Price paid**: in the household's base currency. Needed for depreciation and for a home's cost base.
 - The purchase in the books: see [Find the purchase](assets#find-purchase).
 - **Location (room, garage, cottage)**: where it is. Searched by **Is it covered?** too.
 - **Owner**: a household member, or **The household** (the default).
@@ -51,7 +51,7 @@ The dialog is titled **Add an asset** or **Asset**.
 Buttons:
 
 - **Save**: saves the asset. A new asset must be saved before warranties, documents and maintenance can be added; they then appear below.
-- **Delete** (once saved): removes the asset at once, without asking. It cannot be undone. Marking it sold, given away or discarded keeps its history instead.
+- **Delete** (once saved): asks "Delete "name" with its warranties, maintenance tasks, services and meter readings? Transactions linked to it are kept." and, once confirmed, deletes the asset with all of these. It cannot be undone. Marking it sold, given away or discarded keeps its history instead.
 - **Close**: closes the dialog. Changes not saved with **Save** are lost.
 
 You need the **Edit** permission on the asset's group to add or change it.
@@ -98,14 +98,14 @@ From the date, the asset is worth nothing in net worth, and it leaves the list (
 ### Warranties and coverage {#coverage}
 @index: warranty; purchase protection; extended warranty; credit card benefits
 
-Once the asset is saved, **Warranties and coverage** lists what covers it, each with "until date", "ended date" or "no end date":
+Once the asset is saved, **Warranties and coverage** lists what covers it, each with "until date", "ended date", "ended: 500 hours of use reached" or "no end date":
 
 - each warranty you added (click one to open it);
 - for an asset whose purchase is linked to a credit card payment, the card's own benefits that apply, such as **Purchase protection** or **Extended warranty**, as set on the card under [Accounts](accounts).
 
 "No warranty recorded." when there is none. **Add a warranty** adds one.
 
-You are reminded 60 days before a warranty ends: the reminder appears at the top of the window and in the system notification, and leads to this screen.
+You are reminded 60 days before a warranty ends: the reminder appears at the top of the window and in the system notification, and leads to this screen. For a warranty limited by hours of use, the end is the earlier of its end date and the day the hour meter should reach the limit, at the asset's usual use per day (see [Meter readings](assets#meter)).
 
 ### Add or edit a warranty {#warranty-form}
 
@@ -117,18 +117,18 @@ The dialog is titled **Warranty**.
 - **What it covers**: for example "parts and labour" or "compressor only".
 - **Start**: the purchase date is proposed.
 - **End**: the end date. It cannot be before the start. Leave it empty for a card's extended warranty to be calculated, or for a warranty with no end.
-- **Or up to (hours of use)**: for a warranty limited by hours of use, as noted on it. It is kept for your reference; the covered status and the reminder follow the end date.
+- **Or up to (hours of use)**: for a warranty limited by hours of use, as noted on it, such as 500. It counts when the asset's **Meter** is **Hours of use**: the warranty ends when the latest meter reading reaches the limit, even before its end date ("ended: 500 hours of use reached"), and it is then no longer reminded. While it runs, the reminder comes 60 days before the day the meter should reach the limit at the usual use per day, which needs readings at least two weeks apart. With only hours and no end date, the reminder needs those readings.
 - **Phone number for claims**.
 - **Notes**.
-- **Save**; **Delete** for a saved warranty (it deletes at once).
+- **Save**; **Delete** for a saved warranty: it asks "Delete this warranty (kind) with its claims?" and, once confirmed, deletes the warranty and its claims.
 
 ### Warranty claims {#warranty-claims}
 
-Once the warranty is saved, the dialog shows its **Claims**, each with the date, problem, outcome and amount covered, and a **Delete**. To add one:
+Once the warranty is saved, the dialog shows its **Claims**, each with the date, problem, outcome and amount covered, and a **Delete**, which asks "Delete the claim "problem" of date?" first. To add one:
 
 - **Problem**: what went wrong. Required.
 - **Outcome**: for example "repaired" or "replaced".
-- **Covered**: the amount the warranty paid for.
+- **Covered**: the amount the warranty paid for, in the household's base currency.
 - **Add a claim**: records it, dated today.
 
 Under the claims, **Proof of purchase and warranty documents** lets you attach the receipt and the warranty card with **Attach a file…** or **From the review inbox**.
@@ -178,7 +178,7 @@ An interval by hours or kilometres is only added when the asset's **Meter** coun
 - **Remind me (hours before)** or **Remind me (km before)**: shown with a meter; 10 hours or 500 km by default.
 - **Notes**: the filter size, the part number.
 - **Active** (when editing): untick to pause the task.
-- **Delete** (when editing): removes it at once.
+- **Delete** (when editing): asks "Delete the task "name"? Services already logged are kept." and, once confirmed, deletes it.
 
 ### Meter readings {#meter}
 @index: hours meter; engine hours
@@ -200,7 +200,7 @@ Under **Service log**, every service on the asset, the most recent first: date, 
 - **Cost**.
 - **Notes**.
 - **Also enter the payment in an account**, **Paid from** and **Category**: as for a vehicle service (see [Also enter the payment](vehicles#payment)). The category proposed is home maintenance, or the cottage and RV category for a cottage, RV, boat or trailer. The payment is linked to the asset.
-- **Delete** (when editing): removes the service at once; a payment entered with it stays in its account.
+- **Delete** (when editing): asks "Delete the service of date? A payment entered with it stays in its account." and, once confirmed, deletes it; the payment stays in its account.
 
 ### Cost of ownership {#ownership-cost}
 
@@ -238,11 +238,11 @@ At the top, **Add a project**. For each home or cottage that has a price paid or
 - **Budget**: what you plan to spend.
 - **A capital improvement**: ticked by default. "A new roof, a finished basement or an addition is a capital improvement. Painting or fixing a leak is a repair." Untick it for a repair.
 - **Notes**.
-- **Delete** (when editing): removes the project at once, without asking. It no longer counts in the cost base.
+- **Delete** (when editing): asks "Delete the project "name" with its costs? It no longer counts in the home's cost base." and, once confirmed, deletes it with its costs.
 
 ### Project costs {#project-costs}
 
-Click a project to open its costs. The top line reads "Spent amount of a budget of amount". Each cost shows its date, what it was for, the contractor and the amount, with **✕** to delete it. To add one:
+Click a project to open its costs. The top line reads "Spent amount of a budget of amount". Each cost shows its date, what it was for, the contractor and the amount, with **✕** to delete it: it asks "Delete the cost "description" of amount?" first, and the window closes once it is deleted. To add one:
 
 - **Date**: today by default.
 - **What it was for**: for example "Shingles" or "Deposit". If left empty, the project's name is used.
@@ -274,7 +274,7 @@ At the top, **Add a contractor** and **Show archived**. Each contractor shows th
 
 ### Jobs and ratings {#jobs}
 
-Click a contractor to open a dialog with its name, listing its jobs: date, description, stars and cost, with **✕** to delete one. Under **A new job**:
+Click a contractor to open a dialog with its name, listing its jobs: date, description, stars and cost, with **✕** to delete one: it asks "Delete the job "job" of date? The contractor's rating is worked out again." first, and the dialog closes once it is deleted. Under **A new job**:
 
 - **Date**: today by default.
 - **Job**: what was done. Required.
@@ -292,7 +292,7 @@ When something breaks, look it up here before paying for a repair.
 
 - **Find an item**: "By name, make, model or serial number; vehicles too." The location of an asset and the VIN of a vehicle are searched too. Leave it empty to list everything.
 
-Each item found shows its name ("vehicle" for a vehicle) and, in colour, "under warranty or protection" or "no warranty". Below, each warranty or card benefit with its end date, still-active ones in normal text and ended ones greyed. Assets no longer owned and vehicles no longer in use are not searched.
+Each item found shows its name ("vehicle" for a vehicle) and, in colour, "under warranty or protection" or "no warranty". Below, each warranty or card benefit with its end date, still-active ones in normal text and ended ones greyed. An asset warranty whose hours of use are reached shows "ended: hours of use reached"; a vehicle warranty is ended once the odometer passes its kilometres. Assets no longer owned and vehicles no longer in use are not searched.
 
 To record a warranty claim, open the asset on the **Assets** tab, then the warranty, and use [Warranty claims](assets#warranty-claims).
 
@@ -317,12 +317,12 @@ The dialog is titled **Add a policy** or **Insurance policy**.
 - **Deductible**.
 - **Coverage limit** (or **Benefit amount** for a life kind): the most the policy pays.
 - **Coverage details**: for example "replacement cost, sewer backup included".
-- **Term starts** and **Renewal date**: the current term. The renewal date gives a reminder from 30 days before, until 30 days after.
+- **Term starts** and **Renewal date**: the current term. The renewal date gives a reminder from 30 days before, until 30 days after. Correcting **Term starts** with the same premium moves the current term to the new date in **Premiums year over year** too.
 - **What it covers**: not for life kinds. One box per asset still owned and per vehicle in use (marked "vehicle"). Tick what the policy covers. Covering a home also covers everything that is part of it.
 - **Active**: untick it when the policy ends; it is then left out of the uninsured check, the cost of ownership, the reminders and the emergency summary.
 - **Notes**.
 - **Save**: saves the policy. A new premium, or a change of premium, is added to the premium history, dated from the term start (or today when there is none).
-- **Delete** (once saved): removes the policy at once.
+- **Delete** (once saved): asks "Delete the policy kind · insurer with its premiums, claims and beneficiaries?" and, once confirmed, deletes it with all of these.
 - **Close**: closes the dialog; unsaved changes are lost.
 
 Once saved, the dialog also shows the premium history, renewal, beneficiaries (life kinds), claims and **Policy documents**, where you attach the policy wording and declarations page with **Attach a file…** or **From the review inbox**.
@@ -334,11 +334,11 @@ Once saved, the dialog also shows the premium history, renewal, beneficiaries (l
 
 - **Next renewal date**: the end of the new term. Required, and after the current renewal date.
 - **New premium**: the premium of the new term; leave it empty if it did not change.
-- **Renew**: the term now starts on the old renewal date and ends on the new one, the premium is updated, and the term joins the history.
+- **Renew**: the term now starts on the old renewal date and ends on the new one, the premium is updated, and the term joins the history. **Term starts** and **Renewal date** in the form show the new term at once.
 
 ### Beneficiaries {#beneficiaries}
 
-For a life kind, **Beneficiaries** lists who receives the benefit, with their share and "contingent" for a backup beneficiary, and a **Delete** for each. To add one:
+For a life kind, **Beneficiaries** lists who receives the benefit, with their share and "contingent" for a backup beneficiary, and a **Delete** for each, which asks "Remove name from the beneficiaries?" first. To add one:
 
 - **Name**: required.
 - **Share (%)**: from more than 0 to 100, or empty.
@@ -372,7 +372,7 @@ For estate planning, the active life, disability, critical illness and long-term
 
 This screen produces these reminders, shown at the top of the window and as a system notification:
 
-- a warranty ending within 60 days;
+- a warranty ending within 60 days, by its end date or, for a limit of hours of use, by the day the meter should reach it;
 - an insurance policy to renew within 30 days, or up to 30 days late;
 - maintenance tasks **Due soon** or **Due now** on assets still owned.
 

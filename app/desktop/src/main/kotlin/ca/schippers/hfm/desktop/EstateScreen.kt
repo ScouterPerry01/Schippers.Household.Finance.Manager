@@ -101,7 +101,8 @@ fun emergencySections(model: BooksModel, s: EmergencySummary): List<DocSection> 
                 p.safeDepositKeys?.let { model.t("estate.keys") to it },
                 p.digitalAccounts?.let { model.t("estate.digital") to it },
                 p.otherDocuments?.let { model.t("estate.otherDocuments") to it },
-                p.organDonor?.let { model.t("estate.organDonor") to yes(it) },
+                // EST-01: the donor line is always there; "Not stated" until the box is ticked or unticked.
+                model.t("estate.organDonor") to (p.organDonor?.let(::yes) ?: model.t("estate.notStated")),
                 p.funeralWishes?.let { model.t("estate.funeral") to it },
                 p.notes?.let { model.t("estate.notes") to it },
             ) + p.contacts.map { c ->

@@ -12,6 +12,8 @@ At the top:
 
 Below is one card per pet. When there is none, the screen says "No pets yet."
 
+Pets belong to the whole household, not to an account group: every user sees them. Administrators and members can add, change and delete them. A user with the role **Viewer** sees the cards but has no **Add a pet** and no **Delete**, and saving a change gives an error. See [Users](users).
+
 ## The pet card {#pet-card}
 
 Each card shows:
@@ -80,7 +82,7 @@ A pet marked **No longer in the household** is hidden from the screen, from the 
 
 ## Delete a pet {#delete}
 
-**Delete** in the form asks "Delete name? Transactions recorded for this pet are kept." Once confirmed, the pet is removed. The transactions that named it stay in their accounts. It cannot be undone; marking the pet as no longer in the household is usually better, since it keeps its history.
+**Delete** in the form (not shown to a viewer) asks "Delete name? Transactions recorded for this pet are kept." Once confirmed, the pet is removed. The transactions that named it stay in their accounts. It cannot be undone; marking the pet as no longer in the household is usually better, since it keeps its history.
 
 ## Health records {#health-records}
 @index: vet records; pet vaccines; pet medication

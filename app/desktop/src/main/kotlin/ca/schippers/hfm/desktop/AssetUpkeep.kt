@@ -237,6 +237,7 @@ private fun TaskDialog(model: BooksModel, a: Asset, existing: AssetTask, onClose
     var remindUsage by remember { mutableStateOf(existing.remindUsage.toString()) }
     var active by remember { mutableStateOf(existing.active) }
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
+    var asking by remember { mutableStateOf(false) }
     val meter = a.meter
     FormDialog(
         model.t(if (existing.id.isBlank()) "vehicles.addTask" else "vehicles.editTask") + " · " + a.name, model.t("common.save"), model.t("common.cancel"),
@@ -272,10 +273,13 @@ private fun TaskDialog(model: BooksModel, a: Asset, existing: AssetTask, onClose
             TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
             if (existing.id.isNotBlank()) {
                 LabeledCheckbox(model.t("vehicles.taskActive"), active) { active = it }
-                TextButton(onClick = { if (model.act { model.books.assetMaintenance.deleteTask(a.id, existing.id) } != null) onClose() }) {
-                    Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error)
-                }
+                TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
+        }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("upkeep.delete.task", existing.name), onDismiss = { asking = false }) {
+            (model.act { model.books.assetMaintenance.deleteTask(a.id, existing.id) } != null).also { if (it) onClose() }
         }
     }
 }
@@ -295,6 +299,7 @@ private fun ServiceDialog(model: BooksModel, a: Asset, existing: AssetServiceRec
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
     var done by remember { mutableStateOf(existing.taskIds) }
     val payment = remember { PaymentState() }
+    var asking by remember { mutableStateOf(false) }
     val leisure = a.kind in setOf(AssetKind.COTTAGE, AssetKind.RV, AssetKind.BOAT, AssetKind.TRAILER)
     FormDialog(
         model.t(if (existing.id.isBlank()) "upkeep.addService" else "vehicles.editService") + " · " + a.name, model.t("common.save"), model.t("common.cancel"),
@@ -336,10 +341,13 @@ private fun ServiceDialog(model: BooksModel, a: Asset, existing: AssetServiceRec
                 Text(model.t("vehicles.paymentLinked"), style = MaterialTheme.typography.bodySmall)
             }
             if (existing.id.isNotBlank()) {
-                TextButton(onClick = { if (model.act { books.assetMaintenance.deleteService(a.id, existing.id) } != null) onClose() }) {
-                    Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error)
-                }
+                TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
+        }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("upkeep.delete.service", model.date(existing.date)), onDismiss = { asking = false }) {
+            (model.act { books.assetMaintenance.deleteService(a.id, existing.id) } != null).also { if (it) onClose() }
         }
     }
 }

@@ -65,6 +65,16 @@ object MaintenanceSchedule {
         return (last.second - first.second).toDouble() / days
     }
 
+    /**
+     * WAR-02, VEH-03: the day a usage [limit] (a warranty's kilometres or hours of use) should be
+     * reached from the [current] reading at [usagePerDay]; null without a reading or a rate, or
+     * once the limit is reached.
+     */
+    fun limitReachedOn(limit: Int, current: Int?, usagePerDay: Double?, today: LocalDate): LocalDate? {
+        if (current == null || usagePerDay == null || usagePerDay <= 0 || current >= limit) return null
+        return today.plus(DatePeriod(days = ((limit - current) / usagePerDay).toInt()))
+    }
+
     /** MNT-01: the first time a seasonal task falls due: its month and day this year, or next year if past. */
     fun nextSeason(month: Int, day: Int, today: LocalDate): LocalDate =
         LocalDate(today.year, month, day).let { if (it < today) it.plus(DatePeriod(years = 1)) else it }

@@ -1,6 +1,8 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.Ids
+import ca.schippers.hfm.domain.Role
 import ca.schippers.hfm.money.Money
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
@@ -46,7 +48,10 @@ data class CostSummary(
     val unconverted: Int,
 )
 
-/** Pets in the household (PET-01 to PET-05). Health records and appointments use the pet's id. */
+/**
+ * Pets in the household (PET-01 to PET-05). Health records and appointments use the pet's id.
+ * Pets belong to the whole household: anyone but a viewer can add, change or delete them (HH-06).
+ */
 class PetService internal constructor(private val books: Books) {
 
     fun list(includeArchived: Boolean = false): List<Pet> =
@@ -55,6 +60,7 @@ class PetService internal constructor(private val books: Books) {
     fun get(petId: String): Pet = list(includeArchived = true).firstOrNull { it.id == petId } ?: throw ValidationException("error.notFound")
 
     fun save(pet: Pet): Pet {
+        requireChanger()
         validate(pet.name.isNotBlank(), "error.nameRequired")
         val id = pet.id.ifBlank { Ids.newId() }
         val existing = books.core.pets().executeAsList().firstOrNull { it.id == id }
@@ -72,6 +78,7 @@ class PetService internal constructor(private val books: Books) {
     }
 
     fun delete(petId: String) {
+        requireChanger()
         books.core.deletePet(petId)
         books.session.audit("DELETE", "pet", petId)
     }
@@ -87,6 +94,13 @@ class PetService internal constructor(private val books: Books) {
     /** PET-05: what the pet cost between [from] and [to]. */
     fun costs(petId: String, from: LocalDate, to: LocalDate): CostSummary = books.costs(from, to) { q ->
         q.memberLines(petId, from.toString(), to.toString()).executeAsList().map { CostLine(it.date, it.account_id, it.category_id, it.amount_minor) }
+    }
+
+    /** Whether the signed-in user may add, change or delete pets: everyone but a viewer. */
+    val canChange: Boolean get() = books.role != Role.VIEWER
+
+    private fun requireChanger() {
+        if (!canChange) throw AccessDeniedException("A viewer cannot change pets")
     }
 
     private fun PetRow.toPet() = Pet(

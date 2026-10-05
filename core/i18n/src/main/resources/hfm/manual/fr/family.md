@@ -20,9 +20,9 @@ L’écran s’ouvre sur **Dépenses partagées**. L’onglet choisi est gardé 
 
 Les nouveaux groupes, prêts et allocations sont enregistrés dans le groupe de comptes partagé où vous pouvez ajouter des données (ou, s’il n’y en a pas, le premier groupe où vous le pouvez). Ils sont affichés avec ceux de tous les groupes que vous voyez. Enregistrer, modifier ou supprimer demande la permission de modifier les données de ce groupe : un utilisateur en lecture seule voit l’onglet mais reçoit une erreur en enregistrant. Voir [Utilisateurs](users).
 
-### Les changements sont immédiats {#immediate}
+### Supprimer demande d’abord {#immediate}
 
-Chaque bouton **✕** de cet écran (une dépense, un remboursement, une inscription d’allocation) et chaque bouton **Supprimer** retire la donnée tout de suite, sans demander de confirmation. Il n’y a pas d’annulation ; inscrivez-la de nouveau si vous l’avez retirée par erreur.
+Chaque bouton **✕** de cet écran (une dépense, un remboursement, une inscription d’allocation) et chaque bouton **Supprimer** demande d’abord, en disant ce qui sera supprimé ; **Annuler** le garde. Une fois confirmé, il n’y a pas d’annulation ; inscrivez-la de nouveau si vous l’avez retirée par erreur.
 
 ## Dépenses partagées {#shared-expenses}
 
@@ -66,7 +66,7 @@ Sous les cartes, chaque dépense et chaque remboursement du groupe sont listés,
 - la date ;
 - pour quoi, et dessous soit « Payé par Alex, partagé entre Alex, Sam, Léa » (seules les personnes qui ont une part plus grande que zéro sont nommées), soit, pour un remboursement, « Sam a payé Alex » ;
 - le montant ;
-- **✕** : supprime aussitôt cette dépense ou ce remboursement. Les soldes sont recalculés sans elle.
+- **✕** : demande « Supprimer « description » (montant, date)? Qui doit quoi à qui est recalculé. » et, une fois confirmé, supprime cette dépense ou ce remboursement. Les soldes sont recalculés sans elle.
 
 Pour corriger une dépense, supprimez-la et ajoutez-la de nouveau.
 
@@ -81,6 +81,7 @@ La même boîte crée un groupe (**Nouveau groupe partagé…**) ou le modifie (
   - **✕** : retire la ligne de cette personne.
 - **Ajouter une personne** : ajoute une ligne vide.
 - **Archiver ce groupe (tout est réglé)** : affiché seulement en modification. Un groupe archivé passe à la fin de la liste, avec **(archivé)** après son nom. Ses dépenses et ses soldes sont gardés, et vous pouvez toujours l’ouvrir, y ajouter des dépenses ou le désarchiver.
+- **Supprimer** : affiché seulement en modification. Demande « Supprimer le groupe « nom » avec toutes ses dépenses et tous ses remboursements? Qui doit quoi à qui est perdu. » et, une fois confirmé, supprime le groupe, ses personnes et toutes ses inscriptions. C’est sans retour ; archivez plutôt un groupe pour garder son historique.
 - **Enregistrer** enregistre le groupe ; **Annuler** ferme sans enregistrer.
 
 Règles vérifiées à l’enregistrement :
@@ -132,17 +133,17 @@ La même boîte sert à ajouter un prêt et, depuis la fenêtre des remboursemen
 - **Prêté à** : qui l’a emprunté. Obligatoire.
 - **Montant prêté** : le montant prêté, plus grand que zéro, dans la devise de base du ménage.
 - **Date du prêt** : le jour où l’argent a été prêté, au format AAAA-MM-JJ. L’intérêt, s’il y en a, court à partir de ce jour, et aucun remboursement ne peut être daté avant. Aujourd’hui par défaut.
-- **Taux d’intérêt (% par année)** : le taux annuel, par exemple 2,5 (le point fonctionne aussi). Laissez vide pour un prêt sans intérêt. De 0 à 50 % ; il est gardé avec deux décimales.
+- **Taux d’intérêt (% par année)** : le taux annuel, par exemple 2,5 (le point fonctionne aussi). Laissez vide pour un prêt sans intérêt. De 0 à 50 % ; il est gardé avec deux décimales, arrondi au plus près (3,125 devient 3,13).
 - **Notes** : ce qu’il faut retenir, comme l’objet du prêt ou l’entente de remboursement.
-- **Remboursé en entier (le fermer)** : affiché en modification. Un prêt fermé affiche **(remboursé)** et passe à la fin de la liste. C’est seulement une marque : les montants affichés viennent toujours des remboursements inscrits ; inscrivez donc aussi le dernier remboursement.
-- **Supprimer** : affiché en modification. Supprime aussitôt le prêt et tous ses remboursements.
+- **Remboursé en entier (le fermer)** : affiché en modification. Un prêt fermé affiche **(remboursé)** et passe à la fin de la liste, et son intérêt s’arrête : aucun intérêt n’est compté après son dernier remboursement (après la date du prêt, s’il n’y en a aucun). Les montants affichés viennent toujours des remboursements inscrits ; inscrivez donc aussi le dernier remboursement ; ce qui paraît encore dû est ce que ces remboursements ont laissé. Décocher la case laisse l’intérêt courir de nouveau, jusqu’à aujourd’hui.
+- **Supprimer** : affiché en modification. Demande « Supprimer le prêt de prêteur à emprunteur avec ses remboursements? » et, une fois confirmé, supprime le prêt et tous ses remboursements.
 
 ### Fenêtre des remboursements {#repayments-dialog}
 
 Cliquer sur un prêt ouvre une fenêtre intitulée « Prêteur à Emprunteur ».
 
 - La première ligne résume le prêt aujourd’hui : **Reste dû** (ce qui reste du montant prêté plus l’intérêt non payé), **intérêt jusqu’ici** (tout l’intérêt compté depuis le prêt) et **remboursé** (le total des remboursements).
-- Les remboursements sont listés du plus récent au plus ancien, chacun avec sa date, son montant et **✕** pour le supprimer (la fenêtre se ferme ; rouvrez le prêt pour voir les nouveaux chiffres).
+- Les remboursements sont listés du plus récent au plus ancien, chacun avec sa date, son montant et **✕** pour le supprimer. Il demande d’abord « Supprimer le remboursement de montant du date? Le solde est recalculé. » ; une fois le remboursement supprimé, la fenêtre se ferme (rouvrez le prêt pour voir les nouveaux chiffres).
 - **Date** et **Remboursement** : saisissez un nouveau remboursement, puis cliquez sur **Ajouter le remboursement**. Le bouton est offert dès qu’un montant est saisi. Un remboursement ne peut pas précéder le prêt. Un remboursement daté dans l’avenir ne compte qu’à partir de sa date.
 - **Modifier le prêt…** : ouvre la [boîte du prêt](#loan-dialog).
 - **Fermer** : ferme la fenêtre.
@@ -167,7 +168,8 @@ Une allocation est un montant fixe qu’un enfant reçoit à intervalles réguli
 - **Fréquence** : **par semaine**, **aux deux semaines** ou **par mois**. Les jours d’allocation sont comptés à partir du premier jour : tous les 7 jours, tous les 14 jours, ou le même jour chaque mois (une allocation qui commence le 31 tombe le dernier jour des mois plus courts).
 - **Premier jour** : le premier jour d’allocation, au format AAAA-MM-JJ. Aujourd’hui par défaut.
 - **Dernier jour (facultatif)** : le dernier jour où l’allocation court. Laissez vide s’il n’y a pas de fin. Il ne peut pas précéder le premier jour. Après lui, aucun jour d’allocation n’est plus compté.
-- **Supprimer** : affiché en modification. Supprime aussitôt l’allocation et toutes ses inscriptions.
+- **Notes** : ce qu’il faut retenir, comme ce que l’allocation doit couvrir ou les règles convenues avec l’enfant. Facultatif ; on peut taper plusieurs lignes.
+- **Supprimer** : affiché en modification. Demande « Supprimer l’allocation de nom avec toutes ses inscriptions? » et, une fois confirmé, la supprime avec toutes ses inscriptions.
 
 Changer plus tard le montant, la fréquence ou les dates recalcule ce qui était dû depuis le premier jour, au nouveau montant.
 
@@ -176,7 +178,7 @@ Changer plus tard le montant, la fréquence ou les dates recalcule ce qui était
 Cliquer sur une allocation ouvre cette fenêtre.
 
 - La première ligne la résume : **Dû jusqu’ici** (le nombre de jours d’allocation jusqu’à aujourd’hui, ou jusqu’au dernier jour, fois le montant), **à payer** (ce qui est dû moins les allocations payées, jamais sous zéro) et **l’enfant a** (les allocations payées plus l’argent gagné ou reçu, moins l’argent dépensé).
-- Les 30 dernières inscriptions sont listées de la plus récente à la plus ancienne : date, genre, note et montant (les dépenses en négatif). **✕** supprime une inscription ; la fenêtre se ferme.
+- Les 30 dernières inscriptions sont listées de la plus récente à la plus ancienne : date, genre, note et montant (les dépenses en négatif). **✕** demande « Supprimer cette inscription (genre, montant, date)? » et, une fois confirmé, supprime l’inscription ; la fenêtre se ferme.
 - Pour ajouter une inscription, remplissez :
   - **Date** : aujourd’hui par défaut. Une inscription datée dans l’avenir ne compte qu’à partir de sa date.
   - **Quoi** :

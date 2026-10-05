@@ -30,7 +30,7 @@ Une facture est une demande de paiement que vous envoyez à un client. RANN’s 
 En haut :
 
 - **Nouvelle facture** : ouvre la [boîte de la facture](#invoice-dialog) avec le prochain numéro de l’année déjà rempli.
-- Quand des factures attendent leur paiement, une ligne comme « 2 factures en attente de paiement : 1 250,00 $ ». Elle compte les factures à l’état **Envoyée** et additionne celles qui sont dans la devise de base du ménage.
+- Quand des factures attendent leur paiement, une ligne comme « 2 factures en attente de paiement : 1 250,00 $ ». Elle compte les factures à l’état **Envoyée** et donne un total par devise, la devise de base en premier, par exemple « 3 factures en attente de paiement : 1 250,00 $ + 400,00 $ US ».
 
 Chaque facture est listée, de la plus récente à la plus ancienne, avec :
 
@@ -50,7 +50,7 @@ La même boîte crée une facture (**Nouvelle facture**) ou la modifie (**Modifi
 - **Numéro** : le numéro de la facture. Une nouvelle facture reçoit l’année et le numéro suivant, par exemple 2026-001, puis 2026-002 : le plus grand numéro déjà utilisé sous cette forme pour l’année, plus un. Vous pouvez saisir un autre numéro, mais chaque numéro ne peut servir qu’une fois.
 - **Client** : à qui s’adresse la facture, une personne ou une entreprise. Obligatoire. Il est imprimé sous **Facturer à** dans le PDF et devient le bénéficiaire du dépôt.
 - **Adresse et coordonnées du client** : l’adresse du client et tout ce qui doit être imprimé sous son nom, comme un courriel ou un numéro de bon de commande. Plusieurs lignes sont permises ; chacune est imprimée sur sa propre ligne.
-- **Émise le** : la date de la facture, au format AAAA-MM-JJ. Aujourd’hui par défaut. Les nouveaux numéros suivent l’année du jour où vous créez la facture, pas cette date.
+- **Émise le** : la date de la facture, au format AAAA-MM-JJ. Aujourd’hui par défaut. Pour une nouvelle facture, le numéro suit l’année de cette date : mettez un jour de l’an dernier, et le numéro proposé devient le suivant de l’an dernier (par exemple 2025-014). Un numéro que vous avez tapé vous-même est laissé tel quel.
 - **Due le** : la date d’échéance du paiement, facultative. Elle ne peut pas précéder **Émise le**. Une facture **Envoyée** dont cette date est passée affiche **En retard** dans la liste.
 - **État** :
   - **Brouillon** : en préparation ; pas comptée parmi les factures en attente de paiement.
@@ -72,7 +72,7 @@ La même boîte crée une facture (**Nouvelle facture**) ou la modifie (**Modifi
 Laissez les deux taux vides sauf si vous êtes inscrit pour percevoir les taxes de vente. Chaque taxe est le taux appliqué au sous-total, arrondi au cent, et le total est le sous-total plus les taxes.
 
 - **Notes sur la facture** : imprimées au bas du PDF, comme les modalités de paiement (« Virement Interac à … ») ou un remerciement.
-- **Supprimer** : affiché en modification. Supprime aussitôt la facture, sans demander. Un dépôt déjà inscrit pour elle reste dans le compte.
+- **Supprimer** : affiché en modification. Demande d’abord « Supprimer la facture numéro à client? ». Quand le dépôt inscrit avec **Marquer payée** est encore dans les livres, la question offre aussi **Supprimer aussi son dépôt de montant du date dans compte**, décoché par défaut : laissez-le décoché si l’argent a bien été reçu, et le dépôt reste dans le compte ; cochez-le pour retirer aussi le dépôt, par exemple quand la facture a été marquée payée par erreur. Un dépôt rapproché n’est supprimé qu’après une nouvelle confirmation. Une fois confirmée, la suppression est sans retour.
 - **Enregistrer** enregistre la facture ; **Annuler** ferme sans enregistrer.
 
 La devise de la facture est la devise de base du ménage au moment de sa création.
@@ -143,10 +143,10 @@ Les chiffres suivent vos catégories : une opération ventilée entre plusieurs 
 
 ### Boîte Ajouter un immeuble {#rental-dialog}
 
-- **Nom** : le nom de l’immeuble, par exemple « Duplex rue Cartier ». Obligatoire. À l’ajout d’un immeuble, une étiquette de ce nom est créée pour ses opérations ; si une étiquette de ce nom existe déjà, c’est elle qui est utilisée. Renommer l’immeuble plus tard ne renomme pas son étiquette.
+- **Nom** : le nom de l’immeuble, par exemple « Duplex rue Cartier ». Obligatoire. À l’ajout d’un immeuble, une étiquette de ce nom est créée pour ses opérations ; si une étiquette de ce nom existe déjà, c’est elle qui est utilisée. Renommer l’immeuble plus tard renomme aussi son étiquette (« L’étiquette de l’immeuble est renommée avec lui. »), et les opérations étiquetées continuent de compter. Si une autre étiquette porte déjà le nouveau nom, l’application dit « Une autre étiquette s’appelle déjà « nom ». Choisissez un autre nom. » et rien n’est enregistré.
 - **Adresse** : l’adresse de l’immeuble, affichée sur sa carte.
 - **La part du ménage (%)** : la part de l’immeuble que possède le ménage, de 0,01 à 100. 100 par défaut. Pour un immeuble détenu à moitié avec quelqu’un d’autre, saisissez 50 : la carte montre alors la part du ménage dans le net.
 - **Notes** : ce qu’il faut retenir sur l’immeuble.
-- **Supprimer** : affiché en modification. Retire aussitôt l’immeuble de cet onglet. Son étiquette et les opérations étiquetées ne sont pas touchées.
+- **Supprimer** : affiché en modification. Demande « Supprimer nom? Ses opérations sont conservées. » avec une case **Retirer aussi l’étiquette « étiquette » de la liste et des opérations qui l’ont**, décochée par défaut. Décochée, l’étiquette reste sur les opérations et dans la liste des étiquettes. Cochée, l’étiquette est retirée de la liste et de toutes les opérations qui l’avaient, sauf si un autre immeuble utilise la même étiquette ; les opérations elles-mêmes restent. C’est sans retour.
 
 > Conseil : Quand vous possédez un immeuble avec quelqu’un hors du ménage, inscrivez seulement les paiements et les encaissements du ménage dans vos comptes et laissez la part à 100, ou inscrivez les montants de l’immeuble entier et saisissez votre part. Choisissez une façon et tenez-vous-y.

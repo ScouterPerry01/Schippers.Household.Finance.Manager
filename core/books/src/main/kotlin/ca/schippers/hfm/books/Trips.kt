@@ -91,18 +91,29 @@ class TripService internal constructor(private val books: Books) {
      */
     fun qualifiesForMedical(t: Trip): Boolean = t.purpose == TripPurpose.MEDICAL && t.kmOneWay >= BigDecimal(MEDICAL_MIN_KM)
 
-    /** MED-11: records a qualifying medical trip as a medical expense for [memberId], at [rate] a kilometre. */
+    /**
+     * MED-11: records a qualifying medical trip as a medical expense for [memberId], at [rate] a
+     * kilometre. A trip is added once: the expense is remembered, and adding the trip again is
+     * refused while that expense exists (delete the expense to add the trip anew).
+     */
     fun addToMedical(t: Trip, memberId: String, rate: Money, groupId: String): MedExpense {
         validate(qualifiesForMedical(t), "error.tripNotMedical")
         validate(rate.isPositive, "error.tripRate")
+        validate(t.id.isBlank() || medicalExpense(t) == null, "error.tripAlreadyMedical")
         val amount = Money.of((rate.toBigDecimal() * t.km).setScale(2, RoundingMode.HALF_UP), rate.currency)
-        return books.medical.saveExpense(
+        val expense = books.medical.saveExpense(
             MedExpense(
                 "", groupId, memberId, MedService.MEDICAL_TRAVEL, t.date, amount, paidDate = t.date,
                 description = "${t.destination} · ${t.km.stripTrailingZeros().toPlainString()} km",
             ),
         )
+        if (t.id.isNotBlank()) books.putSetting("$MEDICAL_KEY.${t.id}", expense.id)
+        return expense
     }
+
+    /** MED-11: the medical expense the trip was added as, while it still exists. */
+    fun medicalExpense(t: Trip): MedExpense? = books.setting("$MEDICAL_KEY.${t.id}")?.ifBlank { null }
+        ?.let { id -> books.medical.expenses().firstOrNull { it.id == id } }
 
     /** The per-kilometre rate the user entered for medical travel in [year], if any. */
     fun medicalRate(year: Int): Money? = books.setting("$RATE_KEY.$year")?.let { runCatching { Money.parse(it, Currency.CAD) }.getOrNull() }
@@ -112,5 +123,8 @@ class TripService internal constructor(private val books: Books) {
     companion object {
         const val MEDICAL_MIN_KM = 40
         private const val RATE_KEY = "trip.medicalRate"
+
+        /** The setting that remembers the medical expense a trip became: `trip.medicalExpense.<trip id>`. */
+        private const val MEDICAL_KEY = "trip.medicalExpense"
     }
 }

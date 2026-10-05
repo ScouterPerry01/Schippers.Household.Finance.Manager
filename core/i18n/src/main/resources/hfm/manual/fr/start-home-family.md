@@ -67,7 +67,7 @@ Détails : [Véhicules](vehicles).
 
 1. Ouvrez **Déplacements** et choisissez **Ajouter un déplacement** pour chaque déplacement en voiture pour le travail ou pour des soins.
 2. Inscrivez des lectures de l’odomètre du véhicule près du début et de la fin de l’année, à l’écran **Véhicules** : elles donnent la part de travail du véhicule.
-3. Pour un déplacement médical de 40 km ou plus aller simple, choisissez **Ajouter aux frais médicaux** : il devient une dépense médicale à l’écran **Réclamations médicales**.
+3. Pour un déplacement médical de 40 km ou plus aller simple, choisissez **Ajouter aux frais médicaux** : il devient une dépense médicale à l’écran **Réclamations médicales**, une seule fois ; le bouton devient alors **Ajouté aux frais médicaux**.
 
 Détails : [Déplacements](trips).
 

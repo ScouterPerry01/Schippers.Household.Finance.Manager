@@ -20,7 +20,7 @@ Access is enforced by encryption, not only by the screens: each account group ha
 
 - Administrator: everything, including users and settings, and every shared account group. Administrators add users, change roles, set the household's province, edit household members and give access to shared groups. They do not see a private group unless its owner gives them access.
 - Member: their own private accounts, and the shared groups they are given. A member can change their own name and password, and give access to their own private groups.
-- Viewer: read only, in the groups they are given. On the Access tab a viewer can be given View at most. A member who had Capture only or Edit and becomes a viewer can only view; the table then shows View.
+- Viewer: read only, in the groups they are given. On the Access tab a viewer can be given View at most. A member who had Capture only or Edit and becomes a viewer can only view; the table then shows View. A viewer also sees the household's [pets](pets) without being able to change them.
 
 The household always keeps at least one active administrator. The app refuses to change the role of the last administrator or to stop them from signing in, with "The household must keep at least one active administrator."
 

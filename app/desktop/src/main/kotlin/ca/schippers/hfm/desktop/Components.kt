@@ -214,6 +214,18 @@ fun ErrorText(text: String?) {
     if (text != null) Text(text, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
 }
 
+/**
+ * The question asked before anything is deleted: [question] says what goes and what stays, with
+ * any choice in [extra]. [onDelete] deletes and returns whether it worked; the question then closes.
+ */
+@Composable
+fun AskBeforeDeleting(model: BooksModel, question: String, onDismiss: () -> Unit, extra: @Composable () -> Unit = {}, onDelete: () -> Boolean) {
+    FormDialog(model.t("common.delete"), model.t("common.delete"), model.t("common.cancel"), onDismiss = onDismiss, onSave = { if (onDelete()) onDismiss() }) {
+        Text(question)
+        extra()
+    }
+}
+
 private const val MAX_SHOWN = 200
 
 /**

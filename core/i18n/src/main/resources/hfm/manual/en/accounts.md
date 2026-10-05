@@ -612,7 +612,7 @@ The program:
 Once the program is saved, the window also shows:
 
 - a summary line: Balance (earned and adjustments less redeemed), worth (balance times the worth of one) and about how many were earned this year (this year's spending on the card times the earn rate, as an estimate);
-- the latest twelve entries, with their date, kind, worth and number; **✕** deletes an entry.
+- the latest twelve entries, with their date, kind, worth and number; **✕** asks "Delete this entry (kind, number, date)?" and, once confirmed, deletes the entry.
 
 Under them, A new entry records what a statement shows. It is there from the start, so a new program and its first entry are saved together:
 
