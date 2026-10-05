@@ -32,7 +32,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-/** NAV-01: the menu's groups, in order; the dashboard stands on its own above them. */
+/** NAV-01: the menu's groups, in order; the dashboard and contacts stand on their own above them. */
 enum class NavGroup(val sections: List<Section>) {
     MONEY(listOf(Section.ACCOUNTS, Section.DOCUMENTS, Section.BILLS, Section.BUDGETS, Section.GOALS, Section.FAMILY, Section.SIDE, Section.CALENDAR)),
     INVESTING(listOf(Section.INVESTMENTS, Section.PLANS, Section.LOANS)),
@@ -51,6 +51,9 @@ enum class NavGroup(val sections: List<Section>) {
     }
 }
 
+/** NAV-01: the screens outside the groups, at the top of the menu: the dashboard, then contacts (CON-01). */
+val STANDALONE = listOf(Section.DASHBOARD, Section.CONTACTS)
+
 /** NAV-03: a section's name with its count, such as documents waiting for review. */
 private fun BooksModel.navLabel(section: Section, counts: Map<Section, Int>): String =
     t("nav.${section.name.lowercase()}") + (counts[section]?.takeIf { it > 0 }?.let { " ($it)" } ?: "")
@@ -65,7 +68,9 @@ fun SideMenu(model: BooksModel, app: AppState, counts: Map<Section, Int>) {
     var closed by remember(user) { mutableStateOf(app.closedMenuGroups(user)) }
     // NFR-08: wider with larger text, so names stay on one line.
     Column(Modifier.width(210.dp * app.textScale.coerceAtLeast(1f)).fillMaxHeight().verticalScroll(rememberScrollState()).padding(8.dp)) {
-        NavigationDrawerItem(label = { Text(model.navLabel(Section.DASHBOARD, counts)) }, selected = model.section == Section.DASHBOARD, onClick = { model.section = Section.DASHBOARD })
+        for (section in STANDALONE) {
+            NavigationDrawerItem(label = { Text(model.navLabel(section, counts)) }, selected = model.section == section, onClick = { model.section = section })
+        }
         for (group in NavGroup.entries) {
             val open = group !in closed || NavGroup.of(model.section) == group
             val total = group.sections.sumOf { counts[it] ?: 0 }
@@ -103,8 +108,10 @@ fun TopMenu(model: BooksModel, app: AppState, counts: Map<Section, Int>) {
     var open by remember { mutableStateOf<NavGroup?>(null) }
     Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.padding(horizontal = 8.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { model.section = Section.DASHBOARD }) {
-                Text(model.navLabel(Section.DASHBOARD, counts), fontWeight = if (model.section == Section.DASHBOARD) FontWeight.Bold else FontWeight.Normal)
+            for (section in STANDALONE) {
+                TextButton(onClick = { model.section = section }) {
+                    Text(model.navLabel(section, counts), fontWeight = if (model.section == section) FontWeight.Bold else FontWeight.Normal)
+                }
             }
             for (group in NavGroup.entries) {
                 val total = group.sections.sumOf { counts[it] ?: 0 }

@@ -100,6 +100,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
             Box(Modifier.fillMaxSize()) {
                 when (model.section) {
                     Section.DASHBOARD -> DashboardScreen(model)
+                    Section.CONTACTS -> ContactsScreen(model)
                     Section.ACCOUNTS -> AccountsScreen(model)
                     Section.DOCUMENTS -> DocumentsScreen(model)
                     Section.BILLS -> BillsScreen(model)

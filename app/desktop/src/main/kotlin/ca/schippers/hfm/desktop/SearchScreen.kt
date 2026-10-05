@@ -108,6 +108,10 @@ fun SearchResultsDialog(model: BooksModel) {
                 Simple(model.t("search.categories"), results.categories.map { it.name(model.language) }) { open(Section.CATEGORIES) }
                 Simple(model.t("search.bills"), results.bills.map { it.name }) { open(Section.BILLS) }
                 Simple(model.t("search.institutions"), results.institutions.map { it.name }) { open(Section.INSTITUTIONS) }
+                Simple(model.t("search.contacts"), results.contacts.map { it.label }) { i ->
+                    model.focusContactId = results.contacts[i].id
+                    open(Section.CONTACTS)
+                }
                 Simple(model.t("search.documents"), results.documents.map { it.label }) { i ->
                     model.focusDocumentId = results.documents[i].id
                     open(Section.DOCUMENTS)

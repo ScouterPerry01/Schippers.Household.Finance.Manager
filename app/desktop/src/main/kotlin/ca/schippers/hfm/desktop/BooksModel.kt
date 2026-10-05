@@ -29,7 +29,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
 
-enum class Section { DASHBOARD, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, FAMILY, SIDE, INVESTMENTS, PLANS, LOANS, REPORTS, TAXES, CALENDAR, HEALTH, MEDICAL, ESTATE, PETS, VEHICLES, TRIPS, ASSETS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, RATE_RULES, PHONES, AI, USERS, BACKUPS, SECURITY, DISPLAY, ABOUT }
+enum class Section { DASHBOARD, CONTACTS, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, FAMILY, SIDE, INVESTMENTS, PLANS, LOANS, REPORTS, TAXES, CALENDAR, HEALTH, MEDICAL, ESTATE, PETS, VEHICLES, TRIPS, ASSETS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, RATE_RULES, PHONES, AI, USERS, BACKUPS, SECURITY, DISPLAY, ABOUT }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -76,6 +76,9 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
 
     /** A transaction to open in the register's entry form (from search). */
     var focusTransactionId by mutableStateOf<String?>(null)
+
+    /** A contact to show in the Contacts screen (from search or a record's screen). */
+    var focusContactId by mutableStateOf<String?>(null)
 
     /** A document to open in the documents screen (from search). */
     var focusDocumentId by mutableStateOf<String?>(null)
@@ -220,6 +223,9 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     /** The user's own private group if there is one, otherwise the first shared group. */
     fun defaultGroupForPersonalRecords(): GroupInfo? =
         editableGroups().let { groups -> groups.firstOrNull { it.ownerUserId == session.userId } ?: groups.firstOrNull() }
+
+    /** CON-03: contacts belong to the household, so they go in its first shared group unless the user chooses otherwise. */
+    fun defaultGroupForContacts(): GroupInfo? = editableGroups().let { groups -> groups.firstOrNull { !it.isPrivate } ?: groups.firstOrNull() }
 
     /** Creates "<name> - private" for personal records. Returns the new group's id. */
     fun createPrivateGroup(): String? = act {

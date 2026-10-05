@@ -37,9 +37,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import ca.schippers.hfm.i18n.HelpGuide
 
-/** NFR-12: the guide's topics in menu order: the general ones, the dashboard, then each group's screens. */
+/** NFR-12: the guide's topics in menu order: the general ones, the dashboard and contacts, then each group's screens. */
 fun helpTopicIds(): List<String> =
-    HelpGuide.GENERAL + Section.DASHBOARD.helpId + NavGroup.entries.flatMap { g -> g.sections.map { it.helpId } }
+    HelpGuide.GENERAL + STANDALONE.map { it.helpId } + NavGroup.entries.flatMap { g -> g.sections.map { it.helpId } }
 
 /**
  * The id of a screen's help topic and manual chapter: its name in lower case, except where the

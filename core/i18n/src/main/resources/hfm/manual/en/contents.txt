@@ -16,6 +16,7 @@ start-home-family
 start-phone
 = money Money
 dashboard
+contacts
 accounts
 documents
 bills
