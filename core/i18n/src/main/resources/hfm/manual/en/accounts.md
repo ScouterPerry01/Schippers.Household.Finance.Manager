@@ -23,7 +23,7 @@ The accounts are grouped under headings by kind, always in this order: Banking, 
 
 - the account name, in bold when it is the one selected, followed by (Closed) for a closed account;
 - under the name, Reconciled to followed by the date of the last reconciled statement, or Never reconciled. The date turns red when the last reconciliation is more than 45 days old, as a reminder to reconcile the next statement. The same accounts are listed on the Dashboard under Needs your attention;
-- on the right, the balance, counting every transaction recorded (post-dated ones included). Negative balances are in red. Credit cards, lines of credit, loans and mortgages normally show a negative balance, since it is money owed.
+- on the right, the balance today: transactions dated after today (a post-dated cheque, a payment entered ahead) are not counted yet. When an account has such transactions, a smaller line under the balance gives the balance once they are counted, such as 1 250,00 $ after post-dated. Negative balances are in red. Credit cards, lines of credit, loans and mortgages normally show a negative balance, since it is money owed.
 
 Investment accounts are shown at their full value: the cash in the account plus the securities at their market value. In the register of an investment account, the balance is the cash only.
 
@@ -31,7 +31,7 @@ Click a row to open that account's register. Choosing another account leaves any
 
 ### Totals {#totals}
 
-At the bottom of the column, one line per currency, such as Total CAD and Total USD, adds up the balances of the accounts listed in that currency. Debts are negative, so each line is what you own less what you owe in that currency. Accounts in different currencies are never added together here; the Dashboard's Net worth gives the household total in the base currency.
+At the bottom of the column, one line per currency, such as Total CAD and Total USD, adds up today's balances of the accounts listed in that currency (post-dated transactions are not counted). Debts are negative, so each line is what you own less what you owe in that currency. Accounts in different currencies are never added together here; the Dashboard's Net worth gives the household total in the base currency.
 
 ### Show closed accounts {#show-closed-accounts}
 
@@ -151,7 +151,13 @@ A closed account keeps all its transactions, statements and reports. It disappea
 
 > Tip: Move any remaining balance out with a transfer before you close an account, so its balance is zero.
 
-> Note: The register of a closed account no longer shows **Close account**. There is no button to reopen an account; a closed account can still be shown, opened and read.
+> Note: The register of a closed account shows **Reopen account** in place of **Close account** (see [Reopen an account](accounts#reopen-account)).
+
+### Reopen an account {#reopen-account}
+
+@index: reopen account; closed by mistake; use a closed account again
+
+To use a closed account again, tick **Show closed accounts**, open its register and choose **Reopen account**. It happens at once, without a question: the account comes back in the account list, the totals, the Dashboard tiles and the accounts you can transfer to, with all its history. You can close it again at any time.
 
 ## The register {#register}
 
@@ -163,8 +169,9 @@ The register is the list of an account's transactions, oldest at the top and new
 
 At the top: the account name, then its type, currency and masked number (for example Chequing · CAD · •••• 1234). On the right:
 
-- **Balance**: the balance with every transaction counted, today and in the future (a post-dated transaction already counts).
+- **Balance**: the balance today, counting every transaction dated today or earlier. When transactions are dated after today, a line under it says After post-dated transactions: with the balance once they are counted. The running balance in the register's last column counts every row, post-dated ones too.
 - **Cleared**: the opening balance plus only the transactions marked cleared or reconciled. It should match what the bank shows once everything has gone through. Reconciling compares this amount with the statement.
+- Available credit: on a credit card or line of credit that has a credit limit (see [Credit card details](accounts#card-details)), what can still be spent and the share of the limit in use, such as Available credit: 3 800,00 $ (24 % of the limit used). It is in red when the balance is over the limit.
 
 ### Buttons above the register {#register-buttons}
 
@@ -179,6 +186,7 @@ Which buttons appear depends on the account:
 - **Loan details**: loans and mortgages only; opens Loans and mortgages.
 - **Holdings**: investment accounts only; opens Investments.
 - **Close account**: only while the account is open (see [Close an account](accounts#close-account)).
+- **Reopen account**: only on a closed account (see [Reopen an account](accounts#reopen-account)).
 
 ### Columns {#register-columns}
 
@@ -236,6 +244,7 @@ The buttons at the right of the form:
 - **Split…**: shares the transaction across several categories (not offered for a transfer).
 - **Pay stub…**: on a Banking account, when entering a new transaction, enters a pay from its stub (see [Pay from a pay stub](accounts#pay-stub)).
 - **Sales tax…** and **Refund…**: when editing an existing transaction (see [Sales tax on a purchase](accounts#sales-tax) and [Record a refund](accounts#refund)).
+- **History…**: when editing, the change history of the transaction (see [Change history](accounts#transaction-history)).
 - **Delete**: when editing (see [Edit or delete a transaction](accounts#edit-transaction)).
 - **Cancel**: clears the form, like Escape.
 - **Save**: saves, like Enter.
@@ -261,10 +270,16 @@ Rules under [Category rules](rules) categorize imported statement lines; they do
 
 Click a transaction in the register: the form's title becomes Editing transaction and the fields are loaded. Change what you need and save. The transaction keeps its cleared mark and its tags. A transaction recorded in a foreign currency keeps its original amount; when you change the amount, its rate is worked out again.
 
-- **Delete**: deletes the transaction at once, without asking (unless it is reconciled). Deleting one side of a transfer deletes both sides. Lines of an investment transaction cannot be deleted here.
+- **Delete**: asks first, Delete this transaction (...)? This cannot be undone., naming its date, payee and amount; for a transfer it says the transfer is deleted from both accounts. **Delete** confirms; **Cancel** keeps it. A reconciled transaction then asks a second time (see [Changing a reconciled transaction](accounts#reconciled-changes)). Deleting one side of a transfer deletes both sides. Lines of an investment transaction cannot be deleted here.
 - **Cancel** or Escape: leaves the transaction unchanged and clears the form.
 
 Changing the category of a transfer to an ordinary category (or the reverse) replaces the transaction: the old one is removed and a new one is saved.
+
+### Change history {#transaction-history}
+
+@index: history; audit trail; who changed it; change log
+
+Every transaction keeps a record of each change: when it was created, each time it was changed, and by whom. Click the transaction in the register, then **History…**. The window Change history lists the changes, oldest first. Each one shows the date and time, the user who made it and what was done (Created or Changed), then the transaction as it stood after the change: date, payee, amount, category (or (split), or Transfer), memo, and c or R when it was cleared or reconciled. Under a change, a grey line, Before:, gives the transaction as it was. Marking a transaction cleared or reconciled is a change too. **Close** closes the window. The history itself cannot be changed.
 
 ### Changing a reconciled transaction {#reconciled-changes}
 
@@ -284,7 +299,7 @@ A transfer moves money between two of your accounts: paying the credit card from
 4. If the other account is in another currency, fill in **Amount in {currency}** with what the other side received or paid.
 5. Save.
 
-Editing either side changes both. Changing the other account in Category moves the transfer to the new account. A transfer keeps its date, amount and memo only: it has no category, person or vehicle, a payee typed for it is not kept, and it cannot be split.
+Editing either side changes both. Changing the other account in Category moves the transfer to the new account. A transfer keeps its date, amount, payee and memo: it has no category, person or vehicle, and it cannot be split. A payee typed for a transfer, such as the name of the bank, is kept as text on both sides; it is not added to the list of payees.
 
 > Tip: When a statement shows the same transfer in both accounts, import both statements: the second import matches the transfer already recorded instead of adding it twice.
 
@@ -301,6 +316,8 @@ Choose **Split…** in the form. The window Split transaction shows one row per 
 - **Amount**: the amount of this part, as a positive number; it takes the direction of the transaction (payment or deposit).
 
 When you open it, the first row holds the whole amount (and the category, if one was chosen) and an empty row waits below. **Add line** adds a row already filled with what remains. Under the rows, Remaining: shows what is left to share out, in red until it is zero. **Save** is available once the parts add up exactly to the transaction. Rows with no amount are dropped.
+
+Some split lines carry more than the window shows: the lines of a pay entered from a pay stub are each marked for the person paid, and a line can carry its own tax treatment. These are kept when you change the split and save it again.
 
 If you open the split before typing a payment or deposit, the window shows Total: instead, and the total of the parts becomes the amount of the transaction (as a payment, unless a deposit was typed).
 
@@ -507,11 +524,11 @@ For a statement on paper or in a PDF you cannot import, choose **Enter a paper s
 
 @index: undo reconciliation; reopen statement
 
-When a reconciled period turns out to be wrong, choose **Undo reconciliation** on the most recent reconciled statement. Only the most recent one can be undone. The window Undo the last reconciliation explains that the transactions of this reconciliation become cleared again, so they can be changed, and that the reason is kept in the activity log.
+When a reconciled period turns out to be wrong, choose **Undo reconciliation** on the most recent reconciled statement. Only the most recent one can be undone. The window Undo the last reconciliation explains that the transactions of this reconciliation become cleared again, so they can be changed, and that the statement goes back to In progress, to be reconciled again. The reason is kept with the statement.
 
 - **Reason**: why you are undoing it. Required; the **Undo reconciliation** button stays greyed out until it is filled in.
 
-The statement then shows as Undone with the reason. To reconcile that period again, enter it as a paper statement: the same file cannot be imported a second time.
+The statement stays in the list as Undone, with the reason, as a record of what had been reconciled. Beside it, the same statement appears again as In progress, with the same date, closing balance and lines, still matched to their transactions. Fix what was wrong, then choose **Continue** (or **Reconcile…** in the register) and finish the reconciliation again. There is no need to import the file again, and it would be refused: This statement file has already been imported into this account.
 
 ## Credit card details {#card-details}
 
@@ -519,11 +536,11 @@ The statement then shows as Undone with the reason. To reconcile that period aga
 
 On a Credit account, **Card details** opens Credit card details. Every field is optional. Rates are typed as percentages, such as 19.99.
 
-- **Credit limit**: the card's limit, in the account's currency. Kept for reference.
+- **Credit limit**: the card's limit, in the account's currency. With it, the register shows the available credit and the share of the limit used, and the Dashboard's Owing on credit and loans tile gives the credit still available on all the cards that have a limit.
 - **Purchase rate (%)**: the yearly interest rate on purchases. It is the rate shown for the card in the Debt summary report.
-- **Cash advance rate (%)**: the yearly rate on cash advances. Kept for reference.
+- **Cash advance rate (%)**: the yearly rate on cash advances. It is shown for the card in the Debt summary report.
 - **Statement day (1-31)**: the day of the month the statement is produced. Kept for reference.
-- **Payment due day (1-31)**: the day of the month the payment is due. Kept for reference; to be reminded to pay, set up the payment under [Bills](bills).
+- **Payment due day (1-31)**: the day of the month the payment is due. While the card has a balance owing, each due date is on the [Calendar](calendar) as payment due, and it appears among the reminders from 7 days before, leading back to Accounts. In a shorter month, the payment is due on the month's last day. To have the payment itself prepared and marked paid, set it up under [Bills](bills).
 - **Minimum payment (% of balance)**: the share of the balance the issuer asks for each month, such as 3.
 - **Minimum payment (at least)**: the smallest minimum payment, such as 10. The minimum payment is the larger of the percentage and this amount, but never more than the balance. It is shown for the card in the Debt summary report.
 - **Annual fee**: the yearly fee of the card.
@@ -589,17 +606,19 @@ The program:
 - **Program**: the name of the rewards program. Required before you can save.
 - **Earned as**: Points, Cash back or Miles.
 - **Earned per dollar spent**: how many points, miles or dollars of cash back each dollar of spending earns, such as 1.5 or 0.02. Optional; with it, the app estimates this year's earning.
-- **Worth of one, in dollars**: what one point or mile is worth when redeemed, such as 0.01. Optional; with it, the app shows what the balance is worth. For cash back, enter 1.
+- **Worth of one, in CAD**: what one point or mile is worth when redeemed, in the account's currency, which the label names (CAD, USD...), such as 0.01. Optional; with it, the app shows what the balance is worth. For cash back, enter 1.
 
 Once the program is saved, the window also shows:
 
 - a summary line: Balance (earned and adjustments less redeemed), worth (balance times the worth of one) and about how many were earned this year (this year's spending on the card times the earn rate, as an estimate);
-- the latest twelve entries, with their date, kind, worth and number; **✕** deletes an entry;
-- A new entry, to record what a statement shows:
-  - **Date**: the date of the entry; the default is today.
-  - **What**: Earned, Redeemed or Adjustment.
-  - **How many**: the number of points, miles or dollars of cash back, more than zero.
-  - **Redeemed for (worth)**: for Redeemed only, what you got for them, in the account's currency.
+- the latest twelve entries, with their date, kind, worth and number; **✕** deletes an entry.
+
+Under them, A new entry records what a statement shows. It is there from the start, so a new program and its first entry are saved together:
+
+- **Date**: the date of the entry; the default is today.
+- **What**: Earned, Redeemed or Adjustment.
+- **How many**: the number of points, miles or dollars of cash back, more than zero.
+- **Redeemed for (worth)**: for Redeemed only, what you got for them, in the account's currency.
 
 **Save** saves the program and, when How many is filled in, adds the entry. **Close** leaves without saving.
 
@@ -621,10 +640,11 @@ Choose where each Quicken account goes: a new account, or one you already have. 
 Then one row per Quicken account, with its name and number of transactions:
 
 - the box in front: tick to import the account; clear to leave it out. Transfers to an account left out become ordinary uncategorized lines, with the other account's name in the memo.
-- **Import into**: A new account, or one of your accounts in the same currency. The app proposes an existing account with the same name.
+- **Import into**: A new account, or any of your accounts, each listed with its currency, such as Joint chequing (CAD). The app proposes an existing account with the same name. The amounts in the file are taken in the currency of the account chosen.
 - **Type**: for a new account, its type. The app proposes one from the Quicken account kind and name (a Quicken account named TFSA or CELI becomes a TFSA, for example); check it, since it cannot be changed later.
+- **Currency (e.g. CAD, USD, BTC)**: for a new account, its currency: the household's base currency unless you change it, for example to USD for a US dollar account. Typing is turned into capitals; an unknown code is marked Unknown currency code. It cannot be changed later either.
 
-New accounts are created in the household's base currency, with Quicken's opening balance and the date of their first transaction. **Import** starts; it is greyed out until a date order and a group are chosen and at least one account is ticked. While it runs, it says Importing…
+New accounts are created in the currency chosen, with Quicken's opening balance and the date of their first transaction. **Import** starts; it is greyed out until a date order and a group are chosen and at least one account is ticked. While it runs, it says Importing…
 
 ### After the import {#quicken-results}
 

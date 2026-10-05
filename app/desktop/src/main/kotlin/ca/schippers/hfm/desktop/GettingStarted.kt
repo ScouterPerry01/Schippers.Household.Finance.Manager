@@ -40,15 +40,23 @@ fun BooksModel.setupDone(): Set<SetupStep> {
     }
 }
 
+/** OTH-04: the guide is hidden per user, in the household's settings. */
+private fun BooksModel.gettingStartedKey() = "onboarding.hidden.${books.userId}"
+
+/** Whether this user hid the Getting started guide. */
+fun BooksModel.gettingStartedHidden(): Boolean = books.setting(gettingStartedKey()) == "1"
+
+/** Shows the Getting started guide again on the Dashboard, after it was hidden (Display and accessibility). */
+fun BooksModel.showGettingStarted() = books.putSetting(gettingStartedKey(), "0")
+
 /**
  * OTH-04: a guide on the dashboard through the first steps (the people, the accounts, the bills, a
  * first statement, the phone), each opening the screen that does it, until all are done or the
- * user hides it. The next step to do stands out.
+ * user hides it (Display and accessibility shows it again). The next step to do stands out.
  */
 @Composable
 fun GettingStarted(model: BooksModel) {
-    val key = "onboarding.hidden.${model.books.userId}"
-    var hidden by remember { mutableStateOf(model.books.setting(key) == "1") }
+    var hidden by remember { mutableStateOf(model.gettingStartedHidden()) }
     val done = remember(model.revision) { model.setupDone() }
     var adding by remember { mutableStateOf(false) }
     // The phone is optional: once the other steps are done, the guide has done its work.
@@ -58,7 +66,7 @@ fun GettingStarted(model: BooksModel) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(model.t("setup.title", done.size, SetupStep.entries.size), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                TextButton(onClick = { model.act { model.books.putSetting(key, "1") }; hidden = true }) { Text(model.t("setup.hide")) }
+                TextButton(onClick = { model.act { model.books.putSetting(model.gettingStartedKey(), "1") }; hidden = true }) { Text(model.t("setup.hide")) }
             }
             Text(model.t("setup.intro"), style = MaterialTheme.typography.bodySmall)
             for (step in SetupStep.entries) {

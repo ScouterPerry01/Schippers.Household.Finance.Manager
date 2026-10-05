@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -50,18 +53,23 @@ import ca.schippers.hfm.books.SplitDraft
 import ca.schippers.hfm.books.StatementStatus
 import ca.schippers.hfm.books.Transaction
 import ca.schippers.hfm.books.TransactionDraft
+import ca.schippers.hfm.books.TransactionVersion
 import ca.schippers.hfm.books.TransferDraft
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.AccountStatus
 import ca.schippers.hfm.domain.ClearedStatus
+import ca.schippers.hfm.domain.TaxFlag
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import ca.schippers.hfm.ocr.TaxName
 import ca.schippers.hfm.money.sum
 import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 /** What the category column of an entry holds. */
 sealed interface CategoryChoice {
@@ -128,8 +136,11 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     var editingCards by remember { mutableStateOf(false) }
     var editingRewards by remember { mutableStateOf(false) }
     val holders = remember(model.revision, account.id) { if (account.type.kind == AccountKind.CREDIT) books.creditCards.holders(account.id) else emptyList() }
+    val cardTerms = remember(model.revision, account.id) { if (account.type.kind == AccountKind.CREDIT) books.creditCards.terms(account.id) else null }
     var revealing by remember { mutableStateOf(false) }
     var confirmClose by remember { mutableStateOf(false) }
+    var confirmDelete by remember { mutableStateOf<Transaction?>(null) }
+    var historyOf by remember { mutableStateOf<Transaction?>(null) }
     var splitting by remember { mutableStateOf(false) }
     var salesTaxFor by remember { mutableStateOf<Transaction?>(null) }
     var refunding by remember { mutableStateOf<Transaction?>(null) }
@@ -214,8 +225,20 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
-                Row { Text(model.t("account.balance") + "  "); MoneyText(model, summary.balance, bold = true) }
+                // ACC-01: the balance today; post-dated transactions are shown apart.
+                Row { Text(model.t("account.balance") + "  "); MoneyText(model, summary.balanceToday, bold = true) }
+                if (summary.hasPostDated) {
+                    Text(model.t("account.afterPostDated", model.money(summary.balance)), style = MaterialTheme.typography.bodySmall)
+                }
                 Row { Text(model.t("account.cleared") + "  ", style = MaterialTheme.typography.bodySmall); MoneyText(model, summary.clearedBalance) }
+                // CC-01: what the card's limit still allows.
+                cardTerms?.availableCredit(-summary.balanceToday)?.let { available ->
+                    Text(
+                        model.t("account.availableCredit", model.money(available), cardTerms.limitUsedPercent(-summary.balanceToday) ?: 0),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (available.isNegative) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                    )
+                }
             }
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(vertical = 8.dp)) {
@@ -234,6 +257,9 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
             if (account.type.kind == AccountKind.INVESTMENT) OutlinedButton(onClick = { model.section = Section.INVESTMENTS }) { Text(model.t("account.holdings")) }
             if (account.status != AccountStatus.CLOSED) {
                 OutlinedButton(onClick = { confirmClose = true }) { Text(model.t("account.close")) }
+            } else {
+                // ACC-05: a closed account comes back into use.
+                OutlinedButton(onClick = { model.act { books.accounts.reopen(account.id) } }) { Text(model.t("account.reopen")) }
             }
         }
         HorizontalDivider()
@@ -390,12 +416,9 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                             if (editing.amount.isNegative) OutlinedButton(onClick = { refunding = editing }) { Text(model.t("register.refundButton")) }
                         }
                         entry.editing?.let { editing ->
-                            OutlinedButton(onClick = {
-                                if (model.act(retryConfirmed = { books.transactions.delete(editing.id, confirmReconciled = true); entry.clear() }) {
-                                        books.transactions.delete(editing.id)
-                                    } != null
-                                ) entry.clear()
-                            }) { Text(model.t("common.delete")) }
+                            // TX-08: every change to the transaction, with who made it.
+                            OutlinedButton(onClick = { historyOf = editing }) { Text(model.t("register.history")) }
+                            OutlinedButton(onClick = { confirmDelete = editing }) { Text(model.t("common.delete")) }
                         }
                         TextButton(onClick = { entry.clear() }) { Text(model.t("common.cancel")) }
                         Button(onClick = { save() }) { Text(model.t("common.save")) }
@@ -418,6 +441,25 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     if (editingCards) CardsDialog(model, account) { editingCards = false }
     if (editingRewards) RewardsDialog(model, account) { editingRewards = false }
     if (revealing) RevealNumberDialog(model, account) { revealing = false }
+    historyOf?.let { txn -> HistoryDialog(model, txn, categories) { historyOf = null } }
+    confirmDelete?.let { txn ->
+        val what = listOfNotNull(model.date(txn.date), txn.payeeId?.let(payeeNames::get) ?: txn.payeeText, model.money(txn.amount)).joinToString(" · ")
+        AlertDialog(
+            onDismissRequest = { confirmDelete = null },
+            title = { Text(model.t("register.delete.title")) },
+            text = { Text(model.t(if (txn.transfer != null) "register.delete.transfer" else "register.delete.body", what)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmDelete = null
+                    if (model.act(retryConfirmed = { books.transactions.delete(txn.id, confirmReconciled = true); entry.clear() }) {
+                            books.transactions.delete(txn.id)
+                        } != null
+                    ) entry.clear()
+                }) { Text(model.t("common.delete")) }
+            },
+            dismissButton = { TextButton(onClick = { confirmDelete = null }) { Text(model.t("common.cancel")) } },
+        )
+    }
     if (confirmClose) {
         AlertDialog(
             onDismissRequest = { confirmClose = false },
@@ -463,9 +505,9 @@ private fun buildSave(model: BooksModel, account: Account, entry: EntryState): (
                 ?: throw ValidationException("error.transferToAmount", other.currency.code)
         }
         val draft = if (amount.isNegative) {
-            TransferDraft(account.id, other.id, date, -amount, otherAmount, memo)
+            TransferDraft(account.id, other.id, date, -amount, otherAmount, memo, payeeName = entry.payee.ifBlank { null })
         } else {
-            TransferDraft(other.id, account.id, date, otherAmount ?: amount, otherAmount?.let { amount }, memo)
+            TransferDraft(other.id, account.id, date, otherAmount ?: amount, otherAmount?.let { amount }, memo, payeeName = entry.payee.ifBlank { null })
         }
         return { confirm ->
             guard(confirm)
@@ -525,10 +567,18 @@ private fun applySuggestion(model: BooksModel, account: Account, entry: EntrySta
     }
 }
 
-private class SplitLine(categoryId: String?, memo: String, amount: String) {
+/**
+ * One row of the split window. The person and the tax flag a line already had are not shown
+ * there, but they are kept when the split is saved again (TX-02).
+ */
+internal class SplitLine(categoryId: String?, memo: String, amount: String, val memberId: String? = null, val taxFlag: TaxFlag? = null) {
     var categoryId by mutableStateOf(categoryId)
     var memo by mutableStateOf(memo)
     var amount by mutableStateOf(amount)
+
+    /** The line as saved: [magnitude] typed as a positive number, taking the sign of the transaction. */
+    fun toDraft(magnitude: Money, negative: Boolean): SplitDraft =
+        SplitDraft(categoryId, if (negative) -magnitude else magnitude, memo.ifBlank { null }, memberId, taxFlag)
 }
 
 /**
@@ -546,7 +596,7 @@ private fun SplitDialog(model: BooksModel, account: Account, entry: EntryState, 
     val lines = remember {
         mutableStateListOf<SplitLine>().apply {
             val existing = entry.splits ?: (entry.choice as? CategoryChoice.Of)?.let { c -> total?.let { listOf(SplitDraft(c.category.id, it)) } }
-            existing?.forEach { add(SplitLine(it.categoryId, it.memo.orEmpty(), MoneyFormat.formatAmount(it.amount.abs(), locale))) }
+            existing?.forEach { add(SplitLine(it.categoryId, it.memo.orEmpty(), MoneyFormat.formatAmount(it.amount.abs(), locale), it.memberId, it.taxFlag)) }
             if (isEmpty()) add(SplitLine(null, "", total?.abs()?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()))
             add(SplitLine(null, "", ""))
         }
@@ -565,7 +615,7 @@ private fun SplitDialog(model: BooksModel, account: Account, entry: EntryState, 
         onDismiss = onClose,
         onSave = {
             val drafts = lines.zip(parsed).mapNotNull { (line, amount) ->
-                amount.getOrNull()?.takeIf { !it.isZero }?.let { SplitDraft(line.categoryId, if (negative) -it else it, line.memo.ifBlank { null }) }
+                amount.getOrNull()?.takeIf { !it.isZero }?.let { line.toDraft(it, negative) }
             }
             if (total == null) {
                 val text = MoneyFormat.formatAmount(assigned, locale)
@@ -695,6 +745,51 @@ private fun RevealNumberDialog(model: BooksModel, account: Account, onClose: () 
         },
         dismissButton = { if (revealed == null) TextButton(onClick = onClose) { Text(model.t("common.cancel")) } },
     )
+}
+
+/**
+ * TX-08: every change made to a transaction, oldest first: when, by whom, and the transaction as
+ * it stood after the change, with what it was before for a change.
+ */
+@Composable
+private fun HistoryDialog(model: BooksModel, txn: Transaction, categories: Map<String, Category>, onClose: () -> Unit) {
+    val changes = remember(model.revision, txn.id) { model.books.transactions.versions(txn.id) }
+    val users = remember { model.books.users.list().associate { it.id to it.displayName } }
+    val format = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm") }
+    fun describe(v: TransactionVersion): String = listOfNotNull(
+        model.date(v.date),
+        v.payee,
+        model.money(v.amount),
+        when {
+            v.transfer -> model.t("register.historyTransfer")
+            v.categoryIds.size > 1 -> model.t("register.split")
+            else -> v.categoryIds.firstOrNull()?.let { categories[it]?.name(model.language) } ?: model.t("register.uncategorized")
+        },
+        v.memo,
+        when (v.cleared) { ClearedStatus.UNCLEARED -> null; ClearedStatus.CLEARED -> "c"; ClearedStatus.RECONCILED -> "R" },
+    ).joinToString(" · ")
+    WideDialog(model.t("register.historyTitle"), model.t("common.close"), onClose) {
+        Column(Modifier.width(640.dp).heightIn(max = 480.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(model.t("register.historyHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            if (changes.isEmpty()) Text(model.t("register.historyNone"))
+            for (c in changes) {
+                Column {
+                    Text(
+                        listOfNotNull(
+                            format.format(Instant.ofEpochMilli(c.at).atZone(ZoneId.systemDefault())),
+                            c.userId?.let(users::get),
+                            model.t("action.${c.action}"),
+                        ).joinToString(" · "),
+                        fontWeight = FontWeight.Medium,
+                    )
+                    (c.after ?: c.before)?.let { Text(describe(it), style = MaterialTheme.typography.bodySmall) }
+                    if (c.after != null && c.before != null && c.before != c.after) {
+                        Text(model.t("register.historyBefore", describe(c.before!!)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable

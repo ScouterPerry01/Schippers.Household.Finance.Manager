@@ -238,6 +238,58 @@ class BooksTest {
     }
 
     @Test
+    fun `the history shows each version of a transaction`() {
+        val txn = books.transactions.create(TransactionDraft(chequing().id, day(2), cad("-10.00"), payeeName = "Metro", splits = listOf(SplitDraft(category("food.groceries"), cad("-10.00")))))
+        books.transactions.update(txn.id, TransactionDraft(txn.accountId, day(3), cad("-12.50"), payeeName = "Metro", memo = "Milk"))
+        val versions = books.transactions.versions(txn.id)
+        assertEquals(listOf("CREATE", "UPDATE"), versions.map { it.action })
+        assertNull(versions[0].before)
+        assertEquals(listOf(category("food.groceries")), versions[0].after!!.categoryIds)
+        assertEquals(cad("-10.00"), versions[1].before!!.amount)
+        assertEquals(day(3), versions[1].after!!.date)
+        assertEquals(cad("-12.50"), versions[1].after!!.amount)
+        assertEquals("Milk", versions[1].after!!.memo)
+        assertEquals(books.userId, versions[1].userId)
+    }
+
+    @Test
+    fun `transfers keep the payee typed for them`() {
+        val from = chequing()
+        val savings = books.accounts.create(AccountDraft(sharedGroup, "Savings", AccountType.SAVINGS, Currency.CAD, cad("0"), day(1)))
+        val (out, into) = books.transactions.transfer(TransferDraft(from.id, savings.id, day(4), cad("200"), payeeName = " Rent fund "))
+        assertEquals("Rent fund", out.payeeText)
+        assertEquals("Rent fund", into.payeeText)
+        assertTrue(books.payees.list().isEmpty(), "a transfer creates no payee")
+        books.transactions.updateTransfer(out.transfer!!.transferId, TransferDraft(from.id, savings.id, day(4), cad("250"), payeeName = "Holiday fund"))
+        assertEquals("Holiday fund", books.transactions.get(into.id).payeeText)
+    }
+
+    @Test
+    fun `balances today leave post-dated transactions out`() {
+        val noon = java.time.LocalDate.of(2026, 3, 10).atTime(12, 0).atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val march10 = Books(books.session) { noon }
+        val account = chequing()
+        march10.transactions.create(TransactionDraft(account.id, day(9), cad("-100.00")))
+        march10.transactions.create(TransactionDraft(account.id, day(10), cad("-50.00")))
+        march10.transactions.create(TransactionDraft(account.id, day(20), cad("-300.00"))) // a post-dated cheque
+        val summary = march10.accounts.list().single()
+        assertEquals(cad("850.00"), summary.balanceToday)
+        assertEquals(cad("550.00"), summary.balance)
+        assertTrue(summary.hasPostDated)
+        val empty = march10.accounts.create(AccountDraft(sharedGroup, "Empty", AccountType.SAVINGS, Currency.CAD, cad("5"), day(1)))
+        assertEquals(cad("5"), march10.accounts.list().single { it.account.id == empty.id }.balanceToday)
+    }
+
+    @Test
+    fun `a closed account can be reopened`() {
+        val account = chequing()
+        books.accounts.close(account.id)
+        assertTrue(books.accounts.list().none { it.account.id == account.id })
+        books.accounts.reopen(account.id)
+        assertEquals(AccountStatus.OPEN, books.accounts.list().single { it.account.id == account.id }.account.status)
+    }
+
+    @Test
     fun `reconciled transactions only change with confirmation`() {
         val txn = books.transactions.create(TransactionDraft(chequing().id, day(2), cad("-10.00")))
         books.transactions.setCleared(txn.id, ClearedStatus.RECONCILED)

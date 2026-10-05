@@ -21,6 +21,20 @@ import ca.schippers.hfm.data.ledger.Txn_split as SplitRow
 /** One entry in a record's change history (TX-08). */
 data class Change(val at: Long, val userId: String?, val action: String, val before: String?, val after: String?)
 
+/** TX-08: a transaction as it stood before or after one change; [categoryIds] has one entry per split line. */
+data class TransactionVersion(
+    val date: LocalDate,
+    val payee: String?,
+    val amount: Money,
+    val memo: String?,
+    val cleared: ClearedStatus,
+    val categoryIds: List<String?>,
+    val transfer: Boolean,
+)
+
+/** TX-08: one change to a transaction: when, by whom ([userId]), CREATE, UPDATE or DELETE, and the transaction before and after. */
+data class TransactionChange(val at: Long, val userId: String?, val action: String, val before: TransactionVersion?, val after: TransactionVersion?)
+
 /**
  * Transactions, splits and transfers (TX-01 to TX-03, TX-08).
  *
@@ -76,6 +90,24 @@ class TransactionService internal constructor(private val books: Books) {
         val (group, _) = locate(transactionId)
         return books.ledger(group).ledgerQueries.changesFor(ENTITY, transactionId).executeAsList()
             .map { Change(it.at, it.user_id, it.action, it.before_json, it.after_json) }
+    }
+
+    /**
+     * TX-08: the change history of a transaction as the History view shows it, oldest first: each
+     * change with what the transaction looked like before and after it.
+     */
+    fun versions(transactionId: String): List<TransactionChange> {
+        val (group, row) = locate(transactionId)
+        val currency = Currency.of(books.ledger(group).ledgerQueries.accountById(row.account_id).executeAsOne().currency)
+        fun read(text: String?): TransactionVersion? = text?.let {
+            runCatching { json.decodeFromString(Snapshot.serializer(), it) }.getOrNull()?.let { s ->
+                TransactionVersion(
+                    LocalDate.parse(s.date), s.payee, Money.ofMinor(s.amountMinor, currency), s.memo, ClearedStatus.valueOf(s.cleared),
+                    s.splits.map { it.categoryId }, s.transferId != null,
+                )
+            }
+        }
+        return history(transactionId).map { TransactionChange(it.at, it.userId, it.action, read(it.before), read(it.after)) }
     }
 
     /** Values from the payee's most recent transaction, offered when the payee is typed (MAN-02). */
@@ -269,7 +301,7 @@ class TransactionService internal constructor(private val books: Books) {
             ledger.transaction {
                 val before = snapshot(ledger, row.id)
                 ledger.ledgerQueries.updateTxn(
-                    draft.date.toString(), null, null,
+                    draft.date.toString(), null, draft.payeeText(),
                     if (isFrom) -plan.fromAmount.minorUnits else plan.toAmount.minorUnits,
                     if (plan.crossCurrency) (if (isFrom) plan.toAmount else plan.fromAmount).minorUnits else null,
                     if (plan.crossCurrency) (if (isFrom) plan.to.currency else plan.from.currency).code else null,
@@ -376,13 +408,19 @@ class TransactionService internal constructor(private val books: Books) {
     ) {
         val cross = otherAmount.currency != account.currency
         ledger.ledgerQueries.insertTxn(
-            id, account.id, draft.date.toString(), null, null, amount.minorUnits,
+            id, account.id, draft.date.toString(), null, draft.payeeText(), amount.minorUnits,
             if (cross) otherAmount.minorUnits else null, if (cross) otherAmount.currency.code else null,
             if (cross) rate.toPlainString() else null, draft.memo?.ifBlank { null }, draft.memberId,
             ClearedStatus.UNCLEARED.name, transferId, otherAccountId, books.userId, DESKTOP, now, now,
         )
         logChange(ledger, id, "CREATE", null, snapshot(ledger, id))
     }
+
+    /**
+     * A transfer keeps its payee as text only: no payee is created for it, so payee suggestions
+     * and the payee list stay those of real spending and income.
+     */
+    private fun TransferDraft.payeeText(): String? = payeeName?.trim()?.ifEmpty { null }
 
     private fun transferSides(transferId: String): List<Pair<GroupInfo, TxnRow>> {
         val sides = books.groups().flatMap { group ->

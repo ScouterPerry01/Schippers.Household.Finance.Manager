@@ -12,7 +12,7 @@ Une rangée de tuiles donne les chiffres principaux. Cliquez sur une tuile pour 
 
 - Valeur nette, avec l’écart depuis le mois dernier. Ouvre les Rapports.
 - Encaisse disponible et Dû sur crédit et prêts. Ouvrent les Comptes.
-- Factures des 7 prochains jours. Ouvre les Factures.
+- Factures en retard ou dues dans les 7 prochains jours. Ouvre les Factures.
 - Dépensé ce mois-ci, comparé à vos budgets, avec le nombre de catégories qui dépassent le budget. Ouvre les Budgets.
 
 ## À vérifier

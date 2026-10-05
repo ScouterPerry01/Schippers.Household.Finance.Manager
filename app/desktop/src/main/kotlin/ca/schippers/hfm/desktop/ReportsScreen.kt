@@ -479,8 +479,8 @@ private fun DebtReport(model: BooksModel, accountIds: Set<String>?) {
         model,
         ReportTable(
             model.t("report.DEBT"), model.date(today()),
-            listOf(model.t("nav.accounts"), model.t("account.type"), model.t("loans.owed"), model.t("loans.rate"), model.t("loans.payment"), model.t("loans.payoff"), model.t("loans.interestLeft"), model.t("loans.renewal")),
-            lines.map { listOf(it.account.name, model.t("accountType.${it.account.type}"), it.owed, pct(it.annualRate), it.payment, it.payoffDate, it.interestRemaining, it.termEnd) },
+            listOf(model.t("nav.accounts"), model.t("account.type"), model.t("loans.owed"), model.t("loans.rate"), model.t("report.cashAdvanceRate"), model.t("loans.payment"), model.t("loans.payoff"), model.t("loans.interestLeft"), model.t("loans.renewal")),
+            lines.map { listOf(it.account.name, model.t("accountType.${it.account.type}"), it.owed, pct(it.annualRate), pct(it.cashAdvanceRate), it.payment, it.payoffDate, it.interestRemaining, it.termEnd) },
         ),
         startOpen = true,
     )

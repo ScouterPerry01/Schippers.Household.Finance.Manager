@@ -175,9 +175,13 @@ class CalendarService internal constructor(private val books: Books) {
             books.upkeepBetween(from, to, books.today()).map { CalendarItem.Maintenance(it) })
             .sortedBy { it.date }
 
-    /** Renewal dates between [from] and [to], for the calendar. */
+    /**
+     * Renewal dates between [from] and [to], for the calendar. Card payments are announced only a
+     * few days ahead among the reminders, so the calendar asks for every due date of the period.
+     */
     private fun renewals(from: LocalDate, to: LocalDate): List<Renewal> =
-        books.renewals(from, from.daysUntil(to)).filter { it.date in from..to }
+        (books.renewals(from, from.daysUntil(to)).filter { it.kind != RenewalKind.CARD_PAYMENT_DUE } + books.creditCards.paymentsDue(from, to))
+            .filter { it.date in from..to }
 
     /** CAL-03: events starting within one of their reminder lead times from [now]. */
     fun reminders(now: LocalDateTime): List<EventReminder> {

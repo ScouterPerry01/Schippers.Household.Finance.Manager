@@ -457,8 +457,14 @@ class StatementService internal constructor(private val books: Books) {
         return row.report_json?.let { json.decodeFromString(ReconciliationReport.serializer(), it) }
     }
 
-    /** REC-07: reopens the most recent reconciliation of an account; the reason is logged. */
-    fun undo(statementId: String, reason: String) {
+    /**
+     * REC-07: reopens the most recent reconciliation of an account; the reason is logged. The
+     * reconciled statement stays in the history as undone, with its reason and report, and an open
+     * copy of it (same period, balances and lines, still linked to their transactions) takes its
+     * place, so the period can be reconciled again without importing the file a second time.
+     * Returns the id of that open statement.
+     */
+    fun undo(statementId: String, reason: String): String {
         validate(reason.isNotBlank(), "error.reasonRequired")
         val (group, row) = locateStatement(statementId)
         books.require(group, PermissionLevel.EDIT)
@@ -469,16 +475,28 @@ class StatementService internal constructor(private val books: Books) {
         validate(latest?.id == statementId, "error.undoLatestOnly")
         val report = report(statementId)
         val ledger = books.ledger(group)
+        val q = ledger.ledgerQueries
+        val reopenedId = Ids.newId()
         ledger.transaction {
             report?.cleared?.forEach { item ->
-                if (ledger.ledgerQueries.txnById(item.transactionId).executeAsOneOrNull()?.cleared == ClearedStatus.RECONCILED.name) {
+                if (q.txnById(item.transactionId).executeAsOneOrNull()?.cleared == ClearedStatus.RECONCILED.name) {
                     books.transactions.setCleared(item.transactionId, ClearedStatus.CLEARED, confirmReconciled = true)
                 }
             }
-            ledger.ledgerQueries.undoStatement(reason.trim(), statementId)
+            q.undoStatement(reason.trim(), statementId)
+            // The undone statement keeps the file's fingerprint, so the same file is still refused
+            // on import (REC-10); the open copy carries the lines instead.
+            q.insertStatement(
+                reopenedId, row.account_id, row.source_name, row.format, null, row.period_start, row.period_end,
+                row.opening_balance_minor, row.closing_balance_minor, books.now(), books.userId,
+            )
+            q.statementLines(statementId).executeAsList().forEach { l ->
+                q.insertStatementLine(Ids.newId(), reopenedId, l.line_no, l.external_id, l.date, l.amount_minor, l.payee, l.memo, l.check_number, l.status, l.txn_id)
+            }
         }
         // The reason stays with the statement in the group's ledger; the shared audit log only records the undo (HH-11).
         books.session.audit("UNDO_RECONCILE", "statement", statementId)
+        return reopenedId
     }
 
     /** REC-09: the last reconciled statement date of every visible account (null if never). */

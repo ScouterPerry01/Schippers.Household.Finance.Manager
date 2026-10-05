@@ -12,7 +12,7 @@ A row of tiles gives the main numbers. Click a tile to open the screen behind it
 
 - Net worth, with the change since last month. Opens Reports.
 - Cash available and Owing on credit and loans. Open Accounts.
-- Bills in the next 7 days. Opens Bills.
+- Bills overdue or due in the next 7 days. Opens Bills.
 - Spent this month, compared with your budgets, and how many categories are over budget. Opens Budgets.
 
 ## Needs your attention

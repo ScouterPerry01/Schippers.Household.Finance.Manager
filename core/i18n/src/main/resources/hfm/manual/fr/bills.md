@@ -273,7 +273,7 @@ Une facture papier ou électronique importée dans l’écran [Documents](docume
 
 ## Où les factures apparaissent ailleurs {#elsewhere}
 
-- Le [Tableau de bord](dashboard) montre les factures des 7 prochains jours et leur total.
+- Le [Tableau de bord](dashboard) montre les factures en retard ou dues dans les 7 prochains jours et leur total.
 - Le [Calendrier](calendar) montre chaque échéance avec les rendez-vous et les autres dates.
 - Les paiements inscrits à partir des factures sont des opérations ordinaires : ils comptent dans les [Budgets](budgets), les [Rapports](reports) et les chiffres d’impôt sous la catégorie de la facture.
 

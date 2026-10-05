@@ -273,7 +273,7 @@ A paper bill or e-bill imported on the [Documents](documents) screen can be reco
 
 ## Where bills appear elsewhere {#elsewhere}
 
-- The [Dashboard](dashboard) shows the bills of the next 7 days and their total.
+- The [Dashboard](dashboard) shows the bills overdue or due in the next 7 days and their total.
 - The [Calendar](calendar) shows every due date with appointments and other dates.
 - Payments recorded from bills are ordinary transactions: they count in [Budgets](budgets), [Reports](reports) and tax figures under the bill's category.
 

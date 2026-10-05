@@ -39,7 +39,7 @@ Le guide disparaît de lui-même une fois les quatre premières étapes faites. 
 
 ### Masquer ce guide {#hide-guide}
 
-- **Masquer ce guide** : retire aussitôt le guide de votre tableau de bord, même s’il reste des étapes. C’est mémorisé pour vous seulement : les autres utilisateurs du ménage voient leur propre guide jusqu’à ce qu’ils le masquent ou terminent les étapes. Aucun bouton ne fait revenir le guide ; chaque étape qu’il propose reste faisable à partir du menu.
+- **Masquer ce guide** : retire aussitôt le guide de votre tableau de bord, même s’il reste des étapes. C’est mémorisé pour vous seulement : les autres utilisateurs du ménage voient leur propre guide jusqu’à ce qu’ils le masquent ou terminent les étapes. Pour le faire revenir, choisissez **Afficher de nouveau le guide Premiers pas** dans [Affichage et accessibilité](display#getting-started-guide) ; chaque étape qu’il propose est aussi faisable à partir du menu.
 
 ## Les tuiles {#tiles}
 
@@ -61,7 +61,7 @@ Tous les montants des tuiles sont dans la devise de base du ménage. Les soldes 
 
 @index: encaisse; solde bancaire; argent disponible
 
-- **Encaisse disponible** : le solde total de tous les comptes ouverts du groupe Comptes bancaires : compte chèques, épargne, épargne à intérêt élevé, CPG ou dépôts à terme, argent comptant et cartes prépayées ou cartes-cadeaux. Les placements, cartes de crédit et prêts n’y sont pas. Un clic sur la tuile ouvre Comptes.
+- **Encaisse disponible** : le solde total d’aujourd’hui de tous les comptes ouverts du groupe Comptes bancaires : compte chèques, épargne, épargne à intérêt élevé, CPG ou dépôts à terme, argent comptant et cartes prépayées ou cartes-cadeaux. Les placements, cartes de crédit et prêts n’y sont pas. Les opérations datées après aujourd’hui (postdatées) comptent une fois leur jour venu. Un clic sur la tuile ouvre Comptes.
 
 > Remarque : Un CPG compte ici parce que c’est un type de compte bancaire, même si l’argent est bloqué jusqu’à l’échéance.
 
@@ -69,13 +69,15 @@ Tous les montants des tuiles sont dans la devise de base du ménage. Les soldes 
 
 @index: dettes; montant dû; solde de carte de crédit; solde hypothécaire
 
-- **Dû sur crédit et prêts** : ce que le ménage doit aujourd’hui sur tous les comptes ouverts des groupes Crédit et Prêts : cartes de crédit, marges de crédit, marges de crédit hypothécaires, prêts et prêts hypothécaires. Le montant est affiché en positif. Une carte en solde créditeur (vous avez payé plus que le dû) réduit le total. Un clic sur la tuile ouvre Comptes.
+- **Dû sur crédit et prêts** : ce que le ménage doit aujourd’hui sur tous les comptes ouverts des groupes Crédit et Prêts : cartes de crédit, marges de crédit, marges de crédit hypothécaires, prêts et prêts hypothécaires. Le montant est affiché en positif. Une carte en solde créditeur (vous avez payé plus que le dû) réduit le total. Les opérations datées après aujourd’hui ne comptent pas encore.
+  Quand au moins une carte ou marge de crédit a une limite de crédit (voir [Détails de la carte de crédit](accounts#card-details)), la ligne de détail donne le crédit encore disponible sur ces comptes et la part de leurs limites utilisée, par exemple 3 800,00 $ de crédit disponible (24 % des limites des cartes utilisé). Elle est en rouge quand les soldes dépassent les limites.
+  Un clic sur la tuile ouvre Comptes.
 
-### Factures des 7 prochains jours {#bills-tile}
+### Factures en retard ou dues dans les 7 prochains jours {#bills-tile}
 
 @index: factures à venir; échéances proches
 
-- **Factures des 7 prochains jours** : le total des paiements de factures dus dans les sept prochains jours et pas encore payés. Les factures déjà en retard et toujours impayées (jusqu’à un an en arrière) y sont aussi, pour que rien de tardif ne soit caché. Les jours de paie et autres revenus sont exclus.
+- **Factures en retard ou dues dans les 7 prochains jours** : le total des paiements de factures pas encore payés qui sont soit en retard (jusqu’à un an en arrière), soit dus dans les sept prochains jours, pour que rien de tardif ne soit caché. Les jours de paie et autres revenus sont exclus.
   La ligne de détail les compte : 1 facture, 3 factures, ou rien à payer. Une facture dont le montant varie compte pour son montant estimé.
   Un clic sur la tuile ouvre Factures. Voir [Factures](bills).
 

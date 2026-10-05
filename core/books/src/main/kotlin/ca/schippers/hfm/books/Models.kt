@@ -85,7 +85,14 @@ data class Account(
     val ownerMemberIds: Set<String>,
 )
 
-data class AccountSummary(val account: Account, val balance: Money, val clearedBalance: Money)
+/**
+ * An account with its balances. [balance] counts every transaction, post-dated ones too;
+ * [balanceToday] only those dated today or earlier, which is what the account holds now (ACC-01).
+ */
+data class AccountSummary(val account: Account, val balance: Money, val clearedBalance: Money, val balanceToday: Money = balance) {
+    /** Whether transactions dated after today change the balance. */
+    val hasPostDated: Boolean get() = balance != balanceToday
+}
 
 data class AccountDraft(
     val groupId: String,
@@ -182,6 +189,8 @@ data class TransferDraft(
     val toAmount: Money? = null,
     val memo: String? = null,
     val memberId: String? = null,
+    /** The payee as typed, kept as text on both sides; a transfer never creates a payee (TX-03). */
+    val payeeName: String? = null,
 )
 
 data class RegisterRow(val transaction: Transaction, val runningBalance: Money)

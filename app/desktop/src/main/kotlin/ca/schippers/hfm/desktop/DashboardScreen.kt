@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.BillKind
 import ca.schippers.hfm.books.BudgetLine
 import ca.schippers.hfm.books.CategoryAmount
+import ca.schippers.hfm.books.CreditCardService
 import ca.schippers.hfm.books.NetWorthPoint
 import ca.schippers.hfm.books.Occurrence
 import ca.schippers.hfm.books.OccurrenceStatus
@@ -51,9 +52,12 @@ fun DashboardScreen(model: BooksModel) {
     val data = remember(model.revision) {
         val summaries = books.accounts.list()
         val missing = HashSet<Currency>()
-        fun total(kind: AccountKind) = summaries.filter { it.account.type.kind == kind }.fold(Money.zero(base)) { acc, s ->
-            acc + (books.rates.convert(s.balance, base, today) ?: Money.zero(base).also { missing += s.balance.currency })
-        }
+        // ACC-01: what the accounts hold today; post-dated transactions count once their day comes.
+        fun inBase(m: Money) = books.rates.convert(m, base, today) ?: Money.zero(base).also { missing += m.currency }
+        fun total(kind: AccountKind) = summaries.filter { it.account.type.kind == kind }.fold(Money.zero(base)) { acc, s -> acc + inBase(s.balanceToday) }
+        // CC-01: the credit still available on the cards that have a limit, and how much of those limits is used.
+        val limited = summaries.filter { it.account.type.kind == AccountKind.CREDIT }
+            .mapNotNull { s -> books.creditCards.terms(s.account.id)?.creditLimit?.takeIf { it.isPositive }?.let { limit -> inBase(limit) to inBase(-s.balanceToday) } }
         val netWorth = books.reports.netWorth(books.reports.monthEnds(monthStart.minus(DatePeriod(months = 11)), today))
         val upcoming = books.bills.occurrences(today.minus(DatePeriod(days = 365)), today.plus(DatePeriod(days = 7)))
             .filter { it.status == OccurrenceStatus.DUE && it.bill.kind != BillKind.INCOME }
@@ -67,6 +71,8 @@ fun DashboardScreen(model: BooksModel) {
             netWorth = netWorth.value,
             cash = total(AccountKind.BANK),
             credit = -(total(AccountKind.CREDIT) + total(AccountKind.LOAN)),
+            creditAvailable = limited.takeIf { it.isNotEmpty() }?.let { l -> l.fold(Money.zero(base)) { a, (limit, owed) -> a + limit - owed } },
+            limitUsed = limited.takeIf { it.isNotEmpty() }?.let { l -> CreditCardService.limitUsedPercent(l.fold(Money.zero(base)) { a, p -> a + p.second }, l.fold(Money.zero(base)) { a, p -> a + p.first }) },
             bills = upcoming,
             overdue = upcoming.count { it.dueDate < today },
             budgetLines = budget.lines.filter { it.category.kind == CategoryKind.EXPENSE },
@@ -87,7 +93,11 @@ fun DashboardScreen(model: BooksModel) {
             val monthAgo = data.netWorth.getOrNull(data.netWorth.size - 2)
             Tile(model.t("report.netWorth"), net?.let { model.money(it.net) } ?: "—", monthAgo?.let { m -> net?.let { model.t("dashboard.sinceLastMonth", signed(model, it.net - m.net)) } }) { model.section = Section.REPORTS }
             Tile(model.t("dashboard.cash"), model.money(data.cash), null) { model.section = Section.ACCOUNTS }
-            Tile(model.t("dashboard.credit"), model.money(data.credit), null) { model.section = Section.ACCOUNTS }
+            Tile(
+                model.t("dashboard.credit"), model.money(data.credit),
+                data.creditAvailable?.let { model.t("dashboard.creditAvailable", model.money(it), data.limitUsed ?: 0) },
+                alert = data.creditAvailable?.isNegative == true,
+            ) { model.section = Section.ACCOUNTS }
             val billsTotal = data.bills.fold(Money.zero(base)) { a, o -> a + (books.rates.convert(o.amount, base, today) ?: Money.zero(base)) }
             Tile(model.t("dashboard.bills"), model.money(billsTotal), model.t("dashboard.billsCount", data.bills.size)) { model.section = Section.BILLS }
             if (data.budgetLines.isNotEmpty()) {
@@ -152,6 +162,9 @@ private class DashboardData(
     val netWorth: List<NetWorthPoint>,
     val cash: Money,
     val credit: Money,
+    /** Null when no card has a limit. */
+    val creditAvailable: Money?,
+    val limitUsed: Int?,
     val bills: List<Occurrence>,
     val overdue: Int,
     val budgetLines: List<BudgetLine>,

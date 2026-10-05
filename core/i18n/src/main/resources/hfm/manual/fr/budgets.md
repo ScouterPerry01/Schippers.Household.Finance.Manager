@@ -115,7 +115,7 @@ Cliquez sur la barre d’une catégorie pour ouvrir son formulaire de budget. Ch
 ## Les devises {#currencies}
 @index: devise étrangère; taux de change; devise de base
 
-Les budgets sont dans la devise de base du ménage. Les opérations dans d’autres devises (un compte en dollars américains, par exemple) sont converties aux taux de change de l’application. Quand un taux manque, une ligne rouge indique « Aucun taux de change pour … : ces montants sont exclus. Ajoutez un taux dans Taux de change. » Voir [Taux et cours](rates).
+Les budgets sont dans la devise de base du ménage. Les opérations dans d’autres devises (un compte en dollars américains, par exemple) sont converties aux taux de change de l’application. Quand un taux manque, une ligne rouge indique « Aucun taux de change pour … : ces montants sont exclus. Ajoutez un taux dans Taux et cours. » Voir [Taux et cours](rates).
 
 ## Où les budgets apparaissent ailleurs {#elsewhere}
 

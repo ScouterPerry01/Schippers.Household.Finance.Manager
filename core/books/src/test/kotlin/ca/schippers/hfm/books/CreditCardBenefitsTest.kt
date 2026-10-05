@@ -91,4 +91,38 @@ class CreditCardBenefitsTest {
         assertEquals(26, reminder.daysLeft)
         assertNull(books.renewals(d("2026-06-01")).firstOrNull { it.kind == RenewalKind.CARD_ANNUAL_FEE })
     }
+
+    @Test
+    fun `available credit and the share of the limit used`() {
+        val terms = CreditCardTerms(creditLimit = cad("5000"))
+        assertEquals(cad("3800"), terms.availableCredit(cad("1200")))
+        assertEquals(24, terms.limitUsedPercent(cad("1200")))
+        assertEquals(cad("-100"), terms.availableCredit(cad("5100")), "over the limit")
+        assertEquals(0, terms.limitUsedPercent(cad("-50")), "a credit balance uses none of it")
+        assertNull(CreditCardTerms().availableCredit(cad("1200")))
+    }
+
+    @Test
+    fun `payment due dates come back every month, as reminders and on the calendar`() {
+        assertEquals(
+            listOf(d("2026-01-31"), d("2026-02-28"), d("2026-03-31")),
+            CreditCardTerms(dueDay = 31).dueDates(d("2026-01-15"), d("2026-04-15")),
+            "in a shorter month the payment is due on its last day",
+        )
+        val noon = java.time.LocalDate.of(2026, 2, 10).atTime(12, 0).atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val feb10 = Books(books.session) { noon }
+        feb10.creditCards.saveTerms(visa.id, CreditCardTerms(dueDay = 15, cashAdvanceRate = java.math.BigDecimal("0.2299")))
+        assertTrue(feb10.renewals(d("2026-02-10")).none { it.kind == RenewalKind.CARD_PAYMENT_DUE }, "nothing owed, nothing to pay")
+
+        feb10.transactions.create(TransactionDraft(visa.id, d("2026-02-01"), cad("-250"), "Store"))
+        val due = feb10.renewals(d("2026-02-10")).single { it.kind == RenewalKind.CARD_PAYMENT_DUE }
+        assertEquals(visa.id to d("2026-02-15"), due.subjectId to due.date)
+        assertEquals(5, due.daysLeft)
+        assertTrue(feb10.renewals(d("2026-02-01")).none { it.kind == RenewalKind.CARD_PAYMENT_DUE }, "announced a week ahead")
+        val march = feb10.calendar.items(d("2026-03-01"), d("2026-03-31")).filterIsInstance<CalendarItem.Renewal>().map { it.renewal }
+        assertEquals(listOf(d("2026-03-15")), march.filter { it.kind == RenewalKind.CARD_PAYMENT_DUE }.map { it.date })
+
+        // The cash advance rate is in the debt summary.
+        assertEquals(java.math.BigDecimal("0.2299"), feb10.loans.debtSummary(d("2026-02-10")).single { it.account.id == visa.id }.cashAdvanceRate)
+    }
 }

@@ -46,6 +46,16 @@ Tout fonctionne au clavier :
 
 Les lecteurs d'écran (Narrateur ou NVDA sous Windows, Orca sous Linux) lisent les libellés des champs et des boutons, et disent si un groupe du menu est ouvert ou fermé. Voir [Raccourcis clavier](shortcuts) pour la liste complète.
 
+### Guide Premiers pas {#getting-started-guide}
+
+@index: réafficher le guide; démarrage; Premiers pas
+
+Quand vous avez masqué le guide Premiers pas du tableau de bord, cet écran affiche Guide Premiers pas avec un bouton :
+
+- **Afficher de nouveau le guide Premiers pas** : fait revenir le guide sur votre tableau de bord et ouvre le tableau de bord. Le guide reste ensuite jusqu’à ce que ses quatre premières étapes soient faites, comme avant ; si elles le sont déjà, il n’a plus rien à afficher. Voir [Guide Premiers pas](dashboard#getting-started-guide).
+
+Contrairement aux autres réglages de cet écran, celui-ci est conservé dans le ménage, pour vous seulement. Cette partie n’est pas affichée tant que le guide n’est pas masqué.
+
 ## Le menu {#menu}
 
 @index: navigation; position du menu; menu latéral; menu du haut; barre de menu

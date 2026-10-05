@@ -39,7 +39,7 @@ The guide disappears by itself once the first four steps are done. The phone is 
 
 ### Hide this guide {#hide-guide}
 
-- **Hide this guide**: removes the guide from your Dashboard right away, even if steps remain. It is remembered for you only: other users of the household still see their own guide until they hide it or finish the steps. There is no button to bring the guide back; every step it lists can still be done from the menu.
+- **Hide this guide**: removes the guide from your Dashboard right away, even if steps remain. It is remembered for you only: other users of the household still see their own guide until they hide it or finish the steps. To bring it back, choose **Show the Getting started guide again** under [Display and accessibility](display#getting-started-guide); every step it lists can also be done from the menu.
 
 ## The tiles {#tiles}
 
@@ -61,7 +61,7 @@ All tile amounts are in the household's base currency. Balances and bills in oth
 
 @index: cash; bank balance; money available
 
-- **Cash available**: the total balance of all open accounts in the Banking group: chequing, savings, high-interest savings, GIC or term deposits, cash and prepaid or gift cards. Investments, credit cards and loans are not included. Clicking the tile opens Accounts.
+- **Cash available**: the total balance today of all open accounts in the Banking group: chequing, savings, high-interest savings, GIC or term deposits, cash and prepaid or gift cards. Investments, credit cards and loans are not included. Transactions dated after today (post-dated) count once their day comes. Clicking the tile opens Accounts.
 
 > Note: A GIC counts here because it is a Banking account type, even if the money is locked in until the term ends.
 
@@ -69,13 +69,15 @@ All tile amounts are in the household's base currency. Balances and bills in oth
 
 @index: debt; owing; credit card balance; mortgage balance
 
-- **Owing on credit and loans**: what the household owes today on all open accounts in the Credit and Loans groups: credit cards, lines of credit, home equity lines of credit, loans and mortgages. It is shown as a positive amount. A card with a credit balance (you paid more than you owed) lowers the total. Clicking the tile opens Accounts.
+- **Owing on credit and loans**: what the household owes today on all open accounts in the Credit and Loans groups: credit cards, lines of credit, home equity lines of credit, loans and mortgages. It is shown as a positive amount. A card with a credit balance (you paid more than you owed) lowers the total. Transactions dated after today are not counted yet.
+  When at least one card or line of credit has a credit limit (see [Credit card details](accounts#card-details)), the detail line gives the credit still available on those accounts and the share of their limits in use, for example 3 800,00 $ of credit available (24 % of card limits used). It is in red when the balances are over the limits.
+  Clicking the tile opens Accounts.
 
-### Bills in the next 7 days {#bills-tile}
+### Bills overdue or due in the next 7 days {#bills-tile}
 
 @index: upcoming bills; due soon
 
-- **Bills in the next 7 days**: the total of bill payments that are due within the next seven days and not yet paid. Bills that are already overdue and still unpaid (up to a year back) are included too, so nothing late is hidden. Pay days and other income are left out.
+- **Bills overdue or due in the next 7 days**: the total of bill payments not yet paid that are either overdue (up to a year back) or due within the next seven days, so nothing late is hidden. Pay days and other income are left out.
   The detail line counts them: 1 bill, 3 bills, or nothing due. A bill whose amount varies counts at its expected amount.
   Clicking the tile opens Bills. See [Bills](bills).
 
