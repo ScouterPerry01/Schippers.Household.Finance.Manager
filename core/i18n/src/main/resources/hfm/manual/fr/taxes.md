@@ -390,7 +390,10 @@ Le dépôt doit être supérieur à zéro : des retenues qui égalent ou dépass
 **Taxes de vente…**, sous une opération existante dans un registre (pas un virement ni une opération de placement), inscrit la TPS, la TVH, la TVQ ou la TVP indiquée sur le reçu.
 
 - **TPS**, **TVH**, **TVQ**, **TVP** : les montants du reçu, sans signe moins. Laissez les autres vides.
+- **Calculer à partir du total** : propose les taxes comprises dans le montant de l’opération, aux taux en vigueur à sa date dans la province du titulaire du compte (ou du ménage), tirés de **Taux et règles**. Comparez-les au reçu avant d’enregistrer. Voir [Taxes de vente sur un achat](accounts#sales-tax).
 - **Enregistrer** : les enregistre avec l’opération. **Annuler** : ferme.
+
+Taux des taxes de vente par province : la TVH (13 % en Ontario ; 15 % au Nouveau-Brunswick, à Terre-Neuve-et-Labrador et à l’Île-du-Prince-Édouard ; 14 % en Nouvelle-Écosse depuis le 1er avril 2025) remplace la TPS ; ailleurs, la TPS de 5 % s’applique, avec la TVQ de 9,975 % au Québec, une TVP de 7 % en Colombie-Britannique ou de 6 % en Saskatchewan, ou la TVD de 7 % au Manitoba ; l’Alberta et les territoires n’ont que la TPS. Ce sont les taux de 2026 ; chaque taux et son historique sont gardés, et peuvent être changés, dans **Taux et règles**.
 
 Le montant de l’opération ne change pas. Pour les dépenses dont la catégorie a le traitement fiscal travail autonome, la trousse de fin d’année additionne les taxes de vente sous **Taxes de vente payées sur les dépenses d’entreprise**, par taxe, qu’une entreprise inscrite peut demander comme crédits de taxe sur les intrants. Laissez vide autrement.
 

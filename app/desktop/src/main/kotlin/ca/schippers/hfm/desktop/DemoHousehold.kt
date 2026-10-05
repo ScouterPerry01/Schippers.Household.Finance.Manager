@@ -705,9 +705,10 @@ object DemoHousehold {
         books.homeProjects.addCost(roof, day(-118), l("Solde", "Balance"), cad("10200.00"), roofer.id)
         books.homeProjects.save(HomeProject("", group, l("Terrasse arrière", "Back deck"), ProjectStatus.PLANNED, Currency.CAD, house.id, budget = cad("6500.00")))
         // SAL-04: Sam's freelance invoices: one paid, one waiting, one overdue.
-        val taxes = if (english) listOf(InvoiceTax("HST", 1300)) else listOf(InvoiceTax("GST", 500), InvoiceTax("QST", 998))
+        // The sales taxes in effect on each invoice's date in Sam's province (Rates and rules): HST in Ontario, GST and QST in Quebec.
+        fun taxes(on: LocalDate) = ca.schippers.hfm.calc.salestax.SalesTaxes.ratesOn(on, books.provinceOf(sam.id)).map { InvoiceTax(it.label, it.rate, it.onGst) }
         fun invoice(n: Int, customer: String, lines: List<InvoiceLine>, due: Int) = books.invoices.save(
-            Invoice("", group, books.invoices.nextNumber(day(n).year), customer, day(n), Currency.CAD, lines, InvoiceStatus.SENT, day(n + due), memberId = sam.id, taxes = taxes),
+            Invoice("", group, books.invoices.nextNumber(day(n).year), customer, day(n), Currency.CAD, lines, InvoiceStatus.SENT, day(n + due), memberId = sam.id, taxes = taxes(day(n))),
         )
         val first = invoice(-60, l("Atelier Lavoie inc.", "Lavoie Studio Inc."), listOf(InvoiceLine(l("Conception graphique", "Graphic design"), "12", "65.00")), 30)
         books.invoices.markPaid(first, day(-35), chequing.id)

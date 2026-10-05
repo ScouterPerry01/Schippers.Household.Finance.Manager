@@ -328,12 +328,16 @@ Après l’enregistrement, le formulaire affiche un bouton comme 3 lignes de ven
 
 @index: TPS; TVH; TVQ; TVP; taxe de vente; crédit de taxe sur les intrants; CTI; RTI
 
-Pour noter les taxes de vente d’un reçu, cliquez sur l’opération dans le registre, puis sur **Taxes de vente…**. La fenêtre Taxes de vente incluses affiche la date, le bénéficiaire et le montant de l’opération et explique : La TPS, la TVH, la TVQ ou la TVP indiquée sur le reçu. Utile pour un travail autonome (crédits de taxe sur les intrants) et le dossier de fin d’année ; laissez vide sinon.
+Pour noter les taxes de vente d’un reçu, cliquez sur l’opération dans le registre, puis sur **Taxes de vente…**. La fenêtre Taxes de vente incluses affiche la date, le bénéficiaire et le montant de l’opération et explique : La TPS, la TVH, la TVQ ou la TVP indiquée sur le reçu, ou calculée à partir du total aux taux en vigueur. Utile pour un travail autonome (crédits de taxe sur les intrants) et le dossier de fin d’année ; laissez vide sinon.
 
 - **TPS** : la taxe fédérale sur les produits et services du reçu.
 - **TVH** : la taxe de vente harmonisée (dans les provinces qui combinent les taxes fédérale et provinciale).
 - **TVQ** : la taxe de vente du Québec.
-- **TVP** : une taxe de vente provinciale.
+- **TVP** : une taxe de vente provinciale (la TVP de la Colombie-Britannique ou de la Saskatchewan, ou la taxe de vente au détail du Manitoba, TVD).
+
+Au-dessus des montants, une ligne affiche les taxes de vente en vigueur à la date de l’opération dans la province qui s’applique, par exemple « Québec, en vigueur le 2026-09-03 : TPS 5 %, TVQ 9,975 % ». La province est celle des titulaires du compte quand ils ont tous la même, sinon celle du ménage. Les taux viennent de **Taux et règles**, par date, de sorte qu’une opération plus ancienne utilise les taux de son jour.
+
+- **Calculer à partir du total** : remplit **TPS**, **TVH**, **TVQ** et **TVP** avec les taxes comprises dans le montant de l’opération à ces taux, et vide les autres. Par exemple, 114,98 $ au Québec en 2026 donne TPS 5,00 $ et TVQ 9,98 $. Les montants ne sont que proposés : comparez-les au reçu (les articles non taxés, comme les produits alimentaires de base, rendent les vraies taxes plus petites), changez-les au besoin, puis **Enregistrer**.
 
 Entrez chaque taxe en montant positif dans la devise du compte ; laissez les autres vides. Les taxes ne peuvent pas dépasser le montant de l’opération. Un montant vide ou nul retire cette taxe. **Enregistrer** remplace ce qui était inscrit avant. Le montant et la catégorie de l’opération ne changent pas : la taxe est notée à côté, et les modifications ultérieures de l’opération la conservent. Pour le travail autonome et le dossier d’impôt, voir [Revenus d’appoint](side) et [Impôts](taxes).
 

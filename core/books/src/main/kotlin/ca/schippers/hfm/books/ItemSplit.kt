@@ -1,7 +1,9 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.salestax.SalesTaxes
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
+import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
@@ -37,36 +39,39 @@ data class ReceiptLine(val description: String, val amount: BigDecimal, val taxe
  * sales tax applies to, each printed tax is shared over its own lines, in proportion to their
  * amounts, so a zero-rated grocery carries none and a taxable item carries its own; what is left
  * (a tip, another tax, rounding) is shared over every line. The codes are trusted only when each
- * printed tax is what its lines would give at a Canadian rate (GST 5 %, HST 13, 14 or 15 %, QST
- * 9.975 %, PST 6 or 7 %); otherwise, or without codes, every tax is shared over every line.
+ * printed tax is what its lines would give at a rate that tax has somewhere in Canada on the
+ * receipt's date [on] (Rates and rules: GST, HST, QST, PST or RST); otherwise, or without codes,
+ * every tax is shared over every line.
  * Shares are rounded to the cent so they add up to [total] exactly, the cents left by rounding going
  * to the lines that lost the most.
  */
 object ItemSplitter {
 
-    /** Rates in percent each sales tax can have somewhere in Canada. */
-    private val RATES = mapOf(
-        "GST" to listOf("5"), "HST" to listOf("13", "14", "15"), "QST" to listOf("9.975"), "PST" to listOf("6", "7"),
-    ).mapValues { (_, v) -> v.map(::BigDecimal) }
+    /** The rates, as fractions, each sales tax printed on a receipt can have somewhere in Canada on [on]; RST is a PST. */
+    private fun rates(on: LocalDate): Map<String, Set<BigDecimal>> {
+        val byKind = SalesTaxes.ratesAnywhere(on).mapKeys { (k, _) -> k.name }
+        return byKind + ("RST" to byKind["PST"].orEmpty())
+    }
 
     private val MC = MathContext.DECIMAL64
 
-    fun split(lines: List<ReceiptLine>, printedTaxes: Map<String, BigDecimal>, total: Money): ItemSplit? {
+    fun split(lines: List<ReceiptLine>, printedTaxes: Map<String, BigDecimal>, total: Money, on: LocalDate): ItemSplit? {
+        val rates = rates(on)
         val sum = lines.fold(BigDecimal.ZERO) { a, l -> a + l.amount }
         if (lines.size < 2 || sum.signum() == 0) return null
         val target = total.toBigDecimal().abs()
         val hasCodes = lines.any { it.taxes != null }
         val marked = lines.map { it.taxes.orEmpty() }
-        val trusted = hasCodes && printedTaxes.filterKeys { it in RATES }.filterValues { it.signum() != 0 }.all { (name, amount) ->
+        val trusted = hasCodes && printedTaxes.filterKeys { it in rates }.filterValues { it.signum() != 0 }.all { (name, amount) ->
             val base = lines.indices.filter { name in marked[it] }.fold(BigDecimal.ZERO) { a, i -> a + lines[i].amount }
-            base.signum() > 0 && RATES.getValue(name).any { rate ->
-                val expected = base * rate / BigDecimal(100)
+            base.signum() > 0 && rates.getValue(name).any { rate ->
+                val expected = base * rate
                 (expected - amount).abs() <= BigDecimal("0.05").max(amount.abs() * BigDecimal("0.03"))
             }
         }
         val exact: List<BigDecimal> = if (trusted) {
             val shares = lines.map { it.amount }.toMutableList()
-            for ((name, amount) in printedTaxes.filterKeys { it in RATES }) {
+            for ((name, amount) in printedTaxes.filterKeys { it in rates }) {
                 val idx = lines.indices.filter { name in marked[it] }
                 val base = idx.fold(BigDecimal.ZERO) { a, i -> a + lines[i].amount }
                 if (base.signum() == 0) continue

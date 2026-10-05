@@ -1,1 +1,54 @@
 # Rates and rules: salestax. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
+#
+# Sales taxes by province and territory, read by ca.schippers.hfm.calc.salestax.SalesTaxes for
+# invoices, the register's Sales tax dialog and the receipt item split. Where a province charges
+# the HST, it replaces the GST; a province value of 0 means the tax is not charged there. The
+# history starts on 2010-01-01 at the latest; a date before a province's first value uses the
+# value for everywhere.
+
+# The federal goods and services tax (GST), charged where there is no HST.
+rule sales.gst RATE
+sales.gst | - | 2008-01-01 | 0.05 | Revenu Québec, Tables of GST and QST rates (GST 5 % from January 1, 2008); CRA, GST/HST statistics tables 2011-2015 (GST reduced from 6 % to 5 % effective January 1, 2008)
+
+# The harmonized sales tax (HST): the federal and provincial parts together, in place of the GST.
+rule sales.hst RATE province
+sales.hst | - | 2008-01-01 | 0 | CRA, GST/HST calculator and rates (5 % GST, no HST, outside the participating provinces)
+sales.hst | NS | 2010-01-01 | 0.13 | CRA, GST/HST statistics tables 2011-2015 (HST for Nova Scotia increased from 13 % to 15 % on July 1, 2010)
+sales.hst | NS | 2010-07-01 | 0.15 | CRA, GST/HST statistics tables 2011-2015 (HST for Nova Scotia increased from 13 % to 15 % on July 1, 2010)
+sales.hst | NS | 2025-04-01 | 0.14 | CRA, GST/HST calculator and rates (as of April 1, 2025, the HST rate decreased to 14 % in Nova Scotia)
+sales.hst | NB | 2010-01-01 | 0.13 | CRA, GST/HST statistics tables 2011-2015 and 2016-2020 (HST 13 % in New Brunswick until June 30, 2016)
+sales.hst | NB | 2016-07-01 | 0.15 | CRA, GST/HST statistics tables 2016-2020 (HST for New Brunswick increased from 13 % to 15 % on July 1, 2016)
+sales.hst | NL | 2010-01-01 | 0.13 | CRA, GST/HST statistics tables 2011-2015 and 2016-2020 (HST 13 % in Newfoundland and Labrador until June 30, 2016)
+sales.hst | NL | 2016-07-01 | 0.15 | CRA, GST/HST statistics tables 2016-2020 (HST for Newfoundland and Labrador increased from 13 % to 15 % on July 1, 2016)
+sales.hst | ON | 2010-07-01 | 0.13 | CRA, GST/HST statistics tables 2011-2015 (Ontario joined the HST on July 1, 2010, at 13 %); Ontario Ministry of Finance, Harmonized Sales Tax
+sales.hst | BC | 2010-07-01 | 0.12 | CRA, GST/HST statistics tables 2011-2015 (British Columbia joined the HST on July 1, 2010, at 12 %)
+sales.hst | BC | 2013-04-01 | 0 | CRA, GST/HST statistics tables 2011-2015 (British Columbia left the HST on April 1, 2013; the 12 % HST was replaced by the 5 % GST)
+sales.hst | PE | 2013-04-01 | 0.14 | CRA, GST/HST statistics tables 2011-2015 (Prince Edward Island joined the HST on April 1, 2013, at 14 %)
+sales.hst | PE | 2016-10-01 | 0.15 | CRA, GST/HST statistics tables 2016-2020 (HST for Prince Edward Island increased from 14 % to 15 % on October 1, 2016)
+
+# The provincial sales tax charged with the GST: PST in British Columbia and Saskatchewan, retail
+# sales tax (RST) in Manitoba and, before the HST, Ontario. Quebec's QST is its own rule.
+rule sales.pst RATE province
+sales.pst | - | 2008-01-01 | 0 | CRA, GST/HST calculator and rates (PST 0 % or N/A in the other provinces and territories)
+sales.pst | BC | 2010-01-01 | 0.07 | Government of British Columbia, Social Service Tax Act, s. 6 (7 % of the purchase price; replaced by the HST on July 1, 2010)
+sales.pst | BC | 2010-07-01 | 0 | Government of British Columbia, Social Service Tax Act (no PST on purchases on or after July 1, 2010: HST instead)
+sales.pst | BC | 2013-04-01 | 0.07 | Government of British Columbia, B.C. provincial sales tax (generally 7 %; PST in effect April 1, 2013)
+sales.pst | MB | 2010-01-01 | 0.07 | Manitoba, The Retail Sales Tax Act, general sales tax rate (7 % if payable before July 1, 2013)
+sales.pst | MB | 2013-07-01 | 0.08 | Manitoba, The Retail Sales Tax Act, general sales tax rate (8 % after June 30, 2013 and before July 1, 2019); Manitoba Finance, RST schedule at 8 % effective July 1, 2013
+sales.pst | MB | 2019-07-01 | 0.07 | Manitoba Finance, Notice RST 19-01 (rate decreased from 8 % to 7 % effective July 1, 2019)
+sales.pst | SK | 2010-01-01 | 0.05 | Government of Saskatchewan, Tax changes since 2007 (2017-18 Budget increases the PST rate from 5 %)
+sales.pst | SK | 2017-03-23 | 0.06 | Government of Saskatchewan, Tax changes since 2007 (PST rate from 5 % to 6 %, effective March 23, 2017)
+sales.pst | ON | 2010-01-01 | 0.08 | Ontario Ministry of Finance, Harmonized Sales Tax (the HST replaced the 8 % retail sales tax effective July 1, 2010)
+sales.pst | ON | 2010-07-01 | 0 | Ontario Ministry of Finance, Harmonized Sales Tax (effective July 1, 2010)
+
+# The Quebec sales tax (QST), charged in Quebec with the GST.
+rule sales.qst RATE
+sales.qst | - | 2010-01-01 | 0.075 | Revenu Québec, Tables of GST and QST rates (7.5 % from January 1, 1998 to December 31, 2010)
+sales.qst | - | 2011-01-01 | 0.085 | Revenu Québec, Tables of GST and QST rates (8.5 % from January 1 to December 31, 2011)
+sales.qst | - | 2012-01-01 | 0.095 | Revenu Québec, Tables of GST and QST rates (9.5 % from January 1 to December 31, 2012)
+sales.qst | - | 2013-01-01 | 0.09975 | Revenu Québec, Tables of GST and QST rates (9.975 % from January 1, 2013)
+
+# Whether the QST is charged on the price plus the GST (true) or on the price alone (false).
+rule sales.qstOnGst YES_NO
+sales.qstOnGst | - | 2010-01-01 | true | Finances Québec, Information Bulletin 2012-4 (the QST at 9.5 % is calculated on a consideration that includes the GST; the GST is removed from the QST base as of January 1, 2013)
+sales.qstOnGst | - | 2013-01-01 | false | Finances Québec, Information Bulletin 2012-4 (as of January 1, 2013, the QST at 9.975 % is calculated on consideration that excludes the GST)

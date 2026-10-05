@@ -57,6 +57,7 @@ import ca.schippers.hfm.books.TransactionDraft
 import ca.schippers.hfm.books.TransactionVersion
 import ca.schippers.hfm.books.TransferDraft
 import ca.schippers.hfm.books.ValidationException
+import ca.schippers.hfm.calc.salestax.SalesTaxes
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.AccountStatus
@@ -851,6 +852,17 @@ private fun SalesTaxDialog(model: BooksModel, account: Account, txn: Transaction
     }) {
         Text(listOfNotNull(model.date(txn.date), txn.payeeText, model.money(txn.amount)).joinToString(" · "), fontWeight = FontWeight.Medium)
         Text(model.t("register.salesTaxHint"), style = MaterialTheme.typography.bodySmall)
+        // TX-04: the taxes in the total at the rates in effect on the transaction's date in the owner's province (Rates and rules).
+        val province = remember(txn.id) { model.books.transactions.salesTaxProvince(txn.id) }
+        val rates = remember(txn.id) { SalesTaxes.ratesOn(txn.date, province) }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(salesTaxesInEffect(model, txn.date, province, rates), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+            OutlinedButton(onClick = {
+                model.act { model.books.transactions.salesTaxesFromTotal(txn.id) }?.let { found ->
+                    for (t in SALES_TAXES) texts[t] = found[t]?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()
+                }
+            }) { Text(model.t("register.salesTaxFromTotal")) }
+        }
         for (t in SALES_TAXES) AmountInput(model.t("taxName.$t"), texts[t].orEmpty(), account.currency, locale, Modifier.fillMaxWidth(), model::money) { texts[t] = it }
     }
 }

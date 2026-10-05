@@ -24,6 +24,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +53,7 @@ import ca.schippers.hfm.books.TripPurpose
 import ca.schippers.hfm.books.TripService
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.books.VehicleStatus
-import ca.schippers.hfm.calc.Province
+import ca.schippers.hfm.calc.salestax.SalesTaxes
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.money.MoneyFormat
@@ -523,16 +524,36 @@ private fun InvoiceDialog(model: BooksModel, i: Invoice, onClose: () -> Unit) {
     var due by remember { mutableStateOf(i.dueDate?.toString().orEmpty()) }
     var status by remember { mutableStateOf(i.status) }
     var member by remember { mutableStateOf(members.firstOrNull { it.id == i.memberId }) }
-    var gst by remember { mutableStateOf(i.taxes.firstOrNull { it.name == "GST" || it.name == "HST" }?.let { BigDecimal(it.rateBp).movePointLeft(2).stripTrailingZeros().toPlainString() }.orEmpty()) }
-    var gstName by remember { mutableStateOf(i.taxes.firstOrNull { it.name == "GST" || it.name == "HST" }?.name ?: "GST") }
-    var qst by remember { mutableStateOf(i.taxes.firstOrNull { it.name == "QST" || it.name == "PST" }?.let { BigDecimal(it.rateBp).movePointLeft(2).stripTrailingZeros().toPlainString() }.orEmpty()) }
+    // The sales taxes: the GST or HST, and the province's own (QST, PST or RST), in percent as typed.
+    val federalOf = { t: List<InvoiceTax> -> t.firstOrNull { it.name == "GST" || it.name == "HST" } }
+    val provincialOf = { t: List<InvoiceTax> -> t.firstOrNull { it.name == "QST" || it.name == "PST" || it.name == "RST" } }
+    var gst by remember { mutableStateOf(federalOf(i.taxes)?.percent?.toPlainString().orEmpty()) }
+    var gstName by remember { mutableStateOf(federalOf(i.taxes)?.name ?: "GST") }
+    var qst by remember { mutableStateOf(provincialOf(i.taxes)?.percent?.toPlainString().orEmpty()) }
+    var qstName by remember { mutableStateOf(provincialOf(i.taxes)?.name ?: SalesTaxes.provincialLabel(model.books.provinceOf(i.memberId))) }
+    // The rates in effect on the issue date in the province of the person invoicing (Rates and rules).
+    val province = model.books.provinceOf(member?.id)
+    val issued = runCatching { LocalDate.parse(issue.trim()) }.getOrNull()
+    val inEffect = issued?.let { SalesTaxes.ratesOn(it, province) }.orEmpty()
+    fun useRatesInEffect() {
+        val proposed = inEffect.map { InvoiceTax(it.label, it.rate, it.onGst) }
+        gst = federalOf(proposed)?.percent?.toPlainString().orEmpty()
+        gstName = federalOf(proposed)?.name ?: "GST"
+        qst = provincialOf(proposed)?.percent?.toPlainString().orEmpty()
+        qstName = provincialOf(proposed)?.name ?: SalesTaxes.provincialLabel(province)
+    }
+    // A new invoice of someone who charged sales tax before follows the rates in effect, until a rate is typed.
+    var following by remember { mutableStateOf(i.id.isBlank() && model.books.invoices.list().filter { it.memberId == i.memberId }.maxByOrNull { it.issueDate }?.taxes?.isNotEmpty() == true) }
+    LaunchedEffect(following, issued, province) { if (following) useRatesInEffect() }
     var notes by remember { mutableStateOf(i.notes.orEmpty()) }
     val lines = remember { mutableStateListOf<LineRow>().apply { i.lines.forEach { add(LineRow(it.description, it.quantity, it.unitPrice)) } } }
     var asking by remember { mutableStateOf(false) }
     FormDialog(model.t(if (i.id.isBlank()) "invoice.add" else "invoice.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
-            fun bp(text: String) = text.trim().ifEmpty { null }?.let { decimal(it, "error.loanRate").movePointRight(2).toInt() }
-            val taxes = listOfNotNull(bp(gst)?.let { InvoiceTax(gstName, it) }, bp(qst)?.let { InvoiceTax(if (model.books.province == Province.QC) "QST" else "PST", it) })
+            // Exact rates: 9.975 % stays 9.975 %.
+            fun percent(text: String) = text.trim().ifEmpty { null }?.let { decimal(it, "error.salesTaxRate").also { p -> if (p.signum() < 0 || p > BigDecimal(100)) throw ValidationException("error.salesTaxRate") } }
+            val onGst = inEffect.firstOrNull { it.label == qstName }?.onGst ?: false
+            val taxes = listOfNotNull(percent(gst)?.let { InvoiceTax.ofPercent(gstName, it) }, percent(qst)?.let { InvoiceTax.ofPercent(qstName, it, onGst) })
             model.books.invoices.save(
                 i.copy(
                     number = number, customer = customer, customerDetails = details, issueDate = date(issue), dueDate = optionalDate(due), status = status, memberId = member?.id,
@@ -574,8 +595,15 @@ private fun InvoiceDialog(model: BooksModel, i: Invoice, onClose: () -> Unit) {
             TextButton(onClick = { lines.add(LineRow("", "1", "")) }) { Text(model.t("invoice.addLine")) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Picker(model.t("invoice.salesTax"), listOf("GST", "HST"), gstName, { model.t("taxName.$it") }, Modifier.width(120.dp)) { gstName = it }
-                TextInput(model.t("invoice.ratePercent"), gst, Modifier.width(120.dp)) { gst = it }
-                TextInput(model.t(if (model.books.province == Province.QC) "invoice.qstPercent" else "invoice.pstPercent"), qst, Modifier.width(150.dp)) { qst = it }
+                TextInput(model.t("invoice.ratePercent"), gst, Modifier.width(120.dp)) { gst = it; following = false }
+                Picker(model.t("invoice.provincialTax"), listOf("QST", "PST", "RST"), qstName, { model.t("taxName.$it") }, Modifier.width(120.dp)) { qstName = it }
+                TextInput(model.t("invoice.ratePercent"), qst, Modifier.width(120.dp)) { qst = it; following = false }
+            }
+            if (issued != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(salesTaxesInEffect(model, issued, province, inEffect), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { useRatesInEffect(); following = true }) { Text(model.t("invoice.useRatesInEffect")) }
+                }
             }
             Text(model.t("invoice.taxHint"), style = MaterialTheme.typography.bodySmall)
             TextInput(model.t("invoice.notes"), notes, singleLine = false) { notes = it }

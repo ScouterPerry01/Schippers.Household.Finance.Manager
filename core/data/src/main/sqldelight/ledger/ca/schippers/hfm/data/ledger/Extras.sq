@@ -81,7 +81,7 @@ CREATE TABLE invoice (
     paid_date TEXT,
     member_id TEXT,
     lines TEXT NOT NULL,
-    -- Sales tax charged, as (name, basis points) JSON, for a GST/HST/QST registrant.
+    -- Sales tax charged, as JSON [{name, rate}] with the rate an exact decimal ("0.09975"; older rows: rateBp), for a GST/HST/QST/PST registrant.
     taxes TEXT,
     notes TEXT
 );
