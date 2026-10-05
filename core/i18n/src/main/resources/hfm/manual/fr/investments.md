@@ -287,7 +287,7 @@ Choisissez **Gains en capital et PBR** au bas de la liste des comptes. Cette vue
 
 - **Année** : l’année d’imposition à afficher, de cette année jusqu’à dix ans en arrière.
 - **Gain en capital net en** (l’année) : les gains moins les pertes de l’année, pour tous les titulaires ensemble.
-- **Moitié imposable** : la moitié de ce gain net, la partie incluse dans le revenu.
+- **Moitié imposable** : la partie de ce gain net incluse dans le revenu : la moitié, le taux d’inclusion des gains en capital de **Taux et règles**, appliqué à chaque vente au taux en vigueur à sa date.
 
 Le tableau « Gains et pertes en capital » de l’année énumère chaque disposition : **Date**, **Titre**, **Titulaires**, **Quantité**, **Produit** (après commission), **PBR** (le coût des unités vendues), **Gain** (une perte est négative), et la mention « perte apparente possible » s’il y a lieu. Un remboursement de capital qui fait passer le coût sous zéro y paraît aussi comme un gain.
 
@@ -299,7 +299,7 @@ Utilisez **Masquer le tableau** ou **Afficher le tableau** pour le replier, les 
 
 @index: perte apparente; vente à perte et rachat
 
-Une perte porte la mention « perte apparente possible » quand des unités du même groupe ont été achetées dans les 30 jours avant ou après la vente. Selon les règles fiscales, une telle perte peut être refusée et ajoutée plutôt au coût des nouvelles unités. L’application ne fait que la signaler ; elle ne change pas les chiffres. Vérifiez avant de produire votre déclaration.
+Une perte porte la mention « perte apparente possible » quand des unités du même groupe ont été achetées dans les 30 jours avant ou après la vente (les 30 jours sont un chiffre de **Taux et règles**). Selon les règles fiscales, une telle perte peut être refusée et ajoutée plutôt au coût des nouvelles unités. L’application ne fait que la signaler ; elle ne change pas les chiffres. Vérifiez avant de produire votre déclaration.
 
 ### Prix de base rajusté aujourd’hui {#acb-today}
 

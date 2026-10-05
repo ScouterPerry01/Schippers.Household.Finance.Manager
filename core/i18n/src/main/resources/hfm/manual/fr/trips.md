@@ -61,7 +61,7 @@ La même boîte ajoute un déplacement (**Ajouter un déplacement**) ou le modif
 - **Personne** : qui a fait le déplacement, ou **Ménage**. Elle décide de la carte où le déplacement compte et est proposée comme patient quand on l’ajoute aux frais médicaux.
 - **Véhicule** : le véhicule utilisé, ou **Aucun véhicule**. Seuls les déplacements avec un véhicule comptent dans la part de travail de ce véhicule. Un nouveau déplacement propose le premier véhicule en service. Un déplacement enregistré garde son propre choix : **Aucun véhicule** reste **Aucun véhicule**, et un véhicule vendu ou retiré depuis reste dans la liste pour ce déplacement.
 - **Notes** : ce qu’il faut retenir, comme le client ou le motif de la visite.
-- Quand **Médical** est choisi, un rappel explique qu’un déplacement médical compte comme dépense médicale quand les soins sont à 40 km ou plus, aller simple, et ne sont pas offerts plus près.
+- Quand **Médical** est choisi, un rappel explique qu’un déplacement médical compte comme dépense médicale quand les soins sont à 40 km ou plus, aller simple, et ne sont pas offerts plus près. Les 40 km sont un chiffre de **Taux et règles** (Déplacement médical : distance minimale), lu pour la date du déplacement.
 - **Supprimer** : affiché en modification. Demande « Supprimer le déplacement du date vers destination? » et, une fois confirmé, le supprime. C’est sans retour. Une dépense médicale faite à partir du déplacement reste dans l’écran Réclamations médicales.
 
 ## Déplacements pour des soins {#medical-travel}
@@ -74,13 +74,15 @@ Un déplacement **Médical** dont la distance aller simple est de 40 km ou plus 
 
 ### Boîte Ajouter aux frais médicaux {#to-medical-dialog}
 
-- La première ligne montre la date et la destination du déplacement, suivie d’un rappel que l’ARC publie chaque année un taux par kilomètre pour chaque province.
-- **Personne** : le patient, dont ce sera la dépense médicale. La personne du déplacement par défaut, sinon le premier membre du ménage.
-- **Taux par kilomètre** : le taux de l’ARC pour votre province pour l’année du déplacement, par exemple 0,62. Une fois saisi, il est rempli d’avance pour tous les autres déplacements de la même année.
+- La première ligne montre la date et la destination du déplacement, suivie d’un rappel que l’ARC publie chaque année un taux par kilomètre pour chaque province et territoire, et que le taux affiché vient de **Taux et règles**.
+- **Personne** : le patient, dont ce sera la dépense médicale. La personne du déplacement par défaut, sinon le premier membre du ménage. Le taux suit la province ou le territoire de cette personne (celui du ménage, sauf si la personne a le sien), puisque le déplacement commence là où elle habite.
+- Sous la personne, une ligne indique d’où vient le taux : le taux de la province en vigueur depuis une date, intégré (avec la source de l’ARC) ou propre au ménage ; ou qu’il n’y a pas encore de taux pour la province.
+- **Taux par kilomètre** : en dollars, par exemple 0,62 ou 0,605 (les taux de l’ARC peuvent avoir un demi-cent). Il est rempli avec le Déplacement médical : taux par kilomètre de Taux et règles pour la date du déplacement et la province de la personne : l’ARC publie les taux d’une année au début de l’année suivante ; d’ici là, le taux de la dernière année est affiché. Vous pouvez le changer pour ce déplacement. Un taux saisi pour une année dans une version antérieure de l’application sert encore pour cette année.
+- **Garder ce taux pour province à partir du 1er janvier année, dans Taux et règles** : pour un administrateur seulement. Coché, quand le taux a été changé, le taux est aussi ajouté à Taux et règles comme valeur propre au ménage pour cette province à partir du 1er janvier de l’année du déplacement ; il est alors rempli pour les prochains déplacements.
 
 **Enregistrer** est offert dès qu’une personne et un taux sont choisis. Il :
 
-1. garde le taux de cette année pour les prochains déplacements ;
+1. garde le taux dans Taux et règles, quand la case ci-dessus est cochée ;
 2. ajoute pour la personne, dans l’écran [Réclamations médicales](medical), une dépense médicale du type **Déplacements pour des soins**, datée et payée à la date du déplacement, égale au taux fois les kilomètres du déplacement (doublés pour un aller-retour), avec comme description la destination et la distance.
 
 La dépense compte ensuite dans la réclamation médicale comme toute autre. Un déplacement n’est ajouté qu’une fois : son bouton devient alors **Ajouté aux frais médicaux**. Pour l’ajouter de nouveau, par exemple à un autre taux, supprimez d’abord la dépense dans l’écran Réclamations médicales ; le bouton revient.

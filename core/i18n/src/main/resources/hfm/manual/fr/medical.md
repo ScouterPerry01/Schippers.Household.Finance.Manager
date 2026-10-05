@@ -274,7 +274,7 @@ La meilleure période se termine toujours à la date d’une dépense de l’ann
 Quand le rapport porte sur **Tout le monde** et que le ménage compte au moins deux adultes, **Quel conjoint devrait demander le crédit ?** compare les deux :
 
 - **Revenu net, nom** : le revenu net prévu de chaque conjoint pour l’année (ligne 23600 de la déclaration). Laissez les autres adultes vides. Les livres ne contiennent pas le revenu net ; vous le tapez donc, et il n’est pas enregistré.
-- **Montant fixe de l’ARC, année** : le montant fixe que l’ARC établit chaque année. Il est rempli pour les années que l’application connaît (2023 à 2026 ; 2 890 $ pour 2026, tel que publié par l’ARC) ; entrez-le pour les années suivantes d’après le site de l’ARC.
+- **Montant fixe de l’ARC, année** : le montant fixe que l’ARC établit chaque année. Il est rempli d’après **Taux et règles** (Frais médicaux : montant fixe de l’ARC), où les montants de l’ARC de 2023 à 2026 sont intégrés (2 890 $ pour 2026). Il est indexé chaque année : une année sans son propre montant reste vide. Saisissez-le ici d’après le site de l’ARC, ou demandez à un administrateur de l’ajouter dans Taux et règles à partir du 1er janvier de son année pour qu’il soit rempli dès lors. Le 3 % est aussi un chiffre de Taux et règles (Frais médicaux : part du revenu net).
 
 Avec deux revenus entrés, le rapport affiche pour chaque conjoint « Demandé par nom : montant compte pour le crédit fédéral » : le total de la meilleure période moins 3 % du revenu net de ce conjoint, ou moins le montant fixe s’il est plus bas. Puis l’un de ces messages :
 

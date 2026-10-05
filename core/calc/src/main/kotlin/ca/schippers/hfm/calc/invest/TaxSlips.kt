@@ -1,5 +1,7 @@
 package ca.schippers.hfm.calc.invest
 
+import ca.schippers.hfm.calc.rules.decimalOrEarliest
+import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -40,39 +42,31 @@ data class InvestmentIncome(
 
 /**
  * The boxes of each slip, from the published slip layouts (CRA T5 and T3; Revenu Québec RL-3 and
- * RL-16), with the dividend gross-up and the federal dividend tax credit for the year. Quebec's
+ * RL-16), with the dividend gross-up and the federal dividend tax credit for the year (rules of
+ * the Rates and rules screen, area "investing"). Quebec's
  * dividend credit (RL-3 box C, RL-16 box J) is left to the return.
  */
 object TaxSlips {
 
-    /** Share of a capital gain that is taxable. */
-    val INCLUSION_RATE: BigDecimal = BigDecimal("0.5")
+    /** Share of a capital gain disposed of on [on] that is taxable (rule capitalgains.inclusion). */
+    fun inclusionRate(on: LocalDate): BigDecimal = decimalOrEarliest("capitalgains.inclusion", on)
 
-    /** Eligible dividends: 38 % gross-up since 2012, federal credit 6/11 of it (15.0198 % of the taxable amount). */
-    private val ELIGIBLE_GROSS_UP = BigDecimal("1.38")
-    private val ELIGIBLE_CREDIT = BigDecimal("0.150198")
+    /** Eligible dividends: the gross-up factor (1.38 since 2012) and the federal credit on the taxable amount (15.0198 %). */
+    fun eligibleGrossUp(year: Int): BigDecimal = decimalOrEarliest("dividends.eligible.grossup", LocalDate(year, 12, 31))
 
-    /** Other than eligible (ordinary) dividends: the gross-up and federal credit changed in 2016 to 2019. */
-    fun ordinaryGrossUp(year: Int): BigDecimal = when {
-        year >= 2019 -> BigDecimal("1.15")
-        year == 2018 -> BigDecimal("1.16")
-        year >= 2016 -> BigDecimal("1.17")
-        else -> BigDecimal("1.18")
-    }
+    fun eligibleCredit(year: Int): BigDecimal = decimalOrEarliest("dividends.eligible.credit", LocalDate(year, 12, 31))
 
-    fun ordinaryCredit(year: Int): BigDecimal = when {
-        year >= 2019 -> BigDecimal("0.090301")
-        year == 2018 -> BigDecimal("0.100313")
-        year >= 2016 -> BigDecimal("0.105217")
-        else -> BigDecimal("0.110198")
-    }
+    /** Other than eligible (ordinary) dividends: the gross-up factor and federal credit, which changed in 2014 and 2016 to 2019. */
+    fun ordinaryGrossUp(year: Int): BigDecimal = decimalOrEarliest("dividends.other.grossup", LocalDate(year, 12, 31))
+
+    fun ordinaryCredit(year: Int): BigDecimal = decimalOrEarliest("dividends.other.credit", LocalDate(year, 12, 31))
 
     /** The slip's boxes (codes as printed) with their amounts in dollars; empty boxes are left out. */
     fun boxes(kind: SlipKind, income: InvestmentIncome, year: Int): Map<String, BigDecimal> {
         val i = income
-        val eligibleTaxable = cents(i.eligibleDividends * ELIGIBLE_GROSS_UP)
+        val eligibleTaxable = cents(i.eligibleDividends * eligibleGrossUp(year))
         val ordinaryTaxable = cents(i.ordinaryDividends * ordinaryGrossUp(year))
-        val eligibleCredit = cents(eligibleTaxable * ELIGIBLE_CREDIT)
+        val eligibleCredit = cents(eligibleTaxable * eligibleCredit(year))
         val ordinaryCredit = cents(ordinaryTaxable * ordinaryCredit(year))
         val boxes = when (kind) {
             SlipKind.T5 -> listOf(

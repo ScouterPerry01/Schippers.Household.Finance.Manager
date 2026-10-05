@@ -1,4 +1,6 @@
 # Rates and rules: registered plans. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
+# Read by RegisteredPlans (core/calc) and PlanService (core/books). A figure in force before the
+# first date shown is read from its earliest value, except the TFSA limit (no TFSA before 2009).
 
 # The TFSA dollar limit for a year, from January 1; a year not yet published keeps the last one.
 rule tfsa.limit AMOUNT
@@ -20,3 +22,112 @@ tfsa.limit | - | 2023-01-01 | 6500 | CRA, TFSA dollar limit
 tfsa.limit | - | 2024-01-01 | 7000 | CRA, TFSA dollar limit
 tfsa.limit | - | 2025-01-01 | 7000 | CRA, TFSA dollar limit
 tfsa.limit | - | 2026-01-01 | 7000 | CRA, TFSA dollar limit
+
+# The age from which a resident of Canada accrues TFSA room.
+rule tfsa.age NUMBER
+tfsa.age | - | 2009-01-01 | 18 | CRA, TFSA contribution room (18 years of age or older)
+
+# The tax on an excess TFSA amount, per month it remains.
+rule tfsa.excess.tax RATE
+tfsa.excess.tax | - | 2009-01-01 | 0.01 | CRA, If you over-contribute to a TFSA (1% per month)
+
+# FHSA participation room for a year, and the lifetime limit. FHSAs exist since April 1, 2023.
+rule fhsa.annual AMOUNT
+fhsa.annual | - | 2023-04-01 | 8000 | CRA, Participating in your FHSAs
+rule fhsa.lifetime AMOUNT
+fhsa.lifetime | - | 2023-04-01 | 40000 | CRA, Participating in your FHSAs
+rule fhsa.excess.tax RATE
+fhsa.excess.tax | - | 2023-04-01 | 0.01 | CRA, Tax implications for FHSAs (1% per month on the highest excess FHSA amount)
+
+# RRSP: the year a holder turns this age is the last (Budget 2007 raised it from 69 to 71).
+rule rrsp.last.age NUMBER
+rrsp.last.age | - | 2007-01-01 | 71 | CRA, RRSPs and Other Registered Plans for Retirement (T4040): December 31 of the year you turn 71
+# Contributions in the first days of a year count for the year before (Income Tax Act s. 146(5)).
+rule rrsp.deadline.days DAYS
+rrsp.deadline.days | - | 2000-01-01 | 60 | CRA, T4040: contributions made in the first 60 days of the year
+# Over-contributions up to this amount are not taxed; the tax applies to the rest, per month.
+rule rrsp.excess.buffer AMOUNT
+rrsp.excess.buffer | - | 2000-01-01 | 2000 | CRA, Excess contributions (more than $2,000 over the deduction limit)
+rule rrsp.excess.tax RATE
+rrsp.excess.tax | - | 2000-01-01 | 0.01 | CRA, Excess contributions (1% per month)
+
+# RRIF prescribed minimum factors (Income Tax Regulations s. 7308(4), as amended for 2015 and
+# later years): the first for the age of rrif.factors.age, then one per year of age; the last
+# one applies to every older age (95 or older). Below that age the factor is 1 / (N - age),
+# N being rrif.formula.age.
+rule rrif.factors LIST
+rrif.factors | - | 2015-01-01 | 0.0528; 0.0540; 0.0553; 0.0567; 0.0582; 0.0598; 0.0617; 0.0636; 0.0658; 0.0682; 0.0708; 0.0738; 0.0771; 0.0808; 0.0851; 0.0899; 0.0955; 0.1021; 0.1099; 0.1192; 0.1306; 0.1449; 0.1634; 0.1879; 0.2000 | CRA, Chart - Prescribed factors (all other RRIFs, ages 71 to 95 or older)
+rule rrif.factors.age NUMBER
+rrif.factors.age | - | 2015-01-01 | 71 | CRA, Chart - Prescribed factors
+rule rrif.formula.age NUMBER
+rrif.formula.age | - | 2000-01-01 | 90 | CRA, T4040: under 71, the minimum is the value divided by (90 minus age)
+
+# LIF maximum: an annuity to the end of the year the holder turns this age, at the reference rate
+# (a plan's own rate, entered with the plan, comes first).
+rule lif.reference.rate RATE
+lif.reference.rate | - | 2000-01-01 | 0.06 | Pension Benefits Standards Regulations, 1985, Schedule III (6% unless the long-term rate is higher); Retraite Québec, Rates relating to LIF calculations
+rule lif.last.age NUMBER
+lif.last.age | - | 2000-01-01 | 90 | Pension Benefits Standards Regulations, 1985, Schedule III (until December 31 of the year the holder reaches 90)
+# Whether a LIF has a yearly maximum: everywhere, federal plans too, but Saskatchewan and P.E.I.
+rule lif.maximum YES_NO province
+lif.maximum | - | 2000-01-01 | true | Pension Benefits Standards Regulations, 1985, Schedule III
+lif.maximum | SK | 2002-04-01 | false | Government of Saskatchewan, Pension restrictions removed (April 3, 2002): prescribed RRIFs, no maximum
+lif.maximum | PE | 2000-01-01 | false | No locked-in plan legislation in force in Prince Edward Island (not confirmed from an official source)
+
+# RESP lifetime contribution limit per beneficiary.
+rule resp.lifetime AMOUNT
+resp.lifetime | - | 1996-01-01 | 42000 | CRA, RESP contributions (1996 to 2006)
+resp.lifetime | - | 2007-01-01 | 50000 | CRA, RESP contributions (2007 and later)
+
+# Canada Education Savings Grant (basic): rate, yearly room, yearly maximum with carry-forward,
+# lifetime maximum, and the first year of grant room counted here.
+rule resp.cesg.rate RATE
+resp.cesg.rate | - | 2007-01-01 | 0.20 | CRA, Canada Education Savings Grant (CESG)
+rule resp.cesg.room AMOUNT
+resp.cesg.room | - | 2007-01-01 | 500 | CRA, CESG: $500 of grant room a year from 2007 ($400 for 1998 to 2006)
+rule resp.cesg.yearly.max AMOUNT
+resp.cesg.yearly.max | - | 2007-01-01 | 1000 | CRA, CESG: $1,000 with unused grant room
+rule resp.cesg.lifetime AMOUNT
+resp.cesg.lifetime | - | 2007-01-01 | 7200 | CRA, CESG lifetime limit
+rule resp.cesg.first.year NUMBER
+resp.cesg.first.year | - | 2007-01-01 | 2007 | CRA, CESG (grant room counted from 2007; the $400 a year of 1998 to 2006 is not)
+
+# Quebec education savings incentive (basic amount), same shape.
+rule resp.qesi.rate RATE
+resp.qesi.rate | - | 2007-01-01 | 0.10 | Finances Québec, Dépenses fiscales, Incitatif québécois à l'épargne-études (fiche 110503)
+rule resp.qesi.room AMOUNT
+resp.qesi.room | - | 2007-01-01 | 250 | Finances Québec, fiche 110503 (10 % of the first $2,500)
+rule resp.qesi.yearly.max AMOUNT
+resp.qesi.yearly.max | - | 2007-01-01 | 500 | Finances Québec, fiche 110503 ($250 plus up to $250 of accumulated rights)
+rule resp.qesi.lifetime AMOUNT
+resp.qesi.lifetime | - | 2007-01-01 | 3600 | Finances Québec, fiche 110503
+rule resp.qesi.first.year NUMBER
+resp.qesi.first.year | - | 2007-01-01 | 2007 | Finances Québec, fiche 110503 (rights accumulate from 2007)
+
+# Grants at 16 and 17: paid only if this much was contributed before the end of the year the
+# beneficiary turned 15, or at least the yearly amount in this many years before then.
+rule resp.grant.early.total AMOUNT
+resp.grant.early.total | - | 2007-01-01 | 2000 | CRA, CESG: contribution requirements for beneficiaries 16 or 17
+rule resp.grant.early.yearly AMOUNT
+resp.grant.early.yearly | - | 2007-01-01 | 100 | CRA, CESG: contribution requirements for beneficiaries 16 or 17
+rule resp.grant.early.years NUMBER
+resp.grant.early.years | - | 2007-01-01 | 4 | CRA, CESG: contribution requirements for beneficiaries 16 or 17
+
+# Which provinces have a provincial RESP grant the app works out.
+rule resp.qesi.offered YES_NO province
+resp.qesi.offered | - | 2007-01-01 | false | Only Quebec offers the QESI
+resp.qesi.offered | QC | 2007-01-01 | true | Finances Québec, fiche 110503
+rule resp.bctesg.offered YES_NO province
+resp.bctesg.offered | - | 2007-01-01 | false | Only British Columbia offers the BCTESG
+resp.bctesg.offered | BC | 2015-08-15 | true | Government of British Columbia, BC Training and Education Savings Grant (from August 2015)
+
+# B.C. Training and Education Savings Grant: the amount, the ages it can be applied for between
+# (from the 6th birthday to the day before the 9th), and the first year of birth that qualifies.
+rule resp.bctesg.amount AMOUNT
+resp.bctesg.amount | - | 2015-08-15 | 1200 | Government of British Columbia, BC Training and Education Savings Grant
+rule resp.bctesg.age.from NUMBER
+resp.bctesg.age.from | - | 2015-08-15 | 6 | Government of British Columbia, BC Training and Education Savings Grant
+rule resp.bctesg.age.until NUMBER
+resp.bctesg.age.until | - | 2015-08-15 | 9 | Government of British Columbia, BC Training and Education Savings Grant
+rule resp.bctesg.born.from NUMBER
+resp.bctesg.born.from | - | 2015-08-15 | 2006 | Government of British Columbia, BC Training and Education Savings Grant (born in 2006 or later)

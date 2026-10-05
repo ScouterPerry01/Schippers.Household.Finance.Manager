@@ -157,7 +157,7 @@ private fun WhoClaims(model: BooksModel, year: Int, window: Window, adults: List
     val entered = adults.mapNotNull { a -> runCatching { parseAmount(incomes[a.id].orEmpty(), cad, locale) }.getOrNull()?.let { a to it.toBigDecimal() } }.toMap()
     if (entered.size < 2) return
     val cap = runCatching { parseAmount(max, cad, locale) }.getOrNull()?.toBigDecimal()
-    val ranked = Medical.whoClaims(window.total, entered, cap)
+    val ranked = Medical.whoClaims(window.total, entered, cap, year)
     for ((a, amount) in ranked) Text(model.t("medicalReport.claimable", a.displayName, model.money(Money.of(amount, cad))))
     val (best, top) = ranked.first()
     val gap = top - ranked[1].second

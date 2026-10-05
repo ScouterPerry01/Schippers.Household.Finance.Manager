@@ -64,7 +64,12 @@ data class PersonInvestmentIncome(
         .groupBy({ it.key }, { it.value }).mapValues { (_, list) -> list.reduce(Money::plus) }
 
     val netGain: Money? get() = gains.map { it.amount }.reduceOrNull(Money::plus)
-    val taxableGain: Money? get() = netGain?.let { Money.of(it.toBigDecimal().multiply(TaxSlips.INCLUSION_RATE), it.currency, RoundingMode.HALF_UP) }
+    /** Each gain or loss at the inclusion rate of its sale date (rule capitalgains.inclusion). */
+    val taxableGain: Money? get() = netGain?.let { net -> Money.of(taxableGainUnrounded, net.currency, RoundingMode.HALF_UP) }
+
+    /** [taxableGain] before rounding to the cent, to add to other gains first. */
+    internal val taxableGainUnrounded: BigDecimal
+        get() = gains.fold(BigDecimal.ZERO) { a, g -> a + g.amount.toBigDecimal().multiply(TaxSlips.inclusionRate(g.gain.disposition.date)) }
 }
 
 data class InvestmentIncomeReport(val year: Int, val people: List<PersonInvestmentIncome>, val missingRates: Set<Currency>)
