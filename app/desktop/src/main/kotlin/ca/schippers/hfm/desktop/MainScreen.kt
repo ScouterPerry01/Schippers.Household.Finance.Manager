@@ -121,6 +121,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
                     Section.TAXES -> TaxesScreen(model)
                     Section.ESTATE -> EstateScreen(model)
                     Section.DISPLAY -> DisplayScreen(app)
+                    Section.FAMILY -> FamilyScreen(model)
                     Section.USERS -> UsersScreen(model)
                     Section.BACKUPS -> BackupsScreen(model)
                     Section.SECURITY -> SecurityScreen(model, app)

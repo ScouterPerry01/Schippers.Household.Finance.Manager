@@ -466,6 +466,28 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 23 ledgers gain shared expenses, family loans and allowances`() {
+        val file = temp.resolve("ledger23.db")
+        older("../data/src/main/sqldelight/ledger/schemas/23.db", file, 23).close()
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).familyMoneyQueries
+            q.upsertShareGroup("g", "Trip", "CAD", 0, 0)
+            q.upsertSharePerson("p", "g", "Paul", null)
+            q.upsertShareEntry("e", "g", "2026-07-01", "Gas", 6000, "p", """{"p":1}""", null)
+            q.deleteShareGroup("g")
+            assertEquals(0, q.sharePeople("g").executeAsList().size + q.shareEntries("g").executeAsList().size, "people and entries go with their group")
+            q.upsertFamilyLoan("l", "Mom", "Maya", 100000, "CAD", "2026-01-01", 0, null, 0)
+            q.insertLoanPayment("lp", "l", "2026-02-01", 10000, null)
+            assertEquals(1, q.loanPayments("l").executeAsList().size)
+            q.upsertAllowance("a", "m", 1000, "CAD", "WEEKLY", "2026-09-01", null, null)
+            q.insertAllowanceEntry("ae", "a", "2026-09-07", 1000, "PAID", null)
+            assertEquals(1, q.allowanceEntries("a").executeAsList().size)
+        }
+    }
+
+    @Test
     fun `version 6 core databases gain saved reports`() {
         val file = temp.resolve("core6.db")
         older("../data/src/main/sqldelight/core/schemas/6.db", file, 6).use { driver ->

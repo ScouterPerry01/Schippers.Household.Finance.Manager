@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 
 /** NAV-01: the menu's groups, in order; the dashboard stands on its own above them. */
 enum class NavGroup(val sections: List<Section>) {
-    MONEY(listOf(Section.ACCOUNTS, Section.DOCUMENTS, Section.BILLS, Section.BUDGETS, Section.GOALS, Section.CALENDAR)),
+    MONEY(listOf(Section.ACCOUNTS, Section.DOCUMENTS, Section.BILLS, Section.BUDGETS, Section.GOALS, Section.FAMILY, Section.CALENDAR)),
     INVESTING(listOf(Section.INVESTMENTS, Section.PLANS, Section.LOANS)),
     REPORTS(listOf(Section.REPORTS, Section.TAXES)),
     HOME(listOf(Section.HEALTH, Section.MEDICAL, Section.ESTATE, Section.PETS, Section.VEHICLES, Section.ASSETS)),

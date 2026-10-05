@@ -1,6 +1,12 @@
 package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Account
+import ca.schippers.hfm.books.Allowance
+import ca.schippers.hfm.books.AllowanceFrequency
+import ca.schippers.hfm.books.AllowanceKind
+import ca.schippers.hfm.books.FamilyLoan
+import ca.schippers.hfm.books.ShareEntry
+import ca.schippers.hfm.books.SharePerson
 import ca.schippers.hfm.books.ContactRole
 import ca.schippers.hfm.books.DeductionKind
 import ca.schippers.hfm.books.EstateContact
@@ -290,6 +296,22 @@ object DemoHousehold {
                 ),
             ),
         )
+        // HH-04, LN-07, HH-03: a weekend shared with friends, a loan within the family, and Maya's allowance.
+        val weekend = books.sharedExpenses.save(
+            null, group, l("Fin de semaine au chalet", "Cottage weekend"), Currency.CAD,
+            listOf(SharePerson("", "Alex", alex.id), SharePerson("", "Sam", sam.id), SharePerson("", l("Julie et Marc", "Priya and Raj"))),
+        )
+        val (pAlex, pSam, pFriends) = weekend.people.map { it.id }
+        val shares = mapOf(pAlex to 1, pSam to 1, pFriends to 2)
+        books.sharedExpenses.saveEntry(weekend.id, ShareEntry("", today.minus(DatePeriod(days = 20)), l("Épicerie", "Groceries"), cad("212.40"), pAlex, shares))
+        books.sharedExpenses.saveEntry(weekend.id, ShareEntry("", today.minus(DatePeriod(days = 19)), l("Location du bateau", "Boat rental"), cad("180.00"), pFriends, shares))
+        books.sharedExpenses.saveEntry(weekend.id, ShareEntry("", today.minus(DatePeriod(days = 19)), l("Essence", "Gas"), cad("68.00"), pSam, shares))
+        val loan = books.familyLoans.save(FamilyLoan("", group, l("Alex et Sam", "Alex and Sam"), "Gordon", cad("3000.00"), today.minus(DatePeriod(months = 5)), 0, l("Réparation de la voiture", "Car repair"), false, emptyList()))
+        for (m in 1..4) books.familyLoans.addPayment(loan, today.minus(DatePeriod(months = 5 - m)), cad("250.00"))
+        val allowance = books.allowances.save(Allowance("", group, lea.id, cad("10.00"), AllowanceFrequency.WEEKLY, today.minus(DatePeriod(days = 34)), null, null, emptyList()))
+        for (w in 0..3) books.allowances.addEntry(allowance, today.minus(DatePeriod(days = 34 - 7 * w)), cad("10.00"), AllowanceKind.PAID)
+        books.allowances.addEntry(allowance, today.minus(DatePeriod(days = 12)), cad("15.00"), AllowanceKind.EARNED, l("Ramassé les feuilles", "Raked the leaves"))
+        books.allowances.addEntry(allowance, today.minus(DatePeriod(days = 6)), cad("12.99"), AllowanceKind.SPENT, l("Livre", "Book"))
         // TAX-03: Sam pays quarterly instalments on freelance income.
         books.instalments.save(chequing.id, sam.id, today.year, TaxAuthority.CRA, List(4) { cad("450.00") })
         for (month in listOf(3, 6, 9)) {

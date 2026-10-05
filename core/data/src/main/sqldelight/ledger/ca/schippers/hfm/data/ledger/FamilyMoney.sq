@@ -1,0 +1,143 @@
+-- HH-04 (ledger version 24): expenses shared within the household or with others (a trip, roommates):
+-- who paid, how each is split, and settlements between people.
+CREATE TABLE share_group (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    currency TEXT NOT NULL,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE share_person (
+    id TEXT NOT NULL PRIMARY KEY,
+    group_id TEXT NOT NULL REFERENCES share_group(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    member_id TEXT
+);
+
+-- An expense split by weights (person id to share, JSON), or a settlement: paid_by paid settles_to.
+CREATE TABLE share_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    group_id TEXT NOT NULL REFERENCES share_group(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    description TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    paid_by TEXT NOT NULL,
+    weights TEXT,
+    settles_to TEXT
+);
+
+-- LN-07: money lent between family members (or to friends), with optional simple interest.
+CREATE TABLE family_loan (
+    id TEXT NOT NULL PRIMARY KEY,
+    lender TEXT NOT NULL,
+    borrower TEXT NOT NULL,
+    principal_minor INTEGER NOT NULL,
+    currency TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    -- Yearly simple interest in basis points (500 = 5 %); 0 for none.
+    rate_bp INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    closed INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE family_loan_payment (
+    id TEXT NOT NULL PRIMARY KEY,
+    loan_id TEXT NOT NULL REFERENCES family_loan(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    notes TEXT
+);
+
+-- HH-03: a child's allowance, and the child's money: allowance paid, money earned or received, money spent.
+CREATE TABLE allowance (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    currency TEXT NOT NULL,
+    frequency TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    notes TEXT
+);
+
+CREATE TABLE allowance_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    allowance_id TEXT NOT NULL REFERENCES allowance(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    -- PAID (allowance given), EARNED (chores, gifts), SPENT.
+    kind TEXT NOT NULL,
+    notes TEXT
+);
+
+shareGroups:
+SELECT * FROM share_group ORDER BY archived, name COLLATE NOCASE;
+
+upsertShareGroup:
+INSERT INTO share_group(id, name, currency, archived, created_at) VALUES (?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET name = excluded.name, currency = excluded.currency, archived = excluded.archived;
+
+deleteShareGroup:
+DELETE FROM share_group WHERE id = ?;
+
+sharePeople:
+SELECT * FROM share_person WHERE group_id = ? ORDER BY rowid;
+
+upsertSharePerson:
+INSERT INTO share_person(id, group_id, name, member_id) VALUES (?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET name = excluded.name, member_id = excluded.member_id;
+
+deleteSharePerson:
+DELETE FROM share_person WHERE id = ?;
+
+shareEntries:
+SELECT * FROM share_entry WHERE group_id = ? ORDER BY date, rowid;
+
+upsertShareEntry:
+INSERT INTO share_entry(id, group_id, date, description, amount_minor, paid_by, weights, settles_to) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET date = excluded.date, description = excluded.description, amount_minor = excluded.amount_minor,
+    paid_by = excluded.paid_by, weights = excluded.weights, settles_to = excluded.settles_to;
+
+deleteShareEntry:
+DELETE FROM share_entry WHERE id = ?;
+
+familyLoans:
+SELECT * FROM family_loan ORDER BY closed, start_date DESC;
+
+upsertFamilyLoan:
+INSERT INTO family_loan(id, lender, borrower, principal_minor, currency, start_date, rate_bp, notes, closed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET lender = excluded.lender, borrower = excluded.borrower, principal_minor = excluded.principal_minor,
+    currency = excluded.currency, start_date = excluded.start_date, rate_bp = excluded.rate_bp, notes = excluded.notes, closed = excluded.closed;
+
+deleteFamilyLoan:
+DELETE FROM family_loan WHERE id = ?;
+
+loanPayments:
+SELECT * FROM family_loan_payment WHERE loan_id = ? ORDER BY date, rowid;
+
+insertLoanPayment:
+INSERT INTO family_loan_payment(id, loan_id, date, amount_minor, notes) VALUES (?, ?, ?, ?, ?);
+
+deleteLoanPayment:
+DELETE FROM family_loan_payment WHERE id = ?;
+
+allowances:
+SELECT * FROM allowance ORDER BY member_id;
+
+upsertAllowance:
+INSERT INTO allowance(id, member_id, amount_minor, currency, frequency, start_date, end_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET amount_minor = excluded.amount_minor, currency = excluded.currency, frequency = excluded.frequency,
+    start_date = excluded.start_date, end_date = excluded.end_date, notes = excluded.notes;
+
+deleteAllowance:
+DELETE FROM allowance WHERE id = ?;
+
+allowanceEntries:
+SELECT * FROM allowance_entry WHERE allowance_id = ? ORDER BY date, rowid;
+
+insertAllowanceEntry:
+INSERT INTO allowance_entry(id, allowance_id, date, amount_minor, kind, notes) VALUES (?, ?, ?, ?, ?, ?);
+
+deleteAllowanceEntry:
+DELETE FROM allowance_entry WHERE id = ?;
