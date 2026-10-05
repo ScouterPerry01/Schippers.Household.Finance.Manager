@@ -138,7 +138,7 @@ Two kinds of coloured banner can appear under the top bar:
 
 @index: menu; navigation; side menu; menu at the top
 
-The menu leads to every screen. The **Dashboard** stands on its own at the top; the other screens are in five groups: Money, Investing and borrowing, Reports and taxes, Home and family, and Settings.
+The menu leads to every screen. The **Dashboard** and **Contacts** stand on their own at the top, outside the groups; the other screens are in five groups: Money, Investing and borrowing, Reports and taxes, Home and family, and Settings.
 
 The menu can be shown in two ways, and each user's choice is remembered on this computer:
 
@@ -155,6 +155,7 @@ Counts in parentheses show what waits for you. Documents shows the number of doc
 @index: screens; sections of the app
 
 - Dashboard: an overview of balances, what needs attention and the [Getting started guide](quick-start#guide). See [Dashboard](dashboard).
+- Contacts: the household's banks, advisors, insurers, doctors, pharmacies and everyone else you deal with, each with what it is for, and linked to the records it concerns. See [Contacts](contacts).
 - Money: [Accounts](accounts), [Documents](documents), [Bills](bills), [Budgets](budgets), [Savings goals](goals), [Family money](family), [Side income](side) and [Calendar](calendar).
 - Investing and borrowing: [Investments](investments), [Registered plans](plans) and [Loans and mortgages](loans).
 - Reports and taxes: [Reports](reports) and [Taxes](taxes).

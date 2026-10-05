@@ -387,3 +387,11 @@ Sous [Rapports](reports) :
 - **Biens et garanties** : l’inventaire de la maison, avec valeurs et garanties.
 - **Entretien et coût de possession** : ce que coûte l’entretien de chaque véhicule et de chaque bien.
 - **Valeur nette** : comprend les biens comptés dans la valeur nette.
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Les formulaires d’un bien, d’une police d’assurance et d’un entrepreneur enregistrés se terminent par Contacts. Un bien montre qui l’entretient ou l’assure (Service, Assureur). Une police montre son Assureur, son Courtier et son Conseiller comme contacts, avec leurs téléphones ; l’Assureur et le Courtier tapés en texte sur la police restent tels quels. Un entrepreneur montre le contact fait pour lui (Contact).
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

@@ -450,3 +450,11 @@ Plusieurs rapports dans [Rapports](reports) utilisent ce que vous saisissez ici 
 - Revenus de placement et gains en capital : par personne et par année d’imposition, les feuillets T5 et T3 (avec les RL-3 et RL-16 au Québec) estimés à partir de vos opérations de revenu jusqu’à ce que vous saisissiez les vrais feuillets, et les gains en capital pour l’annexe 3.
 - Régimes enregistrés : droits de cotisation, retraits et subventions (voir [Régimes enregistrés](plans)).
 - La valeur nette inclut chaque compte de placement à sa valeur marchande.
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Sous le nom d’un compte de placement ou d’un régime enregistré, l’écran montre ses contacts, comme Société de placement · Desjardins ou Conseiller · Marc Lavoie · REER et CELI, et **Lier un contact…** pour en ajouter un.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

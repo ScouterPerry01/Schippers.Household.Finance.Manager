@@ -5,6 +5,7 @@ quick-start
 basics
 = guides Premiers pas dans chaque partie de l'application
 start-settings
+start-contacts
 start-money
 start-bills-budgets
 start-documents

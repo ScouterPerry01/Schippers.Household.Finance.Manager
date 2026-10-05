@@ -282,3 +282,11 @@ Une facture papier ou électronique importée dans l’écran [Documents](docume
 - Ajouter, modifier, supprimer, sauter et rétablir, entrer un montant et annuler un paiement demandent la permission **Modification** sur le groupe de comptes du compte de paiement.
 - Marquer une échéance payée ou reçue demande au moins la permission **Saisie seulement**.
 - Une facture est visible par tous ceux qui peuvent ouvrir le groupe de comptes de son compte de paiement. Voir [Utilisateurs](users).
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Le formulaire d’une facture enregistrée montre Contacts : l’entreprise qui envoie la facture (Facturier), avec son téléphone et ce à quoi elle sert, comme le service à la clientèle d’un service public.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

@@ -120,3 +120,11 @@ The card shows this year's total (since January 1) and the last 12 months, with 
 For each pet still in the household, the municipal licence's **Expires** date and the insurance's **Renewal date** produce a reminder from 30 days before the date, and stay as long as the date is past and not updated, for example "Rex: municipal licence (Sherbrooke) in 12 days" or "Rex: pet insurance (insurer) 3 days overdue". It appears at the top of the window and in the system notification, and leads to the Pets screen. The dates also appear on the [Calendar](calendar).
 
 Once renewed, edit the pet and enter the new date: the reminder stops.
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+The form of a saved pet ends with Contacts: the vet, a groomer or kennel (Service) and the insurer. The Insurer typed on the pet stays as it is.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

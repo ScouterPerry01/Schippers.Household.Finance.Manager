@@ -193,3 +193,11 @@ When a loan has a term end, a reminder appears with the other reminders, and as 
 @index: debt summary
 
 The Debt summary report under [Reports](reports) lists every debt, largest first, with its rate, payment, payoff date and interest left when terms are entered here, and the term end.
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+Under the name of the loan or mortgage, the screen shows its contacts, such as Lender · Desjardins, and **Link a contact…** to add the lender, a mortgage broker or an advisor.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

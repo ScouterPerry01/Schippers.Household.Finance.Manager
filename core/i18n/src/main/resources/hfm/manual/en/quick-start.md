@@ -137,6 +137,7 @@ From then on, receipts and bills you photograph arrive on the **To review** tab 
 Your household is working. When you are ready for more, read the getting-started chapter of each area:
 
 - [Settings](start-settings): categories, payees, rules, users and display.
+- [Contacts](start-contacts): gather and sort the people and organizations you deal with.
 - [Money](start-money): the register, reconciliation and transfers.
 - [Bills and budgets](start-bills-budgets): bills, budgets and savings goals.
 - [Documents](start-documents): receipts, bills and the vault.

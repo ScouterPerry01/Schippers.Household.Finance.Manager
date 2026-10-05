@@ -245,3 +245,11 @@ Les médicaments, problèmes de santé, allergies, examens et vaccins ont chacun
 - **Réclamations médicales** : une dépense médicale du type « Médicaments sur ordonnance » peut nommer un des médicaments de la personne, et les professionnels sont offerts pour chaque dépense. Voir [Réclamations médicales](medical).
 - **Animaux** : le bouton **Dossier de santé** de la fiche d’un animal ouvre cet écran pour cet animal. Voir [Animaux](pets).
 - **Urgence et succession** : le sommaire de santé utilise la même protection PDF que le sommaire d’urgence. Voir [Urgence et succession](estate).
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Le formulaire d’un professionnel se termine par Contacts : le contact de ce professionnel (Contact), où ses personnes, ses heures, plusieurs téléphones et des numéros de dossier peuvent être gardés. Le formulaire d’un médicament enregistré montre ses contacts Pharmacie et Prescripteur. Le Prescripteur et la Pharmacie choisis parmi les professionnels ci-dessus restent tels quels et continuent d’alimenter les rappels.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

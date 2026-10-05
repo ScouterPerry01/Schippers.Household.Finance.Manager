@@ -681,3 +681,11 @@ Le champ **Groupe de comptes** ne propose que les groupes que vous pouvez modifi
 ## Métaux précieux et portefeuilles de cryptoactifs {#metals-and-crypto}
 
 Les comptes Métaux précieux et Portefeuille de cryptoactifs sont listés sous Placements dans l’écran Comptes et ouvrent un registre comme tout compte, avec un bouton **Titres détenus**. Leurs avoirs, les métaux et les pièces eux-mêmes, les adresses en lecture seule et les importations de plateformes se gèrent dans Placements. Voir [Placements](investments).
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Le formulaire d’un compte enregistré (**Modifier le compte**) se termine par Contacts : la banque, le prêteur, la société de placement ou le conseiller du compte, chacun avec sa ligne pour quoi et son premier téléphone. Le formulaire défile quand il est plus haut que la fenêtre. Dans le registre, les mêmes contacts s’affichent sous le nom du compte, comme Banque · Desjardins · Compte conjoint, Visa, placements et hypothèque du chalet ; cliquez sur l’un pour l’ouvrir. L’**Institution** choisie dans le formulaire reste telle quelle.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

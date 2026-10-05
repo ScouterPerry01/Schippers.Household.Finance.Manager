@@ -681,3 +681,11 @@ The **Account group** field offers only the groups you can edit. When you try so
 ## Precious metals and crypto wallets {#metals-and-crypto}
 
 Precious metals and Crypto wallet accounts are listed under Investments on the Accounts screen and open a register like any account, with a **Holdings** button. Their holdings, the metals and coins themselves, watch-only addresses and exchange imports are managed under Investments. See [Investments](investments).
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+The form of a saved account (**Edit account**) ends with Contacts: the bank, lender, investment firm or advisor for the account, each with its what-for line and first phone. The form scrolls when it is taller than the window. In the register, the same contacts show under the account's name, such as Bank · TD Canada Trust · Joint chequing, Visa and cottage mortgage; click one to open it. The **Institution** chosen on the form stays as it is.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

@@ -87,3 +87,11 @@ Past transactions keep their payee. An archived payee is no longer sent to the p
 - [Documents](documents): the merchant read on a receipt becomes the payee of the new transaction.
 - [Reports](reports) and search: transactions can be found and grouped by payee.
 - The phone: up to 400 payees, with their default categories, to choose from when capturing a receipt. See [Phones](phones).
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+The form of a saved payee ends with Contacts: the contact for this payee, such as the company behind a bill, with its phones and what it is for.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

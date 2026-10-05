@@ -106,3 +106,11 @@ Note where each paper is, not its content:
 - Mark important documents to keep for good in [Documents](documents) so they are listed.
 - Add beneficiaries to registered plans under [Registered plans](plans) and to life policies under [Home and assets](assets#insurance-tab): they appear in the summary.
 - Save a new PDF after each change: a saved PDF does not update itself.
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+Once a person's papers are saved, the Papers and wishes tab shows, under the people to call, the contacts linked to these papers in an estate role, such as Executor or Notary. **Link a contact…** picks one from Contacts. The emergency summary lists them with the people to call typed on this tab, which stay as they are.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

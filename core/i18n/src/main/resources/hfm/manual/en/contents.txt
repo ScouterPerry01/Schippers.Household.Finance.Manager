@@ -5,6 +5,7 @@ quick-start
 basics
 = guides Getting started with each part of the app
 start-settings
+start-contacts
 start-money
 start-bills-budgets
 start-documents

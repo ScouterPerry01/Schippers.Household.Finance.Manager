@@ -87,3 +87,11 @@ Les opérations passées gardent leur bénéficiaire. Un bénéficiaire archivé
 - [Documents](documents) : le marchand lu sur un reçu devient le bénéficiaire de la nouvelle opération.
 - [Rapports](reports) et recherche : les opérations peuvent être trouvées et regroupées par bénéficiaire.
 - Le téléphone : jusqu'à 400 bénéficiaires, avec leur catégorie par défaut, parmi lesquels choisir en saisissant un reçu. Voir [Téléphones](phones).
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Le formulaire d’un bénéficiaire enregistré se termine par Contacts : le contact de ce bénéficiaire, comme l’entreprise derrière une facture, avec ses téléphones et ce à quoi il sert.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

@@ -273,3 +273,11 @@ Pour chaque véhicule en service :
 - Entretien : les tâches **Bientôt** et **À faire**.
 
 Les rappels paraissent en haut de la fenêtre et dans une notification du système, et mènent à cet écran. Les dates de renouvellement, les fins de garantie et les échéances d’entretien paraissent aussi au [Calendrier](calendar).
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Le formulaire d’un véhicule enregistré se termine par Contacts : le garage, d’autres services et l’assureur.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

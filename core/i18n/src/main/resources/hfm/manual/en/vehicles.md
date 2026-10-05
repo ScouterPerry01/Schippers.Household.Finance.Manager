@@ -273,3 +273,11 @@ For each vehicle in use:
 - Maintenance: tasks **Due soon** and **Due now**.
 
 Reminders appear at the top of the window and as a system notification, and lead to this screen. The renewal dates, warranty ends and maintenance due dates also appear on the [Calendar](calendar).
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+The form of a saved vehicle ends with Contacts: the garage, other services and the insurer.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

@@ -150,3 +150,11 @@ Un rendez-vous marqué fait ou annulé ne donne aucun rappel. Pour les rappels d
 - Ajouter un rendez-vous demande au moins la permission **Saisie seulement** sur le groupe choisi dans **Enregistrer dans**.
 - Le modifier, le marquer fait ou annulé et le supprimer demandent la permission **Modification** sur ce groupe.
 - Un rendez-vous dans un groupe privé est chiffré et visible seulement par son propriétaire. Les factures, les dates de santé et les autres éléments apparaissent pour ceux qui peuvent voir les fiches d’où ils viennent. Voir [Utilisateurs](users).
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Le formulaire d’un rendez-vous enregistré se termine par Contacts : avec qui est le rendez-vous (Avec), comme la dentiste ou le conseiller de la caisse.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

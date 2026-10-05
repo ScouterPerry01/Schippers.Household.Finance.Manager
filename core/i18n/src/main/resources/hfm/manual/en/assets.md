@@ -387,3 +387,11 @@ Under [Reports](reports):
 - **Assets and warranties**: the home inventory, with values and warranties.
 - **Maintenance and cost of ownership**: what each vehicle and asset costs to keep.
 - **Net worth**: includes the assets counted in net worth.
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+The forms of a saved asset, insurance policy and contractor end with Contacts. An asset shows who services or insures it (Service, Insurer). A policy shows its Insurer, Broker and Advisor as contacts, with their phones; the Insurer and Broker typed as text on the policy stay as they are. A contractor shows the contact made for it (Contact).
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

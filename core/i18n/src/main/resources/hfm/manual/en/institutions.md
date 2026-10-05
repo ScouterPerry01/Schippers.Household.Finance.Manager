@@ -55,3 +55,11 @@ There is no way to delete an institution. To stop an account from naming it, edi
 The institution list is shared by the whole household, whichever account groups use it: everyone who signs in sees the same institutions. Every institution added or changed is recorded in the activity log on the [Users](users) screen.
 
 Administrators and members can add and change institutions. Viewers see the list and the forms greyed out, without **Add** or **Save**.
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+The institution form ends with Contacts: the contact made for this institution (Contact), where you can keep its people, such as your advisor, its hours and several phone numbers, and say what it is for. The fields above stay as they are; the Phone and Website typed here keep working.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

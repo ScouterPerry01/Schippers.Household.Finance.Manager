@@ -120,3 +120,11 @@ La fiche montre le total de l’année (depuis le 1er janvier) et des 12 dernier
 Pour chaque animal encore dans le ménage, l’**Échéance** de la licence municipale et la **Date de renouvellement** de l’assurance donnent un rappel à partir de 30 jours avant la date, qui reste tant que la date est passée et n’a pas été changée, par exemple « Rex : licence municipale (Sherbrooke) dans 12 jours » ou « Rex : assurance de l’animal (assureur) en retard de 3 jours ». Il paraît en haut de la fenêtre et dans la notification du système, et mène à l’écran Animaux. Les dates paraissent aussi au [Calendrier](calendar).
 
 Une fois le renouvellement fait, modifiez l’animal et entrez la nouvelle date : le rappel cesse.
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Le formulaire d’un animal enregistré se termine par Contacts : le vétérinaire, un toiletteur ou une pension (Service) et l’assureur. L’Assureur tapé sur l’animal reste tel quel.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

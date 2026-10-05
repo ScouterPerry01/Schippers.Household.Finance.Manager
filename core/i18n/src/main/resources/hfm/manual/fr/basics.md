@@ -138,7 +138,7 @@ Deux sortes de bandeaux de couleur peuvent paraître sous la barre du haut :
 
 @index: menu; navigation; menu latéral; menu en haut
 
-Le menu mène à chaque écran. Le **Tableau de bord** est seul en haut ; les autres écrans sont répartis en cinq groupes : Argent, Placements et emprunts, Rapports et impôts, Maison et famille, et Réglages.
+Le menu mène à chaque écran. Le **Tableau de bord** et **Contacts** sont seuls en haut, en dehors des groupes ; les autres écrans sont répartis en cinq groupes : Argent, Placements et emprunts, Rapports et impôts, Maison et famille, et Réglages.
 
 Le menu peut se présenter de deux façons, et le choix de chaque utilisateur est retenu sur cet ordinateur :
 
@@ -155,6 +155,7 @@ Les nombres entre parenthèses indiquent ce qui vous attend. Documents indique l
 @index: écrans; parties de l'application
 
 - Tableau de bord : un aperçu des soldes, de ce qui demande votre attention et du [guide des premiers pas](quick-start#guide). Voir [Tableau de bord](dashboard).
+- Contacts : les banques, conseillers, assureurs, médecins, pharmacies et tous ceux avec qui le ménage fait affaire, chacun avec ce pour quoi il sert, et liés aux éléments qui les concernent. Voir [Contacts](contacts).
 - Argent : [Comptes](accounts), [Documents](documents), [Factures](bills), [Budgets](budgets), [Objectifs d'épargne](goals), [Argent en famille](family), [Revenus d'appoint](side) et [Calendrier](calendar).
 - Placements et emprunts : [Placements](investments), [Régimes enregistrés](plans) et [Prêts et hypothèques](loans).
 - Rapports et impôts : [Rapports](reports) et [Impôts](taxes).

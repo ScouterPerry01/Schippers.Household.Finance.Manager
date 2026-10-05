@@ -450,3 +450,11 @@ Several reports under [Reports](reports) use what you enter here:
 - Investment income and capital gains: per person and tax year, the T5 and T3 slips (with RL-3 and RL-16 in Quebec) estimated from your income transactions until you enter the real slips, and the capital gains for Schedule 3.
 - Registered plans: contribution room, withdrawals and grants (see [Registered plans](plans)).
 - Net worth includes every investment account at market value.
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+Under the name of an investment or registered plan account, the screen shows its contacts, such as Investment firm · TD Canada Trust or Advisor · Daniel Wong · RRSP and TFSA, and **Link a contact…** to add one.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

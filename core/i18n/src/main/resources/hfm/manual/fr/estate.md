@@ -106,3 +106,11 @@ Notez où se trouve chaque papier, pas son contenu :
 - Marquez les documents importants à conserver dans [Documents](documents) pour qu’ils soient énumérés.
 - Ajoutez les bénéficiaires des régimes enregistrés sous [Régimes enregistrés](plans) et ceux des polices d’assurance vie sous [Maison et biens](assets#insurance-tab) : ils paraissent dans le sommaire.
 - Enregistrez un nouveau PDF après chaque changement : un PDF enregistré ne se met pas à jour de lui-même.
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Une fois les papiers d’une personne enregistrés, l’onglet Papiers et volontés montre, sous les personnes à appeler, les contacts liés à ces papiers dans un rôle de succession, comme Liquidateur ou Notaire. **Lier un contact…** en choisit un dans Contacts. Le sommaire d’urgence les énumère avec les personnes à appeler tapées dans cet onglet, qui restent telles quelles.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

@@ -55,3 +55,11 @@ Il n'y a aucun moyen de supprimer une institution. Pour qu'un compte ne la nomme
 La liste des institutions est partagée par tout le ménage, quels que soient les groupes de comptes qui les utilisent : tous ceux qui se connectent voient les mêmes institutions. Chaque institution ajoutée ou modifiée est inscrite dans le journal d'activité de l'écran [Utilisateurs](users).
 
 Les administrateurs et les membres peuvent ajouter et modifier des institutions. Les lecteurs voient la liste et les formulaires en gris, sans **Ajouter** ni **Enregistrer**.
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Le formulaire de l’institution se termine par Contacts : le contact fait pour cette institution (Contact), où vous pouvez garder ses personnes, comme votre conseiller, ses heures et plusieurs numéros de téléphone, et dire à quoi elle sert. Les champs ci-dessus restent tels quels ; le Téléphone et le Site Web tapés ici continuent de fonctionner.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

@@ -282,3 +282,11 @@ A paper bill or e-bill imported on the [Documents](documents) screen can be reco
 - Adding, editing, deleting, skipping and unskipping, entering an amount and undoing a payment need **Edit** permission on the account group of the paying account.
 - Marking a due date paid or received needs at least **Capture only** permission.
 - A bill is visible to everyone who can open the account group of its paying account. See [Users](users).
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+The form of a saved bill shows Contacts: the company that sends the bill (Biller), with its phone and what it is for, such as the utility's customer service.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

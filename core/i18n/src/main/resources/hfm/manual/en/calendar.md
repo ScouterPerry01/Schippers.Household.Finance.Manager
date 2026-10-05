@@ -150,3 +150,11 @@ An appointment marked done or cancelled gives no reminder. For bill reminders, s
 - Adding an appointment needs at least **Capture only** permission on the group chosen under **Store in**.
 - Changing, marking done or cancelled, and deleting need **Edit** permission on that group.
 - An appointment in a private group is encrypted and seen only by its owner. Bills, health dates and the other items appear for those who can see the records they come from. See [Users](users).
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+The form of a saved appointment ends with Contacts: who the appointment is with (With), such as the dentist or the bank advisor.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

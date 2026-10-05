@@ -193,3 +193,11 @@ Quand un prêt a une fin de terme, un rappel paraît avec les autres rappels, et
 @index: sommaire des dettes
 
 Le rapport Sommaire des dettes dans [Rapports](reports) énumère chaque dette, de la plus grosse à la plus petite, avec son taux, son versement, sa date de remboursement et les intérêts restants quand les conditions sont saisies ici, ainsi que la fin du terme.
+
+## Contacts {#linked-contacts}
+
+@index: contact; contact lié; Lier un contact
+
+Sous le nom du prêt ou de l’hypothèque, l’écran montre ses contacts, comme Prêteur · Desjardins, et **Lier un contact…** pour ajouter le prêteur, un courtier hypothécaire ou un conseiller.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

@@ -137,6 +137,7 @@ Dès lors, les reçus et factures que vous photographiez arrivent dans l'onglet 
 Votre ménage fonctionne. Quand vous serez prêt à aller plus loin, lisez le chapitre de premiers pas de chaque domaine :
 
 - [Les réglages](start-settings) : catégories, bénéficiaires, règles, utilisateurs et affichage.
+- [Les contacts](start-contacts) : rassembler et classer les personnes et organisations avec qui vous faites affaire.
 - [L'argent](start-money) : le registre, le rapprochement et les virements.
 - [Les factures et budgets](start-bills-budgets) : factures, budgets et objectifs d'épargne.
 - [Les documents](start-documents) : reçus, factures et le coffre.

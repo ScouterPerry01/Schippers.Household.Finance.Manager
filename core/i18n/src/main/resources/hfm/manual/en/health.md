@@ -245,3 +245,11 @@ Medications, conditions, allergies, tests and vaccines each have a **Delete** bu
 - **Medical claims**: a medical expense of the kind "Prescriptions" can name one of the person's medications, and the providers are offered for each expense. See [Medical claims](medical).
 - **Pets**: the **Health records** button on a pet's card opens this screen for that pet. See [Pets](pets).
 - **Emergency and estate**: the health summary uses the same PDF protection as the emergency summary. See [Emergency and estate](estate).
+
+## Contacts {#linked-contacts}
+
+@index: contact; linked contact; Link a contact
+
+The provider form ends with Contacts: the contact for this provider (Contact), where its people, hours, several phones and file numbers can be kept. The medication form of a saved medication shows its Pharmacy and Prescriber contacts. The Prescriber and Pharmacy chosen from the providers above stay as they are and keep feeding the reminders.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).
