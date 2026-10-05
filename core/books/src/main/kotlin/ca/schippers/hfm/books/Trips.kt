@@ -1,5 +1,7 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.Province
+import ca.schippers.hfm.calc.medical.Medical
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.money.Currency
@@ -33,6 +35,12 @@ data class VehicleUse(val vehicleId: String, val totalKm: Int?, val workKm: BigD
     /** Business and employment use, in percent of all the kilometres driven, when the odometer shows them. */
     val workPercent: Int? get() = totalKm?.takeIf { it > 0 }?.let { (workKm * BigDecimal(100) / BigDecimal(it)).setScale(0, RoundingMode.HALF_UP).toInt().coerceAtMost(100) }
 }
+
+/**
+ * MED-11: a rate per kilometre for medical travel in dollars, which may have a half cent, for [province], in effect from [from]: built in
+ * (with its [source]) or the household's own.
+ */
+data class MedicalTravelRate(val rate: BigDecimal, val province: Province, val from: LocalDate, val builtIn: Boolean, val source: String?)
 
 /** OTH-02, MED-11: the trip log, business use of each vehicle, and medical travel. */
 class TripService internal constructor(private val books: Books) {
@@ -84,23 +92,26 @@ class TripService internal constructor(private val books: Books) {
         }
     }
 
-    /**
-     * MED-11: a medical trip of at least [MEDICAL_MIN_KM] one way (care not available closer to home)
-     * qualifies for vehicle expenses; the CRA's simplified method pays a rate per kilometre, set per
-     * province each year. [rate] is that rate, as entered by the user.
-     */
-    fun qualifiesForMedical(t: Trip): Boolean = t.purpose == TripPurpose.MEDICAL && t.kmOneWay >= BigDecimal(MEDICAL_MIN_KM)
+    /** MED-11: the one-way distance from which a medical trip counts, on [on] (rule medical.travel.min.km, 40 km). */
+    fun medicalMinimumKm(on: LocalDate): BigDecimal = Medical.travelMinimumKm(on)
 
     /**
-     * MED-11: records a qualifying medical trip as a medical expense for [memberId], at [rate] a
-     * kilometre. A trip is added once: the expense is remembered, and adding the trip again is
+     * MED-11: a medical trip of at least [medicalMinimumKm] one way (care not available closer to
+     * home) qualifies for vehicle expenses; the CRA's simplified method pays a rate per kilometre,
+     * set per province each year (see [medicalRate]).
+     */
+    fun qualifiesForMedical(t: Trip): Boolean = t.purpose == TripPurpose.MEDICAL && t.kmOneWay >= medicalMinimumKm(t.date)
+
+    /**
+     * MED-11: records a qualifying medical trip as a medical expense for [memberId], at [rate]
+     * dollars a kilometre (the CRA's rates have half cents). A trip is added once: the expense is remembered, and adding the trip again is
      * refused while that expense exists (delete the expense to add the trip anew).
      */
-    fun addToMedical(t: Trip, memberId: String, rate: Money, groupId: String): MedExpense {
+    fun addToMedical(t: Trip, memberId: String, rate: BigDecimal, groupId: String): MedExpense {
         validate(qualifiesForMedical(t), "error.tripNotMedical")
-        validate(rate.isPositive, "error.tripRate")
+        validate(rate.signum() > 0, "error.tripRate")
         validate(t.id.isBlank() || medicalExpense(t) == null, "error.tripAlreadyMedical")
-        val amount = Money.of((rate.toBigDecimal() * t.km).setScale(2, RoundingMode.HALF_UP), rate.currency)
+        val amount = Money.of((rate * t.km).setScale(2, RoundingMode.HALF_UP), Currency.CAD)
         val expense = books.medical.saveExpense(
             MedExpense(
                 "", groupId, memberId, MedService.MEDICAL_TRAVEL, t.date, amount, paidDate = t.date,
@@ -115,13 +126,35 @@ class TripService internal constructor(private val books: Books) {
     fun medicalExpense(t: Trip): MedExpense? = books.setting("$MEDICAL_KEY.${t.id}")?.ifBlank { null }
         ?.let { id -> books.medical.expenses().firstOrNull { it.id == id } }
 
-    /** The per-kilometre rate the user entered for medical travel in [year], if any. */
-    fun medicalRate(year: Int): Money? = books.setting("$RATE_KEY.$year")?.let { runCatching { Money.parse(it, Currency.CAD) }.getOrNull() }
+    /**
+     * MED-11: the rate per kilometre for a medical trip on [date] by [memberId]: the rule
+     * medical.travel.rate for the province or territory the person lives in (where the travel
+     * begins), or null when none is set. A rate typed for the year before rates and rules existed
+     * (setting `trip.medicalRate.<year>`) counts as the household's own value for that year, for
+     * every province, unless the household has since added its own rule value for the year.
+     */
+    fun medicalRate(date: LocalDate, memberId: String?): MedicalTravelRate? {
+        val province = books.provinceOf(memberId)
+        val rule = Medical.travelRate(date, province)
+        val yearStart = LocalDate(date.year, 1, 1)
+        val typed = books.setting("$RATE_KEY.${date.year}")?.ifBlank { null }?.let { runCatching { BigDecimal(it.trim()) }.getOrNull() }
+        if (typed != null && typed.signum() > 0 && (rule == null || rule.builtIn || rule.from < yearStart)) {
+            return MedicalTravelRate(typed, province, yearStart, builtIn = false, source = null)
+        }
+        return rule?.let { MedicalTravelRate(BigDecimal(it.value), province, it.from, it.builtIn, it.source) }
+    }
 
-    fun setMedicalRate(year: Int, rate: Money?) = books.putSetting("$RATE_KEY.$year", rate?.toBigDecimal()?.toPlainString().orEmpty())
+    /**
+     * MED-11: keeps [rate] as the household's medical travel rate for [province] from January 1 of
+     * [year], in Rates and rules (an administrator's change, as any rule value).
+     */
+    fun keepMedicalRate(year: Int, province: Province, rate: BigDecimal) {
+        validate(rate.signum() > 0, "error.tripRate")
+        books.rateRules.add("medical.travel.rate", province, LocalDate(year, 1, 1), rate.stripTrailingZeros().toPlainString())
+    }
 
     companion object {
-        const val MEDICAL_MIN_KM = 40
+        /** The rate typed for a year before rates and rules: `trip.medicalRate.<year>`, still read. */
         private const val RATE_KEY = "trip.medicalRate"
 
         /** The setting that remembers the medical expense a trip became: `trip.medicalExpense.<trip id>`. */

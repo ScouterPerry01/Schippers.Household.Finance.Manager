@@ -71,7 +71,7 @@ internal fun FxReport(model: BooksModel, year: Int) {
         ),
     )
     // The owner's decision: the exemption applied, with a note.
-    Text(model.t("fx.exemptionNote", model.money(Money.of(ForeignExchange.EXEMPTION, base))), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 12.dp))
+    Text(model.t("fx.exemptionNote", model.money(Money.of(ForeignExchange.exemption(year), base))), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 12.dp))
 }
 
 private fun quantityText(q: BigDecimal, scale: Int, model: BooksModel): String =

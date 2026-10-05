@@ -65,7 +65,7 @@ RRSP room is never estimated: enter the RRSP deduction limit for the year, and y
 - With a CRA figure (the room at January 1 of a year), the app starts from the latest figure entered for that year or before, and carries it forward: each year adds the new yearly limit, takes off the contributions and gives back the withdrawals of the year before.
 - Without a CRA figure, the app estimates: every yearly limit since 2009 or the year the person turned 18, whichever is later, minus what the books show. The line under the title says it is an estimate. It cannot know about contributions made before you used the app, or years spent outside Canada, so enter the CRA's figure to be sure.
 - Without a CRA figure and without a date of birth, the room is unknown.
-- The yearly limits are built in: $5,000 for 2009 to 2012, $5,500 for 2013 and 2014, $10,000 for 2015, $5,500 for 2016 to 2018, $6,000 for 2019 to 2022, $6,500 for 2023, and $7,000 from 2024. A year not yet published repeats the last limit known.
+- The yearly limits come from **Rates and rules** (TFSA dollar limit), where the CRA's figures are built in: $5,000 for 2009 to 2012, $5,500 for 2013 and 2014, $10,000 for 2015, $5,500 for 2016 to 2018, $6,000 for 2019 to 2022, $6,500 for 2023, and $7,000 from 2024. A year not yet published repeats the last limit known; when the CRA announces a new one, an administrator can add it there from January 1 of its year. The age of 18 is a figure of Rates and rules too (TFSA starting age).
 - Money moved in from another TFSA is not counted as a contribution.
 
 ### How FHSA room is worked out {#fhsa-room}
@@ -73,7 +73,7 @@ RRSP room is never estimated: enter the RRSP deduction limit for the year, and y
 @index: first home savings account; FHSA participation room
 
 - Room starts the year the person's first FHSA was opened (the account's opening date), or the earliest year with a CRA figure.
-- Each year gives $8,000, plus up to $8,000 left unused the year before, within the $40,000 lifetime limit.
+- Each year gives $8,000, plus up to $8,000 left unused the year before, within the $40,000 lifetime limit. Both figures come from **Rates and rules** (FHSA yearly room, FHSA lifetime limit), read for each year, so a new limit added there applies from its year.
 - A CRA figure entered for the year replaces the estimate for that year.
 - Money moved in from another FHSA is not counted.
 
@@ -92,6 +92,8 @@ When the contributions are higher than the room, a red warning appears on the ca
 - RRSP: up to $2,000 over the deduction limit is allowed. Beyond that, 1% a month on the part over $2,000 until it is withdrawn or room opens up.
 - TFSA: 1% a month on the excess until it is withdrawn.
 - FHSA: 1% a month on the excess until it is withdrawn or designated.
+
+The $2,000 allowance, the 1% a month for each plan and the RRSP's first 60 days are figures of **Rates and rules**, built in from the CRA and read for the year shown.
 
 Over-contributions also appear in the reminders. See [Reminders from registered plans](plans#plan-reminders).
 
@@ -150,6 +152,7 @@ Messages under the figures: "No minimum in the year the plan is opened."; "Enter
 - There is no minimum in the year the plan was opened (by the account's opening date).
 - A LIF has the same minimum as a RRIF. Its maximum is the value on January 1 divided by the value of an annuity paid until the end of the year the holder turns 90, at the reference rate (6% unless you enter another). It is never less than the minimum. If you enter last year's investment earnings and they are higher, they are the maximum instead.
 - The LIF follows the pension law of the governing jurisdiction chosen in Plan details, or of the holder's province by default. Saskatchewan and Prince Edward Island set no maximum.
+- The prescribed factors, the ages (71, 90 and 95), the 6% reference rate and which provinces set no LIF maximum come from **Rates and rules**, read for January 1 of the year shown. The age of 71 for converting an RRSP is there too.
 
 From November on, a minimum not yet withdrawn appears in the reminders.
 
@@ -169,7 +172,7 @@ A withdrawal is money moved out of the plan to an account other than another RRS
 - **Value on January 1** (with the year, "(statement)"): RRIF, spousal RRIF and LIF: the value on January 1 from the plan's statement. It shows the value already entered for that year. Left empty, a value entered stays as it is; when none was entered, the books' value at December 31 is used. The year is the one shown on the screen when you opened the window.
 - **Use the books' value at December 31 instead**: shown when a value was entered for the year. It forgets that value (and last year's investment earnings kept with it), so the books' value is used again, and closes the window.
 - **Age used for the minimum**: RRIF, spousal RRIF and LIF: "The holder", or another household member, such as a younger spouse.
-- **Reference rate (%)**: LIF only: the rate for the maximum, 6 unless the rate for the first 15 years is higher. More than 0 and less than 25.
+- **Reference rate (%)**: LIF only: the rate for the maximum, 6 unless the rate for the first 15 years is higher. More than 0 and less than 25. Left empty, the LIF reference rate of **Rates and rules** is used (6%).
 - **Last year's investment earnings**: LIF only: what the LIF earned last year, which can raise the maximum. It shows the figure already entered; left empty, it stays as it is. It is kept with the value on January 1, so enter that value too, or the app asks for it.
 
 Click **Save** or **Cancel**.
@@ -206,6 +209,7 @@ A contribution is a transfer into an RESP from an account that is not an RESP, o
 - QESI (Quebec): 10% of the year's contributions, with room of $250 a year, at most $500 a year and $3,600 in all, under the same age rules.
 - BCTESG (British Columbia): $1,200 once, without a contribution, for a child born in 2006 or later, from age 6. The application must be made before the child turns 9.
 - Contributions over $50,000 per beneficiary give a reminder.
+- Every rate, amount, age and year above, and which provinces have a provincial grant, comes from **Rates and rules**, with the official figures built in. Each is read for the year it applies to, so a change the government announces can be added there from its date.
 
 ### Record a grant received {#record-grant}
 

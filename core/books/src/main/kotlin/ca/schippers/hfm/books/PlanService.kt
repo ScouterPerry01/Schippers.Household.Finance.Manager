@@ -130,8 +130,10 @@ data class RespBeneficiaryStatus(
     val otherGrants: Money,
     /** CESG room carried forward: what extra contributions could still attract. */
     val cesgRoomLeft: Money,
+    /** The lifetime contribution limit for the year (rule resp.lifetime). */
+    val lifetimeLimit: Money = Money.ofMinor(RegisteredPlans.respLifetime(), contributionsTotal.currency),
 ) {
-    val lifetimeLeft: Money get() = Money.ofMinor(RegisteredPlans.RESP_LIFETIME, contributionsTotal.currency) - contributionsTotal
+    val lifetimeLeft: Money get() = lifetimeLimit - contributionsTotal
 }
 
 data class Pension(
@@ -329,17 +331,21 @@ class PlanService internal constructor(private val books: Books) {
      * RRSP: the deduction limit and unused contributions from the notice of assessment, less what
      * was contributed from March of [year] to the end of February of the next year (contributions
      * in the first 60 days of a year belong to the previous year's notice). Over-contributions up
-     * to $2,000 are not penalized.
+     * to $2,000 are not penalized. The 60 days, the $2,000 and the 1 % a month are rules
+     * (rrsp.deadline.days, rrsp.excess.buffer, rrsp.excess.tax).
      */
     private fun rrspRoom(member: Member, year: Int, entry: RoomEntry?): RoomStatus {
-        val from = LocalDate(year, 1, 1).plus(DatePeriod(days = 60))
-        val to = LocalDate(year + 1, 1, 1).plus(DatePeriod(days = 59))
+        val from = LocalDate(year, 1, 1).plus(DatePeriod(days = RegisteredPlans.rrspDeadlineDays(year)))
+        val to = LocalDate(year + 1, 1, 1).plus(DatePeriod(days = RegisteredPlans.rrspDeadlineDays(year + 1) - 1))
         val flows = flows(member.id, RoomPlan.RRSP, from, to)
         val contributions = flows.map { it.amount }.sum(cad)
         val available = entry?.let { it.limit - it.unused }
         val left = available?.let { it - contributions }
-        val excess = left?.let { -it - Money.parse("2000", cad) }?.takeIf { it.isPositive }
-        return RoomStatus(member, RoomPlan.RRSP, year, if (entry != null) RoomSource.ENTERED else RoomSource.UNKNOWN, available, contributions, zero(), flows, left, excess?.times(BigDecimal("0.01")))
+        val excess = left?.let { -it - Money.of(RegisteredPlans.rrspExcessBuffer(year), cad) }?.takeIf { it.isPositive }
+        return RoomStatus(
+            member, RoomPlan.RRSP, year, if (entry != null) RoomSource.ENTERED else RoomSource.UNKNOWN, available, contributions, zero(), flows, left,
+            excess?.times(RegisteredPlans.excessTaxPerMonth("rrsp", year)),
+        )
     }
 
     /**
@@ -350,7 +356,7 @@ class PlanService internal constructor(private val books: Books) {
     private fun tfsaRoom(member: Member, year: Int, entries: List<RoomEntry>): RoomStatus {
         val base = entries.filter { it.year <= year }.maxByOrNull { it.year }
         val birthYear = member.birthDate?.year
-        val startYear = base?.year ?: birthYear?.let { maxOf(2009, it + 18) }
+        val startYear = base?.year ?: birthYear?.let { maxOf(2009, it + RegisteredPlans.tfsaAge(year)) }
         if (startYear == null) {
             val flows = flows(member.id, RoomPlan.TFSA, LocalDate(year, 1, 1), LocalDate(year, 12, 31))
             return RoomStatus(member, RoomPlan.TFSA, year, RoomSource.UNKNOWN, null, flows.filter { it.amount.isPositive }.map { it.amount }.sum(cad),
@@ -366,7 +372,7 @@ class PlanService internal constructor(private val books: Books) {
                 val left = room - contributions
                 return RoomStatus(
                     member, RoomPlan.TFSA, year, if (base != null) RoomSource.ENTERED else RoomSource.ESTIMATED, room, contributions, withdrawals, flows, left,
-                    if (left.isNegative) (-left).times(BigDecimal("0.01")) else null,
+                    if (left.isNegative) (-left).times(RegisteredPlans.excessTaxPerMonth("tfsa", year)) else null,
                 )
             }
             room = room - contributions + withdrawals + Money.parse(RegisteredPlans.tfsaLimit(y + 1).toString(), cad)
@@ -374,7 +380,7 @@ class PlanService internal constructor(private val books: Books) {
         }
     }
 
-    /** FHSA: $8,000 a year from the year the first FHSA was opened, with carry-forward, within $40,000. */
+    /** FHSA: the year's room (rule fhsa.annual, $8,000) from the year the first FHSA was opened, with carry-forward, within the lifetime limit (rule fhsa.lifetime, $40,000). */
     private fun fhsaRoom(member: Member, year: Int, entries: List<RoomEntry>, today: LocalDate): RoomStatus {
         val accounts = registeredAccounts(includeClosed = true).filter { it.type == AccountType.FHSA && member.id in it.ownerMemberIds }
         val opened = (accounts.map { it.openingDate.year } + entries.map { it.year }).minOrNull()
@@ -388,10 +394,10 @@ class PlanService internal constructor(private val books: Books) {
         val entry = entries.firstOrNull { it.year == year }
         val available = entry?.limit ?: Money.ofMinor(rooms.last().available, cad)
         val left = available - contributions
-        val lifetimeLeft = Money.ofMinor(RegisteredPlans.FHSA_LIFETIME * 100L - byYear.values.sum(), cad)
+        val lifetimeLeft = Money.ofMinor(RegisteredPlans.fhsaLifetime(year) * 100L - byYear.values.sum(), cad)
         return RoomStatus(
             member, RoomPlan.FHSA, year, if (entry != null) RoomSource.ENTERED else RoomSource.ESTIMATED, available, contributions, zero(), flows, left,
-            if (left.isNegative) (-left).times(BigDecimal("0.01")) else null, lifetimeLeft,
+            if (left.isNegative) (-left).times(RegisteredPlans.excessTaxPerMonth("fhsa", year)) else null, lifetimeLeft,
         )
     }
 
@@ -438,12 +444,14 @@ class PlanService internal constructor(private val books: Books) {
         val minimum = when {
             firstYear -> Money.zero(account.currency)
             value == null || age == null -> null
-            else -> RegisteredPlans.rrifMinimum(value, age)
+            else -> RegisteredPlans.rrifMinimum(value, age, year)
         }
         val holder = account.ownerMemberIds.singleOrNull()
         val jurisdiction = if (account.type == AccountType.LIF) d.jurisdiction ?: PensionJurisdiction.Provincial(books.provinceOf(holder)) else null
-        val maximum = if (jurisdiction != null && RegisteredPlans.lifHasMaximum(jurisdiction) && value != null && age != null && !firstYear) {
-            RegisteredPlans.lifMaximum(value, age, d.lifReferenceRate ?: BigDecimal("0.06"), entered?.last_year_earnings_minor?.let { Money.ofMinor(it, account.currency) })
+        val maximum = if (jurisdiction != null && RegisteredPlans.lifHasMaximum(jurisdiction, year) && value != null && age != null && !firstYear) {
+            RegisteredPlans.lifMaximum(
+                value, age, d.lifReferenceRate ?: RegisteredPlans.lifReferenceRate(year), entered?.last_year_earnings_minor?.let { Money.ofMinor(it, account.currency) }, year,
+            )
         } else {
             null
         }
@@ -548,11 +556,11 @@ class PlanService internal constructor(private val books: Books) {
             val contributions = byMember[id].orEmpty()
             val birthYear = member.birthDate?.year
             val cesg = birthYear?.let { RegisteredPlans.grants(RegisteredPlans.CESG, it, contributions, year) }.orEmpty()
-            val provincial = RegisteredPlans.provincialGrant(books.provinceOf(id))
+            val provincial = RegisteredPlans.provincialGrant(books.provinceOf(id), year)
             val asOf = minOf(today, LocalDate(year, 12, 31))
             val provincialExpected = when (provincial) {
                 RegisteredPlans.ProvincialGrant.QESI -> birthYear?.let { RegisteredPlans.grants(RegisteredPlans.QESI, it, contributions, year).sumOf { g -> g.grant } } ?: 0L
-                RegisteredPlans.ProvincialGrant.BCTESG -> member.birthDate?.takeIf { RegisteredPlans.bctesgEligible(it, asOf) }?.let { RegisteredPlans.BCTESG_AMOUNT } ?: 0L
+                RegisteredPlans.ProvincialGrant.BCTESG -> member.birthDate?.takeIf { RegisteredPlans.bctesgEligible(it, asOf) }?.let { RegisteredPlans.bctesgAmount(asOf) } ?: 0L
                 null -> 0L
             }
             val provincialKind = provincial?.let { GrantKind.valueOf(it.name) }
@@ -560,7 +568,7 @@ class PlanService internal constructor(private val books: Books) {
             RespBeneficiaryStatus(
                 member, m(contributions.filterKeys { it <= year }.values.sum()), m(contributions[year] ?: 0L),
                 m(cesg.sumOf { it.grant }), m(received[id to GrantKind.CESG] ?: 0L), provincial, m(provincialExpected), m(provincialKind?.let { received[id to it] } ?: 0L),
-                m(GrantKind.entries.filter { it != GrantKind.CESG && it != provincialKind }.sumOf { received[id to it] ?: 0L }), m(cesg.lastOrNull()?.roomLeft ?: 0L),
+                m(GrantKind.entries.filter { it != GrantKind.CESG && it != provincialKind }.sumOf { received[id to it] ?: 0L }), m(cesg.lastOrNull()?.roomLeft ?: 0L), m(RegisteredPlans.respLifetime(year)),
             )
         }.sortedBy { it.member.displayName }
     }
@@ -674,7 +682,7 @@ class PlanService internal constructor(private val books: Books) {
         for (a in registeredAccounts().filter { it.type in setOf(AccountType.RRSP, AccountType.SPOUSAL_RRSP) && it.status == AccountStatus.OPEN }) {
             val owner = a.ownerMemberIds.singleOrNull()?.let(members::get) ?: continue
             val birth = owner.birthDate ?: continue
-            if (year - birth.year == RegisteredPlans.RRSP_LAST_AGE && a.balanceOrHoldings(today).isPositive) out += PlanWarning("planWarning.convert", listOf(a.name, owner.displayName), a.id)
+            if (year - birth.year == RegisteredPlans.rrspLastAge(year) && a.balanceOrHoldings(today).isPositive) out += PlanWarning("planWarning.convert", listOf(a.name, owner.displayName), a.id)
         }
         spousalWithoutContributor().forEach { out += PlanWarning("planWarning.noContributor", listOf(it.name), it.id) }
         respBeneficiaries(year).filter { it.lifetimeLeft.isNegative }.forEach { out += PlanWarning("planWarning.respOver", listOf(it.member.displayName, -it.lifetimeLeft), it.member.id) }

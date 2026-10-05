@@ -65,7 +65,7 @@ Les droits REER ne sont jamais estimés : saisissez le maximum déductible au ti
 - Avec un chiffre de l’ARC (les droits au 1er janvier d’une année), l’application part du chiffre le plus récent saisi pour cette année ou avant, et le reporte : chaque année ajoute le nouveau plafond annuel, retranche les cotisations et redonne les retraits de l’année précédente.
 - Sans chiffre de l’ARC, l’application estime : tous les plafonds annuels depuis 2009 ou depuis l’année des 18 ans de la personne, selon la plus tardive, moins ce que montrent les livres. La ligne sous le titre précise qu’il s’agit d’une estimation. Elle ne peut connaître les cotisations faites avant que vous utilisiez l’application, ni les années passées hors du Canada ; saisissez le chiffre de l’ARC pour être certain.
 - Sans chiffre de l’ARC et sans date de naissance, les droits sont inconnus.
-- Les plafonds annuels sont intégrés : 5 000 $ de 2009 à 2012, 5 500 $ en 2013 et 2014, 10 000 $ en 2015, 5 500 $ de 2016 à 2018, 6 000 $ de 2019 à 2022, 6 500 $ en 2023 et 7 000 $ à partir de 2024. Une année pas encore publiée reprend le dernier plafond connu.
+- Les plafonds annuels viennent de **Taux et règles** (Plafond annuel du CELI), où les chiffres de l’ARC sont intégrés : 5 000 $ de 2009 à 2012, 5 500 $ en 2013 et 2014, 10 000 $ en 2015, 5 500 $ de 2016 à 2018, 6 000 $ de 2019 à 2022, 6 500 $ en 2023 et 7 000 $ à partir de 2024. Une année pas encore publiée reprend le dernier plafond connu ; quand l’ARC en annonce un nouveau, un administrateur peut l’y ajouter à partir du 1er janvier de son année. L’âge de 18 ans est aussi un chiffre de Taux et règles (Âge d’admissibilité au CELI).
 - L’argent transféré d’un autre CELI n’est pas compté comme une cotisation.
 
 ### Comment les droits CELIAPP sont calculés {#fhsa-room}
@@ -73,7 +73,7 @@ Les droits REER ne sont jamais estimés : saisissez le maximum déductible au ti
 @index: compte d’épargne libre d’impôt pour l’achat d’une première propriété; droits de participation au CELIAPP
 
 - Les droits commencent l’année d’ouverture du premier CELIAPP de la personne (la date d’ouverture du compte), ou la première année qui a un chiffre de l’ARC.
-- Chaque année donne 8 000 $, plus jusqu’à 8 000 $ inutilisés l’année précédente, dans la limite du plafond à vie de 40 000 $.
+- Chaque année donne 8 000 $, plus jusqu’à 8 000 $ inutilisés l’année précédente, dans la limite du plafond à vie de 40 000 $. Ces deux chiffres viennent de **Taux et règles** (Droits annuels au CELIAPP, Plafond à vie du CELIAPP), lus pour chaque année : un nouveau plafond qui y est ajouté s’applique à partir de son année.
 - Un chiffre de l’ARC saisi pour l’année remplace l’estimation de cette année.
 - L’argent transféré d’un autre CELIAPP n’est pas compté.
 
@@ -92,6 +92,8 @@ Quand les cotisations dépassent les droits, un avertissement en rouge s’affic
 - REER : un excédent jusqu’à 2 000 $ au-delà du maximum déductible est permis. Au-delà, 1 % par mois sur la partie qui dépasse 2 000 $, jusqu’au retrait ou à l’apparition de nouveaux droits.
 - CELI : 1 % par mois sur l’excédent jusqu’à son retrait.
 - CELIAPP : 1 % par mois sur l’excédent jusqu’à son retrait ou sa désignation.
+
+L’excédent permis de 2 000 $, le 1 % par mois de chaque régime et les 60 premiers jours du REER sont des chiffres de **Taux et règles**, intégrés d’après l’ARC et lus pour l’année affichée.
 
 Les cotisations excédentaires paraissent aussi dans les rappels. Voir [Rappels des régimes enregistrés](plans#plan-reminders).
 
@@ -150,6 +152,7 @@ Messages sous les chiffres : « Aucun minimum l’année de l’ouverture du ré
 - Il n’y a pas de minimum l’année de l’ouverture du régime (selon la date d’ouverture du compte).
 - Un FRV a le même minimum qu’un FERR. Son maximum est la valeur au 1er janvier divisée par la valeur d’une rente versée jusqu’à la fin de l’année des 90 ans du titulaire, au taux de référence (6 % sauf si vous en saisissez un autre). Il n’est jamais inférieur au minimum. Si vous saisissez les revenus de placement de l’an dernier et qu’ils sont plus élevés, ce sont eux qui forment le maximum.
 - Le FRV suit la loi sur les régimes de retraite de l’autorité choisie dans Détails du régime, ou par défaut celle de la province du titulaire. La Saskatchewan et l’Île-du-Prince-Édouard ne fixent pas de maximum.
+- Les facteurs prescrits, les âges (71, 90 et 95 ans), le taux de référence de 6 % et les provinces sans maximum pour le FRV viennent de **Taux et règles**, lus au 1er janvier de l’année affichée. L’âge de 71 ans pour convertir un REER s’y trouve aussi.
 
 À partir de novembre, un minimum pas encore retiré paraît dans les rappels.
 
@@ -169,7 +172,7 @@ Un retrait est de l’argent sorti du régime vers un compte autre qu’un REER,
 - **Valeur au 1er janvier** (avec l’année, « (relevé) ») : FERR, FERR de conjoint et FRV : la valeur au 1er janvier selon le relevé du régime. Le champ affiche la valeur déjà inscrite pour cette année. Laissé vide, une valeur inscrite reste telle quelle ; si aucune n’a été inscrite, la valeur des livres au 31 décembre est utilisée. L’année est celle affichée à l’écran quand vous avez ouvert la fenêtre.
 - **Utiliser plutôt la valeur des livres au 31 décembre** : affiché quand une valeur a été inscrite pour l’année. Il oublie cette valeur (et les revenus de placement de l’an dernier gardés avec elle), pour que la valeur des livres serve de nouveau, et ferme la fenêtre.
 - **Âge utilisé pour le minimum** : FERR, FERR de conjoint et FRV : « Le titulaire », ou un autre membre du ménage, comme un conjoint plus jeune.
-- **Taux de référence (%)** : FRV seulement : le taux du maximum, 6 sauf si le taux des 15 premières années est plus élevé. Plus que 0 et moins que 25.
+- **Taux de référence (%)** : FRV seulement : le taux du maximum, 6 sauf si le taux des 15 premières années est plus élevé. Plus que 0 et moins que 25. Laissé vide, le taux de référence du FRV de **Taux et règles** est utilisé (6 %).
 - **Revenus de placement de l’an dernier** : FRV seulement : ce que le FRV a rapporté l’an dernier, qui peut relever le maximum. Le champ affiche le montant déjà inscrit ; laissé vide, il reste tel quel. Il est gardé avec la valeur au 1er janvier : inscrivez aussi cette valeur, sinon l’application la demande.
 
 Cliquez sur **Enregistrer** ou sur **Annuler**.
@@ -206,6 +209,7 @@ Une cotisation est un virement vers un REEE depuis un compte qui n’est pas un 
 - IQEE (Québec) : 10 % des cotisations de l’année, avec des droits de 250 $ par année, au plus 500 $ par année et 3 600 $ au total, selon les mêmes règles d’âge.
 - BCTESG (Colombie-Britannique) : 1 200 $ une seule fois, sans cotisation, pour un enfant né en 2006 ou après, dès 6 ans. La demande doit être faite avant ses 9 ans.
 - Des cotisations de plus de 50 000 $ par bénéficiaire donnent un rappel.
+- Chaque taux, montant, âge et année ci-dessus, et les provinces qui ont une subvention provinciale, viennent de **Taux et règles**, avec les chiffres officiels intégrés. Chacun est lu pour l’année visée : un changement annoncé par le gouvernement peut y être ajouté à partir de sa date.
 
 ### Inscrire une subvention reçue {#record-grant}
 

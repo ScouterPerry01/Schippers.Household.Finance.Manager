@@ -1,1 +1,45 @@
 # Rates and rules: investing. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
+# Read by TaxSlips, ForeignExchange and CostBase (core/calc). A date before the first value shown
+# is read from the earliest value.
+
+# The share of a capital gain or loss that is taxable, by the date of the sale.
+rule capitalgains.inclusion RATE
+capitalgains.inclusion | - | 1990-01-01 | 0.75 | CRA, Capital Gains (T4037): three-quarters from 1990
+capitalgains.inclusion | - | 2000-02-28 | 0.666667 | CRA, Capital Gains (T4037): two-thirds from February 28 to October 17, 2000
+capitalgains.inclusion | - | 2000-10-18 | 0.5 | CRA, Capital Gains (T4037): one-half since October 18, 2000
+
+# Eligible dividends: the gross-up factor (1 plus the gross-up) and the federal dividend tax
+# credit as a share of the taxable (grossed-up) amount, by the year received.
+rule dividends.eligible.grossup NUMBER
+dividends.eligible.grossup | - | 2006-01-01 | 1.45 | CRA, T5 Guide (T4015), eligible dividends: 45% for 2006 to 2009
+dividends.eligible.grossup | - | 2010-01-01 | 1.44 | CRA, T5 Guide (T4015), eligible dividends: 44% for 2010
+dividends.eligible.grossup | - | 2011-01-01 | 1.41 | CRA, T5 Guide (T4015), eligible dividends: 41% for 2011
+dividends.eligible.grossup | - | 2012-01-01 | 1.38 | CRA, T5 Guide (T4015), eligible dividends: 38% for 2012 and later
+rule dividends.eligible.credit RATE
+dividends.eligible.credit | - | 2006-01-01 | 0.189655 | CRA, T5 Guide (T4015), eligible dividends: 18.9655% for 2006 to 2009
+dividends.eligible.credit | - | 2010-01-01 | 0.179739 | CRA, T5 Guide (T4015), eligible dividends: 17.9739% for 2010
+dividends.eligible.credit | - | 2011-01-01 | 0.164354 | CRA, T5 Guide (T4015), eligible dividends: 16.4354% for 2011
+dividends.eligible.credit | - | 2012-01-01 | 0.150198 | CRA, T5 Guide (T4015), eligible dividends: 15.0198% for 2012 and later
+
+# Other than eligible (ordinary) dividends, the same way.
+rule dividends.other.grossup NUMBER
+dividends.other.grossup | - | 2009-01-01 | 1.25 | CRA, T5 Guide (T4015), non-eligible dividends: 25% for 2009 to 2013
+dividends.other.grossup | - | 2014-01-01 | 1.18 | CRA, T5 Guide (T4015), non-eligible dividends: 18% for 2014 and 2015
+dividends.other.grossup | - | 2016-01-01 | 1.17 | CRA, T5 Guide (T4015), non-eligible dividends: 17% for 2016 and 2017
+dividends.other.grossup | - | 2018-01-01 | 1.16 | CRA, T5 Guide (T4015), non-eligible dividends: 16% for 2018
+dividends.other.grossup | - | 2019-01-01 | 1.15 | CRA, T5 Guide (T4015), non-eligible dividends: 15% for 2019 and later
+rule dividends.other.credit RATE
+dividends.other.credit | - | 2009-01-01 | 0.133333 | CRA, T5 Guide (T4015), non-eligible dividends: 13.3333% for 2009 to 2013
+dividends.other.credit | - | 2014-01-01 | 0.110169 | CRA, T5 Guide (T4015), non-eligible dividends: 11.0169% for 2014 and 2015
+dividends.other.credit | - | 2016-01-01 | 0.105217 | CRA, T5 Guide (T4015), non-eligible dividends: 10.5217% for 2016 and 2017
+dividends.other.credit | - | 2018-01-01 | 0.100313 | CRA, T5 Guide (T4015), non-eligible dividends: 10.0313% for 2018
+dividends.other.credit | - | 2019-01-01 | 0.090301 | CRA, T5 Guide (T4015), non-eligible dividends: 9.0301% for 2019 and later
+
+# The part of an individual's net foreign exchange gain or loss for the year left out (Income
+# Tax Act s. 39(2)).
+rule fx.exemption AMOUNT
+fx.exemption | - | 2000-01-01 | 200 | CRA, Capital Gains (T4037): only the net gain or loss over $200 is reported
+
+# A loss is superficial when identical property is bought within this many days before or after the sale.
+rule superficial.loss.days DAYS
+superficial.loss.days | - | 2000-01-01 | 30 | CRA, Capital losses: superficial loss, 30 calendar days before or after the sale

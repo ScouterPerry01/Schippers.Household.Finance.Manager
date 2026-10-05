@@ -1,5 +1,9 @@
 package ca.schippers.hfm.calc.medical
 
+import ca.schippers.hfm.calc.Province
+import ca.schippers.hfm.calc.rules.RuleValue
+import ca.schippers.hfm.calc.rules.Rules
+import ca.schippers.hfm.calc.rules.decimalOrEarliest
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
@@ -84,11 +88,12 @@ object Medical {
 
     /**
      * MED-13: the part of [total] that counts for the federal credit when claimed by someone with
-     * [netIncome]: the expenses above 3 % of net income, or above [maxReduction] (the CRA's fixed
-     * amount for the year) when that is less.
+     * [netIncome]: the expenses above 3 % of net income (rule medical.threshold.rate for [year]),
+     * or above [maxReduction] (the CRA's fixed amount for the year) when that is less.
      */
-    fun claimable(total: BigDecimal, netIncome: BigDecimal, maxReduction: BigDecimal?): BigDecimal {
-        val threePercent = netIncome.max(BigDecimal.ZERO).multiply(BigDecimal("0.03")).setScale(2, RoundingMode.HALF_UP)
+    fun claimable(total: BigDecimal, netIncome: BigDecimal, maxReduction: BigDecimal?, year: Int = java.time.LocalDate.now().year): BigDecimal {
+        val rate = decimalOrEarliest("medical.threshold.rate", LocalDate(year, 12, 31))
+        val threePercent = netIncome.max(BigDecimal.ZERO).multiply(rate).setScale(2, RoundingMode.HALF_UP)
         val reduction = maxReduction?.let { threePercent.min(it) } ?: threePercent
         return (total - reduction).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP)
     }
@@ -98,17 +103,25 @@ object Medical {
      * for the credit, the most first. Usually the spouse with the lower net income, as long as they
      * have tax to pay: the credit is not refundable.
      */
-    fun <K> whoClaims(total: BigDecimal, netIncomes: Map<K, BigDecimal>, maxReduction: BigDecimal?): List<Pair<K, BigDecimal>> =
-        netIncomes.map { (k, income) -> k to claimable(total, income, maxReduction) }.sortedByDescending { it.second }
-
-    /** The federal fixed amount for [year] as published by the CRA, when known; later years are entered by the user. */
-    fun federalMaxReduction(year: Int): BigDecimal? = FEDERAL_MAX_REDUCTION[year]?.let { BigDecimal(it) }
+    fun <K> whoClaims(total: BigDecimal, netIncomes: Map<K, BigDecimal>, maxReduction: BigDecimal?, year: Int = java.time.LocalDate.now().year): List<Pair<K, BigDecimal>> =
+        netIncomes.map { (k, income) -> k to claimable(total, income, maxReduction, year) }.sortedByDescending { it.second }
 
     /**
-     * The "3 % of net income ceiling" from the CRA's table of indexed amounts, "Adjustment of the
-     * personal income tax and benefit amounts" (canada.ca/en/revenue-agency/services/tax/individuals/
-     * frequently-asked-questions-individuals/adjustment-personal-income-tax-benefit-amounts.html):
-     * 2023 to 2026 as shown there in October 2026.
+     * The federal fixed amount for [year] (rule medical.threshold.max: the "3 % of net income
+     * ceiling" of the CRA's indexed amounts), when a value is set for that year: it is indexed each
+     * year, so an earlier year's amount is not carried forward. Later years are added in Rates and
+     * rules, or typed in the report.
      */
-    private val FEDERAL_MAX_REDUCTION = mapOf(2023 to 2635, 2024 to 2759, 2025 to 2834, 2026 to 2890)
+    fun federalMaxReduction(year: Int): BigDecimal? =
+        Rules.valueOn("medical.threshold.max", LocalDate(year, 12, 31))?.takeIf { it.from.year == year }?.let { BigDecimal(it.value) }
+
+    /** MED-11: a medical trip counts when the care is at least this many kilometres away, one way (rule medical.travel.min.km). */
+    fun travelMinimumKm(on: LocalDate): BigDecimal = decimalOrEarliest("medical.travel.min.km", on)
+
+    /**
+     * MED-11: the CRA's simplified rate per kilometre for vehicle expenses on [on] for travel that
+     * begins in [province] (rule medical.travel.rate, by province, in dollars), or null when none
+     * is set yet. A year not yet published keeps the last one.
+     */
+    fun travelRate(on: LocalDate, province: Province): RuleValue? = Rules.valueOn("medical.travel.rate", on, province)
 }

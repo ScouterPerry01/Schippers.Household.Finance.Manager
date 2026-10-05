@@ -222,7 +222,9 @@ class TaxPackageService internal constructor(private val books: Books) {
             }
             val gains = (p.netGain ?: Money.zero(cad)) + slipGains
             if (gains.isPositive) {
-                add(m, PackageItem.TAXABLE_CAPITAL_GAINS, null, Money.of(gains.toBigDecimal().multiply(TaxSlips.INCLUSION_RATE), cad, RoundingMode.HALF_UP))
+                // Each gain at the inclusion rate of its date; the slips' gains at the rate of the year's end.
+                val taxable = p.taxableGainUnrounded + slipGains.toBigDecimal().multiply(TaxSlips.inclusionRate(LocalDate(year, 12, 31)))
+                add(m, PackageItem.TAXABLE_CAPITAL_GAINS, null, Money.of(taxable, cad, RoundingMode.HALF_UP))
             }
         }
     }

@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.AccountType
@@ -60,12 +61,33 @@ class ExtrasTest {
         val far = books.trips.save(Trip("", group, LocalDate(2026, 6, 7), "Ottawa Heart Institute", BigDecimal("95"), true, TripPurpose.MEDICAL, memberId = sam))
         assertFalse(books.trips.qualifiesForMedical(near))
         assertTrue(books.trips.qualifiesForMedical(far))
-        val expense = books.trips.addToMedical(far, sam, cad("0.59"), group)
+        val expense = books.trips.addToMedical(far, sam, BigDecimal("0.59"), group)
         assertEquals(cad("112.10"), expense.amount, "190 km at 59 cents")
         assertEquals(MedService.MEDICAL_TRAVEL, expense.service)
-        assertFailsWith<ValidationException> { books.trips.addToMedical(near, sam, cad("0.59"), group) }
-        books.trips.setMedicalRate(2026, cad("0.59"))
-        assertEquals(cad("0.59"), books.trips.medicalRate(2026))
+        assertFailsWith<ValidationException> { books.trips.addToMedical(near, sam, BigDecimal("0.59"), group) }
+        val other = books.trips.save(Trip("", group, LocalDate(2026, 6, 8), "CHU de Québec", BigDecimal("50"), false, TripPurpose.MEDICAL, memberId = sam))
+        assertEquals(cad("30.25"), books.trips.addToMedical(other, sam, BigDecimal("0.605"), group).amount, "a rate with a half cent is kept")
+    }
+
+    @Test
+    fun `the medical travel rate comes from rates and rules, by province and date, and a rate typed before is kept`() {
+        books.setProvince(Province.ON)
+        val sam = books.members.create("Sam", MemberKind.ADULT).id
+        val rate = books.trips.medicalRate(LocalDate(2025, 5, 1), sam)!!
+        assertEquals(BigDecimal("0.62"), rate.rate, "the CRA's 2025 rate for Ontario")
+        assertTrue(rate.builtIn)
+        assertEquals(BigDecimal("0.62"), books.trips.medicalRate(LocalDate(2026, 5, 1), sam)!!.rate, "a year not yet published keeps the last rate")
+        assertEquals(BigDecimal("40"), books.trips.medicalMinimumKm(LocalDate(2026, 5, 1)))
+
+        books.putSetting("trip.medicalRate.2026", "0.59")
+        assertEquals(BigDecimal("0.59"), books.trips.medicalRate(LocalDate(2026, 5, 1), sam)!!.rate, "the rate typed for 2026 before rates and rules")
+        assertEquals(BigDecimal("0.62"), books.trips.medicalRate(LocalDate(2025, 5, 1), sam)!!.rate, "only for its year")
+
+        books.trips.keepMedicalRate(2026, Province.ON, BigDecimal("0.635"))
+        val kept = books.trips.medicalRate(LocalDate(2026, 5, 1), sam)!!
+        assertEquals(BigDecimal("0.635"), kept.rate, "the household's rule value comes first")
+        assertFalse(kept.builtIn)
+        assertEquals(LocalDate(2026, 1, 1), kept.from)
     }
 
     @Test
@@ -144,13 +166,13 @@ class ExtrasTest {
         val sam = books.members.create("Sam", MemberKind.ADULT).id
         val trip = books.trips.save(Trip("", group, LocalDate(2026, 6, 7), "Ottawa Heart Institute", BigDecimal("95"), true, TripPurpose.MEDICAL, memberId = sam))
         assertEquals(null, books.trips.medicalExpense(trip))
-        val expense = books.trips.addToMedical(trip, sam, cad("0.59"), group)
+        val expense = books.trips.addToMedical(trip, sam, BigDecimal("0.59"), group)
         assertEquals(expense.id, books.trips.medicalExpense(trip)?.id)
-        assertFailsWith<ValidationException> { books.trips.addToMedical(trip, sam, cad("0.59"), group) }
+        assertFailsWith<ValidationException> { books.trips.addToMedical(trip, sam, BigDecimal("0.59"), group) }
         assertEquals(1, books.medical.expenses().size)
         books.medical.deleteExpense(expense.id)
         assertEquals(null, books.trips.medicalExpense(trip))
-        books.trips.addToMedical(trip, sam, cad("0.61"), group)
+        books.trips.addToMedical(trip, sam, BigDecimal("0.61"), group)
         assertEquals(cad("115.90"), books.medical.expenses().single().amount)
     }
 

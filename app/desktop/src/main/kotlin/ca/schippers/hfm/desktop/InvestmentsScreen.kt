@@ -53,6 +53,7 @@ import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.importers.ImportedInvestmentStatement
 import ca.schippers.hfm.money.Currency
+import ca.schippers.hfm.calc.invest.TaxSlips
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import ca.schippers.hfm.money.sum
@@ -352,7 +353,9 @@ private fun GainsView(model: BooksModel) {
         Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.Bottom) {
             Picker(model.t("loans.year"), years, year, { it.toString() }, Modifier.width(140.dp)) { year = it }
             Stat(model.t("investments.netGain", year.toString()), model.money(gains.map { it.disposition.gain }.sum(base)))
-            Stat(model.t("investments.taxable"), model.money(gains.map { it.disposition.gain }.sum(base).times(BigDecimal("0.5"))))
+            // Each gain at the inclusion rate of its sale date (Rates and rules).
+            val taxable = gains.fold(BigDecimal.ZERO) { a, g -> a + g.disposition.gain.toBigDecimal().multiply(TaxSlips.inclusionRate(g.disposition.date)) }
+            Stat(model.t("investments.taxable"), model.money(Money.of(taxable, base)))
         }
         if (gains.any { it.disposition.possibleSuperficialLoss }) {
             Text(model.t("investments.superficialHint"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)

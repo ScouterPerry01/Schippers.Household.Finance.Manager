@@ -31,9 +31,9 @@ data class CurrencyHolding(
 
 data class FxDisposal(val currency: Currency, val ownerMemberIds: Set<String>, val disposition: Disposition)
 
-/** One person's foreign exchange result for a year, with the $200 exemption applied. */
-data class PersonFx(val member: Member?, val net: Money) {
-    val reportable: Money get() = Money.of(ForeignExchange.reportable(net.toBigDecimal()), net.currency)
+/** One person's foreign exchange result for [year], with the year's exemption (rule fx.exemption, $200) applied. */
+data class PersonFx(val member: Member?, val net: Money, val year: Int) {
+    val reportable: Money get() = Money.of(ForeignExchange.reportable(net.toBigDecimal(), year), net.currency)
 }
 
 data class FxReport(
@@ -109,7 +109,7 @@ class FxGainService internal constructor(private val books: Books) {
             val mine = disposals.filter { d -> if (m == null) d.ownerMemberIds.isEmpty() else m.id in d.ownerMemberIds }
             if (mine.isEmpty()) return@mapNotNull null
             val net = mine.fold(BigDecimal.ZERO) { acc, d -> acc + d.disposition.gain.toBigDecimal().divide(BigDecimal(d.ownerMemberIds.size.coerceAtLeast(1)), base.minorUnits, RoundingMode.HALF_UP) }
-            PersonFx(m, Money.of(net, base))
+            PersonFx(m, Money.of(net, base), year)
         }
         return FxReport(year, holdings.sortedBy { it.currency.code }, disposals.sortedBy { it.disposition.date }, people, missing, problems)
     }

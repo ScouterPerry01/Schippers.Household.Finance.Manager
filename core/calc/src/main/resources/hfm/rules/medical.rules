@@ -1,1 +1,60 @@
 # Rates and rules: medical. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
+# Read by Medical (core/calc), TripService and the medical expenses report.
+
+# The medical expense credit: expenses count above the lesser of this share of net income and
+# the fixed amount for the year (indexed each year: a year without its own amount has none).
+rule medical.threshold.rate RATE
+medical.threshold.rate | - | 2000-01-01 | 0.03 | CRA, Lines 33099 and 33199: 3% of net income or the fixed amount, whichever is less
+rule medical.threshold.max AMOUNT
+medical.threshold.max | - | 2023-01-01 | 2635 | CRA, Adjustment of the personal income tax and benefit amounts: medical expense tax credit (3% of net income ceiling), 2023
+medical.threshold.max | - | 2024-01-01 | 2759 | CRA, Adjustment of the personal income tax and benefit amounts: medical expense tax credit (3% of net income ceiling), 2024
+medical.threshold.max | - | 2025-01-01 | 2834 | CRA, Adjustment of the personal income tax and benefit amounts: medical expense tax credit (3% of net income ceiling), 2025
+medical.threshold.max | - | 2026-01-01 | 2890 | CRA, Adjustment of the personal income tax and benefit amounts: medical expense tax credit (3% of net income ceiling), 2026
+
+# Medical travel: the care must be at least this many kilometres away, one way, to claim the
+# cost of travel by car.
+rule medical.travel.min.km NUMBER
+medical.travel.min.km | - | 2000-01-01 | 40 | CRA, Lines 33099 and 33199: travel expenses, at least 40 km (one way) from home
+
+# The simplified method: dollars per kilometre for the province or territory where the travel
+# begins, by tax year. The CRA publishes a year early in the next; until then the last applies.
+rule medical.travel.rate AMOUNT province
+medical.travel.rate | AB | 2023-01-01 | 0.53 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 53.0 cents/km)
+medical.travel.rate | BC | 2023-01-01 | 0.565 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 56.5 cents/km)
+medical.travel.rate | MB | 2023-01-01 | 0.545 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 54.5 cents/km)
+medical.travel.rate | NB | 2023-01-01 | 0.575 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 57.5 cents/km)
+medical.travel.rate | NL | 2023-01-01 | 0.59 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 59.0 cents/km)
+medical.travel.rate | NS | 2023-01-01 | 0.58 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 58.0 cents/km)
+medical.travel.rate | NT | 2023-01-01 | 0.705 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 70.5 cents/km)
+medical.travel.rate | NU | 2023-01-01 | 0.675 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 67.5 cents/km)
+medical.travel.rate | ON | 2023-01-01 | 0.59 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 59.0 cents/km)
+medical.travel.rate | PE | 2023-01-01 | 0.56 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 56.0 cents/km)
+medical.travel.rate | QC | 2023-01-01 | 0.575 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 57.5 cents/km)
+medical.travel.rate | SK | 2023-01-01 | 0.525 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 52.5 cents/km)
+medical.travel.rate | YT | 2023-01-01 | 0.705 | CRA, Meal and vehicle rates used to calculate travel expenses (2023 kilometre rates, 70.5 cents/km)
+medical.travel.rate | AB | 2024-01-01 | 0.545 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 54.5 cents/km)
+medical.travel.rate | BC | 2024-01-01 | 0.575 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 57.5 cents/km)
+medical.travel.rate | MB | 2024-01-01 | 0.545 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 54.5 cents/km)
+medical.travel.rate | NB | 2024-01-01 | 0.585 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 58.5 cents/km)
+medical.travel.rate | NL | 2024-01-01 | 0.605 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 60.5 cents/km)
+medical.travel.rate | NS | 2024-01-01 | 0.595 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 59.5 cents/km)
+medical.travel.rate | NT | 2024-01-01 | 0.7 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 70.0 cents/km)
+medical.travel.rate | NU | 2024-01-01 | 0.705 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 70.5 cents/km)
+medical.travel.rate | ON | 2024-01-01 | 0.605 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 60.5 cents/km)
+medical.travel.rate | PE | 2024-01-01 | 0.575 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 57.5 cents/km)
+medical.travel.rate | QC | 2024-01-01 | 0.58 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 58.0 cents/km)
+medical.travel.rate | SK | 2024-01-01 | 0.55 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 55.0 cents/km)
+medical.travel.rate | YT | 2024-01-01 | 0.715 | CRA, Meal and vehicle rates used to calculate travel expenses (2024 kilometre rates, 71.5 cents/km)
+medical.travel.rate | AB | 2025-01-01 | 0.565 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 56.5 cents/km)
+medical.travel.rate | BC | 2025-01-01 | 0.595 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 59.5 cents/km)
+medical.travel.rate | MB | 2025-01-01 | 0.56 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 56.0 cents/km)
+medical.travel.rate | NB | 2025-01-01 | 0.595 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 59.5 cents/km)
+medical.travel.rate | NL | 2025-01-01 | 0.615 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 61.5 cents/km)
+medical.travel.rate | NS | 2025-01-01 | 0.595 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 59.5 cents/km)
+medical.travel.rate | NT | 2025-01-01 | 0.7 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 70.0 cents/km)
+medical.travel.rate | NU | 2025-01-01 | 0.705 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 70.5 cents/km)
+medical.travel.rate | ON | 2025-01-01 | 0.62 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 62.0 cents/km)
+medical.travel.rate | PE | 2025-01-01 | 0.585 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 58.5 cents/km)
+medical.travel.rate | QC | 2025-01-01 | 0.605 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 60.5 cents/km)
+medical.travel.rate | SK | 2025-01-01 | 0.555 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 55.5 cents/km)
+medical.travel.rate | YT | 2025-01-01 | 0.705 | CRA, Meal and vehicle rates used to calculate travel expenses (2025 kilometre rates, 70.5 cents/km)

@@ -184,7 +184,10 @@ private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
             Picker(model.t("trips.vehicle"), listOf(null) + vehicles, vehicle, { it?.name ?: model.t("trips.noVehicle") }, Modifier.weight(1f)) { vehicle = it }
         }
         TextInput(model.t("calendar.notes"), notes) { notes = it }
-        if (purpose == TripPurpose.MEDICAL) Text(model.t("trips.medicalHint", TripService.MEDICAL_MIN_KM), style = MaterialTheme.typography.bodySmall)
+        if (purpose == TripPurpose.MEDICAL) {
+            val minimum = model.books.trips.medicalMinimumKm(runCatching { LocalDate.parse(day) }.getOrDefault(t.date))
+            Text(model.t("trips.medicalHint", minimum.stripTrailingZeros().toPlainString()), style = MaterialTheme.typography.bodySmall)
+        }
         if (t.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
     }
     if (asking) {
@@ -194,25 +197,46 @@ private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
     }
 }
 
-/** MED-11: a qualifying medical trip as a medical expense, at the rate per kilometre the user enters. */
+/**
+ * MED-11: a qualifying medical trip as a medical expense, at the rate per kilometre of Rates and
+ * rules for the trip's date and the person's province or territory; it can be changed for the
+ * trip, and an administrator can keep the new rate in Rates and rules for that year.
+ */
 @Composable
 private fun TripMedicalDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
     val locale = model.language.locale
     val members = remember { model.books.members.list() }
     var member by remember { mutableStateOf(members.firstOrNull { it.id == t.memberId } ?: members.firstOrNull()) }
-    var rate by remember { mutableStateOf(model.books.trips.medicalRate(t.date.year)?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
+    val found = remember(member) { model.books.trips.medicalRate(t.date, member?.id) }
+    val province = remember(member) { model.books.provinceOf(member?.id) }
+    // The CRA's rates have half cents (0.565): shown as typed numbers, not as money.
+    var rate by remember(member) {
+        mutableStateOf(found?.let { java.text.NumberFormat.getNumberInstance(locale).apply { minimumFractionDigits = 2; maximumFractionDigits = 4 }.format(it.rate) }.orEmpty())
+    }
+    val admin = model.books.users.isAdministrator
+    var keep by remember { mutableStateOf(false) }
     FormDialog(model.t("trips.toMedical"), model.t("common.save"), model.t("common.cancel"), canSave = member != null && rate.isNotBlank(), onDismiss = onClose, onSave = {
         val ok = model.act {
-            val r = parseAmount(rate, model.books.reports.base, locale)?.abs() ?: throw ValidationException("error.tripRate")
-            model.books.trips.setMedicalRate(t.date.year, r)
+            val r = decimal(rate, "error.tripRate").abs()
+            if (keep && admin && (found == null || r.compareTo(found.rate) != 0)) model.books.trips.keepMedicalRate(t.date.year, province, r)
             model.books.trips.addToMedical(t, member!!.id, r, model.workGroup())
         }
         if (ok != null) onClose()
     }) {
         Text("${model.date(t.date)} · ${t.destination}", fontWeight = FontWeight.Medium)
-        Text(model.t("trips.medicalRateHint", t.date.year), style = MaterialTheme.typography.bodySmall)
+        Text(model.t("trips.medicalRateHint"), style = MaterialTheme.typography.bodySmall)
         Picker(model.t("report.person"), members, member, { it.displayName }) { member = it }
-        AmountInput(model.t("trips.ratePerKm"), rate, model.books.reports.base, locale, Modifier.fillMaxWidth(), model::money) { rate = it }
+        val where = model.t("province.$province")
+        Text(
+            when {
+                found == null -> model.t("trips.medicalRateNone", where)
+                found.builtIn -> model.t("trips.medicalRateBuiltIn", where, model.date(found.from), found.source.orEmpty())
+                else -> model.t("trips.medicalRateOwn", where, model.date(found.from))
+            },
+            style = MaterialTheme.typography.bodySmall,
+        )
+        TextInput(model.t("trips.ratePerKm"), rate, Modifier.fillMaxWidth()) { rate = it }
+        if (admin) LabeledCheckbox(model.t("trips.keepRate", where, t.date.year.toString()), keep) { keep = it }
     }
 }
 

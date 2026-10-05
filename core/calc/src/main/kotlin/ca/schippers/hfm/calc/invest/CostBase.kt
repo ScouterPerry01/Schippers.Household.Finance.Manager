@@ -1,6 +1,7 @@
 package ca.schippers.hfm.calc.invest
 
 import ca.schippers.hfm.calc.CALC
+import ca.schippers.hfm.calc.rules.intOrEarliest
 import ca.schippers.hfm.money.Money
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
@@ -83,12 +84,13 @@ object CostBase {
         return CostResult(pool.state, flagSuperficial(pool.dispositions, sorted), history)
     }
 
-    /** Marks losses with units of the same pool acquired within 30 days before or after. */
+    /** Marks losses with units of the same pool acquired within 30 days (rule superficial.loss.days) before or after. */
     fun flagSuperficial(dispositions: List<Disposition>, events: List<CostEvent>): List<Disposition> {
         val acquisitions = events.filter { it.kind == CostEventKind.ACQUIRE }.map { it.date }
         return dispositions.map { d ->
             val loss = d.gain.isNegative && d.quantity.signum() > 0
-            if (loss && acquisitions.any { kotlin.math.abs(d.date.daysUntil(it)) <= 30 }) d.copy(possibleSuperficialLoss = true) else d
+            val days = if (loss) intOrEarliest("superficial.loss.days", d.date) else 0
+            if (loss && acquisitions.any { kotlin.math.abs(d.date.daysUntil(it)) <= days }) d.copy(possibleSuperficialLoss = true) else d
         }
     }
 }
