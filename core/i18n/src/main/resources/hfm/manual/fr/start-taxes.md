@@ -39,7 +39,7 @@ Voir [Acomptes](taxes#instalments).
 
 1. Ouvrez **Impôts**, puis l’onglet **Estimation**.
 2. Choisissez l’**Année d’imposition** et la **Personne**.
-3. Lisez **Montants utilisés** à gauche : chaque montant en indique l’origine. Entrez ce que les livres ne peuvent pas savoir, comme les frais médicaux que cette personne demande ou le revenu net d’un conjoint, et corrigez ce qui n’est pas juste. Rien de ce qui y est entré n’est enregistré.
+3. Lisez **Montants utilisés** à gauche : chaque montant en indique l’origine. Entrez ce que les livres ne peuvent pas savoir, comme les frais médicaux que cette personne demande ou le revenu net d’un conjoint, et corrigez ce qui n’est pas juste. Entrez aussi, sous Reports des années antérieures, les soldes de l’avis de cotisation de l’an dernier : frais de scolarité inutilisés, dons, pertes en capital nettes, cotisations REER inutilisées et plafond de déduction REER. Ce que vous entrez est conservé pour cette personne et cette année.
 4. Lisez le résultat à droite : l’impôt fédéral et provincial ou territorial, ce qui est déjà payé, et le **Solde dû** ou le **Remboursement**, avec chaque étape du calcul en dessous.
 5. Pour voir ce qu’une cotisation REER ferait économiser, changez **Déduction pour REER** et suivez le solde et le **Taux marginal**.
 

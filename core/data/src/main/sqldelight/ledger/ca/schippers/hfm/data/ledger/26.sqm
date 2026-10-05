@@ -1,0 +1,11 @@
+-- Version 26 to 27: the figures of the income tax estimate per person and year, kept (the
+-- balances carried forward from the notice of assessment, and the figures entered). Only an
+-- addition: no existing table changes.
+
+CREATE TABLE tax_estimate_figure (
+    member_id TEXT NOT NULL,
+    tax_year INTEGER NOT NULL,
+    figure TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    PRIMARY KEY (member_id, tax_year, figure)
+);

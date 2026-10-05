@@ -235,7 +235,7 @@ At the top:
 
 - **Tax year**: the year to estimate. It starts as the tax year being prepared (last year until the end of June, then the current year); the current year and the six before are offered. Built-in rates start with 2024: for an earlier year, the tab says there are no rates.
 - **Person**: whose tax to estimate. The adults and adult dependants of the household are offered, and anyone else with figures in the package. Each person files their own return, so each has their own estimate.
-- **Use the books' figures again**: shown once you have changed a figure or the age box; puts every figure back as the books have it.
+- **Use the books' figures again**: shown once you have changed a figure or the age box; puts every figure back as the books have it, and forgets what was kept for this person and year.
 
 The red line under them is the reminder that this is an estimate. "No one to estimate yet" means the household has no adult member: add them under [Household members](members).
 
@@ -247,9 +247,9 @@ The left side lists the figures used; the right side shows the result and the ca
 
 Under **Figures used**, a line says whose rates apply: those of the province or territory the person lives in (their **Lives in** on Household members), or else the household's. Then:
 
-- **65 or older on December 31**: ticked when the person's birth date says they are 65 or older at the end of the year. It gives the age amount, and counts RRIF income as pension income. Change it when the birth date is not entered.
+- **65 or older on December 31**: ticked when the person's birth date says they are 65 or older at the end of the year. It gives the age amount, and counts RRIF income as pension income. Change it when the birth date is not entered; the change is kept.
 
-Each figure is an amount in dollars, with a line under it saying where it comes from: **From the year-end package** and the package items added together, **Not in the books** when the books have no source for it, or **Entered here, not saved** once you change it. **Use the books** beside a changed figure puts the books' amount back. What you enter here is not saved, does not change the books, and is forgotten when you choose another person or year or leave the screen. A blank amount counts as zero. An amount can be a sum, such as 1200 + 350.
+Each figure is an amount in dollars, with a line under it saying where it comes from: **From the year-end package** and the package items added together, **Not in the books** when the books have no source for it, or **Entered here, kept for this person and year** once you change it. What you enter is kept with the books, for this person and this year, and comes back the next time you open the estimate; it never changes a transaction or the package. **Use the books** beside a changed figure forgets it and puts the books' amount back. A user who cannot change any account group sees **Entered here, not kept: you cannot change any account group**, and what they enter is forgotten when they choose another person or year or leave the screen. A blank amount counts as zero. An amount can be a sum, such as 1200 + 350.
 
 The figures are grouped as on a return.
 
@@ -265,7 +265,7 @@ Income:
 
 Deductions:
 
-- **RRSP deduction**: from **RRSP contributions**. The deduction cannot be more than the RRSP deduction limit on the notice of assessment; enter a smaller amount if needed.
+- **RRSP deduction**: from **RRSP contributions**, the contributions of the year. The deduction cannot be more than the RRSP deduction limit on the notice of assessment: enter that limit under **RRSP deduction limit** (see below) and the estimate keeps the deduction within it.
 - **FHSA deduction**: from **FHSA contributions**.
 - **Registered pension plan contributions**: from **Pension plan contributions** deducted from pay.
 - **Union and professional dues**: from **Union and professional dues**.
@@ -278,7 +278,19 @@ Credits:
 - **EI premiums (and QPIP in Quebec)**: from **EI premiums**, or **EI and QPIP premiums** in Quebec.
 - **Charitable donations**: from **Charitable donations**, at their eligible amounts. Spouses may claim each other's: enter here the gifts this person will claim.
 - **Medical expenses claimed**: not filled in, because the household's medical expenses are claimed together by one spouse. A line under the field gives the household's claim from the package; enter it for the spouse who claims it. The threshold (3 % of net income or the fixed amount) is applied by the estimate, so enter the expenses themselves.
+- **Tuition fees of the year (T2202, RL-8)**: from **Tuition** in the package, the fees paid on categories whose tax treatment is tuition. The amount that counts is the one on the student's T2202 slip (the RL-8 in Quebec): check it, and enter it if it differs. Under the field, the T2202 and RL-8 slips of the person's slip checklist are listed with their status. The student claims tuition first, as far as needed to bring their own tax to zero: see [Tuition and carry-forwards](taxes#estimate-carry-forward).
+- **Tuition to transfer to a spouse or parent**: for the student. Empty means nothing is transferred. Enter the amount the student wants to transfer: the estimate transfers at most what is left of this year's fees after their own claim, and no more than $5,000 less the part of this year's fees they used (in Quebec, to a parent or grandparent only, with no dollar maximum). What is not transferred is carried forward.
+- **Tuition transferred from a student**: for the spouse, parent or grandparent who receives it: the amount the student transfers, as the student's estimate works it out. At most $5,000 counts, federally and in the provinces and territories that still have the credit; in Quebec, it is fees transferred by a child or grandchild, credited at 8 %.
 - **Spouse's or partner's net income**: empty means no spouse amount is claimed. Enter the net income of a spouse or common-law partner to claim the spouse amount, which falls as their income rises. In Quebec, it is added to the person's own income to form the family income that reduces the age and retirement amounts and sets the medical expense threshold.
+
+Carried forward from earlier years: the balances that last year's notice of assessment gives. Each is kept for this person and year. Empty means none.
+
+- **Unused federal tuition amounts**: the federal tuition amounts not used yet.
+- **Unused provincial or Quebec tuition amounts**: the provincial or territorial ones; for a Quebec resident, the unused fees on the Quebec notice of assessment. They can still be claimed in Ontario, Saskatchewan and Alberta, which no longer give a credit for new fees.
+- **Donations of the last five years not claimed yet**: gifts of the five previous years not claimed. With this year's, they are claimed up to 75 % of net income; the rest is carried forward.
+- **Net capital losses of other years**: at their taxable amount (half the losses), as the notice of assessment gives them. They only reduce this year's taxable capital gains, so they lower taxable income, not net income.
+- **Unused RRSP contributions**: contributions made in earlier years and not deducted yet. They are deducted with this year's.
+- **RRSP deduction limit**: the limit on the notice of assessment. Empty means no limit is applied. When it is entered, the RRSP deduction (this year's contributions and the unused ones) stays within it, and the rest is carried forward.
 
 Tax already paid:
 
@@ -301,6 +313,8 @@ The box at the top right gives:
 
 When the rates for the year are not yet in Rates and rules, a red line says that those of the latest year known are used.
 
+Under it, **Carried forward** shows, when there is any, what becomes of each balance this year: tuition (federal, and provincial or Quebec), donations, net capital losses and unused RRSP contributions. Each line gives what is available (with this year's own fees or gifts), what is used this year, what a student transfers, and what is **Left** for the following years. Enter what is left in next year's estimate under Carried forward from earlier years; the notice of assessment confirms it.
+
 ### The calculation {#estimate-lines}
 
 @index: tax brackets; basic personal amount; non-refundable credits; surtax; Ontario Health Premium; Quebec abatement
@@ -311,17 +325,20 @@ Income:
 
 - **Total income**: all the income figures added together.
 - **CPP or QPP enhanced contributions (deduction)**: the part of the contributions that is deducted rather than credited.
+- **RRSP deduction, with unused contributions**: shown when unused contributions or a deduction limit are entered: the RRSP deduction, with what could be claimed below its name.
 - **Deductions**: the deductions, with that part.
-- **Net income** and **Taxable income**: total income less the deductions (never below zero). The estimate counts no other deduction, so the two are the same.
+- **Net income**: total income less the deductions (never below zero).
+- **Net capital losses of other years**: the losses carried forward that are applied, up to this year's taxable capital gains.
+- **Taxable income**: net income less those losses; without them, the two are the same.
 
 Federal, then the province or territory:
 
 - **Tax bracket**: one line per bracket reached, with its rate, the income taxed at that rate and where the bracket starts.
 - **Tax on taxable income**: the brackets added together.
-- Credit amounts: **Basic personal amount** (reduced at high incomes where the rules say so), **Age amount** (from 65, reduced above an income threshold), **Senior supplementary amount** (Saskatchewan), **Spouse or common-law partner amount**, **Canada employment amount** (federal and Yukon), **CPP or QPP contributions (base part)**, **EI premiums**, **Pension income amount** and **Medical expenses above the threshold**.
+- Credit amounts: **Basic personal amount** (reduced at high incomes where the rules say so), **Age amount** (from 65, reduced above an income threshold), **Senior supplementary amount** (Saskatchewan), **Spouse or common-law partner amount**, **Canada employment amount** (federal and Yukon), **CPP or QPP contributions (base part)**, **EI premiums**, **Pension income amount**, **Medical expenses above the threshold**, **Tuition amount** (the student's own claim, as far as needed to bring the tax to zero) and **Tuition transferred from a student**.
 - **Total of the credit amounts**, and **Non-refundable tax credits**: that total at the lowest rate.
 - **Top-up or supplemental tax credit**: the federal top-up credit, which keeps 15 % on credit amounts above the first bracket since the lowest rate went down in 2025, or Alberta's supplemental credit on credit amounts above its 8 % bracket.
-- **Donation tax credit**: the first $200 at the lowest rate, the rest at a higher rate, and, where the rules have one, a still higher rate on gifts matched by income in the top bracket.
+- **Donation tax credit**: the first $200 at the lowest rate, the rest at a higher rate, and, where the rules have one, a still higher rate on gifts matched by income in the top bracket. This year's gifts and those carried forward count, up to 75 % of net income.
 - **Dividend tax credit**: a share of the taxable amount of eligible and other dividends.
 - **Tax after credits**: never below zero, since these credits are not refundable.
 - **Refundable Quebec abatement**: for a Quebec resident, 16.5 % of the federal tax after credits.
@@ -340,16 +357,31 @@ A person who lives in Quebec on December 31 pays federal tax, reduced by the Que
 - The age amount and the retirement income amount are reduced together on family income (the person's and their spouse's).
 - The medical expense credit is 20 % of the expenses above 3 % of family income.
 - QPP replaces CPP: the base part of the contributions is a federal credit, and the rest a deduction on both returns.
+- Net capital losses of other years are deducted from Quebec income as on the federal return.
+- **Tuition amount**: Quebec's credit is 8 % of the tuition fees, on a line of its own after the donation credit. The student uses it as far as it brings the Quebec tax to zero; what is left of this year's fees can go to a parent or grandparent (not to a spouse), and the rest is carried forward.
+
+### Tuition and carry-forwards {#estimate-carry-forward}
+
+@index: tuition credit; tuition transfer; carry-forward; unused tuition; T2202; RL-8; unused RRSP contributions; net capital loss; donation carry-forward
+
+Some amounts move from one year to the next. The estimate applies them as the return does, and shows under **Carried forward** what is left for next year.
+
+- Tuition: a student first claims the unused amounts carried forward, then this year's fees, but only as much as needed to bring their federal tax to zero after the basic personal, age, spouse, CPP, EI, Canada employment and pension amounts (Schedule 11). Of this year's fees left, up to $5,000, less the part of this year's fees they used, can go to a spouse or common-law partner, a parent or a grandparent; the rest is carried forward for as long as needed, and an amount carried forward can never be transferred. The provinces and territories follow the same pattern at their lowest rate; Ontario, Saskatchewan and Alberta no longer give a credit for new fees but still allow the amounts carried forward. In Quebec, the credit is 8 % of the fees; the student uses it first, and what is left of this year's fees can go to a parent or grandparent.
+- Donations: gifts can be claimed in their year or in any of the five following years, up to 75 % of net income in a year. The estimate claims the gifts carried forward and this year's together, up to that limit.
+- Net capital losses: a net capital loss can reduce the taxable capital gains of any later year. The estimate applies what is carried forward up to this year's taxable capital gains.
+- Unused RRSP contributions: contributions not deducted in the year they were made can be deducted in a later year, within the RRSP deduction limit.
+
+The estimate claims each balance as fully as it can. On the return, some of them (donations, RRSP contributions, Quebec tuition) can be kept for a later year instead: your tax software or accountant can say whether that is better.
 
 ### What the estimate leaves out {#estimate-left-out}
 
-The estimate does not count: tuition, amounts transferred from a spouse or child, carry-forwards (unused tuition, donations or losses), low-income tax reductions other than Ontario's and British Columbia's, refundable credits and benefits (GST/HST credit, Canada workers benefit, Quebec's solidarity credit), the OAS recovery tax, the alternative minimum tax, political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, its health services fund contribution and its prescription drug insurance premium, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
+The estimate does not count: amounts transferred from a spouse or child other than tuition, the education and textbook amounts some provinces and territories still have, the Canada training credit, non-capital losses of other years, low-income tax reductions other than Ontario's and British Columbia's, refundable credits and benefits (GST/HST credit, Canada workers benefit, Quebec's solidarity credit), the OAS recovery tax, the alternative minimum tax, political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, its health services fund contribution and its prescription drug insurance premium, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
 
 ### Where the rates come from {#estimate-rates}
 
 @index: income tax rates; tax rates by province; rate changes
 
-Every rate, amount and threshold the estimate uses (brackets, basic personal amounts, credit rates, the age, spouse, pension and employment amounts, medical expense thresholds, donation and dividend credit rates, Ontario's surtax and health premium, CPP and QPP, and Quebec's deduction for workers) is a value in [Rates and rules](rates-rules), under **Income tax**, by date and by province or territory. The app comes with the official figures for 2024, 2025 and 2026, each with its source. An administrator can add a value for a year or a province there, for example when a budget changes a rate; the estimate uses it from its date. A year whose figures are not there yet uses the latest ones.
+Every rate, amount and threshold the estimate uses (brackets, basic personal amounts, credit rates, the age, spouse, pension and employment amounts, medical expense thresholds, donation and dividend credit rates, Ontario's surtax and health premium, CPP and QPP, Quebec's deduction for workers, the tuition credits and their transfer maximums, and the donation limit) is a value in [Rates and rules](rates-rules), under **Income tax**, by date and by province or territory. The app comes with the official figures for 2024, 2025 and 2026, each with its source. An administrator can add a value for a year or a province there, for example when a budget changes a rate; the estimate uses it from its date. A year whose figures are not there yet uses the latest ones.
 
 ## Through the year: what feeds the tax screens {#through-the-year}
 

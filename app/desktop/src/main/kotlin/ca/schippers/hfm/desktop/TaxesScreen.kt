@@ -48,6 +48,7 @@ import ca.schippers.hfm.books.SlipStatus
 import ca.schippers.hfm.books.SlipType
 import ca.schippers.hfm.books.TaxAuthority
 import ca.schippers.hfm.calc.tax.TaxInput
+import ca.schippers.hfm.calc.tax.TaxInputGroup
 import ca.schippers.hfm.calc.tax.TaxLine
 import ca.schippers.hfm.calc.tax.TaxLineKind
 import ca.schippers.hfm.calc.tax.TaxPart
@@ -472,8 +473,9 @@ private fun exportPackageFolder(model: BooksModel, pkg: TaxPackage): java.io.Fil
 
 /**
  * One person's income tax for a year, estimated from the year-end package with the rates of Rates
- * and rules: the figures used, each with where it comes from and a field to replace it (not saved),
- * the calculation line by line, and the balance owing or refund. An aid, not a return (TAX-04).
+ * and rules: the figures used, each with where it comes from and a field to replace it (kept per
+ * person and year, with the balances carried forward), the calculation line by line, what becomes
+ * of the carry-forwards, and the balance owing or refund. An aid, not a return (TAX-04).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -486,14 +488,34 @@ private fun EstimateTab(model: BooksModel) {
     val people = remember(pkg) { books.incomeTax.people(year, pkg) }
     var who by remember(year) { mutableStateOf(people.firstOrNull()?.id) }
     val person = people.firstOrNull { it.id == who } ?: people.firstOrNull()
-    val entered = remember(year, person?.id) { mutableStateMapOf<TaxInput, String>() }
-    var age65 by remember(year, person?.id) { mutableStateOf<Boolean?>(null) }
+    // What was entered before for this person and year is kept in the books and comes back here.
+    val saved = remember(year, person?.id) { person?.let { runCatching { books.incomeTax.saved(year, it.id) }.getOrNull() } }
+    val entered = remember(year, person?.id) {
+        mutableStateMapOf<TaxInput, String>().apply { saved?.figures?.forEach { (input, amount) -> put(input, MoneyFormat.formatAmount(Money.of(amount, Currency.CAD), locale)) } }
+    }
+    var age65 by remember(year, person?.id) { mutableStateOf(saved?.age65) }
+    val groupId = remember { model.defaultGroupForPersonalRecords()?.id }
+    // Keeps a figure (null forgets it); a blank amount is kept as zero, except where blank means "none".
+    fun keep(input: TaxInput, text: String?) {
+        val id = person?.id ?: return
+        val g = groupId ?: return
+        val amount = when {
+            text == null -> null
+            text.isBlank() -> if (input in BLANK_IS_NONE) null else BigDecimal.ZERO
+            else -> runCatching { parseAmount(text, Currency.CAD, locale) }.getOrNull()?.toBigDecimal() ?: return
+        }
+        runCatching { books.incomeTax.save(year, id, input, amount, g) }.onFailure { model.error = model.describe(it) }
+    }
 
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Picker(model.t("taxes.year"), (thisYear downTo thisYear - 6).toList(), year, { it.toString() }, Modifier.width(190.dp)) { year = it }
         if (people.isNotEmpty()) Picker(model.t("report.person"), people, person, { it.displayName }, Modifier.width(220.dp)) { who = it.id }
         if (entered.isNotEmpty() || age65 != null) {
-            OutlinedButton(onClick = { entered.clear(); age65 = null }, modifier = Modifier.padding(top = 8.dp)) { Text(model.t("taxEstimate.reset")) }
+            OutlinedButton(onClick = {
+                entered.clear()
+                age65 = null
+                if (groupId != null) person?.let { p -> runCatching { books.incomeTax.clear(year, p.id) }.onFailure { model.error = model.describe(it) } }
+            }, modifier = Modifier.padding(top = 8.dp)) { Text(model.t("taxEstimate.reset")) }
         }
     }
     Text(model.t("taxEstimate.notice"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(vertical = 4.dp))
@@ -501,10 +523,10 @@ private fun EstimateTab(model: BooksModel) {
         Text(model.t("taxEstimate.none"), Modifier.padding(vertical = 12.dp))
         return
     }
-    // A blank field counts as zero; a blank spouse's net income claims no spouse amount.
+    // A blank field counts as zero; a blank spouse's net income claims no spouse amount, a blank RRSP limit sets none.
     val values = entered.mapNotNull { (input, text) ->
         if (text.isBlank()) {
-            if (input == TaxInput.SPOUSE_NET_INCOME) null else input to BigDecimal.ZERO
+            if (input in BLANK_IS_NONE) null else input to BigDecimal.ZERO
         } else {
             runCatching { parseAmount(text, Currency.CAD, locale) }.getOrNull()?.let { input to it.toBigDecimal() }
         }
@@ -519,29 +541,46 @@ private fun EstimateTab(model: BooksModel) {
                     Text(model.t("taxEstimate.figures"), fontWeight = FontWeight.Medium)
                     Text(model.t("taxEstimate.figuresHint"), style = MaterialTheme.typography.bodySmall)
                     Text(model.t("taxEstimate.province", model.t("province.${result.province}")), style = MaterialTheme.typography.bodySmall)
-                    LabeledCheckbox(model.t("taxEstimate.age65"), result.age65) { age65 = it }
+                    LabeledCheckbox(model.t("taxEstimate.age65"), result.age65) { checked ->
+                        age65 = checked
+                        if (groupId != null) runCatching { books.incomeTax.saveAge65(year, person.id, checked, groupId) }.onFailure { model.error = model.describe(it) }
+                    }
                 }
             }
             result.figures.groupBy { it.input.group }.forEach { (group, figures) ->
                 item(key = "g/$group") {
-                    Text(model.t("taxEstimateGroup.$group"), fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                    Column(Modifier.padding(top = 12.dp, bottom = 4.dp)) {
+                        Text(model.t("taxEstimateGroup.$group"), fontWeight = FontWeight.Medium)
+                        if (group == TaxInputGroup.CARRY_FORWARD) Text(model.t("taxEstimate.carryHint"), style = MaterialTheme.typography.bodySmall)
+                    }
                 }
                 items(figures, key = { "f/${it.input}" }) { f ->
                     Column(Modifier.padding(vertical = 2.dp)) {
                         val shown = entered[f.input] ?: f.fromBooks?.let { MoneyFormat.formatAmount(Money.of(it, Currency.CAD), locale) }.orEmpty()
-                        AmountInput(model.t("taxEstimateInput.${f.input}"), shown, Currency.CAD, locale, Modifier.fillMaxWidth(), model::money) { entered[f.input] = it }
+                        AmountInput(model.t("taxEstimateInput.${f.input}"), shown, Currency.CAD, locale, Modifier.fillMaxWidth(), model::money) {
+                            entered[f.input] = it
+                            keep(f.input, it)
+                        }
                         val source = when {
-                            f.input in entered -> model.t("taxEstimate.entered")
+                            f.input in entered -> model.t(if (groupId != null) "taxEstimate.entered" else "taxEstimate.enteredNotSaved")
                             f.from.isNotEmpty() -> model.t("taxEstimate.from", f.from.joinToString(", ") { model.t("packageItem.$it") })
-                            f.input == TaxInput.SPOUSE_NET_INCOME -> model.t("taxEstimate.noSpouse")
-                            else -> model.t("taxEstimate.notInBooks")
+                            else -> model.t(EMPTY_HINTS[f.input] ?: if (f.input.group == TaxInputGroup.CARRY_FORWARD) "taxEstimate.fromNotice" else "taxEstimate.notInBooks")
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(source, Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                            if (f.input in entered) TextButton(onClick = { entered.remove(f.input) }) { Text(model.t("taxEstimate.useBooks")) }
+                            if (f.input in entered) TextButton(onClick = { entered.remove(f.input); keep(f.input, null) }) { Text(model.t("taxEstimate.useBooks")) }
                         }
+                        INPUT_HINTS[f.input]?.let { Text(model.t(it), style = MaterialTheme.typography.bodySmall) }
                         if (f.input == TaxInput.MEDICAL && result.householdMedical.signum() > 0) {
                             Text(model.t("taxEstimate.householdMedical", cad(result.householdMedical)), style = MaterialTheme.typography.bodySmall)
+                        }
+                        if (f.input == TaxInput.TUITION) {
+                            for (slip in result.tuitionSlips) {
+                                Text(
+                                    model.t("taxEstimate.tuitionSlip", model.t("slipType.${slip.type}"), slip.issuer, model.t("slipStatus.${slip.status}")),
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
                         }
                     }
                 }
@@ -566,6 +605,30 @@ private fun EstimateTab(model: BooksModel) {
                         ResultRow(model.t("taxEstimate.marginalRate"), percentText(e.marginalRate, locale))
                         if (e.ratesFrom < year) {
                             Text(model.t("taxEstimate.olderRates", e.ratesFrom.toString(), year.toString()), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
+            }
+            if (e.carryForwards.isNotEmpty()) {
+                item(key = "carry") {
+                    OutlinedCard(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(model.t("taxEstimate.carried"), fontWeight = FontWeight.Medium)
+                            for (c in e.carryForwards) {
+                                Column {
+                                    Row {
+                                        Text(model.t("taxEstimateCarry.${c.kind}"), Modifier.weight(1f))
+                                        Text(model.t("taxEstimate.carryLeft", cad(c.left)), fontWeight = FontWeight.Medium)
+                                    }
+                                    val detail = if (c.transferred.signum() > 0) {
+                                        model.t("taxEstimate.carryDetailTransfer", cad(c.available), cad(c.used), cad(c.transferred))
+                                    } else {
+                                        model.t("taxEstimate.carryDetail", cad(c.available), cad(c.used))
+                                    }
+                                    Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                }
+                            }
+                            Text(model.t("taxEstimate.carryNote", (year + 1).toString()), style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
@@ -596,6 +659,25 @@ private fun EstimateTab(model: BooksModel) {
         }
     }
 }
+
+/** Figures where a blank amount means "none" rather than zero. */
+private val BLANK_IS_NONE = setOf(TaxInput.SPOUSE_NET_INCOME, TaxInput.RRSP_LIMIT)
+
+/** What the line under an empty figure says, where it is not "Not in the books". */
+private val EMPTY_HINTS = mapOf(
+    TaxInput.SPOUSE_NET_INCOME to "taxEstimate.noSpouse",
+    TaxInput.RRSP_LIMIT to "taxEstimate.noRrspLimit",
+    TaxInput.TUITION_TO_TRANSFER to "taxEstimate.noTransfer",
+)
+
+/** A further explanation under some figures. */
+private val INPUT_HINTS = mapOf(
+    TaxInput.TUITION to "taxEstimateHint.TUITION",
+    TaxInput.TUITION_TO_TRANSFER to "taxEstimateHint.TUITION_TO_TRANSFER",
+    TaxInput.TUITION_RECEIVED to "taxEstimateHint.TUITION_RECEIVED",
+    TaxInput.CAPITAL_LOSSES_CARRIED to "taxEstimateHint.CAPITAL_LOSSES_CARRIED",
+    TaxInput.DONATIONS_CARRIED to "taxEstimateHint.DONATIONS_CARRIED",
+)
 
 private val TOTAL_LINES = setOf(TaxLineKind.NET_INCOME, TaxLineKind.TAXABLE_INCOME, TaxLineKind.TAX_ON_INCOME, TaxLineKind.BASIC_TAX, TaxLineKind.TAX)
 

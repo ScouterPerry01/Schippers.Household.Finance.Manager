@@ -143,6 +143,8 @@ See [Taxes](taxes). In Quebec, provincial slips are called Relevés (RL).
 - **Quebec abatement**: a reduction of 16.5 % of the federal tax for Quebec residents, who pay more Quebec tax in its place.
 - **Surtax**: an extra tax on the provincial tax above a threshold (Ontario).
 - **Ontario Health Premium**: an amount added to Ontario tax, by tiers of taxable income, up to $900.
+- **Tuition tax credit**: a non-refundable credit on eligible tuition fees (T2202, RL-8). The student uses it first; up to $5,000 of the year's fees can go to a spouse, parent or grandparent (in Quebec, a parent or grandparent), and the rest is carried forward. See [Tuition and carry-forwards](taxes#estimate-carry-forward).
+- **Carry-forward**: an amount not used in its year that can be claimed in a later year: unused tuition, donations (up to five years), net capital losses, unused RRSP contributions. The notice of assessment gives most of them.
 
 ## Health and family {#health-family}
 

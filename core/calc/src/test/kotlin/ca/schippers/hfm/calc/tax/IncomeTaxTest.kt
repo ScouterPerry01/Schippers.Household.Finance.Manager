@@ -151,6 +151,67 @@ class IncomeTaxTest {
         assertEquals(d("0.06"), changed.lines.first { it.part == TaxPart.PROVINCIAL && it.kind == TaxLineKind.CREDITS }.rate)
     }
 
+    private fun TaxEstimate.carry(kind: CarryKind) = carryForwards.first { it.kind == kind }
+
+    @Test
+    fun `a student claims tuition to bring the tax to zero, carried amounts first, and transfers up to 5,000`() {
+        val inputs = pay("20000") + mapOf(
+            TaxInput.TUITION to d("8000"), TaxInput.TUITION_CARRIED to d("3000"), TaxInput.TUITION_TO_TRANSFER to d("5000"),
+            TaxInput.TUITION_CARRIED_PROVINCIAL to d("1000"),
+        )
+        val e = IncomeTax.estimate(2025, Province.ON, inputs, age65 = false)
+        // Federal: 20,000 × 14.5 % = 2,900 of tax is 20,000 of credit amounts; less 16,129 + 1,471, 2,400 of tuition is needed.
+        assertEquals(d("2400.00"), e.line(TaxPart.FEDERAL, TaxLineKind.TUITION))
+        assertEquals(d("0.00"), e.federalTax)
+        val fed = e.carry(CarryKind.TUITION_FEDERAL)
+        // All from the 3,000 carried; of this year's 8,000 none used, so 5,000 can be transferred; 11,000 − 2,400 − 5,000 left.
+        assertEquals(listOf(d("11000.00"), d("2400.00"), d("5000.00"), d("3600.00")), listOf(fed.available, fed.used, fed.transferred, fed.left))
+        // Ontario ended the credit for this year's fees, but the 1,000 carried still counts (7,253 would be needed).
+        val on = e.carry(CarryKind.TUITION_PROVINCIAL)
+        assertEquals(listOf(d("1000.00"), d("1000.00"), d("0.00"), d("0.00")), listOf(on.available, on.used, on.transferred, on.left))
+
+        // The parent who receives it, in British Columbia: 5,000 federal and 5,000 provincial.
+        val parent = IncomeTax.estimate(2025, Province.BC, pay("80000") + (TaxInput.TUITION_RECEIVED to d("6000")), age65 = false)
+        assertEquals(d("5000.00"), parent.line(TaxPart.FEDERAL, TaxLineKind.TUITION_RECEIVED))
+        assertEquals(d("5000.00"), parent.line(TaxPart.PROVINCIAL, TaxLineKind.TUITION_RECEIVED))
+    }
+
+    @Test
+    fun `a Quebec student uses the 8 percent credit first and transfers the rest of this year's fees`() {
+        val inputs = pay("22000") + mapOf(TaxInput.TUITION to d("6000"), TaxInput.TUITION_TO_TRANSFER to d("6000"))
+        val e = IncomeTax.estimate(2025, Province.QC, inputs, age65 = false)
+        // Federal: 22,000 − 17,600 = 4,400 used; 5,000 − 4,400 = 600 transferred; 1,000 left.
+        val fed = e.carry(CarryKind.TUITION_FEDERAL)
+        assertEquals(listOf(d("4400.00"), d("600.00"), d("1000.00")), listOf(fed.used, fed.transferred, fed.left))
+        // Quebec: 20,680 × 14 % = 2,895.20, less 18,571 × 14 % = 2,599.94; 295.26 at 8 % is 3,690.75 of fees; the other 2,309.25 to a parent.
+        val qc = e.carry(CarryKind.TUITION_PROVINCIAL)
+        assertEquals(listOf(d("3690.75"), d("2309.25"), d("0.00")), listOf(qc.used, qc.transferred, qc.left))
+        assertEquals(d("-295.26"), e.line(TaxPart.PROVINCIAL, TaxLineKind.TUITION))
+        assertEquals(d("0.00"), e.provincialTax)
+    }
+
+    @Test
+    fun `carried losses reduce taxable income, donations are limited to 75 percent, RRSP to its limit`() {
+        val inputs = pay("100000") + mapOf(
+            TaxInput.TAXABLE_CAPITAL_GAINS to d("4000"), TaxInput.CAPITAL_LOSSES_CARRIED to d("10000"),
+            TaxInput.DONATIONS to d("1000"), TaxInput.DONATIONS_CARRIED to d("500"),
+            TaxInput.RRSP to d("10000"), TaxInput.RRSP_UNUSED to d("5000"), TaxInput.RRSP_LIMIT to d("12000"),
+        )
+        val e = IncomeTax.estimate(2025, Province.ON, inputs, age65 = false)
+        assertEquals(d("12000.00"), e.line(TaxPart.INCOME, TaxLineKind.RRSP_DEDUCTION))
+        assertEquals(d("92000.00"), e.netIncome)
+        assertEquals(d("-4000.00"), e.line(TaxPart.INCOME, TaxLineKind.CAPITAL_LOSSES))
+        assertEquals(d("88000.00"), e.taxableIncome)
+        assertEquals(d("3000.00"), e.carry(CarryKind.RRSP).left)
+        assertEquals(d("6000.00"), e.carry(CarryKind.CAPITAL_LOSSES).left)
+        // 1,500 of gifts: 200 at 14.5 % and 1,300 at 29 %.
+        assertEquals(d("-406.00"), e.line(TaxPart.FEDERAL, TaxLineKind.DONATIONS))
+        assertEquals(d("0.00"), e.carry(CarryKind.DONATIONS).left)
+
+        val small = IncomeTax.estimate(2025, Province.ON, pay("2000") + (TaxInput.DONATIONS to d("3000")), age65 = false)
+        assertEquals(listOf(d("1500.00"), d("1500.00")), small.carry(CarryKind.DONATIONS).let { listOf(it.used, it.left) })
+    }
+
     @Test
     fun `a year before the first rates has no estimate`() {
         assertFailsWith<RuleException> { IncomeTax.estimate(2023, Province.ON, pay("50000"), age65 = false) }

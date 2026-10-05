@@ -555,4 +555,25 @@ class MigrationTest {
             assertEquals("S-1", q.donationReceiptsFor(listOf("t")).executeAsOne().receipt_number)
         }
     }
+
+    @Test
+    fun `version 26 ledgers keep their slip checklist and gain the estimate's figures`() {
+        val file = temp.resolve("ledger26.db")
+        older("../data/src/main/sqldelight/ledger/schemas/26.db", file, 26).use { driver ->
+            driver.execute(null, "INSERT INTO tax_slip_check(tax_year, member_id, slip_key, slip_type, issuer, status, manual) VALUES (2025, 'sam', 't2202:college', 'T2202', 'College', 'RECEIVED', 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(27L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).taxYearQueries
+            assertEquals("RECEIVED", q.slipChecks(2025).executeAsOne().status, "the checklist stays")
+            q.upsertEstimateFigure("sam", 2025, "TUITION_CARRIED", 420000)
+            q.upsertEstimateFigure("sam", 2025, "TUITION_CARRIED", 380000)
+            q.upsertEstimateFigure("sam", 2025, "EMPLOYMENT", 5200000)
+            assertEquals(380000L, q.estimateFigures("sam", 2025).executeAsList().first { it.figure == "TUITION_CARRIED" }.amount_minor, "updated in place")
+            q.deleteEstimateFigure("sam", 2025, "EMPLOYMENT")
+            assertEquals(1, q.estimateFigures("sam", 2025).executeAsList().size)
+        }
+    }
 }

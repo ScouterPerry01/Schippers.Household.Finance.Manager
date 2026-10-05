@@ -339,3 +339,40 @@ tax.prov.medical | NU | 2024-01-01 | 0.03; 2759 | CRA, Form NU428 2024
 tax.prov.medical | NU | 2025-01-01 | 0.03; 2834 | CRA, Form NU428 2025
 tax.prov.donation | NU | 2024-01-01 | 200; 0.04; 0.115 | CRA, Form NU428 2024
 tax.prov.dividends | NU | 2024-01-01 | 0.0551; 0.0261 | CRA, Worksheet NU428 2024
+
+# Tuition and carry-forwards. Read in October 2026 on the CRA's federal and provincial Schedules 11
+# (5000-S11 and the 428 schedules S11) for 2024 and 2025, Schedule 9, and Revenu Quebec's Schedule T.
+#   donationLimit: the share of net income up to which donations (this year's and those carried forward) are claimed
+#   fed.tuitionTransfer, prov.tuitionTransfer: the most of this year's tuition a student can transfer to a spouse, parent or grandparent
+#   prov.tuition: whether this year's fees give the provincial or territorial credit (unused amounts carried forward always count)
+#   qc.tuition: Quebec's credit rate on tuition fees (no dollar maximum on the transfer to a parent)
+rule tax.donationLimit RATE
+rule tax.fed.tuitionTransfer AMOUNT
+rule tax.prov.tuition YES_NO province
+rule tax.prov.tuitionTransfer AMOUNT province
+rule tax.qc.tuition RATE
+
+tax.donationLimit | - | 2024-01-01 | 0.75 | CRA, Schedule 9 2024 and 2025 (75 % of net income, line 23600); Finances Québec, Information Bulletin 2013-6 (Quebec: generally 75 % of income)
+tax.fed.tuitionTransfer | - | 2024-01-01 | 5000 | CRA, Schedule 11 2024 and 2025, line 21 (current-year amount, maximum $5,000, less the current-year amount the student uses)
+tax.prov.tuition | ON | 2024-01-01 | false | Ontario Budget 2016, chapter 5A (eliminated for studies after September 4, 2017); CRA, Schedule ON(S11) 2024 and 2025 (unused amounts carried forward only)
+tax.prov.tuition | SK | 2024-01-01 | false | Saskatchewan 2017-18 Budget, tax backgrounder (eliminated effective July 1, 2017); CRA, Schedule SK(S11) 2024 and 2025 (unused amounts carried forward only)
+tax.prov.tuition | AB | 2024-01-01 | false | CRA, Alberta information for 2020 (discontinued from 2020); CRA, Schedule AB(S11) 2024 and 2025 (unused amounts carried forward only)
+tax.prov.tuition | NL | 2024-01-01 | true | CRA, Schedule NL(S11) 2024 and 2025 (current-year tuition amount)
+tax.prov.tuition | PE | 2024-01-01 | true | CRA, Schedule PE(S11) 2024 and 2025 (current-year tuition amount)
+tax.prov.tuition | NS | 2024-01-01 | true | CRA, Schedule NS(S11) 2024 and 2025 (current-year tuition amount)
+tax.prov.tuition | NB | 2024-01-01 | true | CRA, Schedule NB(S11) 2024 and 2025 (current-year tuition amount)
+tax.prov.tuition | MB | 2024-01-01 | true | CRA, Schedule MB(S11) 2024 and 2025 (current-year tuition amount)
+tax.prov.tuition | BC | 2024-01-01 | true | CRA, Schedule BC(S11) 2024 and 2025 (current-year tuition amount)
+tax.prov.tuition | YT | 2024-01-01 | true | CRA, Schedule YT(S11) 2024 and 2025 (current-year tuition amount)
+tax.prov.tuition | NT | 2024-01-01 | true | CRA, Schedule NT(S11) 2024 and 2025 (current-year tuition amount)
+tax.prov.tuition | NU | 2024-01-01 | true | CRA, Schedule NU(S11) 2024 and 2025 (current-year tuition amount)
+tax.prov.tuitionTransfer | NL | 2024-01-01 | 5000 | CRA, Schedule NL(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
+tax.prov.tuitionTransfer | PE | 2024-01-01 | 5000 | CRA, Schedule PE(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
+tax.prov.tuitionTransfer | NS | 2024-01-01 | 5000 | CRA, Schedule NS(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
+tax.prov.tuitionTransfer | NB | 2024-01-01 | 5000 | CRA, Schedule NB(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
+tax.prov.tuitionTransfer | MB | 2024-01-01 | 5000 | CRA, Schedule MB(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
+tax.prov.tuitionTransfer | BC | 2024-01-01 | 5000 | CRA, Schedule BC(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
+tax.prov.tuitionTransfer | YT | 2024-01-01 | 5000 | CRA, Schedule YT(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
+tax.prov.tuitionTransfer | NT | 2024-01-01 | 5000 | CRA, Schedule NT(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
+tax.prov.tuitionTransfer | NU | 2024-01-01 | 5000 | CRA, Schedule NU(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
+tax.qc.tuition | - | 2024-01-01 | 0.08 | Revenu Québec, Schedule T 2024 and 2025 (TP-1.D.T-V); guide TP-1.G-V 2025, lines 398 and 398.1 (8 % of fees for 2014 and later)

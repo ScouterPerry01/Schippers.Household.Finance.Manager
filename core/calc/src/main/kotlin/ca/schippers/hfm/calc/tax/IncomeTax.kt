@@ -7,13 +7,16 @@ import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-/** Where a figure of the estimate belongs on the return. */
-enum class TaxInputGroup { INCOME, DEDUCTIONS, CREDITS, PAYMENTS }
+/**
+ * Where a figure of the estimate belongs on the return; [CARRY_FORWARD] holds the balances from
+ * earlier years that the notice of assessment gives.
+ */
+enum class TaxInputGroup { INCOME, DEDUCTIONS, CREDITS, CARRY_FORWARD, PAYMENTS }
 
 /**
  * A figure the income tax estimate starts from, in dollars for the tax year. Dividends are the
  * taxable (grossed-up) amounts, as on the slips; [SPOUSE_NET_INCOME] is left out when there is no
- * spouse or common-law partner to claim.
+ * spouse or common-law partner to claim, and [RRSP_LIMIT] when the deduction limit is not known.
  */
 enum class TaxInput(val group: TaxInputGroup) {
     EMPLOYMENT(TaxInputGroup.INCOME),
@@ -44,7 +47,34 @@ enum class TaxInput(val group: TaxInputGroup) {
     EI_QPIP(TaxInputGroup.CREDITS),
     DONATIONS(TaxInputGroup.CREDITS),
     MEDICAL(TaxInputGroup.CREDITS),
+
+    /** Eligible tuition fees of the year (T2202, RL-8). */
+    TUITION(TaxInputGroup.CREDITS),
+
+    /** Of this year's tuition, what the student wants to transfer to a spouse, parent or grandparent. */
+    TUITION_TO_TRANSFER(TaxInputGroup.CREDITS),
+
+    /** Tuition transferred to this person by a student (their spouse, child or grandchild). */
+    TUITION_RECEIVED(TaxInputGroup.CREDITS),
     SPOUSE_NET_INCOME(TaxInputGroup.CREDITS),
+
+    /** Unused federal tuition amounts of earlier years. */
+    TUITION_CARRIED(TaxInputGroup.CARRY_FORWARD),
+
+    /** Unused provincial or territorial (or Quebec) tuition amounts of earlier years. */
+    TUITION_CARRIED_PROVINCIAL(TaxInputGroup.CARRY_FORWARD),
+
+    /** Donations of the five previous years not claimed yet. */
+    DONATIONS_CARRIED(TaxInputGroup.CARRY_FORWARD),
+
+    /** Net capital losses of other years, at their taxable (allowable) amount. */
+    CAPITAL_LOSSES_CARRIED(TaxInputGroup.CARRY_FORWARD),
+
+    /** RRSP contributions of earlier years not deducted yet. */
+    RRSP_UNUSED(TaxInputGroup.CARRY_FORWARD),
+
+    /** The RRSP deduction limit of the notice of assessment. */
+    RRSP_LIMIT(TaxInputGroup.CARRY_FORWARD),
     TAX_DEDUCTED(TaxInputGroup.PAYMENTS),
     INSTALMENTS(TaxInputGroup.PAYMENTS),
 }
@@ -54,11 +84,22 @@ enum class TaxPart { INCOME, FEDERAL, PROVINCIAL }
 
 /** What a line of the estimate is; the apps name it and explain it in the user's language. */
 enum class TaxLineKind {
-    TOTAL_INCOME, CPP_ENHANCED, DEDUCTIONS, NET_INCOME, WORKER_DEDUCTION, TAXABLE_INCOME,
+    TOTAL_INCOME, CPP_ENHANCED, RRSP_DEDUCTION, DEDUCTIONS, NET_INCOME, WORKER_DEDUCTION, CAPITAL_LOSSES, TAXABLE_INCOME,
     BRACKET, TAX_ON_INCOME,
     BASIC_PERSONAL, AGE, SENIOR_SUPPLEMENT, SPOUSE, EMPLOYMENT_AMOUNT, CPP, EI, PENSION, MEDICAL, AGE_PENSION_REDUCTION,
+    TUITION, TUITION_RECEIVED,
     CREDIT_AMOUNTS, CREDITS, SUPPLEMENTAL_CREDIT, DONATIONS, DIVIDENDS, BASIC_TAX, ABATEMENT, SURTAX, TAX_REDUCTION, HEALTH_PREMIUM, TAX,
 }
+
+/** A balance carried from year to year. */
+enum class CarryKind { TUITION_FEDERAL, TUITION_PROVINCIAL, DONATIONS, CAPITAL_LOSSES, RRSP }
+
+/**
+ * What became of a balance carried forward this year: [available] (with this year's own amounts,
+ * such as the year's tuition or donations), what is [used] on this return, what is [transferred]
+ * to someone else (tuition), and what is [left] for the years after.
+ */
+data class CarryForward(val kind: CarryKind, val available: BigDecimal, val used: BigDecimal, val transferred: BigDecimal, val left: BigDecimal)
 
 /**
  * One line of the estimate: [amount] in dollars. A bracket line has its [rate], the income taxed
@@ -93,6 +134,7 @@ data class TaxEstimate(
     val marginalRate: BigDecimal,
     val lines: List<TaxLine>,
     val ratesFrom: Int,
+    val carryForwards: List<CarryForward> = emptyList(),
 ) {
     val totalTax: BigDecimal get() = federalTax + provincialTax
     val balance: BigDecimal get() = totalTax - paid
@@ -135,19 +177,47 @@ object IncomeTax {
         val cppCredit = money(paidPlan.min(maxFirst).multiply(baseRate).divide(firstRate, 10, RoundingMode.HALF_UP))
         val cppDeduction = paidPlan - cppCredit
 
+        val carry = ArrayList<CarryForward>()
+        fun p(i: TaxInput) = v(i).max(BigDecimal.ZERO)
         val total = TaxInput.entries.filter { it.group == TaxInputGroup.INCOME }.fold(BigDecimal.ZERO) { a, i -> a + v(i) }
-        val deductions = TaxInput.entries.filter { it.group == TaxInputGroup.DEDUCTIONS }.fold(BigDecimal.ZERO) { a, i -> a + v(i).max(BigDecimal.ZERO) } + cppDeduction
+
+        // RRSP: this year's contributions and the unused ones of earlier years, within the deduction limit when it is known.
+        val rrspClaim = p(TaxInput.RRSP) + p(TaxInput.RRSP_UNUSED)
+        val rrspLimit = inputs[TaxInput.RRSP_LIMIT]?.max(BigDecimal.ZERO)
+        val rrsp = rrspLimit?.let { rrspClaim.min(it) } ?: rrspClaim
+        val deductions = TaxInput.entries.filter { it.group == TaxInputGroup.DEDUCTIONS && it != TaxInput.RRSP }.fold(BigDecimal.ZERO) { a, i -> a + p(i) } + rrsp + cppDeduction
         val net = (total - deductions).max(BigDecimal.ZERO)
         lines += TaxLine(TaxPart.INCOME, TaxLineKind.TOTAL_INCOME, money(total))
         if (cppDeduction.signum() > 0) lines += TaxLine(TaxPart.INCOME, TaxLineKind.CPP_ENHANCED, money(cppDeduction))
+        if (p(TaxInput.RRSP_UNUSED).signum() > 0 || rrspLimit != null) {
+            lines += TaxLine(TaxPart.INCOME, TaxLineKind.RRSP_DEDUCTION, money(rrsp), money(rrspClaim))
+            carry += CarryForward(CarryKind.RRSP, money(rrspClaim), money(rrsp), BigDecimal.ZERO.setScale(2), money(rrspClaim - rrsp))
+        }
         lines += TaxLine(TaxPart.INCOME, TaxLineKind.DEDUCTIONS, money(deductions))
         lines += TaxLine(TaxPart.INCOME, TaxLineKind.NET_INCOME, money(net))
-        lines += TaxLine(TaxPart.INCOME, TaxLineKind.TAXABLE_INCOME, money(net))
+
+        // Net capital losses of other years, against this year's taxable capital gains (taxable income, not net income).
+        val lossesCarried = p(TaxInput.CAPITAL_LOSSES_CARRIED)
+        val losses = lossesCarried.min(p(TaxInput.TAXABLE_CAPITAL_GAINS)).min(net)
+        if (lossesCarried.signum() > 0) {
+            lines += TaxLine(TaxPart.INCOME, TaxLineKind.CAPITAL_LOSSES, money(losses).negate(), money(p(TaxInput.TAXABLE_CAPITAL_GAINS)))
+            carry += CarryForward(CarryKind.CAPITAL_LOSSES, money(lossesCarried), money(losses), BigDecimal.ZERO.setScale(2), money(lossesCarried - losses))
+        }
+        val taxable = net - losses
+        lines += TaxLine(TaxPart.INCOME, TaxLineKind.TAXABLE_INCOME, money(taxable))
         val spouse = inputs[TaxInput.SPOUSE_NET_INCOME]?.max(BigDecimal.ZERO)
+
+        // Donations: this year's and those carried from the five years before, up to a share of net income; the oldest first.
+        val giftsCarried = p(TaxInput.DONATIONS_CARRIED)
+        val gifts = p(TaxInput.DONATIONS) + giftsCarried
+        val claimedGifts = gifts.min(money(net.multiply(Rules.decimal("tax.donationLimit", on))))
+        if (giftsCarried.signum() > 0 || claimedGifts < gifts) {
+            carry += CarryForward(CarryKind.DONATIONS, money(gifts), money(claimedGifts), BigDecimal.ZERO.setScale(2), money(gifts - claimedGifts))
+        }
 
         // Federal.
         val fedBrackets = Rules.brackets("tax.fed.brackets", on)
-        val fedOnIncome = bracketTax(TaxPart.FEDERAL, net, fedBrackets, lines)
+        val fedOnIncome = bracketTax(TaxPart.FEDERAL, taxable, fedBrackets, lines)
         val bpa = phased(Rules.list("tax.fed.bpa", on), net)
         val fedAmounts = buildList {
             add(TaxLineKind.BASIC_PERSONAL to bpa)
@@ -159,12 +229,18 @@ object IncomeTax {
             add(TaxLineKind.PENSION to Rules.decimal("tax.fed.pension", on).min(v(TaxInput.PENSION).max(BigDecimal.ZERO)))
             add(TaxLineKind.MEDICAL to medical(federalMedical(on), v(TaxInput.MEDICAL), net))
         }
+        val fedTuition = Tuition(
+            p(TaxInput.TUITION_CARRIED), p(TaxInput.TUITION), p(TaxInput.TUITION_RECEIVED).min(Rules.decimal("tax.fed.tuitionTransfer", on)),
+            p(TaxInput.TUITION_TO_TRANSFER), Rules.decimal("tax.fed.tuitionTransfer", on),
+        )
         val fedBasic = credits(
             TaxPart.FEDERAL, fedOnIncome, fedAmounts, Rules.decimal("tax.fed.creditRate", on),
-            Rules.list("tax.fed.donation", on), federalDividendCredits(on), v(TaxInput.DONATIONS), net, fedBrackets.last().from,
+            Rules.list("tax.fed.donation", on), federalDividendCredits(on), claimedGifts, taxable, fedBrackets.last().from,
             v(TaxInput.ELIGIBLE_DIVIDENDS), v(TaxInput.OTHER_DIVIDENDS), lines,
             supplemental = Rules.valueOn("tax.fed.topUpCredit", on)?.let { Rules.list("tax.fed.topUpCredit", on) },
+            tuition = fedTuition,
         )
+        fedTuition.carry(CarryKind.TUITION_FEDERAL)?.let { carry += it }
         var federal = fedBasic
         if (quebec) {
             val rate = Rules.decimal("tax.fed.quebecAbatement", on)
@@ -175,21 +251,49 @@ object IncomeTax {
         lines += TaxLine(TaxPart.FEDERAL, TaxLineKind.TAX, federal)
 
         // Provincial or territorial.
-        val provincial = if (quebec) quebec(on, inputs, net, spouse, age65, lines) else provincial(on, province, inputs, net, cppCredit, spouse, age65, lines)
+        val provTuition = provincialTuition(on, province, inputs)
+        val provincial = if (quebec) {
+            quebec(on, inputs, net, losses, gifts, spouse, age65, lines, provTuition)
+        } else {
+            provincial(on, province, inputs, net, taxable, claimedGifts, cppCredit, spouse, age65, lines, provTuition)
+        }
+        provTuition.carry(CarryKind.TUITION_PROVINCIAL)?.let { carry += it }
         lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.TAX, provincial)
 
         val ratesFrom = Rules.valueOn("tax.fed.brackets", on)!!.from.year
         val paid = v(TaxInput.TAX_DEDUCTED) + v(TaxInput.INSTALMENTS)
-        return TaxEstimate(year, province, money(total), money(net), money(net), federal, provincial, money(paid), BigDecimal.ZERO, BigDecimal.ZERO, lines, ratesFrom)
+        return TaxEstimate(
+            year, province, money(total), money(net), money(taxable), federal, provincial, money(paid), BigDecimal.ZERO, BigDecimal.ZERO, lines, ratesFrom,
+            carry.sortedBy { it.kind },
+        )
+    }
+
+    /**
+     * The provincial or territorial tuition claim: the unused amounts carried forward always count;
+     * this year's fees and a transfer only where the province or territory still gives the credit.
+     * Quebec's credit is at its own rate (tax.qc.tuition) on the fees and transfers only to a parent
+     * or grandparent, without a dollar maximum.
+     */
+    private fun provincialTuition(on: LocalDate, p: Province, inputs: Map<TaxInput, BigDecimal>): Tuition {
+        fun v(i: TaxInput) = (inputs[i] ?: BigDecimal.ZERO).max(BigDecimal.ZERO)
+        val carried = v(TaxInput.TUITION_CARRIED_PROVINCIAL)
+        if (p == Province.QC) {
+            // No dollar maximum: what the student cannot use of this year's fees can go to a parent or grandparent.
+            val current = v(TaxInput.TUITION)
+            return Tuition(carried, current, v(TaxInput.TUITION_RECEIVED), v(TaxInput.TUITION_TO_TRANSFER), current, Rules.decimal("tax.qc.tuition", on))
+        }
+        if (!Rules.yesNo("tax.prov.tuition", on, p)) return Tuition(carried, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+        val max = Rules.decimal("tax.prov.tuitionTransfer", on, p)
+        return Tuition(carried, v(TaxInput.TUITION), v(TaxInput.TUITION_RECEIVED).min(max), v(TaxInput.TUITION_TO_TRANSFER), max)
     }
 
     private fun provincial(
-        on: LocalDate, p: Province, inputs: Map<TaxInput, BigDecimal>, net: BigDecimal, cppCredit: BigDecimal,
-        spouse: BigDecimal?, age65: Boolean, lines: MutableList<TaxLine>,
+        on: LocalDate, p: Province, inputs: Map<TaxInput, BigDecimal>, net: BigDecimal, taxable: BigDecimal, gifts: BigDecimal, cppCredit: BigDecimal,
+        spouse: BigDecimal?, age65: Boolean, lines: MutableList<TaxLine>, tuition: Tuition,
     ): BigDecimal {
         fun v(i: TaxInput) = inputs[i] ?: BigDecimal.ZERO
         val brackets = Rules.brackets("tax.prov.brackets", on, p)
-        val onIncome = bracketTax(TaxPart.PROVINCIAL, net, brackets, lines)
+        val onIncome = bracketTax(TaxPart.PROVINCIAL, taxable, brackets, lines)
         val amounts = buildList {
             add(TaxLineKind.BASIC_PERSONAL to phased(Rules.list("tax.prov.bpa", on, p), net))
             if (age65) add(TaxLineKind.AGE to reduced(Rules.list("tax.prov.age", on, p), net))
@@ -206,9 +310,10 @@ object IncomeTax {
         }
         val basic = credits(
             TaxPart.PROVINCIAL, onIncome, amounts, Rules.decimal("tax.prov.creditRate", on, p),
-            Rules.list("tax.prov.donation", on, p), Rules.list("tax.prov.dividends", on, p), v(TaxInput.DONATIONS), net, brackets.last().from,
+            Rules.list("tax.prov.donation", on, p), Rules.list("tax.prov.dividends", on, p), gifts, taxable, brackets.last().from,
             v(TaxInput.ELIGIBLE_DIVIDENDS), v(TaxInput.OTHER_DIVIDENDS), lines,
             supplemental = Rules.valueOn("tax.prov.supplementalCredit", on, p)?.let { Rules.list("tax.prov.supplementalCredit", on, p) },
+            tuition = tuition,
         )
         var tax = basic
         // British Columbia's tax reduction: an amount reduced by a rate of net income above a base.
@@ -235,9 +340,9 @@ object IncomeTax {
             }
         }
         Rules.valueOn("tax.prov.healthPremium", on, p)?.let { Rules.list("tax.prov.healthPremium", on, p) }?.let { tiers ->
-            val premium = healthPremium(tiers, net)
+            val premium = healthPremium(tiers, taxable)
             if (premium.signum() > 0) {
-                lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.HEALTH_PREMIUM, premium, net)
+                lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.HEALTH_PREMIUM, premium, money(taxable))
                 tax += premium
             }
         }
@@ -250,16 +355,23 @@ object IncomeTax {
      * spouse's), as is the floor of the medical expense credit; QPP, EI and QPIP give no Quebec
      * credit.
      */
-    private fun quebec(on: LocalDate, inputs: Map<TaxInput, BigDecimal>, net: BigDecimal, spouse: BigDecimal?, age65: Boolean, lines: MutableList<TaxLine>): BigDecimal {
+    private fun quebec(
+        on: LocalDate, inputs: Map<TaxInput, BigDecimal>, net: BigDecimal, losses: BigDecimal, gifts: BigDecimal, spouse: BigDecimal?, age65: Boolean,
+        lines: MutableList<TaxLine>, tuition: Tuition,
+    ): BigDecimal {
         fun v(i: TaxInput) = inputs[i] ?: BigDecimal.ZERO
         val p = Province.QC
         val (workerRate, workerMax) = Rules.list("tax.qc.workerDeduction", on)
         val worker = money(v(TaxInput.EMPLOYMENT).max(BigDecimal.ZERO).multiply(workerRate).min(workerMax))
         val qcNet = (net - worker).max(BigDecimal.ZERO)
         if (worker.signum() > 0) lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.WORKER_DEDUCTION, worker, v(TaxInput.EMPLOYMENT), workerRate)
-        lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.TAXABLE_INCOME, money(qcNet))
+        val qcLosses = losses.min(qcNet)
+        if (qcLosses.signum() > 0) lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.CAPITAL_LOSSES, money(qcLosses).negate())
+        val qcTaxable = qcNet - qcLosses
+        lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.TAXABLE_INCOME, money(qcTaxable))
+        val qcGifts = gifts.min(money(qcNet.multiply(Rules.decimal("tax.donationLimit", on))))
         val brackets = Rules.brackets("tax.prov.brackets", on, p)
-        val onIncome = bracketTax(TaxPart.PROVINCIAL, qcNet, brackets, lines)
+        val onIncome = bracketTax(TaxPart.PROVINCIAL, qcTaxable, brackets, lines)
         val family = qcNet + (spouse ?: BigDecimal.ZERO)
         val age = Rules.list("tax.prov.age", on, p)
         val amounts = buildList {
@@ -280,9 +392,43 @@ object IncomeTax {
         val medicalCredit = if (claim.signum() > 0) listOf(TaxLine(TaxPart.PROVINCIAL, TaxLineKind.MEDICAL, money(claim.multiply(medicalRate)).negate(), claim, medicalRate)) else emptyList()
         return credits(
             TaxPart.PROVINCIAL, onIncome, amounts, Rules.decimal("tax.prov.creditRate", on, p),
-            Rules.list("tax.prov.donation", on, p), Rules.list("tax.prov.dividends", on, p), v(TaxInput.DONATIONS), qcNet, brackets.last().from,
-            v(TaxInput.ELIGIBLE_DIVIDENDS), v(TaxInput.OTHER_DIVIDENDS), lines, extra = medicalCredit,
+            Rules.list("tax.prov.donation", on, p), Rules.list("tax.prov.dividends", on, p), qcGifts, qcTaxable, brackets.last().from,
+            v(TaxInput.ELIGIBLE_DIVIDENDS), v(TaxInput.OTHER_DIVIDENDS), lines, extra = medicalCredit, tuition = tuition,
         )
+    }
+
+    /**
+     * A tuition claim: unused amounts [carried] from earlier years and this year's fees
+     * ([current]), what was [received] from a student, what the student wants transferred
+     * ([toTransfer]) up to [transferMax] less what they use of this year's fees. With a [rate], the
+     * credit is at that rate on its own (Quebec), otherwise one of the credit amounts. The claim
+     * fills in [used] and [transferred] once the tax it must bring to zero is known.
+     */
+    private class Tuition(
+        val carried: BigDecimal, val current: BigDecimal, val received: BigDecimal,
+        val toTransfer: BigDecimal, val transferMax: BigDecimal, val rate: BigDecimal? = null,
+    ) {
+        var used: BigDecimal = BigDecimal.ZERO
+        var transferred: BigDecimal = BigDecimal.ZERO
+
+        /**
+         * The student claims what is needed to bring the tax to zero ([needed]), the amounts
+         * carried forward first; of this year's fees left over, up to the maximum less what they
+         * used of them can be transferred. Returns the amount claimed.
+         */
+        fun claim(needed: BigDecimal): BigDecimal {
+            used = (carried + current).min(needed.max(BigDecimal.ZERO)).setScale(2, RoundingMode.HALF_UP)
+            val usedCurrent = (used - carried).max(BigDecimal.ZERO)
+            transferred = toTransfer.min(current - usedCurrent).min((transferMax - usedCurrent).max(BigDecimal.ZERO)).max(BigDecimal.ZERO)
+                .setScale(2, RoundingMode.HALF_UP)
+            return used
+        }
+
+        fun carry(kind: CarryKind): CarryForward? {
+            if (carried.signum() == 0 && current.signum() == 0) return null
+            val available = (carried + current).setScale(2, RoundingMode.HALF_UP)
+            return CarryForward(kind, available, used, transferred, available - used - transferred)
+        }
     }
 
     /** The tax on [income] bracket by bracket, a line for each bracket reached. */
@@ -303,22 +449,38 @@ object IncomeTax {
 
     /**
      * The non-refundable credits: the amounts at the credit rate, then the donation and dividend
-     * credits; the tax after them, never below zero.
+     * credits; the tax after them, never below zero. A student's [tuition] is claimed only as far
+     * as it brings the tax to zero after the other credit amounts; the rest is carried forward or
+     * transferred.
      */
     private fun credits(
         part: TaxPart, onIncome: BigDecimal, amounts: List<Pair<TaxLineKind, BigDecimal>>, rate: BigDecimal,
         donationRates: List<BigDecimal>, dividendRates: List<BigDecimal>, gifts: BigDecimal, taxable: BigDecimal, topFrom: BigDecimal,
         eligible: BigDecimal, other: BigDecimal, lines: MutableList<TaxLine>,
-        supplemental: List<BigDecimal>? = null, extra: List<TaxLine> = emptyList(),
+        supplemental: List<BigDecimal>? = null, extra: List<TaxLine> = emptyList(), tuition: Tuition? = null,
     ): BigDecimal {
         var sum = BigDecimal.ZERO
-        for ((kind, amount) in amounts) {
+        val all = amounts + listOfNotNull(tuition?.takeIf { it.received.signum() > 0 }?.let { TaxLineKind.TUITION_RECEIVED to it.received })
+        for ((kind, amount) in all) {
             val a = money(amount)
             if (a.signum() == 0 && kind != TaxLineKind.BASIC_PERSONAL) continue
             lines += TaxLine(part, kind, a)
             sum += a
         }
         sum = sum.max(BigDecimal.ZERO)
+        val extraCredits = extra.fold(BigDecimal.ZERO) { a, l -> a - l.amount }
+        // Schedule 11: the tax on taxable income over the lowest rate, less the amounts of lines 30000 to 31800
+        // (not medical expenses, transfers, donations or dividends), is what the student must claim first.
+        val ownTuition = if (tuition != null && tuition.rate == null && (tuition.carried + tuition.current).signum() > 0) {
+            val before = all.filter { (kind, _) -> kind !in AFTER_TUITION }.fold(BigDecimal.ZERO) { a, (_, x) -> a + money(x) }
+            tuition.claim(onIncome.divide(rate, 2, RoundingMode.UP) - before)
+        } else {
+            BigDecimal.ZERO
+        }
+        if (tuition != null && tuition.rate == null && ownTuition.signum() > 0) {
+            lines += TaxLine(part, TaxLineKind.TUITION, money(ownTuition), money(tuition.carried + tuition.current))
+            sum += ownTuition
+        }
         val credit = money(sum.multiply(rate))
         lines += TaxLine(part, TaxLineKind.CREDIT_AMOUNTS, sum)
         lines += TaxLine(part, TaxLineKind.CREDITS, credit.negate(), sum, rate)
@@ -326,9 +488,20 @@ object IncomeTax {
         val more = supplemental?.let { (threshold, extraRate) -> money((sum - threshold).max(BigDecimal.ZERO).multiply(extraRate)) } ?: BigDecimal.ZERO
         if (more.signum() > 0) lines += TaxLine(part, TaxLineKind.SUPPLEMENTAL_CREDIT, more.negate(), sum - supplemental!![0], supplemental[1])
         lines += extra
-        val others = more - extra.fold(BigDecimal.ZERO) { a, l -> a + l.amount }
+        var others = more + extraCredits
         val donation = donationCredit(donationRates, gifts, taxable, topFrom)
         if (donation.signum() > 0) lines += TaxLine(part, TaxLineKind.DONATIONS, donation.negate(), money(gifts))
+        // Quebec's tuition credit (Schedule T): its own rate on the fees, as far as it brings the tax left after the other
+        // credits, donations included, to zero.
+        if (tuition?.rate != null && (tuition.carried + tuition.current + tuition.received).signum() > 0) {
+            val left = (onIncome - credit - others - donation).max(BigDecimal.ZERO)
+            val claimed = tuition.claim(left.divide(tuition.rate, 2, RoundingMode.UP)) + tuition.received
+            val c = money(claimed.multiply(tuition.rate))
+            if (c.signum() > 0) {
+                lines += TaxLine(part, TaxLineKind.TUITION, c.negate(), money(claimed), tuition.rate)
+                others += c
+            }
+        }
         val dividends = money(eligible.max(BigDecimal.ZERO).multiply(dividendRates[0]) + other.max(BigDecimal.ZERO).multiply(dividendRates[1]))
         if (dividends.signum() > 0) lines += TaxLine(part, TaxLineKind.DIVIDENDS, dividends.negate(), money(eligible + other))
         val basic = (onIncome - credit - others - donation - dividends).max(BigDecimal.ZERO)
@@ -365,7 +538,6 @@ object IncomeTax {
     internal fun reduced(values: List<BigDecimal>, net: BigDecimal): BigDecimal =
         (values[0] - (net - values[1]).max(BigDecimal.ZERO).multiply(values[2])).max(BigDecimal.ZERO)
 
-    /** Medical expenses above the lesser of a rate of net income and a fixed amount (no fixed amount when only the rate is given). */
     /** The federal medical threshold: the rate of net income, then the CRA's fixed amount (the Medical rules, shared with the medical report). */
     internal fun federalMedical(on: LocalDate): List<BigDecimal> =
         listOf(Rules.decimal("medical.threshold.rate", on), Rules.decimal("medical.threshold.max", on))
@@ -374,6 +546,7 @@ object IncomeTax {
     private fun federalDividendCredits(on: LocalDate): List<BigDecimal> =
         listOf(Rules.decimal("dividends.eligible.credit", on), Rules.decimal("dividends.other.credit", on))
 
+    /** Medical expenses above the lesser of a rate of net income and a fixed amount (no fixed amount when only the rate is given). */
     internal fun medical(values: List<BigDecimal>, expenses: BigDecimal, net: BigDecimal): BigDecimal {
         if (expenses.signum() <= 0) return BigDecimal.ZERO
         val floor = net.multiply(values[0]).let { f -> values.getOrNull(1)?.let { f.min(it) } ?: f }
@@ -392,4 +565,7 @@ object IncomeTax {
     }
 
     private fun money(x: BigDecimal): BigDecimal = x.setScale(2, RoundingMode.HALF_UP)
+
+    /** Credit amounts that come after the tuition amount on the return, so the student claims tuition before them. */
+    private val AFTER_TUITION = setOf(TaxLineKind.MEDICAL, TaxLineKind.TUITION_RECEIVED)
 }

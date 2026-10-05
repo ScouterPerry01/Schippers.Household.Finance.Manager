@@ -235,7 +235,7 @@ En haut :
 
 - **Année d’imposition** : l’année à estimer. Elle est au départ l’année qu’on prépare (l’an dernier jusqu’à la fin de juin, puis l’année en cours) ; l’année en cours et les six précédentes sont offertes. Les taux intégrés commencent en 2024 : pour une année antérieure, l’onglet indique qu’il n’y a pas de taux.
 - **Personne** : la personne dont on estime l’impôt. Les adultes et les adultes à charge du ménage sont offerts, ainsi que toute autre personne qui a des montants dans la trousse. Chacun produit sa propre déclaration, donc chacun a sa propre estimation.
-- **Reprendre les montants des livres** : affiché dès que vous avez changé un montant ou la case de l’âge ; remet chaque montant tel que les livres l’indiquent.
+- **Reprendre les montants des livres** : affiché dès que vous avez changé un montant ou la case de l’âge ; remet chaque montant tel que les livres l’indiquent, et oublie ce qui était conservé pour cette personne et cette année.
 
 La ligne rouge en dessous rappelle qu’il s’agit d’une estimation. « Personne à estimer pour l’instant » signifie que le ménage n’a aucun membre adulte : ajoutez-les dans [Membres du ménage](members).
 
@@ -247,9 +247,9 @@ La partie gauche énumère les montants utilisés ; la partie droite montre le r
 
 Sous **Montants utilisés**, une ligne indique de quels taux il s’agit : ceux de la province ou du territoire où vit la personne (son **Habite au ou en** dans Membres du ménage), sinon ceux du ménage. Ensuite :
 
-- **65 ans ou plus au 31 décembre** : cochée quand la date de naissance de la personne indique 65 ans ou plus à la fin de l’année. Elle donne le montant en raison de l’âge et fait compter les revenus d’un FERR comme revenus de pension. Changez-la quand la date de naissance n’est pas entrée.
+- **65 ans ou plus au 31 décembre** : cochée quand la date de naissance de la personne indique 65 ans ou plus à la fin de l’année. Elle donne le montant en raison de l’âge et fait compter les revenus d’un FERR comme revenus de pension. Changez-la quand la date de naissance n’est pas entrée ; le changement est conservé.
 
-Chaque montant est en dollars, avec une ligne en dessous qui en indique l’origine : **De la trousse de fin d’année** et les éléments de la trousse additionnés, **Absent des livres** quand les livres n’en ont pas la source, ou **Entré ici, non enregistré** dès que vous le changez. **Reprendre les livres** à côté d’un montant changé remet celui des livres. Ce que vous entrez ici n’est pas enregistré, ne change pas les livres et est oublié quand vous choisissez une autre personne ou une autre année ou que vous quittez l’écran. Un montant vide compte pour zéro. Un montant peut être une somme, comme 1200 + 350.
+Chaque montant est en dollars, avec une ligne en dessous qui en indique l’origine : **De la trousse de fin d’année** et les éléments de la trousse additionnés, **Absent des livres** quand les livres n’en ont pas la source, ou **Entré ici, conservé pour cette personne et cette année** dès que vous le changez. Ce que vous entrez est conservé avec les livres, pour cette personne et cette année, et revient la prochaine fois que vous ouvrez l’estimation ; cela ne change jamais une opération ni la trousse. **Reprendre les livres** à côté d’un montant changé l’oublie et remet celui des livres. Un utilisateur qui ne peut modifier aucun groupe de comptes voit **Entré ici, non conservé : vous ne pouvez modifier aucun groupe de comptes**, et ce qu’il entre est oublié quand il choisit une autre personne ou une autre année ou qu’il quitte l’écran. Un montant vide compte pour zéro. Un montant peut être une somme, comme 1200 + 350.
 
 Les montants sont regroupés comme dans une déclaration.
 
@@ -265,7 +265,7 @@ Revenus :
 
 Déductions :
 
-- **Déduction pour REER** : de **Cotisations REER**. La déduction ne peut dépasser le plafond de déduction REER de l’avis de cotisation ; entrez un montant moindre au besoin.
+- **Déduction pour REER** : de **Cotisations REER**, les cotisations de l’année. La déduction ne peut dépasser le plafond de déduction REER de l’avis de cotisation : entrez ce plafond dans **Plafond de déduction REER** (voir plus bas) et l’estimation garde la déduction en deçà.
 - **Déduction pour CELIAPP** : de **Cotisations CELIAPP**.
 - **Cotisations à un régime de pension agréé** : de **Cotisations au régime de retraite** retenues sur la paie.
 - **Cotisations syndicales et professionnelles** : de **Cotisations syndicales et professionnelles**.
@@ -278,7 +278,19 @@ Crédits :
 - **Cotisations d’AE (et au RQAP au Québec)** : de **Cotisations d’AE**, ou **Cotisations d’AE et au RQAP** au Québec.
 - **Dons de bienfaisance** : de **Dons de bienfaisance**, à leur montant admissible. Les conjoints peuvent demander les dons l’un de l’autre : entrez ici les dons que cette personne demandera.
 - **Frais médicaux demandés** : non rempli, parce que les frais médicaux du ménage sont demandés ensemble par un des conjoints. Une ligne sous le champ donne le montant du ménage tiré de la trousse ; entrez-le pour le conjoint qui le demande. L’estimation applique elle-même le seuil (3 % du revenu net ou le montant fixe) : entrez donc les frais eux-mêmes.
+- **Frais de scolarité de l’année (T2202, RL-8)** : de **Frais de scolarité** dans la trousse, les frais payés dans les catégories dont le traitement fiscal est frais de scolarité. Le montant qui compte est celui du feuillet T2202 de l’étudiant (le relevé 8 au Québec) : vérifiez-le, et entrez-le s’il diffère. Sous le champ, les feuillets T2202 et relevés 8 de la liste des feuillets de la personne sont affichés avec leur état. L’étudiant demande d’abord les frais de scolarité, dans la mesure nécessaire pour ramener son propre impôt à zéro : voir [Frais de scolarité et reports](taxes#estimate-carry-forward).
+- **Frais de scolarité à transférer à un conjoint ou à un parent** : pour l’étudiant. Vide, rien n’est transféré. Entrez le montant que l’étudiant veut transférer : l’estimation transfère au plus ce qui reste des frais de l’année après sa propre demande, et pas plus de 5 000 $ moins la partie des frais de l’année qu’il a utilisée (au Québec, à un parent ou grand-parent seulement, sans maximum en dollars). Ce qui n’est pas transféré est reporté.
+- **Frais de scolarité transférés par un étudiant** : pour le conjoint, le parent ou le grand-parent qui les reçoit : le montant que l’étudiant transfère, tel que l’estimation de l’étudiant le calcule. Au plus 5 000 $ comptent, au fédéral et dans les provinces et territoires qui ont encore le crédit ; au Québec, ce sont des frais transférés par un enfant ou un petit-enfant, crédités à 8 %.
 - **Revenu net de l’époux ou du conjoint** : vide, aucun montant pour époux n’est demandé. Entrez le revenu net d’un époux ou d’un conjoint de fait pour demander le montant pour époux, qui diminue à mesure que son revenu augmente. Au Québec, il s’ajoute au revenu de la personne pour former le revenu familial qui réduit les montants pour l’âge et pour revenus de retraite et fixe le seuil des frais médicaux.
+
+Reports des années antérieures : les soldes que donne l’avis de cotisation de l’an dernier. Chacun est conservé pour cette personne et cette année. Vide signifie aucun.
+
+- **Frais de scolarité fédéraux inutilisés** : les montants fédéraux pour frais de scolarité pas encore utilisés.
+- **Frais de scolarité provinciaux ou du Québec inutilisés** : ceux de la province ou du territoire ; pour un résident du Québec, les frais inutilisés de l’avis de cotisation du Québec. On peut encore les demander en Ontario, en Saskatchewan et en Alberta, qui ne donnent plus de crédit pour les nouveaux frais.
+- **Dons des cinq dernières années pas encore demandés** : les dons des cinq années précédentes non demandés. Avec ceux de l’année, ils sont demandés jusqu’à 75 % du revenu net ; le reste est reporté.
+- **Pertes en capital nettes d’autres années** : à leur montant imposable (la moitié des pertes), comme l’avis de cotisation les donne. Elles réduisent seulement les gains en capital imposables de l’année : elles diminuent donc le revenu imposable, pas le revenu net.
+- **Cotisations REER inutilisées** : des cotisations versées les années précédentes et pas encore déduites. Elles sont déduites avec celles de l’année.
+- **Plafond de déduction REER** : le plafond de l’avis de cotisation. Vide, aucun plafond n’est appliqué. Une fois entré, la déduction REER (cotisations de l’année et cotisations inutilisées) le respecte, et le reste est reporté.
 
 Impôt déjà payé :
 
@@ -301,6 +313,8 @@ L’encadré en haut à droite donne :
 
 Quand les taux de l’année ne sont pas encore dans Taux et règles, une ligne rouge indique que ceux de la dernière année connue sont utilisés.
 
+En dessous, **Reports** montre, s’il y en a, ce que devient chaque solde cette année : frais de scolarité (fédéral, et provincial ou Québec), dons, pertes en capital nettes et cotisations REER inutilisées. Chaque ligne donne ce qui est disponible (avec les frais ou les dons de l’année), ce qui est utilisé cette année, ce qu’un étudiant transfère, et ce qui **Reste** pour les années suivantes. Entrez ce qui reste dans l’estimation de l’an prochain, sous Reports des années antérieures ; l’avis de cotisation le confirme.
+
 ### Le calcul {#estimate-lines}
 
 @index: tranches d’imposition; montant personnel de base; crédits non remboursables; surtaxe; contribution-santé de l’Ontario; abattement du Québec
@@ -311,17 +325,20 @@ Revenus :
 
 - **Revenu total** : tous les revenus additionnés.
 - **Cotisations bonifiées au RPC ou au RRQ (déduction)** : la partie des cotisations qui est déduite plutôt que créditée.
+- **Déduction REER, avec les cotisations inutilisées** : affichée quand des cotisations inutilisées ou un plafond de déduction sont entrés : la déduction REER, avec sous son nom ce qui pourrait être demandé.
 - **Déductions** : les déductions, avec cette partie.
-- **Revenu net** et **Revenu imposable** : le revenu total moins les déductions (jamais sous zéro). L’estimation ne compte aucune autre déduction : les deux sont donc égaux.
+- **Revenu net** : le revenu total moins les déductions (jamais sous zéro).
+- **Pertes en capital nettes d’autres années** : les pertes reportées qui sont appliquées, jusqu’aux gains en capital imposables de l’année.
+- **Revenu imposable** : le revenu net moins ces pertes ; sans elles, les deux sont égaux.
 
 Le fédéral, puis la province ou le territoire :
 
 - **Tranche d’imposition** : une ligne par tranche atteinte, avec son taux, le revenu imposé à ce taux et le début de la tranche.
 - **Impôt sur le revenu imposable** : les tranches additionnées.
-- Les montants donnant droit aux crédits : **Montant personnel de base** (réduit aux revenus élevés quand les règles le prévoient), **Montant en raison de l’âge** (dès 65 ans, réduit au-delà d’un seuil de revenu), **Montant supplémentaire pour aînés** (Saskatchewan), **Montant pour époux ou conjoint de fait**, **Montant canadien pour emploi** (fédéral et Yukon), **Cotisations au RPC ou au RRQ (partie de base)**, **Cotisations d’AE**, **Montant pour revenu de pension** et **Frais médicaux au-delà du seuil**.
+- Les montants donnant droit aux crédits : **Montant personnel de base** (réduit aux revenus élevés quand les règles le prévoient), **Montant en raison de l’âge** (dès 65 ans, réduit au-delà d’un seuil de revenu), **Montant supplémentaire pour aînés** (Saskatchewan), **Montant pour époux ou conjoint de fait**, **Montant canadien pour emploi** (fédéral et Yukon), **Cotisations au RPC ou au RRQ (partie de base)**, **Cotisations d’AE**, **Montant pour revenu de pension**, **Frais médicaux au-delà du seuil**, **Montant pour frais de scolarité** (la propre demande de l’étudiant, dans la mesure nécessaire pour ramener l’impôt à zéro) et **Frais de scolarité transférés par un étudiant**.
 - **Total des montants donnant droit aux crédits**, et **Crédits d’impôt non remboursables** : ce total au taux le plus bas.
 - **Crédit d’impôt complémentaire ou supplémentaire** : le crédit complémentaire fédéral, qui maintient 15 % sur les montants au-delà de la première tranche depuis la baisse du taux le plus bas en 2025, ou le crédit supplémentaire de l’Alberta sur les montants au-delà de sa tranche à 8 %.
-- **Crédit d’impôt pour dons** : les premiers 200 $ au taux le plus bas, le reste à un taux plus élevé et, quand les règles en prévoient un, à un taux encore plus élevé sur les dons correspondant au revenu de la tranche supérieure.
+- **Crédit d’impôt pour dons** : les premiers 200 $ au taux le plus bas, le reste à un taux plus élevé et, quand les règles en prévoient un, à un taux encore plus élevé sur les dons correspondant au revenu de la tranche supérieure. Les dons de l’année et ceux reportés comptent, jusqu’à 75 % du revenu net.
 - **Crédit d’impôt pour dividendes** : une part du montant imposable des dividendes déterminés et des autres dividendes.
 - **Impôt après les crédits** : jamais sous zéro, puisque ces crédits ne sont pas remboursables.
 - **Abattement du Québec remboursable** : pour un résident du Québec, 16,5 % de l’impôt fédéral après les crédits.
@@ -340,16 +357,31 @@ Une personne qui habite au Québec le 31 décembre paie l’impôt fédéral, r�
 - Le montant en raison de l’âge et le montant pour revenus de retraite sont réduits ensemble selon le revenu familial (celui de la personne et de son conjoint).
 - Le crédit pour frais médicaux est de 20 % des frais qui dépassent 3 % du revenu familial.
 - Le RRQ remplace le RPC : la partie de base des cotisations donne un crédit fédéral, et le reste une déduction dans les deux déclarations.
+- Les pertes en capital nettes d’autres années sont déduites du revenu du Québec comme dans la déclaration fédérale.
+- **Montant pour frais de scolarité** : le crédit du Québec est de 8 % des frais de scolarité, sur une ligne à part après le crédit pour dons. L’étudiant l’utilise dans la mesure où il ramène l’impôt du Québec à zéro ; ce qui reste des frais de l’année peut aller à un parent ou à un grand-parent (pas à un conjoint), et le reste est reporté.
+
+### Frais de scolarité et reports {#estimate-carry-forward}
+
+@index: crédit pour frais de scolarité; transfert des frais de scolarité; report; frais de scolarité inutilisés; T2202; relevé 8; cotisations REER inutilisées; perte en capital nette; report des dons
+
+Certains montants passent d’une année à l’autre. L’estimation les applique comme la déclaration, et montre sous **Reports** ce qui reste pour l’an prochain.
+
+- Frais de scolarité : l’étudiant demande d’abord les montants inutilisés reportés, puis les frais de l’année, mais seulement ce qu’il faut pour ramener son impôt fédéral à zéro après les montants personnel de base, en raison de l’âge, pour époux, du RPC, de l’AE, canadien pour emploi et pour revenu de pension (annexe 11). Des frais de l’année qui restent, jusqu’à 5 000 $, moins la partie des frais de l’année qu’il a utilisée, peuvent aller à un époux ou conjoint de fait, à un parent ou à un grand-parent ; le reste est reporté aussi longtemps qu’il le faut, et un montant reporté ne peut jamais être transféré. Les provinces et territoires suivent le même modèle à leur taux le plus bas ; l’Ontario, la Saskatchewan et l’Alberta ne donnent plus de crédit pour les nouveaux frais, mais permettent encore les montants reportés. Au Québec, le crédit est de 8 % des frais ; l’étudiant l’utilise d’abord, et ce qui reste des frais de l’année peut aller à un parent ou à un grand-parent.
+- Dons : les dons peuvent être demandés dans leur année ou dans l’une des cinq années suivantes, jusqu’à 75 % du revenu net dans une année. L’estimation demande ensemble les dons reportés et ceux de l’année, jusqu’à ce plafond.
+- Pertes en capital nettes : une perte en capital nette peut réduire les gains en capital imposables de toute année ultérieure. L’estimation applique ce qui est reporté jusqu’aux gains en capital imposables de l’année.
+- Cotisations REER inutilisées : des cotisations non déduites l’année de leur versement peuvent être déduites une année ultérieure, dans les limites du plafond de déduction REER.
+
+L’estimation demande chaque solde le plus complètement possible. Dans la déclaration, certains (dons, cotisations REER, frais de scolarité au Québec) peuvent plutôt être gardés pour une année ultérieure : votre logiciel d’impôt ou votre comptable peut dire si c’est préférable.
 
 ### Ce que l’estimation laisse de côté {#estimate-left-out}
 
-L’estimation ne compte pas : les frais de scolarité, les montants transférés d’un conjoint ou d’un enfant, les reports (frais de scolarité, dons ou pertes inutilisés), les réductions d’impôt pour faible revenu autres que celles de l’Ontario et de la Colombie-Britannique, les crédits et prestations remboursables (crédit pour la TPS/TVH, Allocation canadienne pour les travailleurs, crédit d’impôt pour solidarité du Québec), l’impôt de récupération de la SV, l’impôt minimum de remplacement, les contributions politiques, les crédits pour impôt étranger, le montant canadien pour aidant naturel et le montant pour personne à charge admissible, le montant pour personne vivant seule du Québec, sa cotisation au Fonds des services de santé et sa prime d’assurance médicaments, et les suppléments de 2024 de la Nouvelle-Écosse aux montants pour époux et pour l’âge. Au Yukon, le montant pour époux n’est pas réduit avec le montant personnel de base aux revenus élevés. Ces éléments peuvent changer le résultat : c’est la déclaration qui compte.
+L’estimation ne compte pas : les montants transférés d’un conjoint ou d’un enfant autres que les frais de scolarité, les montants relatifs aux études et pour manuels que certaines provinces et certains territoires ont encore, le crédit canadien pour la formation, les pertes autres qu’en capital d’autres années, les réductions d’impôt pour faible revenu autres que celles de l’Ontario et de la Colombie-Britannique, les crédits et prestations remboursables (crédit pour la TPS/TVH, Allocation canadienne pour les travailleurs, crédit d’impôt pour solidarité du Québec), l’impôt de récupération de la SV, l’impôt minimum de remplacement, les contributions politiques, les crédits pour impôt étranger, le montant canadien pour aidant naturel et le montant pour personne à charge admissible, le montant pour personne vivant seule du Québec, sa cotisation au Fonds des services de santé et sa prime d’assurance médicaments, et les suppléments de 2024 de la Nouvelle-Écosse aux montants pour époux et pour l’âge. Au Yukon, le montant pour époux n’est pas réduit avec le montant personnel de base aux revenus élevés. Ces éléments peuvent changer le résultat : c’est la déclaration qui compte.
 
 ### D’où viennent les taux {#estimate-rates}
 
 @index: taux d’impôt sur le revenu; taux d’impôt par province; changements de taux
 
-Chaque taux, montant et seuil utilisé par l’estimation (tranches, montants personnels de base, taux des crédits, montants pour l’âge, pour époux, pour revenu de pension et pour emploi, seuils des frais médicaux, taux des crédits pour dons et pour dividendes, surtaxe et contribution-santé de l’Ontario, RPC et RRQ, déduction pour travailleur du Québec) est une valeur de [Taux et règles](rates-rules), sous **Impôt sur le revenu**, par date et par province ou territoire. L’application fournit les chiffres officiels de 2024, 2025 et 2026, chacun avec sa source. Un administrateur peut y ajouter une valeur pour une année ou une province, par exemple quand un budget change un taux ; l’estimation l’utilise à partir de sa date. Une année dont les chiffres n’y sont pas encore utilise les derniers connus.
+Chaque taux, montant et seuil utilisé par l’estimation (tranches, montants personnels de base, taux des crédits, montants pour l’âge, pour époux, pour revenu de pension et pour emploi, seuils des frais médicaux, taux des crédits pour dons et pour dividendes, surtaxe et contribution-santé de l’Ontario, RPC et RRQ, déduction pour travailleur du Québec, crédits pour frais de scolarité et leurs transferts maximaux, et plafond des dons) est une valeur de [Taux et règles](rates-rules), sous **Impôt sur le revenu**, par date et par province ou territoire. L’application fournit les chiffres officiels de 2024, 2025 et 2026, chacun avec sa source. Un administrateur peut y ajouter une valeur pour une année ou une province, par exemple quand un budget change un taux ; l’estimation l’utilise à partir de sa date. Une année dont les chiffres n’y sont pas encore utilise les derniers connus.
 
 ## Pendant l’année : ce qui alimente les écrans fiscaux {#through-the-year}
 

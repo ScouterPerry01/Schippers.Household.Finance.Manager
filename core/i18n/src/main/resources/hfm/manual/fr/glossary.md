@@ -143,6 +143,8 @@ Voir [Impôts](taxes). Au Québec, les feuillets provinciaux s'appellent des rel
 - **Abattement du Québec** : une réduction de 16,5 % de l'impôt fédéral pour les résidents du Québec, qui paient plus d'impôt au Québec en échange.
 - **Surtaxe** : un impôt de plus sur l'impôt provincial au-delà d'un seuil (Ontario).
 - **Contribution-santé de l'Ontario** : un montant ajouté à l'impôt de l'Ontario, par paliers de revenu imposable, jusqu'à 900 $.
+- **Crédit d'impôt pour frais de scolarité** : un crédit non remboursable sur les frais de scolarité admissibles (T2202, relevé 8). L'étudiant l'utilise d'abord ; jusqu'à 5 000 $ des frais de l'année peuvent aller à un conjoint, un parent ou un grand-parent (au Québec, un parent ou un grand-parent), et le reste est reporté. Voir [Frais de scolarité et reports](taxes#estimate-carry-forward).
+- **Report** : un montant non utilisé dans son année qu'on peut demander une année ultérieure : frais de scolarité inutilisés, dons (jusqu'à cinq ans), pertes en capital nettes, cotisations REER inutilisées. L'avis de cotisation donne la plupart d'entre eux.
 
 ## La santé et la famille {#health-family}
 

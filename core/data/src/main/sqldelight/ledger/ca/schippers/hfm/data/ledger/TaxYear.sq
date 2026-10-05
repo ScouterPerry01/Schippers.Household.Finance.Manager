@@ -25,6 +25,19 @@ CREATE TABLE tax_instalment (
     PRIMARY KEY (account_id, member_id, tax_year, authority, due_date)
 );
 
+-- Ledger version 27: the figures of one person's income tax estimate for a year, kept so that
+-- nothing typed is lost: the balances carried forward from the notice of assessment (unused
+-- tuition, donations, net capital losses, unused RRSP contributions, minimum tax), the household
+-- situation (counts and choices) and every figure entered in place of the books'. figure is the
+-- figure's name; amount_minor is in cents (a count or a yes (1) / no (0) is times 100 as well).
+CREATE TABLE tax_estimate_figure (
+    member_id TEXT NOT NULL,
+    tax_year INTEGER NOT NULL,
+    figure TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    PRIMARY KEY (member_id, tax_year, figure)
+);
+
 slipChecks:
 SELECT * FROM tax_slip_check WHERE tax_year = ?;
 
@@ -64,3 +77,16 @@ SELECT t.id AS txn_id, t.account_id, t.date, t.payee_text, coalesce(s.member_id,
     t.amount_minor AS txn_amount_minor
 FROM txn_split s JOIN txn t ON t.id = s.txn_id
 WHERE t.date >= ? AND t.date <= ? AND t.transfer_id IS NULL;
+
+estimateFigures:
+SELECT * FROM tax_estimate_figure WHERE member_id = ? AND tax_year = ?;
+
+upsertEstimateFigure:
+INSERT INTO tax_estimate_figure(member_id, tax_year, figure, amount_minor) VALUES (?, ?, ?, ?)
+ON CONFLICT(member_id, tax_year, figure) DO UPDATE SET amount_minor = excluded.amount_minor;
+
+deleteEstimateFigure:
+DELETE FROM tax_estimate_figure WHERE member_id = ? AND tax_year = ? AND figure = ?;
+
+deleteEstimateFigures:
+DELETE FROM tax_estimate_figure WHERE member_id = ? AND tax_year = ?;

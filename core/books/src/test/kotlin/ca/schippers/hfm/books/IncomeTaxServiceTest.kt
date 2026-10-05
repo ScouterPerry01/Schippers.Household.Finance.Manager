@@ -79,4 +79,30 @@ class IncomeTaxServiceTest {
         assertTrue(sam.id in books.incomeTax.people(2025).map { it.id })
         assertNull(books.incomeTax.estimate(2023, sam.id).estimate, "no rates before 2024")
     }
+
+    @Test
+    fun `carry-forwards and entered figures are kept per person and year`() {
+        val alex = books.members.create("Alex", MemberKind.ADULT)
+        books.incomeTax.save(2025, alex.id, TaxInput.EMPLOYMENT, BigDecimal("30000"), group)
+        books.incomeTax.save(2025, alex.id, TaxInput.TUITION_CARRIED, BigDecimal("4200.50"), group)
+        books.incomeTax.save(2025, alex.id, TaxInput.TUITION_CARRIED, BigDecimal("3800"), group)
+        books.incomeTax.saveAge65(2025, alex.id, true, group)
+
+        val kept = books.incomeTax.saved(2025, alex.id)
+        assertEquals(0, BigDecimal("3800").compareTo(kept.figures[TaxInput.TUITION_CARRIED]))
+        assertEquals(true, kept.age65)
+        assertTrue(books.incomeTax.saved(2026, alex.id).figures.isEmpty(), "each year has its own")
+
+        // The estimate starts from what was kept: the carried tuition is used against the tax.
+        val r = books.incomeTax.estimate(2025, alex.id)
+        assertTrue(r.age65)
+        val used = r.estimate!!.carryForwards.first { it.kind == ca.schippers.hfm.calc.tax.CarryKind.TUITION_FEDERAL }
+        assertEquals(0, BigDecimal("3800").compareTo(used.available))
+        assertTrue(used.used.signum() > 0)
+
+        books.incomeTax.save(2025, alex.id, TaxInput.EMPLOYMENT, null, group)
+        assertNull(books.incomeTax.saved(2025, alex.id).figures[TaxInput.EMPLOYMENT], "forgotten: the books' figure applies again")
+        books.incomeTax.clear(2025, alex.id)
+        assertEquals(SavedEstimate(emptyMap(), null), books.incomeTax.saved(2025, alex.id))
+    }
 }

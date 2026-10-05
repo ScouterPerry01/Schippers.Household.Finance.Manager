@@ -39,7 +39,7 @@ See [Instalments](taxes#instalments).
 
 1. Open **Taxes**, then the **Estimate** tab.
 2. Choose the **Tax year** and the **Person**.
-3. Read **Figures used** on the left: each amount says where it comes from. Enter what the books cannot know, such as the medical expenses this person claims or a spouse's net income, and correct anything that is not right. Nothing entered there is saved.
+3. Read **Figures used** on the left: each amount says where it comes from. Enter what the books cannot know, such as the medical expenses this person claims or a spouse's net income, and correct anything that is not right. Enter also, under Carried forward from earlier years, the balances of last year's notice of assessment: unused tuition, donations, net capital losses, unused RRSP contributions and the RRSP deduction limit. What you enter is kept for that person and year.
 4. Read the result on the right: the federal and provincial or territorial tax, what was already paid, and the **Balance owing** or **Refund**, with every step of the calculation below it.
 5. To see what an RRSP contribution would save, change **RRSP deduction** and watch the balance and the **Marginal rate**.
 
