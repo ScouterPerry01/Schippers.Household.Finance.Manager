@@ -1,0 +1,30 @@
+-- TX-04 (ledger version 20): the sales taxes a transaction included, as the receipt shows them
+-- (GST, HST, QST, PST), for self-employed members' input tax credits and the year-end package.
+CREATE TABLE txn_sales_tax (
+    txn_id TEXT NOT NULL REFERENCES txn(id) ON DELETE CASCADE,
+    tax TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    PRIMARY KEY (txn_id, tax)
+);
+
+CREATE INDEX txn_refund ON txn(refund_of) WHERE refund_of IS NOT NULL;
+
+salesTaxesFor:
+SELECT tax, amount_minor FROM txn_sales_tax WHERE txn_id = ?;
+
+deleteSalesTaxes:
+DELETE FROM txn_sales_tax WHERE txn_id = ?;
+
+insertSalesTax:
+INSERT INTO txn_sales_tax(txn_id, tax, amount_minor) VALUES (?, ?, ?);
+
+-- Sales taxes of transactions between two dates, with the account, for reports.
+salesTaxesBetween:
+SELECT t.id, t.account_id, t.date, s.tax, s.amount_minor FROM txn_sales_tax s JOIN txn t ON t.id = s.txn_id
+WHERE t.date >= :from AND t.date <= :to ORDER BY t.date;
+
+setRefundOf:
+UPDATE txn SET refund_of = ? WHERE id = ?;
+
+refundsOf:
+SELECT id FROM txn WHERE refund_of = ?;

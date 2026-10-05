@@ -389,6 +389,28 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 19 ledgers keep their transactions and gain sales taxes and refund links`() {
+        val file = temp.resolve("ledger19.db")
+        older("../data/src/main/sqldelight/ledger/schemas/19.db", file, 19).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_balance_minor, opening_date, created_at, updated_at) VALUES ('a', 'Visa', 'CREDIT_CARD', 'CAD', 0, '2026-01-01', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO txn(id, account_id, date, amount_minor, created_at, updated_at) VALUES ('p', 'a', '2026-09-10', -30000, 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            driver.execute(null, "INSERT INTO txn(id, account_id, date, amount_minor, created_at, updated_at) VALUES ('r', 'a', '2026-09-20', 9000, 0, 0)", 0)
+            val q = LedgerDatabase(driver).salesTaxQueries
+            q.setRefundOf("p", "r")
+            q.insertSalesTax("p", "HST", 3451)
+            assertEquals(listOf("r"), q.refundsOf("p").executeAsList())
+            assertEquals(1, q.salesTaxesFor("p").executeAsList().size)
+            driver.execute(null, "DELETE FROM txn WHERE id = 'p'", 0)
+            assertEquals(0, q.salesTaxesFor("p").executeAsList().size, "the taxes go with their transaction")
+            assertEquals(1L, count(driver, "SELECT count(*) FROM txn WHERE id = 'r' AND refund_of IS NULL"), "the refund stays, unlinked")
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()

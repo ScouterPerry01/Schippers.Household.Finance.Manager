@@ -9,6 +9,7 @@ import ca.schippers.hfm.domain.TaxFlag
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.sum
+import ca.schippers.hfm.ocr.TaxName
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -140,6 +141,71 @@ class TransactionService internal constructor(private val books: Books) {
             logChange(ledger, transactionId, "UPDATE", before, snapshot(ledger, transactionId))
         }
         return get(transactionId)
+    }
+
+    // --- Sales tax and refunds (TX-04, TX-05) ----------------------------------------------------
+
+    /** TX-04: the sales taxes the transaction included, as positive amounts in its currency. */
+    fun salesTaxes(transactionId: String): Map<TaxName, Money> {
+        val (group, row) = locate(transactionId)
+        val currency = books.accounts.get(row.account_id).currency
+        return books.ledger(group).salesTaxQueries.salesTaxesFor(transactionId).executeAsList()
+            .associate { TaxName.valueOf(it.tax) to Money.ofMinor(it.amount_minor, currency) }
+    }
+
+    /**
+     * TX-04: records the sales taxes a transaction included (GST, HST, QST, PST), replacing those
+     * recorded before; a zero amount removes a tax. They cannot add up to more than the transaction.
+     * Ordinary edits of the transaction leave them as they are.
+     */
+    fun setSalesTaxes(transactionId: String, taxes: Map<TaxName, Money>) {
+        val (group, row) = locate(transactionId)
+        books.require(group, PermissionLevel.EDIT)
+        val currency = books.accounts.get(row.account_id).currency
+        val kept = taxes.filterValues { !it.isZero }
+        validate(kept.values.all { it.currency == currency && !it.isNegative }, "error.salesTax")
+        validate(kept.values.fold(Money.zero(currency), Money::plus).minorUnits <= kotlin.math.abs(row.amount_minor), "error.salesTaxTooLarge")
+        val q = books.ledger(group).salesTaxQueries
+        books.ledger(group).transaction {
+            q.deleteSalesTaxes(transactionId)
+            for ((tax, amount) in kept) q.insertSalesTax(transactionId, tax.name, amount.minorUnits)
+        }
+    }
+
+    /** TX-05: the refunds recorded against a purchase. */
+    fun refundsOf(purchaseId: String): List<Transaction> {
+        val (group, _) = locate(purchaseId)
+        return books.ledger(group).salesTaxQueries.refundsOf(purchaseId).executeAsList().map { get(it) }
+    }
+
+    /**
+     * TX-05: records money back for [purchaseId] (positive [amount]) in the same account, with the
+     * same payee and categories, so it lowers spending where the purchase raised it; split purchases
+     * are refunded in proportion. Refunds cannot exceed what was paid.
+     */
+    fun recordRefund(purchaseId: String, date: LocalDate, amount: Money, memo: String? = null): Transaction {
+        val purchase = get(purchaseId)
+        validate(purchase.amount.isNegative && purchase.transfer == null && purchase.investmentId == null, "error.refundNotPurchase")
+        validate(amount.currency == purchase.amount.currency && amount.minorUnits > 0, "error.refundAmount")
+        val already = refundsOf(purchaseId).fold(Money.zero(amount.currency)) { a, r -> a + r.amount }
+        validate((already + amount).minorUnits <= -purchase.amount.minorUnits, "error.refundTooLarge")
+        val paid = -purchase.amount.minorUnits
+        var given = 0L
+        val splits = purchase.splits.mapIndexed { i, sp ->
+            val part = if (i == purchase.splits.lastIndex) amount.minorUnits - given
+            else Math.floorDiv(-sp.amount.minorUnits * amount.minorUnits, paid)
+            given += part
+            SplitDraft(sp.categoryId, Money.ofMinor(part, amount.currency), sp.memo, sp.memberId, sp.taxFlag)
+        }
+        val refund = create(
+            TransactionDraft(
+                purchase.accountId, date, amount, purchase.payeeText, splits, memo, purchase.memberId,
+                assetId = purchase.assetId, cardHolderId = purchase.cardHolderId,
+            ),
+        )
+        val (group, _) = locate(refund.id)
+        books.ledger(group).salesTaxQueries.setRefundOf(purchaseId, refund.id)
+        return get(refund.id)
     }
 
     /** Deletes a transaction; deleting either side of a transfer deletes both sides. */
@@ -478,4 +544,5 @@ internal fun TxnRow.toTransaction(currency: Currency, splits: List<SplitRow>, ta
     createdBy = created_by,
     investmentId = investment_id,
     cardHolderId = card_holder_id,
+    refundOf = refund_of,
 )

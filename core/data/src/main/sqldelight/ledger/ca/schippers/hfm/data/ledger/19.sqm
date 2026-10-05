@@ -1,0 +1,12 @@
+-- Version 19 to 20: sales taxes per transaction (TX-04) and refunds linked to their purchase (TX-05).
+
+ALTER TABLE txn ADD COLUMN refund_of TEXT REFERENCES txn(id) ON DELETE SET NULL;
+
+CREATE TABLE txn_sales_tax (
+    txn_id TEXT NOT NULL REFERENCES txn(id) ON DELETE CASCADE,
+    tax TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    PRIMARY KEY (txn_id, tax)
+);
+
+CREATE INDEX txn_refund ON txn(refund_of) WHERE refund_of IS NOT NULL;

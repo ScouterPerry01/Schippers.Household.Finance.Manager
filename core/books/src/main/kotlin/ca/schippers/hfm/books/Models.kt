@@ -145,6 +145,8 @@ data class Transaction(
     val investmentId: String? = null,
     /** CC-05: the card (main or supplementary) a credit card transaction was made with. */
     val cardHolderId: String? = null,
+    /** TX-05: the purchase this transaction refunds. */
+    val refundOf: String? = null,
 ) {
     val isSplit: Boolean get() = splits.size > 1
 }

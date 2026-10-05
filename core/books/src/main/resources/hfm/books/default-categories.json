@@ -8,7 +8,8 @@
     { "key": "housing.insurance", "en": "Home insurance", "fr": "Assurance habitation" },
     { "key": "housing.maintenance", "en": "Maintenance and repairs", "fr": "Entretien et réparations" },
     { "key": "housing.furnishings", "en": "Furniture and appliances", "fr": "Meubles et électroménagers" },
-    { "key": "housing.garden", "en": "Yard and snow removal", "fr": "Terrain et déneigement" }
+    { "key": "housing.garden", "en": "Yard and snow removal", "fr": "Terrain et déneigement" },
+    { "key": "housing.moving", "en": "Moving expenses", "fr": "Frais de déménagement", "tax": "MOVING" }
   ]},
   { "key": "utilities", "en": "Utilities", "fr": "Services publics", "kind": "EXPENSE", "children": [
     { "key": "utilities.electricity", "en": "Electricity", "fr": "Électricité" },
@@ -109,6 +110,10 @@
     { "key": "taxes.income_tax", "en": "Income tax", "fr": "Impôt sur le revenu" },
     { "key": "taxes.foreign_tax", "en": "Foreign tax withheld", "fr": "Impôt étranger retenu" },
     { "key": "taxes.instalments", "en": "Tax instalments", "fr": "Acomptes provisionnels" }
+  ]},
+  { "key": "work", "en": "Work expenses", "fr": "Dépenses d’emploi", "kind": "EXPENSE", "children": [
+    { "key": "work.union_dues", "en": "Union and professional dues", "fr": "Cotisations syndicales et professionnelles", "tax": "EMPLOYMENT" },
+    { "key": "work.other", "en": "Other employment expenses", "fr": "Autres dépenses d’emploi", "tax": "EMPLOYMENT" }
   ]},
   { "key": "business", "en": "Self-employment expenses", "fr": "Dépenses de travail autonome", "kind": "EXPENSE", "tax": "BUSINESS", "children": [
     { "key": "business.supplies", "en": "Office supplies", "fr": "Fournitures de bureau", "tax": "BUSINESS" },

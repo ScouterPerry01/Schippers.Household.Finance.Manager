@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,6 +58,7 @@ import ca.schippers.hfm.domain.AccountStatus
 import ca.schippers.hfm.domain.ClearedStatus
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
+import ca.schippers.hfm.ocr.TaxName
 import ca.schippers.hfm.money.sum
 import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
@@ -128,6 +130,8 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     var revealing by remember { mutableStateOf(false) }
     var confirmClose by remember { mutableStateOf(false) }
     var splitting by remember { mutableStateOf(false) }
+    var salesTaxFor by remember { mutableStateOf<Transaction?>(null) }
+    var refunding by remember { mutableStateOf<Transaction?>(null) }
     var pendingImport by remember { mutableStateOf<PendingImport?>(null) }
     var showStatements by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
@@ -373,6 +377,11 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                         if (entry.choice !is CategoryChoice.TransferWith) {
                             OutlinedButton(onClick = { splitting = true }) { Text(model.t("register.splitButton")) }
                         }
+                        entry.editing?.takeIf { it.transfer == null && it.investmentId == null }?.let { editing ->
+                            // TX-04, TX-05: the sales taxes it included, and money back for a purchase.
+                            OutlinedButton(onClick = { salesTaxFor = editing }) { Text(model.t("register.salesTaxButton")) }
+                            if (editing.amount.isNegative) OutlinedButton(onClick = { refunding = editing }) { Text(model.t("register.refundButton")) }
+                        }
                         entry.editing?.let { editing ->
                             OutlinedButton(onClick = {
                                 if (model.act(retryConfirmed = { books.transactions.delete(editing.id, confirmReconciled = true); entry.clear() }) {
@@ -394,6 +403,8 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     if (splitting) {
         SplitDialog(model, account, entry, categoryTree) { splitting = false }
     }
+    salesTaxFor?.let { txn -> SalesTaxDialog(model, account, txn) { salesTaxFor = null } }
+    refunding?.let { txn -> RefundDialog(model, account, txn) { done -> refunding = null; if (done) entry.clear() } }
     if (editingAccount) AccountDialog(model, account) { editingAccount = false }
     if (editingCard) CardTermsDialog(model, account) { editingCard = false }
     if (editingCards) CardsDialog(model, account) { editingCards = false }
@@ -689,3 +700,54 @@ private fun Cell(text: String, modifier: Modifier) {
 
 /** Transactions shown when a register opens (NFR-02). */
 private const val PAGE = 1000
+
+/** TX-04: the sales taxes a transaction included, as on the receipt (for input tax credits and the year-end package). */
+@Composable
+private fun SalesTaxDialog(model: BooksModel, account: Account, txn: Transaction, onClose: () -> Unit) {
+    val locale = model.language.locale
+    val recorded = remember(txn.id) { model.books.transactions.salesTaxes(txn.id) }
+    val texts = remember(txn.id) {
+        mutableStateMapOf<TaxName, String>().apply {
+            for (t in SALES_TAXES) put(t, recorded[t]?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty())
+        }
+    }
+    FormDialog(model.t("register.salesTaxTitle"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
+        val ok = model.act {
+            val taxes = SALES_TAXES.associateWith { t -> parseAmount(texts[t].orEmpty(), account.currency, locale)?.abs() ?: Money.zero(account.currency) }
+            model.books.transactions.setSalesTaxes(txn.id, taxes)
+        }
+        if (ok != null) onClose()
+    }) {
+        Text(listOfNotNull(model.date(txn.date), txn.payeeText, model.money(txn.amount)).joinToString(" · "), fontWeight = FontWeight.Medium)
+        Text(model.t("register.salesTaxHint"), style = MaterialTheme.typography.bodySmall)
+        for (t in SALES_TAXES) AmountInput(model.t("taxName.$t"), texts[t].orEmpty(), account.currency, locale, Modifier.fillMaxWidth(), model::money) { texts[t] = it }
+    }
+}
+
+private val SALES_TAXES = listOf(TaxName.GST, TaxName.HST, TaxName.QST, TaxName.PST)
+
+/** TX-05: money back for a purchase, in the same account and categories, linked to it. */
+@Composable
+private fun RefundDialog(model: BooksModel, account: Account, purchase: Transaction, onClose: (Boolean) -> Unit) {
+    val locale = model.language.locale
+    val earlier = remember(purchase.id) { model.books.transactions.refundsOf(purchase.id) }
+    val left = earlier.fold(-purchase.amount) { a, r -> a - r.amount }
+    var date by remember { mutableStateOf(today().toString()) }
+    var amount by remember { mutableStateOf(MoneyFormat.formatAmount(left, locale)) }
+    var memo by remember { mutableStateOf("") }
+    FormDialog(model.t("register.refundTitle"), model.t("common.save"), model.t("common.cancel"), canSave = left.minorUnits > 0, onDismiss = { onClose(false) }, onSave = {
+        val ok = model.act {
+            val d = runCatching { kotlinx.datetime.LocalDate.parse(date.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
+            val value = parseAmount(amount, account.currency, locale)?.abs() ?: throw ValidationException("error.refundAmount")
+            model.books.transactions.recordRefund(purchase.id, d, value, memo.ifBlank { null })
+        }
+        if (ok != null) onClose(true)
+    }) {
+        Text(listOfNotNull(model.date(purchase.date), purchase.payeeText, model.money(purchase.amount)).joinToString(" · "), fontWeight = FontWeight.Medium)
+        if (earlier.isNotEmpty()) Text(model.t("register.refundedSoFar", model.money(-left - purchase.amount)), style = MaterialTheme.typography.bodySmall)
+        Text(model.t("register.refundHint"), style = MaterialTheme.typography.bodySmall)
+        DateInput(model.t("report.date"), date) { date = it }
+        AmountInput(model.t("register.refundAmount"), amount, account.currency, locale, Modifier.fillMaxWidth(), model::money) { amount = it }
+        TextInput(model.t("register.memo"), memo) { memo = it }
+    }
+}

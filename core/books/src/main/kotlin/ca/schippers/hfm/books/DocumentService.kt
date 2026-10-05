@@ -329,6 +329,11 @@ class DocumentService internal constructor(private val books: Books) {
     fun fileAsTransaction(documentId: String, draft: TransactionDraft): Transaction {
         val txn = books.transactions.create(draft)
         fileWithTransaction(documentId, txn.id)
+        // TX-04: the sales taxes the receipt shows, when they are in the transaction's currency.
+        get(documentId).draft?.taxes?.filter { (_, v) -> v.value.currency == txn.amount.currency && !v.value.isNegative }
+            ?.groupBy({ it.first }, { it.second.value })?.mapValues { (_, v) -> v.reduce(Money::plus) }
+            ?.takeIf { it.isNotEmpty() && it.values.fold(Money.zero(txn.amount.currency), Money::plus).minorUnits <= kotlin.math.abs(txn.amount.minorUnits) }
+            ?.let { books.transactions.setSalesTaxes(txn.id, it) }
         // OCR-07: a single category is suggested next time; a receipt split by items is not one.
         draft.splits.mapNotNull { it.categoryId }.distinct().singleOrNull()?.let { category ->
             val (group, row) = locate(documentId)
