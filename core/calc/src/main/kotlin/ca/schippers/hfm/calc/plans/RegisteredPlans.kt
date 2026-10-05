@@ -3,6 +3,7 @@ package ca.schippers.hfm.calc.plans
 import ca.schippers.hfm.calc.CALC
 import ca.schippers.hfm.calc.PensionJurisdiction
 import ca.schippers.hfm.calc.Province
+import ca.schippers.hfm.calc.rules.Rules
 import ca.schippers.hfm.money.Money
 import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
@@ -82,18 +83,8 @@ object RegisteredPlans {
 
     // --- TFSA (INV-09) ---------------------------------------------------------------------------------
 
-    /** Annual TFSA dollar limits published by the CRA. */
-    private val TFSA_LIMITS = mapOf(
-        2009 to 5000, 2010 to 5000, 2011 to 5000, 2012 to 5000, 2013 to 5500, 2014 to 5500, 2015 to 10000, 2016 to 5500,
-        2017 to 5500, 2018 to 5500, 2019 to 6000, 2020 to 6000, 2021 to 6000, 2022 to 6000, 2023 to 6500, 2024 to 7000,
-        2025 to 7000, 2026 to 7000,
-    )
-
-    /** The limit for [year]; years not yet published repeat the last one known. */
-    fun tfsaLimit(year: Int): Int = when {
-        year < 2009 -> 0
-        else -> TFSA_LIMITS[year] ?: TFSA_LIMITS.getValue(TFSA_LIMITS.keys.max())
-    }
+    /** The TFSA dollar limit for [year] (rule tfsa.limit); years not yet published keep the last one. */
+    fun tfsaLimit(year: Int): Int = if (year < 2009) 0 else Rules.int("tfsa.limit", LocalDate(year, 1, 1))
 
     /** Every limit since 2009 or the year the person turned 18, through [year]: the room of someone who never contributed. */
     fun tfsaCumulativeLimit(birthYear: Int, year: Int): Int = (maxOf(2009, birthYear + 18)..year).sumOf(::tfsaLimit)

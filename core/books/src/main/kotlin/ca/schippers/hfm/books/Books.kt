@@ -93,6 +93,9 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val quicken = QifImportService(this)
     val users = UserService(this)
 
+    /** Rates and rules: the household's own values of every rate, limit and threshold. */
+    val rateRules = RateRuleService(this)
+
     /** PROV-01: the household's province or territory, whose rules apply unless a person has their own. */
     val province: Province get() = Province.of(core.household().executeAsOne().province) ?: Province.QC
 

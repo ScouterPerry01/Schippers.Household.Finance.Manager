@@ -1,0 +1,10 @@
+# The rates and rules files, one per area of the Rates and rules screen (see Rules.kt).
+plans
+investing
+medical
+salestax
+incometax
+reminders
+thresholds
+security
+holidays

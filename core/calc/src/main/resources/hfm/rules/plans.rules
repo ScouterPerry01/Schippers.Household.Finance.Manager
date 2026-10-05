@@ -1,0 +1,22 @@
+# Rates and rules: registered plans. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
+
+# The TFSA dollar limit for a year, from January 1; a year not yet published keeps the last one.
+rule tfsa.limit AMOUNT
+tfsa.limit | - | 2009-01-01 | 5000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2010-01-01 | 5000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2011-01-01 | 5000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2012-01-01 | 5000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2013-01-01 | 5500 | CRA, TFSA dollar limit
+tfsa.limit | - | 2014-01-01 | 5500 | CRA, TFSA dollar limit
+tfsa.limit | - | 2015-01-01 | 10000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2016-01-01 | 5500 | CRA, TFSA dollar limit
+tfsa.limit | - | 2017-01-01 | 5500 | CRA, TFSA dollar limit
+tfsa.limit | - | 2018-01-01 | 5500 | CRA, TFSA dollar limit
+tfsa.limit | - | 2019-01-01 | 6000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2020-01-01 | 6000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2021-01-01 | 6000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2022-01-01 | 6000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2023-01-01 | 6500 | CRA, TFSA dollar limit
+tfsa.limit | - | 2024-01-01 | 7000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2025-01-01 | 7000 | CRA, TFSA dollar limit
+tfsa.limit | - | 2026-01-01 | 7000 | CRA, TFSA dollar limit

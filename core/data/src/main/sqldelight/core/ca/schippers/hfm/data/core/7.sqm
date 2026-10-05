@@ -1,0 +1,14 @@
+-- Version 7 to 8: the household's own values for rates and rules, with effective dates.
+
+CREATE TABLE rule_value (
+    id TEXT NOT NULL PRIMARY KEY,
+    rule_key TEXT NOT NULL,
+    province TEXT,
+    effective_from TEXT NOT NULL,
+    value TEXT NOT NULL,
+    note TEXT,
+    created_by TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX rule_value_key ON rule_value(rule_key, effective_from);
