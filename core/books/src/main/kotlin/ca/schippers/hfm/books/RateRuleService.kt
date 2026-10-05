@@ -51,6 +51,10 @@ class RateRuleService internal constructor(private val books: Books) {
         return Rules.values(key).first { it.id == id }
     }
 
+    /** Who added each of the household's values ([RuleValue.id]) and when, for the Rates and rules screen. */
+    fun origins(): Map<String, RuleValueOrigin> =
+        q.ruleValues().executeAsList().associate { it.id to RuleValueOrigin(it.created_by, it.created_at) }
+
     /** Removes one of the household's values; built-in values cannot be removed, only replaced. */
     fun delete(id: String) {
         requireAdmin(books)
@@ -69,3 +73,6 @@ class RateRuleService internal constructor(private val books: Books) {
         }
     }
 }
+
+/** The user ([createdBy], null when unknown) who added a household value of a rule, and when ([createdAt], epoch milliseconds). */
+data class RuleValueOrigin(val createdBy: String?, val createdAt: Long)

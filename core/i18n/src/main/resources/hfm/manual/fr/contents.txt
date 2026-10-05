@@ -47,6 +47,7 @@ payees
 rules
 institutions
 rates
+rates-rules
 phones
 ai
 backups

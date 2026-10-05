@@ -32,6 +32,7 @@ class MessageKeysTest {
             "tax" to ca.schippers.hfm.domain.TaxFlag.entries,
             "category.new" to ca.schippers.hfm.domain.CategoryKind.entries,
             "nav" to Section.entries.map { it.name.lowercase() },
+            "rateRules.type" to ca.schippers.hfm.calc.rules.RuleType.entries,
             "lineStatus" to ca.schippers.hfm.books.LineStatus.entries,
             "statementStatus" to ca.schippers.hfm.books.StatementStatus.entries,
             "import.amountMode" to listOf("single", "split"),

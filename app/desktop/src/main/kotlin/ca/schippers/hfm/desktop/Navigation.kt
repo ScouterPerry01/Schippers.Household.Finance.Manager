@@ -41,7 +41,7 @@ enum class NavGroup(val sections: List<Section>) {
     SETTINGS(
         listOf(
             Section.MEMBERS, Section.USERS, Section.CATEGORIES, Section.PAYEES, Section.RULES, Section.INSTITUTIONS,
-            Section.RATES, Section.PHONES, Section.AI, Section.BACKUPS, Section.SECURITY, Section.DISPLAY, Section.ABOUT,
+            Section.RATES, Section.RATE_RULES, Section.PHONES, Section.AI, Section.BACKUPS, Section.SECURITY, Section.DISPLAY, Section.ABOUT,
         ),
     ),
     ;

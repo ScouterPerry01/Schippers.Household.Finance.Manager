@@ -2,6 +2,8 @@
 
 Taux et cours contient les taux de change qui convertissent les autres devises en dollars canadiens, et les cours du marché facultatifs des actions, des cryptoactifs et des métaux précieux. L'écran se trouve dans le groupe **Réglages** du menu, sous **Taux et cours**.
 
+> Remarque : Les taux d'imposition, plafonds de régimes, seuils et autres chiffres fixés par les gouvernements ne sont pas ici : ils sont à l'écran suivant, [Taux et règles](rates-rules), avec leurs dates et leurs provinces.
+
 ## Pourquoi les taux comptent {#why-rates}
 
 @index: taux de change; devise étrangère; conversion de devises; dollars américains; USD; devise de base; change

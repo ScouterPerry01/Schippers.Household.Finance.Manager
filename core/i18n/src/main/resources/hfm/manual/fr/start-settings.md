@@ -88,6 +88,7 @@ Détails : [Bénéficiaires](payees) et [Règles de catégorie](rules).
 
 - [Institutions financières](institutions) : les numéros de téléphone et sites Web de vos banques, et les numéros d'institution et de transit.
 - [Taux et cours](rates) : les taux de change des comptes en devises (automatiques), et les cours du marché facultatifs des actions, des cryptoactifs et des métaux précieux.
+- [Taux et règles](rates-rules) : chaque taux d'imposition, plafond de régime, seuil et délai que l'application applique, avec sa date et sa province. Les valeurs officielles sont intégrées ; un administrateur peut entrer un nouveau chiffre, comme le plafond du CELI de l'an prochain, dès qu'il est annoncé.
 - [Téléphones](phones) : jumeler RANN's Roost Mobile pour saisir des reçus.
 - [Lecture par IA](ai) : laisser Claude lire les documents difficiles avec votre propre clé Anthropic.
 - [À propos](about) : votre version, et la vérification des mises à jour des paquets Linux.
