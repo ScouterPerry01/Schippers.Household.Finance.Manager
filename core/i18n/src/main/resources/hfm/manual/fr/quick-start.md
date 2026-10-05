@@ -9,7 +9,7 @@ Ce chapitre vous mène du premier démarrage de RANN's Roost à un ménage prêt
 Ayez sous la main :
 
 - un endroit pour le ménage sur votre ordinateur, comme votre dossier Documents ;
-- un mot de passe d'au moins 12 caractères dont vous vous souviendrez (quelques mots à la suite font très bien l'affaire) ;
+- un mot de passe d'au moins 12 caractères, sans votre nom d'utilisateur, dont vous vous souviendrez (quelques mots à la suite font très bien l'affaire) ;
 - une imprimante, ou un crayon et du papier, pour la clé de récupération ;
 - les soldes actuels de vos comptes bancaires et de vos cartes ;
 - un relevé récent téléchargé du site de votre banque, en fichier OFX, QFX, QBO ou CSV (cherchez « Télécharger les opérations » ou « Exporter » sur le site de la banque) ;
@@ -37,7 +37,7 @@ Sur une copie Linux installée à partir d'un paquet .deb ou .rpm ou d'une AppIm
   - **Province ou territoire** : où vous habitez. Ce choix fixe les jours fériés bancaires, les catégories par défaut, les subventions provinciales et les formulaires fiscaux. Rien n'est choisi au départ : choisissez le vôtre.
   - **Votre nom** : votre nom tel qu'il paraît dans l'application.
   - **Nom d'utilisateur** : le nom court que vous taperez pour vous connecter, sans espaces.
-  - **Mot de passe principal** et **Confirmer le mot de passe principal** : au moins 12 caractères, tapés deux fois.
+  - **Mot de passe principal** et **Confirmer le mot de passe principal** : au moins 12 caractères, sans votre nom d'utilisateur, tapés deux fois. Ce sont les [règles des mots de passe](security#password-rules) intégrées; un administrateur peut les changer plus tard.
 4. Cliquez sur **Créer le ménage**.
 
 Vous êtes l'administrateur du ménage : vous pouvez tout faire, y compris ajouter d'autres utilisateurs plus tard. [S'y retrouver](basics#create-screen) décrit chaque champ de cet écran.

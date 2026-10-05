@@ -1,6 +1,6 @@
 # Sécurité
 
-Votre ménage est gardé chiffré sur cet ordinateur et ne s'ouvre qu'avec le mot de passe ou la clé de récupération d'un utilisateur. Ce chapitre couvre l'écran **Sécurité** (le délai de verrouillage automatique), le verrouillage, les mots de passe et la clé de récupération. L'écran se trouve dans le groupe **Réglages** du menu, sous **Sécurité**.
+Votre ménage est gardé chiffré sur cet ordinateur et ne s'ouvre qu'avec le mot de passe ou la clé de récupération d'un utilisateur. Ce chapitre couvre l'écran **Sécurité** (le délai de verrouillage automatique et les règles des mots de passe du ménage), le verrouillage, les mots de passe et la clé de récupération. L'écran se trouve dans le groupe **Réglages** du menu, sous **Sécurité**.
 
 ## Comment votre ménage est protégé {#protection}
 
@@ -13,7 +13,7 @@ Votre ménage est gardé chiffré sur cet ordinateur et ne s'ouvre qu'avec le mo
 
 ## L'écran Sécurité {#screen}
 
-L'écran a un réglage et un rappel.
+L'écran a un réglage propre à cet ordinateur, un rappel et les [règles des mots de passe](security#password-rules) du ménage.
 
 ### Verrouiller après une période d'inactivité {#auto-lock}
 
@@ -60,15 +60,43 @@ Un utilisateur qu'on a empêché de se connecter à l'écran [Utilisateurs](user
 
 ## Mots de passe {#passwords}
 
-@index: règles des mots de passe; longueur du mot de passe; phrase de passe; mot de passe fort
+@index: longueur du mot de passe; phrase de passe; mot de passe fort
 
-- Le premier administrateur choisit le mot de passe principal à la création du ménage : au moins 12 caractères, tapés deux fois (**Mot de passe principal**, **Confirmer le mot de passe principal**).
-- Les utilisateurs ajoutés plus tard reçoivent un mot de passe choisi au moment de l'ajout, et chacun peut changer le sien : au moins 12 caractères là aussi.
-- Un nouveau mot de passe fixé avec la clé de récupération demande aussi au moins 12 caractères.
+- Le premier administrateur choisit le mot de passe principal à la création du ménage, tapé deux fois (**Mot de passe principal**, **Confirmer le mot de passe principal**). Aucun ménage n'existe encore, donc les règles intégrées s'appliquent : au moins 12 caractères, sans le nom d'utilisateur.
+- Les utilisateurs ajoutés plus tard reçoivent un mot de passe choisi au moment de l'ajout, et chacun peut changer le sien. Les deux suivent les règles des mots de passe du ménage.
+- Un nouveau mot de passe fixé avec la clé de récupération suit lui aussi les règles du ménage. Elles sont vérifiées une fois que la clé de récupération a ouvert le ménage, avant que rien ne change.
+
+Sous chaque champ de mot de passe, une ligne dit ce que les règles demandent, comme « Au moins 12 caractères. Il ne peut pas contenir le nom d'utilisateur. » Voir [Règles des mots de passe](security#password-rules).
 
 Une phrase de passe de quelques mots sans lien entre eux, comme « érable canot jeudi lanterne », est facile à retenir et difficile à deviner. Ne réutilisez pas le mot de passe d'un site Web.
 
 Pour changer votre mot de passe, utilisez **Changer mon mot de passe…** à l'écran [Utilisateurs](users). Voir [Changer mon mot de passe](users#change-password). Votre clé de récupération reste la même.
+
+## Règles des mots de passe {#password-rules}
+
+@index: règles des mots de passe; politique de mots de passe; exigences des mots de passe; Argon2id; dérivation de clé
+
+Les règles des mots de passe du ménage disent ce que tout mot de passe choisi à partir de maintenant doit avoir. Elles sont à l'écran **Sécurité**, dans la carte **Règles des mots de passe**. Un administrateur les fixe pour tout le ménage; les autres utilisateurs les voient sans pouvoir les changer (« Seul un administrateur peut changer ces règles. »).
+
+- **Mot de passe le plus court, en caractères (8 à 64)** : le nombre minimum de caractères d'un mot de passe. Par défaut, 12. Moins de 8 ou plus de 64 est refusé.
+- **Doit avoir une majuscule** : tout nouveau mot de passe doit avoir au moins une majuscule, accentuée ou non. Désactivé par défaut.
+- **Doit avoir une minuscule** : au moins une minuscule. Désactivé par défaut.
+- **Doit avoir un chiffre** : au moins un chiffre. Désactivé par défaut.
+- **Doit avoir un symbole (autre chose qu'une lettre, un chiffre ou une espace)** : au moins un symbole, comme ! ou #. Désactivé par défaut.
+- **Ne peut pas contenir le nom d'utilisateur** : le mot de passe ne peut pas contenir le nom d'utilisateur, en majuscules ou non. Activé par défaut. Les noms d'utilisateur d'un ou deux caractères ne sont pas cherchés.
+- **Enregistrer les règles des mots de passe** : garde les règles. Seul ce qui a changé est enregistré, et prend effet aujourd'hui. Une ligne le confirme : « Règles des mots de passe enregistrées. Elles s'appliquent dès aujourd'hui à tout mot de passe choisi à partir de maintenant. »
+
+Les règles s'appliquent partout où l'on choisit un mot de passe : ajout d'un utilisateur, changement de mot de passe et réinitialisation avec la clé de récupération. Un mot de passe qui ne les respecte pas est refusé avec ce qui lui manque, comme « Le mot de passe doit avoir un chiffre. » Les mots de passe déjà choisis continuent de fonctionner, même s'ils ne respectent pas les nouvelles règles; demandez aux utilisateurs de changer le leur si vous le souhaitez.
+
+Chaque changement est conservé dans [Taux et règles](rates-rules) avec sa date d'effet, comme toute autre règle : on y voit les règles en vigueur à n'importe quelle date.
+
+### Comment les mots de passe sont protégés {#password-cost}
+
+@index: Argon2id; hachage des mots de passe; coût de dérivation de clé
+
+Un mot de passe n'est jamais conservé. Il est transformé en clé avec Argon2id, une méthode conçue pour rendre les essais lents. La dernière ligne de la carte donne son coût pour les nouveaux mots de passe : la mémoire, 64 Mio par défaut, et le nombre de passes, 3 par défaut. Les deux sont des valeurs de [Taux et règles](rates-rules) (Mémoire de protection des mots de passe, Passes de protection des mots de passe). Un coût plus élevé rend chaque essai plus lent, et le déverrouillage un peu plus lent aussi.
+
+Chaque mot de passe garde le coût avec lequel il a été choisi, donc un changement ne bloque jamais personne : il s'applique aux mots de passe choisis par la suite. Moins de 19 Mio ou 2 passes est refusé, le minimum recommandé pour Argon2id.
 
 ## La clé de récupération {#recovery-key}
 
@@ -100,8 +128,8 @@ La clé de récupération ne change jamais : changer votre mot de passe, ou le r
 1. À l'écran de déverrouillage, cliquez sur **Mot de passe oublié?**.
 2. À l'écran « Réinitialiser le mot de passe avec la clé de récupération », tapez votre **Nom d'utilisateur**.
 3. Tapez la **Clé de récupération**. Les majuscules, les espaces et les tirets n'importent pas, et les lettres I, L et O sont lues comme les chiffres 1 et 0. Une faute de frappe est repérée tout de suite : « Cette clé de récupération n'est pas valide. »
-4. Tapez un **Nouveau mot de passe** d'au moins 12 caractères, puis de nouveau dans **Confirmer le mot de passe principal**.
-5. Cliquez sur **Réinitialiser le mot de passe**. Le ménage s'ouvre avec le nouveau mot de passe.
+4. Tapez un **Nouveau mot de passe** qui suit les [règles des mots de passe](security#password-rules) du ménage (au moins 12 caractères par défaut), puis de nouveau dans **Confirmer le mot de passe principal**.
+5. Cliquez sur **Réinitialiser le mot de passe**. Le ménage s'ouvre avec le nouveau mot de passe. Un mot de passe qui ne respecte pas les règles est refusé avec ce qui lui manque, et l'ancien mot de passe reste en place.
 
 **Retour** revient à l'écran de déverrouillage sans rien changer.
 

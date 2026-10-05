@@ -3,6 +3,7 @@ package ca.schippers.hfm.books
 import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.calc.rules.Rule
 import ca.schippers.hfm.calc.rules.RuleException
+import ca.schippers.hfm.calc.rules.RuleLimits
 import ca.schippers.hfm.calc.rules.RuleType
 import ca.schippers.hfm.calc.rules.RuleValue
 import ca.schippers.hfm.calc.rules.Rules
@@ -44,6 +45,7 @@ class RateRuleService internal constructor(private val books: Books) {
         // A decimal comma, as typed in French, becomes a point; lists and brackets keep theirs as written.
         val clean = value.trim().let { if (rule!!.type in setOf(RuleType.RATE, RuleType.AMOUNT, RuleType.NUMBER)) it.replace(',', '.') else it }
         validate(runCatching { Rules.check(rule!!, clean) }.isSuccess, "error.ruleValue")
+        validate(RuleLimits.allows(key, clean), "error.ruleValue")
         val id = Ids.newId()
         q.insertRuleValue(id, key, province?.name, from.toString(), clean, note?.trim()?.ifEmpty { null }, books.userId, books.now())
         books.session.audit("CREATE", "rule_value", id, key)

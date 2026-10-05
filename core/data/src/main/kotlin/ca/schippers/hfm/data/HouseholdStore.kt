@@ -28,6 +28,11 @@ class HouseholdStore(
     private val drivers: EncryptedDriverFactory,
     private val kdfParams: KdfParams = KdfParams(),
     private val clock: () -> Long = System::currentTimeMillis,
+    /**
+     * The Argon2id settings for passwords set from now on (Rates and rules, security.argon2.*);
+     * [kdfParams] when not given. Existing passwords keep the settings stored with them.
+     */
+    private val newPasswordKdf: (() -> KdfParams)? = null,
 ) {
 
     fun isHousehold(dir: Path): Boolean = HeaderFile.exists(dir)
@@ -92,8 +97,12 @@ class HouseholdStore(
         return openSession(dir, header, user, KeyPair.fromPrivate(privateKey))
     }
 
-    /** Signs in with the printed recovery key and sets a new password (SEC-07). */
-    fun resetPassword(dir: Path, loginName: String, recoveryKey: RecoveryKey, newPassword: CharArray): HouseholdSession {
+    /**
+     * Signs in with the printed recovery key and sets a new password (SEC-07). [check] sees the
+     * household open before anything changes, to apply its password rules; whatever it throws
+     * leaves the old password in place.
+     */
+    fun resetPassword(dir: Path, loginName: String, recoveryKey: RecoveryKey, newPassword: CharArray, check: (HouseholdSession) -> Unit = {}): HouseholdSession {
         val header = HeaderFile.read(dir)
         val user = header.user(loginName) ?: throw WrongPasswordException()
         val recoveryWrap = recoveryWrappingKey(recoveryKey, user.userId)
@@ -105,10 +114,18 @@ class HouseholdStore(
             recoveryWrap.fill(0)
         }
         val keys = KeyPair.fromPrivate(privateKey)
+        // The check's session wipes its key when it closes, so it gets a copy.
+        try {
+            openSession(dir, header, user, KeyPair.fromPrivate(privateKey.copyOf())).use(check)
+        } catch (e: Exception) {
+            privateKey.fill(0)
+            throw e
+        }
+        val kdf = kdfForNewPassword()
         val salt = Random.bytes(PasswordKdf.SALT_BYTES)
-        val newWrap = PasswordKdf.derive(newPassword, salt, kdfParams)
+        val newWrap = PasswordKdf.derive(newPassword, salt, kdf)
         val updatedUser = user.copy(
-            kdf = kdfParams,
+            kdf = kdf,
             salt = salt.b64(),
             wrappedPrivateKey = Aead.seal(newWrap, keys.privateKey, userKeyAad(header.householdId, user.userId)).b64(),
         )
@@ -140,6 +157,8 @@ class HouseholdStore(
 
     internal fun now(): Long = clock()
 
+    private fun kdfForNewPassword(): KdfParams = newPasswordKdf?.invoke() ?: kdfParams
+
     internal fun verifyPassword(header: HouseholdHeader, userId: String, password: CharArray): Boolean {
         val user = header.users.firstOrNull { it.userId == userId } ?: return false
         val wrappingKey = PasswordKdf.derive(password, user.salt.unb64(), user.kdf)
@@ -161,14 +180,15 @@ class HouseholdStore(
         keys: KeyPair,
         recovery: RecoveryKey,
     ): UserKeys {
+        val kdf = kdfForNewPassword()
         val salt = Random.bytes(PasswordKdf.SALT_BYTES)
-        val wrap = PasswordKdf.derive(password, salt, kdfParams)
+        val wrap = PasswordKdf.derive(password, salt, kdf)
         val recoveryWrap = recoveryWrappingKey(recovery, userId)
         try {
             return UserKeys(
                 userId = userId,
                 loginName = loginName.trim(),
-                kdf = kdfParams,
+                kdf = kdf,
                 salt = salt.b64(),
                 publicKey = keys.publicKey.b64(),
                 wrappedPrivateKey = Aead.seal(wrap, keys.privateKey, userKeyAad(householdId, userId)).b64(),
@@ -188,10 +208,11 @@ class HouseholdStore(
     /** Wraps a user's private key under a new password; the recovery wrapping is unchanged. */
     internal fun rewrapPassword(header: HouseholdHeader, userId: String, keys: KeyPair, newPassword: CharArray): HouseholdHeader {
         val user = header.users.first { it.userId == userId }
+        val kdf = kdfForNewPassword()
         val salt = Random.bytes(PasswordKdf.SALT_BYTES)
-        val wrap = PasswordKdf.derive(newPassword, salt, kdfParams)
+        val wrap = PasswordKdf.derive(newPassword, salt, kdf)
         try {
-            val updated = user.copy(kdf = kdfParams, salt = salt.b64(), wrappedPrivateKey = Aead.seal(wrap, keys.privateKey, userKeyAad(header.householdId, userId)).b64())
+            val updated = user.copy(kdf = kdf, salt = salt.b64(), wrappedPrivateKey = Aead.seal(wrap, keys.privateKey, userKeyAad(header.householdId, userId)).b64())
             return header.copy(users = header.users.map { if (it.userId == userId) updated else it })
         } finally {
             wrap.fill(0)

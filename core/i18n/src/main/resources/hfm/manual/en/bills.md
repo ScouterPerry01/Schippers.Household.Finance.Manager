@@ -14,11 +14,11 @@ The title bar has two buttons:
 
 Under it are five tabs:
 
-- **To pay**: what is overdue, due today and due in the next 30 days, with the buttons to pay, skip or enter an amount, and each amount beside the usual one.
+- **To pay**: what is overdue, due today and due in the next 30 days (the default window, set in [Rates and rules](rates-rules)), with the buttons to pay, skip or enter an amount, and each amount beside the usual one.
 - **All bills**: every bill, income and transfer you set up.
 - **Calendar**: a month view of due dates.
 - **Subscriptions**: what each subscription costs a year.
-- **Cash flow forecast**: each account's projected balance over 30, 60 or 90 days.
+- **Cash flow forecast**: each account's projected balance over 30, 60 or 90 days; 30 by default ([Rates and rules](rates-rules)).
 
 ## Bills, income and transfers {#bill-types}
 @index: recurring income; pay day; payday; scheduled transfer; automatic savings
@@ -89,7 +89,7 @@ For Variable and Estimated bills, the **To pay** tab offers **Enter amount** to 
   - **Move to the business day before**: for payments that must arrive on time, such as a pre-authorized debit processed the business day before.
   - **Move to the next business day**: for deposits, such as a pay day that moves to the Monday.
 
-Bank holidays are the federal holidays banks observe, plus the holidays of the household's province or territory (for example the Fête nationale in Quebec, Family Day, or the Civic Holiday). A holiday that falls on a weekend is observed on the following weekday.
+Bank holidays are the federal holidays banks observe, plus the holidays of the household's province or territory (for example the Fête nationale in Quebec, Family Day, or the Civic Holiday). A holiday that falls on a weekend is observed on the following weekday. Which provincial holidays each province or territory observes, and from which year, is kept in [Rates and rules](rates-rules), so a province adding or dropping a holiday can be entered there with its date.
 
 ### First and last due dates {#due-dates}
 
@@ -99,7 +99,7 @@ Bank holidays are the federal holidays banks observe, plus the holidays of the h
 ### Reminders {#reminders}
 @index: bill reminder; notification; due date alert
 
-- **Remind me (days before)**: how many days before each due date you want a reminder, separated by commas, for example 7, 1 (the default). Each number is 0 to 365. Leave it empty for no advance reminder.
+- **Remind me (days before)**: how many days before each due date you want a reminder, separated by commas, for example 7, 1 (the default for a new bill, set in [Rates and rules](rates-rules)). Each number is 0 to 365. Leave it empty for no advance reminder.
 
 Whatever you enter here, a bill that is due today or overdue is always in the reminders. See [Reminders and notifications](bills#reminder-banner).
 
@@ -123,7 +123,7 @@ When you edit an existing bill, **Payment history** at the bottom of the form li
 
 - "usually ...": the average of the payments before it (up to the twelve before);
 - "same month last year ...": what was paid for the due date in the same month a year earlier;
-- "unusual", in red: the amount is more than a quarter above the usual, with at least three earlier payments to compare.
+- "unusual", in red: the amount is above 125 % of the usual (the default threshold, set in [Rates and rules](rates-rules)), with at least three earlier payments to compare.
 
 "No payments recorded yet." means the bill was never marked paid. The history comes from the due dates marked paid, so it starts with the first payment you mark.
 
@@ -134,7 +134,7 @@ When you edit an existing bill, **Payment history** at the bottom of the form li
 
 - **Overdue**: due dates already passed and not yet paid or skipped, looking back up to one year.
 - **Due today**.
-- **Next 30 days**.
+- **Next 30 days**: the number of days is the bills agenda lead time of [Rates and rules](rates-rules), 30 by default.
 - **Paid recently**: due dates of the last 31 days (and any later ones) already marked paid, newest first.
 - **Skipped**: due dates you skipped, from up to a year ago to the next 30 days, newest first. Shown only when there are some.
 
@@ -146,7 +146,7 @@ Once a bill has been paid before, its line also compares the amount with its his
 
 - "usually ...": the average of the payments before this due date (up to the last twelve);
 - "same month last year ...": what was paid for the due date in the same month a year earlier;
-- "Unusual amount: more than a quarter above the usual.", in red: the amount is known (entered or paid, not just expected) and more than 25% above the usual, with at least three earlier payments to compare. Check the bill before you pay it.
+- "Unusual amount: above 125 % of the usual.", in red: the amount is known (entered or paid, not just expected) and above that share of the usual (125 % unless changed in Rates and rules), with at least three earlier payments to compare. Check the bill before you pay it.
 
 The whole history of a bill is in its form. See [Payment history](bills#payment-history).
 

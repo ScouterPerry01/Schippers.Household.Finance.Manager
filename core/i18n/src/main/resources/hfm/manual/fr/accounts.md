@@ -22,7 +22,7 @@ Quand le ménage n’a encore aucun compte, la liste affiche Aucun compte pour l
 Les comptes sont regroupés sous des titres par nature, toujours dans cet ordre : Comptes bancaires, Crédit, Prêts, Placements et Biens. Chaque ligne affiche :
 
 - le nom du compte, en gras pour le compte choisi, suivi de (Fermé) pour un compte fermé ;
-- sous le nom, Rapproché au suivi de la date du dernier relevé rapproché, ou Jamais rapproché. La date passe au rouge quand le dernier rapprochement date de plus de 45 jours, pour vous rappeler de rapprocher le prochain relevé. Les mêmes comptes figurent dans le tableau de bord sous À vérifier ;
+- sous le nom, Rapproché au suivi de la date du dernier relevé rapproché, ou Jamais rapproché. La date passe au rouge quand le dernier rapprochement date de plus de 45 jours (par défaut, réglable dans [Taux et règles](rates-rules)), pour vous rappeler de rapprocher le prochain relevé. Les mêmes comptes figurent dans le tableau de bord sous À vérifier ;
 - à droite, le solde d’aujourd’hui : les opérations datées après aujourd’hui (un chèque postdaté, un paiement inscrit d’avance) ne comptent pas encore. Quand un compte en a, une ligne plus petite sous le solde donne le solde une fois qu’elles comptent, comme 1 250,00 $ avec les postdatées. Les soldes négatifs sont en rouge. Les cartes de crédit, marges de crédit, prêts et prêts hypothécaires ont normalement un solde négatif, puisque c’est de l’argent dû.
 
 Les comptes de placement sont affichés à leur pleine valeur : les liquidités du compte plus les titres à leur valeur marchande. Dans le registre d’un compte de placement, le solde ne comprend que les liquidités.
@@ -431,7 +431,7 @@ L’importation inscrit le relevé et passe ses lignes une à une :
 
 - Une ligne déjà importée d’un relevé précédent (même numéro de la banque, ou même date, même montant et même description) est marquée Déjà importée et sautée ; des téléchargements qui se chevauchent ne créent donc jamais de doublons.
 - Une ligne qui correspond à une opération déjà inscrite (par exemple un reçu envoyé du téléphone, ou une opération tapée à la main) y est jumelée. Il faut le même montant, à 5 jours près. Quand les dates sont à 3 jours près et que c’est la seule candidate, ou que le bénéficiaire se ressemble, le jumelage se fait aussitôt (Jumelée) et l’opération devient compensée. Sinon la ligne est marquée À confirmer, pour que vous décidiez.
-- Un achat inscrit dans une devise étrangère peut correspondre à une ligne qui en diffère d’au plus 3,5 % (les frais de conversion et le taux du jour) ; un tel jumelage est toujours À confirmer.
+- Un achat inscrit dans une devise étrangère peut correspondre à une ligne qui en diffère d’au plus 3,5 % par défaut (les frais de conversion et le taux du jour ; réglable dans [Taux et règles](rates-rules)) ; un tel jumelage est toujours À confirmer.
 - Toute autre ligne devient une nouvelle opération, déjà compensée (Ajoutée). Sa catégorie vient de vos [Règles de catégorie](rules), sinon de la catégorie par défaut du bénéficiaire, sinon de la catégorie que le bénéficiaire avait la dernière fois.
 
 Le même fichier ne peut pas être importé deux fois dans le même compte : Ce fichier de relevé a déjà été importé dans ce compte.
@@ -545,11 +545,11 @@ Dans un compte de crédit, **Détails de la carte** ouvre Détails de la carte d
 - **Taux sur les achats (%)** : le taux d’intérêt annuel sur les achats. C’est le taux affiché pour la carte dans le rapport Sommaire des dettes.
 - **Taux sur les avances de fonds (%)** : le taux annuel sur les avances de fonds. Il est affiché pour la carte dans le rapport Sommaire des dettes.
 - **Jour du relevé (1-31)** : le jour du mois où le relevé est produit. Conservé pour référence.
-- **Jour d’échéance du paiement (1-31)** : le jour du mois où le paiement est dû. Tant que la carte a un solde dû, chaque échéance figure dans le [Calendrier](calendar) comme paiement dû, et elle paraît parmi les rappels à partir de 7 jours avant, en ramenant à Comptes. Dans un mois plus court, le paiement est dû le dernier jour du mois. Pour que le paiement lui-même soit préparé et marqué payé, inscrivez-le dans [Factures](bills).
+- **Jour d’échéance du paiement (1-31)** : le jour du mois où le paiement est dû. Tant que la carte a un solde dû, chaque échéance figure dans le [Calendrier](calendar) comme paiement dû, et elle paraît parmi les rappels à partir de 7 jours avant (le délai par défaut dans [Taux et règles](rates-rules)), en ramenant à Comptes. Dans un mois plus court, le paiement est dû le dernier jour du mois. Pour que le paiement lui-même soit préparé et marqué payé, inscrivez-le dans [Factures](bills).
 - **Paiement minimum (% du solde)** : la part du solde que l’émetteur demande chaque mois, comme 3.
 - **Paiement minimum (au moins)** : le plus petit paiement minimum, comme 10. Le paiement minimum est le plus grand du pourcentage et de ce montant, sans jamais dépasser le solde. Il est affiché pour la carte dans le rapport Sommaire des dettes.
 - **Frais annuels** : les frais annuels de la carte.
-- **Frais portés le** : une date où les frais annuels sont portés, au format AAAA-MM-JJ ; elle revient chaque année. Avec des frais annuels, un rappel paraît 30 jours avant chaque anniversaire, parmi les rappels et dans le [Calendrier](calendar), et ramène à Comptes, pour que vous décidiez si la carte en vaut encore la peine.
+- **Frais portés le** : une date où les frais annuels sont portés, au format AAAA-MM-JJ ; elle revient chaque année. Avec des frais annuels, un rappel paraît 30 jours avant chaque anniversaire (le délai de renouvellement dans [Taux et règles](rates-rules)), parmi les rappels et dans le [Calendrier](calendar), et ramène à Comptes, pour que vous décidiez si la carte en vaut encore la peine.
 
 Les jours doivent être entre 1 et 31, et les taux entre 0 et 100 %. **Enregistrer** conserve les détails ; **Annuler** les laisse tels quels. Le rapport Sommaire des dettes se trouve dans [Rapports](reports).
 

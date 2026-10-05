@@ -130,16 +130,17 @@ private fun Simple(title: String, names: List<String>, onClick: (Int) -> Unit) {
     }
 }
 
-/** SEC-02 and related security settings for this computer. */
+/** SEC-02 and related security settings for this computer, and the household's password rules. */
 @Composable
 fun SecurityScreen(model: BooksModel, state: AppState) {
     val choices = listOf(1, 5, 10, 15, 30, 60, 0)
-    Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(model.t("nav.security"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("security.autoLock.explain"), style = MaterialTheme.typography.bodySmall)
         Picker(model.t("security.autoLock"), choices, state.autoLockMinutes, { if (it == 0) model.t("security.never") else model.t("security.minutes", it) }, Modifier.width(260.dp)) {
             state.setAutoLock(it)
         }
         Text(model.t("security.recoveryReminder"), style = MaterialTheme.typography.bodySmall)
+        PasswordRulesCard(model)
     }
 }

@@ -1,6 +1,8 @@
 package ca.schippers.hfm.desktop
 
 import androidx.compose.foundation.layout.width
+import ca.schippers.hfm.books.Passwords
+import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.calc.Province
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +42,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.calc.rules.PasswordRules
 import ca.schippers.hfm.data.Backups
 import ca.schippers.hfm.data.WrongPasswordException
 import ca.schippers.hfm.i18n.Language
@@ -223,7 +226,10 @@ private fun CreateScreen(state: AppState) {
     Picker(state.t("household.province"), Province.entries.sortedBy { state.t("province.$it") }, province, { state.t("province.$it") }, Modifier.width(400.dp)) { province = it }
     Field(state.t("create.adminName"), adminName) { adminName = it }
     Field(state.t("create.login"), login) { login = it }
+    // No household exists yet, so the built-in password rules apply (Rates and rules, security.password.*).
+    val rules = remember { PasswordRules.builtIn(today()) }
     Field(state.t("create.password"), password, secret = true) { password = it }
+    Text(passwordRulesText(state.language, rules), style = MaterialTheme.typography.bodySmall)
     Field(state.t("create.password.confirm"), confirm, secret = true) { confirm = it }
     error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
@@ -232,11 +238,7 @@ private fun CreateScreen(state: AppState) {
         Button(
             enabled = !busy && parent != null && name.isNotBlank() && province != null && adminName.isNotBlank() && login.isNotBlank(),
             onClick = {
-                error = when {
-                    password.length < AppState.MIN_PASSWORD_LENGTH -> state.t("create.password.tooShort", AppState.MIN_PASSWORD_LENGTH)
-                    password != confirm -> state.t("create.password.mismatch")
-                    else -> null
-                }
+                error = passwordProblem(state.language, rules, password, login.trim()) ?: if (password != confirm) state.t("create.password.mismatch") else null
                 if (error != null) return@Button
                 busy = true
                 scope.launch {
@@ -378,20 +380,24 @@ private fun ResetScreen(state: AppState, dir: Path) {
         OutlinedButton(onClick = { state.screen = Screen.Unlock(dir) }, enabled = !busy) { Text(state.t("common.back")) }
         Button(enabled = !busy && login.isNotBlank() && key.isNotBlank(), onClick = {
             val parsed = runCatching { RecoveryKey.parse(key) }.getOrNull()
+            // The household's own password rules are checked once the recovery key has opened it.
             error = when {
                 parsed == null -> state.t("reset.invalidKey")
-                password.length < AppState.MIN_PASSWORD_LENGTH -> state.t("create.password.tooShort", AppState.MIN_PASSWORD_LENGTH)
-                password != confirm -> state.t("create.password.mismatch")
+                password.isEmpty() || password != confirm -> state.t("create.password.mismatch")
                 else -> null
             }
             if (error != null || parsed == null) return@Button
             busy = true
             scope.launch {
                 try {
-                    val session = withContext(Dispatchers.IO) { state.store.resetPassword(dir, login, parsed, password.toCharArray()) }
+                    val session = withContext(Dispatchers.IO) {
+                        state.store.resetPassword(dir, login, parsed, password.toCharArray()) { s -> Passwords.checkReset(s, login.trim(), password.toCharArray(), today()) }
+                    }
                     state.opened(session)
                 } catch (_: WrongPasswordException) {
                     error = state.t("reset.invalidKey")
+                } catch (e: ValidationException) {
+                    error = e.message(state.language)
                 } catch (e: Exception) {
                     error = state.t("error.generic", e.message ?: e.javaClass.simpleName)
                 } finally {

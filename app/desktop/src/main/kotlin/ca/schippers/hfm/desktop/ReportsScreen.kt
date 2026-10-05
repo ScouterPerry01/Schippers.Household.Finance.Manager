@@ -39,6 +39,7 @@ import ca.schippers.hfm.books.DrillRow
 import ca.schippers.hfm.books.Granularity
 import ca.schippers.hfm.books.ReportFilter
 import ca.schippers.hfm.books.StatementStatus
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
@@ -515,8 +516,8 @@ private fun DebtReport(model: BooksModel, accountIds: Set<String>?) {
 @Composable
 private fun ReconciliationReport(model: BooksModel) {
     val books = model.books
-    // Accounts last reconciled more than this many days ago are flagged.
-    val behindAfter = 45
+    // Accounts last reconciled more than this many days ago are flagged (Rates and rules).
+    val behindAfter = Thresholds.reconcileBehind(today())
     val accounts = remember(model.revision) {
         val last = books.statements.lastReconciled()
         books.accounts.list().map { s -> Triple(s, last[s.account.id], books.statements.statements(s.account.id).count { it.status == StatementStatus.OPEN }) }
@@ -526,11 +527,11 @@ private fun ReconciliationReport(model: BooksModel) {
         val days = reconciled?.daysUntil(today())
         listOf<Any?>(
             s.account.name, reconciled ?: model.t("accounts.neverReconciled"), days?.toString() ?: "", open.toString(), s.balance - s.clearedBalance,
-            if (days != null && days > behindAfter) model.t("report.behind") else "",
+            if (days != null && days > behindAfter) model.t("report.behind", behindAfter) else "",
         )
     }
     Text(model.t("report.RECONCILIATION"), style = MaterialTheme.typography.titleLarge)
-    Text(model.t("report.reconciliationHint"), style = MaterialTheme.typography.bodySmall)
+    Text(model.t("report.reconciliationHint", behindAfter), style = MaterialTheme.typography.bodySmall)
     // The accounts behind stand out above the table, in the warning colour.
     for ((name, days) in behind) {
         Text(model.t("report.behindAccount", name, days), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 4.dp))

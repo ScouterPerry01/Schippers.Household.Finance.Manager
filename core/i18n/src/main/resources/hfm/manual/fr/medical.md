@@ -154,7 +154,7 @@ La boîte s’intitule **Ajouter un régime** ou **Régime**.
 - **Adhérent** : le membre du ménage qui détient le régime, habituellement l’employé, ou « (aucun) ». Pour mémoire.
 - Qui est couvert et dans quel ordre : voir [Qui est couvert et dans quel ordre](medical#coverage-order).
 - **Début de l’année du régime (mois)** et **Début de l’année du régime (jour)** : quand commence l’année du régime, par exemple 1 et 1 pour l’année civile, ou 7 et 1 pour un régime qui se renouvelle le 1er juillet. Le mois va de 1 à 12 et le jour de 1 à 28. Les maximums annuels et les franchises repartent à zéro à cette date.
-- **Jours pour envoyer une réclamation** : « Après la date du service ; souvent 365, ou jusqu’à une date fixe après la fin de l’année du régime. » De 1 à 3650 ; 365 par défaut. L’échéance de chaque dépense est sa date du service plus ce nombre de jours.
+- **Jours pour envoyer une réclamation** : « Après la date du service ; souvent 365, ou jusqu’à une date fixe après la fin de l’année du régime. » De 1 à 3650 ; 365 par défaut pour un nouveau régime (réglable dans [Taux et règles](rates-rules)). L’échéance de chaque dépense est sa date du service plus ce nombre de jours.
 - **Crédit annuel** : seulement pour un compte gestion-santé. Voir [Compte gestion-santé](medical#hsa).
 - **Actif** : coché tant que le régime est en vigueur. Décochez-le quand le régime prend fin : il n’est plus proposé pour les nouvelles réclamations, n’est plus compté dans **Couverture restante** et affiche « inactif » dans la liste. Ses réclamations passées sont conservées.
 - **Notes**.
@@ -240,7 +240,7 @@ Les dépenses plus tôt dans la même année du régime épuisent d’abord la f
 ## Échéances et rappels {#deadlines}
 @index: échéance de réclamation; rappel; délai
 
-L’échéance pour envoyer une dépense au régime suivant est sa date du service plus les **Jours pour envoyer une réclamation** de ce régime. À partir de 30 jours avant l’échéance, et jusqu’à 30 jours après, une dépense à envoyer paraît dans les rappels en haut de la fenêtre et dans la notification du système, comme « réclamation à envoyer » avec la personne, la description et le régime. Un clic sur le rappel ouvre l’écran Réclamations médicales. L’échéance paraît aussi au [Calendrier](calendar).
+L’échéance pour envoyer une dépense au régime suivant est sa date du service plus les **Jours pour envoyer une réclamation** de ce régime. À partir de 30 jours avant l’échéance, et jusqu’à 30 jours après (par défaut, réglable dans [Taux et règles](rates-rules)), une dépense à envoyer paraît dans les rappels en haut de la fenêtre et dans la notification du système, comme « réclamation à envoyer » avec la personne, la description et le régime. Un clic sur le rappel ouvre l’écran Réclamations médicales. L’échéance paraît aussi au [Calendrier](calendar).
 
 Envoyer la réclamation, fermer la dépense ou inscrire le paiement du dernier régime met fin au rappel.
 

@@ -1,5 +1,8 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.Province
+import ca.schippers.hfm.calc.rules.LeadTimes
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.calc.schedule.DueState
 import ca.schippers.hfm.calc.schedule.DueStatus
@@ -71,7 +74,7 @@ data class MaintenanceTask(
     val intervalKm: Int? = null,
     val startDate: LocalDate? = null,
     val startOdometer: Int? = null,
-    val remindDays: Int = 14,
+    val remindDays: Int = LeadTimes.maintenance(),
     val remindKm: Int = 500,
     val active: Boolean = true,
     val notes: String? = null,
@@ -267,7 +270,10 @@ class VehicleService internal constructor(private val books: Books) {
         val existing = tasks(vehicleId).mapNotNull { it.templateKey }.toSet()
         val odometer = latestOdometer(vehicleId)?.odometer
         return TEMPLATES.filter { it.key !in existing && (it.combustion == null || it.combustion == !v.electric) }.map { tpl ->
-            val start = tpl.seasonStart?.let { (month, day) -> LocalDate(today.year, month, day).let { if (it < today) it.plus(DatePeriod(years = 1)) else it } }
+            val province = books.provinceOf(v.driverMemberId)
+            val start = tpl.seasonStart?.invoke(today, province)?.let { (month, day) ->
+                Thresholds.dayIn(today.year, month, day).let { if (it < today) Thresholds.dayIn(today.year + 1, month, day) else it }
+            }
             saveTask(
                 MaintenanceTask(
                     "", vehicleId, names(tpl.key), tpl.key, tpl.months, tpl.km,
@@ -441,11 +447,11 @@ class VehicleService internal constructor(private val books: Books) {
     }
 
     /**
-     * VEH-02, VEH-03: registration and insurance within [withinDays], warranties within 60 days
-     * (WAR-02). A warranty limited by kilometres also ends on the day the odometer should reach the
+     * VEH-02, VEH-03: registration and insurance within [withinDays], warranties within the
+     * warranty lead time of Rates and rules (WAR-02). A warranty limited by kilometres also ends on the day the odometer should reach the
      * limit, at the usual distance driven; once past the limit it is over and no longer reminds.
      */
-    fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> = list().flatMap { v ->
+    fun renewals(today: LocalDate, withinDays: Int = LeadTimes.renewals(today)): List<Renewal> = list().flatMap { v ->
         val readings = readings(v.id)
         val odometer = readings.maxOfOrNull { it.odometer }
         listOfNotNull(
@@ -456,7 +462,7 @@ class VehicleService internal constructor(private val books: Books) {
             val end = listOfNotNull(w.endDate, byKm).minOrNull() ?: return@mapNotNull null
             val detail = listOfNotNull(w.provider ?: w.kind.name, w.endKm?.takeIf { byKm == end }?.let { "$it km" }).joinToString(" · ")
             // An expired warranty is not a reminder; only the run-up to its end is.
-            Renewal(RenewalKind.WARRANTY, v.id, v.name, end, today.daysUntil(end), detail).takeIf { it.daysLeft in 0..maxOf(withinDays, WARRANTY_NOTICE_DAYS) }
+            Renewal(RenewalKind.WARRANTY, v.id, v.name, end, today.daysUntil(end), detail).takeIf { it.daysLeft in 0..maxOf(withinDays, LeadTimes.warranty(today)) }
         }
     }
 
@@ -531,18 +537,25 @@ class VehicleService internal constructor(private val books: Books) {
         id, vehicle_id, WarrantyKind.valueOf(kind), provider, start_date?.let(LocalDate::parse), end_date?.let(LocalDate::parse), end_km?.toInt(), phone, notes,
     )
 
-    /** VEH-05, MNT-02: starter tasks. [combustion] limits a task to engines (true) or electric vehicles (false). */
-    private class Template(val key: String, val months: Int?, val km: Int?, val combustion: Boolean? = null, val seasonStart: Pair<Int, Int>? = null)
+    /**
+     * VEH-05, MNT-02: starter tasks. [combustion] limits a task to engines (true) or electric vehicles
+     * (false); a seasonal task falls due on the month and day [seasonStart] gives for the province.
+     */
+    private class Template(
+        val key: String,
+        val months: Int?,
+        val km: Int?,
+        val combustion: Boolean? = null,
+        val seasonStart: ((LocalDate, Province) -> Pair<Int, Int>)? = null,
+    )
 
     companion object {
-        const val WARRANTY_NOTICE_DAYS = 60
-
         private val TEMPLATES = listOf(
             Template("oil", 6, 8_000, combustion = true),
             Template("tire_rotation", 12, 10_000),
-            // Quebec requires winter tires from December 1 to March 15.
-            Template("winter_tires_on", 12, null, seasonStart = 11 to 15),
-            Template("winter_tires_off", 12, null, seasonStart = 4 to 15),
+            // Rates and rules: Quebec requires winter tires from December 1 to March 15; elsewhere the dates are suggestions.
+            Template("winter_tires_on", 12, null, seasonStart = Thresholds::winterTiresOn),
+            Template("winter_tires_off", 12, null, seasonStart = Thresholds::winterTiresOff),
             Template("brakes", 12, 20_000),
             Template("cabin_filter", 12, 20_000),
             Template("engine_filter", 24, 30_000, combustion = true),

@@ -45,6 +45,7 @@ import ca.schippers.hfm.books.Medication
 import ca.schippers.hfm.books.ProviderKind
 import ca.schippers.hfm.books.Severity
 import ca.schippers.hfm.books.ValidationException
+import ca.schippers.hfm.calc.rules.LeadTimes
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
@@ -160,7 +161,7 @@ private fun newRecord(model: BooksModel, tab: HealthTab, person: BooksModel.Who)
     val g = group.id
     val p = person.id
     return when (tab) {
-        HealthTab.MEDICATIONS -> HealthEdit.Med(Medication("", g, p, "", null, null, null, null, null, today(), null, 30, null, today(), 5, true, null))
+        HealthTab.MEDICATIONS -> HealthEdit.Med(Medication("", g, p, "", null, null, null, null, null, today(), null, 30, null, today(), LeadTimes.refill(), true, null))
         HealthTab.CONDITIONS -> HealthEdit.Record(HealthCondition("", g, p, "", null, ConditionStatus.ACTIVE, null, null))
         HealthTab.ALLERGIES -> HealthEdit.Record(Allergy("", g, p, "", null, null, null))
         HealthTab.TESTS -> HealthEdit.Record(HealthTest("", g, p, "", today(), null, null, null, null, null, null))
@@ -273,7 +274,7 @@ private fun MedicationDialog(model: BooksModel, existing: Medication, onClose: (
                         groupId = groupId, name = name, dose = dose.ifBlank { null }, instructions = instructions.ifBlank { null },
                         prescriberId = prescriberId, pharmacyId = pharmacyId, rxNumber = rx.ifBlank { null },
                         startDate = optionalDate(start), endDate = optionalDate(end), daysSupply = optionalInt(supply), refillsRemaining = optionalInt(refills),
-                        lastFillDate = optionalDate(lastFill), refillReminderDays = optionalInt(remindDays) ?: 5, active = active, notes = notes.ifBlank { null },
+                        lastFillDate = optionalDate(lastFill), refillReminderDays = optionalInt(remindDays) ?: LeadTimes.refill(), active = active, notes = notes.ifBlank { null },
                     ),
                 )
             }

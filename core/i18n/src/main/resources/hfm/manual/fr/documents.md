@@ -149,7 +149,7 @@ Jusqu’à 500 documents sont affichés. Cliquez sur **Ouvrir** sur une ligne po
 ## L’onglet Anciens documents {#old-documents-tab}
 @index: conservation; combien de temps garder les reçus; six ans; ARC; Agence du revenu du Canada; documents fiscaux
 
-L’Agence du revenu du Canada demande en général de conserver les documents fiscaux et les pièces qui les appuient pendant six ans. **Anciens documents** énumère les documents classés dont la date remonte à plus de six ans, pour que vous décidiez s’il faut les supprimer.
+L’Agence du revenu du Canada demande en général de conserver les documents fiscaux et les pièces qui les appuient pendant six ans. **Anciens documents** énumère les documents classés dont la date remonte à plus de six ans, pour que vous décidiez s’il faut les supprimer. Six ans est la durée de conservation par défaut dans [Taux et règles](rates-rules).
 
 - Les documents encore dans **À vérifier** n’apparaissent jamais ici.
 - Les documents marqués **Conserver ce document** n’apparaissent jamais ici.
@@ -235,7 +235,7 @@ La section **Classer avec** offre toutes les façons de classer le document. Cha
 
 ### Joindre à une opération existante {#attach-to-transaction}
 
-L’application propose jusqu’à quatre opérations qui pourraient être celle du document : le même montant, dans la même devise, datée à cinq jours ou moins de la date du document, la plus proche d’abord. Les virements entre vos propres comptes, les opérations de placement et les opérations auxquelles le document est déjà joint sont écartés. Chaque ligne montre la date, le compte, le bénéficiaire et le montant.
+L’application propose jusqu’à quatre opérations qui pourraient être celle du document : le même montant, dans la même devise, datée à cinq jours ou moins de la date du document (par défaut, réglable dans [Taux et règles](rates-rules)), la plus proche d’abord. Les virements entre vos propres comptes, les opérations de placement et les opérations auxquelles le document est déjà joint sont écartés. Chaque ligne montre la date, le compte, le bénéficiaire et le montant.
 
 - **Joindre** : joint le document à cette opération et le classe. L’opération elle-même n’est pas modifiée.
 
@@ -248,7 +248,7 @@ C’est le choix habituel quand l’opération a déjà été importée de votre
 
 Pour un document de type **Facture** ou **Facture détaillée**, l’application cherche l’une de vos factures à laquelle il se rapporte : d’abord par votre numéro de compte chez le fournisseur (les quatre derniers chiffres), puis en comparant le nom du commerce ou du fournisseur avec le bénéficiaire et le nom de la facture. Si elle en trouve une, elle affiche « Cela ressemble à la facture … » et :
 
-- **Inscrire le montant sur cette facture** : inscrit le total du document comme montant de l’échéance de cette facture la plus proche de la date d’échéance du document (ou de sa date), à 45 jours ou moins, joint le document à la facture et le classe. La liste À payer de la facture montre alors le montant réel de cette échéance. Voir [Factures](bills).
+- **Inscrire le montant sur cette facture** : inscrit le total du document comme montant de l’échéance de cette facture la plus proche de la date d’échéance du document (ou de sa date), à 45 jours ou moins (par défaut, réglable dans [Taux et règles](rates-rules)), joint le document à la facture et le classe. La liste À payer de la facture montre alors le montant réel de cette échéance. Voir [Factures](bills).
 
 La facture doit avoir une échéance à 45 jours ou moins du document ; sinon, une erreur l’indique. Le document doit avoir un total.
 

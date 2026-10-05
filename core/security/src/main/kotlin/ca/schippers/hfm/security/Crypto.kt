@@ -36,6 +36,22 @@ data class KdfParams(
     companion object {
         /** Cheap settings for unit tests only. */
         val TESTING = KdfParams(memoryKiB = 1024, iterations = 1, parallelism = 1)
+
+        /** The least memory a new password may use: 19 MiB (OWASP Password Storage Cheat Sheet). */
+        const val MIN_MEMORY_KIB = 19 * 1024
+
+        /** The fewest passes a new password may use with that memory (OWASP). */
+        const val MIN_ITERATIONS = 2
+
+        /**
+         * The settings for passwords set from now on, as the household chose them (Rates and rules,
+         * security.argon2.*): [memoryMiB] and [iterations], never below the safe minimums. Each
+         * password keeps the settings it was set with, so a change applies only to new passwords.
+         */
+        fun forNewPasswords(memoryMiB: Int, iterations: Int): KdfParams {
+            require(memoryMiB * 1024 >= MIN_MEMORY_KIB && iterations >= MIN_ITERATIONS) { "Argon2id below 19 MiB and 2 passes is not safe" }
+            return KdfParams(memoryKiB = memoryMiB * 1024, iterations = iterations, parallelism = 1)
+        }
     }
 }
 

@@ -476,7 +476,7 @@ Budgets cover every account, so the account filters are not shown for this repor
 
 @index: reconcile; reconciliation; bank statement; uncleared
 
-Every open account with **Last reconciled** (or "Never reconciled"), **Days since**, **Statements in progress** (statements started but not finished) and **Not yet on a statement** (the balance less the cleared balance). Accounts should be reconciled with each statement. An account last reconciled more than 45 days ago stands out: a red line above the table names it, such as "Chequing: last reconciled 52 days ago", and its **Flag** column in the table reads "More than 45 days". The table is open from the start. The report covers every open account, so the account filters are not shown. See [Accounts](accounts) for reconciling.
+Every open account with **Last reconciled** (or "Never reconciled"), **Days since**, **Statements in progress** (statements started but not finished) and **Not yet on a statement** (the balance less the cleared balance). Accounts should be reconciled with each statement. An account last reconciled more than 45 days ago (the default, set in [Rates and rules](rates-rules)) stands out: a red line above the table names it, such as "Chequing: last reconciled 52 days ago", and its **Flag** column in the table reads "More than 45 days". The table is open from the start. The report covers every open account, so the account filters are not shown. See [Accounts](accounts) for reconciling.
 
 ## Who can see what {#permissions}
 

@@ -8,6 +8,7 @@ import ca.schippers.hfm.calc.invest.CostEventKind
 import ca.schippers.hfm.calc.invest.CostPool
 import ca.schippers.hfm.calc.invest.Disposition
 import ca.schippers.hfm.calc.invest.normalized
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.data.ledger.LedgerDatabase
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.AccountType
@@ -355,12 +356,13 @@ class InvestmentService internal constructor(private val books: Books) {
     }
 
     /**
-     * M-35: bonds and GICs held on [today] that mature within [withinDays] days (at least 30), or
+     * M-35: bonds and GICs held on [today] that mature within [withinDays] days (at least the
+     * maturity lead time of Rates and rules), or
      * have matured and are still held, one per account holding them; for the reminders and the
      * Calendar.
      */
-    fun maturities(today: LocalDate, withinDays: Int = 30): List<Renewal> {
-        val maturing = securities(includeArchived = true).filter { s -> s.maturity?.let { today.daysUntil(it) <= maxOf(withinDays, 30) } == true }.map { it.id }.toSet()
+    fun maturities(today: LocalDate, withinDays: Int = LeadTimes.maturity(today)): List<Renewal> {
+        val maturing = securities(includeArchived = true).filter { s -> s.maturity?.let { today.daysUntil(it) <= maxOf(withinDays, LeadTimes.maturity(today)) } == true }.map { it.id }.toSet()
         if (maturing.isEmpty()) return emptyList()
         return accounts().flatMap { a ->
             holdingsFrom(a, transactions(a.id), today).filter { it.security.id in maturing }.map { h ->

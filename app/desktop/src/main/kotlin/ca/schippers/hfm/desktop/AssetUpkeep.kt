@@ -36,6 +36,7 @@ import ca.schippers.hfm.books.AssetTaskStatus
 import ca.schippers.hfm.books.MeterUnit
 import ca.schippers.hfm.books.UpkeepDue
 import ca.schippers.hfm.books.ValidationException
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.calc.schedule.DueState
 import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.DatePeriod
@@ -247,7 +248,7 @@ private fun TaskDialog(model: BooksModel, a: Asset, existing: AssetTask, onClose
                 model.books.assetMaintenance.saveTask(
                     existing.copy(
                         name = name, intervalMonths = intOf(months), intervalUsage = intOf(every).takeIf { meter != null }, startDate = dateOf(start),
-                        startUsage = intOf(startUsage).takeIf { meter != null }, remindDays = intOf(remindDays) ?: 14, remindUsage = intOf(remindUsage) ?: existing.remindUsage,
+                        startUsage = intOf(startUsage).takeIf { meter != null }, remindDays = intOf(remindDays) ?: LeadTimes.maintenance(), remindUsage = intOf(remindUsage) ?: existing.remindUsage,
                         active = active, notes = notes,
                     ),
                 )

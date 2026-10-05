@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
@@ -99,9 +100,12 @@ class SyncService internal constructor(private val books: Books) {
 
     val desktopId: String get() = identity().first
 
-    /** SYNC-03: a new QR code, valid for [validMillis]. Earlier codes stay valid until they expire. */
+    /**
+     * SYNC-03: a new QR code, valid for [validMillis] (the invitation lead time of Rates and rules,
+     * 10 minutes built in). Earlier codes stay valid until they expire.
+     */
     @Synchronized
-    fun invitation(desktopName: String, host: String, port: Int, now: Long, validMillis: Long = INVITATION_MILLIS): PairingInvitation {
+    fun invitation(desktopName: String, host: String, port: Int, now: Long, validMillis: Long = LeadTimes.syncInvitationMillis(books.today())): PairingInvitation {
         val (id, key) = identity()
         val code = Random.bytes(6).joinToString("") { "%02x".format(it) }
         val invitation = PairingInvitation(id, desktopName, SyncCrypto.b64(key.publicKey), host, port, code)
@@ -310,7 +314,6 @@ class SyncService internal constructor(private val books: Books) {
     companion object {
         private const val DESKTOP_ID = "sync.desktopId"
         private const val PRIVATE_KEY = "sync.privateKey"
-        const val INVITATION_MILLIS = 10 * 60_000L
         private const val MAX_ITEMS = 50
         private const val MAX_PAYEES = 400
         private const val MAX_DUE = 50

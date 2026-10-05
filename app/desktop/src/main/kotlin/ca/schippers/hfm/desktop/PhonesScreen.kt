@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.PairedDevice
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.sync.PairingInvitation
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
@@ -115,7 +116,7 @@ private fun dateTime(millis: Long): String =
 @Composable
 private fun PairingDialog(model: BooksModel, invitation: PairingInvitation, devicesBefore: Int, onClose: () -> Unit) {
     val qr = remember(invitation) { qrImage(invitation.toQrText(), 320) }
-    var secondsLeft by remember(invitation) { mutableStateOf((ca.schippers.hfm.books.SyncService.INVITATION_MILLIS / 1000).toInt()) }
+    var secondsLeft by remember(invitation) { mutableStateOf((LeadTimes.syncInvitationMillis(today()) / 1000).toInt()) }
     val paired = remember(model.revision) { model.books.sync.devices().size > devicesBefore }
     LaunchedEffect(invitation) {
         while (secondsLeft > 0) {

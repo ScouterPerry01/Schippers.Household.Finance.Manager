@@ -5,6 +5,7 @@ import ca.schippers.hfm.calc.medical.CoverageRule
 import ca.schippers.hfm.calc.medical.CoverageUse
 import ca.schippers.hfm.calc.medical.Medical
 import ca.schippers.hfm.calc.medical.Window
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.MemberKind
 import ca.schippers.hfm.domain.PermissionLevel
@@ -51,7 +52,7 @@ data class MedPlan(
     val memberId: String? = null,
     val yearStartMonth: Int = 1,
     val yearStartDay: Int = 1,
-    val claimDays: Int = 365,
+    val claimDays: Int = LeadTimes.medicalPlanDeadline(),
     /** A Health Spending Account's yearly credit. */
     val hsaAmount: Money? = null,
     val active: Boolean = true,
@@ -401,18 +402,22 @@ class MedicalService internal constructor(private val books: Books) {
         }
     }
 
-    /** MED-09: claims still to send whose deadline is within [withinDays], as reminders. */
-    fun deadlines(today: LocalDate, withinDays: Int = 30): List<Renewal> {
+    /**
+     * MED-09: claims still to send whose deadline is within [withinDays], or passed within the
+     * medical claim window of Rates and rules, as reminders.
+     */
+    fun deadlines(today: LocalDate, withinDays: Int = LeadTimes.medicalClaim(today)): List<Renewal> {
+        val overdue = LeadTimes.medicalClaim(today)
         val names = books.members.list(includeArchived = true).associate { it.id to it.displayName }
         // Only expenses recent enough to have a deadline ahead (or just passed) are looked at (NFR-02).
         val longest = plans(includeInactive = false).maxOfOrNull { it.claimDays } ?: return emptyList()
-        val since = today.minus(DatePeriod(days = longest + 30))
+        val since = today.minus(DatePeriod(days = longest + overdue))
         return expenses().filter { !it.closed && it.serviceDate >= since }.mapNotNull { e ->
             val s = status(e)
             val deadline = s.deadline ?: return@mapNotNull null
             if (s.stage != ExpenseStage.TO_SUBMIT) return@mapNotNull null
             val days = today.daysUntil(deadline)
-            if (days > withinDays || days < -30) null
+            if (days > withinDays || days < -overdue) null
             else Renewal(RenewalKind.MEDICAL_CLAIM, e.id, listOfNotNull(names[e.memberId], e.description).joinToString(" · "), deadline, days, s.nextPlan?.name)
         }
     }

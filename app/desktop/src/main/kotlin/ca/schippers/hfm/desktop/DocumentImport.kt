@@ -1,6 +1,5 @@
 package ca.schippers.hfm.desktop
 
-import ca.schippers.hfm.books.DocumentService
 import ca.schippers.hfm.importers.EmailMessage
 import ca.schippers.hfm.ocr.OcrLine
 import ca.schippers.hfm.ocr.OcrResult
@@ -191,5 +190,3 @@ const val WATCH_GROUP = "documents.watchGroup"
 const val IMPORTED_DIR = "Imported"
 private const val WATCH_INTERVAL_MS = 20_000L
 
-/** Keeps DocumentService's retention period visible to the screens. */
-val RETENTION_YEARS = DocumentService.RETENTION_YEARS

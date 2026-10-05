@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.calc.schedule.Frequency
 import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.data.AccessDeniedException
@@ -53,7 +54,7 @@ data class EventDraft(
     val accountId: String? = null,
     val recurrence: Recurrence? = null,
     val endDate: LocalDate? = null,
-    val reminderMinutes: List<Int> = listOf(1440),
+    val reminderMinutes: List<Int> = listOf(LeadTimes.newEvent()),
 )
 
 data class EventOccurrence(val event: CalendarEvent, val date: LocalDate, val mark: OccurrenceMark?) {

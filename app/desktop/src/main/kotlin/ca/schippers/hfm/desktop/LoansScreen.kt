@@ -50,6 +50,7 @@ import ca.schippers.hfm.calc.loan.Compounding
 import ca.schippers.hfm.calc.loan.DatedRow
 import ca.schippers.hfm.calc.loan.LoanTerms
 import ca.schippers.hfm.calc.loan.PaymentFrequency
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
@@ -305,7 +306,7 @@ private fun LoanTermsDialog(model: BooksModel, account: Account, existing: LoanD
     var payment by remember { mutableStateOf(amt(existing?.payment)) }
     var extra by remember { mutableStateOf(amt(existing?.extraPerPayment)) }
     var termEnd by remember { mutableStateOf(existing?.termEnd?.toString().orEmpty()) }
-    var remind by remember { mutableStateOf((existing?.renewalRemindDays ?: 120).toString()) }
+    var remind by remember { mutableStateOf((existing?.renewalRemindDays ?: LeadTimes.loanRenewal()).toString()) }
     var tax by remember { mutableStateOf(amt(existing?.propertyTax)) }
     var insurance by remember { mutableStateOf(amt(existing?.insurance)) }
     var payer by remember { mutableStateOf(payers.firstOrNull { it.id == existing?.paymentAccountId }) }

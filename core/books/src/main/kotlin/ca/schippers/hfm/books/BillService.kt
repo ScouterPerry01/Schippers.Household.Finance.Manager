@@ -1,5 +1,7 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.LeadTimes
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.AccountKind
@@ -60,7 +62,7 @@ data class BillDraft(
     val paymentMethod: PaymentMethod = PaymentMethod.ONLINE,
     val categoryId: String? = null,
     val endDate: LocalDate? = null,
-    val reminderDays: List<Int> = listOf(7, 1),
+    val reminderDays: List<Int> = LeadTimes.newBill(),
     val isSubscription: Boolean = false,
     val renewalDate: LocalDate? = null,
     val cancelBy: LocalDate? = null,
@@ -218,8 +220,11 @@ class BillService internal constructor(private val books: Books) {
         )
     }
 
-    /** BILL-05. Overdue looks back a year at most; [days] sets how far ahead "upcoming" reaches. */
-    fun agenda(today: LocalDate, days: Int = 30): Agenda {
+    /**
+     * BILL-05. Overdue looks back a year at most; [days] sets how far ahead "upcoming" reaches, by
+     * default the bills agenda lead time of Rates and rules.
+     */
+    fun agenda(today: LocalDate, days: Int = LeadTimes.billsAgenda(today)): Agenda {
         val all = occurrences(today.minus(DatePeriod(days = 365)), today.plus(DatePeriod(days = days)))
         val due = all.filter { it.status == OccurrenceStatus.DUE }
         return Agenda(
@@ -350,8 +355,8 @@ class BillService internal constructor(private val books: Books) {
         val previous = paid.filter { it.dueDate < o.dueDate }.takeLast(12)
         val average = if (previous.isEmpty()) null else Money.ofMinor(previous.sumOf { it.amount.minorUnits } / previous.size, currency)
         val lastYear = paid.firstOrNull { it.dueDate.year == o.dueDate.year - 1 && it.dueDate.month == o.dueDate.month }?.amount
-        // Unusual: a quarter above the average of the previous bills (at least three of them).
-        val unusual = o.amountKnown && previous.size >= 3 && average != null && o.amount > average.times(BigDecimal("1.25"))
+        // Unusual: above the Rates and rules share of the average of the previous bills (at least three of them), 125 % built in.
+        val unusual = o.amountKnown && previous.size >= 3 && average != null && o.amount > average.times(Thresholds.unusualBill(o.dueDate))
         return BillHistoryEntry(o, average, lastYear, unusual)
     }
 
@@ -368,7 +373,7 @@ class BillService internal constructor(private val books: Books) {
      * income and transfers that are still due (overdue ones are counted today). BILL-07: payments
      * that would take a bank account below zero are reported as shortfalls.
      */
-    fun forecast(today: LocalDate, days: Int = 30): List<AccountForecast> {
+    fun forecast(today: LocalDate, days: Int = LeadTimes.billsForecast(today)): List<AccountForecast> {
         val end = today.plus(DatePeriod(days = days))
         val due = occurrences(today.minus(DatePeriod(days = 365)), end).filter { it.status == OccurrenceStatus.DUE }
         val effects = due.flatMap { o ->

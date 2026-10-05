@@ -48,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.ocr.desktop.Heif
 import ca.schippers.hfm.books.DocumentDetails
 import ca.schippers.hfm.books.DocumentEntity
@@ -202,7 +203,7 @@ private fun AllTab(model: BooksModel, onOpen: (VaultDocument) -> Unit) {
 private fun RetentionTab(model: BooksModel, onOpen: (VaultDocument) -> Unit) {
     val docs = remember(model.revision) { model.books.documents.discardable(today()) }
     Column {
-        Text(model.t("documents.retentionExplain", RETENTION_YEARS), style = MaterialTheme.typography.bodySmall)
+        Text(model.t("documents.retentionExplain", LeadTimes.documentRetention(today())), style = MaterialTheme.typography.bodySmall)
         LazyColumn(Modifier.padding(top = 8.dp)) {
             if (docs.isEmpty()) item { Text(model.t("documents.nothingToDiscard"), Modifier.padding(8.dp)) }
             items(docs, key = { it.id }) { doc -> DocumentRow(model, doc, highlight = false) { onOpen(doc) } }

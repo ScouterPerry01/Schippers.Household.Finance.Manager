@@ -476,7 +476,7 @@ Les budgets couvrent tous les comptes : les filtres de comptes ne sont donc pas 
 
 @index: rapprocher; rapprochement bancaire; relevé bancaire; non compensé
 
-Chaque compte ouvert avec **Dernier rapprochement** (ou « Jamais rapproché »), **Jours écoulés**, **Relevés en cours** (relevés commencés mais non terminés) et **Pas encore sur un relevé** (le solde moins le solde compensé). Les comptes devraient être rapprochés à chaque relevé. Un compte dont le dernier rapprochement date de plus de 45 jours ressort : une ligne rouge au-dessus du tableau le nomme, par exemple « Chèques : dernier rapprochement il y a 52 jours », et sa colonne **Signalement** dans le tableau indique « Plus de 45 jours ». Le tableau est ouvert dès le départ. Le rapport couvre tous les comptes ouverts : les filtres de comptes ne sont donc pas affichés. Voir [Comptes](accounts) pour faire un rapprochement.
+Chaque compte ouvert avec **Dernier rapprochement** (ou « Jamais rapproché »), **Jours écoulés**, **Relevés en cours** (relevés commencés mais non terminés) et **Pas encore sur un relevé** (le solde moins le solde compensé). Les comptes devraient être rapprochés à chaque relevé. Un compte dont le dernier rapprochement date de plus de 45 jours (par défaut, réglable dans [Taux et règles](rates-rules)) ressort : une ligne rouge au-dessus du tableau le nomme, par exemple « Chèques : dernier rapprochement il y a 52 jours », et sa colonne **Signalement** dans le tableau indique « Plus de 45 jours ». Le tableau est ouvert dès le départ. Le rapport couvre tous les comptes ouverts : les filtres de comptes ne sont donc pas affichés. Voir [Comptes](accounts) pour faire un rapprochement.
 
 ## Qui voit quoi {#permissions}
 

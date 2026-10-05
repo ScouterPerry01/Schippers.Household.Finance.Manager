@@ -55,7 +55,7 @@ L’application examine les opérations de l’année, par bénéficiaire et par
 - Une paie dans **Salaire**, **Primes et commissions** ou **Revenus d’emploi** : un T4, « T4, revenus d’emploi », du bénéficiaire.
 - **Régime de retraite de l’employeur** : un T4A. **RRQ / RPC** : un T4A(P). **Pension de la Sécurité de la vieillesse** : un T4A(OAS). **Retraits de FERR et rentes** : un T4RIF.
 - **Assurance-emploi** ou **Assurance-emploi / RQAP** : un T4E.
-- Des **Intérêts** de 50 $ ou plus dans l’année du même payeur : un T5. Sous 50 $, aucun feuillet n’est attendu.
+- Des **Intérêts** de 50 $ ou plus dans l’année du même payeur : un T5. Sous 50 $, aucun feuillet n’est attendu (le seuil est dans [Taux et règles](rates-rules)).
 - Des **Frais de scolarité** payés : un T2202 de l’établissement.
 - Des **Frais de garde** payés, pour une personne qui produit au Québec : un Relevé 24.
 - De l’argent versé dans un REER depuis l’extérieur des régimes enregistrés (un virement depuis un autre compte, ou un dépôt sans virement ni catégorie, comme l’encaisse importée d’un fichier de courtage) : un reçu de cotisation REER, pour le titulaire (pour un REER de conjoint, pour le cotisant). De l’argent retiré d’un REER : un T4RSP. D’un FERR, d’un FERR de conjoint ou d’un FRV : un T4RIF. Tout virement vers ou depuis un CELIAPP : un T4FHSA. L’émetteur est l’institution du régime, ou le nom du compte.
@@ -135,7 +135,7 @@ Chaque don a ses propres détails de reçu : quand un même paiement contient de
 
 @index: acomptes provisionnels; paiements par acomptes; impôt trimestriel; rappel de l’ARC; Revenu Québec; instalments
 
-Certaines personnes paient leur impôt pendant l’année par acomptes plutôt qu’à la production de la déclaration : habituellement celles dont l’impôt à payer à la production dépasse 3 000 $ (1 800 $ au Québec) cette année et l’une des deux années précédentes, comme les retraités ou les travailleurs autonomes. L’ARC et Revenu Québec envoient des rappels avec les montants. Les acomptes sont dus les 15 mars, 15 juin, 15 septembre et 15 décembre ; un paiement fait le jour ouvrable suivant une fin de semaine ou un jour férié est à temps.
+Certaines personnes paient leur impôt pendant l’année par acomptes plutôt qu’à la production de la déclaration : habituellement celles dont l’impôt à payer à la production dépasse 3 000 $ (1 800 $ au Québec) cette année et l’une des deux années précédentes, comme les retraités ou les travailleurs autonomes. L’ARC et Revenu Québec envoient des rappels avec les montants. Les acomptes sont dus les 15 mars, 15 juin, 15 septembre et 15 décembre (dates conservées dans [Taux et règles](rates-rules)) ; un paiement fait le jour ouvrable suivant une fin de semaine ou un jour férié est à temps.
 
 L’onglet **Acomptes** énumère les acomptes de l’année d’imposition, regroupés par personne et par autorité, par exemple « Jean · Agence du revenu du Canada ». Cliquez sur l’en-tête, ou sur **Modifier** à côté, pour les changer. Chaque acompte affiche :
 
@@ -147,7 +147,7 @@ L’onglet **Acomptes** énumère les acomptes de l’année d’imposition, reg
 
 « Aucun acompte pour cette année. » signifie qu’aucun n’a été saisi pour l’année affichée.
 
-Les acomptes non entièrement payés qui sont dus d’ici 30 jours, ou en retard d’au plus 30 jours, paraissent parmi les rappels de l’application sous « acompte provisionnel », avec l’autorité, et mènent à cet écran.
+Les acomptes non entièrement payés qui sont dus d’ici 30 jours, ou en retard d’au plus 30 jours (par défaut, réglable dans [Taux et règles](rates-rules)), paraissent parmi les rappels de l’application sous « acompte provisionnel », avec l’autorité, et mènent à cet écran.
 
 ### Acomptes pour une année {#instalment-window}
 

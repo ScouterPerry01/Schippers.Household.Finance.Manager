@@ -46,6 +46,7 @@ import ca.schippers.hfm.books.Vehicle
 import ca.schippers.hfm.books.VehicleStatus
 import ca.schippers.hfm.books.Warranty
 import ca.schippers.hfm.books.WarrantyKind
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.MoneyFormat
@@ -336,7 +337,7 @@ private fun WarrantiesTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -
     val odometer = remember(model.revision, v.id) { books.vehicles.latestOdometer(v.id)?.odometer }
     Column {
         Row {
-            Text(model.t("vehicles.warrantyExplain"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+            Text(model.t("vehicles.warrantyExplain", LeadTimes.warranty(today())), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
             Button(onClick = { onEdit(VehicleEdit.WarrantyEdit(Warranty("", v.id, WarrantyKind.MANUFACTURER, v.make, v.purchaseDate))) }) { Text(model.t("vehicles.addWarranty")) }
         }
         LazyColumn(Modifier.padding(top = 8.dp)) {
@@ -540,7 +541,7 @@ private fun TaskDialog(model: BooksModel, existing: MaintenanceTask, onClose: ()
                 model.books.vehicles.saveTask(
                     existing.copy(
                         name = name, intervalMonths = optionalInt(months), intervalKm = optionalInt(kms), startDate = optionalDate(start),
-                        startOdometer = optionalInt(startOdo), remindDays = optionalInt(remindDays) ?: 14, remindKm = optionalInt(remindKm) ?: 500,
+                        startOdometer = optionalInt(startOdo), remindDays = optionalInt(remindDays) ?: LeadTimes.maintenance(), remindKm = optionalInt(remindKm) ?: 500,
                         active = active, notes = notes,
                     ),
                 )

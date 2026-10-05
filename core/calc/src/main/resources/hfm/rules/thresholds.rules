@@ -1,1 +1,59 @@
 # Rates and rules: thresholds. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
+# Read through Thresholds.kt.
+
+# An account not reconciled for more than this many days is shown as behind.
+rule threshold.reconcileBehind DAYS
+threshold.reconcileBehind | - | 2000-01-01 | 45 | RANN's Roost default
+
+# A bill above this percentage of its average is flagged as unusual.
+rule threshold.unusualBill NUMBER
+threshold.unusualBill | - | 2000-01-01 | 125 | RANN's Roost default
+
+# A budget is flagged once spending reaches this percentage of it.
+rule threshold.budgetAlert NUMBER
+threshold.budgetAlert | - | 2000-01-01 | 100 | RANN's Roost default
+
+# Interest from one payer in a year at or above this amount is expected on a T5 slip.
+rule threshold.t5Interest AMOUNT
+threshold.t5Interest | - | 2000-01-01 | 50 | CRA, T4015 T5 Guide: no T5 needed for interest under $50
+
+# How far a foreign-currency statement line may differ from the recorded amount and still match.
+rule threshold.statementFx RATE
+threshold.statementFx | - | 2000-01-01 | 0.035 | RANN's Roost default
+
+# How far a receipt's printed tax may differ from what its marked lines give: the larger of an amount and a rate.
+rule threshold.receiptTaxAmount AMOUNT
+threshold.receiptTaxAmount | - | 2000-01-01 | 0.05 | RANN's Roost default
+rule threshold.receiptTaxRate RATE
+threshold.receiptTaxRate | - | 2000-01-01 | 0.03 | RANN's Roost default
+
+# Straight-line depreciation of an asset with no years or residual value of its own.
+rule threshold.depreciationYears NUMBER
+threshold.depreciationYears | - | 2000-01-01 | 10 | RANN's Roost default
+rule threshold.depreciationResidual RATE
+threshold.depreciationResidual | - | 2000-01-01 | 0 | RANN's Roost default
+
+# Automatic backups before the household chooses: every how many days (1 daily, 7 weekly, 0 off), and how many to keep.
+rule threshold.backupEvery DAYS
+threshold.backupEvery | - | 2000-01-01 | 1 | RANN's Roost default
+rule threshold.backupKeep NUMBER
+threshold.backupKeep | - | 2000-01-01 | 10 | RANN's Roost default
+
+# When the winter tire tasks fall due. Quebec requires winter tires from December 15 to March 15
+# (2008), from December 1 since 2019 (Highway Safety Code, s. 440.1); elsewhere the dates are suggestions.
+rule vehicle.winterTiresOn MONTH_DAY province
+vehicle.winterTiresOn | - | 2000-01-01 | 11-15 | RANN's Roost default
+vehicle.winterTiresOn | QC | 2008-01-01 | 12-15 | Gouvernement du Québec, Highway Safety Code s. 440.1
+vehicle.winterTiresOn | QC | 2019-01-01 | 12-01 | Gouvernement du Québec, Highway Safety Code s. 440.1 (quebec.ca, winter tire requirements)
+rule vehicle.winterTiresOff MONTH_DAY province
+vehicle.winterTiresOff | - | 2000-01-01 | 04-15 | RANN's Roost default
+
+# The four tax instalment due dates in a year.
+rule instalment.due1 MONTH_DAY
+instalment.due1 | - | 2000-01-01 | 03-15 | CRA, Paying your income tax by instalments
+rule instalment.due2 MONTH_DAY
+instalment.due2 | - | 2000-01-01 | 06-15 | CRA, Paying your income tax by instalments
+rule instalment.due3 MONTH_DAY
+instalment.due3 | - | 2000-01-01 | 09-15 | CRA, Paying your income tax by instalments
+rule instalment.due4 MONTH_DAY
+instalment.due4 | - | 2000-01-01 | 12-15 | CRA, Paying your income tax by instalments

@@ -86,7 +86,7 @@ All tile amounts are in the household's base currency. Balances and bills in oth
 @index: budget; spending this month; over budget
 
 - **Spent this month**: this tile appears only when at least one expense category has a budget. It shows what was spent this month in the budgeted categories (subcategories included), with a detail line giving the total budgeted, for example of 3 200,00 $ budgeted.
-  When one or more categories are over budget, the detail adds 1 category over budget (or the number of categories), in red.
+  When one or more categories are over budget (past the budget alert percentage of [Rates and rules](rates-rules), 100 % by default), the detail adds 1 category over budget (or the number of categories), in red.
   Clicking the tile opens Budgets. See [Budgets](budgets).
 
 ## Needs your attention {#needs-attention}
@@ -100,7 +100,7 @@ The lines that can appear, in this order:
 - Overdue bills, such as 1 bill is overdue or 3 bills are overdue: unpaid bills whose due date has passed. Opens Bills, where you record the payment or skip the occurrence. See [Bills](bills).
 - Statement lines, such as 2 statement lines need a decision: imported statement lines, in statements still being reconciled, that are marked To confirm or No match. Opens Accounts. Choose the account, then **Reconcile…** to settle them. See [Lines that need your attention](accounts#reconcile-attention).
 - Missing categories, such as 5 transactions have no category: transactions with at least one line that has no category. Transfers between your accounts are not counted, since they never need a category. Opens Accounts; the registers show (uncategorized) in the Category column. Uncategorized amounts count in no budget and show as (uncategorized) in reports, so it pays to fix them.
-- Accounts behind, such as Joint chequing has not been reconciled in more than 45 days: one line per account whose last reconciled statement is more than 45 days old. An account that was never reconciled is not listed here; the Accounts screen marks it Never reconciled instead. Opens Accounts.
+- Accounts behind, such as Joint chequing has not been reconciled in more than 45 days: one line per account whose last reconciled statement is more than 45 days old (the default, set in [Rates and rules](rates-rules)). An account that was never reconciled is not listed here; the Accounts screen marks it Never reconciled instead. Opens Accounts.
 - No successful backup in the last 7 days: no backup has worked in the last week, or none was ever made. Opens Backups. See [Backups](backups).
 - Missing rates, such as No exchange rate for USD: those amounts are left out: some balances, bills or spending are in a currency the app has no rate for, so they are not in the totals above. Opens Rates and prices, where you add the rate. See [Rates and prices](rates).
 

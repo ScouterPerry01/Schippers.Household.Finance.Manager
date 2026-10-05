@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.calc.salestax.SalesTaxes
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
@@ -61,12 +62,15 @@ object ItemSplitter {
         if (lines.size < 2 || sum.signum() == 0) return null
         val target = total.toBigDecimal().abs()
         val hasCodes = lines.any { it.taxes != null }
+        // How far a printed tax may be from its lines' tax: the larger of an amount and a share (Rates and rules).
+        val toleranceAmount = Thresholds.receiptTaxAmount()
+        val toleranceRate = Thresholds.receiptTaxRate()
         val marked = lines.map { it.taxes.orEmpty() }
         val trusted = hasCodes && printedTaxes.filterKeys { it in rates }.filterValues { it.signum() != 0 }.all { (name, amount) ->
             val base = lines.indices.filter { name in marked[it] }.fold(BigDecimal.ZERO) { a, i -> a + lines[i].amount }
             base.signum() > 0 && rates.getValue(name).any { rate ->
                 val expected = base * rate
-                (expected - amount).abs() <= BigDecimal("0.05").max(amount.abs() * BigDecimal("0.03"))
+                (expected - amount).abs() <= toleranceAmount.max(amount.abs() * toleranceRate)
             }
         }
         val exact: List<BigDecimal> = if (trusted) {

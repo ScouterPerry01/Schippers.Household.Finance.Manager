@@ -1,1 +1,82 @@
 # Rates and rules: reminders. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
+# Lead times and windows; read through LeadTimes.kt. Most are the app's own choices.
+
+# How many days ahead renewals (registrations, policies, fees, plans) show as reminders.
+rule reminder.renewals DAYS
+reminder.renewals | - | 2000-01-01 | 30 | RANN's Roost default
+
+# How many days before a warranty ends it shows as a reminder (vehicles and other assets).
+rule reminder.warranty DAYS
+reminder.warranty | - | 2000-01-01 | 60 | RANN's Roost default
+
+# How many days ahead the assets report lists warranties ending.
+rule reminder.assetsReport DAYS
+reminder.assetsReport | - | 2000-01-01 | 90 | RANN's Roost default
+
+# How many days before a credit card payment is due it shows as a reminder.
+rule reminder.cardPayment DAYS
+reminder.cardPayment | - | 2000-01-01 | 7 | RANN's Roost default
+
+# How many days ahead the bills agenda looks.
+rule reminder.billsAgenda DAYS
+reminder.billsAgenda | - | 2000-01-01 | 30 | RANN's Roost default
+
+# How many days ahead the balance forecast from bills looks.
+rule reminder.billsForecast DAYS
+reminder.billsForecast | - | 2000-01-01 | 30 | RANN's Roost default
+
+# How many days before and after its due date an unpaid tax instalment shows as a reminder.
+rule reminder.instalment DAYS
+reminder.instalment | - | 2000-01-01 | 30 | RANN's Roost default
+
+# How many days before and after its deadline a medical claim still to send shows as a reminder.
+rule reminder.medicalClaim DAYS
+reminder.medicalClaim | - | 2000-01-01 | 30 | RANN's Roost default
+
+# How many days before maturity a bond or GIC shows as a reminder.
+rule reminder.maturity DAYS
+reminder.maturity | - | 2000-01-01 | 30 | RANN's Roost default
+
+# How many days before and after renewal an insurance policy shows as a reminder.
+rule reminder.insurance DAYS
+reminder.insurance | - | 2000-01-01 | 30 | RANN's Roost default
+
+# The reminders a new bill starts with, in days before it is due.
+rule reminder.newBill LIST
+reminder.newBill | - | 2000-01-01 | 7; 1 | RANN's Roost default
+
+# The reminder a new calendar event starts with, in minutes before it starts.
+rule reminder.newEvent NUMBER
+reminder.newEvent | - | 2000-01-01 | 1440 | RANN's Roost default
+
+# The days before a refill is due that a new medication starts with.
+rule reminder.refill DAYS
+reminder.refill | - | 2000-01-01 | 5 | RANN's Roost default
+
+# The days before it is due that a new maintenance task starts with.
+rule reminder.maintenance DAYS
+reminder.maintenance | - | 2000-01-01 | 14 | RANN's Roost default
+
+# The days before the term ends that a new loan or mortgage starts with.
+rule reminder.loanRenewal DAYS
+reminder.loanRenewal | - | 2000-01-01 | 120 | RANN's Roost default
+
+# The claim deadline, in days after the service, that a new medical plan starts with.
+rule reminder.medicalPlanDeadline DAYS
+reminder.medicalPlanDeadline | - | 2000-01-01 | 365 | RANN's Roost default
+
+# How many minutes a phone pairing invitation stays valid.
+rule reminder.syncInvitation NUMBER
+reminder.syncInvitation | - | 2000-01-01 | 10 | RANN's Roost default
+
+# How many days before or after a document's date a transaction can match it.
+rule reminder.documentMatch DAYS
+reminder.documentMatch | - | 2000-01-01 | 5 | RANN's Roost default
+
+# How many days before or after a bill document's due date a bill occurrence can match it.
+rule reminder.billMatch DAYS
+reminder.billMatch | - | 2000-01-01 | 45 | RANN's Roost default
+
+# How many years filed documents are kept before they are offered for discarding.
+rule reminder.documentRetention NUMBER
+reminder.documentRetention | - | 2000-01-01 | 6 | CRA, Keeping records: six years from the end of the tax year

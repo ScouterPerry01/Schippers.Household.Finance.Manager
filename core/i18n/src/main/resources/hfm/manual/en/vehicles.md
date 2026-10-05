@@ -46,7 +46,7 @@ Under **Registration and insurance**:
 - **Insurance renewal**: when the auto policy renews.
 - **Insurer** and **Policy number**: shown on the overview with the insurance renewal.
 
-Each date gives a line on the overview, in bold within 30 days and red once passed, and a reminder from 30 days before. See [Reminders and calendar](vehicles#reminders).
+Each date gives a line on the overview, in bold within 30 days and red once passed, and a reminder from 30 days before (the default renewal lead time, set in [Rates and rules](rates-rules)). See [Reminders and calendar](vehicles#reminders).
 
 > Tip: To see whether the vehicle is covered by a policy, and to keep the policy's premiums and claims, add the auto policy on the **Insurance** tab of [Home and assets](assets#insurance-tab) and tick the vehicle under **What it covers**.
 
@@ -128,7 +128,7 @@ Tasks are sorted by their next date. Paused tasks follow, marked "(paused)", wit
 
 - **Oil and filter change**: every 6 months or 8,000 km (not for an electric vehicle).
 - **Tire rotation**: every 12 months or 10,000 km.
-- **Install winter tires**: every year, due November 15.
+- **Install winter tires**: every year, due November 15, or December 1 in Quebec (the driver's province, or the household's).
 - **Remove winter tires**: every year, due April 15.
 - **Brake inspection**: every 12 months or 20,000 km.
 - **Cabin air filter**: every 12 months or 20,000 km.
@@ -137,7 +137,7 @@ Tasks are sorted by their next date. Paused tasks follow, marked "(paused)", wit
 
 They count from today and the current odometer, except the winter tires, which fall due on their date. Edit any task to match your owner's manual, or pause the ones you do not need.
 
-> Note: In Quebec, winter tires are required from December 1 to March 15.
+> Note: In Quebec, winter tires are required from December 1 to March 15 (from December 15 before 2019). Elsewhere the dates are suggestions. Both dates, by province, are in [Rates and rules](rates-rules).
 
 ### Add or edit a task {#task-form}
 
@@ -149,7 +149,7 @@ They count from today and the current odometer, except the winter tires, which f
 - **Every (km)**: from 1 to 1,000,000. At least one of the two intervals is required.
 - **Last done on**: when the task was last done before you started recording services, or the date to count from. A new task proposes today. Once a service records the task, the latest such service is used instead.
 - **Last done at (km)**: the odometer when it was last done. A new task proposes the current odometer. It is only used for a task with a distance.
-- **Remind me (days before)**: how many days before the due date the task becomes **Due soon**; 14 by default.
+- **Remind me (days before)**: how many days before the due date the task becomes **Due soon**; 14 by default for a new task ([Rates and rules](rates-rules)).
 - **Remind me (km before)**: how many kilometres before the due distance the task becomes **Due soon**; 500 by default.
 - **Notes**: the part number, the oil type, anything useful.
 - **Active** (when editing): untick it to pause a task you do not need now. A paused task is not due and gives no reminder. Tick it again to resume.
@@ -268,8 +268,8 @@ The **Maintenance and cost of ownership** report under [Reports](reports) brings
 
 For each vehicle in use:
 
-- **Registration renewal** and **Insurance renewal**: a reminder from 30 days before the date, which stays once the date has passed until you enter the new date, for example "Civic: registration (ABC 123) in 12 days".
-- Warranties: a reminder from 60 days before the end date, or before the day the odometer should reach the distance limit, whichever is first, for example "Civic: warranty ends (Honda · 100000 km) in 40 days". A warranty already past its date or distance is not a reminder.
+- **Registration renewal** and **Insurance renewal**: a reminder from 30 days before the date (the default), which stays once the date has passed until you enter the new date, for example "Civic: registration (ABC 123) in 12 days".
+- Warranties: a reminder from 60 days before the end date (the default, set in [Rates and rules](rates-rules)), or before the day the odometer should reach the distance limit, whichever is first, for example "Civic: warranty ends (Honda · 100000 km) in 40 days". A warranty already past its date or distance is not a reminder.
 - Maintenance: tasks **Due soon** and **Due now**.
 
 Reminders appear at the top of the window and as a system notification, and lead to this screen. The renewal dates, warranty ends and maintenance due dates also appear on the [Calendar](calendar).

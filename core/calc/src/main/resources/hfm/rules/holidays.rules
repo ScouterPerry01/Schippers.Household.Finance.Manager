@@ -1,1 +1,56 @@
 # Rates and rules: holidays. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
+# Which provincial and territorial holidays banks observe, read by BusinessDays.kt for each year
+# (on January 1 of that year). The national ones (New Year, Good Friday, Victoria Day, Canada Day,
+# Labour Day, Thanksgiving, Remembrance Day, Christmas, Boxing Day) are always observed.
+
+# Third Monday of February: Family Day (AB, BC, NB, ON, SK), Louis Riel Day (MB), Islander Day (PE), Heritage Day (NS).
+# B.C. kept it on the second Monday from 2013 to 2018, and P.E.I. in 2009; the app uses the third Monday.
+rule holiday.familyDay YES_NO province
+holiday.familyDay | - | 2000-01-01 | false | No February holiday by default
+holiday.familyDay | AB | 2000-01-01 | true | Government of Alberta, Employment Standards Code (Family Day since 1990)
+holiday.familyDay | SK | 2007-01-01 | true | Government of Saskatchewan, Employment Act (Family Day since 2007)
+holiday.familyDay | ON | 2008-01-01 | true | Government of Ontario, Employment Standards Act (Family Day since 2008)
+holiday.familyDay | MB | 2008-01-01 | true | Government of Manitoba, Employment Standards Code (Louis Riel Day since 2008)
+holiday.familyDay | PE | 2009-01-01 | true | Government of Prince Edward Island, Employment Standards Act (Islander Day since 2009)
+holiday.familyDay | BC | 2013-01-01 | true | Government of British Columbia, Employment Standards Act (Family Day since 2013; third Monday since 2019)
+holiday.familyDay | NS | 2015-01-01 | true | Government of Nova Scotia, Labour Standards Code (Heritage Day since 2015)
+holiday.familyDay | NB | 2018-01-01 | true | Government of New Brunswick, Employment Standards Act (Family Day since 2018)
+
+# First Monday of August: Civic Holiday, B.C. Day, Heritage Day (AB), Terry Fox Day (MB), New Brunswick Day, Natal Day (NS), Saskatchewan Day.
+rule holiday.civicHoliday YES_NO province
+holiday.civicHoliday | - | 2000-01-01 | false | No August holiday by default
+holiday.civicHoliday | AB | 2000-01-01 | true | Government of Alberta (Heritage Day, observed by banks)
+holiday.civicHoliday | BC | 2000-01-01 | true | Government of British Columbia, Employment Standards Act (B.C. Day)
+holiday.civicHoliday | MB | 2000-01-01 | true | Government of Manitoba (Civic Holiday, observed by banks)
+holiday.civicHoliday | NB | 2000-01-01 | true | Government of New Brunswick, Employment Standards Act (New Brunswick Day)
+holiday.civicHoliday | NS | 2000-01-01 | true | Government of Nova Scotia (Natal Day, observed by banks)
+holiday.civicHoliday | NT | 2000-01-01 | true | Government of the Northwest Territories, Employment Standards Act (Civic Holiday)
+holiday.civicHoliday | NU | 2000-01-01 | true | Government of Nunavut, Labour Standards Act (Civic Holiday)
+holiday.civicHoliday | ON | 2000-01-01 | true | Government of Ontario (Civic Holiday, observed by banks)
+holiday.civicHoliday | SK | 2000-01-01 | true | Government of Saskatchewan, Employment Act (Saskatchewan Day)
+
+# June 24: Fête nationale du Québec.
+rule holiday.fetNationale YES_NO province
+holiday.fetNationale | - | 2000-01-01 | false | Quebec only
+holiday.fetNationale | QC | 2000-01-01 | true | Gouvernement du Québec, Loi sur la fête nationale
+
+# June 21: National Indigenous Peoples Day.
+rule holiday.indigenousPeoplesDay YES_NO province
+holiday.indigenousPeoplesDay | - | 2000-01-01 | false | Northwest Territories and Yukon only
+holiday.indigenousPeoplesDay | NT | 2001-01-01 | true | Government of the Northwest Territories, Employment Standards Act (since 2001)
+holiday.indigenousPeoplesDay | YT | 2017-01-01 | true | Government of Yukon, Employment Standards Act, SY 2017 c 1 (since 2017)
+
+# July 9: Nunavut Day.
+rule holiday.nunavutDay YES_NO province
+holiday.nunavutDay | - | 2000-01-01 | false | Nunavut only
+holiday.nunavutDay | NU | 2001-01-01 | true | Government of Nunavut (territorial holiday since 2001; statutory since 2020, Bill 29)
+
+# Third Monday of August: Discovery Day.
+rule holiday.discoveryDay YES_NO province
+holiday.discoveryDay | - | 2000-01-01 | false | Yukon only
+holiday.discoveryDay | YT | 2000-01-01 | true | Government of Yukon, Employment Standards Act (Discovery Day)
+
+# September 30: National Day for Truth and Reconciliation, a federal holiday that banks observe.
+rule holiday.truthReconciliation YES_NO province
+holiday.truthReconciliation | - | 2000-01-01 | false | Not yet a holiday
+holiday.truthReconciliation | - | 2021-01-01 | true | Government of Canada, Bill C-5 (2021), Canada Labour Code

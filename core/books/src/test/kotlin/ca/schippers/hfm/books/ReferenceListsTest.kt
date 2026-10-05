@@ -113,11 +113,11 @@ class ReferenceListsTest {
         val electricity = category("utilities.electricity")
         val rule = books.rules.create("HYDRO", electricity.id)
         val payee = books.payees.create("Hydro-Québec")
-        books.users.add("viewer", "Viewer", Role.VIEWER, "viewer-password".toCharArray())
-        books.users.add("marie", "Marie", Role.MEMBER, "marie-password".toCharArray())
+        books.users.add("viewer", "Viewer", Role.VIEWER, "watcher-passcode".toCharArray())
+        books.users.add("marie", "Marie", Role.MEMBER, "her-own-passcode".toCharArray())
         books.session.close()
 
-        Books(store.unlock(dir, "viewer", "viewer-password".toCharArray())).let { viewer ->
+        Books(store.unlock(dir, "viewer", "watcher-passcode".toCharArray())).let { viewer ->
             try {
                 assertTrue(!viewer.canEdit)
                 assertFailsWith<AccessDeniedException> { viewer.categories.create(null, "Hobbies", "Loisirs", CategoryKind.EXPENSE) }
@@ -138,7 +138,7 @@ class ReferenceListsTest {
             }
         }
 
-        Books(store.unlock(dir, "marie", "marie-password".toCharArray())).let { member ->
+        Books(store.unlock(dir, "marie", "her-own-passcode".toCharArray())).let { member ->
             try {
                 member.payees.addAlias(payee.id, "HYDRO-QUE")
                 member.rules.update(rule.id, "HYDRO-QUEBEC", electricity.id, payeeId = payee.id)
@@ -159,14 +159,14 @@ class ReferenceListsTest {
     @Test
     fun `a viewer can be given View at most (M-78)`() {
         val shared = books.groups().single().id
-        val viewer = books.users.add("viewer", "Viewer", Role.VIEWER, "viewer-password".toCharArray()).userId
+        val viewer = books.users.add("viewer", "Viewer", Role.VIEWER, "watcher-passcode".toCharArray()).userId
         assertFailsWith<ValidationException> { books.users.setAccess(shared, viewer, PermissionLevel.EDIT) }
         assertFailsWith<ValidationException> { books.users.setAccess(shared, viewer, PermissionLevel.CAPTURE_ONLY) }
         books.users.setAccess(shared, viewer, PermissionLevel.VIEW)
         assertEquals(PermissionLevel.VIEW, books.users.access().single().levels[viewer])
 
         // A member given Edit, then made a viewer, shows View: what they can actually do.
-        val marie = books.users.add("marie", "Marie", Role.MEMBER, "marie-password".toCharArray()).userId
+        val marie = books.users.add("marie", "Marie", Role.MEMBER, "her-own-passcode".toCharArray()).userId
         books.users.setAccess(shared, marie, PermissionLevel.EDIT)
         books.users.setRole(marie, Role.VIEWER)
         assertEquals(PermissionLevel.VIEW, books.users.access().single().levels[marie])

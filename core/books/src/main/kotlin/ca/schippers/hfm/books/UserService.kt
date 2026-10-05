@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.PasswordRules
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.data.AddedUser
 import ca.schippers.hfm.domain.PermissionLevel
@@ -40,7 +41,7 @@ class UserService internal constructor(private val books: Books) {
     fun add(loginName: String, displayName: String, role: Role, password: CharArray, memberId: String? = null): AddedUser {
         validate(loginName.isNotBlank() && loginName.trim().none(Char::isWhitespace), "error.loginName")
         validate(displayName.isNotBlank(), "error.nameRequired")
-        validate(password.size >= MIN_PASSWORD, "error.passwordShort", MIN_PASSWORD)
+        Passwords.check(passwordRules(), password, loginName.trim())
         validate(list().none { it.loginName.equals(loginName.trim(), ignoreCase = true) }, "error.loginTaken")
         val added = session.addUser(loginName.trim(), displayName.trim(), role, password)
         if (memberId != null) session.linkMember(added.userId, memberId)
@@ -66,8 +67,31 @@ class UserService internal constructor(private val books: Books) {
     }
 
     fun changePassword(current: CharArray, newPassword: CharArray) {
-        validate(newPassword.size >= MIN_PASSWORD, "error.passwordShort", MIN_PASSWORD)
+        Passwords.check(passwordRules(), newPassword, list().firstOrNull { it.isMe }?.loginName)
         guard { session.changePassword(current, newPassword) }
+    }
+
+    /** The household's password rules in effect today (Rates and rules, security.password.*). */
+    fun passwordRules(): PasswordRules = PasswordRules.on(books.today())
+
+    /**
+     * An administrator sets the household's password rules, in effect from today for every
+     * password chosen from now on; passwords already set keep working. Only what changed is added.
+     */
+    fun setPasswordRules(rules: PasswordRules) {
+        requireAdmin(books)
+        validate(rules.minLength in PasswordRules.MIN..PasswordRules.MAX, "error.passwordRuleLength", PasswordRules.MIN, PasswordRules.MAX)
+        val current = passwordRules()
+        val today = books.today()
+        fun set(key: String, now: Any, was: Any) {
+            if (now != was) books.rateRules.add("security.password.$key", null, today, now.toString())
+        }
+        set("minLength", rules.minLength, current.minLength)
+        set("capitals", rules.capitals, current.capitals)
+        set("smallLetters", rules.smallLetters, current.smallLetters)
+        set("digits", rules.digits, current.digits)
+        set("symbols", rules.symbols, current.symbols)
+        set("notLoginName", rules.notLoginName, current.notLoginName)
     }
 
     /** HH-07, HH-08: every group the signed-in user can see, with each user's level. */
@@ -131,9 +155,6 @@ class UserService internal constructor(private val books: Books) {
 
     companion object {
         const val HOUSEHOLD = "household"
-        /** M-72: the same minimum everywhere a password is chosen, as when the household is created. */
-        const val MIN_PASSWORD = 12
-
         /** The actions recorded in the activity log, each with a name in both languages. */
         val ACTIONS = listOf(
             "ACTIVATE", "BACKUP", "BACKUP_SETTINGS", "CHANGE_PASSWORD", "CREATE", "DEACTIVATE", "DELETE", "DELETE_BUDGET", "EXPORT", "IMPORT", "LINK",

@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.money.Currency
@@ -231,11 +232,11 @@ class InsuranceService internal constructor(private val books: Books) {
             books.vehicles.list().filter { it.id !in covered }.map { UninsuredItem(it.id, it.name, true, it.purchasePrice) }
     }
 
-    /** INS-03: policies to renew within [withinDays], as reminders. */
-    fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> = policies(includeInactive = false).mapNotNull { p ->
+    /** INS-03: policies to renew within [withinDays], or overdue within the insurance lead time, as reminders. */
+    fun renewals(today: LocalDate, withinDays: Int = LeadTimes.insurance(today)): List<Renewal> = policies(includeInactive = false).mapNotNull { p ->
         val date = p.renewalDate ?: return@mapNotNull null
         val days = today.daysUntil(date)
-        if (days > withinDays || days < -30) null else Renewal(RenewalKind.INSURANCE_RENEWAL, p.id, p.insurer, date, days, p.policyNumber)
+        if (days > withinDays || days < -LeadTimes.insurance(today)) null else Renewal(RenewalKind.INSURANCE_RENEWAL, p.id, p.insurer, date, days, p.policyNumber)
     }
 
     private fun editable(groupId: String): GroupInfo = books.group(groupId).also { books.require(it, PermissionLevel.EDIT) }

@@ -43,10 +43,10 @@ Cet écran crée un nouveau ménage vide. La province, votre nom et votre mot de
 - **Province ou territoire** : où habite le ménage. Ses règles s'appliquent : les jours fériés bancaires qui déplacent les dates des factures, les catégories par défaut, les subventions provinciales aux REEE, les règles des régimes immobilisés et les formulaires fiscaux provinciaux. Obligatoire : rien n'est choisi au départ, choisissez donc le vôtre. Il peut être changé plus tard sous [Membres du ménage](members), et une personne qui vit ailleurs peut avoir le sien.
 - **Votre nom** : obligatoire. Votre nom tel qu'il paraît dans l'application, par exemple dans le journal d'activité et la liste des utilisateurs.
 - **Nom d'utilisateur** : obligatoire. Le nom que vous tapez pour vous connecter. Gardez-le court et sans espaces. Il ne peut pas être changé plus tard.
-- **Mot de passe principal** : obligatoire, au moins 12 caractères. Une phrase de passe de quelques mots est facile à retenir et difficile à deviner. Il protège les clés de chiffrement du ménage : il n'est jamais enregistré, et personne ne peut le réinitialiser pour vous.
+- **Mot de passe principal** : obligatoire. Les [règles des mots de passe](security#password-rules) intégrées s'appliquent, puisque le ménage n'existe pas encore : au moins 12 caractères, sans le nom d'utilisateur; la ligne sous le champ le rappelle. Un administrateur peut changer les règles plus tard pour tout le ménage. Une phrase de passe de quelques mots est facile à retenir et difficile à deviner. Il protège les clés de chiffrement du ménage : il n'est jamais enregistré, et personne ne peut le réinitialiser pour vous.
 - **Confirmer le mot de passe principal** : le même mot de passe une seconde fois, pour attraper les fautes de frappe.
 - **Retour** : revient à Bienvenue sans rien créer.
-- **Créer le ménage** : disponible une fois le dossier, le nom du ménage, la province ou le territoire, votre nom et le nom d'utilisateur remplis. Si le mot de passe a moins de 12 caractères, l'écran affiche « Utilisez au moins 12 caractères. » ; si les deux mots de passe diffèrent, il affiche « Les mots de passe ne correspondent pas. ». Sinon, l'application crée le ménage, ce qui prend quelques secondes (un cercle tourne pendant ce temps).
+- **Créer le ménage** : disponible une fois le dossier, le nom du ménage, la province ou le territoire, votre nom et le nom d'utilisateur remplis. Si le mot de passe ne respecte pas les règles, l'écran dit ce qui lui manque, comme « Le mot de passe doit avoir au moins 12 caractères. » ; si les deux mots de passe diffèrent, il affiche « Les mots de passe ne correspondent pas. ». Sinon, l'application crée le ménage, ce qui prend quelques secondes (un cercle tourne pendant ce temps).
 
 Le nouveau ménage a le dollar canadien comme monnaie de base. Il commence avec un groupe de comptes partagé et vous comme seul utilisateur, avec le rôle Administrateur. Le ménage est créé dans la langue qu'utilise l'application.
 
@@ -88,7 +88,7 @@ Utilisez cet écran quand un mot de passe est oublié. Il fixe un nouveau mot de
 
 - **Nom d'utilisateur** : le nom d'utilisateur de la personne dont le mot de passe est oublié.
 - **Clé de récupération** : la clé de récupération de cet utilisateur. Tapez-la avec ou sans les tirets et les espaces, en majuscules ou non ; les lettres I et L sont lues comme le chiffre 1 et la lettre O comme 0, de sorte que les caractères semblables ne nuisent pas. Les deux derniers caractères servent de contrôle : une faute de frappe est détectée.
-- **Nouveau mot de passe** : le nouveau mot de passe, d'au moins 12 caractères.
+- **Nouveau mot de passe** : le nouveau mot de passe. Il doit suivre les [règles des mots de passe](security#password-rules) du ménage (au moins 12 caractères par défaut); elles sont vérifiées une fois que la clé a ouvert le ménage, et un mot de passe qui ne les respecte pas est refusé avec ce qui lui manque.
 - **Confirmer le mot de passe principal** : le nouveau mot de passe une seconde fois.
 - **Retour** : revient à l'écran de déverrouillage.
 - **Réinitialiser le mot de passe** : disponible une fois le nom d'utilisateur et la clé remplis. Si la clé est mal tapée ou n'appartient pas à cet utilisateur, l'écran affiche « Cette clé de récupération n'est pas valide. ». Sinon, le mot de passe est changé et le ménage s'ouvre.
@@ -307,7 +307,7 @@ Pendant que l'application fonctionne, son icône se trouve dans la zone de notif
 
 ### Le tableau de bord {#dashboard-attention}
 
-La liste À vérifier du tableau de bord rassemble d'autres éléments à examiner : les factures en retard, les lignes de relevé qui demandent une décision, les opérations sans catégorie, les comptes non rapprochés depuis plus de 45 jours et l'absence de sauvegarde réussie dans les 7 derniers jours. Voir [Tableau de bord](dashboard).
+La liste À vérifier du tableau de bord rassemble d'autres éléments à examiner : les factures en retard, les lignes de relevé qui demandent une décision, les opérations sans catégorie, les comptes non rapprochés depuis plus de 45 jours (un nombre modifiable dans [Taux et règles](rates-rules)) et l'absence de sauvegarde réussie dans les 7 derniers jours. Voir [Tableau de bord](dashboard).
 
 ## Le travail fait pendant que le ménage est ouvert {#background}
 

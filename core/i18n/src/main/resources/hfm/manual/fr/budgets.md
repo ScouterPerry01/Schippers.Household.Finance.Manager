@@ -36,7 +36,7 @@ Les dépenses et les revenus sont montrés séparément, les dépenses d’abord
 Chaque catégorie budgétée a une barre. La longueur de la barre est le montant réel ; un repère montre le budget. Le texte indique « … sur … », le réel sur le budgété, et une note :
 
 - « Reste … » : ce qui reste pour la période.
-- « Dépassement de … » : pour une catégorie de dépenses dont le réel dépasse le budget. La barre est affichée comme une alerte.
+- « Dépassement de … » : pour une catégorie de dépenses dont le réel dépasse le budget. La barre est affichée comme une alerte. Elle l’est aussi dès que les dépenses dépassent le pourcentage d’alerte de budget de [Taux et règles](rates-rules) : 100 % par défaut ; à un pourcentage plus bas, un budget est signalé avant d’être dépassé.
 - « dont … reporté » : la partie du budget reportée des mois précédents, quand le report est activé.
 - « (annuel) » après le nom de la catégorie : un budget annuel vu dans la vue du mois. Il compare le cumul de l’année avec le montant de l’année entière.
 
