@@ -27,17 +27,20 @@ data class ImportSummary(
     val unreadable: List<String>,
     /** HEIC photos kept in the vault but not read, for want of a HEIC decoder on this computer. */
     val needHeicDecoder: List<String> = emptyList(),
+    /** Section 3.2: what became of the phone transfer files among them. */
+    val transfers: List<String> = emptyList(),
 ) {
-    operator fun plus(other: ImportSummary) =
-        ImportSummary(added + other.added, alreadyInVault + other.alreadyInVault, unreadable + other.unreadable, needHeicDecoder + other.needHeicDecoder)
+    operator fun plus(other: ImportSummary) = ImportSummary(
+        added + other.added, alreadyInVault + other.alreadyInVault, unreadable + other.unreadable, needHeicDecoder + other.needHeicDecoder, transfers + other.transfers,
+    )
 
     companion object {
         val NONE = ImportSummary(0, 0, emptyList())
     }
 }
 
-/** File types the desktop imports (CAP-03). */
-val IMPORTABLE_EXTENSIONS = setOf("pdf", "jpg", "jpeg", "png", "heic", "heif", "bmp", "gif")
+/** File types the desktop imports (CAP-03), and the phone's transfer files (section 3.2). */
+val IMPORTABLE_EXTENSIONS = setOf("pdf", "jpg", "jpeg", "png", "heic", "heif", "bmp", "gif", ca.schippers.hfm.sync.BundleFile.EXTENSION)
 
 /**
  * CAP-03, CAP-04: stores each file in the vault, reads its text on this computer and extracts its
@@ -48,8 +51,14 @@ suspend fun importFiles(model: BooksModel, files: List<Path>, groupId: String): 
     var existing = 0
     val unreadable = ArrayList<String>()
     val needDecoder = ArrayList<String>()
+    val transfers = ArrayList<String>()
     for (file in files) {
         val bytes = runCatching { Files.readAllBytes(file) }.getOrNull()
+        // A phone's transfer file, saved from an email or copied by USB: its items go to the inbox.
+        if (bytes != null && file.extension.lowercase() == ca.schippers.hfm.sync.BundleFile.EXTENSION) {
+            transfers += model.transferMessage(file.name, model.syncServer.receiveFile(bytes))
+            continue
+        }
         val kind = bytes?.let(FileKind::of)
         if (bytes == null || kind == null || kind == FileKind.UNSUPPORTED) {
             unreadable += file.name
@@ -74,7 +83,7 @@ suspend fun importFiles(model: BooksModel, files: List<Path>, groupId: String): 
             model.books.documents.recordText(imported.document.id, read.pages, read.result, if (read.fromTextLayer) "pdf-text" else "paddle-ppocrv5-latin", today())
         }
     }
-    ImportSummary(added, existing, unreadable, needDecoder)
+    ImportSummary(added, existing, unreadable, needDecoder, transfers)
 }
 
 /** The group new documents go to: the shared group the user can add to, or else any. */
@@ -101,7 +110,7 @@ suspend fun watchFolder(model: BooksModel) {
                     val done = Files.createDirectories(folder.resolve(IMPORTED_DIR))
                     for (f in files) runCatching { Files.move(f, uniqueTarget(done, f.name), StandardCopyOption.ATOMIC_MOVE) }
                 }
-                if (summary != null && summary.added > 0) {
+                if (summary != null && (summary.added > 0 || summary.transfers.isNotEmpty())) {
                     model.lastImportMessage = model.importMessage(summary)
                     model.changed()
                 }
@@ -123,11 +132,11 @@ private fun uniqueTarget(dir: Path, name: String): Path {
 }
 
 fun BooksModel.importMessage(s: ImportSummary): String = listOfNotNull(
-    t("documents.imported", s.added),
+    t("documents.imported", s.added).takeIf { s.added > 0 || s.transfers.isEmpty() },
     s.alreadyInVault.takeIf { it > 0 }?.let { t("documents.alreadyInVault", it) },
     s.unreadable.takeIf { it.isNotEmpty() }?.let { t("documents.unreadable", it.joinToString(", ")) },
     s.needHeicDecoder.takeIf { it.isNotEmpty() }?.let { t("documents.heicNoDecoder", it.joinToString(", ")) + " " + heicDecoderHint() },
-).joinToString(" ")
+).plus(s.transfers).joinToString(" ")
 
 /** How to install a HEIC decoder on this computer (ADR 0004). */
 fun BooksModel.heicDecoderHint(): String = t(if (Heif.platform == Heif.Platform.WINDOWS) "documents.heicHintWindows" else "documents.heicHintLinux")

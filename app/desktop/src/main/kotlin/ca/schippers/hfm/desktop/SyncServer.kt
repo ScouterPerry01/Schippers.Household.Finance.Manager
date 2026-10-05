@@ -74,9 +74,32 @@ class SyncServer(private val books: Books, private val today: () -> LocalDate, p
     private fun sync(ex: HttpExchange): Pair<Int, ByteArray> {
         val device = ex.requestHeaders.getFirst(SyncClient.DEVICE_HEADER) ?: return 400 to ByteArray(0)
         val body = ex.requestBody.use { it.readNBytes(MAX_SYNC_BYTES) }
-        val answer = books.sync.handle(device, body, converter, System.currentTimeMillis(), today())
+        val answer = synchronized(receiving) { books.sync.handle(device, body, converter, System.currentTimeMillis(), today()) }
         onChange()
         return 200 to answer
+    }
+
+    /** Requests are received one at a time, whether over Wi-Fi or as files. */
+    private val receiving = Any()
+
+    /**
+     * Section 3.2: a phone's request that came as a file (the transfer folder, a file chosen or
+     * dropped, an email attachment saved). Works whether or not the listener is running.
+     */
+    fun receiveFile(bytes: ByteArray): TransferReceipt = try {
+        val reply = synchronized(receiving) { books.sync.handleFile(bytes, converter, System.currentTimeMillis(), today()) }
+        onChange()
+        TransferReceipt(TransferOutcome.RECEIVED, reply.received, reply)
+    } catch (e: ca.schippers.hfm.books.OwnerAwayException) {
+        TransferReceipt(TransferOutcome.OWNER_AWAY, owner = e.ownerName)
+    } catch (_: ca.schippers.hfm.books.NotThisHouseholdException) {
+        TransferReceipt(TransferOutcome.OTHER_HOUSEHOLD)
+    } catch (_: DeviceNotPairedException) {
+        TransferReceipt(TransferOutcome.NOT_PAIRED)
+    } catch (_: DecryptionException) {
+        TransferReceipt(TransferOutcome.NOT_PAIRED)
+    } catch (_: ca.schippers.hfm.sync.BundleFile.NotABundleException) {
+        TransferReceipt(TransferOutcome.NOT_A_BUNDLE)
     }
 
     private fun handle(ex: HttpExchange, block: () -> Pair<Int, ByteArray>) {

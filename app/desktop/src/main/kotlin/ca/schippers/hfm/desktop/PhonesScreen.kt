@@ -36,6 +36,7 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.awt.image.BufferedImage
 import java.time.Instant
 import java.time.ZoneId
@@ -68,6 +69,7 @@ fun PhonesScreen(model: BooksModel) {
             },
             color = if (server.running && address != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
         )
+        AwayFromHome(model)
         LazyColumn(Modifier.padding(top = 8.dp)) {
             if (devices.isEmpty()) item { Text(model.t("phones.none"), Modifier.padding(8.dp)) }
             items(devices, key = { it.id }) { d ->
@@ -163,4 +165,48 @@ private fun qrImage(text: String, size: Int): ImageBitmap {
     val img = BufferedImage(matrix.width, matrix.height, BufferedImage.TYPE_INT_RGB)
     for (y in 0 until matrix.height) for (x in 0 until matrix.width) img.setRGB(x, y, if (matrix[x, y]) 0x000000 else 0xFFFFFF)
     return img.toComposeImageBitmap()
+}
+
+/**
+ * Section 3.2: transfer when the phone is away from home. A folder of the user's own cloud storage,
+ * synced to this computer by the provider's app, receives the phone's transfer files; a file that
+ * came by email or USB can be imported by hand.
+ */
+@Composable
+private fun AwayFromHome(model: BooksModel) {
+    val books = model.books
+    val folder = remember(model.revision) { books.setting(TRANSFER_FOLDER)?.takeIf { it.isNotBlank() } }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var message by remember { mutableStateOf<String?>(null) }
+    Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(model.t("transfer.title"), fontWeight = FontWeight.Medium)
+            Text(model.t("transfer.explain"), style = MaterialTheme.typography.bodySmall)
+            Text(folder?.let { model.t("transfer.folder", it) } ?: model.t("transfer.noFolder"))
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = {
+                    chooseDirectory(model.t("transfer.choose"))?.let { dir ->
+                        model.act { books.putSetting(TRANSFER_FOLDER, dir.toString()) }
+                        scope.launch { message = runCatching { model.t("transfer.checkedNow", checkTransferFolder(model, dir)) }.getOrElse { e -> e.message } }
+                    }
+                }) { Text(model.t(if (folder == null) "transfer.choose" else "transfer.change")) }
+                if (folder != null) {
+                    TextButton(onClick = { model.act { books.putSetting(TRANSFER_FOLDER, "") } }) { Text(model.t("transfer.stop")) }
+                }
+                OutlinedButton(onClick = {
+                    val chooser = javax.swing.JFileChooser().apply {
+                        dialogTitle = model.t("transfer.importFile")
+                        fileFilter = javax.swing.filechooser.FileNameExtensionFilter(model.t("transfer.fileType"), ca.schippers.hfm.sync.BundleFile.EXTENSION)
+                    }
+                    if (chooser.showOpenDialog(null) == javax.swing.JFileChooser.APPROVE_OPTION) {
+                        val file = chooser.selectedFile
+                        scope.launch {
+                            message = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { model.transferMessage(file.name, model.syncServer.receiveFile(file.readBytes())) }
+                        }
+                    }
+                }) { Text(model.t("transfer.importFile")) }
+            }
+            (message ?: model.transferStatus)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
+        }
+    }
 }

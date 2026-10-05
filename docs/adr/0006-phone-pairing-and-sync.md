@@ -51,6 +51,13 @@ The development plan first proposed Ktor with TLS and mDNS discovery.
 - While another user is signed in, the desktop answers 409. The phone keeps its items and says why.
 - A member's captures go to their private group and their own review inbox; an administrator's go to the shared group.
 
+**Transfer files, away from home (section 3.2, Phase 5c):**
+- The same sealed request travels as a file: a short header (`ROOSTSYNC1`, then the desktop id, device id, direction and time as JSON) and the sealed body. The header only says whose it is; the same ids are bound into the encryption, so changing it makes the body fail to open.
+- Names say which way a file goes: `to-desktop-<device>-<time>.roostsync` and `to-phone-<device>-<time>.roostsync`.
+- Cloud folder: the phone writes requests into a folder of the user's own cloud storage chosen with Android's folder picker; the computer sees the same folder through the provider's own app. RANN registers no app with Google, Microsoft or Dropbox and holds no account token. Every 20 seconds the desktop imports new requests, removes them, and leaves a reply (acknowledgements and reference data, as over Wi-Fi) for the phone to collect and delete. Requests for another household or for a user not signed in are left alone; unreadable ones are moved to `Not imported`; uncollected replies are removed after 60 days.
+- Email and USB: the phone shares the same file. On the desktop it is imported by hand, dropped on the Documents screen or put in the documents folder; there is no reply, so the phone shows the items as sent until a later transfer confirms them. The desktop never signs in to a mailbox.
+- Items are still imported once, whatever the route (SYNC-02).
+
 **Removal (SYNC-08):** a removed phone gets 403 and unpairs itself. It never held any household key, so no key rotation is needed.
 
 **Phone storage (SYNC-01, SEC-03):**
@@ -62,5 +69,5 @@ The development plan first proposed Ktor with TLS and mDNS discovery.
 
 - Plain HTTP needs `cleartextTrafficPermitted` on Android. This is acceptable because bodies are already end-to-end encrypted; the transport is never trusted.
 - Windows asks once whether the app may accept connections on private networks.
-- The phone must be on the same network as the computer. Cloud-folder and email transfer (§3.1, §3.2) can reuse the same sealed bundles later (Phase 5).
-- Tested: `SyncServiceTest` and `MultiUserTest` in `core/books`, and `SyncServerTest` (real HTTP on localhost) in `app/desktop`. On the Android emulator: pairing, reference data, a quick expense reaching the desktop inbox, and (Phase 4c) the maintenance list and a boat's hour reading reaching the desktop.
+- Wi-Fi transfer needs the phone on the same network as the computer; away from home, transfer files go through the user's own cloud folder, email or USB.
+- Tested: `SyncServiceTest` and `MultiUserTest` in `core/books`, and `SyncServerTest` (real HTTP on localhost, and transfer files) in `app/desktop`. On the Android emulator: pairing, reference data, a quick expense reaching the desktop inbox, and (Phase 4c) the maintenance list and a boat's hour reading reaching the desktop.

@@ -11,6 +11,7 @@ import ca.schippers.hfm.ocr.OcrResult
 import ca.schippers.hfm.security.KeyPair
 import ca.schippers.hfm.security.PairKey
 import ca.schippers.hfm.security.Random
+import ca.schippers.hfm.sync.BundleFile
 import ca.schippers.hfm.sync.CaptureItem
 import ca.schippers.hfm.sync.CaptureKind
 import ca.schippers.hfm.sync.Direction
@@ -57,6 +58,12 @@ class DeviceNotPairedException : Exception("This phone is not paired")
  * key is sealed for that user, so its captures wait on the phone until they open the household.
  */
 class OwnerAwayException(val ownerName: String) : Exception("The phone's owner is not signed in")
+
+/** Section 3.2: the reply to a request that came as a file, and how many of its items were new. */
+class FileReply(val name: String, val bytes: ByteArray, val deviceId: String, val received: Int)
+
+/** Section 3.2: a transfer file for another household, such as one sharing the same cloud folder. */
+class NotThisHouseholdException : Exception("This transfer file is for another household")
 
 /** SYNC-03: the phone's answer did not match a current QR code. */
 class PairingRejectedException : Exception("Pairing was refused")
@@ -145,7 +152,11 @@ class SyncService internal constructor(private val books: Books) {
      * Opens a phone's sealed request, stores each new item, and returns the sealed answer: the
      * items stored, those that failed, and the reference data when it changed.
      */
-    fun handle(deviceId: String, sealed: ByteArray, converter: CaptureConverter, now: Long, today: LocalDate): ByteArray {
+    fun handle(deviceId: String, sealed: ByteArray, converter: CaptureConverter, now: Long, today: LocalDate): ByteArray =
+        process(deviceId, sealed, converter, now, today).first
+
+    /** [handle], also giving how many items were new. */
+    private fun process(deviceId: String, sealed: ByteArray, converter: CaptureConverter, now: Long, today: LocalDate): Pair<ByteArray, Int> {
         val device = books.core.deviceById(deviceId).executeAsOneOrNull()?.takeIf { it.revoked_at == null } ?: throw DeviceNotPairedException()
         if (device.user_id != books.userId) throw OwnerAwayException(books.core.userById(device.user_id).executeAsOneOrNull()?.display_name.orEmpty())
         val key = books.session.openSealed(SyncCrypto.unb64(device.pair_key), "device:$deviceId")
@@ -170,7 +181,23 @@ class SyncService internal constructor(private val books: Books) {
         val reference = reference(today, now)
         val version = version(reference)
         val response = SyncResponse(imported, failed, version, reference.takeIf { version != request.referenceVersion })
-        return SyncCrypto.seal(SyncResponse.serializer(), response, key, desktopId, deviceId, Direction.TO_PHONE)
+        return SyncCrypto.seal(SyncResponse.serializer(), response, key, desktopId, deviceId, Direction.TO_PHONE) to added
+    }
+
+    /**
+     * Section 3.2: a phone's request that came as a file (a cloud folder, email or USB). Stores its
+     * items as [handle] does and returns the reply as a file, with its name, for the phone to read
+     * when it next looks in the folder.
+     * @throws BundleFile.NotABundleException when the file is not a request; [NotThisHouseholdException]
+     * when it is for another household (several may share a folder).
+     */
+    fun handleFile(bytes: ByteArray, converter: CaptureConverter, now: Long, today: LocalDate): FileReply {
+        val (header, sealed) = BundleFile.read(bytes)
+        if (header.direction != Direction.TO_DESKTOP) throw BundleFile.NotABundleException()
+        if (header.desktopId != desktopId) throw NotThisHouseholdException()
+        val (answer, added) = process(header.deviceId, sealed, converter, now, today)
+        val reply = BundleFile.Header(desktopId, header.deviceId, Direction.TO_PHONE, now)
+        return FileReply(BundleFile.name(reply), BundleFile.write(reply, answer), header.deviceId, added)
     }
 
     /** Stores one captured item; returns the document it became, if any. */

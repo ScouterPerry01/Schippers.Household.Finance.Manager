@@ -61,6 +61,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
     }
     // CAP-04: files saved into the watched folder are imported in the background.
     LaunchedEffect(model) { watchFolder(model) }
+    LaunchedEffect(model) { watchTransferFolder(model) }
     LaunchedEffect(model) {
         ensureBackupDefaults(model)
         backupScheduler(model)

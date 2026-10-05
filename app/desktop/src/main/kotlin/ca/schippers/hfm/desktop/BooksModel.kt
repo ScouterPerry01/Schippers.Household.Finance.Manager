@@ -65,6 +65,9 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     /** CAP-03, CAP-04: what the last document import did. */
     var lastImportMessage by mutableStateOf<String?>(null)
 
+    /** Section 3.2: what the last look at the transfer folder found. */
+    var transferStatus by mutableStateOf<String?>(null)
+
     /** OTH-03: the last search and its results, shown in a dialog. */
     var search by mutableStateOf<Pair<String, SearchResults>?>(null)
 

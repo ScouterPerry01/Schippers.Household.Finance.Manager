@@ -4,6 +4,7 @@ import ca.schippers.hfm.books.Books
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.security.KdfParams
+import ca.schippers.hfm.sync.BundleFile
 import ca.schippers.hfm.sync.CaptureItem
 import ca.schippers.hfm.sync.CaptureKind
 import ca.schippers.hfm.sync.OcrText
@@ -63,6 +64,29 @@ class SyncServerTest {
             SyncClient(connectTimeoutMillis = 1_000).pair(books.sync.invitation("Bureau", "127.0.0.1", 1, System.currentTimeMillis()), "phone-2", "Other")
         }
         assertEquals(SyncException.Reason.UNREACHABLE, gone.reason)
+        books.session.close()
+    }
+
+    @Test
+    fun `transfer files are received whether or not the listener runs, and say what became of them`() {
+        val store = HouseholdStore(SqlCipherJdbcDriverFactory(), KdfParams.TESTING)
+        val books = Books(store.create(temp.resolve("F.hfm"), "Famille F", "perry", "Perry", "pw".toCharArray()).session)
+        val server = SyncServer(books, { LocalDate(2026, 10, 2) }) {}
+        server.start()
+        val desktop = SyncClient().pair(books.sync.invitation("Bureau", "127.0.0.1", server.port, System.currentTimeMillis()), "phone-1", "Pixel")
+        // Away from home: the listener is off, the file arrives through the folder.
+        server.close()
+        val item = CaptureItem("r-1", CaptureKind.RECEIPT, System.currentTimeMillis(), pages = listOf(SyncCrypto.b64(jpeg())))
+        val (_, file) = BundleFile.request(desktop, SyncRequest(System.currentTimeMillis(), listOf(item)), System.currentTimeMillis())
+
+        val first = server.receiveFile(file)
+        assertEquals(TransferOutcome.RECEIVED to 1, first.outcome to first.received)
+        assertEquals(listOf("r-1"), BundleFile.reply(desktop, first.reply!!.bytes).imported)
+        assertEquals(0, server.receiveFile(file).received, "the same file twice imports once")
+        assertEquals(TransferOutcome.NOT_A_BUNDLE, server.receiveFile(jpeg()).outcome)
+        assertEquals(TransferOutcome.OTHER_HOUSEHOLD, server.receiveFile(BundleFile.request(desktop.copy(desktopId = "x"), SyncRequest(0, emptyList()), 0).second).outcome)
+        books.sync.revoke("phone-1", System.currentTimeMillis())
+        assertEquals(TransferOutcome.NOT_PAIRED, server.receiveFile(file).outcome)
         books.session.close()
     }
 }

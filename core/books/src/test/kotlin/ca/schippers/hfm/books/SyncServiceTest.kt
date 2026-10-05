@@ -11,12 +11,14 @@ import ca.schippers.hfm.security.DecryptionException
 import ca.schippers.hfm.security.KdfParams
 import ca.schippers.hfm.security.KeyPair
 import ca.schippers.hfm.security.PairKey
+import ca.schippers.hfm.sync.BundleFile
 import ca.schippers.hfm.sync.CaptureFields
 import ca.schippers.hfm.sync.CaptureItem
 import ca.schippers.hfm.sync.CaptureKind
 import ca.schippers.hfm.sync.Direction
 import ca.schippers.hfm.sync.OcrText
 import ca.schippers.hfm.sync.PairRequest
+import ca.schippers.hfm.sync.PairedDesktop
 import ca.schippers.hfm.sync.PairingInvitation
 import ca.schippers.hfm.sync.SyncCrypto
 import ca.schippers.hfm.sync.SyncRequest
@@ -83,6 +85,36 @@ class SyncServiceTest {
         "item-1", CaptureKind.RECEIPT, now, pages = listOf(SyncCrypto.b64("jpeg-bytes".encodeToByteArray())),
         ocrLines = listOf(OcrText("Metro Plus", 0.98f), OcrText("TOTAL 23,45", 0.97f), OcrText("2026-09-30", 0.97f)),
     )
+
+    @Test
+    fun `a request can come as a file, and the reply goes back as one`() {
+        val key = pairAsPhone(books.sync.invitation("Bureau", "127.0.0.1", 47311, now))
+        val desktop = PairedDesktop(books.sync.desktopId, "Famille S", "127.0.0.1", 47311, "pixel-8", SyncCrypto.b64(key))
+        val (name, file) = BundleFile.request(desktop, SyncRequest(now, listOf(receipt)), now)
+        assertTrue(name.startsWith("to-desktop-pixel8-") && name.endsWith(".roostsync"), name)
+
+        val first = books.sync.handleFile(file, converter, now, today)
+        val reply = first.bytes
+        assertTrue(first.name.startsWith("to-phone-pixel8-"), first.name)
+        assertEquals(1, first.received)
+        val answer = BundleFile.reply(desktop, reply)
+        assertEquals(listOf("item-1"), answer.imported)
+        assertEquals(1, books.documents.inbox().size)
+        // The same file again (a folder synced twice, an email opened twice) imports nothing new.
+        val again = books.sync.handleFile(file, converter, now, today)
+        assertEquals(listOf("item-1"), BundleFile.reply(desktop, again.bytes).imported)
+        assertEquals(0, again.received)
+        assertEquals(1, books.documents.inbox().size)
+
+        assertFailsWith<BundleFile.NotABundleException> { books.sync.handleFile("hello".encodeToByteArray(), converter, now, today) }
+        assertFailsWith<BundleFile.NotABundleException>("a reply is not a request") { books.sync.handleFile(reply, converter, now, today) }
+        val other = BundleFile.request(desktop.copy(desktopId = "another-household"), SyncRequest(now, listOf(receipt)), now).second
+        assertFailsWith<NotThisHouseholdException> { books.sync.handleFile(other, converter, now, today) }
+        // Changing the header to pass as another phone makes the body fail to open.
+        val forged = String(file, Charsets.ISO_8859_1).replace("\"pixel-8\"", "\"tablet\"").toByteArray(Charsets.ISO_8859_1)
+        assertFailsWith<DeviceNotPairedException> { books.sync.handleFile(forged, converter, now, today) }
+        assertFailsWith<BundleFile.NotABundleException>("a reply for another phone is refused") { BundleFile.reply(desktop.copy(deviceId = "tablet"), reply) }
+    }
 
     @Test
     fun `pairing needs the code from the QR code`() {
