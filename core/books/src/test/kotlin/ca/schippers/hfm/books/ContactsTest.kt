@@ -196,4 +196,25 @@ class ContactsTest {
         assertEquals(listOf("roy@example.com"), merged.emails.map { it.value })
         assertEquals(listOf(c.id), books.contacts.links(merged.id).map { it.link.targetId })
     }
+
+    @Test
+    fun `a record kept in a private group is gathered into that group, out of other users' sight`() {
+        household().use { books ->
+            val marie = books.users.add("marie", "Marie", Role.MEMBER, "password2-long".toCharArray()).userId
+            books.session.setPermission(books.groups().single().id, marie, PermissionLevel.EDIT)
+        }
+        Books(store.unlock(dir, "marie", "password2-long".toCharArray())).use { marie ->
+            val own = marie.session.createGroup("Marie - privé", private = true)
+            marie.health.saveProvider(HealthProvider("", own, "Dre Psy", ProviderKind.SPECIALIST, "418 555-0111", null, null, false))
+            val p = marie.contacts.proposals().single()
+            assertEquals(own, p.sources.single().privateGroupId)
+            val shared = marie.groups().first { !it.isPrivate }.id
+            val made = marie.contacts.gather(shared, listOf(GatherDecision(p.sources))).single()
+            assertEquals(own, made.groupId, "it stays in the private group, whatever group was chosen")
+        }
+        Books(store.unlock(dir, "perry", "password1".toCharArray())).use { perry ->
+            assertTrue(perry.contacts.proposals().isEmpty())
+            assertTrue(perry.contacts.list().isEmpty())
+        }
+    }
 }

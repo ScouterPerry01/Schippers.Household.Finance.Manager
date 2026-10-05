@@ -391,8 +391,9 @@ class ContactService internal constructor(private val books: Books) {
     /** Every record that can become a contact, with what it brings and the links it gets. */
     private fun sources(): List<GatherSource> {
         val out = ArrayList<GatherSource>()
-        val privateGroups = books.groups().filter { it.isPrivate }.map { it.id }.toSet()
-        fun private(groupId: String) = groupId.takeIf { it in privateGroups }
+        val privateGroups = books.groups().filter { it.isPrivate }
+        val editablePrivate = privateGroups.filter { it.level == PermissionLevel.EDIT }.map { it.id }.toSet()
+        fun private(groupId: String) = groupId.takeIf { id -> privateGroups.any { it.id == id } }
         val accounts = runCatching { books.accounts.list(includeClosed = true).map { it.account } }.getOrDefault(emptyList())
         for (i in books.institutions.list()) {
             val folded = SearchService.fold(i.name)
@@ -464,7 +465,9 @@ class ContactService internal constructor(private val books: Books) {
                 )
             }
         }
-        return out
+        // A record in someone else's private group the user may only read stays out: its contact
+        // could be made neither there nor, without leaking it, anywhere else.
+        return out.filter { it.privateGroupId == null || it.privateGroupId in editablePrivate }
     }
 
     // --- Helpers --------------------------------------------------------------------------------
