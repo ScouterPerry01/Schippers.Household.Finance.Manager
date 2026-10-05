@@ -49,7 +49,7 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import java.time.format.DateTimeFormatter
 
-enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, PLANS, FX, MEDICAL, ASSETS, MAINTENANCE, DEBT, BUDGET, RECONCILIATION }
+enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, CUSTOM, YEAR_IN_REVIEW, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, PLANS, FX, MEDICAL, ASSETS, MAINTENANCE, DEBT, BUDGET, RECONCILIATION }
 /** FX-06: reports that can show one currency's accounts in their own amounts. */
 private val BY_CURRENCY = setOf(ReportKind.INCOME_EXPENSE, ReportKind.SPENDING_BY_CATEGORY, ReportKind.INCOME_BY_CATEGORY, ReportKind.SPENDING_BY_PAYEE, ReportKind.NET_WORTH)
 
@@ -68,6 +68,8 @@ class ReportState {
     var compare by mutableStateOf(Compare.NONE)
     /** The tax year of the investment income report: last year by default, as for filing. */
     var taxYear by mutableStateOf(today().year - 1)
+    /** The year in review's year: this one so far by default. */
+    var reviewYear by mutableStateOf(today().year)
     /** The year of the registered plans report: this year by default, for the room left. */
     var planYear by mutableStateOf(today().year)
     /** FX-06: show only the accounts in this currency, in their own amounts; null for everything in the base currency. */
@@ -75,6 +77,12 @@ class ReportState {
     /** Drill path in the category reports: the category whose subcategories are shown. */
     var parent by mutableStateOf<Category?>(null)
     var drill by mutableStateOf<Pair<String, List<DrillRow>>?>(null)
+    /** RPT-03: the custom report's rows, columns, measure and chart. */
+    var layout by mutableStateOf(ca.schippers.hfm.books.CustomLayout())
+    /** RPT-07: a chosen set of accounts (such as the cottage's); null for every account. */
+    var accountSet by mutableStateOf<Set<String>?>(null)
+    /** The saved report on the screen, if one was opened or saved, so saving again updates it. */
+    var savedId by mutableStateOf<String?>(null)
 
     fun range(): Pair<LocalDate, LocalDate> {
         val t = today()
@@ -100,21 +108,44 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
     val members = remember(model.revision) { books.members.list() }
     val tags = remember(model.revision) { books.tags() }
     val (from, to) = state.range()
-    val accountIds = remember(model.revision, state.groupId) {
-        state.groupId?.let { g -> books.accounts.list(includeClosed = true).filter { it.account.groupId == g }.map { it.account.id }.toSet() }
+    val owned = state.kind in setOf(ReportKind.NET_WORTH, ReportKind.DEBT)
+    val accountIds = remember(model.revision, state.groupId, state.accountSet, state.memberId, owned) {
+        val chosen = model.reportAccounts(state.groupId, state.accountSet)
+        // RPT-07: net worth and debt by person are those of the accounts the person owns.
+        val member = state.memberId.takeIf { owned }
+        if (member == null) chosen else books.accounts.list(includeClosed = true).filter { member in it.account.ownerMemberIds }.map { it.account.id }.toSet()
+            .let { mine -> chosen?.let { mine intersect it } ?: mine }
     }
+    val saved = remember(model.revision) { books.savedReports.list() }
+    var saving by remember { mutableStateOf(false) }
+    var choosingAccounts by remember { mutableStateOf(false) }
     val currencies = remember(model.revision) { books.accounts.list(includeClosed = true).map { it.account.currency }.filter { !it.isCrypto && it != books.reports.base }.distinct().sortedBy { it.code } }
     val currency = state.currency?.takeIf { state.kind in BY_CURRENCY }
     val filter = ReportFilter(from, to, accountIds, state.memberId, state.tagId, currency)
 
     Row(Modifier.fillMaxSize()) {
-        Column(Modifier.width(230.dp).fillMaxHeight().padding(8.dp)) {
+        Column(Modifier.width(230.dp).fillMaxHeight().padding(8.dp).verticalScroll(rememberScrollState())) {
             for (kind in ReportKind.entries) {
                 NavigationDrawerItem(
                     label = { Text(model.t("report.${kind.name}")) },
-                    selected = state.kind == kind,
-                    onClick = { state.kind = kind; state.parent = null },
+                    selected = state.kind == kind && state.savedId == null,
+                    onClick = { state.kind = kind; state.parent = null; state.savedId = null },
                 )
+            }
+            // RPT-03: the reports this user saved.
+            if (saved.isNotEmpty()) {
+                Text(model.t("report.saved"), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp))
+                for (r in saved) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        NavigationDrawerItem(
+                            label = { Text(r.name + if (r.schedule != null) " ⏱" else "", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            selected = state.savedId == r.id,
+                            onClick = { ca.schippers.hfm.books.ReportDefinition.fromJson(r.definition)?.let { state.load(it, r) } },
+                            modifier = Modifier.weight(1f),
+                        )
+                        TextButton(onClick = { model.act { books.savedReports.delete(r.id) }; if (state.savedId == r.id) state.savedId = null }) { Text("✕") }
+                    }
+                }
             }
         }
         VerticalDivider()
@@ -124,19 +155,37 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                 if (state.kind == ReportKind.PLANS || state.kind == ReportKind.MAINTENANCE) {
                     Picker(model.t("loans.year"), (today().year downTo today().year - 10).toList(), state.planYear, { it.toString() }, Modifier.width(140.dp)) { state.planYear = it }
                 }
-                if (state.kind == ReportKind.INVESTMENT_INCOME || state.kind == ReportKind.FX || state.kind == ReportKind.MEDICAL) {
+                if (state.kind == ReportKind.YEAR_IN_REVIEW) {
+                    Picker(model.t("review.year"), (today().year downTo today().year - 10).toList(), state.reviewYear, { it.toString() }, Modifier.width(140.dp)) { state.reviewYear = it }
+                }
+                if (state.kind in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.MEDICAL)) {
                     Picker(model.t("income.year"), (today().year downTo today().year - 10).toList(), state.taxYear, { it.toString() }, Modifier.width(190.dp)) { state.taxYear = it }
                 }
-                if (state.kind !in setOf(ReportKind.RECONCILIATION, ReportKind.DEBT, ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE)) {
+                if (state.kind !in setOf(ReportKind.RECONCILIATION, ReportKind.DEBT, ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE, ReportKind.YEAR_IN_REVIEW)) {
                     Picker(model.t("report.period"), RangePreset.entries, state.preset, { model.t("range.$it") }, Modifier.width(200.dp)) { state.preset = it }
                     if (state.preset == RangePreset.CUSTOM) {
                         DateInput(model.t("report.from"), state.customFrom, Modifier.width(150.dp)) { state.customFrom = it }
                         DateInput(model.t("report.to"), state.customTo, Modifier.width(150.dp)) { state.customTo = it }
                     }
                 }
-                if (groups.size > 1 && state.kind !in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE)) {
+                if (groups.size > 1 && state.kind !in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE, ReportKind.YEAR_IN_REVIEW)) {
                     Picker(model.t("report.accounts"), listOf(null) + groups, groups.firstOrNull { it.id == state.groupId }, { it?.name ?: model.t("report.allAccounts") }, Modifier.width(200.dp)) {
                         state.groupId = it?.id
+                    }
+                }
+                if (state.kind !in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE, ReportKind.RECONCILIATION, ReportKind.YEAR_IN_REVIEW)) {
+                    OutlinedButton(onClick = { choosingAccounts = true }, modifier = Modifier.padding(top = 8.dp)) {
+                        Text(state.accountSet?.let { model.t("report.someAccounts", it.size) } ?: model.t("report.chooseAccounts"))
+                    }
+                }
+                if (state.kind in setOf(ReportKind.NET_WORTH, ReportKind.DEBT, ReportKind.CUSTOM) && members.isNotEmpty()) {
+                    Picker(model.t("report.person"), listOf(null) + members, members.firstOrNull { it.id == state.memberId }, { it?.displayName ?: model.t("report.everyone") }, Modifier.width(180.dp)) {
+                        state.memberId = it?.id
+                    }
+                }
+                if (state.kind == ReportKind.CUSTOM && tags.isNotEmpty()) {
+                    Picker(model.t("report.tag"), listOf(null) + tags, tags.firstOrNull { it.id == state.tagId }, { it?.name ?: model.t("report.anyTag") }, Modifier.width(180.dp)) {
+                        state.tagId = it?.id
                     }
                 }
                 if (state.kind in BY_CURRENCY && currencies.isNotEmpty()) {
@@ -163,9 +212,15 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                     Picker(model.t("report.compare"), Compare.entries, state.compare, { model.t("compare.$it") }, Modifier.width(260.dp)) { state.compare = it }
                 }
             }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
+                TextButton(onClick = { saving = true }) { Text(model.t("report.save")) }
+                model.reportMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
+            }
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                 when (state.kind) {
+                    ReportKind.CUSTOM -> CustomReportView(model, state, filter)
+                    ReportKind.YEAR_IN_REVIEW -> YearReviewReport(model, state.reviewYear)
                     ReportKind.INCOME_EXPENSE -> IncomeExpenseReport(model, state, filter)
                     ReportKind.SPENDING_BY_CATEGORY -> CategoryReport(model, state, filter, CategoryKind.EXPENSE)
                     ReportKind.INCOME_BY_CATEGORY -> CategoryReport(model, state, filter, CategoryKind.INCOME)
@@ -186,6 +241,8 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
         }
     }
     state.drill?.let { (title, rows) -> DrillDialog(model, title, rows) { state.drill = null } }
+    if (saving) SaveReportDialog(model, state) { saving = false }
+    if (choosingAccounts) AccountSetDialog(model, state.accountSet) { state.accountSet = it; choosingAccounts = false }
 }
 
 /** FX-06: the currency the report is in: the one chosen, or the base currency. */

@@ -452,6 +452,22 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 6 core databases gain saved reports`() {
+        val file = temp.resolve("core6.db")
+        older("../data/src/main/sqldelight/core/schemas/6.db", file, 6).use { driver ->
+            driver.execute(null, "INSERT INTO app_user(id, login_name, display_name, role, public_key, created_at) VALUES ('u', 'perry', 'Perry', 'ADMINISTRATOR', x'00', 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, CoreDatabase.Schema, file)
+            assertEquals(CoreDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = CoreDatabase(driver).savedReportQueries
+            q.upsertSavedReport("r", "u", "Cottage", "{}", null, null, null, 0)
+            q.upsertSavedReport("r", "u", "Cottage costs", "{}", "MONTHLY", "/tmp", null, 0)
+            assertEquals("Cottage costs" to "MONTHLY", q.savedReports("u").executeAsOne().let { it.name to it.schedule })
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()

@@ -1,0 +1,27 @@
+-- RPT-03, RPT-05 (core version 7): reports a user saved to run again, and those made on a schedule.
+-- Only the choices are kept (kind, period, filters, rows and columns, as JSON), never amounts.
+CREATE TABLE saved_report (
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    definition TEXT NOT NULL,
+    -- RPT-05: MONTHLY, QUARTERLY or YEARLY; the folder the PDF is written to; the last period made.
+    schedule TEXT,
+    folder TEXT,
+    last_period TEXT,
+    created_at INTEGER NOT NULL
+);
+
+savedReports:
+SELECT * FROM saved_report WHERE user_id = ? ORDER BY name COLLATE NOCASE;
+
+upsertSavedReport:
+INSERT INTO saved_report(id, user_id, name, definition, schedule, folder, last_period, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET name = excluded.name, definition = excluded.definition, schedule = excluded.schedule,
+    folder = excluded.folder, last_period = excluded.last_period;
+
+setReportRun:
+UPDATE saved_report SET last_period = ? WHERE id = ?;
+
+deleteSavedReport:
+DELETE FROM saved_report WHERE id = ? AND user_id = ?;

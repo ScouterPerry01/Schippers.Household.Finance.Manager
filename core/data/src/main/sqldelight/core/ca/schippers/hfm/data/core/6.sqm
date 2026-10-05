@@ -1,0 +1,12 @@
+-- Version 6 to 7 (RPT-03, RPT-05): saved and scheduled reports.
+
+CREATE TABLE saved_report (
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    definition TEXT NOT NULL,
+    schedule TEXT,
+    folder TEXT,
+    last_period TEXT,
+    created_at INTEGER NOT NULL
+);
