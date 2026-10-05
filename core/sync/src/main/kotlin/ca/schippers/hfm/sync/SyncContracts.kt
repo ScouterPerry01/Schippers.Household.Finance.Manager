@@ -148,7 +148,14 @@ data class RefBill(val name: String, val dueDate: String, val amount: String, va
 data class RefDue(val taskId: String, val subject: String, val task: String, val state: String, val dueDate: String? = null, val dueUsage: Int? = null, val unit: String? = null)
 
 @Serializable
-data class RefBudget(val categoryName: String, val budget: String, val spent: String, val currency: String)
+data class RefBudget(
+    val categoryName: String,
+    val budget: String,
+    val spent: String,
+    val currency: String,
+    /** BUD-04: so the phone can name the category in its own language and remember which alerts it showed. */
+    val categoryId: String? = null,
+)
 
 internal val SyncJson = Json { ignoreUnknownKeys = true; encodeDefaults = false; explicitNulls = false }
 internal val B64URL: Base64.Encoder get() = Base64.getUrlEncoder().withoutPadding()

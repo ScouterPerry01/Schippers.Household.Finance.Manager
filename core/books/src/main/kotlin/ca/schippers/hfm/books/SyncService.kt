@@ -269,7 +269,10 @@ class SyncService internal constructor(private val books: Books) {
                 RefBill(it.bill.name, it.dueDate.toString(), it.amount.toBigDecimal().toPlainString(), it.amount.currency.code, !it.amountKnown, it.bill.reminderDays)
             },
             budgets = budgets?.lines.orEmpty().filter { it.category.kind == CategoryKind.EXPENSE }.map {
-                RefBudget(it.category.name(ca.schippers.hfm.i18n.Language.ENGLISH), it.budgeted.toBigDecimal().toPlainString(), it.actual.toBigDecimal().toPlainString(), it.budgeted.currency.code)
+                RefBudget(
+                    it.category.name(ca.schippers.hfm.i18n.Language.ENGLISH), it.budgeted.toBigDecimal().toPlainString(), it.actual.toBigDecimal().toPlainString(),
+                    it.budgeted.currency.code, it.category.id,
+                )
             },
             maintenance = maintenance(today),
             generatedAtMillis = now,
