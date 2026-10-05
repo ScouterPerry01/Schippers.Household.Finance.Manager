@@ -81,4 +81,28 @@ object Medical {
     /** The calendar year as a period, for comparison and for returns that use it. */
     fun calendarYear(expenses: List<Pair<LocalDate, BigDecimal>>, year: Int): Window =
         Window(LocalDate(year, 1, 1), LocalDate(year, 12, 31), expenses.filter { it.first.year == year }.fold(BigDecimal.ZERO) { a, e -> a + e.second })
+
+    /**
+     * MED-13: the part of [total] that counts for the federal credit when claimed by someone with
+     * [netIncome]: the expenses above 3 % of net income, or above [maxReduction] (the CRA's fixed
+     * amount for the year) when that is less.
+     */
+    fun claimable(total: BigDecimal, netIncome: BigDecimal, maxReduction: BigDecimal?): BigDecimal {
+        val threePercent = netIncome.max(BigDecimal.ZERO).multiply(BigDecimal("0.03")).setScale(2, RoundingMode.HALF_UP)
+        val reduction = maxReduction?.let { threePercent.min(it) } ?: threePercent
+        return (total - reduction).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP)
+    }
+
+    /**
+     * MED-13: who of the spouses should claim the household's expenses: each with what would count
+     * for the credit, the most first. Usually the spouse with the lower net income, as long as they
+     * have tax to pay: the credit is not refundable.
+     */
+    fun <K> whoClaims(total: BigDecimal, netIncomes: Map<K, BigDecimal>, maxReduction: BigDecimal?): List<Pair<K, BigDecimal>> =
+        netIncomes.map { (k, income) -> k to claimable(total, income, maxReduction) }.sortedByDescending { it.second }
+
+    /** The federal fixed amount for [year] as published by the CRA, when known; later years are entered by the user. */
+    fun federalMaxReduction(year: Int): BigDecimal? = FEDERAL_MAX_REDUCTION[year]?.let { BigDecimal(it) }
+
+    private val FEDERAL_MAX_REDUCTION = mapOf(2023 to 2635, 2024 to 2759, 2025 to 2834)
 }

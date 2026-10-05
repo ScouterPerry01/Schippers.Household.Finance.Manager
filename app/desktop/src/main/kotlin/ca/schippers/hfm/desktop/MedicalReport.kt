@@ -3,19 +3,30 @@ package ca.schippers.hfm.desktop
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.MedExpense
 import ca.schippers.hfm.books.MedicalService
+import ca.schippers.hfm.books.Member
+import ca.schippers.hfm.calc.medical.Medical
 import ca.schippers.hfm.calc.medical.Window
 import ca.schippers.hfm.money.Currency
+import ca.schippers.hfm.domain.MemberKind
 import ca.schippers.hfm.money.Money
+import ca.schippers.hfm.money.MoneyFormat
 import ca.schippers.hfm.ocr.desktop.PdfPages
 import java.io.File
 import javax.swing.JFileChooser
@@ -75,6 +86,8 @@ internal fun MedicalReport(model: BooksModel, year: Int, memberId: String?) {
         val familyIds = tax.people.filter { !it.otherDependant }.map { it.member.id }.toSet()
         Text(model.t("medicalReport.family", model.date(w.start), model.date(w.end), model.money(Money.of(w.total, cad))), modifier = Modifier.padding(vertical = 6.dp))
         BundleButton(model, model.t("medicalReport.bundleFamily"), w, familyIds, year)
+        val adults = members.filter { it.kind == MemberKind.ADULT && !it.archived }
+        if (memberId == null && adults.size >= 2) WhoClaims(model, year, w, adults)
     }
     TableView(
         model,
@@ -117,4 +130,41 @@ private fun BundleButton(model: BooksModel, label: String, window: Window, membe
             file.writeBytes(pdf)
         }
     }, modifier = Modifier.padding(vertical = 4.dp)) { Text(label) }
+}
+
+/**
+ * MED-13: which spouse's claim counts for more, from the net incomes the user enters (the books do
+ * not hold them). Indicative only: the credit is not refundable, and the return decides.
+ */
+@Composable
+private fun WhoClaims(model: BooksModel, year: Int, window: Window, adults: List<Member>) {
+    val locale = model.language.locale
+    val cad = Currency.CAD
+    val incomes = remember(year) { mutableStateMapOf<String, String>() }
+    var max by remember(year) { mutableStateOf(Medical.federalMaxReduction(year)?.let { MoneyFormat.formatAmount(Money.of(it.setScale(2), cad), locale) }.orEmpty()) }
+    Text(model.t("medicalReport.whoClaims"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp))
+    Text(model.t("medicalReport.whoClaimsHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (a in adults) {
+            AmountInput(model.t("medicalReport.netIncome", a.displayName), incomes[a.id].orEmpty(), cad, locale, Modifier.width(220.dp), model::money) { incomes[a.id] = it }
+        }
+        AmountInput(model.t("medicalReport.maxReduction", year.toString()), max, cad, locale, Modifier.width(220.dp), model::money) { max = it }
+    }
+    val entered = adults.mapNotNull { a -> runCatching { parseAmount(incomes[a.id].orEmpty(), cad, locale) }.getOrNull()?.let { a to it.toBigDecimal() } }.toMap()
+    if (entered.size < 2) return
+    val cap = runCatching { parseAmount(max, cad, locale) }.getOrNull()?.toBigDecimal()
+    val ranked = Medical.whoClaims(window.total, entered, cap)
+    for ((a, amount) in ranked) Text(model.t("medicalReport.claimable", a.displayName, model.money(Money.of(amount, cad))))
+    val (best, top) = ranked.first()
+    val gap = top - ranked[1].second
+    Text(
+        when {
+            top.signum() == 0 -> model.t("medicalReport.claimNone")
+            gap.signum() == 0 -> model.t("medicalReport.claimEither")
+            else -> model.t("medicalReport.claimBest", best.displayName, model.money(Money.of(gap, cad)))
+        },
+        fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 4.dp),
+    )
+    Text(model.t("medicalReport.claimNote"), style = MaterialTheme.typography.bodySmall)
+    if (model.books.province.isQuebec) Text(model.t("medicalReport.claimQuebec"), style = MaterialTheme.typography.bodySmall)
 }

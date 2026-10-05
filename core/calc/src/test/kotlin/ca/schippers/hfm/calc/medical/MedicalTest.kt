@@ -59,4 +59,20 @@ class MedicalTest {
         val tie = Medical.bestWindow(listOf(d("2026-01-10") to n("100"), d("2026-06-10") to n("0")), 2026)!!
         assertEquals(d("2026-01-10"), tie.end)
     }
+
+    /**
+     * MED-13: $4,000 of expenses. Alex's net income of $110,000 takes off the fixed amount ($2,834 in
+     * 2025, less than 3 %); Sam's $40,000 takes off only $1,200, so Sam's claim counts for $1,634 more.
+     */
+    @Test
+    fun `the spouse with the lower net income usually claims`() {
+        val max = Medical.federalMaxReduction(2025)
+        assertEquals(n("2834"), max)
+        assertEquals(n("1166.00"), Medical.claimable(n("4000"), n("110000"), max))
+        assertEquals(n("2800.00"), Medical.claimable(n("4000"), n("40000"), max))
+        assertEquals(n("0.00"), Medical.claimable(n("500"), n("40000"), max), "nothing counts below the threshold")
+        assertEquals(n("700.00"), Medical.claimable(n("4000"), n("110000"), null), "with no fixed amount, 3 % of net income")
+        assertEquals(listOf("Sam" to n("2800.00"), "Alex" to n("1166.00")), Medical.whoClaims(n("4000"), mapOf("Alex" to n("110000"), "Sam" to n("40000")), max))
+        assertNull(Medical.federalMaxReduction(2031))
+    }
 }

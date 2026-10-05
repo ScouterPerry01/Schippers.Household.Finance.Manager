@@ -20,3 +20,7 @@ L’application indique à quel régime envoyer chaque dépense et environ combi
 ## Couverture restante
 
 L’onglet Couverture restante montre ce qui reste des maximums annuels de chaque régime pour l’année du régime, et quand un service limité est de nouveau couvert.
+
+## Le crédit d’impôt
+
+Le rapport Frais médicaux, dans Rapports, trouve les 12 mois se terminant dans l’année qui comptent le plus de frais admissibles et réunit leurs reçus dans un seul PDF. Sous Quel conjoint devrait demander le crédit ?, entrez le revenu net prévu des deux conjoints : le rapport montre combien compte pour le crédit fédéral si chacun le demande, et quelle demande compte le plus. Le montant fixe que l’ARC établit chaque année est rempli pour les années que RANN's Roost connaît ; entrez-le pour les années suivantes. C’est à titre indicatif seulement : le crédit n’est pas remboursable, donc le conjoint qui le demande doit avoir de l’impôt à payer.

@@ -20,3 +20,7 @@ The app shows which plan to send each expense to next, and about how much should
 ## Coverage left
 
 The Coverage left tab shows what is left of each plan's yearly maximums this plan year, and when a limited service is covered again.
+
+## The tax credit
+
+The Medical expenses report, under Reports, finds the 12 months ending in the year with the most eligible expenses and puts their receipts in one PDF. Under Which spouse should claim?, enter the two spouses' expected net incomes: it shows how much counts for the federal credit if each one claims, and which claim counts for more. The fixed amount the CRA sets each year is filled in for the years RANN's Roost knows; enter it for later years. This is indicative only: the credit is not refundable, so the spouse who claims needs tax to pay.
