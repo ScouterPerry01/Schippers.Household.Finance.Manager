@@ -412,6 +412,10 @@ DELETE FROM txn_tag WHERE txn_id = ?;
 tagsForTxn:
 SELECT tag_id FROM txn_tag WHERE txn_id = ?;
 
+-- A deleted tag comes off every transaction; the transactions stay.
+deleteTagEverywhere:
+DELETE FROM txn_tag WHERE tag_id = ?;
+
 
 setExternalId:
 UPDATE txn SET external_id = ?, updated_at = ? WHERE id = ?;

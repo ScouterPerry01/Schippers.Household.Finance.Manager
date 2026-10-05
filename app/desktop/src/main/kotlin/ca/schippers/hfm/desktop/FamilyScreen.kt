@@ -37,7 +37,10 @@ import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Allowance
 import ca.schippers.hfm.books.AllowanceFrequency
 import ca.schippers.hfm.books.AllowanceKind
+import ca.schippers.hfm.books.AllowanceEntry
 import ca.schippers.hfm.books.FamilyLoan
+import ca.schippers.hfm.books.FamilyLoanService
+import ca.schippers.hfm.books.LoanPayment
 import ca.schippers.hfm.books.ShareEntry
 import ca.schippers.hfm.books.ShareGroup
 import ca.schippers.hfm.books.SharePerson
@@ -82,6 +85,7 @@ private fun SharedTab(model: BooksModel) {
     var editing by remember { mutableStateOf<ShareGroup?>(null) }
     var creating by remember { mutableStateOf(false) }
     var adding by remember { mutableStateOf(false) }
+    var deleting by remember { mutableStateOf<ShareEntry?>(null) }
     val g = groups.firstOrNull { it.id == selected } ?: groups.firstOrNull()
     Row(Modifier.fillMaxSize()) {
         Column(Modifier.width(240.dp).fillMaxHeight()) {
@@ -144,7 +148,7 @@ private fun SharedTab(model: BooksModel) {
                         )
                     }
                     MoneyText(model, e.amount)
-                    TextButton(onClick = { model.act { books.sharedExpenses.deleteEntry(g.id, e.id) } }) { Text("✕") }
+                    TextButton(onClick = { deleting = e }) { Text("✕") }
                 }
             }
         }
@@ -152,6 +156,13 @@ private fun SharedTab(model: BooksModel) {
     if (creating) ShareGroupDialog(model, null) { id -> creating = false; if (id != null) selected = id }
     editing?.let { e -> ShareGroupDialog(model, e) { editing = null } }
     if (adding && g != null) ShareEntryDialog(model, g) { adding = false }
+    if (g != null) {
+        deleting?.let { e ->
+            AskBeforeDeleting(model, model.t("share.deleteEntry.body", e.description, model.money(e.amount), model.date(e.date)), onDismiss = { deleting = null }) {
+                model.act { books.sharedExpenses.deleteEntry(g.id, e.id) } != null
+            }
+        }
+    }
 }
 
 @Composable
@@ -160,6 +171,7 @@ private fun ShareGroupDialog(model: BooksModel, existing: ShareGroup?, onClose: 
     var name by remember { mutableStateOf(existing?.name.orEmpty()) }
     val people = remember { mutableStateListOf<SharePerson>().apply { addAll(existing?.people ?: listOf(SharePerson("", ""), SharePerson("", ""))) } }
     var archived by remember { mutableStateOf(existing?.archived ?: false) }
+    var asking by remember { mutableStateOf(false) }
     FormDialog(model.t(if (existing == null) "share.newGroup" else "share.editGroup"), model.t("common.save"), model.t("common.cancel"), onDismiss = { onClose(null) }, onSave = {
         val saved = model.act { model.books.sharedExpenses.save(existing?.id, model.editableGroup(), name, existing?.currency ?: model.books.reports.base, people.toList(), archived) }
         if (saved != null) onClose(saved.id)
@@ -176,7 +188,15 @@ private fun ShareGroupDialog(model: BooksModel, existing: ShareGroup?, onClose: 
             }
         }
         TextButton(onClick = { people.add(SharePerson("", "")) }) { Text(model.t("share.addPerson")) }
-        if (existing != null) LabeledCheckbox(model.t("share.archive"), archived) { archived = it }
+        if (existing != null) {
+            LabeledCheckbox(model.t("share.archive"), archived) { archived = it }
+            TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+        }
+    }
+    if (asking && existing != null) {
+        AskBeforeDeleting(model, model.t("share.delete.body", existing.name), onDismiss = { asking = false }) {
+            (model.act { model.books.sharedExpenses.delete(existing.id) } != null).also { if (it) onClose(null) }
+        }
     }
 }
 
@@ -262,11 +282,12 @@ private fun FamilyLoanDialog(model: BooksModel, loan: FamilyLoan, onClose: () ->
     var rate by remember { mutableStateOf(if (loan.rateBp == 0) "" else (loan.rateBp / 100.0).toString()) }
     var notes by remember { mutableStateOf(loan.notes.orEmpty()) }
     var closed by remember { mutableStateOf(loan.closed) }
+    var asking by remember { mutableStateOf(false) }
     val cur = loan.principal.currency
     FormDialog(model.t(if (loan.id.isBlank()) "loan.add" else "loan.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
             val principal = parseAmount(amount, cur, locale)?.abs() ?: throw ValidationException("error.loanPrincipal")
-            val bp = rate.trim().replace(',', '.').ifEmpty { "0" }.toBigDecimalOrNull()?.movePointRight(2)?.toInt() ?: throw ValidationException("error.loanRate")
+            val bp = rate.trim().replace(',', '.').ifEmpty { "0" }.toBigDecimalOrNull()?.let(FamilyLoanService::rateBp) ?: throw ValidationException("error.loanRate")
             model.books.familyLoans.save(loan.copy(lender = lender, borrower = borrower, principal = principal, start = parseDate(start), rateBp = bp, notes = notes, closed = closed))
         }
         if (ok != null) onClose()
@@ -283,7 +304,12 @@ private fun FamilyLoanDialog(model: BooksModel, loan: FamilyLoan, onClose: () ->
         TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
         if (loan.id.isNotBlank()) {
             LabeledCheckbox(model.t("loan.markClosed"), closed) { closed = it }
-            TextButton(onClick = { if (model.act { model.books.familyLoans.delete(loan) } != null) onClose() }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+            TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+        }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("loan.delete.body", loan.lender, loan.borrower), onDismiss = { asking = false }) {
+            (model.act { model.books.familyLoans.delete(loan) } != null).also { if (it) onClose() }
         }
     }
 }
@@ -294,6 +320,7 @@ private fun LoanPaymentsDialog(model: BooksModel, loan: FamilyLoan, onEdit: () -
     var date by remember { mutableStateOf(today().toString()) }
     var amount by remember { mutableStateOf("") }
     val s = model.books.familyLoans.status(loan, today())
+    var deleting by remember { mutableStateOf<LoanPayment?>(null) }
     FormDialog(model.t("loan.between", loan.lender, loan.borrower), model.t("loan.addPayment"), model.t("common.close"), canSave = amount.isNotBlank(), onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.familyLoans.addPayment(loan, parseDate(date), parseAmount(amount, loan.principal.currency, locale)?.abs() ?: throw ValidationException("error.loanPayment"))
@@ -305,7 +332,7 @@ private fun LoanPaymentsDialog(model: BooksModel, loan: FamilyLoan, onEdit: () -
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(p.date), Modifier.width(110.dp))
                 MoneyText(model, p.amount, modifier = Modifier.weight(1f))
-                TextButton(onClick = { model.act { model.books.familyLoans.deletePayment(loan, p.id) }; onClose() }) { Text("✕") }
+                TextButton(onClick = { deleting = p }) { Text("✕") }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -313,6 +340,11 @@ private fun LoanPaymentsDialog(model: BooksModel, loan: FamilyLoan, onEdit: () -
             AmountInput(model.t("loan.payment"), amount, loan.principal.currency, locale, Modifier.weight(1f), model::money) { amount = it }
         }
         TextButton(onClick = onEdit) { Text(model.t("loan.edit")) }
+    }
+    deleting?.let { p ->
+        AskBeforeDeleting(model, model.t("loan.deletePayment.body", model.money(p.amount), model.date(p.date)), onDismiss = { deleting = null }) {
+            (model.act { model.books.familyLoans.deletePayment(loan, p.id) } != null).also { if (it) onClose() }
+        }
     }
 }
 
@@ -369,10 +401,14 @@ private fun AllowanceDialog(model: BooksModel, a: Allowance, onClose: () -> Unit
     var frequency by remember { mutableStateOf(a.frequency) }
     var start by remember { mutableStateOf(a.start.toString()) }
     var end by remember { mutableStateOf(a.end?.toString().orEmpty()) }
+    var notes by remember { mutableStateOf(a.notes.orEmpty()) }
+    var asking by remember { mutableStateOf(false) }
     FormDialog(model.t(if (a.id.isBlank()) "allowance.add" else "allowance.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
             val value = parseAmount(amount, a.amount.currency, locale)?.abs() ?: throw ValidationException("error.allowanceAmount")
-            model.books.allowances.save(a.copy(memberId = member?.id ?: a.memberId, amount = value, frequency = frequency, start = parseDate(start), end = end.trim().ifEmpty { null }?.let(::parseDate)))
+            model.books.allowances.save(
+                a.copy(memberId = member?.id ?: a.memberId, amount = value, frequency = frequency, start = parseDate(start), end = end.trim().ifEmpty { null }?.let(::parseDate), notes = notes),
+            )
         }
         if (ok != null) onClose()
     }) {
@@ -385,7 +421,13 @@ private fun AllowanceDialog(model: BooksModel, a: Allowance, onClose: () -> Unit
             DateInput(model.t("allowance.start"), start, Modifier.weight(1f)) { start = it }
             DateInput(model.t("allowance.end"), end, Modifier.weight(1f)) { end = it }
         }
-        if (a.id.isNotBlank()) TextButton(onClick = { if (model.act { model.books.allowances.delete(a) } != null) onClose() }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+        TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
+        if (a.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("allowance.delete.body", member?.displayName.orEmpty()), onDismiss = { asking = false }) {
+            (model.act { model.books.allowances.delete(a) } != null).also { if (it) onClose() }
+        }
     }
 }
 
@@ -397,6 +439,7 @@ private fun AllowanceEntriesDialog(model: BooksModel, a: Allowance, onEdit: () -
     var kind by remember { mutableStateOf(AllowanceKind.PAID) }
     var notes by remember { mutableStateOf("") }
     val s = model.books.allowances.status(a, today())
+    var deleting by remember { mutableStateOf<AllowanceEntry?>(null) }
     FormDialog(model.t("allowance.entriesTitle"), model.t("allowance.addEntry"), model.t("common.close"), canSave = amount.isNotBlank(), onDismiss = onClose, onSave = {
         val ok = model.act { model.books.allowances.addEntry(a, parseDate(date), parseAmount(amount, a.amount.currency, locale)?.abs() ?: throw ValidationException("error.allowanceAmount"), kind, notes) }
         if (ok != null) onClose()
@@ -407,7 +450,7 @@ private fun AllowanceEntriesDialog(model: BooksModel, a: Allowance, onEdit: () -
                 Text(model.date(e.date), Modifier.width(100.dp))
                 Text(model.t("allowanceKind.${e.kind}") + (e.notes?.let { " · $it" } ?: ""), Modifier.weight(1f))
                 MoneyText(model, if (e.kind == AllowanceKind.SPENT) -e.amount else e.amount)
-                TextButton(onClick = { model.act { model.books.allowances.deleteEntry(a, e.id) }; onClose() }) { Text("✕") }
+                TextButton(onClick = { deleting = e }) { Text("✕") }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -419,5 +462,10 @@ private fun AllowanceEntriesDialog(model: BooksModel, a: Allowance, onEdit: () -
             TextInput(model.t("calendar.notes"), notes, Modifier.weight(1f)) { notes = it }
         }
         TextButton(onClick = onEdit) { Text(model.t("allowance.edit")) }
+    }
+    deleting?.let { e ->
+        AskBeforeDeleting(model, model.t("allowance.deleteEntry.body", model.t("allowanceKind.${e.kind}"), model.money(e.amount), model.date(e.date)), onDismiss = { deleting = null }) {
+            (model.act { model.books.allowances.deleteEntry(a, e.id) } != null).also { if (it) onClose() }
+        }
     }
 }

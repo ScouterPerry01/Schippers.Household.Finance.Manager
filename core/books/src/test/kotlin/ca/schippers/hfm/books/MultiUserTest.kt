@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.AccountType
@@ -19,6 +20,7 @@ import ca.schippers.hfm.sync.PairRequest
 import ca.schippers.hfm.sync.SyncCrypto
 import ca.schippers.hfm.sync.SyncRequest
 import ca.schippers.hfm.sync.SyncResponse
+import kotlin.test.assertFalse
 import kotlinx.datetime.LocalDate
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -119,5 +121,20 @@ class MultiUserTest {
             assertTrue(p.users.activity(marieId).all { it.userId == marieId })
         }
         marie().use { m -> assertTrue(m.users.activity().all { it.userId == marieId }, "Marie sees only her own activity") }
+    }
+
+    @Test
+    fun `a viewer sees the pets but cannot change them`() {
+        household()
+        perry().use {
+            it.users.add("vic", "Vic", Role.VIEWER, "password3".toCharArray())
+            it.pets.save(Pet("", "Rex", Species.DOG))
+        }
+        Books(store.unlock(dir, "vic", "password3".toCharArray())).use { vic ->
+            assertEquals(listOf("Rex"), vic.pets.list().map { it.name })
+            assertFalse(vic.pets.canChange)
+            assertFailsWith<AccessDeniedException> { vic.pets.save(Pet("", "Mimi", Species.CAT)) }
+            assertFailsWith<AccessDeniedException> { vic.pets.delete(vic.pets.list().single().id) }
+        }
     }
 }

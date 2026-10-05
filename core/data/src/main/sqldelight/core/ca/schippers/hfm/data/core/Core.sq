@@ -327,6 +327,13 @@ SELECT * FROM tag ORDER BY name COLLATE NOCASE;
 tagByName:
 SELECT * FROM tag WHERE name = ? COLLATE NOCASE;
 
+-- SAL-05: a rental property's tag follows the property's name, and goes with it when asked.
+renameTag:
+UPDATE tag SET name = ? WHERE id = ?;
+
+deleteTag:
+DELETE FROM tag WHERE id = ?;
+
 insertGroup:
 INSERT INTO account_group(id, name, partition_id, owner_user_id, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?);
 

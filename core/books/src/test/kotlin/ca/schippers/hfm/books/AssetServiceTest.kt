@@ -120,4 +120,31 @@ class AssetServiceTest {
         insurance.saveClaim(InsuranceClaim("", home.id, d("2026-07-20"), "Dégât d'eau au sous-sol", assetId = house.id, claimed = cad("8500"), deductible = cad("1000")))
         assertEquals(cad("8500"), insurance.claims(home.id).single().claimed)
     }
+
+    @Test
+    fun `a warranty limited by hours of use ends when the meter reaches them, and reminds before`() {
+        val boat = assets.save(Asset("", group, AssetKind.BOAT, "Bateau", purchaseDate = d("2025-05-01"), meter = MeterUnit.HOURS))
+        assertEquals(Currency.CAD, boat.currency, "with no amount yet, the household's base currency")
+        assets.saveWarranty(AssetWarranty("", group, boat.id, AssetWarrantyKind.MANUFACTURER, "Mercury", endDate = d("2030-05-01"), endHours = 500))
+        books.assetMaintenance.addReading(boat.id, d("2026-06-01"), 300)
+        books.assetMaintenance.addReading(boat.id, d("2026-08-30"), 480)
+        // 180 hours in 90 days is 2 a day: the last 20 hours take ten days.
+        assertEquals(d("2026-09-11"), assets.renewals(d("2026-09-01")).single { it.subjectId == boat.id }.date)
+        assertTrue(assets.coverage(boat.id, d("2026-09-01")).single().active)
+        books.assetMaintenance.addReading(boat.id, d("2026-09-10"), 505)
+        val ended = assets.coverage(boat.id, d("2026-09-12")).single()
+        assertFalse(ended.active)
+        assertTrue(ended.usedUp)
+        assertTrue(assets.renewals(d("2026-09-12")).none { it.subjectId == boat.id }, "used up, it no longer reminds")
+        assets.delete(boat.id)
+        assertTrue(assets.warranties(boat.id).isEmpty(), "its warranties go with it")
+    }
+
+    @Test
+    fun `a corrected term start moves that term in the premium history`() {
+        val p = insurance.save(InsurancePolicy("", group, PolicyKind.AUTO, "Intact", premium = cad("900"), startDate = d("2026-02-01"), renewalDate = d("2027-02-01")))
+        insurance.save(p.copy(startDate = d("2026-03-01")))
+        assertEquals(d("2026-03-01"), insurance.policy(p.id).startDate)
+        assertEquals(listOf(d("2026-03-01") to cad("900")), insurance.premiums(p.id).map { it.startDate to it.premium })
+    }
 }

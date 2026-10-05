@@ -67,7 +67,7 @@ Details: [Vehicles](vehicles).
 
 1. Open **Trip log** and choose **Add a trip** for each trip by car for work or medical care.
 2. Enter odometer readings for the vehicle near the start and the end of the year, on the **Vehicles** screen: they give the vehicle's work share.
-3. For a medical trip of 40 km or more one way, choose **Add to medical expenses**: it becomes a medical expense on the **Medical claims** screen.
+3. For a medical trip of 40 km or more one way, choose **Add to medical expenses**: it becomes a medical expense on the **Medical claims** screen, once; the button then reads **Added to medical expenses**.
 
 Details: [Trip log](trips).
 

@@ -113,7 +113,7 @@ Quand **Renouvellements restants** atteint 0, la liste affiche « Ordonnance à 
 ## Onglet Rendez-vous {#appointments}
 @index: rendez-vous chez le médecin; rendez-vous chez le vétérinaire; dentiste
 
-L’onglet **Rendez-vous** liste les rendez-vous du calendrier de la personne ou de l’animal choisi, d’il y a un an jusqu’à dans un an. Ce sont les mêmes rendez-vous qu’au [Calendrier](calendar) : en ajouter, en changer ou en supprimer un ici change aussi le calendrier.
+L’onglet **Rendez-vous** liste les rendez-vous du calendrier de la personne ou de l’animal choisi, d’il y a un an jusqu’à dans un an, du genre **Médical** (ou **Animaux** pour un animal). Ce sont les mêmes rendez-vous qu’au [Calendrier](calendar) : en ajouter, en changer ou en supprimer un ici change aussi le calendrier. S’il n’y en a aucun, l’onglet dit « Aucun rendez-vous médical dans la dernière ou la prochaine année. »
 
 **Ajouter un rendez-vous** ouvre le formulaire de rendez-vous du calendrier, avec la date d’aujourd’hui, le type **Médical** (ou **Animaux** pour un animal) et la personne ou l’animal déjà remplis. Ses champs, comme **Quoi**, **Date**, **Heure**, **Où**, **Qui**, **Professionnel**, **Me le rappeler** et la répétition, sont décrits au chapitre [Calendrier](calendar). La liste **Professionnel** offre les professionnels de l’onglet **Professionnels**.
 

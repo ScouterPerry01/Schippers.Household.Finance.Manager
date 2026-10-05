@@ -6,6 +6,8 @@ import ca.schippers.hfm.domain.MemberKind
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.security.KdfParams
+import java.math.BigDecimal
+import kotlin.test.assertTrue
 import kotlinx.datetime.LocalDate
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -89,5 +91,26 @@ class FamilyMoneyTest {
 
         val monthly = books.allowances.save(Allowance("", group, maya, cad("20.00"), AllowanceFrequency.MONTHLY, LocalDate(2026, 1, 31), null, null, emptyList()))
         assertEquals(LocalDate(2026, 3, 31), books.allowances.dates(monthly, LocalDate(2026, 3, 31)).last(), "a month-end allowance stays at the month's end")
+    }
+
+    @Test
+    fun `a loan marked repaid in full gains no more interest`() {
+        val loan = books.familyLoans.save(FamilyLoan("", group, "Mom", "Maya", cad("1000.00"), LocalDate(2026, 1, 1), 365, null, false, emptyList()))
+        // 3.65 % on $1,000 is 10 cents a day: $3.10 in January, paid first, so $3.10 of principal is left.
+        books.familyLoans.addPayment(loan, LocalDate(2026, 2, 1), cad("1000.00"))
+        val open = books.familyLoans.list().single()
+        assertEquals(cad("3.20"), books.familyLoans.status(open, LocalDate(2026, 12, 31)).interest, "still open, what is left gains interest")
+        val closed = books.familyLoans.save(open.copy(closed = true))
+        assertEquals(cad("3.10"), books.familyLoans.status(closed, LocalDate(2026, 12, 31)).interest)
+        assertEquals(313, FamilyLoanService.rateBp(BigDecimal("3.125")), "rounded, not cut")
+        assertEquals(312, FamilyLoanService.rateBp(BigDecimal("3.124")))
+    }
+
+    @Test
+    fun `a shared group can be deleted with its expenses`() {
+        val g = books.sharedExpenses.save(null, group, "Cottage", Currency.CAD, listOf(SharePerson("", "Paul"), SharePerson("", "Anne")))
+        books.sharedExpenses.saveEntry(g.id, ShareEntry("", LocalDate(2026, 7, 1), "Groceries", cad("90.00"), g.people[0].id, g.people.associate { it.id to 1 }))
+        books.sharedExpenses.delete(g.id)
+        assertTrue(books.sharedExpenses.list().isEmpty())
     }
 }

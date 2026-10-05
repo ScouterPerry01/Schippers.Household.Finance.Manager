@@ -113,7 +113,7 @@ When **Refills remaining** reaches 0, the list shows "Prescription needs renewal
 ## Appointments tab {#appointments}
 @index: doctor's appointment; vet appointment; dentist
 
-The **Appointments** tab lists the calendar appointments of the person or pet chosen, from one year ago to one year ahead. They are the same appointments as on the [Calendar](calendar): adding, changing or deleting one here changes the calendar too.
+The **Appointments** tab lists the calendar appointments of the person or pet chosen, from one year ago to one year ahead, of the kind **Medical** (or **Pets** for a pet). They are the same appointments as on the [Calendar](calendar): adding, changing or deleting one here changes the calendar too. When there is none, the tab says "No medical appointments in the past or next year."
 
 **Add an appointment** opens the calendar's appointment form, with today's date, the kind **Medical** (or **Pets** for a pet) and the person or pet already filled in. Its fields, such as **What**, **Date**, **Time**, **Where**, **Who**, **Provider**, **Remind me** and the repeat, are described in the [Calendar](calendar) chapter. The **Provider** list offers the providers of the **Providers** tab.
 

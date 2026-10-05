@@ -20,9 +20,9 @@ The screen opens on **Shared expenses**. The tab you choose is kept only while y
 
 New groups, loans and allowances are stored in the shared account group you are allowed to add to (or, if there is none, the first group you can add to). They are listed together with those of every group you can see. Saving, changing or deleting needs permission to change records in that group: a user with read-only access sees the tab but gets an error when saving. See [Users](users).
 
-### Changes are immediate {#immediate}
+### Deleting asks first {#immediate}
 
-Every **✕** button on this screen (an expense, a repayment, an allowance entry) and every **Delete** button removes the record at once, without asking first. There is no undo; enter it again if you removed it by mistake.
+Every **✕** button on this screen (an expense, a repayment, an allowance entry) and every **Delete** button asks first, saying what will be deleted; **Cancel** keeps it. Once confirmed, there is no undo; enter it again if you removed it by mistake.
 
 ## Shared expenses {#shared-expenses}
 
@@ -66,7 +66,7 @@ Below the cards, every expense and settlement of the group is listed, newest fir
 - the date;
 - what it was for, and under it either "Paid by Alex, shared by Alex, Sam, Léa" (only the people with a share of more than zero are named) or, for a settlement, "Sam paid Alex";
 - the amount;
-- **✕**: deletes that expense or settlement immediately. The balances are worked out again without it.
+- **✕**: asks "Delete "description" (amount, date)? Who owes whom is worked out again." and, once confirmed, deletes that expense or settlement. The balances are worked out again without it.
 
 To correct an expense, delete it and add it again.
 
@@ -81,6 +81,7 @@ The same dialog creates a group (**New shared group…**) or changes one (**Edit
   - **✕**: removes that person's line.
 - **Add a person**: adds an empty line.
 - **Archive this group (all settled)**: shown only when editing. An archived group moves to the end of the list with **(archived)** after its name. Its expenses and balances are kept and you can still open it, add to it or unarchive it.
+- **Delete**: shown only when editing. Asks "Delete the group "name" with all its expenses and settlements? Who owes whom is lost." and, once confirmed, deletes the group, its people and all its entries. It cannot be undone; archive a group to keep its history instead.
 - **Save** saves the group; **Cancel** closes without saving.
 
 Rules checked when you save:
@@ -132,17 +133,17 @@ The same dialog is used to add a loan and, from the repayments window, to change
 - **Lent to**: who borrowed it. Required.
 - **Amount lent**: the amount lent, more than zero, in the household's base currency.
 - **Date lent**: the day the money was lent, as YYYY-MM-DD. Interest, if any, runs from this day, and no repayment can be dated earlier. Today by default.
-- **Interest rate (% a year)**: the yearly rate, such as 2.5 (a comma also works). Leave it empty for a loan with no interest. From 0 to 50 %; it is kept to two decimals.
+- **Interest rate (% a year)**: the yearly rate, such as 2.5 (a comma also works). Leave it empty for a loan with no interest. From 0 to 50 %; it is kept to two decimals, rounded to the nearest (3.125 becomes 3.13).
 - **Notes**: anything to remember, such as what the money was for or the agreed repayment plan.
-- **Repaid in full (close it)**: shown when changing a loan. A closed loan shows **(repaid)** and moves to the end of the list. It is a marker only: the amounts shown still come from the repayments recorded, so record the last repayment too.
-- **Delete**: shown when changing a loan. Deletes the loan and all its repayments, at once.
+- **Repaid in full (close it)**: shown when changing a loan. A closed loan shows **(repaid)** and moves to the end of the list, and its interest stops: no interest is counted after its last repayment (after the date lent, when there is none). The amounts shown still come from the repayments recorded, so record the last repayment too; anything still shown as owed is what those repayments left. Unticking it lets the interest run again, up to today.
+- **Delete**: shown when changing a loan. Asks "Delete the loan from lender to borrower with its repayments?" and, once confirmed, deletes the loan and all its repayments.
 
 ### Repayments window {#repayments-dialog}
 
 Clicking a loan opens a window titled "Lender to Borrower".
 
 - The first line sums up the loan today: **Still owed** (what is left of the amount lent plus the interest not yet paid), **interest so far** (all the interest counted since the loan was made) and **repaid** (the total of the repayments).
-- The repayments are listed newest first, each with its date, its amount and **✕** to delete it (the window closes; open the loan again to see the new figures).
+- The repayments are listed newest first, each with its date, its amount and **✕** to delete it. It asks "Delete the repayment of amount on date? The balance is worked out again." first; once it is deleted, the window closes (open the loan again to see the new figures).
 - **Date** and **Repayment**: enter a new repayment, then click **Add the repayment**. The button is available once an amount is entered. A repayment cannot be dated before the loan. A repayment dated in the future counts only from its date.
 - **Edit the loan…**: opens the [loan dialog](#loan-dialog).
 - **Close**: closes the window.
@@ -167,7 +168,8 @@ An allowance is a fixed amount a child receives on a schedule. RANN's Roost coun
 - **How often**: **a week**, **every two weeks** or **a month**. Allowance days are counted from the first day: every 7 days, every 14 days, or the same day each month (an allowance starting on the 31st falls on the last day of shorter months).
 - **First day**: the first allowance day, as YYYY-MM-DD. Today by default.
 - **Last day (optional)**: the last day the allowance runs. Leave empty for no end. It cannot be before the first day. After it, no more allowance days are counted.
-- **Delete**: shown when changing an allowance. Deletes it with all its entries, at once.
+- **Notes**: anything to remember, such as what the allowance is meant to cover or the rules agreed with the child. Optional; several lines can be typed.
+- **Delete**: shown when changing an allowance. Asks "Delete the allowance of name with all its entries?" and, once confirmed, deletes it with all its entries.
 
 Changing the amount, frequency or dates later recounts what was due since the first day, at the new amount.
 
@@ -176,7 +178,7 @@ Changing the amount, frequency or dates later recounts what was due since the fi
 Clicking an allowance opens this window.
 
 - The first line sums it up: **Due so far** (the number of allowance days up to today, or up to the last day, times the amount), **owed** (due so far less the allowance paid, never below zero) and **the child has** (allowance paid plus money earned or received, less money spent).
-- The last 30 entries are listed newest first: date, what kind, the note, and the amount (spending shown as negative). **✕** deletes an entry; the window closes.
+- The last 30 entries are listed newest first: date, what kind, the note, and the amount (spending shown as negative). **✕** asks "Delete this entry (kind, amount, date)?" and, once confirmed, deletes the entry; the window closes.
 - To add an entry, fill in:
   - **Date**: today by default. An entry dated in the future counts only from its date.
   - **What**:

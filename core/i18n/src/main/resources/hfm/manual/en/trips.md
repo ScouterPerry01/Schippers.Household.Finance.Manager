@@ -38,7 +38,7 @@ The year's trips are listed newest first. Each line shows:
 - the date;
 - where from and where to ("Home → Client office"), with **↺** for a round trip;
 - the purpose, the person, the vehicle and the notes;
-- **Add to medical expenses**, for a **Medical** trip of 40 km or more one way (see [Medical travel](#medical-travel));
+- **Add to medical expenses**, for a **Medical** trip of 40 km or more one way (see [Medical travel](#medical-travel)); once the trip is added, it reads **Added to medical expenses** and can no longer be clicked;
 - the distance, doubled for a round trip.
 
 Click a trip to change or delete it. With no trips in the year, the list says so.
@@ -59,10 +59,10 @@ The same dialog adds a trip (**Add a trip**) or changes one (**Edit the trip**).
 - **Kilometres one way**: the distance one way, such as 23.5 (a comma also works). Required, more than zero and under 10,000. It is kept to one decimal.
 - **Round trip**: on when you came back the same way; the trip then counts twice the distance. On by default.
 - **Person**: who made the trip, or **Household**. It decides which person's card the trip counts in and is suggested as the patient when adding it to medical expenses.
-- **Vehicle**: the vehicle used, or **No vehicle**. Only trips with a vehicle count towards that vehicle's work share. The first vehicle is chosen by default.
+- **Vehicle**: the vehicle used, or **No vehicle**. Only trips with a vehicle count towards that vehicle's work share. A new trip proposes the first vehicle in use. A saved trip keeps its own choice: **No vehicle** stays **No vehicle**, and a vehicle sold or retired since stays in the list for that trip.
 - **Notes**: anything to remember, such as the client or the reason for the visit.
 - When **Medical** is chosen, a reminder explains that a medical trip counts as a medical expense when the care is 40 km or more away, one way, and not available closer to home.
-- **Delete**: shown when changing a trip. Deletes it at once, without asking.
+- **Delete**: shown when changing a trip. Asks "Delete the trip of date to destination?" and, once confirmed, deletes it. It cannot be undone. A medical expense made from the trip stays on the Medical claims screen.
 
 ## Medical travel {#medical-travel}
 
@@ -83,4 +83,4 @@ A **Medical** trip whose one-way distance is 40 km or more shows **Add to medica
 1. keeps the rate for that year, for the next trips;
 2. adds a medical expense for the person on the [Medical claims](medical) screen, of the type **Travel for medical care**, dated and paid on the trip's date, for the rate times the trip's kilometres (doubled for a round trip), described as the destination and the distance.
 
-The expense then counts in the medical claim like any other. Each click adds a new expense, so add each trip only once; to undo it, delete the expense on the Medical claims screen.
+The expense then counts in the medical claim like any other. A trip is added only once: its button then reads **Added to medical expenses**. To add it again, for example at another rate, delete the expense on the Medical claims screen first; the button comes back.

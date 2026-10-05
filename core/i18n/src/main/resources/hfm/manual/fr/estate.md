@@ -80,7 +80,7 @@ Notez où se trouve chaque papier, pas son contenu :
 ### Volontés {#wishes}
 
 - **Volontés funéraires ou arrangements préalables** : sur plusieurs lignes, par exemple inhumation ou crémation, la maison funéraire, un numéro de contrat d’arrangements préalables.
-- **Donneur d’organes et de tissus** : cochez-le si la personne souhaite faire don de ses organes. Une fois coché et enregistré, le sommaire affiche « Oui » ; si vous le décochez plus tard, il affiche « Non ». Une case jamais cochée est omise du sommaire. Inscrivez aussi le consentement officiellement (auprès de votre province ou sur votre carte d’assurance maladie).
+- **Donneur d’organes et de tissus** : cochez-le si la personne souhaite faire don de ses organes. Une fois coché et enregistré, le sommaire affiche « Oui » ; si vous le décochez plus tard, il affiche « Non ». Tant que la case n’a jamais été cochée, le sommaire affiche « Non précisé », pour que la personne qui le lit sache que la volonté n’a pas été inscrite. Inscrivez aussi le consentement officiellement (auprès de votre province ou sur votre carte d’assurance maladie).
 - **Notes** : tout ce que la famille devrait savoir d’autre.
 
 ### Personnes à appeler {#contacts}

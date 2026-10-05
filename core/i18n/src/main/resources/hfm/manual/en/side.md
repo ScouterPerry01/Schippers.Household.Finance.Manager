@@ -30,7 +30,7 @@ An invoice is a request for payment you send to a customer. RANN's Roost numbers
 At the top:
 
 - **New invoice**: opens the [invoice dialog](#invoice-dialog) with the next number of the year already filled in.
-- When invoices are waiting to be paid, a line such as "2 invoices waiting to be paid: $1,250.00". It counts the invoices whose status is **Sent**, and adds up those in the household's base currency.
+- When invoices are waiting to be paid, a line such as "2 invoices waiting to be paid: $1,250.00". It counts the invoices whose status is **Sent** and gives one total per currency, the base currency first, such as "3 invoices waiting to be paid: $1,250.00 + US$400.00".
 
 Each invoice is listed, newest first, with:
 
@@ -50,7 +50,7 @@ The same dialog creates an invoice (**New invoice**) or changes one (**Edit the 
 - **Number**: the invoice number. A new invoice gets the year and the next number, such as 2026-001, then 2026-002: the highest number already used in that form for the year, plus one. You can type any other number, but each number can be used only once.
 - **Customer**: who the invoice is for, such as a person or a business name. Required. It is printed under **Bill to** on the PDF and becomes the payee of the deposit.
 - **Customer address and details**: the customer's address and anything else to print under their name, such as an email or a purchase order number. Several lines are allowed; each prints on its own line.
-- **Issued**: the invoice date, as YYYY-MM-DD. Today by default. New numbers are based on the year of the day you create the invoice, not on this date.
+- **Issued**: the invoice date, as YYYY-MM-DD. Today by default. For a new invoice, the number follows the year of this date: change it to a day of last year, and the number proposed becomes the next one of last year (such as 2025-014). A number you typed yourself is left as it is.
 - **Due**: the date payment is due, optional. It cannot be before **Issued**. A **Sent** invoice past this date shows **Overdue** in the list.
 - **Status**:
   - **Draft**: being prepared; not counted as waiting to be paid.
@@ -72,7 +72,7 @@ The same dialog creates an invoice (**New invoice**) or changes one (**Edit the 
 Leave both rates empty unless you are registered to collect sales taxes. Each tax is the rate applied to the subtotal, rounded to the cent, and the total is the subtotal plus the taxes.
 
 - **Notes on the invoice**: printed at the bottom of the PDF, such as payment instructions ("Interac e-Transfer to …") or a thank-you.
-- **Delete**: shown when changing an invoice. Deletes it at once, without asking. A deposit already recorded for it stays in the account.
+- **Delete**: shown when changing an invoice. Asks "Delete invoice number to customer?" first. When the deposit recorded with **Mark as paid** is still in the books, the question also offers **Also delete its deposit of amount on date in account**, unticked by default: leave it unticked when the money was really received, and the deposit stays in the account; tick it to remove the deposit too, for example when the invoice was marked paid by mistake. A reconciled deposit is deleted only after you confirm it again. Once confirmed, the delete cannot be undone.
 - **Save** saves the invoice; **Cancel** closes without saving.
 
 The invoice's currency is the household's base currency when it is created.
@@ -143,10 +143,10 @@ The figures follow your categories: a transaction split between categories count
 
 ### Add a property dialog {#rental-dialog}
 
-- **Name**: the property's name, such as "Duplex on Bank Street". Required. When you add a property, a tag with this name is created for its transactions; if a tag with that name already exists, that tag is used. Renaming the property later does not rename its tag.
+- **Name**: the property's name, such as "Duplex on Bank Street". Required. When you add a property, a tag with this name is created for its transactions; if a tag with that name already exists, that tag is used. Renaming the property later renames its tag too ("The property's tag is renamed with it."), so the tagged transactions keep counting. If another tag already has the new name, the app says "Another tag is already named "name". Choose another name." and nothing is saved.
 - **Address**: the property's address, shown on its card.
 - **The household's share (%)**: the part of the property the household owns, from 0.01 to 100. 100 by default. For a property owned half with someone else, enter 50: the card then shows the household's share of the net.
 - **Notes**: anything to remember about the property.
-- **Delete**: shown when changing a property. Removes the property from this tab at once. Its tag and the tagged transactions are not touched.
+- **Delete**: shown when changing a property. Asks "Delete name? Its transactions are kept." with a box **Also remove the tag "tag" from the tags and from the transactions that have it**, unticked by default. Unticked, the tag stays on the transactions and in the tag list. Ticked, the tag is removed from the list and from every transaction that had it, unless another property uses the same tag; the transactions themselves stay. It cannot be undone.
 
 > Tip: When you own a property with someone outside the household, record only the household's own payments and receipts in your accounts and leave the share at 100, or record the whole property's amounts and enter your share. Choose one way and keep to it.

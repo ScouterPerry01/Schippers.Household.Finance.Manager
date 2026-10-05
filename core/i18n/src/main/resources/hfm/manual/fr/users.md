@@ -20,7 +20,7 @@ L'accès est protégé par le chiffrement, pas seulement par les écrans : chaqu
 
 - Administrateur : tout, y compris les utilisateurs et les réglages, et tous les groupes de comptes partagés. Les administrateurs ajoutent des utilisateurs, changent les rôles, fixent la province du ménage, modifient les membres du ménage et donnent accès aux groupes partagés. Ils ne voient pas un groupe privé à moins que son propriétaire ne leur donne accès.
 - Membre : ses propres comptes privés, et les groupes partagés qu'on lui donne. Un membre peut changer son propre nom et son mot de passe, et donner accès à ses propres groupes privés.
-- Lecteur : lecture seulement, dans les groupes qu'on lui donne. Même si on donne Saisie seulement ou Modification à un lecteur sur un groupe, il peut seulement le consulter.
+- Lecteur : lecture seulement, dans les groupes qu'on lui donne. Même si on donne Saisie seulement ou Modification à un lecteur sur un groupe, il peut seulement le consulter. Un lecteur voit aussi les [animaux](pets) du ménage sans pouvoir les changer.
 
 Le ménage garde toujours au moins un administrateur actif. L'application refuse de changer le rôle du dernier administrateur ou de l'empêcher de se connecter, avec « Le ménage doit garder au moins un administrateur actif. »
 

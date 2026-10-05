@@ -199,4 +199,17 @@ class PetVehicleTest {
         assertEquals(Money.ofMinor(12, Currency.CAD), cost.costPerKm)
         assertEquals(cat("transport.insurance"), cost.costs.byCategory.first().first)
     }
+
+    @Test
+    fun `a warranty limited by kilometres reminds when the odometer should reach them`() {
+        val v = civic()
+        books.vehicles.saveWarranty(Warranty("", v.id, WarrantyKind.POWERTRAIN, "Honda", endKm = 50_000))
+        // 9,000 km in the 180 days since the purchase is 50 km a day: the last 1,000 km take 20 days.
+        books.vehicles.addReading(v.id, d(7, 9), 49_000)
+        val r = books.renewals(d(7, 9)).single { it.kind == RenewalKind.WARRANTY }
+        assertEquals(d(7, 29), r.date)
+        assertEquals("Honda · 50000 km", r.detail)
+        books.vehicles.addReading(v.id, d(7, 30), 50_100)
+        assertTrue(books.renewals(d(7, 31)).none { it.kind == RenewalKind.WARRANTY }, "past its kilometres, the warranty is over")
+    }
 }

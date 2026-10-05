@@ -222,7 +222,8 @@ class FamilyLoanService internal constructor(private val books: Books) {
 
     /**
      * As of [today]: simple interest runs on the principal still owed, day by day; each payment goes
-     * to the interest owed first, then to the principal.
+     * to the interest owed first, then to the principal. A loan marked repaid in full ([FamilyLoan.closed])
+     * gains no interest after its last payment (or after its start, with no payment).
      */
     fun status(loan: FamilyLoan, today: LocalDate): FamilyLoanStatus {
         var principal = loan.principal.minorUnits.toBigDecimal()
@@ -247,9 +248,15 @@ class FamilyLoanService internal constructor(private val books: Books) {
             amount -= toInterest
             principal = (principal - amount).max(java.math.BigDecimal.ZERO)
         }
-        accrue(today)
+        // Interest stops once the loan is marked repaid in full.
+        if (!loan.closed) accrue(today)
         fun m(v: java.math.BigDecimal) = Money.ofMinor(v.setScale(0, java.math.RoundingMode.HALF_UP).toLong(), loan.principal.currency)
         return FamilyLoanStatus(m(interestTotal), Money.ofMinor(paid, loan.principal.currency), m(principal), m(interestOwed))
+    }
+
+    companion object {
+        /** LN-07: a yearly rate typed in percent as basis points, rounded to the nearest (3.125 % is 313, 3.13 %). */
+        fun rateBp(percent: java.math.BigDecimal): Int = percent.movePointRight(2).setScale(0, java.math.RoundingMode.HALF_UP).toInt()
     }
 }
 

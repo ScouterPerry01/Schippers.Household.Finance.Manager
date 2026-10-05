@@ -80,7 +80,7 @@ Note where each paper is, not its content:
 ### Wishes {#wishes}
 
 - **Funeral wishes or prearrangement**: on several lines, for example burial or cremation, the funeral home, a prearrangement contract number.
-- **Organ and tissue donor**: tick it if the person wishes to donate. Once ticked and saved, the summary shows "Yes"; if you untick it later, it shows "No". A box never ticked is left out of the summary. Register the consent officially as well (with your province or on your health card).
+- **Organ and tissue donor**: tick it if the person wishes to donate. Once ticked and saved, the summary shows "Yes"; if you untick it later, it shows "No". As long as the box was never ticked, the summary shows "Not stated", so whoever reads it knows the wish was not recorded. Register the consent officially as well (with your province or on your health card).
 - **Notes**: anything else the family should know.
 
 ### People to call {#contacts}

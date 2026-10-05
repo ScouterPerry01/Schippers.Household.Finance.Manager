@@ -154,6 +154,10 @@ private fun ExpenseDialog(model: BooksModel, existing: MedExpense, onClose: () -
     val medications = remember(memberId) { books.health.medications(memberId) }
     var taxEligible by remember { mutableStateOf(existing.taxEligible) }
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
+    // MED-06: the account group it is kept in, chosen when it is added, as for health records (HH-11).
+    var groupId by remember { mutableStateOf(existing.groupId) }
+    var asking by remember { mutableStateOf(false) }
+    var deletingClaim by remember { mutableStateOf<MedClaim?>(null) }
     // The expense as saved, so claims can be added once it exists.
     var saved by remember { mutableStateOf(existing.takeIf { it.id.isNotBlank() }) }
     val current = saved?.let { s -> remember(model.revision, s.id) { runCatching { books.medical.expense(s.id) }.getOrNull() } }
@@ -161,7 +165,7 @@ private fun ExpenseDialog(model: BooksModel, existing: MedExpense, onClose: () -
     var submitting by remember { mutableStateOf(false) }
 
     fun draft() = existing.copy(
-        id = saved?.id.orEmpty(), memberId = memberId, service = service, serviceDate = dateOrNull(serviceDate) ?: throw ValidationException("error.invalidDate"),
+        id = saved?.id.orEmpty(), groupId = saved?.groupId ?: groupId, memberId = memberId, service = service, serviceDate = dateOrNull(serviceDate) ?: throw ValidationException("error.invalidDate"),
         paidDate = dateOrNull(paidDate), amount = parseAmount(amount, Currency.CAD, locale) ?: throw ValidationException("error.amountPositive"),
         description = description, providerId = providerId, taxEligible = taxEligible, notes = notes, closed = current?.closed ?: existing.closed,
         medicationId = medicationId.takeIf { service == MedService.PRESCRIPTION },
@@ -188,11 +192,13 @@ private fun ExpenseDialog(model: BooksModel, existing: MedExpense, onClose: () -
             }
             LabeledCheckbox(model.t("medical.taxEligible"), taxEligible) { taxEligible = it }
             TextInput(model.t("account.notes"), notes, singleLine = false) { notes = it }
+            GroupPicker(model, saved?.groupId ?: groupId, enabled = saved == null) { groupId = it.id }
+            if (saved == null) PrivateGroupHint(model) { groupId = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = { model.act { books.medical.saveExpense(draft()) }?.let { saved = it } }) { Text(model.t("common.save")) }
                 if (current != null) {
                     OutlinedButton(onClick = { model.act { books.medical.close(current.id, !current.closed) } }) { Text(model.t(if (current.closed) "medical.reopen" else "medical.close")) }
-                    TextButton(onClick = { model.act { books.medical.deleteExpense(current.id) }?.let { onClose() } }) { Text(model.t("common.delete")) }
+                    TextButton(onClick = { asking = true }) { Text(model.t("common.delete")) }
                 }
             }
 
@@ -217,7 +223,7 @@ private fun ExpenseDialog(model: BooksModel, existing: MedExpense, onClose: () -
                             TextButton(onClick = { paying = c }) { Text(model.t("medical.recordPayment")) }
                             TextButton(onClick = { model.act { books.medical.deny(c.id, today()) } }) { Text(model.t("medical.deny")) }
                         }
-                        TextButton(onClick = { model.act { books.medical.deleteClaim(c.id) } }) { Text(model.t("common.delete")) }
+                        TextButton(onClick = { deletingClaim = c }) { Text(model.t("common.delete")) }
                     }
                 }
                 Text(model.t("medical.outOfPocket", model.money(current.outOfPocket), model.money(current.reimbursed)), fontWeight = FontWeight.Bold)
@@ -236,6 +242,17 @@ private fun ExpenseDialog(model: BooksModel, existing: MedExpense, onClose: () -
         status.nextPlan?.let { plan -> SubmitDialog(model, current, plan, status.expected) { submitting = false } }
     }
     paying?.let { c -> PaymentDialog(model, c) { paying = null } }
+    if (asking && current != null) {
+        AskBeforeDeleting(model, model.t("medical.delete.expense", model.t("medService.${current.service}"), model.date(current.serviceDate)), onDismiss = { asking = false }) {
+            (model.act { books.medical.deleteExpense(current.id) } != null).also { if (it) onClose() }
+        }
+    }
+    deletingClaim?.let { c ->
+        val plan = remember(c.planId) { runCatching { books.medical.plan(c.planId).name }.getOrDefault("") }
+        AskBeforeDeleting(model, model.t("medical.delete.claim", plan, model.date(c.submitted)), onDismiss = { deletingClaim = null }) {
+            model.act { books.medical.deleteClaim(c.id) } != null
+        }
+    }
 }
 
 @Composable
@@ -381,6 +398,9 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
     var saved by remember { mutableStateOf(existing.takeIf { it.id.isNotBlank() }) }
     val coverages = saved?.let { s -> remember(model.revision, s.id) { books.medical.coverages(s.id) } }.orEmpty()
     var coverage by remember { mutableStateOf<MedCoverage?>(null) }
+    // MED-01: the account group it is kept in, chosen when it is added (HH-11).
+    var groupId by remember { mutableStateOf(existing.groupId) }
+    var asking by remember { mutableStateOf(false) }
 
     WideDialog(model.t(if (existing.id.isBlank()) "medical.addPlan" else "medical.plan"), model.t("common.close"), onClose) {
         Column(Modifier.width(760.dp).heightIn(max = 620.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -408,12 +428,14 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
             if (kind == MedPlanKind.HSA) AmountInput(model.t("medical.hsaAmount"), hsa, Currency.CAD, locale, Modifier.fillMaxWidth(), model::money) { hsa = it }
             LabeledCheckbox(model.t("medical.active"), active) { active = it }
             TextInput(model.t("account.notes"), notes, singleLine = false) { notes = it }
+            GroupPicker(model, saved?.groupId ?: groupId, enabled = saved == null) { groupId = it.id }
+            if (saved == null) PrivateGroupHint(model) { groupId = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = {
                     model.act {
                         books.medical.savePlan(
                             existing.copy(
-                                id = saved?.id.orEmpty(), kind = kind, name = name, insurer = insurer, policyNumber = policy, certificateNumber = certificate, memberId = memberId,
+                                id = saved?.id.orEmpty(), groupId = saved?.groupId ?: groupId, kind = kind, name = name, insurer = insurer, policyNumber = policy, certificateNumber = certificate, memberId = memberId,
                                 yearStartMonth = startMonth.trim().toIntOrNull() ?: 1, yearStartDay = startDay.trim().toIntOrNull() ?: 1, claimDays = claimDays.trim().toIntOrNull() ?: 365,
                                 hsaAmount = if (kind == MedPlanKind.HSA) parseAmount(hsa, Currency.CAD, locale) else null, active = active, notes = notes,
                                 people = members.indices.filter { order[it] > 0 }.map { PlanPerson(members[it].id, order[it]) },
@@ -421,7 +443,7 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
                         )
                     }?.let { saved = it }
                 }) { Text(model.t("common.save")) }
-                saved?.let { s -> TextButton(onClick = { model.act { books.medical.deletePlan(s.id) }?.let { onClose() } }) { Text(model.t("common.delete")) } }
+                if (saved != null) TextButton(onClick = { asking = true }) { Text(model.t("common.delete")) }
             }
             if (saved != null && kind != MedPlanKind.HSA) {
                 HorizontalDivider(Modifier.padding(vertical = 6.dp))
@@ -439,6 +461,13 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
         }
     }
     coverage?.let { c -> CoverageDialog(model, c) { coverage = null } }
+    saved?.let { s ->
+        if (asking) {
+            AskBeforeDeleting(model, model.t("medical.delete.plan", s.name), onDismiss = { asking = false }) {
+                (model.act { books.medical.deletePlan(s.id) } != null).also { if (it) onClose() }
+            }
+        }
+    }
 }
 
 private fun coverageText(model: BooksModel, c: MedCoverage): String = listOfNotNull(
@@ -459,6 +488,7 @@ private fun CoverageDialog(model: BooksModel, existing: MedCoverage, onClose: ()
     var perVisit by remember { mutableStateOf(amt(existing.perVisitMax)) }
     var annual by remember { mutableStateOf(amt(existing.annualMax)) }
     var months by remember { mutableStateOf(existing.frequencyMonths?.toString().orEmpty()) }
+    var asking by remember { mutableStateOf(false) }
     FormDialog(model.t("medical.coverage"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.medical.saveCoverage(
@@ -481,7 +511,12 @@ private fun CoverageDialog(model: BooksModel, existing: MedCoverage, onClose: ()
             AmountInput(model.t("medical.annualMax"), annual, Currency.CAD, locale, Modifier.weight(1f), model::money) { annual = it }
         }
         TextInput(model.t("medical.frequency"), months, supporting = model.t("medical.frequencyHint")) { months = it }
-        if (existing.id.isNotBlank()) TextButton(onClick = { model.act { model.books.medical.deleteCoverage(existing.planId, existing.id) }; onClose() }) { Text(model.t("common.delete")) }
+        if (existing.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete")) }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("medical.delete.coverage", model.t("medService.${existing.service}")), onDismiss = { asking = false }) {
+            (model.act { model.books.medical.deleteCoverage(existing.planId, existing.id) } != null).also { if (it) onClose() }
+        }
     }
 }
 

@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.FuelEntry
 import ca.schippers.hfm.books.FuelType
 import ca.schippers.hfm.books.MaintenanceTask
+import ca.schippers.hfm.books.OdometerReading
 import ca.schippers.hfm.books.PaymentDraft
 import ca.schippers.hfm.books.ServiceRecord
 import ca.schippers.hfm.books.TaskState
@@ -128,6 +129,7 @@ private fun OverviewTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> 
     val readings = remember(model.revision, v.id) { books.vehicles.readings(v.id) }
     val rate = remember(model.revision, v.id) { books.vehicles.kmPerDay(v.id) }
     val driver = remember(model.revision, v.driverMemberId) { v.driverMemberId?.let { id -> books.members.list(true).firstOrNull { it.id == id }?.displayName } }
+    var deleting by remember { mutableStateOf<OdometerReading?>(null) }
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -168,8 +170,13 @@ private fun OverviewTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> 
                 Text(model.date(r.date), Modifier.width(110.dp))
                 Text(km(model, r.odometer), Modifier.width(140.dp))
                 Text(model.t("readingSource.${r.source}"), Modifier.width(160.dp), style = MaterialTheme.typography.bodySmall)
-                r.id?.let { id -> TextButton(onClick = { model.act { books.vehicles.deleteReading(v.id, id) } }) { Text(model.t("common.delete")) } }
+                if (r.id != null) TextButton(onClick = { deleting = r }) { Text(model.t("common.delete")) }
             }
+        }
+    }
+    deleting?.let { r ->
+        AskBeforeDeleting(model, model.t("vehicles.delete.reading", km(model, r.odometer), model.date(r.date)), onDismiss = { deleting = null }) {
+            model.act { books.vehicles.deleteReading(v.id, r.id!!) } != null
         }
     }
 }
@@ -524,6 +531,7 @@ private fun TaskDialog(model: BooksModel, existing: MaintenanceTask, onClose: ()
     var remindKm by remember { mutableStateOf(existing.remindKm.toString()) }
     var active by remember { mutableStateOf(existing.active) }
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
+    var asking by remember { mutableStateOf(false) }
     FormDialog(
         model.t(if (existing.id.isBlank()) "vehicles.addTask" else "vehicles.editTask"), model.t("common.save"), model.t("common.cancel"),
         canSave = name.isNotBlank(), onDismiss = onClose,
@@ -558,10 +566,13 @@ private fun TaskDialog(model: BooksModel, existing: MaintenanceTask, onClose: ()
             TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
             if (existing.id.isNotBlank()) {
                 LabeledCheckbox(model.t("vehicles.taskActive"), active) { active = it }
-                TextButton(onClick = { if (model.act { model.books.vehicles.deleteTask(existing.vehicleId, existing.id) } != null) onClose() }) {
-                    Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error)
-                }
+                TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
+        }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("upkeep.delete.task", existing.name), onDismiss = { asking = false }) {
+            (model.act { model.books.vehicles.deleteTask(existing.vehicleId, existing.id) } != null).also { if (it) onClose() }
         }
     }
 }
@@ -607,6 +618,7 @@ private fun ServiceDialog(model: BooksModel, v: Vehicle, existing: ServiceRecord
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
     var done by remember { mutableStateOf(existing.taskIds) }
     val payment = remember { PaymentState() }
+    var asking by remember { mutableStateOf(false) }
     FormDialog(
         model.t(if (existing.id.isBlank()) "vehicles.addService" else "vehicles.editService") + " · " + v.name, model.t("common.save"), model.t("common.cancel"),
         onDismiss = onClose,
@@ -642,10 +654,13 @@ private fun ServiceDialog(model: BooksModel, v: Vehicle, existing: ServiceRecord
             TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
             if (existing.transactionId == null) PaymentFields(model, v.currency, "transport.maintenance", payment) else Text(model.t("vehicles.paymentLinked"), style = MaterialTheme.typography.bodySmall)
             if (existing.id.isNotBlank()) {
-                TextButton(onClick = { if (model.act { books.vehicles.deleteService(v.id, existing.id) } != null) onClose() }) {
-                    Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error)
-                }
+                TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
+        }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("upkeep.delete.service", model.date(existing.date)), onDismiss = { asking = false }) {
+            (model.act { books.vehicles.deleteService(v.id, existing.id) } != null).also { if (it) onClose() }
         }
     }
 }
@@ -661,6 +676,7 @@ private fun FuelDialog(model: BooksModel, v: Vehicle, existing: FuelEntry, onClo
     var full by remember { mutableStateOf(existing.fullTank) }
     var station by remember { mutableStateOf(existing.station.orEmpty()) }
     val payment = remember { PaymentState() }
+    var asking by remember { mutableStateOf(false) }
     FormDialog(
         model.t(if (v.electric) "vehicles.addCharge" else "vehicles.addFuel") + " · " + v.name, model.t("common.save"), model.t("common.cancel"),
         onDismiss = onClose,
@@ -693,10 +709,13 @@ private fun FuelDialog(model: BooksModel, v: Vehicle, existing: FuelEntry, onClo
                 Text(model.t("vehicles.paymentLinked"), style = MaterialTheme.typography.bodySmall)
             }
             if (existing.id.isNotBlank()) {
-                TextButton(onClick = { if (model.act { books.vehicles.deleteFuel(v.id, existing.id) } != null) onClose() }) {
-                    Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error)
-                }
+                TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
+        }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("vehicles.delete.fuel", model.date(existing.date)), onDismiss = { asking = false }) {
+            (model.act { books.vehicles.deleteFuel(v.id, existing.id) } != null).also { if (it) onClose() }
         }
     }
 }
@@ -710,6 +729,7 @@ private fun WarrantyDialog(model: BooksModel, existing: Warranty, onClose: () ->
     var endKm by remember { mutableStateOf(existing.endKm?.toString().orEmpty()) }
     var phone by remember { mutableStateOf(existing.phone.orEmpty()) }
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
+    var asking by remember { mutableStateOf(false) }
     FormDialog(
         model.t(if (existing.id.isBlank()) "vehicles.addWarranty" else "vehicles.editWarranty"), model.t("common.save"), model.t("common.cancel"),
         onDismiss = onClose,
@@ -733,10 +753,11 @@ private fun WarrantyDialog(model: BooksModel, existing: Warranty, onClose: () ->
         }
         TextInput(model.t("vehicles.claimPhone"), phone) { phone = it }
         TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
-        if (existing.id.isNotBlank()) {
-            TextButton(onClick = { if (model.act { model.books.vehicles.deleteWarranty(existing.vehicleId, existing.id) } != null) onClose() }) {
-                Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error)
-            }
+        if (existing.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+    }
+    if (asking) {
+        AskBeforeDeleting(model, model.t("vehicles.delete.warranty", model.t("warrantyKind.${existing.kind}")), onDismiss = { asking = false }) {
+            (model.act { model.books.vehicles.deleteWarranty(existing.vehicleId, existing.id) } != null).also { if (it) onClose() }
         }
     }
 }

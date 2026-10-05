@@ -440,15 +440,23 @@ class VehicleService internal constructor(private val books: Books) {
         books.ledger(group).vehiclesQueries.deleteWarranty(warrantyId)
     }
 
-    /** VEH-02, VEH-03: registration and insurance within [withinDays], warranties within 60 days (WAR-02). */
+    /**
+     * VEH-02, VEH-03: registration and insurance within [withinDays], warranties within 60 days
+     * (WAR-02). A warranty limited by kilometres also ends on the day the odometer should reach the
+     * limit, at the usual distance driven; once past the limit it is over and no longer reminds.
+     */
     fun renewals(today: LocalDate, withinDays: Int = 30): List<Renewal> = list().flatMap { v ->
+        val readings = readings(v.id)
+        val odometer = readings.maxOfOrNull { it.odometer }
         listOfNotNull(
             v.registrationRenewal?.let { Renewal(RenewalKind.REGISTRATION, v.id, v.name, it, today.daysUntil(it), v.plate) }?.takeIf { it.daysLeft <= withinDays },
             v.insuranceRenewal?.let { Renewal(RenewalKind.VEHICLE_INSURANCE, v.id, v.name, it, today.daysUntil(it), v.insurer) }?.takeIf { it.daysLeft <= withinDays },
-        ) + warranties(v.id).mapNotNull { w ->
+        ) + warranties(v.id).filter { it.covers(today, odometer) }.mapNotNull { w ->
+            val byKm = w.endKm?.let { MaintenanceSchedule.limitReachedOn(it, odometer, kmPerDay(readings), today) }
+            val end = listOfNotNull(w.endDate, byKm).minOrNull() ?: return@mapNotNull null
+            val detail = listOfNotNull(w.provider ?: w.kind.name, w.endKm?.takeIf { byKm == end }?.let { "$it km" }).joinToString(" · ")
             // An expired warranty is not a reminder; only the run-up to its end is.
-            w.endDate?.let { Renewal(RenewalKind.WARRANTY, v.id, v.name, it, today.daysUntil(it), w.provider ?: w.kind.name) }
-                ?.takeIf { it.daysLeft in 0..maxOf(withinDays, WARRANTY_NOTICE_DAYS) }
+            Renewal(RenewalKind.WARRANTY, v.id, v.name, end, today.daysUntil(end), detail).takeIf { it.daysLeft in 0..maxOf(withinDays, WARRANTY_NOTICE_DAYS) }
         }
     }
 

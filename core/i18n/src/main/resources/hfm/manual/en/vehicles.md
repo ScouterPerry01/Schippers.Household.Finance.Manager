@@ -89,7 +89,7 @@ The app gathers readings from four places, shown in the list with their source:
 - **fill-up**: the odometer of a fill-up or charge;
 - **service**: the odometer of a service.
 
-Only readings entered with **Enter odometer** have a **Delete** button; the others are changed in their own record.
+Only readings entered with **Enter odometer** have a **Delete** button, which asks "Delete the reading of 52,300 km on date?" first; the others are changed in their own record.
 
 The readings are used for:
 
@@ -153,7 +153,7 @@ They count from today and the current odometer, except the winter tires, which f
 - **Remind me (km before)**: how many kilometres before the due distance the task becomes **Due soon**; 500 by default.
 - **Notes**: the part number, the oil type, anything useful.
 - **Active** (when editing): untick it to pause a task you do not need now. A paused task is not due and gives no reminder. Tick it again to resume.
-- **Delete** (when editing): removes the task at once. Services that recorded it are kept.
+- **Delete** (when editing): asks "Delete the task "name"? Services already logged are kept." and, once confirmed, deletes the task. Services that recorded it are kept.
 
 ### When a task is due {#task-due}
 
@@ -190,7 +190,7 @@ The form is titled **Add a service** or **Edit service**, with the vehicle's nam
 - **Cost**: what it cost, in the vehicle's currency.
 - **Notes**: the work done, the parts, the invoice number.
 - Payment: see [Also enter the payment](vehicles#payment).
-- **Delete** (when editing): removes the service at once. A payment entered with it stays in its account.
+- **Delete** (when editing): asks "Delete the service of date? A payment entered with it stays in its account." and, once confirmed, deletes the service. The payment stays in its account.
 
 ### Also enter the payment {#payment}
 @index: link transaction; pay from account
@@ -219,7 +219,7 @@ At the top, the consumption over the last year and the fuel cost per kilometre, 
 - **Filled the tank** (or **Charged to full**): ticked by default. "Consumption is measured from one full tank to the next." Untick it for a partial fill.
 - **Station**.
 - Payment: as for a service, with the fuel or EV charging category proposed. See [Also enter the payment](vehicles#payment).
-- **Delete** (when editing): removes the entry at once.
+- **Delete** (when editing): asks "Delete the entry of date? A payment entered with it stays in its account." and, once confirmed, deletes the entry.
 
 ### Consumption {#consumption}
 
@@ -228,7 +228,7 @@ At the top, the consumption over the last year and the fuel cost per kilometre, 
 ## Warranties tab {#warranties-tab}
 @index: vehicle warranty; powertrain; extended warranty; corrosion; battery warranty
 
-"You are reminded 60 days before a warranty ends, so problems can be reported while still covered."
+"You are reminded 60 days before a warranty ends, so problems can be reported while still covered." A warranty ends on its end date, or, when it has a distance limit, on the day the odometer should reach it at the usual distance per day (from readings at least two weeks apart over the last year), whichever comes first. A warranty limited only by kilometres reminds this way too.
 
 Each warranty shows its kind and provider, its end date, its distance limit and its phone, with **Still covered** or **Ended**. A warranty is still covered while today is on or before its end date and the odometer has not passed its distance limit. **Add a warranty** adds one; **Edit** opens one.
 
@@ -238,11 +238,11 @@ Each warranty shows its kind and provider, its end date, its distance limit and 
 - **Garage or provider**: who honours it; the make is proposed.
 - **Starts**: the purchase date is proposed.
 - **Ends**: the end date.
-- **Up to (km)**: the distance limit, for example 100,000.
+- **Up to (km)**: the distance limit, for example 100,000. Once the odometer passes it, the warranty is **Ended** and no longer reminds.
 - At least one of **Ends** and **Up to (km)** is required, and the end cannot be before the start.
 - **Claims phone number**.
 - **Notes**: what it covers, the deductible.
-- **Delete** (when editing): removes it at once.
+- **Delete** (when editing): asks "Delete this warranty (kind)?" and, once confirmed, deletes it.
 
 The reminder comes from 60 days before the **Ends** date until that date; a warranty limited only by distance gives no reminder, so watch the odometer.
 
@@ -269,7 +269,7 @@ The **Maintenance and cost of ownership** report under [Reports](reports) brings
 For each vehicle in use:
 
 - **Registration renewal** and **Insurance renewal**: a reminder from 30 days before the date, which stays once the date has passed until you enter the new date, for example "Civic: registration (ABC 123) in 12 days".
-- Warranties: a reminder from 60 days before the end date.
+- Warranties: a reminder from 60 days before the end date, or before the day the odometer should reach the distance limit, whichever is first, for example "Civic: warranty ends (Honda · 100000 km) in 40 days". A warranty already past its date or distance is not a reminder.
 - Maintenance: tasks **Due soon** and **Due now**.
 
 Reminders appear at the top of the window and as a system notification, and lead to this screen. The renewal dates, warranty ends and maintenance due dates also appear on the [Calendar](calendar).
