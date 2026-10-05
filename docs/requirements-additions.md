@@ -137,3 +137,17 @@ Owner's request (2026-10-04), to be built in Phase 5g with the other usability w
 | NAV-01 | The desktop's sections are grouped under a few headings instead of one long list, with reference lists and setup (categories, payees, rules, institutions, phones, AI reading, users, backups, security, About) under Settings. | Should |
 | NAV-02 | Each user chooses the menu's place: a list on the left with collapsible groups, or a menu bar at the top with drop-down menus. The choice is remembered on that computer. | Should |
 | NAV-03 | Both menus show the same groups and the same counts (such as documents waiting for review), and work from the keyboard (NFR-08). | Should |
+
+## Contacts
+
+Owner's request (2026-10-05): one place for the people and organizations the household deals with, linked to the rest of the app, standing on its own in the menu (not under Settings), with several of a kind told apart.
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| CON-01 | A contact is an organization or a person (who can work at an organization), with one or more kinds (bank, investment firm, insurer, pharmacy, family doctor, specialist, lawyer, contractor, employer, school, utility, government...), a "What for" line written by the user, and the household members it serves. | Must |
+| CON-02 | A contact keeps labelled phones and emails, account or client numbers (masked; showing one asks for the password and is logged), address, website, hours and notes. | Must |
+| CON-03 | Contacts are kept in an account group like health records: the household's shared group by default, or a private group chosen when adding one. | Must |
+| CON-04 | A contact is linked with a role to records of the app (accounts, loans, investments, policies, health providers, medications, appointments, bills, payees, pets, vehicles, assets, contractors or one of their jobs, estate papers); its page lists them by role, and each record shows and picks its contacts. | Must |
+| CON-05 | Contacts are filtered by kind, by the person served and by what they are linked to, and found by the global search. | Should |
+| CON-06 | Contacts can be gathered from the records that already hold contact details, and two contacts merged, likely duplicates proposed, nothing merged or moved without the user's confirmation. | Should |
+| CON-07 | The phone shows the contacts its user can see (never account or client numbers), with tap to call, email or map, and can send new contacts to the desktop, where they are reviewed before being added. | Should |
