@@ -18,4 +18,6 @@ Téléchargez un relevé de votre banque et choisissez Importer un relevé…. L
 
 ## Autres boutons
 
-Selon le type de compte, le registre offre aussi Modifier le compte, Fermer le compte, Cartes et avantages, Détails du prêt, Titres détenus et Talon de paie….
+Selon le type de compte, le registre offre aussi Modifier le compte, Fermer le compte, Cartes et avantages, Récompenses, Détails du prêt, Titres détenus et Talon de paie….
+
+Sur une carte de crédit, Récompenses garde ses points, sa remise en argent ou ses milles : le programme, ce que chaque relevé indique comme gagné et ce que vous avez échangé. Avec le taux de gain et la valeur d’un point, il estime les gains de l’année et la valeur du solde.

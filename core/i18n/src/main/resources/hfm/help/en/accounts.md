@@ -18,4 +18,6 @@ Download a statement from your bank and choose Import statement…. OFX, QFX, QB
 
 ## Other buttons
 
-Depending on the account type, the register also offers Edit account, Close account, Cards and benefits, Loan details, Holdings and Pay stub….
+Depending on the account type, the register also offers Edit account, Close account, Cards and benefits, Rewards, Loan details, Holdings and Pay stub….
+
+On a credit card, Rewards keeps its points, cash back or miles: the program, what each statement says you earned, and what you redeemed. With the earn rate and the worth of one point, it estimates this year's earning and what the balance is worth.

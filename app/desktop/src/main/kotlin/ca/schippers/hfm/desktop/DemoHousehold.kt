@@ -1,6 +1,20 @@
 package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Account
+import ca.schippers.hfm.books.CardReward
+import ca.schippers.hfm.books.Contractor
+import ca.schippers.hfm.books.ContractorJob
+import ca.schippers.hfm.books.HomeProject
+import ca.schippers.hfm.books.Invoice
+import ca.schippers.hfm.books.InvoiceLine
+import ca.schippers.hfm.books.InvoiceStatus
+import ca.schippers.hfm.books.InvoiceTax
+import ca.schippers.hfm.books.ProjectStatus
+import ca.schippers.hfm.books.RentalProperty
+import ca.schippers.hfm.books.RewardKind
+import ca.schippers.hfm.books.RewardUnit
+import ca.schippers.hfm.books.Trip
+import ca.schippers.hfm.books.TripPurpose
 import ca.schippers.hfm.books.Allowance
 import ca.schippers.hfm.books.AllowanceFrequency
 import ca.schippers.hfm.books.AllowanceKind
@@ -291,7 +305,7 @@ object DemoHousehold {
                 organDonor = true,
                 contacts = listOf(
                     EstateContact(if (english) ContactRole.EXECUTOR else ContactRole.LIQUIDATOR, "Sam"),
-                    EstateContact(if (english) ContactRole.LAWYER else ContactRole.NOTARY, l("Me Isabelle Gagnon", "Priya Patel"), l("Gagnon notaires", "Patel Law"), l("418-555-0142", "613-555-0142")),
+                    EstateContact(if (english) ContactRole.LAWYER else ContactRole.NOTARY, l("Me Isabelle Gagnon", "Priya Patel"), l("Gagnon notaires", "Patel Law"), l(l("418-555-0142", "613-555-0142"), "613-555-0142")),
                     EstateContact(ContactRole.FINANCIAL_ADVISOR, l("Marc Lavoie", "Daniel Wong"), l("Desjardins", "TD Wealth"), l("418-555-0190", "613-555-0190")),
                 ),
             ),
@@ -331,6 +345,7 @@ object DemoHousehold {
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
         addPetAndCarRecords(books, group, visa, rex, civic, today)
         addAssets(books, group, visa, alex, sam, lea, civic, today)
+        addExtras(books, group, chequing, visa, alex, sam, civic, today)
         addInvestments(books, group, alex, sam, desjardins, today)
         addPlans(books, group, chequing, savings, alex, sam, lea, desjardins, today)
         addCrypto(books, group, chequing, alex, today)
@@ -605,8 +620,8 @@ object DemoHousehold {
         val private = books.session.createGroup(l("Alex Demo - privé", "Alex Demo - private"), private = true)
         val health = books.health
         val pharmacy = health.saveProvider(HealthProvider("", shared, l("Pharmacie Jean Coutu", "Shoppers Drug Mart"), ProviderKind.PHARMACY, l("418-555-0100", "613-555-0100"), l("1200, boul. Charest", "1200 Bank St"), null, false))
-        val doctor = health.saveProvider(HealthProvider("", shared, l("Dre Gagnon (GMF Limoilou)", "Dr. Patel (Glebe Family Health Team)"), ProviderKind.DOCTOR, l("418-555-0142", "613-555-0142"), null, null, false))
-        val dentist = health.saveProvider(HealthProvider("", shared, l("Clinique dentaire Saint-Roch", "Elgin Street Dental"), ProviderKind.DENTIST, l("418-555-0177", "613-555-0177"), null, null, false))
+        val doctor = health.saveProvider(HealthProvider("", shared, l("Dre Gagnon (GMF Limoilou)", "Dr. Patel (Glebe Family Health Team)"), ProviderKind.DOCTOR, l(l("418-555-0142", "613-555-0142"), "613-555-0142"), null, null, false))
+        val dentist = health.saveProvider(HealthProvider("", shared, l("Clinique dentaire Saint-Roch", "Elgin Street Dental"), ProviderKind.DENTIST, l(l("418-555-0177", "613-555-0177"), "613-555-0177"), null, null, false))
 
         val calendar = books.calendar
         calendar.create(EventDraft(shared, l("Pose des pneus d'hiver", "Winter tires on"), EventCategory.VEHICLE, day(1), LocalTime(9, 30), 60, l("Garage Tremblay", "Main Street Auto"), reminderMinutes = listOf(1440, 60)))
@@ -665,6 +680,52 @@ object DemoHousehold {
         med.submit(inhaler.id, samPlan.id, day(-5))
         expense(sam, MedService.PHYSIOTHERAPY, -15, "95.00", l("Physiothérapie (épaule)", "Shoulder, after a fall"))
         expense(lea, MedService.EYE_EXAM, -340, "95.00", l("Examen de la vue", "Optometrist, yearly exam"))
+    }
+
+    /** OTH-02, MNT-08, MNT-09, SAL-04, SAL-05, CC-03: trips, contractors, a roof, Sam's invoices, a duplex and card rewards. */
+    private fun addExtras(books: Books, group: String, chequing: Account, visa: Account, alex: Member, sam: Member, civic: Vehicle, today: LocalDate) {
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        fun cat(key: String) = books.categories.list().first { it.systemKey == key }.id
+        fun day(n: Int) = today.plus(DatePeriod(days = n))
+        // OTH-02, MED-11: Sam's client visits, and a specialist far from home.
+        for ((n, place, km) in listOf(Triple(-70, l("Client à Lévis", "Client in Kanata"), "28"), Triple(-41, l("Client à Montmagny", "Client in Smiths Falls"), "78"), Triple(-12, l("Client à Lévis", "Client in Kanata"), "28"))) {
+            books.trips.save(Trip("", group, day(n), place, BigDecimal(km), true, TripPurpose.BUSINESS, civic.id, sam.id))
+        }
+        books.trips.save(Trip("", group, day(-25), l("Épicerie", "Groceries"), BigDecimal("6"), true, TripPurpose.PERSONAL, civic.id, alex.id))
+        books.trips.save(Trip("", group, day(-33), l("Institut de cardiologie de Montréal", "Kingston Health Sciences Centre"), BigDecimal(if (english) "196" else "253"), true, TripPurpose.MEDICAL, civic.id, alex.id))
+        // MNT-08, MNT-09: the roofer, the plumber, and the new roof on the house.
+        val roofer = books.contractors.save(Contractor("", group, l("Toitures Gagnon", "Capital Roofing"), l("Couvreur", "Roofer"), l("418-555-0142", "613-555-0142"), website = l("toituresgagnon.example", "capitalroofing.example")))
+        books.contractors.saveJob(roofer, ContractorJob("", day(-120), l("Nouveau toit", "New roof"), cad("14200.00"), 5))
+        val plumber = books.contractors.save(Contractor("", group, l("Plomberie Roy", "Rideau Plumbing"), l("Plombier", "Plumber"), l("418-555-0177", "613-555-0177")))
+        books.contractors.saveJob(plumber, ContractorJob("", day(-300), l("Chauffe-eau", "Water heater"), cad("1850.00"), 4))
+        books.contractors.saveJob(plumber, ContractorJob("", day(-40), l("Fuite sous l'évier", "Leak under the sink"), cad("240.00"), 3))
+        val house = books.assets.list().first { it.kind == AssetKind.HOME }
+        val roof = books.homeProjects.save(HomeProject("", group, l("Nouveau toit", "New roof"), ProjectStatus.DONE, Currency.CAD, house.id, day(-130), day(-118), cad("15000.00")))
+        books.homeProjects.addCost(roof, day(-130), l("Dépôt", "Deposit"), cad("4000.00"), roofer.id)
+        books.homeProjects.addCost(roof, day(-118), l("Solde", "Balance"), cad("10200.00"), roofer.id)
+        books.homeProjects.save(HomeProject("", group, l("Terrasse arrière", "Back deck"), ProjectStatus.PLANNED, Currency.CAD, house.id, budget = cad("6500.00")))
+        // SAL-04: Sam's freelance invoices: one paid, one waiting, one overdue.
+        val taxes = if (english) listOf(InvoiceTax("HST", 1300)) else listOf(InvoiceTax("GST", 500), InvoiceTax("QST", 998))
+        fun invoice(n: Int, customer: String, lines: List<InvoiceLine>, due: Int) = books.invoices.save(
+            Invoice("", group, books.invoices.nextNumber(day(n).year), customer, day(n), Currency.CAD, lines, InvoiceStatus.SENT, day(n + due), memberId = sam.id, taxes = taxes),
+        )
+        val first = invoice(-60, l("Atelier Lavoie inc.", "Lavoie Studio Inc."), listOf(InvoiceLine(l("Conception graphique", "Graphic design"), "12", "65.00")), 30)
+        books.invoices.markPaid(first, day(-35), chequing.id)
+        invoice(-40, l("Café du Quai", "Harbour Café"), listOf(InvoiceLine(l("Menus et affiches", "Menus and posters"), "8", "65.00"), InvoiceLine(l("Impression", "Printing"), "1", "120.00")), 30)
+        invoice(-9, l("Atelier Lavoie inc.", "Lavoie Studio Inc."), listOf(InvoiceLine(l("Site Web : maquettes", "Website mock-ups"), "15", "65.00")), 30)
+        // SAL-05: the duplex Alex and a sister own half each; its rent and costs carry its tag.
+        val duplex = books.rentals.save(RentalProperty("", group, l("Duplex rue Cartier", "Duplex on Bank Street"), "", l("212, rue Cartier, Québec", "212 Bank Street, Ottawa"), shareBp = 5_000))
+        val tag = books.tags().first { it.id == duplex.tagId }.name
+        for (m in 3 downTo 1) {
+            books.transactions.create(TransactionDraft(chequing.id, today.minus(DatePeriod(months = m)), cad("1150.00"), l("Locataire", "Tenant"), listOf(SplitDraft(cat("income.rental"), cad("1150.00"))), tags = setOf(tag)))
+        }
+        books.transactions.create(TransactionDraft(chequing.id, day(-50), cad("-1240.00"), l("Ville de Québec", "City of Ottawa"), listOf(SplitDraft(cat("housing.municipal_tax"), cad("-1240.00"))), tags = setOf(tag)))
+        books.transactions.create(TransactionDraft(chequing.id, day(-38), cad("-240.00"), l("Plomberie Roy", "Rideau Plumbing"), listOf(SplitDraft(cat("housing.maintenance"), cad("-240.00"))), tags = setOf(tag)))
+        // CC-03: points on the Visa.
+        books.rewards.save(CardReward(visa.id, group, l("Desjardins BONUSDOLLARS", "TD Rewards"), RewardUnit.POINTS, BigDecimal("3"), BigDecimal("0.005")))
+        books.rewards.addEntry(visa.id, day(-65), BigDecimal("4120"), RewardKind.EARNED)
+        books.rewards.addEntry(visa.id, day(-35), BigDecimal("3985"), RewardKind.EARNED)
+        books.rewards.addEntry(visa.id, day(-20), BigDecimal("5000"), RewardKind.REDEEMED, cad("25.00"), l("Carte-cadeau", "Gift card"))
     }
 
     /** AST, WAR, INS: the house and what is in it, warranties, and the household's policies. */

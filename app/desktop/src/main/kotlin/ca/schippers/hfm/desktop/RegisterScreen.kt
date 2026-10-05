@@ -126,6 +126,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     var editingAccount by remember { mutableStateOf(false) }
     var editingCard by remember { mutableStateOf(false) }
     var editingCards by remember { mutableStateOf(false) }
+    var editingRewards by remember { mutableStateOf(false) }
     val holders = remember(model.revision, account.id) { if (account.type.kind == AccountKind.CREDIT) books.creditCards.holders(account.id) else emptyList() }
     var revealing by remember { mutableStateOf(false) }
     var confirmClose by remember { mutableStateOf(false) }
@@ -228,6 +229,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
             if (account.numberMasked != null) OutlinedButton(onClick = { revealing = true }) { Text(model.t("account.show")) }
             if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCard = true }) { Text(model.t("account.cardDetails")) }
             if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCards = true }) { Text(model.t("cards.button")) }
+            if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingRewards = true }) { Text(model.t("rewards.button")) }
             if (account.type.kind == AccountKind.LOAN) OutlinedButton(onClick = { model.section = Section.LOANS }) { Text(model.t("account.loanDetails")) }
             if (account.type.kind == AccountKind.INVESTMENT) OutlinedButton(onClick = { model.section = Section.INVESTMENTS }) { Text(model.t("account.holdings")) }
             if (account.status != AccountStatus.CLOSED) {
@@ -414,6 +416,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     if (editingAccount) AccountDialog(model, account) { editingAccount = false }
     if (editingCard) CardTermsDialog(model, account) { editingCard = false }
     if (editingCards) CardsDialog(model, account) { editingCards = false }
+    if (editingRewards) RewardsDialog(model, account) { editingRewards = false }
     if (revealing) RevealNumberDialog(model, account) { revealing = false }
     if (confirmClose) {
         AlertDialog(

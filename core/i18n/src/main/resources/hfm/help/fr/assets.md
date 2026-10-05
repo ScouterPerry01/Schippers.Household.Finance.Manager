@@ -14,6 +14,16 @@ Dans la fiche d’un bien, ajoutez des tâches avec Ajouter les tâches habituel
 
 Dans l’onglet Est-ce couvert?, tapez dans Trouver un article pour chercher par nom, marque, modèle ou numéro de série. Vous voyez s’il est sous garantie ou protégé. Pour inscrire une réclamation, ouvrez la garantie dans la fiche du bien et choisissez Ajouter une réclamation.
 
+## Projets
+
+Dans l’onglet Projets, Ajouter un projet note des travaux sur une maison : un nouveau toit, une rénovation, une réparation. Donnez-lui un état, des dates et un budget, et indiquez s’il s’agit d’une amélioration en capital. Cliquez sur un projet pour ajouter ses coûts au fur et à mesure, avec l’entrepreneur qui a fait les travaux.
+
+Une amélioration en capital terminée ou en cours s’ajoute au prix de base de la maison, affiché au-dessus de la liste : le prix d’achat plus ces améliorations. Une réparation n’ajoute rien.
+
+## Entrepreneurs
+
+Dans l’onglet Entrepreneurs, Ajouter un entrepreneur garde les gens qui travaillent sur la maison et les véhicules : leur métier, téléphone, courriel et site Web. Cliquez sur un entrepreneur pour noter chaque travail, son coût et une note de une à cinq étoiles ; la liste montre leur moyenne. Archivez un entrepreneur que vous n’employez plus.
+
 ## Assurances
 
 Dans l’onglet Assurances, choisissez Ajouter une police (habitation, vie, invalidité ou autre). Notez la prime, la date de renouvellement et les bénéficiaires. Au renouvellement, choisissez Renouveler pour inscrire la nouvelle prime. L’onglet liste aussi les biens et véhicules qu’aucune police active ne couvre.
