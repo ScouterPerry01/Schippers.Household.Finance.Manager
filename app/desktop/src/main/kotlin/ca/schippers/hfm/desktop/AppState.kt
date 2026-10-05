@@ -1,6 +1,7 @@
 package ca.schippers.hfm.desktop
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.FocusRequester
@@ -8,6 +9,7 @@ import ca.schippers.hfm.data.HouseholdSession
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.i18n.Language
+import ca.schippers.hfm.i18n.Manual
 import ca.schippers.hfm.i18n.Messages
 import ca.schippers.hfm.security.RecoveryKey
 import java.nio.file.Files
@@ -67,6 +69,19 @@ class AppState(
     /** NFR-12: opens the help on the topic for where the user is. */
     fun openHelp() {
         helpTopic = (screen as? Screen.Main)?.model?.section?.helpId ?: ca.schippers.hfm.i18n.HelpGuide.GENERAL.first()
+    }
+
+    /** NFR-12: the manual's page to show (a chapter, or chapter#section); null while its window is closed. */
+    var manualPage by mutableStateOf<String?>(null)
+
+    /** Increases each time the manual is asked for, so an open manual window comes to the front. */
+    var manualRequests by mutableIntStateOf(0)
+
+    /** NFR-12: opens the manual in its own window, on [page] or else on the chapter for the screen shown. */
+    fun openManual(page: String? = null) {
+        val section = (screen as? Screen.Main)?.model?.section?.helpId
+        manualPage = page ?: section?.takeIf { Manual.book(language).chapter(it) != null } ?: MANUAL_START
+        manualRequests++
     }
 
     /** Focus target for Ctrl+F (OTH-03). */
@@ -157,6 +172,9 @@ class AppState(
         private const val PREF_THEME = "theme"
         private const val PREF_TEXT_SCALE = "textScale"
         private const val PREF_LANGUAGE = "language"
+
+        /** The manual's first chapter, shown when no chapter covers the screen. */
+        const val MANUAL_START = "welcome"
         private const val PREF_AUTO_LOCK = "autoLockMinutes"
         const val DEFAULT_AUTO_LOCK = 10
         private const val PREF_RECENT = "recentHouseholds"

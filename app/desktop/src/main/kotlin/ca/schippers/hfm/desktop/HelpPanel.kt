@@ -99,6 +99,7 @@ fun HelpPanel(state: AppState, start: String, onClose: () -> Unit) {
                     }
                     HorizontalDivider()
                     Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
+                        TextButton(onClick = { state.openManual(); onClose() }) { Text(state.t("manual.open")) }
                         TextButton(onClick = onClose) { Text(state.t("common.close")) }
                     }
                 }

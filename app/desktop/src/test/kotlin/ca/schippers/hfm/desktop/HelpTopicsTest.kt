@@ -2,6 +2,7 @@ package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.i18n.HelpGuide
 import ca.schippers.hfm.i18n.Language
+import ca.schippers.hfm.i18n.Manual
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -25,5 +26,14 @@ class HelpTopicsTest {
         assertTrue(HelpGuide.search(Language.ENGLISH, helpTopicIds(), "reconcile statement").isNotEmpty())
         assertTrue(HelpGuide.search(Language.FRENCH, helpTopicIds(), "releve").isNotEmpty(), "relevé found without its accent")
         assertTrue(HelpGuide.search(Language.ENGLISH, helpTopicIds(), "zzzqqq").isEmpty())
+    }
+
+    @Test
+    fun `every screen has its chapter in the manual, which Shift+F1 opens`() {
+        for (language in Language.entries) {
+            val missing = Section.entries.map { it.helpId }.filter { Manual.book(language).chapter(it) == null }
+            assertEquals(emptyList(), missing, "manual chapters missing in $language")
+            assertTrue(Manual.book(language).chapter(AppState.MANUAL_START) != null)
+        }
     }
 }

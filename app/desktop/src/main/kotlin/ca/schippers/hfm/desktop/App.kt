@@ -56,7 +56,12 @@ import javax.swing.JFileChooser
 
 @Composable
 fun App(state: AppState) {
-    // NFR-08: the theme and text size chosen on this computer.
+    AppTheme(state) { AppContent(state) }
+}
+
+/** NFR-08: the theme and text size chosen on this computer, for the main window and the manual's. */
+@Composable
+fun AppTheme(state: AppState, content: @Composable () -> Unit) {
     val dark = when (state.theme) {
         ThemeChoice.SYSTEM -> isSystemInDarkTheme()
         ThemeChoice.LIGHT -> false
@@ -66,49 +71,49 @@ fun App(state: AppState) {
     androidx.compose.runtime.CompositionLocalProvider(
         LocalDarkTheme provides dark,
         androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(density.density, density.fontScale * state.textScale),
-    ) { AppContent(state, dark) }
+    ) {
+        MaterialTheme(colorScheme = if (dark) darkColorScheme() else lightColorScheme(), content = content)
+    }
 }
 
 @Composable
-private fun AppContent(state: AppState, dark: Boolean) {
-    MaterialTheme(colorScheme = if (dark) darkColorScheme() else lightColorScheme()) {
-        Surface(
-            Modifier.fillMaxSize().pointerInput(state) {
-                // Any mouse activity counts as use, for auto-lock (SEC-02).
-                awaitPointerEventScope {
-                    while (true) {
-                        awaitPointerEvent(PointerEventPass.Initial)
-                        state.touch()
-                    }
-                }
-            },
-        ) {
-            // DIST-05: asked once on first start; then checked at most once a day while open.
-            UpdateQuestion(state)
-            LaunchedEffect(state.updater, state.updater.enabled) {
+private fun AppContent(state: AppState) {
+    Surface(
+        Modifier.fillMaxSize().pointerInput(state) {
+            // Any mouse activity counts as use, for auto-lock (SEC-02).
+            awaitPointerEventScope {
                 while (true) {
-                    state.updater.checkIfDue()
-                    delay(60 * 60_000L)
+                    awaitPointerEvent(PointerEventPass.Initial)
+                    state.touch()
                 }
             }
-            Column(Modifier.fillMaxSize()) {
-                TopBar(state)
-                when (val screen = state.screen) {
-                    is Screen.Main -> MainScreen(screen.model, state)
-                    else -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp), contentAlignment = Alignment.TopCenter) {
-                        Column(Modifier.widthIn(max = 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                            when (screen) {
-                                Screen.Welcome -> WelcomeScreen(state)
-                                Screen.About -> {
-                                    TextButton(onClick = { state.screen = Screen.Welcome }) { Text(state.t("common.back")) }
-                                    AboutContent(state)
-                                }
-                                Screen.Create -> CreateScreen(state)
-                                is Screen.Unlock -> UnlockScreen(state, screen.dir)
-                                is Screen.Reset -> ResetScreen(state, screen.dir)
-                                is Screen.ShowRecoveryKey -> RecoveryKeyScreen(state, screen)
-                                is Screen.Main -> Unit
+        },
+    ) {
+        // DIST-05: asked once on first start; then checked at most once a day while open.
+        UpdateQuestion(state)
+        LaunchedEffect(state.updater, state.updater.enabled) {
+            while (true) {
+                state.updater.checkIfDue()
+                delay(60 * 60_000L)
+            }
+        }
+        Column(Modifier.fillMaxSize()) {
+            TopBar(state)
+            when (val screen = state.screen) {
+                is Screen.Main -> MainScreen(screen.model, state)
+                else -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp), contentAlignment = Alignment.TopCenter) {
+                    Column(Modifier.widthIn(max = 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        when (screen) {
+                            Screen.Welcome -> WelcomeScreen(state)
+                            Screen.About -> {
+                                TextButton(onClick = { state.screen = Screen.Welcome }) { Text(state.t("common.back")) }
+                                AboutContent(state)
                             }
+                            Screen.Create -> CreateScreen(state)
+                            is Screen.Unlock -> UnlockScreen(state, screen.dir)
+                            is Screen.Reset -> ResetScreen(state, screen.dir)
+                            is Screen.ShowRecoveryKey -> RecoveryKeyScreen(state, screen)
+                            is Screen.Main -> Unit
                         }
                     }
                 }
@@ -129,6 +134,7 @@ private fun TopBar(state: AppState) {
         }
         (state.screen as? Screen.Main)?.let { main -> SearchBox(state, main.model) }
         TextButton(onClick = state::openHelp, modifier = Modifier.padding(start = 8.dp)) { Text(state.t("help.button")) }
+        TextButton(onClick = state::openManual) { Text(state.t("manual.button")) }
         if (state.screen is Screen.Main) {
             OutlinedButton(onClick = state::lock, modifier = Modifier.padding(start = 8.dp)) { Text(state.t("common.lock")) }
         }

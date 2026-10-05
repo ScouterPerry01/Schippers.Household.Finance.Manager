@@ -4,6 +4,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 import androidx.compose.runtime.remember
@@ -49,6 +50,8 @@ private fun desktopApp() = application {
                 }
                 System.getProperty("hfm.demo.search")?.let { q -> model.search = q to model.books.search.search(q, model.language.locale) }
                 app.screen = Screen.Main(model)
+                // -Pmanual=<chapter or chapter#section> (or "screen"): the manual open beside the app.
+                System.getProperty("hfm.demo.manual")?.let { page -> app.openManual(page.takeUnless { it == "screen" }) }
             }
         }
     }
@@ -86,6 +89,10 @@ private fun desktopApp() = application {
             if (event.type == KeyEventType.KeyDown && event.isCtrlPressed && event.key == Key.F && state.screen is Screen.Main) {
                 runCatching { state.searchFocus.requestFocus() }
                 true
+            } else if (event.type == KeyEventType.KeyDown && event.key == Key.F1 && event.isShiftPressed) {
+                // NFR-12: Shift+F1 opens the manual, in its own window, on the chapter for the screen shown.
+                state.openManual()
+                true
             } else if (event.type == KeyEventType.KeyDown && event.key == Key.F1 && state.helpTopic == null) {
                 // NFR-12: F1 opens the help on the topic for the screen shown.
                 state.openHelp()
@@ -100,13 +107,14 @@ private fun desktopApp() = application {
     ) {
         App(state)
     }
+    if (state.manualPage != null) ManualWindow(state)
 }
 
 /**
  * The RANN's Roost head, for the window, taskbar and tray (branding/, not covered by the GPL).
  * Loaded on first use, so the packaged self-check runs without the graphics libraries.
  */
-private val AppIcon by lazy {
+internal val AppIcon by lazy {
     BitmapPainter(
         org.jetbrains.skia.Image.makeFromEncoded(
             checkNotNull(object {}.javaClass.getResourceAsStream("/hfm/branding/icon.png")).use { it.readBytes() },

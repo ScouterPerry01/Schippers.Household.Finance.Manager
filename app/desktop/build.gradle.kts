@@ -168,6 +168,7 @@ tasks.register<JavaExec>("runDemo") {
     providers.gradleProperty("reconcile").orNull?.let { systemProperty("hfm.demo.reconcile", it) }
     providers.gradleProperty("view").orNull?.let { systemProperty("hfm.demo.report", it) }
     providers.gradleProperty("search").orNull?.let { systemProperty("hfm.demo.search", it) }
+    providers.gradleProperty("manual").orNull?.let { systemProperty("hfm.demo.manual", it) }
     // A test release folder (update.json, its .minisig, release-key.pub, the files) for the update screens.
     providers.gradleProperty("update").orNull?.let { systemProperty("hfm.demo.update", it) }
     // A local stand-in for the AI service, for trying AI reading without a key or cost.

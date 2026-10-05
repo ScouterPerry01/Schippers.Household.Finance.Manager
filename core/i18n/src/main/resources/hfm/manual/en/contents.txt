@@ -1,0 +1,61 @@
+// The manual's parts and chapters in reading order (docs/manual-format.md).
+= start Getting started
+welcome
+quick-start
+basics
+= guides Getting started with each part of the app
+start-settings
+start-money
+start-bills-budgets
+start-documents
+start-calendar
+start-investing
+start-reports
+start-taxes
+start-home-family
+start-phone
+= money Money
+dashboard
+accounts
+documents
+bills
+budgets
+goals
+family
+side
+calendar
+= investing Investing and borrowing
+investments
+plans
+loans
+= reports Reports and taxes
+reports
+taxes
+= home Home and family
+health
+medical
+estate
+pets
+vehicles
+trips
+assets
+= settings Settings
+members
+users
+categories
+payees
+rules
+institutions
+rates
+phones
+ai
+backups
+security
+display
+about
+= appendices Appendices
+phone-app
+shortcuts
+privacy-data
+troubleshooting
+glossary

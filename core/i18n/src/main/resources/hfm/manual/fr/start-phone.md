@@ -1,0 +1,58 @@
+# Premiers pas avec l’application mobile
+
+RANN’s Roost Mobile, sur votre téléphone Android, vous permet de photographier un reçu à la caisse, d’inscrire un achat comptant ou de noter l’odomètre, et de le retrouver sur votre ordinateur, prêt à vérifier. Ce chapitre vous mène de l’installation à la vérification de votre première capture. Chaque étape renvoie aux explications complètes.
+
+@index: configurer le téléphone; configuration mobile; première capture
+
+## Ce qu’il vous faut {#needs}
+
+- Un téléphone Android, et RANN’s Roost sur votre ordinateur avec votre ménage configuré.
+- Le téléphone et l’ordinateur sur le même Wi-Fi de la maison pour le jumelage.
+- RANN’s Roost ouvert sur l’ordinateur, le ménage déverrouillé, chaque fois que vous voulez que le téléphone envoie par Wi-Fi.
+
+## 1. Installer l’application {#install}
+
+1. Installez RANN’s Roost Mobile à partir de Google Play, ou l’édition GitHub à partir des versions publiées par RANN sur GitHub (voir [Deux éditions](phone-app#editions)).
+2. Ouvrez-la. Autorisez les notifications si Android le demande, pour recevoir les rappels de factures et de budgets.
+3. Choisissez un NIP de 4 à 8 chiffres et saisissez-le de nouveau. L’application le demande chaque fois que vous y revenez après plus d’une minute (voir [Le verrou](phone-app#lock)).
+4. Édition GitHub seulement : choisissez si elle peut vérifier les mises à jour une fois par jour.
+
+## 2. Jumeler le téléphone à votre ordinateur {#pair}
+
+1. Sur l’ordinateur, allez à **Téléphones** dans le groupe **Réglages** du menu et cliquez sur **Jumeler un téléphone**. Un code QR apparaît ; il est valide 10 minutes.
+2. Sur le téléphone, touchez **Jumeler à un ordinateur**, puis **Numériser le code**, et pointez l’appareil photo vers l’écran.
+3. Le téléphone affiche **Jumelé à** et le nom de votre ménage ; l’ordinateur indique que le téléphone est jumelé. Fermez la fenêtre sur l’ordinateur.
+
+Si le téléphone ne peut pas joindre l’ordinateur, vérifiez que les deux sont sur le même Wi-Fi et que Windows autorise RANN’s Roost sur les réseaux privés. Détails : [Jumeler un téléphone](phones#pair) et [Jumeler à un ordinateur](phone-app#pair-screen).
+
+## 3. Capturer un reçu {#capture}
+
+1. Dans l’onglet **Capturer**, touchez **Reçu**.
+2. Tenez le reçu à plat ; le numériseur en trouve les bords. Ajoutez des pages pour un long reçu, puis terminez.
+3. Le téléphone lit le reçu et remplit le commerce, la date et le montant. Corrigez-les au besoin et ajoutez une note si vous le voulez. Tout est facultatif.
+4. Touchez **Enregistrer**.
+
+Utilisez **Facture** pour une facture, **Autre document** pour tout autre document à garder, **Dépense rapide** pour un achat sans reçu, et **Odomètre ou heures** pour une lecture de véhicule. Détails : [Le formulaire de capture](phone-app#capture-form).
+
+## 4. L’envoyer {#send}
+
+À la maison, avec RANN’s Roost ouvert sur l’ordinateur, la capture part dès que vous l’enregistrez. Sinon, elle attend sur le téléphone et part d’elle-même la prochaine fois que le téléphone est sur votre Wi-Fi.
+
+Dans l’onglet **Envois**, chaque capture affiche **En attente**, puis **Sur l’ordinateur** une fois reçue. **Envoyer maintenant** envoie aussitôt et met le résumé à jour. Détails : [L’onglet Envois](phone-app#sent-tab).
+
+> Conseil : Loin de la maison pour un moment? Choisissez le même dossier de votre Google Drive, OneDrive, Dropbox ou Nextcloud dans les **Réglages** du téléphone et dans l’écran **Téléphones** de l’ordinateur : les captures y transitent, chiffrées. Voir [Loin de la maison](phones#away-from-home).
+
+## 5. La vérifier sur l’ordinateur {#review}
+
+1. Sur l’ordinateur, ouvrez **Documents** et son onglet **À vérifier**. Votre capture s’y trouve avec l’image, le texte lu et ce que vous avez saisi.
+2. Cliquez sur **Vérifier**, contrôlez les détails, puis rattachez-la à une opération, inscrivez-la sur une facture, ou classez-la. Voir [Documents](documents).
+
+Les lectures d’odomètre sautent cette étape : elles vont directement aux lectures du véhicule.
+
+## 6. Consulter votre résumé {#summary}
+
+L’onglet **Résumé** du téléphone affiche les soldes de vos comptes, les factures à payer, les budgets du mois et l’entretien à faire, au dernier transfert. Voir [L’onglet Résumé](phone-app#summary-tab).
+
+## Si le téléphone est perdu {#lost}
+
+Sur l’ordinateur, allez à **Téléphones** et cliquez sur **Retirer** à côté du téléphone. Il ne peut plus rien envoyer ni recevoir. Le NIP de l’application protège aussi ce qu’il contient. Voir [La liste des téléphones](phones#phone-list).
