@@ -51,8 +51,12 @@ data class PairResponse(val desktopId: String, val householdName: String, val pr
 /** SYNC-09 transfer states, shown on both devices. */
 enum class TransferStatus { PENDING, SENT, IMPORTED, FAILED }
 
-/** Kinds of item a phone can capture (CAP-01..08, MNT-03). */
-enum class CaptureKind { RECEIPT, BILL, DOCUMENT, QUICK_EXPENSE, METER_READING }
+/**
+ * Kinds of item a phone can capture (CAP-01..08, MNT-03). [CONTACT] only marks a new contact in the
+ * phone's own queue: contacts travel in [SyncRequest.contacts], never as a [CaptureItem], so a
+ * desktop that does not know them still reads the request.
+ */
+enum class CaptureKind { RECEIPT, BILL, DOCUMENT, QUICK_EXPENSE, METER_READING, CONTACT }
 
 /**
  * One captured item. [id] is created on the phone, so the desktop imports it at most once however
@@ -91,13 +95,44 @@ data class CaptureFields(
     val odometer: Int? = null,
 )
 
+/**
+ * CON-07: a contact made on the phone, for the desktop to review before it becomes a contact.
+ * [id] is made on the phone, so the desktop receives it at most once. [kinds] are the names of the
+ * desktop's contact kinds (BANK, PHARMACY...); for a person, [organizationId] is an organization
+ * from [ReferenceData.contacts], and [organizationName] its name or one typed on the phone.
+ */
 @Serializable
-data class SyncRequest(val sentAtMillis: Long, val items: List<CaptureItem>, val referenceVersion: String? = null)
+data class PhoneContact(
+    val id: String,
+    val createdAtMillis: Long,
+    val name: String,
+    val person: Boolean = false,
+    val organizationId: String? = null,
+    val organizationName: String? = null,
+    val kinds: List<String> = emptyList(),
+    val purpose: String? = null,
+    val phones: List<RefContactDetail> = emptyList(),
+    val emails: List<RefContactDetail> = emptyList(),
+    val address: String? = null,
+    val notes: String? = null,
+)
+
+/**
+ * [contacts] (CON-07) were added after the first phones: a desktop that predates them ignores the
+ * field and does not acknowledge them, so they stay queued on the phone until it is updated.
+ */
+@Serializable
+data class SyncRequest(
+    val sentAtMillis: Long,
+    val items: List<CaptureItem>,
+    val referenceVersion: String? = null,
+    val contacts: List<PhoneContact> = emptyList(),
+)
 
 @Serializable
 data class SyncFailure(val id: String, val reason: String)
 
-/** SYNC-04: the items the desktop has stored; the phone may then delete its copies. */
+/** SYNC-04: the items (and phone contacts) the desktop has stored; the phone may then delete its copies. */
 @Serializable
 data class SyncResponse(
     val imported: List<String>,
@@ -124,7 +159,21 @@ data class ReferenceData(
     /** MNT-05 on the phone: maintenance due this month or overdue, on vehicles and other assets. */
     val maintenance: List<RefDue> = emptyList(),
     val generatedAtMillis: Long = 0,
-)
+    /** CON-07: the contacts the phone's user can see, without account or client numbers. */
+    val contacts: List<RefContact> = emptyList(),
+) {
+    companion object {
+        /**
+         * What a phone app understands of the reference data: 1 up to maintenance and budgets, 2
+         * with contacts. A phone that kept its copy with an older app asks for all of it again
+         * ([knownVersion]), since that app dropped what it did not know.
+         */
+        const val FORMAT = 2
+
+        /** The version a phone sends: none when its copy was kept by an app reading an older [FORMAT]. */
+        fun knownVersion(version: String?, storedFormat: Int): String? = version?.takeIf { storedFormat >= FORMAT }
+    }
+}
 
 @Serializable
 data class RefAccount(val id: String, val name: String, val type: String, val currency: String, val balance: String)
@@ -158,6 +207,35 @@ data class RefBudget(
     /** BUD-04: so the phone can name the category in its own language and remember which alerts it showed. */
     val categoryId: String? = null,
 )
+
+/**
+ * CON-07: a contact as the phone shows it, read-only. [kinds] are the desktop's kind names; [forWhom]
+ * the names of the people it serves (none: the whole household). Account and client numbers are
+ * never sent. A person's [organizationId] is set when that organization is sent too;
+ * [organizationName] names it either way.
+ */
+@Serializable
+data class RefContact(
+    val id: String,
+    val name: String,
+    val person: Boolean = false,
+    val organizationId: String? = null,
+    val organizationName: String? = null,
+    val jobTitle: String? = null,
+    val kinds: List<String> = emptyList(),
+    val purpose: String? = null,
+    val forWhom: List<String> = emptyList(),
+    val phones: List<RefContactDetail> = emptyList(),
+    val emails: List<RefContactDetail> = emptyList(),
+    val address: String? = null,
+    val website: String? = null,
+    val hours: String? = null,
+    val notes: String? = null,
+)
+
+/** A phone number or email with its label ("Office", "Cell"). */
+@Serializable
+data class RefContactDetail(val value: String, val label: String? = null)
 
 internal val SyncJson = Json { ignoreUnknownKeys = true; encodeDefaults = false; explicitNulls = false }
 internal val B64URL: Base64.Encoder get() = Base64.getUrlEncoder().withoutPadding()
