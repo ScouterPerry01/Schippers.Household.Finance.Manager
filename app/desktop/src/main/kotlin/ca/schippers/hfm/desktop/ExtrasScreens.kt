@@ -44,6 +44,7 @@ import ca.schippers.hfm.books.Invoice
 import ca.schippers.hfm.books.InvoiceLine
 import ca.schippers.hfm.books.InvoiceStatus
 import ca.schippers.hfm.books.InvoiceTax
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.ProjectStatus
 import ca.schippers.hfm.books.RentalProperty
 import ca.schippers.hfm.books.RewardKind
@@ -296,6 +297,7 @@ private fun ContractorDialog(model: BooksModel, c: Contractor, onClose: () -> Un
         TextInput(model.t("contractor.website"), website) { website = it }
         TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
         if (c.id.isNotBlank()) LabeledCheckbox(model.t("contractor.archive"), archived) { archived = it }
+        LinkedContacts(model, LinkTarget.CONTRACTOR, c.id.ifBlank { null }, suggestedName = c.name, groupId = c.groupId)
     }
 }
 

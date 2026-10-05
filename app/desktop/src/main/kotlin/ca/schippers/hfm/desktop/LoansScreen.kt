@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Account
 import ca.schippers.hfm.books.AccountSummary
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.LoanChangeKind
 import ca.schippers.hfm.books.LoanDetails
 import ca.schippers.hfm.books.LoanService
@@ -130,6 +131,7 @@ private fun LoanDetail(model: BooksModel, summary: AccountSummary, details: Loan
                     ).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                 )
+                LinkedContacts(model, LinkTarget.ACCOUNT, account.id, accountRoles(account.type), memberIds = account.ownerMemberIds, groupId = account.groupId, compact = true)
             }
             OutlinedButton(onClick = { action = LoanAction.Terms }) { Text(model.t(if (details == null) "loans.enterTerms" else "loans.editTerms")) }
         }

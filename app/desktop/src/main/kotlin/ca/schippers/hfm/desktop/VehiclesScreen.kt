@@ -35,6 +35,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.FuelEntry
 import ca.schippers.hfm.books.FuelType
+import ca.schippers.hfm.books.LinkRole
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.MaintenanceTask
 import ca.schippers.hfm.books.OdometerReading
 import ca.schippers.hfm.books.PaymentDraft
@@ -495,6 +497,8 @@ private fun VehicleDialog(model: BooksModel, existing: Vehicle, onClose: (String
             }
             TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
             GroupPicker(model, groupId, enabled = existing.id.isBlank()) { groupId = it.id }
+            // CON-04: the garage, the insurer, as contacts.
+            LinkedContacts(model, LinkTarget.VEHICLE, existing.id.ifBlank { null }, listOf(LinkRole.GARAGE, LinkRole.SERVICE, LinkRole.INSURER, LinkRole.OTHER), groupId = existing.groupId)
             if (existing.id.isNotBlank()) TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
         }
     }

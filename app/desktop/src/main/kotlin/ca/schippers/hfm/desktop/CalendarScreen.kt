@@ -43,6 +43,7 @@ import ca.schippers.hfm.books.EventCategory
 import ca.schippers.hfm.books.EventDraft
 import ca.schippers.hfm.books.GroupInfo
 import ca.schippers.hfm.books.HealthDue
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.OccurrenceMark
 import ca.schippers.hfm.books.OccurrenceStatus
 import ca.schippers.hfm.books.Renewal
@@ -481,6 +482,8 @@ internal fun EventDialog(model: BooksModel, existing: CalendarEvent?, draft: Eve
             }
             TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
             GroupPicker(model, groupId, enabled = existing == null) { groupId = it.id }
+            // CON-04: who the appointment is with, as a contact.
+            if (existing != null) LinkedContacts(model, LinkTarget.EVENT, existing.id, memberIds = setOfNotNull(existing.memberId), groupId = existing.groupId)
             if (existing == null) PrivateGroupHint(model) { groupId = it }
             if (existing != null) {
                 TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }

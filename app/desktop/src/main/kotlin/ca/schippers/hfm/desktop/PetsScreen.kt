@@ -30,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.CostSummary
 import ca.schippers.hfm.books.EventCategory
+import ca.schippers.hfm.books.LinkRole
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.Pet
 import ca.schippers.hfm.books.Sex
 import ca.schippers.hfm.books.Species
@@ -248,6 +250,8 @@ private fun PetDialog(model: BooksModel, existing: Pet, onClose: () -> Unit) {
             TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
             if (existing.id.isNotBlank()) {
                 LabeledCheckbox(model.t("pets.archivedField"), archived) { archived = it }
+                // CON-04: the vet, the insurer, the groomer or kennel, as contacts.
+                LinkedContacts(model, LinkTarget.PET, existing.id, listOf(LinkRole.VETERINARIAN, LinkRole.SERVICE, LinkRole.INSURER, LinkRole.OTHER), suggestedName = existing.insurer.orEmpty(), memberIds = setOf(existing.id))
                 if (books.pets.canChange) TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
         }

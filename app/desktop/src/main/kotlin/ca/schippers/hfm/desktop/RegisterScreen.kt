@@ -48,6 +48,7 @@ import ca.schippers.hfm.books.Account
 import ca.schippers.hfm.books.AccountSummary
 import ca.schippers.hfm.books.Category
 import ca.schippers.hfm.books.CreditCardTerms
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.ReconciledChangeException
 import ca.schippers.hfm.books.RespGrantRecord
 import ca.schippers.hfm.books.SplitDraft
@@ -226,6 +227,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                     listOfNotNull(model.t("accountType.${account.type}"), account.currency.code, account.numberMasked).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                 )
+                LinkedContacts(model, LinkTarget.ACCOUNT, account.id, accountRoles(account.type), compact = true, canLink = false)
             }
             Column(horizontalAlignment = Alignment.End) {
                 // ACC-01: the balance today; post-dated transactions are shown apart.

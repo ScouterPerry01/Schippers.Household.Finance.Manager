@@ -39,6 +39,7 @@ import ca.schippers.hfm.books.BillDraft
 import ca.schippers.hfm.books.BillHistoryEntry
 import ca.schippers.hfm.books.BillKind
 import ca.schippers.hfm.books.Category
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.Occurrence
 import ca.schippers.hfm.books.OccurrenceStatus
 import ca.schippers.hfm.books.PaymentMethod
@@ -592,6 +593,8 @@ private fun BillDialog(model: BooksModel, existing: Bill?, onClose: () -> Unit) 
             if (existing != null) {
                 LabeledCheckbox(model.t("bills.active"), active) { active = it }
                 TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+                // CON-04: the company that sends the bill, as a contact.
+                LinkedContacts(model, LinkTarget.BILL, existing.id, suggestedName = existing.payeeName ?: existing.name)
                 BillHistory(model, existing)
             }
         }

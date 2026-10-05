@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Category
 import ca.schippers.hfm.books.CategoryRule
 import ca.schippers.hfm.books.Institution
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.Member
 import ca.schippers.hfm.books.Payee
 import ca.schippers.hfm.books.ValidationException
@@ -229,6 +230,7 @@ private fun PayeeForm(model: BooksModel, existing: Payee?, tree: List<Pair<Categ
                 }
             }
         }
+        LinkedContacts(model, LinkTarget.PAYEE, existing.id, suggestedName = existing.name)
     }
     if (editable) {
         Button(onClick = {
@@ -282,6 +284,8 @@ private fun InstitutionForm(model: BooksModel, existing: Institution?, onSaved: 
     TextInput(model.t("institution.website"), value.website.orEmpty(), enabled = editable) { value = value.copy(website = it) }
     TextInput(model.t("institution.phone"), value.phone.orEmpty(), enabled = editable) { value = value.copy(phone = it) }
     TextInput(model.t("account.notes"), value.notes.orEmpty(), singleLine = false, enabled = editable) { value = value.copy(notes = it) }
+    // CON-04: the contact kept for this institution, with its people and what each is for.
+    if (existing != null) LinkedContacts(model, LinkTarget.INSTITUTION, existing.id, suggestedName = existing.name)
     if (!editable) {
         Text(model.t("common.readOnlyViewer"), style = MaterialTheme.typography.bodySmall)
         return

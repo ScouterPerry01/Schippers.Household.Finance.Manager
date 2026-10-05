@@ -45,6 +45,8 @@ import ca.schippers.hfm.books.InsuranceClaim
 import ca.schippers.hfm.books.InsuranceClaimStatus
 import ca.schippers.hfm.books.InsurancePolicy
 import ca.schippers.hfm.books.InsuranceService
+import ca.schippers.hfm.books.LinkRole
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.MeterUnit
 import ca.schippers.hfm.books.PolicyBeneficiary
 import ca.schippers.hfm.books.PolicyKind
@@ -235,6 +237,8 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
                 }
             }
             TextInput(model.t("account.notes"), notes, singleLine = false) { notes = it }
+            // CON-04: who services or insures it, as contacts.
+            LinkedContacts(model, LinkTarget.ASSET, saved?.id, listOf(LinkRole.SERVICE, LinkRole.INSURER, LinkRole.OTHER), memberIds = setOfNotNull(ownerId), groupId = existing.groupId)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = {
                     model.act {
@@ -524,6 +528,8 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
             }
             LabeledCheckbox(model.t("medical.active"), active) { active = it }
             TextInput(model.t("account.notes"), notes, singleLine = false) { notes = it }
+            // CON-04: the insurer and broker as contacts, with their phones; the text fields above stay as typed.
+            LinkedContacts(model, LinkTarget.POLICY, saved?.id, listOf(LinkRole.INSURER, LinkRole.BROKER, LinkRole.ADVISOR, LinkRole.OTHER), suggestedName = insurer, memberIds = setOfNotNull(insured), groupId = existing.groupId)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = {
                     model.act {

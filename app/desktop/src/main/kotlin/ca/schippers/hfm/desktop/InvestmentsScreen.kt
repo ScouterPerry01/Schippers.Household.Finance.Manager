@@ -46,6 +46,7 @@ import ca.schippers.hfm.books.IncomeType
 import ca.schippers.hfm.books.InvestmentImportResult
 import ca.schippers.hfm.books.InvestmentKind
 import ca.schippers.hfm.books.InvestmentTxn
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.Region
 import ca.schippers.hfm.books.Security
 import ca.schippers.hfm.books.SecurityKind
@@ -183,6 +184,7 @@ private fun AccountView(model: BooksModel, h: AccountHoldings, onAction: (InvAct
         Column(Modifier.weight(1f)) {
             Text(account.name, style = MaterialTheme.typography.titleLarge)
             Text(model.t("accountType.${account.type}") + if (account.type.isRegistered) " · " + model.t("investments.noTaxPool") else "", style = MaterialTheme.typography.bodySmall)
+            LinkedContacts(model, LinkTarget.ACCOUNT, account.id, accountRoles(account.type), memberIds = account.ownerMemberIds, groupId = account.groupId, compact = true)
         }
     }
     FlowRow(Modifier.padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(32.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

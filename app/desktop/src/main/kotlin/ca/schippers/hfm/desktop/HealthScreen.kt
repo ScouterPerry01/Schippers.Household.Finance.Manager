@@ -41,6 +41,7 @@ import ca.schippers.hfm.books.HealthProvider
 import ca.schippers.hfm.books.HealthRecord
 import ca.schippers.hfm.books.HealthTest
 import ca.schippers.hfm.books.Immunization
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.Medication
 import ca.schippers.hfm.books.ProviderKind
 import ca.schippers.hfm.books.Severity
@@ -317,6 +318,8 @@ private fun MedicationDialog(model: BooksModel, existing: Medication, onClose: (
             }
             if (existing.id.isNotBlank()) {
                 LabeledCheckbox(model.t("health.active"), active) { active = it }
+                // CON-04: the pharmacy that fills it and the prescriber, as contacts.
+                LinkedContacts(model, LinkTarget.MEDICATION, existing.id, memberIds = setOf(existing.memberId), groupId = existing.groupId)
                 TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
         }
@@ -548,6 +551,8 @@ private fun ProviderDialog(model: BooksModel, existing: HealthProvider, onClose:
         TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
         GroupPicker(model, groupId, enabled = existing.id.isBlank()) { groupId = it.id }
         if (existing.id.isNotBlank()) LabeledCheckbox(model.t("health.archived"), archived) { archived = it }
+        // CON-04: the provider's contact, where its people, hours and numbers are kept.
+        LinkedContacts(model, LinkTarget.HEALTH_PROVIDER, existing.id.ifBlank { null }, suggestedName = existing.name, groupId = existing.groupId)
     }
 }
 

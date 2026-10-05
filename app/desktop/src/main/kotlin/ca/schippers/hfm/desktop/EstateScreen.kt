@@ -34,6 +34,7 @@ import ca.schippers.hfm.books.ContactRole
 import ca.schippers.hfm.books.EmergencySummary
 import ca.schippers.hfm.books.EstateContact
 import ca.schippers.hfm.books.EstatePlan
+import ca.schippers.hfm.books.LinkTarget
 import java.io.File
 import javax.swing.JFileChooser
 
@@ -107,6 +108,8 @@ fun emergencySections(model: BooksModel, s: EmergencySummary): List<DocSection> 
                 p.notes?.let { model.t("estate.notes") to it },
             ) + p.contacts.map { c ->
                 model.t("contactRole.${c.role}") to listOfNotNull(c.name, c.organization, c.phone, c.email, c.notes).joinToString(" · ")
+            } + runCatching { model.books.contacts.linkedTo(LinkTarget.ESTATE, r.memberId) }.getOrDefault(emptyList()).map { l ->
+                model.t("linkRoleShort.${l.link.role}") to listOfNotNull(l.contact.name, l.contact.purpose, l.contact.phones.firstOrNull()?.value, l.contact.emails.firstOrNull()?.value).joinToString(" · ")
             },
         )
     }
@@ -246,6 +249,8 @@ private fun PapersTab(model: BooksModel) {
             }
         }
         TextButton(onClick = { contacts.add(EstateContact(ContactRole.EXECUTOR, "")) }) { Text(model.t("estate.addContact")) }
+        // CON-04: contacts from the Contacts screen in an estate role, once the papers are saved.
+        record?.let { r -> LinkedContacts(model, LinkTarget.ESTATE, r.memberId, memberIds = setOf(r.memberId), groupId = r.groupId) }
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = {

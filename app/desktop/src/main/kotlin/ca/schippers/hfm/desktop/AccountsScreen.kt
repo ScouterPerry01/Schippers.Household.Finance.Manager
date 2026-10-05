@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +35,7 @@ import ca.schippers.hfm.books.Account
 import ca.schippers.hfm.books.AccountDraft
 import ca.schippers.hfm.books.AccountSummary
 import ca.schippers.hfm.books.Institution
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.AccountStatus
@@ -201,34 +205,43 @@ fun AccountDialog(model: BooksModel, existing: Account?, onClose: () -> Unit) {
             if (result != null) onClose()
         },
     ) {
-        TextInput(model.t("account.name"), name) { name = it }
-        Picker(model.t("account.type"), AccountType.entries, type, { model.t("accountType.$it") }, enabled = existing == null) { type = it }
-        TextInput(model.t("account.currency"), currencyCode, enabled = existing == null, error = if (currency == null) model.t("error.unknownCurrency") else null) { currencyCode = it.uppercase() }
-        if (groups.size > 1 && existing == null) {
-            Picker(model.t("account.group"), groups, groups.firstOrNull { it.id == groupId }, { it.name }) { groupId = it.id }
-        }
-        Picker(
-            model.t("account.institution"), listOf<Institution?>(null) + institutions,
-            institutions.firstOrNull { it.id == institutionId }, { it?.name ?: model.t("common.none") },
-        ) { institutionId = it?.id }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (currency != null) {
-                AmountInput(model.t("account.openingBalance"), opening, currency, model.language.locale, Modifier.weight(1f), model::money) { opening = it }
+        Column(Modifier.heightIn(max = 600.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextInput(model.t("account.name"), name) { name = it }
+            Picker(model.t("account.type"), AccountType.entries, type, { model.t("accountType.$it") }, enabled = existing == null) { type = it }
+            TextInput(model.t("account.currency"), currencyCode, enabled = existing == null, error = if (currency == null) model.t("error.unknownCurrency") else null) { currencyCode = it.uppercase() }
+            if (groups.size > 1 && existing == null) {
+                Picker(model.t("account.group"), groups, groups.firstOrNull { it.id == groupId }, { it.name }) { groupId = it.id }
             }
-            DateInput(model.t("account.openingDate"), openingDate, Modifier.weight(1f)) { openingDate = it }
-        }
-        TextInput(
-            model.t("account.number"), number,
-            supporting = existing?.numberMasked?.let { model.t("account.number.current", it) },
-        ) { number = it }
-        if (members.isNotEmpty()) {
-            Text(model.t("account.owners"), style = MaterialTheme.typography.labelLarge)
-            for (m in members) {
-                LabeledCheckbox(m.displayName, m.id in owners) { checked -> owners = if (checked) owners + m.id else owners - m.id }
+            Picker(
+                model.t("account.institution"), listOf<Institution?>(null) + institutions,
+                institutions.firstOrNull { it.id == institutionId }, { it?.name ?: model.t("common.none") },
+            ) { institutionId = it?.id }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (currency != null) {
+                    AmountInput(model.t("account.openingBalance"), opening, currency, model.language.locale, Modifier.weight(1f), model::money) { opening = it }
+                }
+                DateInput(model.t("account.openingDate"), openingDate, Modifier.weight(1f)) { openingDate = it }
+            }
+            TextInput(
+                model.t("account.number"), number,
+                supporting = existing?.numberMasked?.let { model.t("account.number.current", it) },
+            ) { number = it }
+            if (members.isNotEmpty()) {
+                Text(model.t("account.owners"), style = MaterialTheme.typography.labelLarge)
+                for (m in members) {
+                    LabeledCheckbox(m.displayName, m.id in owners) { checked -> owners = if (checked) owners + m.id else owners - m.id }
+                }
+            }
+            TextInput(model.t("account.notes"), notes, singleLine = false) { notes = it }
+            if (type.kind == AccountKind.CREDIT && existing == null) Text(model.t("account.cardHint"), style = MaterialTheme.typography.bodySmall)
+            // CON-04: the bank, lender, investment firm or advisor for this account.
+            if (existing != null) {
+                LinkedContacts(
+                    model, LinkTarget.ACCOUNT, existing.id, accountRoles(existing.type), institutions.firstOrNull { it.id == existing.institutionId }?.name.orEmpty(),
+                    existing.ownerMemberIds, existing.groupId,
+                )
             }
         }
-        TextInput(model.t("account.notes"), notes, singleLine = false) { notes = it }
-        if (type.kind == AccountKind.CREDIT && existing == null) Text(model.t("account.cardHint"), style = MaterialTheme.typography.bodySmall)
     }
 }
 
