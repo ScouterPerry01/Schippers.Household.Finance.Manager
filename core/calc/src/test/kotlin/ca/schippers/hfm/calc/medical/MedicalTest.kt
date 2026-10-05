@@ -73,6 +73,7 @@ class MedicalTest {
         assertEquals(n("0.00"), Medical.claimable(n("500"), n("40000"), max), "nothing counts below the threshold")
         assertEquals(n("700.00"), Medical.claimable(n("4000"), n("110000"), null), "with no fixed amount, 3 % of net income")
         assertEquals(listOf("Sam" to n("2800.00"), "Alex" to n("1166.00")), Medical.whoClaims(n("4000"), mapOf("Alex" to n("110000"), "Sam" to n("40000")), max))
+        assertEquals(n("2890"), Medical.federalMaxReduction(2026), "the CRA's published amount for 2026")
         assertNull(Medical.federalMaxReduction(2031))
     }
 }

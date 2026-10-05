@@ -104,5 +104,11 @@ object Medical {
     /** The federal fixed amount for [year] as published by the CRA, when known; later years are entered by the user. */
     fun federalMaxReduction(year: Int): BigDecimal? = FEDERAL_MAX_REDUCTION[year]?.let { BigDecimal(it) }
 
-    private val FEDERAL_MAX_REDUCTION = mapOf(2023 to 2635, 2024 to 2759, 2025 to 2834)
+    /**
+     * The "3 % of net income ceiling" from the CRA's table of indexed amounts, "Adjustment of the
+     * personal income tax and benefit amounts" (canada.ca/en/revenue-agency/services/tax/individuals/
+     * frequently-asked-questions-individuals/adjustment-personal-income-tax-benefit-amounts.html):
+     * 2023 to 2026 as shown there in October 2026.
+     */
+    private val FEDERAL_MAX_REDUCTION = mapOf(2023 to 2635, 2024 to 2759, 2025 to 2834, 2026 to 2890)
 }

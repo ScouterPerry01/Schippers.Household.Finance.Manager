@@ -244,6 +244,29 @@ class BudgetServiceTest {
     }
 
     @Test
+    fun `budget vs actual for any chosen period`() {
+        books.budgets.set(cat("housing.insurance"), BudgetPeriod.ANNUAL, cad("1200.00"), startMonth = d(1, 1))
+        books.budgets.set(cat("food"), BudgetPeriod.MONTHLY, cad("500.00"), startMonth = d(1, 1))
+        spend(d(2, 1), "-1184.00", "housing.insurance")
+        spend(d(3, 5), "-300.00", "food.groceries")
+        spend(d(4, 5), "-200.00", "food.groceries")
+        spend(d(5, 5), "-100.00", "food.groceries")
+
+        // March to April: two months of the monthly budget, only what was spent in them.
+        val spring = books.budgets.period(d(3, 1), d(4, 30)).lines.associateBy { it.category.systemKey }
+        assertEquals(cad("1000.00") to cad("500.00"), spring.getValue("food").budgeted to spring.getValue("food").actual)
+        assertEquals(cad("1200.00") to cad("1184.00"), spring.getValue("housing.insurance").let { it.budgeted to it.actual }, "annual: the year to the period's end")
+
+        // One month is the month view.
+        assertEquals(books.budgets.month(d(4, 1)).lines, books.budgets.period(d(4, 1), d(4, 30)).lines)
+
+        // A period over two years counts a twelfth of an annual budget per month.
+        val span = books.budgets.period(LocalDate(2025, 11, 1), d(4, 30)).lines.associateBy { it.category.systemKey }
+        assertEquals(cad("600.00"), span.getValue("housing.insurance").budgeted)
+        assertEquals(cad("500.00"), span.getValue("food").actual)
+    }
+
+    @Test
     fun `income budgets and totals`() {
         books.budgets.set(cat("income.employment"), BudgetPeriod.MONTHLY, cad("6000.00"), startMonth = d(1, 1))
         spend(d(5, 1), "3000.00", "income.employment.salary")

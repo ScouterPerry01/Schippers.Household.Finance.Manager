@@ -243,7 +243,7 @@ Envoyer la réclamation, fermer la dépense ou inscrire le paiement du dernier r
 ## Le crédit d’impôt pour frais médicaux {#tax-credit}
 @index: CIFM; ligne 33099; ligne 33199; ligne 381; crédit pour frais médicaux; ARC; Revenu Québec
 
-Le rapport **Frais médicaux** sous [Rapports](reports) rassemble les montants de l’année pour le crédit d’impôt non remboursable pour frais médicaux. Il montre les coûts, les remboursements et les montants à votre charge de l’année par personne, un tableau de chaque dépense, puis le crédit.
+Le rapport **Frais médicaux** sous [Rapports](reports) rassemble les montants de l’année pour le crédit d’impôt non remboursable pour frais médicaux. Il montre les coûts, les remboursements et les montants à votre charge des frais payés dans l’année, par personne, un tableau de chaque dépense avec sa date de paiement et sa date de service, puis le crédit. La trousse de fin d’année de l’écran Impôts utilise les mêmes montants (voir [Trousse de fin d’année](taxes#year-end-package)).
 
 En bref, comme l’explique le rapport : au fédéral (ligne 33099) et au Québec (ligne 381), les frais payés pendant n’importe quelle période de 12 mois consécutifs se terminant dans l’année peuvent être demandés, une seule fois. Les frais du ménage (conjoints et enfants de moins de 18 ans) sont demandés ensemble, habituellement par un conjoint ; ceux d’une personne à charge adulte sont demandés à part (ligne fédérale 33199). Seule la partie au-delà d’un seuil compte : 3 % du revenu net au fédéral (ou un montant fixe s’il est moindre), 3 % du revenu familial au Québec.
 
@@ -270,7 +270,7 @@ La meilleure période se termine toujours à la date d’une dépense de l’ann
 Quand le rapport porte sur **Tout le monde** et que le ménage compte au moins deux adultes, **Quel conjoint devrait demander le crédit ?** compare les deux :
 
 - **Revenu net, nom** : le revenu net prévu de chaque conjoint pour l’année (ligne 23600 de la déclaration). Laissez les autres adultes vides. Les livres ne contiennent pas le revenu net ; vous le tapez donc, et il n’est pas enregistré.
-- **Montant fixe de l’ARC, année** : le montant fixe que l’ARC établit chaque année. Il est rempli pour les années que l’application connaît (2023 à 2025) ; entrez-le pour les années suivantes d’après le site de l’ARC.
+- **Montant fixe de l’ARC, année** : le montant fixe que l’ARC établit chaque année. Il est rempli pour les années que l’application connaît (2023 à 2026 ; 2 890 $ pour 2026, tel que publié par l’ARC) ; entrez-le pour les années suivantes d’après le site de l’ARC.
 
 Avec deux revenus entrés, le rapport affiche pour chaque conjoint « Demandé par nom : montant compte pour le crédit fédéral » : le total de la meilleure période moins 3 % du revenu net de ce conjoint, ou moins le montant fixe s’il est plus bas. Puis l’un de ces messages :
 

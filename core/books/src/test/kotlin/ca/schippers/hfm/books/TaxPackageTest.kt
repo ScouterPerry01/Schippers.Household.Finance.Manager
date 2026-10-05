@@ -101,4 +101,23 @@ class TaxPackageTest {
         assertEquals(cad("15.00"), pkg.total(PackageItem.EI_QPIP_PREMIUMS))
         assertEquals(null, PackageItem.EI_QPIP_PREMIUMS.line)
     }
+
+    @Test
+    fun `medical expenses are claimed as the medical expenses report claims them`() {
+        val sam = books.members.create("Sam", MemberKind.ADULT)
+        val alex = books.members.create("Alex", MemberKind.ADULT)
+        val gilles = books.members.create("Gilles", MemberKind.DEPENDANT)
+        fun expense(who: Member, date: String, amount: String) =
+            books.medical.saveExpense(MedExpense("", group, who.id, MedService.PHYSIOTHERAPY, LocalDate.parse(date), cad(amount)))
+        expense(sam, "2026-03-01", "300.00")
+        expense(alex, "2026-06-01", "200.00")
+        expense(gilles, "2026-04-01", "400.00")
+
+        val pkg = books.taxPackage.build(2026)
+        val household = pkg.people.single { it.memberId == null }
+        assertEquals(cad("500.00"), household.total(PackageItem.MEDICAL), "the spouses' expenses together, over one period")
+        assertEquals(cad("400.00"), household.total(PackageItem.MEDICAL_DEPENDANT))
+        assertEquals("33199", PackageItem.MEDICAL_DEPENDANT.line)
+        assertTrue(pkg.people.filter { it.memberId != null }.none { p -> p.lines.any { it.item == PackageItem.MEDICAL } }, "not each person's own best period")
+    }
 }

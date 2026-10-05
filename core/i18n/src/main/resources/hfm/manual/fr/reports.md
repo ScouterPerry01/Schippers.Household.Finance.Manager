@@ -47,8 +47,8 @@ La rangée au-dessus du rapport contient les filtres. Chaque rapport n’affiche
 - **Période** : les dates que couvre le rapport. Choisissez **Ce mois-ci** (du premier du mois à aujourd’hui), **Le mois dernier** (tout le mois précédent), **Cette année** (du 1er janvier à aujourd’hui), **L’an dernier** (du 1er janvier au 31 décembre de l’an dernier), **12 derniers mois** (du premier jour du mois d’il y a onze mois à aujourd’hui) ou **Dates au choix**. Par défaut : **Cette année**. Utilisée par Revenus et dépenses, Dépenses par catégorie, Revenus par catégorie, Dépenses par bénéficiaire, Rapport personnalisé, Valeur nette, Portefeuille de placements et Budget et réel. Les périodes autres que Dates au choix suivent le calendrier : un rapport enregistré sur **Ce mois-ci** présente toujours le mois en cours.
 - **Du** : affiché avec **Dates au choix** seulement. Le premier jour de la période, au format AAAA-MM-JJ. Si la date est illisible, le premier jour du mois en cours est utilisé.
 - **Au** : affiché avec **Dates au choix** seulement. Le dernier jour de la période, au format AAAA-MM-JJ. Si la date est illisible, la date du jour est utilisée.
-- **Comptes** : affiché seulement quand le ménage a plus d’un groupe de comptes. **Tous les comptes** couvre tous les comptes que vous pouvez voir ; choisir un groupe limite le rapport aux comptes de ce groupe. Utilisé par tous les rapports sauf Revenus de placement et gains en capital, Gains de change, Régimes enregistrés, Frais médicaux, Biens et garanties, Entretien et coût de possession et Bilan de l’année. Dans le Portefeuille de placements, le groupe choisit aussi la répartition cible utilisée.
-- **Choisir des comptes…** : ouvre une liste de comptes, pour un rapport sur certains comptes seulement, par exemple ceux du chalet. Une fois des comptes choisis, le bouton indique par exemple **3 comptes choisis**. Si un groupe de comptes est aussi choisi, le rapport couvre les comptes qui sont dans les deux. Voir [Choisir des comptes](reports#choose-accounts). Non affiché pour Revenus de placement, Gains de change, Régimes enregistrés, Frais médicaux, Biens et garanties, Entretien, État des rapprochements et Bilan de l’année.
+- **Groupe de comptes** : affiché seulement quand le ménage a plus d’un groupe de comptes. **Tous les comptes** couvre tous les comptes que vous pouvez voir ; choisir un groupe limite le rapport aux comptes de ce groupe. Utilisé par tous les rapports sauf Revenus de placement et gains en capital, Gains de change, Régimes enregistrés, Frais médicaux, Biens et garanties, Entretien et coût de possession, Bilan de l’année, Budget et réel et État des rapprochements. Dans le Portefeuille de placements, le groupe choisit aussi la répartition cible utilisée.
+- **Choisir des comptes…** : ouvre une liste de comptes, pour un rapport sur certains comptes seulement, par exemple ceux du chalet. Une fois des comptes choisis, le bouton indique par exemple **3 comptes choisis**. Si un groupe de comptes est aussi choisi, le rapport couvre les comptes qui sont dans les deux. Voir [Choisir des comptes](reports#choose-accounts). Non affiché pour Revenus de placement, Gains de change, Régimes enregistrés, Frais médicaux, Biens et garanties, Entretien, Bilan de l’année, Budget et réel et État des rapprochements, qui couvrent toujours tous les comptes.
 - **Personne** : affiché quand les membres du ménage sont inscrits. Par défaut : **Tout le monde**.
   - Dans les rapports de revenus et de dépenses et le rapport personnalisé, ne garde que les montants inscrits pour cette personne (le champ **Pour** d’une opération ou d’une ligne de ventilation).
   - Dans Valeur nette et Sommaire des dettes, garde les comptes dont cette personne est titulaire, seule ou conjointement.
@@ -56,11 +56,11 @@ La rangée au-dessus du rapport contient les filtres. Chaque rapport n’affiche
   - Dans Revenus de placement, Régimes enregistrés et Frais médicaux, n’affiche que la part de cette personne.
 - **Étiquette** : affiché quand des étiquettes existent, pour les quatre rapports de revenus et de dépenses et le rapport personnalisé. Par défaut : **Toutes les étiquettes** ; choisir une étiquette ne garde que les opérations qui la portent.
 - **Devise** : affiché pour Revenus et dépenses, Dépenses par catégorie, Revenus par catégorie, Dépenses par bénéficiaire et Valeur nette, quand des comptes sont dans une autre devise que la devise de base (cryptoactifs mis à part). **Tous les comptes, en CAD** (ou votre devise de base) convertit chaque compte dans la devise de base, au taux de change de la date de chaque opération. Choisir par exemple **Comptes en USD seulement** n’affiche que les comptes dans cette devise, dans leurs propres montants, sans conversion.
-- **Comparer avec** : affiché pour les quatre rapports de revenus et de dépenses. Par défaut : **Aucune comparaison**. **Période précédente** compare avec la période de même durée juste avant (pour le 1er au 31 mars, les 31 jours précédents). **Même période l’an dernier** compare avec les mêmes dates un an plus tôt. La comparaison paraît comme un total de plus dans Revenus et dépenses, et comme un montant « avant » et une colonne de plus dans les rapports par catégorie. Dépenses par bénéficiaire offre le choix mais n’affiche pas de comparaison.
+- **Comparer avec** : affiché pour les quatre rapports de revenus et de dépenses. Par défaut : **Aucune comparaison**. **Période précédente** compare avec la période de même durée juste avant (pour le 1er au 31 mars, les 31 jours précédents). **Même période l’an dernier** compare avec les mêmes dates un an plus tôt. La comparaison paraît comme un total de plus dans Revenus et dépenses, et comme un montant « avant » et une colonne de plus dans les rapports par catégorie et dans Dépenses par bénéficiaire.
 - **Année** : pour Régimes enregistrés, Entretien et coût de possession, et Bilan de l’année. L’année en cours ou l’une des dix précédentes. Par défaut, l’année en cours (pour le Bilan de l’année, l’année en cours jusqu’ici).
 - **Année d’imposition** : pour Revenus de placement et gains en capital, Gains de change et Frais médicaux. L’année en cours ou l’une des dix précédentes. Par défaut, l’an dernier, l’année habituellement déclarée.
 
-> Remarque : Les années choisies avec **Année** et **Année d’imposition** sont conservées tant que l’application est ouverte, mais ne font pas partie d’un rapport enregistré.
+Les années choisies avec **Année** et **Année d’imposition** sont conservées tant que l’application est ouverte, et aussi avec un rapport enregistré.
 
 ### Choisir des comptes {#choose-accounts}
 
@@ -117,7 +117,7 @@ Le Portefeuille de placements avertit aussi quand un titre n’a pas de cours à
 
 Un rapport enregistré garde vos choix sous un nom, pour retrouver la même vue en un clic. Les rapports enregistrés vous appartiennent : les autres utilisateurs du ménage ne les voient pas.
 
-Ce qui est conservé : le rapport, la période (ou les dates au choix), le groupe de comptes, les comptes choisis, la personne, l’étiquette, la devise, la comparaison et, pour un rapport personnalisé, ses lignes, colonnes, mesure et graphique. Aucun montant n’est conservé : le rapport est recalculé à partir des livres chaque fois.
+Ce qui est conservé : le rapport, la période (ou les dates au choix), le groupe de comptes, les comptes choisis, la personne, l’étiquette, la devise, la comparaison, l’**Année** ou l’**Année d’imposition** des rapports qui en ont une et, pour un rapport personnalisé, ses lignes, colonnes, mesure et graphique. Un rapport enregistré avant que l’année soit conservée s’ouvre avec l’année affichée à ce moment. Aucun montant n’est conservé : le rapport est recalculé à partir des livres chaque fois.
 
 ### Enregistrer le rapport {#save-dialog}
 
@@ -142,13 +142,11 @@ Les rapports enregistrés sont énumérés sous **Rapports enregistrés**, sous 
 
 Un rapport personnalisé planifié est écrit en PDF dans son dossier après la fin de chaque mois, trimestre ou année. Il utilise les filtres enregistrés, avec la période qui vient de se terminer à la place de la période enregistrée.
 
-- L’application vérifie à l’ouverture du ménage, puis toutes les heures tant qu’il est ouvert. Un PDF est produit pour le mois, le trimestre ou l’année terminé le plus récent qui n’a pas encore été produit.
+- L’application vérifie à l’ouverture du ménage, puis toutes les heures tant qu’il est ouvert. Un PDF est produit pour chaque mois, trimestre ou année terminé depuis le dernier produit, du plus ancien au plus récent : les périodes manquées pendant que le ménage était fermé sont alors produites, jusqu’à un an en arrière. Pour les périodes plus anciennes, produisez le rapport à la main avec **Dates au choix**.
 - Le fichier porte le nom du rapport et de la période, par exemple « Chalet 2026-09.pdf », « Chalet 2026-Q3.pdf » ou « Chalet 2025.pdf ». Un fichier du même nom est remplacé.
 - Quand des rapports sont produits, une ligne à côté de **Enregistrer ce rapport…** les énumère, par exemple « Rapports planifiés produits : Chalet 2026-09.pdf ».
 - Quand un calendrier est établi ou modifié, il commence par la période qui vient de se terminer.
 - Si le dossier n’existe plus (un disque débranché, par exemple), rien n’est écrit et le rapport est retenté plus tard.
-
-> Remarque : La note de la fenêtre d’enregistrement dit que les périodes manquées sont produites à la prochaine ouverture du ménage. Seule la période terminée la plus récente est alors produite : si le ménage n’a pas été ouvert pendant plusieurs mois, les mois précédents ne sont pas produits. Produisez-les à la main, avec **Dates au choix**.
 
 ## Rapports de revenus et de dépenses {#income-spending}
 
@@ -198,10 +196,10 @@ Les bénéficiaires à qui le plus d’argent est allé pendant la période, apr
 
 - Le graphique présente les 30 plus grands ; le tableau énumère tous les bénéficiaires avec des dépenses nettes.
 - Les bénéficiaires dont il est venu plus d’argent qu’il n’en est allé ne sont pas affichés.
-- Les bénéficiaires sont regroupés selon le bénéficiaire choisi dans l’opération, ou sinon selon le nom tel que tapé.
+- Les bénéficiaires sont regroupés selon le bénéficiaire de l’opération, de sorte que les autres graphies associées à un bénéficiaire comptent avec lui. Une opération sans bénéficiaire est regroupée selon le nom tel que tapé, sans tenir compte des majuscules ni des espaces autour. Le rapport personnalisé regroupe ses lignes **Bénéficiaire** de la même façon.
+- Avec **Comparer avec**, chaque barre indique ce qui a été dépensé chez ce bénéficiaire pendant la période de comparaison (« avant : … »), et le tableau a une colonne de plus pour ce montant.
+- Le tableau énumère **Bénéficiaire** et **Montant**, plus la colonne de comparaison quand il y en a une, et un **Total**.
 - Cliquez sur un bénéficiaire pour voir ses opérations.
-
-**Comparer avec** est offert mais n’a pas d’effet sur ce rapport.
 
 ## Rapport personnalisé et bilan de l’année {#custom-and-review}
 
@@ -220,7 +218,7 @@ Comment les montants sont calculés :
 
 - Les virements entre vos propres comptes sont exclus. L’argent sorti sans catégorie compte comme une dépense, l’argent entré comme un revenu.
 - **Personne** est la personne pour qui est une ligne d’opération ; les lignes qui ne sont pour personne sont sous « Ménage ».
-- **Bénéficiaire** regroupe selon le nom du bénéficiaire tel qu’écrit, sans tenir compte des majuscules ; les lignes sans bénéficiaire sont sous « Sans bénéficiaire ».
+- **Bénéficiaire** regroupe comme Dépenses par bénéficiaire : selon le bénéficiaire de l’opération, ou sinon selon le nom tel que tapé, sans tenir compte des majuscules ; les lignes sans bénéficiaire sont sous « Sans bénéficiaire ».
 - Quand les lignes sont des **Étiquette**, une opération qui porte plusieurs étiquettes compte sous chacune : les lignes d’étiquettes peuvent donc dépasser ce qui a été dépensé. Les lignes sans étiquette sont sous « Sans étiquette ».
 - Les lignes qui ne sont pas des périodes sont triées de la plus grande à la plus petite. Au-delà de 12, les onze plus grandes sont gardées et les autres sont additionnées dans une ligne « Autres ».
 - Les colonnes de temps sont dans l’ordre des dates ; les autres colonnes sont triées de la plus grande à la plus petite.
@@ -272,7 +270,7 @@ Ce que le ménage possède (l’actif) et doit (le passif) à la fin de chaque m
 
 @index: rendement; taux de rendement; performance; rendement pondéré en fonction du temps; rendement pondéré en fonction des capitaux; TRPT; rapport de placements
 
-Comment les comptes de placement se sont comportés pendant la période, dans la devise de base, après les frais et l’impôt étranger. **Comptes**, **Choisir des comptes…** et **Personne** choisissent les comptes de placement ; « Aucun compte de placement dans cette sélection. » signifie qu’aucun ne correspond.
+Comment les comptes de placement se sont comportés pendant la période, dans la devise de base, après les frais et l’impôt étranger. **Groupe de comptes**, **Choisir des comptes…** et **Personne** choisissent les comptes de placement ; « Aucun compte de placement dans cette sélection. » signifie qu’aucun ne correspond.
 
 Les totaux en haut :
 
@@ -297,7 +295,7 @@ Le graphique présente la valeur des comptes à chaque fin de mois. En dessous :
 Cette partie du rapport Portefeuille de placements répartit le portefeuille à la date de fin et la compare à une cible.
 
 - **Répartie par** : **Catégorie d’actif** (actions, revenu fixe, encaisse et équivalents, immobilier, matières premières, autre, et cryptoactifs), **Région** (Canada, États-Unis, international, marchés émergents, mondial, autre), **Devise** ou **Compte**.
-- **Établir une cible (ménage)**, ou **Modifier la cible (ménage)** quand elle existe : ouvre la cible pour cette façon de répartir. La cible utilisée dépend des filtres : celle de la personne choisie dans **Personne**, sinon celle du groupe choisi dans **Comptes**, sinon celle du ménage ; le bouton la nomme. Non offert pour **Compte**. Voir [Répartition cible](reports#target-allocation).
+- **Établir une cible (ménage)**, ou **Modifier la cible (ménage)** quand elle existe : ouvre la cible pour cette façon de répartir. La cible utilisée dépend des filtres : celle de la personne choisie dans **Personne**, sinon celle du groupe choisi dans **Groupe de comptes**, sinon celle du ménage ; le bouton la nomme. Non offert pour **Compte**. Voir [Répartition cible](reports#target-allocation).
 
 Les barres classées présentent chaque partie avec sa valeur, sa part en pourcentage et sa cible. Avec une cible, une ligne indique soit que chaque partie est dans la tolérance, soit quelles parties s’en éloignent davantage. Le tableau énumère **Partie**, **Valeur marchande**, **%** et, avec une cible, **Cible** et **Écart** (en points de pourcentage au-dessus ou au-dessous).
 
@@ -393,9 +391,9 @@ Un particulier exclut les premiers 200 $ du gain ou de la perte de change net de
 
 Les frais médicaux de l’**Année d’imposition**, ce que l’assurance a remboursé, et le crédit d’impôt pour frais médicaux. **Personne** n’affiche qu’une personne.
 
-- **Coûts**, **Remboursé** et **À votre charge** : les totaux des frais dont la date du service est dans l’année.
+- **Coûts**, **Remboursé** et **À votre charge** : les totaux des frais payés dans l’année (la date du paiement, ou la date du service quand aucune date de paiement n’a été entrée), la même date que celle du crédit d’impôt.
 - Le graphique présente, par personne, les montants remboursés et à votre charge.
-- Le tableau énumère chaque frais avec **Date du service**, **Personne soignée**, **Type de soins**, **Description**, **Coûts**, **Remboursé** et **À votre charge**.
+- Le tableau énumère chaque frais, dans l’ordre des paiements, avec **Date du paiement**, **Date du service**, **Personne soignée**, **Type de soins**, **Description**, **Coûts**, **Remboursé** et **À votre charge**.
 
 Le crédit d’impôt pour frais médicaux :
 
@@ -414,7 +412,7 @@ Des frais déjà demandés une année précédente ne peuvent pas l’être de n
 Sous la meilleure période du ménage, quand **Personne** est à **Tout le monde** et que le ménage compte au moins deux adultes, le rapport aide à choisir qui demande les frais médicaux du ménage.
 
 - **Revenu net, …** : un champ par adulte : le revenu net prévu (ligne 23600 de la déclaration). Entrez celui des deux conjoints et laissez les autres vides. Rien n’est enregistré ; ces champs ne servent qu’à cette comparaison.
-- **Montant fixe de l’ARC, …** : le montant fixe de l’année qui plafonne le seuil de 3 %. Il est rempli pour les années que l’application connaît ; sinon, entrez-le d’après l’ARC.
+- **Montant fixe de l’ARC, …** : le montant fixe de l’année qui plafonne le seuil de 3 %. Il est rempli pour les années que l’application connaît (2023 à 2026 ; 2 890 $ pour 2026) ; sinon, entrez-le d’après l’ARC.
 
 Une fois deux revenus entrés, une ligne par conjoint indique combien compterait pour le crédit fédéral s’il le demandait (les frais moins le plus petit de 3 % de son revenu net et du montant fixe), suivie d’une conclusion : qui devrait le demander et combien de plus compte, que l’un ou l’autre donne le même résultat, ou que les frais sont sous les deux seuils. Au Québec, une note précise que le seuil provincial se calcule sur le revenu familial : il est le même, peu importe qui le demande.
 
@@ -451,7 +449,7 @@ Voir [Véhicules](vehicles) et [Maison et biens](assets) pour les tâches et les
 
 @index: dette; ce que nous devons; prêts; hypothèque; solde de carte de crédit; date de remboursement
 
-Tous les prêts, hypothèques, marges de crédit et cartes ouverts, à la date du jour, du plus grand au plus petit. **Comptes**, **Choisir des comptes…** et **Personne** (les comptes dont cette personne est titulaire) le restreignent.
+Tous les prêts, hypothèques, marges de crédit et cartes ouverts, à la date du jour, du plus grand au plus petit. **Groupe de comptes**, **Choisir des comptes…** et **Personne** (les comptes dont cette personne est titulaire) le restreignent.
 
 - **Total dû** par devise, et **Intérêts à payer sur les prêts** quand les modalités des prêts sont connues.
 - Le tableau : **Comptes**, **Type**, **Solde dû**, **Taux**, **Versement**, **Remboursé le** (la date de remboursement prévue), **Intérêts à payer** et **Fin du terme**.
@@ -465,18 +463,20 @@ Tous les prêts, hypothèques, marges de crédit et cartes ouverts, à la date d
 
 Les budgets comparés à ce qui a vraiment été dépensé et reçu.
 
-- Avec **Période** à **Cette année** ou **L’an dernier**, le rapport présente toute cette année. Avec toute autre période, il présente le mois du dernier jour de la période (pour **12 derniers mois**, le mois en cours).
+- Le rapport couvre la **Période** choisie : ce qui a été dépensé et reçu de son premier à son dernier jour.
+- Un budget mensuel compte une fois pour chaque mois civil que touche la période : trois fois pour un trimestre, douze fois pour une année. Quand la période est un seul mois, un budget mensuel avec report ajoute ce qui a été reporté des mois précédents.
+- Un budget annuel vaut pour l’année civile. Quand la période est dans une seule année, le montant annuel entier est comparé à ce qui a été dépensé du 1er janvier au dernier jour de la période. Quand la période s’étend sur deux années (comme **12 derniers mois**), un douzième du montant annuel compte pour chaque mois.
 - Pour les dépenses : **Dépensé**, **Budgété** et **Reste** ; pour les revenus : **Reçu**, **Budgété** et **Reste**.
-- Une barre par budget présente le montant réel par rapport à un repère au niveau du budget, avec « … sur … », et soit « Dépassement de … » (dépense au-delà du budget, signalée), soit « Reste … », y compris toute somme reportée. Dans une vue mensuelle, un budget annuel porte la mention « (annuel) ».
+- Une barre par budget présente le montant réel par rapport à un repère au niveau du budget, avec « … sur … », et soit « Dépassement de … » (dépense au-delà du budget, signalée), soit « Reste … », y compris toute somme reportée. Sauf si la période est une année civile entière, un budget annuel porte la mention « (annuel) ».
 - Le tableau : **Catégorie**, **Budgété**, **Réel**, **Reste**.
 
-Les filtres de comptes ne changent pas ce rapport. Les budgets sont établis dans l’écran Budgets, où un clic sur une barre modifie le budget : voir [Budgets](budgets).
+Les budgets couvrent tous les comptes : les filtres de comptes ne sont donc pas affichés pour ce rapport. Les budgets sont établis dans l’écran Budgets, où un clic sur une barre modifie le budget : voir [Budgets](budgets).
 
 ### État des rapprochements {#reconciliation-status}
 
 @index: rapprocher; rapprochement bancaire; relevé bancaire; non compensé
 
-Chaque compte ouvert avec **Dernier rapprochement** (ou « Jamais rapproché »), **Jours écoulés**, **Relevés en cours** (relevés commencés mais non terminés) et **Pas encore sur un relevé** (le solde moins le solde compensé). Les comptes devraient être rapprochés à chaque relevé ; un retard de plus de 45 jours mérite d’être rattrapé. Le tableau est ouvert dès le départ. Voir [Comptes](accounts) pour faire un rapprochement.
+Chaque compte ouvert avec **Dernier rapprochement** (ou « Jamais rapproché »), **Jours écoulés**, **Relevés en cours** (relevés commencés mais non terminés) et **Pas encore sur un relevé** (le solde moins le solde compensé). Les comptes devraient être rapprochés à chaque relevé. Un compte dont le dernier rapprochement date de plus de 45 jours ressort : une ligne rouge au-dessus du tableau le nomme, par exemple « Chèques : dernier rapprochement il y a 52 jours », et sa colonne **Signalement** dans le tableau indique « Plus de 45 jours ». Le tableau est ouvert dès le départ. Le rapport couvre tous les comptes ouverts : les filtres de comptes ne sont donc pas affichés. Voir [Comptes](accounts) pour faire un rapprochement.
 
 ## Qui voit quoi {#permissions}
 

@@ -117,4 +117,28 @@ class PayStubDonationTest {
         assertEquals(cad("150.00"), totals.getValue(null).charitable, "the eligible amount, not what was paid")
         assertEquals(cad("75.00"), totals.getValue(null).political)
     }
+
+    @Test
+    fun `a payroll gift takes an eligible amount up to the gift, not the deposit`() {
+        val txn = books.payStubs.record(chequing.id, stub)
+        books.donations.setReceipt(txn.id, DonationReceipt("United Way", eligible = cad("8.00"), received = true))
+        assertEquals(cad("8.00"), books.donations.list(2026).single().eligible)
+        assertFailsWith<ValidationException> { books.donations.setReceipt(txn.id, DonationReceipt(eligible = cad("10.01"))) }
+    }
+
+    @Test
+    fun `one receipt for gifts by two people is counted once`() {
+        val sam = books.members.create("Sam", ca.schippers.hfm.domain.MemberKind.ADULT).id
+        val lea = books.members.create("Léa", ca.schippers.hfm.domain.MemberKind.ADULT).id
+        val gala = books.transactions.create(
+            TransactionDraft(
+                chequing.id, LocalDate(2026, 5, 9), cad("-300.00"), "Hospital Foundation",
+                listOf(SplitDraft(cat("gifts.charity"), cad("-200.00"), memberId = sam), SplitDraft(cat("gifts.charity"), cad("-100.00"), memberId = lea)),
+            ),
+        )
+        books.donations.setReceipt(gala.id, DonationReceipt("Hospital Foundation", eligible = cad("150.00"), received = true))
+        val eligible = books.donations.list(2026).associate { it.memberId to it.eligible }
+        assertEquals(mapOf<String?, Money>(sam to cad("100.00"), lea to cad("50.00")), eligible, "shared in proportion to each gift")
+        assertEquals(cad("150.00"), books.donations.totals(2026).fold(cad("0")) { a, t -> a + t.charitable })
+    }
 }

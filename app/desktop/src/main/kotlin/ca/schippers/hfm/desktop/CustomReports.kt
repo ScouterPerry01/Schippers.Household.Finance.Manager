@@ -43,6 +43,9 @@ import java.io.File
 /** RPT-03: the screen's choices as a definition to save. */
 fun ReportState.definition(): ReportDefinition = ReportDefinition(
     kind.name, preset.name, customFrom, customTo, groupId, memberId, tagId, accountSet, currency?.code, compare.name, layout.takeIf { kind == ReportKind.CUSTOM },
+    taxYear.takeIf { kind in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.MEDICAL) },
+    planYear.takeIf { kind in setOf(ReportKind.PLANS, ReportKind.MAINTENANCE) },
+    reviewYear.takeIf { kind == ReportKind.YEAR_IN_REVIEW },
 )
 
 /** RPT-03: a saved report's choices back on the screen; unknown names (from a newer version) keep the current choice. */
@@ -58,6 +61,9 @@ fun ReportState.load(d: ReportDefinition, saved: SavedReport) {
     currency = d.currency?.let { runCatching { Currency.of(it) }.getOrNull() }
     compare = d.compare?.let { runCatching { Compare.valueOf(it) }.getOrNull() } ?: Compare.NONE
     d.layout?.let { layout = it }
+    d.taxYear?.let { taxYear = it }
+    d.planYear?.let { planYear = it }
+    d.reviewYear?.let { reviewYear = it }
     parent = null
     savedId = saved.id
 }

@@ -123,12 +123,12 @@ La fenêtre affiche la date, le bénéficiaire et le montant du don, puis :
 - **Organisme ou parti, comme sur le reçu** : le nom à afficher et à donner au comptable. Il est d’abord le bénéficiaire (ou, pour un don par la paie, la note de la ligne).
 - **Numéro d’enregistrement** : pour les dons de bienfaisance seulement. Neuf chiffres, RR et quatre chiffres, par exemple 123456789RR0001 ; les espaces et les traits d’union sont retirés. Toute autre forme est refusée. Facultatif.
 - **Numéro du reçu** : tel qu’imprimé. Facultatif.
-- **Montant admissible** : si vous avez reçu quelque chose en retour (un souper, un lot d’encan), le reçu indique un montant admissible moindre : entrez-le. Laissez vide si tout le don est admissible. Il ne peut pas dépasser le don. C’est le montant admissible que comptent les totaux et la trousse de fin d’année.
+- **Montant admissible** : si vous avez reçu quelque chose en retour (un souper, un lot d’encan), le reçu indique un montant admissible moindre : entrez-le. Laissez vide si tout le don est admissible. Il ne peut pas dépasser le don : les lignes de don de l’opération, donc pour un don par la paie le montant donné, et non tout le dépôt. C’est le montant admissible que comptent les totaux et la trousse de fin d’année.
 - **Reçu obtenu** : cochez quand vous avez le reçu. La case est cochée d’avance quand un fichier est déjà joint à l’opération.
 - **Fichiers du reçu** : le reçu lui-même. **Joindre un fichier…** conserve un fichier dans le coffre et le lie à l’opération ; **Depuis la boîte de révision** lie un document qui y attend. Ces fichiers vont dans le dossier pour le comptable.
 - **Enregistrer** : enregistre les détails du reçu. **Annuler** : ferme sans les enregistrer.
 
-Les détails du reçu appartiennent à l’opération : si un même paiement contient des dons pour deux personnes, les deux partagent les mêmes détails de reçu. L’enregistrement exige le droit de modifier le groupe du compte.
+Les détails du reçu appartiennent à l’opération : si un même paiement contient des dons pour deux personnes (ou un don de bienfaisance et une contribution politique), les deux partagent les mêmes détails de reçu, et un montant admissible moindre est réparti entre eux en proportion de chaque don, pour n’être compté qu’une fois. Quand chaque personne reçoit son propre reçu, inscrivez les dons comme des paiements distincts. L’enregistrement exige le droit de modifier le groupe du compte.
 
 ## Acomptes {#instalments}
 
@@ -193,7 +193,7 @@ Chaque ligne affiche l’élément, sa provenance (un payeur, un compte, une pé
 - Placements : **Dividendes imposables** (12000, les montants majorés des cases 11 et 25 du T5 et 32 et 50 du T3), **Intérêts et autres revenus de placement** (12100, tirés des feuillets et de la catégorie **Intérêts**), **Gains en capital imposables** (12700 : la moitié des gains nets, y compris les gains en capital des feuillets, s’ils sont positifs), **Impôt étranger payé** (formulaire T2209). Ces montants viennent du rapport des revenus de placement : voir [Revenus de placement et gains en capital](reports#investment-income).
 - Travail autonome : **Revenus de travail autonome** et **Dépenses de travail autonome** (formulaire T2125), tirés des catégories dont le traitement fiscal est travail autonome ; **Taxes de vente payées sur les dépenses d’entreprise**, par taxe, tirées des taxes de vente inscrites sur ces dépenses (voir [Taxes de vente incluses](taxes#sales-tax)).
 - Déductions : **Cotisations au régime de retraite** (20700), **Cotisations REER** (20800, tirées des cotisations aux REER et des retenues de REER collectif sur la paie), **Cotisations CELIAPP** (20805), **Cotisations syndicales et professionnelles** (21200), **Frais de garde d’enfants** (21400), **Frais de déménagement** (21900), **Autres dépenses d’emploi** (22900).
-- Crédits : **Frais médicaux** (33099, la meilleure période de 12 mois de chaque personne, ou l’année civile), **Frais de scolarité** (annexe 11), **Dons de bienfaisance** (annexe 9) et **Contributions politiques** (40900), à leurs montants admissibles.
+- Crédits : **Frais médicaux** (33099) comme le rapport Frais médicaux les demande : les frais des conjoints et des enfants ensemble, sur la meilleure période de 12 mois du ménage, dans la trousse du ménage, puisqu’un seul conjoint les demande tous ; et **Frais médicaux d’une personne à charge adulte** (33199), une ligne par personne à charge adulte sur sa propre meilleure période, aussi dans la trousse du ménage. Les reçus médicaux de ces périodes accompagnent la trousse du ménage dans le dossier pour le comptable. Puis **Frais de scolarité** (annexe 11), **Dons de bienfaisance** (annexe 9) et **Contributions politiques** (40900), à leurs montants admissibles.
 - Impôt déjà payé : **Impôt retenu** (43700, l’impôt retenu sur la paie ; l’impôt payé à la production ne compte pas) et **Acomptes payés** (47600, par autorité).
 
 La personne de chaque montant est celle pour qui est la ligne d’opération, ou sinon le seul titulaire du compte ; autrement, le montant va au ménage.
@@ -279,7 +279,7 @@ Les montants des T5 et T3, et les gains en capital, sont calculés dans le rappo
 
 @index: crédit pour frais médicaux; quel conjoint
 
-Les frais médicaux saisis dans l’écran Réclamations médicales (voir [Réclamations médicales](medical)) donnent la ligne **Frais médicaux** de la trousse. Le rapport Frais médicaux trouve la meilleure période de 12 mois, produit un seul PDF des reçus et aide à choisir quel conjoint devrait demander le crédit : voir [Frais médicaux](reports#medical-expenses) et [Quel conjoint devrait demander le crédit](reports#who-claims).
+Les frais médicaux saisis dans l’écran Réclamations médicales (voir [Réclamations médicales](medical)) donnent les lignes **Frais médicaux** de la trousse du ménage, les mêmes montants que le rapport Frais médicaux. Le rapport trouve la meilleure période de 12 mois, produit un seul PDF des reçus et aide à choisir quel conjoint devrait demander le crédit : voir [Frais médicaux](reports#medical-expenses) et [Quel conjoint devrait demander le crédit](reports#who-claims).
 
 ### Cotisations aux régimes enregistrés {#plan-contributions}
 

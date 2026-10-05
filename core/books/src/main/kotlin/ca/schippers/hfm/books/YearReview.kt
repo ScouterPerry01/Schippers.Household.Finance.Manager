@@ -64,6 +64,8 @@ class YearReviewService internal constructor(private val books: Books) {
         val visits = HashMap<String, Int>()
         for (g in books.groups()) {
             val rows = books.ledger(g).taxYearQueries.packageSplits(thisYear.from.toString(), thisYear.to.toString()).executeAsList()
+            // Visits count by payee as the payee rows group them (ReportService.payeeKey).
+            val payeeOf = books.ledger(g).ledgerQueries.reportSplits(thisYear.from.toString(), thisYear.to.toString(), null, null).executeAsList().associate { it.txn_id to it.payee_id }
             for ((_, splits) in rows.groupBy { it.txn_id }) {
                 val first = splits.first()
                 val account = accounts[first.account_id] ?: continue
@@ -72,7 +74,8 @@ class YearReviewService internal constructor(private val books: Books) {
                 val date = LocalDate.parse(first.date)
                 val amount = books.rates.convert(Money.ofMinor(-spent.sumOf { it.amount_minor }, account.currency), cur, date) ?: continue
                 if (!amount.isPositive) continue
-                first.payee_text?.trim()?.takeIf { it.isNotEmpty() }?.let { visits.merge(it.lowercase(), 1, Int::plus) }
+                val payeeId = payeeOf[first.txn_id]
+                if (payeeId != null || !first.payee_text.isNullOrBlank()) visits.merge(ReportService.payeeKey(payeeId, first.payee_text), 1, Int::plus)
                 val top = spent.maxBy { -it.amount_minor }.category_id?.let(categories::get)
                 purchases += LargePurchase(date, first.payee_text, top?.let { if (french) it.nameFr else it.nameEn } ?: labels("uncategorized"), amount)
             }
@@ -89,7 +92,7 @@ class YearReviewService internal constructor(private val books: Books) {
             changes.sortedByDescending { it.thisYear.minorUnits }.take(5),
             changes.filter { !it.lastYear.isZero || !it.thisYear.isZero }.sortedByDescending { kotlin.math.abs(it.change.minorUnits) }.take(5),
             purchases.sortedByDescending { it.amount.minorUnits }.take(5),
-            payees.rows.filter { it.id != null && it.id != PivotTable.OTHER }
+            payees.rows.filter { it.id != null && it.id != PivotTable.OTHER && it.id != ReportService.payeeKey(null, null) }
                 .map { Triple(it.label, visits[it.id] ?: 0, payees.rowTotal(it)) }
                 .sortedWith(compareByDescending<Triple<String, Int, Money>> { it.second }.thenByDescending { it.third.minorUnits }).take(5),
             months.rows.maxByOrNull { months.rowTotal(it).minorUnits }?.let { it.label to months.rowTotal(it) },
