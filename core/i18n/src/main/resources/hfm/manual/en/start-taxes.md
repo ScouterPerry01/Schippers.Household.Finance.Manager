@@ -43,7 +43,7 @@ See [Instalments](taxes#instalments).
 4. Read the result on the right: the federal and provincial or territorial tax, what was already paid, and the **Balance owing** or **Refund**, with every step of the calculation below it.
 5. To see what an RRSP contribution would save, change **RRSP deduction** and watch the balance and the **Marginal rate**.
 
-The rates come from Rates and rules, under Income tax. See [Estimate](taxes#estimate).
+The rates come from [Rates and rules](rates-rules), under Income tax. See [Estimate](taxes#estimate).
 
 ## At tax time {#at-tax-time}
 

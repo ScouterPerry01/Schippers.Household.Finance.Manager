@@ -43,7 +43,7 @@ Voir [Acomptes](taxes#instalments).
 4. Lisez le résultat à droite : l’impôt fédéral et provincial ou territorial, ce qui est déjà payé, et le **Solde dû** ou le **Remboursement**, avec chaque étape du calcul en dessous.
 5. Pour voir ce qu’une cotisation REER ferait économiser, changez **Déduction pour REER** et suivez le solde et le **Taux marginal**.
 
-Les taux viennent de Taux et règles, sous Impôt sur le revenu. Voir [Estimation](taxes#estimate).
+Les taux viennent de [Taux et règles](rates-rules), sous Impôt sur le revenu. Voir [Estimation](taxes#estimate).
 
 ## Au moment des impôts {#at-tax-time}
 
