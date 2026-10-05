@@ -488,6 +488,30 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 24 ledgers gain trips, contractors, projects, invoices, rentals and rewards`() {
+        val file = temp.resolve("ledger24.db")
+        older("../data/src/main/sqldelight/ledger/schemas/24.db", file, 24).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_balance_minor, opening_date, created_at, updated_at) VALUES ('v', 'Visa', 'CREDIT_CARD', 'CAD', 0, '2026-01-01', 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).extrasQueries
+            q.upsertTrip("t", "2026-10-01", null, null, "Home", "Client", 425, 1, "BUSINESS", null)
+            assertEquals(1, q.trips("2026-01-01", "2026-12-31").executeAsList().size)
+            q.upsertContractor("c", "Plombier", "Plumbing", null, null, null, null, 0)
+            q.upsertContractorJob("j", "c", "2026-05-01", "Water heater", 180000, "CAD", 5, null, null)
+            q.deleteContractor("c")
+            assertEquals(0, q.contractorJobs("c").executeAsList().size, "jobs go with their contractor")
+            q.upsertInvoice("i", "2026-001", "Mme Roy", null, "2026-10-01", null, "CAD", "SENT", null, null, "[]", null, null)
+            q.upsertCardReward("v", "Aeroplan", "POINTS", "1.5", "0.015", null)
+            q.insertRewardEntry("r", "v", "2026-09-30", "1200", "EARNED", null, null)
+            driver.execute(null, "DELETE FROM account WHERE id = 'v'", 0)
+            assertEquals(0, q.cardRewards().executeAsList().size + q.rewardEntries("v").executeAsList().size, "rewards go with their card")
+        }
+    }
+
+    @Test
     fun `version 6 core databases gain saved reports`() {
         val file = temp.resolve("core6.db")
         older("../data/src/main/sqldelight/core/schemas/6.db", file, 6).use { driver ->

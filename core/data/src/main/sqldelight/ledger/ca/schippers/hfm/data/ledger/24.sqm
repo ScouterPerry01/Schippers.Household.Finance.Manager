@@ -1,0 +1,107 @@
+-- Version 24 to 25: trips (OTH-02, MED-11), contractors (MNT-08), home projects (MNT-09), invoices (SAL-04),
+-- rental properties (SAL-05) and card rewards (CC-03).
+
+CREATE TABLE trip (
+    id TEXT NOT NULL PRIMARY KEY,
+    date TEXT NOT NULL,
+    vehicle_id TEXT,
+    member_id TEXT,
+    origin TEXT,
+    destination TEXT NOT NULL,
+    km_tenths INTEGER NOT NULL,
+    round_trip INTEGER NOT NULL DEFAULT 0,
+    purpose TEXT NOT NULL,
+    notes TEXT
+);
+
+CREATE INDEX trip_date ON trip(date);
+
+CREATE TABLE contractor (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    trade TEXT,
+    phone TEXT,
+    email TEXT,
+    website TEXT,
+    notes TEXT,
+    archived INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE contractor_job (
+    id TEXT NOT NULL PRIMARY KEY,
+    contractor_id TEXT NOT NULL REFERENCES contractor(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    description TEXT NOT NULL,
+    cost_minor INTEGER,
+    currency TEXT NOT NULL,
+    rating INTEGER,
+    asset_id TEXT,
+    notes TEXT
+);
+
+CREATE TABLE home_project (
+    id TEXT NOT NULL PRIMARY KEY,
+    asset_id TEXT,
+    name TEXT NOT NULL,
+    status TEXT NOT NULL,
+    start_date TEXT,
+    end_date TEXT,
+    budget_minor INTEGER,
+    currency TEXT NOT NULL,
+    capital INTEGER NOT NULL DEFAULT 1,
+    notes TEXT
+);
+
+CREATE TABLE project_cost (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES home_project(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    description TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    contractor_id TEXT
+);
+
+CREATE TABLE invoice (
+    id TEXT NOT NULL PRIMARY KEY,
+    number TEXT NOT NULL UNIQUE,
+    customer TEXT NOT NULL,
+    customer_details TEXT,
+    issue_date TEXT NOT NULL,
+    due_date TEXT,
+    currency TEXT NOT NULL,
+    status TEXT NOT NULL,
+    paid_date TEXT,
+    member_id TEXT,
+    lines TEXT NOT NULL,
+    taxes TEXT,
+    notes TEXT
+);
+
+CREATE TABLE rental_property (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    address TEXT,
+    tag_id TEXT NOT NULL,
+    share_bp INTEGER NOT NULL DEFAULT 10000,
+    asset_id TEXT,
+    notes TEXT
+);
+
+CREATE TABLE card_reward (
+    account_id TEXT NOT NULL PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
+    program TEXT NOT NULL,
+    unit TEXT NOT NULL,
+    earn_rate TEXT,
+    unit_value TEXT,
+    notes TEXT
+);
+
+CREATE TABLE reward_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    units TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    value_minor INTEGER,
+    notes TEXT
+);

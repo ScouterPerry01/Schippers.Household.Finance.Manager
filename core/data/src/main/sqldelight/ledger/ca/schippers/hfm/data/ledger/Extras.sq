@@ -1,0 +1,219 @@
+-- Phase 5h (ledger version 25): the remaining Could items.
+
+-- OTH-02, MED-11: trips by car, for business, employment or medical claims.
+CREATE TABLE trip (
+    id TEXT NOT NULL PRIMARY KEY,
+    date TEXT NOT NULL,
+    vehicle_id TEXT,
+    member_id TEXT,
+    origin TEXT,
+    destination TEXT NOT NULL,
+    -- Distance in tenths of a kilometre, one way; round_trip doubles it.
+    km_tenths INTEGER NOT NULL,
+    round_trip INTEGER NOT NULL DEFAULT 0,
+    -- BUSINESS, EMPLOYMENT, MEDICAL, PERSONAL.
+    purpose TEXT NOT NULL,
+    notes TEXT
+);
+
+CREATE INDEX trip_date ON trip(date);
+
+-- MNT-08: contractors and service providers, with ratings and past jobs.
+CREATE TABLE contractor (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    trade TEXT,
+    phone TEXT,
+    email TEXT,
+    website TEXT,
+    notes TEXT,
+    archived INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE contractor_job (
+    id TEXT NOT NULL PRIMARY KEY,
+    contractor_id TEXT NOT NULL REFERENCES contractor(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    description TEXT NOT NULL,
+    cost_minor INTEGER,
+    currency TEXT NOT NULL,
+    -- 1 to 5.
+    rating INTEGER,
+    asset_id TEXT,
+    notes TEXT
+);
+
+-- MNT-09: home improvement projects; capital improvements add to the home's cost base.
+CREATE TABLE home_project (
+    id TEXT NOT NULL PRIMARY KEY,
+    asset_id TEXT,
+    name TEXT NOT NULL,
+    -- PLANNED, UNDER_WAY, DONE.
+    status TEXT NOT NULL,
+    start_date TEXT,
+    end_date TEXT,
+    budget_minor INTEGER,
+    currency TEXT NOT NULL,
+    capital INTEGER NOT NULL DEFAULT 1,
+    notes TEXT
+);
+
+CREATE TABLE project_cost (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES home_project(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    description TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    contractor_id TEXT
+);
+
+-- SAL-04: simple invoices for side income, with their lines (JSON) and payment status.
+CREATE TABLE invoice (
+    id TEXT NOT NULL PRIMARY KEY,
+    number TEXT NOT NULL UNIQUE,
+    customer TEXT NOT NULL,
+    customer_details TEXT,
+    issue_date TEXT NOT NULL,
+    due_date TEXT,
+    currency TEXT NOT NULL,
+    -- DRAFT, SENT, PAID, CANCELLED.
+    status TEXT NOT NULL,
+    paid_date TEXT,
+    member_id TEXT,
+    lines TEXT NOT NULL,
+    -- Sales tax charged, as (name, basis points) JSON, for a GST/HST/QST registrant.
+    taxes TEXT,
+    notes TEXT
+);
+
+-- SAL-05: rental properties: their income and expenses are the transactions with the property's tag.
+CREATE TABLE rental_property (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    address TEXT,
+    tag_id TEXT NOT NULL,
+    -- The household's share of the property, in basis points (10000 = all of it).
+    share_bp INTEGER NOT NULL DEFAULT 10000,
+    asset_id TEXT,
+    notes TEXT
+);
+
+-- CC-03: a card's rewards program, and points or cash back earned and redeemed.
+CREATE TABLE card_reward (
+    account_id TEXT NOT NULL PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
+    program TEXT NOT NULL,
+    -- POINTS, CASH_BACK, MILES.
+    unit TEXT NOT NULL,
+    -- Units earned per dollar spent, and a unit's value in dollars, as decimals.
+    earn_rate TEXT,
+    unit_value TEXT,
+    notes TEXT
+);
+
+CREATE TABLE reward_entry (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    units TEXT NOT NULL,
+    -- EARNED, REDEEMED, ADJUSTED.
+    kind TEXT NOT NULL,
+    value_minor INTEGER,
+    notes TEXT
+);
+
+trips:
+SELECT * FROM trip WHERE date >= ? AND date <= ? ORDER BY date DESC, rowid DESC;
+
+upsertTrip:
+INSERT INTO trip(id, date, vehicle_id, member_id, origin, destination, km_tenths, round_trip, purpose, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET date = excluded.date, vehicle_id = excluded.vehicle_id, member_id = excluded.member_id, origin = excluded.origin,
+    destination = excluded.destination, km_tenths = excluded.km_tenths, round_trip = excluded.round_trip, purpose = excluded.purpose, notes = excluded.notes;
+
+deleteTrip:
+DELETE FROM trip WHERE id = ?;
+
+contractors:
+SELECT * FROM contractor ORDER BY archived, name COLLATE NOCASE;
+
+upsertContractor:
+INSERT INTO contractor(id, name, trade, phone, email, website, notes, archived) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET name = excluded.name, trade = excluded.trade, phone = excluded.phone, email = excluded.email,
+    website = excluded.website, notes = excluded.notes, archived = excluded.archived;
+
+deleteContractor:
+DELETE FROM contractor WHERE id = ?;
+
+contractorJobs:
+SELECT * FROM contractor_job WHERE contractor_id = ? ORDER BY date DESC, rowid DESC;
+
+upsertContractorJob:
+INSERT INTO contractor_job(id, contractor_id, date, description, cost_minor, currency, rating, asset_id, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET date = excluded.date, description = excluded.description, cost_minor = excluded.cost_minor,
+    currency = excluded.currency, rating = excluded.rating, asset_id = excluded.asset_id, notes = excluded.notes;
+
+deleteContractorJob:
+DELETE FROM contractor_job WHERE id = ?;
+
+homeProjects:
+SELECT * FROM home_project ORDER BY status = 'DONE', start_date DESC;
+
+upsertHomeProject:
+INSERT INTO home_project(id, asset_id, name, status, start_date, end_date, budget_minor, currency, capital, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET asset_id = excluded.asset_id, name = excluded.name, status = excluded.status, start_date = excluded.start_date,
+    end_date = excluded.end_date, budget_minor = excluded.budget_minor, currency = excluded.currency, capital = excluded.capital, notes = excluded.notes;
+
+deleteHomeProject:
+DELETE FROM home_project WHERE id = ?;
+
+projectCosts:
+SELECT * FROM project_cost WHERE project_id = ? ORDER BY date, rowid;
+
+insertProjectCost:
+INSERT INTO project_cost(id, project_id, date, description, amount_minor, contractor_id) VALUES (?, ?, ?, ?, ?, ?);
+
+deleteProjectCost:
+DELETE FROM project_cost WHERE id = ?;
+
+invoices:
+SELECT * FROM invoice ORDER BY issue_date DESC, number DESC;
+
+upsertInvoice:
+INSERT INTO invoice(id, number, customer, customer_details, issue_date, due_date, currency, status, paid_date, member_id, lines, taxes, notes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET number = excluded.number, customer = excluded.customer, customer_details = excluded.customer_details,
+    issue_date = excluded.issue_date, due_date = excluded.due_date, currency = excluded.currency, status = excluded.status,
+    paid_date = excluded.paid_date, member_id = excluded.member_id, lines = excluded.lines, taxes = excluded.taxes, notes = excluded.notes;
+
+deleteInvoice:
+DELETE FROM invoice WHERE id = ?;
+
+rentalProperties:
+SELECT * FROM rental_property ORDER BY name COLLATE NOCASE;
+
+upsertRentalProperty:
+INSERT INTO rental_property(id, name, address, tag_id, share_bp, asset_id, notes) VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET name = excluded.name, address = excluded.address, tag_id = excluded.tag_id, share_bp = excluded.share_bp,
+    asset_id = excluded.asset_id, notes = excluded.notes;
+
+deleteRentalProperty:
+DELETE FROM rental_property WHERE id = ?;
+
+cardRewards:
+SELECT * FROM card_reward;
+
+upsertCardReward:
+INSERT INTO card_reward(account_id, program, unit, earn_rate, unit_value, notes) VALUES (?, ?, ?, ?, ?, ?)
+ON CONFLICT(account_id) DO UPDATE SET program = excluded.program, unit = excluded.unit, earn_rate = excluded.earn_rate,
+    unit_value = excluded.unit_value, notes = excluded.notes;
+
+deleteCardReward:
+DELETE FROM card_reward WHERE account_id = ?;
+
+rewardEntries:
+SELECT * FROM reward_entry WHERE account_id = ? ORDER BY date DESC, rowid DESC;
+
+insertRewardEntry:
+INSERT INTO reward_entry(id, account_id, date, units, kind, value_minor, notes) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteRewardEntry:
+DELETE FROM reward_entry WHERE id = ?;
