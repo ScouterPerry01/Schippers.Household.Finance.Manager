@@ -45,7 +45,7 @@ La fenêtre montre un code QR à gauche et, à droite :
 - l’adresse et le port que le téléphone utilisera ;
 - **Copier en texte** : copie le lien de jumelage dans le presse-papiers, pour un téléphone dont l’appareil photo ne peut pas lire l’écran. Transmettez-le au téléphone par un moyen de confiance et collez-le dans **Ou collez le texte de jumelage** sur le téléphone.
 
-Une fois le téléphone jumelé, la fenêtre indique « Le téléphone est jumelé. Vous pouvez fermer cette fenêtre. » et le téléphone apparaît dans la liste. **Fermer** ferme la fenêtre ; un code inutilisé expire simplement.
+Une fois le téléphone jumelé, la fenêtre indique « Le téléphone est jumelé. Cette fenêtre se ferme d’elle-même. », se ferme deux secondes plus tard, et le téléphone apparaît dans la liste. **Fermer** ferme la fenêtre en tout temps ; un code inutilisé expire simplement.
 
 Chaque code ne sert qu’une fois. Rouvrir la fenêtre crée un nouveau code ; un code précédent reste valide jusqu’à son expiration.
 
@@ -126,4 +126,4 @@ Vérifiez chaque document dans l’onglet **À vérifier** : rattachez-le à une
 
 ## Ce que reçoit le téléphone {#sent-to-phone}
 
-Après chaque transfert, le téléphone reçoit un résumé à jour quand quelque chose y a changé : le nom et la langue du ménage, la devise de base, vos comptes et leurs soldes, les catégories, jusqu’à 400 bénéficiaires, les membres et les animaux, les véhicules et les équipements à compteur avec leur dernière lecture, les factures à payer dans les 60 prochains jours avec leurs jours de rappel, les budgets du mois pour les catégories de dépenses, et l’entretien prévu ce mois-ci. Le téléphone l’affiche dans son onglet **Résumé** et s’en sert pour ses rappels et ses listes de choix. Voir [L’onglet Résumé](phone-app#summary-tab).
+Après chaque transfert, le téléphone reçoit un résumé à jour quand quelque chose y a changé : le nom du ménage, la langue dans laquelle l’application est affichée sur cet ordinateur, la devise de base, vos comptes et leurs soldes, les catégories, jusqu’à 400 bénéficiaires, les membres et les animaux, les véhicules et les équipements à compteur avec leur dernière lecture, les factures à payer dans les 60 prochains jours avec leurs jours de rappel, les budgets du mois pour les catégories de dépenses, et l’entretien prévu ce mois-ci. Le téléphone l’affiche dans son onglet **Résumé** et s’en sert pour ses rappels et ses listes de choix. Voir [L’onglet Résumé](phone-app#summary-tab).

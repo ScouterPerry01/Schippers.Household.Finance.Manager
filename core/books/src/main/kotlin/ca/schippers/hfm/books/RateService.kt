@@ -54,12 +54,17 @@ class RateService internal constructor(private val books: Books) {
 
     /** FX-02 manual override, e.g. for a currency the Bank of Canada does not publish. */
     fun setManual(currency: Currency, date: LocalDate, cadPerUnit: BigDecimal) {
+        requireEditor(books)
         validate(cadPerUnit.signum() > 0, "error.ratePositive")
         books.core.upsertManualRate(currency.code, date.toString(), cadPerUnit.toPlainString())
         books.session.audit("SET_RATE", "fx_rate", currency.code, "$date=$cadPerUnit")
     }
 
-    fun deleteRate(currency: Currency, date: LocalDate) = books.core.deleteRate(currency.code, date.toString())
+    /** M-77: like every change to the household's rates, not for viewers. */
+    fun deleteRate(currency: Currency, date: LocalDate) {
+        requireEditor(books)
+        books.core.deleteRate(currency.code, date.toString())
+    }
 
     /** Currencies used by the household's accounts that need rates and that the Bank of Canada publishes. */
     fun neededCurrencies(): Set<Currency> = allNeeded().filter { it.code in BANK_OF_CANADA }.toSet()
@@ -75,18 +80,26 @@ class RateService internal constructor(private val books: Books) {
         .mapNotNull { runCatching { Currency.of(it) }.getOrNull() }
 
     fun follow(currency: Currency) {
+        requireEditor(books)
         validate(!currency.isCrypto, "error.unknownCurrency")
         books.putSetting(FOLLOWED, (followed() + currency).distinct().joinToString(",") { it.code })
     }
 
     fun unfollow(currency: Currency) {
+        requireEditor(books)
         books.putSetting(FOLLOWED, (followed() - currency).joinToString(",") { it.code })
     }
 
-    /** FX-08: whether the optional second source is used; off by default. */
+    /**
+     * FX-08: whether the optional second source is used; off by default. M-77: like the price feeds,
+     * only an administrator turns it on or off, since it sends currency codes to an outside service.
+     */
     var openSourceEnabled: Boolean
         get() = books.setting(OPEN_SOURCE) == "true"
-        set(value) { books.putSetting(OPEN_SOURCE, value.toString()) }
+        set(value) {
+            requireAdmin(books)
+            books.putSetting(OPEN_SOURCE, value.toString())
+        }
 
     /** Currencies the Bank of Canada does not publish; they need the second source or manual rates. */
     fun notOnBankOfCanada(): Set<Currency> = allNeeded().filter { it.code !in BANK_OF_CANADA }.toSet()

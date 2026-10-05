@@ -166,7 +166,8 @@ class AppState(
     }
 
     companion object {
-        const val MIN_PASSWORD_LENGTH = 12
+        /** M-72: the same minimum as for users added later and changed passwords. */
+        const val MIN_PASSWORD_LENGTH = ca.schippers.hfm.books.UserService.MIN_PASSWORD
         private const val PREF_MENU_TOP = "nav.menuTop"
         private const val PREF_MENU_CLOSED = "nav.menuClosed"
         private const val PREF_THEME = "theme"

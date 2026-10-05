@@ -43,9 +43,9 @@ class AiServiceTest {
             assertEquals(AiSettings(enabled = false, confirmEach = true, model = null), books.ai.settings())
             books.ai.saveSettings(AiSettings(enabled = true, confirmEach = false, model = "claude-sonnet-5-5"))
             assertEquals(AiSettings(true, false, "claude-sonnet-5-5"), books.ai.settings())
-            books.users.add("marie", "Marie", Role.MEMBER, "password2".toCharArray())
+            books.users.add("marie", "Marie", Role.MEMBER, "password2-long".toCharArray())
         }
-        Books(store.unlock(dir, "marie", "password2".toCharArray())).use { marie ->
+        Books(store.unlock(dir, "marie", "password2-long".toCharArray())).use { marie ->
             assertEquals(AiSettings(), marie.ai.settings(), "Marie chooses for herself")
         }
     }
@@ -88,10 +88,10 @@ class AiServiceTest {
             assertEquals(listOf(true, false), log.map { it.succeeded })
             assertEquals(BigDecimal("0.014620"), log[0].costUsd)
             assertEquals("bill.pdf", log[0].documentLabel)
-            val marie = books.users.add("marie", "Marie", Role.MEMBER, "password2".toCharArray()).userId
+            val marie = books.users.add("marie", "Marie", Role.MEMBER, "password2-long".toCharArray()).userId
             books.users.setAccess(shared, marie, PermissionLevel.EDIT)
         }
-        Books(store.unlock(dir, "marie", "password2".toCharArray())).use { marie ->
+        Books(store.unlock(dir, "marie", "password2-long".toCharArray())).use { marie ->
             assertEquals(emptyList(), marie.ai.usage(start, System.currentTimeMillis() + 1000), "Perry's key, Perry's log")
             val own = marie.session.createGroup("Marie - privé", private = true)
             privateDoc = marie.documents.import(own, "stub".encodeToByteArray(), "paie.jpg", "image/jpeg").document.id

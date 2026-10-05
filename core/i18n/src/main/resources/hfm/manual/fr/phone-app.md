@@ -37,7 +37,7 @@ L’application est verrouillée par un NIP, et au besoin par votre empreinte ou
 
 La première fois que vous ouvrez l’application, elle affiche **Choisissez un NIP pour verrouiller l’application** : de 4 à 8 chiffres. Saisissez-le et touchez **OK**, puis **Entrez le NIP de nouveau** et touchez **OK**. Si les deux sont différents, l’application le dit et vous recommencez.
 
-Le NIP n’est pas gardé sur le téléphone, seulement une empreinte brouillée qui sert à le vérifier. L’application n’offre aucun moyen de retrouver un NIP oublié : choisissez-en un dont vous vous souviendrez.
+Le NIP n’est pas gardé sur le téléphone, seulement une empreinte brouillée qui sert à le vérifier. Un NIP oublié ne peut pas être récupéré : l’application peut seulement recommencer à zéro, en effaçant ce qu’elle garde (voir [NIP oublié](phone-app#forgot-pin)). Choisissez-en un dont vous vous souviendrez.
 
 ### Déverrouiller l’application {#unlock}
 
@@ -45,6 +45,26 @@ Le NIP n’est pas gardé sur le téléphone, seulement une empreinte brouillée
 - **Utiliser l’empreinte ou le visage** : affiché quand le téléphone le permet et que **Déverrouiller avec l’empreinte ou le visage** est activé dans Réglages. La fenêtre d’Android apparaît ; **Annuler** revient au NIP.
 
 L’application se verrouille de nouveau quand vous y revenez après plus d’une minute d’absence.
+
+- **NIP oublié?** : voir [NIP oublié](phone-app#forgot-pin).
+
+### NIP oublié {#forgot-pin}
+
+@index: NIP oublié; réinitialiser le NIP; NIP perdu; effacer l’application
+
+Un NIP oublié ne peut pas être récupéré, ni par vous ni par l’ordinateur. Pour utiliser l’application de nouveau, elle recommence à zéro :
+
+1. À l’écran de verrouillage, touchez **NIP oublié?**.
+2. Lisez l’avertissement **Effacer les données de l’application?**. Il explique ce qui est effacé.
+3. Touchez **Effacer et recommencer**, ou **Annuler** pour tout garder et essayer votre NIP de nouveau.
+4. L’application vous demande de choisir un nouveau NIP, comme la première fois.
+5. Jumelez de nouveau le téléphone avec l’ordinateur. Voir [Jumeler un téléphone](phones#pair).
+
+Ce qui est effacé, sur ce téléphone seulement : les saisies pas encore envoyées à l’ordinateur (photos, reçus, notes, lectures d’odomètre), la liste de ce qui a été envoyé, le jumelage avec l’ordinateur, le résumé reçu de lui, et tous les réglages, y compris le déverrouillage par empreinte et le dossier de transfert. Cela ne peut pas être annulé.
+
+Ce qui reste : tout ce que l’ordinateur a déjà reçu, et le ménage sur l’ordinateur. L’ancien jumelage ne peut plus rien envoyer ; retirez-le de la liste à l’écran **Téléphones** de l’ordinateur. Voir [La liste des téléphones](phones#phone-list).
+
+> Conseil : Les saisies pas encore envoyées ne peuvent pas l’être sans le NIP. Une fois le téléphone jumelé de nouveau, saisissez-les de nouveau.
 
 ## Le premier démarrage {#first-start}
 

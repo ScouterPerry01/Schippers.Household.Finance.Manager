@@ -63,8 +63,8 @@ A user who was stopped from signing in on the [Users](users) screen cannot unloc
 @index: password rules; password length; passphrase; strong password
 
 - The first administrator chooses the master password when the household is created: at least 12 characters, typed twice (**Master password**, **Confirm master password**).
-- Users added later get a password chosen when they are added, and anyone can change their own: the screens ask for at least 8 characters.
-- A new password set with the recovery key needs at least 12 characters.
+- Users added later get a password chosen when they are added, and anyone can change their own: at least 12 characters too.
+- A new password set with the recovery key also needs at least 12 characters.
 
 A passphrase of a few unrelated words, such as "maple canoe Thursday lantern", is easy to remember and hard to guess. Do not reuse a password from a website.
 
@@ -81,7 +81,8 @@ Each user has a recovery key: a long code in groups of four letters and digits s
 
 On the "Your recovery key" screen:
 
-- **Copy**: copies the key, so you can paste it into a document to print.
+- **Print**: prints the key through the system's print dialog, without saving it in a file.
+- **Copy**: copies the key, so you can paste it into a password manager.
 - **I have saved my recovery key**: opens the household. Only click it once the key is printed or written down.
 
 How to keep it:

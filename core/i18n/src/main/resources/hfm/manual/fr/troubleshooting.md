@@ -70,7 +70,7 @@ La fenêtre Impossible d'enregistrer donne la raison en une phrase, comme « Un 
 
 @index: Vous n'avez pas la permission de faire ceci; accès refusé; lecture seulement
 
-Votre rôle, ou l'accès qu'on vous a donné à ce groupe de comptes, ne permet pas cette modification. Les lecteurs peuvent seulement consulter ; les membres peuvent modifier leurs propres comptes privés et les groupes partagés auxquels on leur a donné l'accès Modification ; Saisie seulement permet d'ajouter des reçus et des opérations. Demandez à un administrateur de changer votre accès sous [Utilisateurs](users).
+Votre rôle, ou l'accès qu'on vous a donné à ce groupe de comptes, ne permet pas cette modification. Les lecteurs peuvent seulement consulter ; les membres peuvent modifier leurs propres comptes privés et les groupes partagés auxquels on leur a donné l'accès Modification ; Saisie seulement permet d'ajouter des reçus et des opérations. Les lecteurs ne peuvent pas non plus modifier les listes du ménage (catégories, bénéficiaires, règles, institutions, taux), et seuls les administrateurs modifient les membres du ménage, les réglages de sauvegarde et les téléchargements de cours. Demandez à un administrateur de changer votre accès sous [Utilisateurs](users).
 
 ### Des dates ou des nombres sont refusés {#dates-numbers}
 

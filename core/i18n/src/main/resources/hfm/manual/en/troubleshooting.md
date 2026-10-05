@@ -70,7 +70,7 @@ The Cannot save window gives the reason in a sentence, such as "A name is requir
 
 @index: You do not have permission to do this; access denied; read only
 
-Your role, or the access you were given to that account group, does not allow this change. Viewers can only read; members can change their own private accounts and the shared groups they were given Edit access to; Capture only allows adding receipts and transactions. Ask an administrator to change your access under [Users](users).
+Your role, or the access you were given to that account group, does not allow this change. Viewers can only read; members can change their own private accounts and the shared groups they were given Edit access to; Capture only allows adding receipts and transactions. Viewers also cannot change the household's lists (categories, payees, rules, institutions, rates), and only administrators change household members, backup settings and the price downloads. Ask an administrator to change your access under [Users](users).
 
 ### Dates and numbers are refused {#dates-numbers}
 

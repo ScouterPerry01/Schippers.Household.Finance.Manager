@@ -105,6 +105,9 @@ fun PhonesScreen(model: BooksModel) {
     editing?.let { d -> DeviceDialog(model, d) { editing = null } }
 }
 
+/** How long "The phone is paired" stays on screen before the pairing window closes. */
+private const val PAIRED_CLOSE_MILLIS = 2_000L
+
 private fun dateTime(millis: Long): String =
     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()))
 
@@ -119,6 +122,13 @@ private fun PairingDialog(model: BooksModel, invitation: PairingInvitation, devi
             delay(1000)
             secondsLeft--
             if (secondsLeft % 3 == 0) model.changed()
+        }
+    }
+    // M-80: once the phone has paired, the message shows for a moment and the window closes itself.
+    LaunchedEffect(paired) {
+        if (paired) {
+            delay(PAIRED_CLOSE_MILLIS)
+            onClose()
         }
     }
     WideDialog(model.t("phones.pair"), model.t("common.close"), onClose) {

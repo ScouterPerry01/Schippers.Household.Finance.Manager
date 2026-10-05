@@ -53,3 +53,5 @@ There is no way to delete an institution. To stop an account from naming it, edi
 ## Shared by the household {#shared}
 
 The institution list is shared by the whole household, whichever account groups use it: everyone who signs in sees the same institutions. Every institution added or changed is recorded in the activity log on the [Users](users) screen.
+
+Administrators and members can add and change institutions. Viewers see the list and the forms greyed out, without **Add** or **Save**.

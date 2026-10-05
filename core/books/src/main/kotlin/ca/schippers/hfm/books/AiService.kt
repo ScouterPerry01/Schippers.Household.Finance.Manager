@@ -70,7 +70,12 @@ class AiService internal constructor(private val books: Books) {
         model = books.setting(key("model"))?.takeIf { it.isNotBlank() },
     )
 
+    /**
+     * M-77: each member or administrator chooses for themselves, with their own key (AI-02). A viewer
+     * cannot: a reading is saved with its document, which a viewer may not change.
+     */
     fun saveSettings(settings: AiSettings) {
+        requireEditor(books)
         books.putSetting(key("enabled"), settings.enabled.toString())
         books.putSetting(key("confirmEach"), settings.confirmEach.toString())
         books.putSetting(key("model"), settings.model.orEmpty())

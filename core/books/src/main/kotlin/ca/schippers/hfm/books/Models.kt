@@ -69,6 +69,9 @@ data class Payee(
     val archived: Boolean,
 )
 
+/** Text that identifies a payee on statements (section 7.4). */
+data class PayeeAlias(val id: String, val pattern: String)
+
 data class Account(
     val id: String,
     val groupId: String,

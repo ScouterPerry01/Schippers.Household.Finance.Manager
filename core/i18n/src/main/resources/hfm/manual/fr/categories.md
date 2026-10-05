@@ -45,8 +45,9 @@ Quand rien n'est choisi, la zone du formulaire indique « Choisissez une catégo
 
 ### Le formulaire de catégorie {#category-fields}
 
-- **Nom en anglais** : le nom affiché quand l'application est en anglais. Obligatoire, à moins que le nom français soit rempli : si vous laissez un nom vide en créant une catégorie, l'autre sert pour les deux.
+- **Nom en anglais** : le nom affiché quand l'application est en anglais. Obligatoire, à moins que le nom français soit rempli : si vous laissez un nom vide, l'autre sert pour les deux. **Enregistrer** reste grisé tant que les deux sont vides.
 - **Nom en français** : le nom affiché quand l'application est en français.
+- **Dans** : affiché pour une catégorie déjà enregistrée. La catégorie sous laquelle elle se trouve, ou (premier niveau). Seules les catégories du même type sont offertes, jamais la catégorie elle-même ni une catégorie qu'elle contient. Voir [Modifier une catégorie](categories#change-category).
 - **Traitement fiscal** : (aucun), ou l'une des lignes fiscales ci-dessous. Une nouvelle sous-catégorie commence avec le traitement de sa catégorie parente, que vous pouvez changer. Voir [Traitement fiscal](categories#tax-treatment).
 - **Archivé (masqué des listes)** : affiché pour une catégorie déjà enregistrée. Voir [Archiver une catégorie](categories#archive-category).
 - **Enregistrer** : enregistre la catégorie. Rien n'est enregistré avant que vous cliquiez.
@@ -73,10 +74,12 @@ Une seule ventilation d'une opération peut aussi porter son propre traitement f
 ## Modifier une catégorie {#change-category}
 
 1. Cliquez sur la catégorie dans la liste.
-2. Changez ses noms, son traitement fiscal ou sa case Archivé.
+2. Changez ses noms, son emplacement (**Dans**), son traitement fiscal ou sa case Archivé.
 3. Cliquez sur **Enregistrer**.
 
-Un nouveau nom s'affiche tout de suite sur chaque opération, budget et rapport qui utilise la catégorie, y compris les anciens, et sur le téléphone à sa prochaine mise à jour. Une catégorie ne peut pas être déplacée sous une autre catégorie parente, et il n'y a aucun moyen de changer son type ou sa place dans la liste : pour réorganiser, créez la catégorie à l'endroit voulu et archivez l'ancienne.
+Un nouveau nom s'affiche tout de suite sur chaque opération, budget et rapport qui utilise la catégorie, y compris les anciens, et sur le téléphone à sa prochaine mise à jour.
+
+Pour déplacer une catégorie, choisissez une autre catégorie du même type dans **Dans**, ou (premier niveau). Ses sous-catégories la suivent, et elle va en dernier parmi ses nouvelles voisines. Les opérations, les budgets et les rapports continuent de l'utiliser ; les rapports la comptent maintenant sous sa nouvelle catégorie parente. Une catégorie de dépenses ne peut pas devenir une catégorie de revenus, ni l'inverse : pour changer son type, créez une nouvelle catégorie et archivez l'ancienne.
 
 ## Archiver une catégorie {#archive-category}
 
@@ -101,3 +104,7 @@ Une catégorie archivée n'est plus offerte dans les listes de catégories (opé
 - [Impôts](taxes) : les dons et la trousse fiscale, par le traitement fiscal.
 - [Documents](documents) : la catégorie d'une opération créée à partir d'un reçu.
 - Le téléphone : les catégories des reçus saisis dans RANN's Roost Mobile. Voir [Téléphones](phones).
+
+## Qui peut modifier les catégories {#permissions}
+
+Les administrateurs et les membres peuvent ajouter et modifier des catégories. Les lecteurs voient la liste et le formulaire de chaque catégorie en gris, sans les boutons pour ajouter ou enregistrer, avec la remarque « À titre de lecteur, vous pouvez voir cette liste, mais pas la modifier. »

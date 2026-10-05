@@ -37,7 +37,7 @@ The app is locked by a PIN, and optionally by your fingerprint or face, so recei
 
 The first time you open the app, it asks you to **Choose a PIN to lock this app**: 4 to 8 digits. Type it and tap **OK**, then **Enter the PIN again** and tap **OK**. If the two are different, the app says so and you start again.
 
-The PIN is not stored on the phone, only a scrambled check of it. There is no way to recover a forgotten PIN in the app, so choose one you will remember.
+The PIN is not stored on the phone, only a scrambled check of it. A forgotten PIN cannot be recovered: the app can only start over, erasing what it keeps (see [Forgot your PIN](phone-app#forgot-pin)). Choose one you will remember.
 
 ### Unlock the app {#unlock}
 
@@ -45,6 +45,26 @@ The PIN is not stored on the phone, only a scrambled check of it. There is no wa
 - **Use fingerprint or face**: shown when the phone supports it and **Unlock with fingerprint or face** is on in Settings. Android's own prompt appears; **Cancel** returns to the PIN.
 
 The app locks again when you come back to it after more than a minute away.
+
+- **Forgot your PIN?**: see [Forgot your PIN](phone-app#forgot-pin).
+
+### Forgot your PIN {#forgot-pin}
+
+@index: forgotten PIN; reset PIN; lost PIN; erase the app
+
+A forgotten PIN cannot be recovered, by you or by the computer. To use the app again, it starts over:
+
+1. On the lock screen, tap **Forgot your PIN?**.
+2. Read the warning **Erase this app's data?**. It explains what is erased.
+3. Tap **Erase and start over**, or **Cancel** to keep everything and try your PIN again.
+4. The app asks you to choose a new PIN, as the first time.
+5. Pair the phone with the computer again. See [Pair a phone](phones#pair).
+
+What is erased, on this phone only: captures not yet sent to the computer (photos, receipts, notes, odometer readings), the list of what was sent, the pairing with the computer, the summary received from it, and every setting, including fingerprint unlock and the transfer folder. It cannot be undone.
+
+What stays: everything the computer already received, and the household on the computer. The old pairing can no longer send anything; remove it from the list on the computer's **Phones** screen. See [The list of phones](phones#phone-list).
+
+> Tip: Captures not yet sent cannot be sent without the PIN. Once the phone is paired again, capture them again.
 
 ## The first start {#first-start}
 

@@ -119,6 +119,13 @@ Click **Recent rates** on a currency's line. The bottom of the screen shows "Rec
 
 - **Delete**: shown only for rates entered by hand. Removes that day's rate at once. Downloaded rates cannot be deleted.
 
+## Who can change rates and prices {#permissions}
+
+- Administrators: everything on this screen, including turning on the second source of rates and each market price download, since these send requests to outside services.
+- Members: follow currencies, enter and delete rates, set coin names and enter metal prices. The download switches are greyed out.
+- Viewers: see the rates and prices; everything else is greyed out.
+- Everyone: **Update rates** and **Update prices now**, which only download what is already turned on.
+
 ## Privacy {#privacy}
 
 The Bank of Canada and ExchangeRate-API receive only a request for the list of rates. The price services receive the symbols of what you hold, only for the feeds you turned on. See [Privacy and your data](privacy-data).

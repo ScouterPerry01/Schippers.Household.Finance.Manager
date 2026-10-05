@@ -29,7 +29,7 @@ What it costs: each reading costs a few cents on your own Anthropic account. RAN
 
 ### Settings {#settings}
 
-These settings are your own: each user who signs in chooses for themselves, and they follow the household to any computer.
+These settings are your own: each user who signs in chooses for themselves, and they follow the household to any computer. A viewer cannot change them: they are greyed out, with the note "As a viewer, you cannot turn AI reading on: its readings are saved with documents, which viewers cannot change."
 
 - **Read hard documents with AI**: off by default. When on, the review of a document offers **Read with AI** (or, if you have no key yet, "To read with AI, add your key under AI reading."). When off, nothing is ever sent, even with a key saved. Text documents are never offered.
 - **Show me each document and let me hide parts before it is sent**: on by default. When on, clicking **Read with AI** opens the preview, where you can hide areas and crop pages before clicking **Send**. When off, every page is sent as it is, as soon as you click **Read with AI**.

@@ -34,7 +34,7 @@ On a Linux copy installed from a .deb or .rpm package or an AppImage, the app fi
 2. Click **Choose folder…** and pick where the household will live, for example your Documents folder. The app makes a folder there named after the household.
 3. Fill in the form:
   - **Household name**: a name for the household, such as Tremblay Family.
-  - **Province or territory**: where you live. It sets bank holidays, default categories, provincial grants and tax forms. It starts on Quebec, so change it if you live elsewhere.
+  - **Province or territory**: where you live. It sets bank holidays, default categories, provincial grants and tax forms. Nothing is chosen at first: pick yours.
   - **Your name**: how you appear in the app.
   - **Login name**: the short name you will type to sign in, without spaces.
   - **Master password** and **Confirm master password**: at least 12 characters, typed twice.
@@ -50,7 +50,7 @@ The next screen, **Your recovery key**, shows a long key made of letters and dig
 
 > Important: no server can reset your password. If you forget it, this key is the only way back into your household. Nobody, not even RANN, can recover your data without it.
 
-1. Write the key down or click **Copy** and paste it into a document you print. Keep it somewhere safe, away from this computer.
+1. Click **Print** to print it, or write it down. Keep the paper somewhere safe, away from this computer.
 2. Click **I have saved my recovery key**. The household opens on the Dashboard.
 
 ## Step 4: Use the Getting started guide {#guide}

@@ -59,12 +59,15 @@ fun AiScreen(model: BooksModel) {
         Text(model.t("nav.ai"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("ai.intro"), style = MaterialTheme.typography.bodyMedium)
 
-        LabeledCheckbox(model.t("ai.enabled"), settings.enabled) { save(settings.copy(enabled = it)) }
-        LabeledCheckbox(model.t("ai.confirmEach"), settings.confirmEach) { save(settings.copy(confirmEach = it)) }
+        // M-77: a viewer cannot turn AI reading on, since its readings are saved with documents.
+        val canEdit = books.canEdit
+        if (!canEdit) Text(model.t("ai.viewerNote"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
+        LabeledCheckbox(model.t("ai.enabled"), settings.enabled, enabled = canEdit) { save(settings.copy(enabled = it)) }
+        LabeledCheckbox(model.t("ai.confirmEach"), settings.confirmEach, enabled = canEdit) { save(settings.copy(confirmEach = it)) }
         Picker(
             model.t("ai.model"), AiModel.CLAUDE, AiModel.byId(settings.model),
             { m -> model.t("ai.modelPrice", m.label, model.usd(m.inputPerMillion), model.usd(m.outputPerMillion)) },
-            Modifier.width(760.dp),
+            Modifier.width(760.dp), enabled = canEdit,
         ) { save(settings.copy(model = it.id)) }
 
         HorizontalDivider(Modifier.padding(vertical = 8.dp))

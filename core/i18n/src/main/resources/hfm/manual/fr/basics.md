@@ -40,13 +40,13 @@ Cet écran crée un nouveau ménage vide. La province, votre nom et votre mot de
 
 - **Choisir un dossier…** : obligatoire. Ouvre un sélecteur de dossier pour l'Emplacement : le dossier où le ménage sera gardé, comme Documents. Le chemin choisi s'affiche à côté du bouton. L'application crée dedans un nouveau dossier au nom du ménage, terminé par .hfm (Famille Tremblay.hfm). Ce dossier ne doit pas déjà exister avec des fichiers ; sinon, choisissez un autre emplacement ou un autre nom.
 - **Nom du ménage** : obligatoire. Le nom du ménage, utilisé pour le nom du dossier et présenté aux téléphones que vous jumelez. Évitez les caractères que votre système refuse dans les noms de dossier, comme / ou :.
-- **Province ou territoire** : où habite le ménage. Ses règles s'appliquent : les jours fériés bancaires qui déplacent les dates des factures, les catégories par défaut, les subventions provinciales aux REEE, les règles des régimes immobilisés et les formulaires fiscaux provinciaux. Il est réglé sur Québec au départ ; choisissez le vôtre. Il peut être changé plus tard sous [Membres du ménage](members), et une personne qui vit ailleurs peut avoir le sien.
+- **Province ou territoire** : où habite le ménage. Ses règles s'appliquent : les jours fériés bancaires qui déplacent les dates des factures, les catégories par défaut, les subventions provinciales aux REEE, les règles des régimes immobilisés et les formulaires fiscaux provinciaux. Obligatoire : rien n'est choisi au départ, choisissez donc le vôtre. Il peut être changé plus tard sous [Membres du ménage](members), et une personne qui vit ailleurs peut avoir le sien.
 - **Votre nom** : obligatoire. Votre nom tel qu'il paraît dans l'application, par exemple dans le journal d'activité et la liste des utilisateurs.
 - **Nom d'utilisateur** : obligatoire. Le nom que vous tapez pour vous connecter. Gardez-le court et sans espaces. Il ne peut pas être changé plus tard.
 - **Mot de passe principal** : obligatoire, au moins 12 caractères. Une phrase de passe de quelques mots est facile à retenir et difficile à deviner. Il protège les clés de chiffrement du ménage : il n'est jamais enregistré, et personne ne peut le réinitialiser pour vous.
 - **Confirmer le mot de passe principal** : le même mot de passe une seconde fois, pour attraper les fautes de frappe.
 - **Retour** : revient à Bienvenue sans rien créer.
-- **Créer le ménage** : disponible une fois le dossier, le nom du ménage, votre nom et le nom d'utilisateur remplis. Si le mot de passe a moins de 12 caractères, l'écran affiche « Utilisez au moins 12 caractères. » ; si les deux mots de passe diffèrent, il affiche « Les mots de passe ne correspondent pas. ». Sinon, l'application crée le ménage, ce qui prend quelques secondes (un cercle tourne pendant ce temps).
+- **Créer le ménage** : disponible une fois le dossier, le nom du ménage, la province ou le territoire, votre nom et le nom d'utilisateur remplis. Si le mot de passe a moins de 12 caractères, l'écran affiche « Utilisez au moins 12 caractères. » ; si les deux mots de passe diffèrent, il affiche « Les mots de passe ne correspondent pas. ». Sinon, l'application crée le ménage, ce qui prend quelques secondes (un cercle tourne pendant ce temps).
 
 Le nouveau ménage a le dollar canadien comme monnaie de base. Il commence avec un groupe de comptes partagé et vous comme seul utilisateur, avec le rôle Administrateur. Le ménage est créé dans la langue qu'utilise l'application.
 
@@ -58,7 +58,8 @@ Tout de suite après la création d'un ménage, cet écran présente votre clé 
 
 Aucun serveur ne peut réinitialiser votre mot de passe. Si vous l'oubliez, cette clé est le seul moyen de retrouver l'accès à votre ménage. Imprimez-la ou notez-la et rangez-la en lieu sûr, loin de cet ordinateur.
 
-- **Copier** : copie la clé dans le presse-papiers, pour la coller dans un document à imprimer ou dans un gestionnaire de mots de passe. Videz ensuite le presse-papiers si d'autres personnes utilisent cet ordinateur.
+- **Imprimer** : ouvre la fenêtre d'impression du système et imprime une page avec la clé, le nom du ménage et la raison de la garder. La page va directement à l'imprimante : la clé n'est pas enregistrée dans un fichier sur cet ordinateur.
+- **Copier** : copie la clé dans le presse-papiers, pour la coller dans un gestionnaire de mots de passe. Videz ensuite le presse-papiers si d'autres personnes utilisent cet ordinateur.
 - **J'ai conservé ma clé de récupération** : ouvre le ménage. La clé n'est plus jamais affichée.
 
 > Important : chaque utilisateur a sa propre clé de récupération. Quand un administrateur ajoute un utilisateur sous [Utilisateurs](users), la clé de cet utilisateur est affichée une seule fois de la même façon, pour lui être remise.

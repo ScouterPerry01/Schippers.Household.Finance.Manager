@@ -50,7 +50,9 @@ class InstitutionService internal constructor(private val books: Books) {
         Institution(it.id, it.name, it.branch, it.institution_number, it.transit_number, it.website, it.phone, it.notes)
     }
 
+    /** M-77: everyone but viewers may add and change institutions. */
     fun create(institution: Institution): Institution {
+        requireEditor(books)
         validate(institution.name.isNotBlank(), "error.nameRequired")
         validateNumbers(institution)
         val id = Ids.newId()
@@ -62,6 +64,7 @@ class InstitutionService internal constructor(private val books: Books) {
     }
 
     fun update(institution: Institution) {
+        requireEditor(books)
         validate(institution.name.isNotBlank(), "error.nameRequired")
         validateNumbers(institution)
         with(institution) {
@@ -109,6 +112,7 @@ class CategoryService internal constructor(private val books: Books) {
     }
 
     fun create(parentId: String?, nameEn: String, nameFr: String, kind: CategoryKind, taxFlag: TaxFlag? = null): Category {
+        requireEditor(books)
         validate(nameEn.isNotBlank() || nameFr.isNotBlank(), "error.nameRequired")
         val parent = parentId?.let { id -> list(includeArchived = true).firstOrNull { it.id == id } ?: throw ValidationException("error.unknownCategory") }
         validate(parent == null || parent.kind == kind, "error.categoryKind")
@@ -121,17 +125,29 @@ class CategoryService internal constructor(private val books: Books) {
         return Category(id, parentId, null, en, fr, kind, taxFlag, order, archived = false)
     }
 
+    /**
+     * Saves a category's names, parent, tax treatment and archived state. M-75: a name is required,
+     * as when it was created (a blank one takes the other language's), and the category can move
+     * under another parent of the same kind, or to the top level; it then goes last among its new
+     * neighbours.
+     */
     fun update(category: Category) {
+        requireEditor(books)
+        validate(category.nameEn.isNotBlank() || category.nameFr.isNotBlank(), "error.nameRequired")
         validate(category.parentId != category.id, "error.categoryCycle")
         val all = list(includeArchived = true).associateBy { it.id }
+        val before = all[category.id] ?: throw ValidationException("error.unknownCategory")
+        val parent = category.parentId?.let { all[it] ?: throw ValidationException("error.unknownCategory") }
+        validate(parent == null || parent.kind == before.kind, "error.categoryKind")
         var ancestor = category.parentId
         while (ancestor != null) {
             validate(ancestor != category.id, "error.categoryCycle")
             ancestor = all[ancestor]?.parentId
         }
+        val order = if (category.parentId == before.parentId) category.sortOrder else all.values.count { it.parentId == category.parentId && it.kind == before.kind }
         books.core.updateCategory(
-            category.parentId, category.nameEn.trim(), category.nameFr.trim(), category.taxFlag?.name,
-            category.sortOrder.toLong(), if (category.archived) 1 else 0, category.id,
+            category.parentId, category.nameEn.ifBlank { category.nameFr }.trim(), category.nameFr.ifBlank { category.nameEn }.trim(), category.taxFlag?.name,
+            order.toLong(), if (category.archived) 1 else 0, category.id,
         )
         books.session.audit("UPDATE", "category", category.id)
     }
@@ -245,7 +261,9 @@ class PayeeService internal constructor(private val books: Books) {
         .map { Payee(it.id, it.name, it.default_category_id, it.archived == 1L) }
         .filter { includeArchived || !it.archived }
 
+    /** M-77: everyone but viewers may add and change payees, also by typing a new name on a transaction. */
     fun create(name: String, defaultCategoryId: String? = null): Payee {
+        requireEditor(books)
         validate(name.isNotBlank(), "error.nameRequired")
         val id = Ids.newId()
         books.core.insertPayee(id, name.trim(), defaultCategoryId)
@@ -253,12 +271,20 @@ class PayeeService internal constructor(private val books: Books) {
     }
 
     fun update(payee: Payee) {
+        requireEditor(books)
         validate(payee.name.isNotBlank(), "error.nameRequired")
         books.core.updatePayee(payee.name.trim(), payee.defaultCategoryId, if (payee.archived) 1 else 0, payee.id)
     }
 
+    /** M-74: a payee's aliases, in alphabetical order. */
+    fun aliases(payeeId: String): List<PayeeAlias> = books.core.payeeAliases().executeAsList()
+        .filter { it.payee_id == payeeId }
+        .map { PayeeAlias(it.id, it.pattern) }
+        .sortedBy { it.pattern.lowercase() }
+
     /** "AMZN MKTP CA*2X4" → Amazon: an alias pattern contained in the text, ignoring case. */
     fun addAlias(payeeId: String, pattern: String) {
+        requireEditor(books)
         validate(pattern.isNotBlank(), "error.nameRequired")
         books.core.insertPayeeAlias(Ids.newId(), payeeId, pattern.trim())
     }
@@ -301,4 +327,9 @@ class PayeeService internal constructor(private val books: Books) {
 
 internal fun requireAdmin(books: Books) {
     if (books.role != Role.ADMINISTRATOR) throw AccessDeniedException("Only an administrator can do this")
+}
+
+/** M-77: the household's shared lists (categories, payees, rules...) are read only for viewers. */
+internal fun requireEditor(books: Books) {
+    if (books.role == Role.VIEWER) throw AccessDeniedException("A viewer cannot change this")
 }

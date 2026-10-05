@@ -32,7 +32,7 @@ Aliases can be added once the payee is saved.
   - When a transaction is made from a receipt or bill in [Documents](documents).
   - On the phone, which receives each payee with its default category.
 - **Archived (hidden from lists)**: shown for a payee already saved. See [Archive a payee](payees#archive-payee).
-- **Alias**: shown for a payee already saved. See [Aliases](payees#aliases).
+- **Aliases**: shown for a payee already saved: the payee's aliases in alphabetical order, or "No alias yet." Below them, **Alias** and **Add alias** add one. See [Aliases](payees#aliases).
 - **Save**: saves the name, default category and archived box. Nothing is saved until you click it.
 
 ## Aliases {#aliases}
@@ -43,7 +43,7 @@ An alias is a piece of text that identifies this payee on statements, such as AM
 
 1. Select the payee in the list.
 2. Type the text in **Alias**.
-3. Click **Add alias**. The field empties when the alias is saved.
+3. Click **Add alias**. The field empties when the alias is saved, and the alias joins the list above it.
 
 How aliases are matched:
 
@@ -54,7 +54,9 @@ How aliases are matched:
 
 Aliases apply to statement lines imported from then on and to names you type. They do not rename transactions already in the books.
 
-> Note: The screen shows no list of a payee's aliases and has no way to remove one. Choose aliases with care: an alias that is too short, such as "CA", would match far too much.
+> Note: An alias cannot be removed once added. Choose aliases with care: an alias that is too short, such as "CA", would match far too much.
+
+Administrators and members can add payees, change them and add aliases. Viewers see the list, the forms and the aliases greyed out, with the note "As a viewer, you can see this list but not change it."
 
 > Tip: Aliases give the right name; [Category rules](rules) give the right category. When one store sells very different things, use a rule with amount limits rather than a default category.
 

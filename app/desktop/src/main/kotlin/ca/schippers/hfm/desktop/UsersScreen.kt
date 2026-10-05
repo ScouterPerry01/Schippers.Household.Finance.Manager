@@ -135,7 +135,9 @@ private fun AccessMatrix(model: BooksModel) {
                         if (implicit) {
                             Text(model.t(if (a.ownerUserId == u.id) "users.owner" else "users.byRole"), style = MaterialTheme.typography.bodySmall)
                         } else {
-                            Picker("", PermissionLevel.entries, level, { model.t("permission.$it") }, enabled = mayChange) { chosen ->
+                            // M-78: a viewer can be given View at most.
+                            val levels = if (u.role == Role.VIEWER) listOf(PermissionLevel.NONE, PermissionLevel.VIEW) else PermissionLevel.entries
+                            Picker("", levels, level, { model.t("permission.$it") }, enabled = mayChange) { chosen ->
                                 model.act { books.users.setAccess(a.group.id, u.id, chosen) }
                             }
                         }
@@ -245,7 +247,12 @@ private fun RecoveryKeyDialog(model: BooksModel, name: String, key: RecoveryKey,
             Card(Modifier.fillMaxWidth()) {
                 SelectionContainer { Text(text, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(24.dp)) }
             }
-            OutlinedButton(onClick = { Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(text), null) }) { Text(model.t("recovery.copy")) }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = {
+                    printRecoveryKey(model.t("users.recoveryTitle", name), listOf(model.t("recovery.printFor", model.session.dir.fileName.toString().removeSuffix(".hfm")), model.t("users.recoveryExplain", name)), text)
+                }) { Text(model.t("recovery.print")) }
+                OutlinedButton(onClick = { Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(text), null) }) { Text(model.t("recovery.copy")) }
+            }
         }
     }
 }
