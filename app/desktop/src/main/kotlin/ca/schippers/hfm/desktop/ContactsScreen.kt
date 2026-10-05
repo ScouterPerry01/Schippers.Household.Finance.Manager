@@ -67,6 +67,8 @@ fun ContactsScreen(model: BooksModel) {
     var selectedId by remember { mutableStateOf<String?>(null) }
     var editing by remember { mutableStateOf<Contact?>(null) }
     var gathering by remember { mutableStateOf(false) }
+    var fromPhone by remember { mutableStateOf(false) }
+    val phoneCount = remember(model.revision) { runCatching { books.phoneContacts.count() }.getOrDefault(0) }
     val people = remember(model.revision) { model.peopleAndPets(includeArchived = true) }
     val filter = ContactFilter(text, kind, memberId, target, archived)
     val contacts = remember(model.revision, filter) { books.contacts.list(filter) }
@@ -88,6 +90,8 @@ fun ContactsScreen(model: BooksModel) {
             Text(model.t("nav.contacts"), style = MaterialTheme.typography.titleLarge)
             TextInput(model.t("contacts.search"), text, Modifier.width(280.dp)) { text = it }
             Box(Modifier.weight(1f))
+            // CON-07: contacts made on a phone, waiting for review.
+            if (phoneCount > 0) Button(onClick = { fromPhone = true }) { Text(model.t("contacts.fromPhone", phoneCount)) }
             if (canAdd) {
                 OutlinedButton(onClick = { gathering = true }) { Text(model.t("contacts.gather")) }
                 Button(onClick = { editing = newContact(model) }) { Text(model.t("contacts.add")) }
@@ -118,6 +122,7 @@ fun ContactsScreen(model: BooksModel) {
 
     editing?.let { c -> ContactDialog(model, c) { saved -> editing = null; saved?.let { selectedId = it.id } } }
     if (gathering) GatherDialog(model) { gathering = false; books.putSetting(gatherOfferKey(model), "1") }
+    if (fromPhone) PhoneContactsDialog(model, onShow = { selectedId = it }) { fromPhone = false }
 }
 
 private fun gatherOfferKey(model: BooksModel) = "contacts.gatherOffered.${model.books.userId}"
@@ -314,11 +319,11 @@ private fun RevealContactNumberDialog(model: BooksModel, contact: Contact, detai
 
 /**
  * CON-01, CON-02: adds or changes a contact. [onClose] receives the saved contact, or null when
- * the user cancels.
+ * the user cancels. [save] stores it (a contact from the phone also leaves the review list).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ContactDialog(model: BooksModel, existing: Contact, onClose: (Contact?) -> Unit) {
+internal fun ContactDialog(model: BooksModel, existing: Contact, save: (Contact) -> Contact = model.books.contacts::save, onClose: (Contact?) -> Unit) {
     val books = model.books
     val isNew = existing.id.isBlank()
     val people = remember { model.peopleAndPets() }
@@ -344,7 +349,7 @@ internal fun ContactDialog(model: BooksModel, existing: Contact, onClose: (Conta
         canSave = name.isNotBlank(), onDismiss = { onClose(null) },
         onSave = {
             val saved = model.act {
-                books.contacts.save(
+                save(
                     existing.copy(
                         groupId = groupId, name = name, person = person, organizationId = if (person) organizationId else null, jobTitle = jobTitle.takeIf { person },
                         purpose = purpose, kinds = kinds, memberIds = memberIds, details = details.filter { it.value.isNotBlank() },
