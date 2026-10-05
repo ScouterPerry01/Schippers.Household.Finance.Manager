@@ -57,7 +57,7 @@ The app looks at the year's transactions, by payee and by person (the **For** fi
 - **Interest** of $50 or more in the year from the same payer: a T5. Below $50, no slip is expected.
 - **Tuition** paid: a T2202 from the school.
 - **Child care** paid, for a person who files in Quebec: an RL-24.
-- Money moved into an RRSP from outside the registered plans: an RRSP contribution receipt, for the owner (for a spousal RRSP, for the contributor). Money taken out of an RRSP: a T4RSP. Out of a RRIF, spousal RRIF or LIF: a T4RIF. Any transfer in or out of an FHSA: a T4FHSA. The issuer is the plan's institution, or the account name.
+- Money moved into an RRSP from outside the registered plans (a transfer from another account, or a deposit with no transfer and no category, such as cash imported from a brokerage file): an RRSP contribution receipt, for the owner (for a spousal RRSP, for the contributor). Money taken out of an RRSP: a T4RSP. Out of a RRIF, spousal RRIF or LIF: a T4RIF. Any transfer in or out of an FHSA: a T4FHSA. The issuer is the plan's institution, or the account name.
 - Investment income in a non-registered account: a T5 from the institution, or a T3 from each Canadian fund, as worked out in the investment income report (see [Investment income and capital gains](reports#investment-income)).
 - A sale of securities in a non-registered investment account: a T5008 for each owner.
 

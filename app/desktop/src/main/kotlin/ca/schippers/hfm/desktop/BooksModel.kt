@@ -169,6 +169,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         RenewalKind.MEDICAL_CLAIM -> Section.MEDICAL
         RenewalKind.ASSET_WARRANTY, RenewalKind.INSURANCE_RENEWAL -> Section.ASSETS
         RenewalKind.TAX_INSTALMENT -> Section.TAXES
+        RenewalKind.SECURITY_MATURITY -> Section.INVESTMENTS
         else -> Section.VEHICLES
     }
 

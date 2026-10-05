@@ -120,7 +120,7 @@ Click **Save**. The prepayment appears in the Changes tab and in the schedule, a
 - **New term ends**: the end of the new term; starts five years after the current term end. It must be after the renewal date; leave it empty if there is no fixed term.
 - **Note**: free text.
 
-Click **Save**. The renewal is recorded as a rate change with the payment recalculated, and the term end is replaced by the new one, which moves the renewal reminder.
+Click **Save**. The renewal is recorded as a rate change with the payment recalculated, shown as Renewal in the list of changes, and the term end is replaced by the new one, which moves the renewal reminder. The renewal keeps the term end it replaced, so deleting it puts that date back.
 
 ## Rate change {#rate-change}
 
@@ -165,9 +165,9 @@ The **CSV**, **Excel** and **PDF** buttons save the table shown to a file; **Pri
 
 ## Changes tab {#changes-tab}
 
-The prepayments, rate changes (renewals included) and payment changes recorded, newest first: the date, the kind, the amount or the new rate (with "payment recalculated" or "same payment"), and the note.
+The prepayments, rate changes, renewals and payment changes recorded, newest first: the date, the kind, the amount or the new rate (with "payment recalculated" or "same payment"), and the note.
 
-**Delete** beside a change removes it at once, and the schedule is recalculated. Deleting a prepayment does not remove the money moved for it: delete that transfer in the register if needed (a line under the list reminds you). Deleting a renewal does not bring back the earlier term end; change it with **Edit terms** if needed.
+**Delete** beside a change removes it at once, and the schedule is recalculated. Deleting a prepayment does not remove the money moved for it: delete that transfer in the register if needed (a line under the list reminds you). Deleting the latest renewal puts back the term end it replaced, and the renewal reminder with it; deleting an older renewal or a rate change leaves the term end as it is. Renewals recorded before this version of the app did not keep the earlier term end: after deleting one of those, change the term end with **Edit terms** if needed.
 
 ## What if {#what-if}
 

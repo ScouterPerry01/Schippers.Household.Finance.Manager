@@ -232,6 +232,11 @@ fun ExchangeImportDialog(model: BooksModel, file: File, onClose: () -> Unit) {
     val fiat = remember(plan) { mutableStateMapOf<String, Account?>().apply { plan?.fiat?.forEach { c -> put(c, accounts.firstOrNull { it.currency.code == c && it.name.contains(plan.exchange, ignoreCase = true) }) } } }
     val wallets = remember(plan) { mutableStateMapOf<String, Account?>().apply { plan?.coins?.forEach { c -> put(c, accounts.firstOrNull { it.type == AccountType.CRYPTO_WALLET && it.currency.code == c && it.name.contains(plan.exchange, ignoreCase = true) }) } } }
     var groupId by remember { mutableStateOf(model.defaultGroupForPersonalRecords()?.id) }
+    // M-36: who owns the wallets and cash accounts the import creates; the signed-in user's member to start.
+    val members = remember { books.members.list() }
+    var owners by remember {
+        mutableStateOf(setOfNotNull(model.session.core.coreQueries.userById(model.session.userId).executeAsOneOrNull()?.member_id?.takeIf { id -> members.any { it.id == id } }))
+    }
     var result by remember { mutableStateOf<CryptoImportResult?>(null) }
     result?.let { r ->
         WideDialog(model.t("quicken.done"), model.t("common.close"), onClose) {
@@ -245,10 +250,11 @@ fun ExchangeImportDialog(model: BooksModel, file: File, onClose: () -> Unit) {
         result = model.act {
             val p = plan!!
             val fiatIds = p.fiat.associateWith { c ->
-                fiat[c]?.id ?: books.accounts.create(AccountDraft(groupId!!, "${p.exchange} $c", AccountType.CASH, Currency.of(c), Money.zero(Currency.of(c)), exchange!!.events.minOf { it.date })).id
+                fiat[c]?.id ?: books.accounts.create(
+                    AccountDraft(groupId!!, "${p.exchange} $c", AccountType.CASH, Currency.of(c), Money.zero(Currency.of(c)), exchange!!.events.minOf { it.date }, ownerMemberIds = owners),
+                ).id
             }
-            val owner = model.books.members.list().firstOrNull { m -> model.session.core.coreQueries.userById(model.session.userId).executeAsOneOrNull()?.member_id == m.id }
-            books.crypto.importExchange(exchange!!, groupId!!, fiatIds, p.coins.associateWith { wallets[it]?.id }, setOfNotNull(owner?.id))
+            books.crypto.importExchange(exchange!!, groupId!!, fiatIds, p.coins.associateWith { wallets[it]?.id }, owners)
         }
     }) {
         read.exceptionOrNull()?.let { ErrorText(model.t("wallet.importUnknown")) }
@@ -265,6 +271,10 @@ fun ExchangeImportDialog(model: BooksModel, file: File, onClose: () -> Unit) {
             }
             val groups = remember { model.editableGroups() }
             if (groups.size > 1) Picker(model.t("calendar.storeIn"), groups, groups.firstOrNull { it.id == groupId }, { it.name }) { groupId = it.id }
+            if (fiat.values.any { it == null } || wallets.values.any { it == null }) {
+                Text(model.t("wallet.importOwners"), style = MaterialTheme.typography.labelLarge)
+                for (m in members) LabeledCheckbox(m.displayName, m.id in owners) { checked -> owners = if (checked) owners + m.id else owners - m.id }
+            }
             p.warnings.take(10).forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
         }
     }

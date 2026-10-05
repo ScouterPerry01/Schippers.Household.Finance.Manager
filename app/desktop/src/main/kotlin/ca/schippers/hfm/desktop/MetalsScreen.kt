@@ -34,9 +34,12 @@ import ca.schippers.hfm.books.DocumentStatus
 import ca.schippers.hfm.books.Metal
 import ca.schippers.hfm.books.MetalForm
 import ca.schippers.hfm.books.MetalItem
+import ca.schippers.hfm.books.MetalMoney
 import ca.schippers.hfm.books.MetalStorage
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.calc.metals.WeightUnit
+import ca.schippers.hfm.domain.AccountStatus
+import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.ocr.desktop.FileKind
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
@@ -144,19 +147,26 @@ private fun MetalItemDialog(model: BooksModel, account: Account, existing: Metal
     var proceeds by remember { mutableStateOf(amt(existing?.proceeds)) }
     var notes by remember { mutableStateOf(existing?.notes.orEmpty()) }
     val documents = remember(model.revision, existing?.id) { existing?.let { books.metals.documents(it.id) }.orEmpty() }
+    // M-34: the accounts the purchase was paid from and the sale deposited to, in the account's currency.
+    val linked = remember(existing?.id) { existing?.let { books.metals.money(it.id) } ?: MetalMoney() }
+    val moneyAccounts = remember {
+        books.accounts.list(includeClosed = true).map { it.account }
+            .filter { it.currency == c && it.id != account.id && it.type !in setOf(AccountType.PRECIOUS_METALS, AccountType.CRYPTO_WALLET) }
+            .filter { it.status == AccountStatus.OPEN || it.id == linked.paidFromAccountId || it.id == linked.depositedToAccountId }
+    }
+    var paidFrom by remember { mutableStateOf(moneyAccounts.firstOrNull { it.id == linked.paidFromAccountId }) }
+    var depositedTo by remember { mutableStateOf(moneyAccounts.firstOrNull { it.id == linked.depositedToAccountId }) }
     fun dec(text: String) = text.trim().ifEmpty { null }?.let { runCatching { MoneyFormat.parseDecimal(it, locale) }.getOrElse { throw ValidationException("error.invalidNumber") } }
     fun date(text: String) = text.trim().ifEmpty { null }?.let { runCatching { LocalDate.parse(it) }.getOrElse { throw ValidationException("error.invalidDate") } }
 
     FormDialog(model.t(if (existing == null) "metals.add" else "metals.edit"), model.t("common.save"), model.t("common.cancel"), canSave = description.isNotBlank(), onDismiss = onClose, onSave = {
-        val ok = model.act {
-            books.metals.save(
-                MetalItem(
-                    existing?.id.orEmpty(), account.id, metal, form, description, dec(weight) ?: throw ValidationException("error.quantityRequired"), unit,
-                    dec(purity) ?: throw ValidationException("error.purity"), quantity.trim().toIntOrNull() ?: throw ValidationException("error.quantityRequired"),
-                    serials, dealer, date(bought), parseAmount(cost, c, locale), dec(premium), storage, where, insured, insurance, date(soldOn), parseAmount(proceeds, c, locale), notes,
-                ),
-            )
-        }
+        fun item() = MetalItem(
+            existing?.id.orEmpty(), account.id, metal, form, description, dec(weight) ?: throw ValidationException("error.quantityRequired"), unit,
+            dec(purity) ?: throw ValidationException("error.purity"), quantity.trim().toIntOrNull() ?: throw ValidationException("error.quantityRequired"),
+            serials, dealer, date(bought), parseAmount(cost, c, locale), dec(premium), storage, where, insured, insurance, date(soldOn), parseAmount(proceeds, c, locale), notes,
+        )
+        val money = MetalMoney(paidFrom?.id, depositedTo?.id)
+        val ok = model.act(retryConfirmed = { books.metals.save(item(), money, confirmReconciled = true).also { onClose() } }) { books.metals.save(item(), money) }
         if (ok != null) onClose()
     }) {
         Column(Modifier.heightIn(max = 620.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -176,6 +186,7 @@ private fun MetalItemDialog(model: BooksModel, account: Account, existing: Metal
                 AmountInput(model.t("metals.cost"), cost, c, locale, Modifier.weight(1f), model::money) { cost = it }
                 TextInput(model.t("metals.premium"), premium, Modifier.weight(1f), supporting = model.t("metals.premiumHint")) { premium = it }
             }
+            Picker(model.t("metals.paidFrom"), listOf<Account?>(null) + moneyAccounts, paidFrom, { it?.name ?: model.t("metals.noAccount") }) { paidFrom = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextInput(model.t("metals.dealer"), dealer, Modifier.weight(1f)) { dealer = it }
                 TextInput(model.t("metals.serials"), serials, Modifier.weight(1f)) { serials = it }
@@ -184,6 +195,7 @@ private fun MetalItemDialog(model: BooksModel, account: Account, existing: Metal
                 Picker(model.t("metals.storage"), MetalStorage.entries, storage, { model.t("metalStorage.$it") }, Modifier.weight(1f)) { storage = it }
                 TextInput(model.t("metals.where"), where, Modifier.weight(1f)) { where = it }
             }
+            Text(model.t("metals.moneyHint"), style = MaterialTheme.typography.bodySmall)
             LabeledCheckbox(model.t("metals.insuredField"), insured) { insured = it }
             if (insured) TextInput(model.t("metals.insurance"), insurance) { insurance = it }
             if (existing != null) {
@@ -191,6 +203,7 @@ private fun MetalItemDialog(model: BooksModel, account: Account, existing: Metal
                     DateInput(model.t("metals.soldOn"), soldOn, Modifier.weight(1f)) { soldOn = it }
                     AmountInput(model.t("investments.proceeds"), proceeds, c, locale, Modifier.weight(1f), model::money) { proceeds = it }
                 }
+                Picker(model.t("metals.depositedTo"), listOf<Account?>(null) + moneyAccounts, depositedTo, { it?.name ?: model.t("metals.noAccount") }) { depositedTo = it }
                 Text(model.t("metals.documents"), style = MaterialTheme.typography.labelLarge)
                 for (doc in documents) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -199,7 +212,9 @@ private fun MetalItemDialog(model: BooksModel, account: Account, existing: Metal
                     }
                 }
                 TextButton(onClick = { attachFile(model, account, existing) }) { Text(model.t("metals.attach")) }
-                TextButton(onClick = { if (model.act { books.metals.delete(account.id, existing.id) } != null) onClose() }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+                TextButton(onClick = {
+                    if (model.act(retryConfirmed = { books.metals.delete(account.id, existing.id, confirmReconciled = true); onClose() }) { books.metals.delete(account.id, existing.id) } != null) onClose()
+                }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
             TextInput(model.t("account.notes"), notes, singleLine = false) { notes = it }
         }

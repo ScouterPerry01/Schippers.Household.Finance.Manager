@@ -49,6 +49,7 @@ import ca.schippers.hfm.books.AccountSummary
 import ca.schippers.hfm.books.Category
 import ca.schippers.hfm.books.CreditCardTerms
 import ca.schippers.hfm.books.ReconciledChangeException
+import ca.schippers.hfm.books.RespGrantRecord
 import ca.schippers.hfm.books.SplitDraft
 import ca.schippers.hfm.books.StatementStatus
 import ca.schippers.hfm.books.Transaction
@@ -144,6 +145,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     var splitting by remember { mutableStateOf(false) }
     var salesTaxFor by remember { mutableStateOf<Transaction?>(null) }
     var refunding by remember { mutableStateOf<Transaction?>(null) }
+    var deletingGrant by remember { mutableStateOf<RespGrantRecord?>(null) }
     var payStub by remember { mutableStateOf(false) }
     var pendingImport by remember { mutableStateOf<PendingImport?>(null) }
     var showStatements by remember { mutableStateOf(false) }
@@ -418,7 +420,11 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                         entry.editing?.let { editing ->
                             // TX-08: every change to the transaction, with who made it.
                             OutlinedButton(onClick = { historyOf = editing }) { Text(model.t("register.history")) }
-                            OutlinedButton(onClick = { confirmDelete = editing }) { Text(model.t("common.delete")) }
+                            OutlinedButton(onClick = {
+                                // M-29: deleting an RESP grant's deposit asks whether the grant goes too.
+                                val grant = runCatching { books.plans.grantForTransaction(account.id, editing.id) }.getOrNull()
+                                if (grant != null) deletingGrant = grant else confirmDelete = editing
+                            }) { Text(model.t("common.delete")) }
                         }
                         TextButton(onClick = { entry.clear() }) { Text(model.t("common.cancel")) }
                         Button(onClick = { save() }) { Text(model.t("common.save")) }
@@ -458,6 +464,27 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                 }) { Text(model.t("common.delete")) }
             },
             dismissButton = { TextButton(onClick = { confirmDelete = null }) { Text(model.t("common.cancel")) } },
+        )
+    }
+    deletingGrant?.let { g ->
+        val depositId = g.transactionId!!
+        AlertDialog(
+            onDismissRequest = { deletingGrant = null },
+            title = { Text(model.t("register.grantDeposit.title")) },
+            text = { Text(model.t("register.grantDeposit.body", model.t("grantKind.${g.kind}"), model.money(g.amount))) },
+            confirmButton = {
+                Row {
+                    TextButton(onClick = {
+                        deletingGrant = null
+                        if (model.act(retryConfirmed = { books.plans.deleteGrant(account.id, g.id, confirmReconciled = true); entry.clear() }) { books.plans.deleteGrant(account.id, g.id) } != null) entry.clear()
+                    }) { Text(model.t("register.grantDeposit.both")) }
+                    TextButton(onClick = {
+                        deletingGrant = null
+                        if (model.act(retryConfirmed = { books.transactions.delete(depositId, confirmReconciled = true); entry.clear() }) { books.transactions.delete(depositId) } != null) entry.clear()
+                    }) { Text(model.t("register.grantDeposit.depositOnly")) }
+                }
+            },
+            dismissButton = { TextButton(onClick = { deletingGrant = null }) { Text(model.t("common.cancel")) } },
         )
     }
     if (confirmClose) {

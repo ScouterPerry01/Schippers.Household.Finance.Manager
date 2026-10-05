@@ -94,12 +94,24 @@ data class WithdrawalStatus(
     val firstYear: Boolean,
     /** LIF only: the jurisdiction whose rules apply. */
     val jurisdiction: PensionJurisdiction? = null,
+    /** LIF only: last year's investment earnings as entered from the statement (M-27). */
+    val lastYearEarnings: Money? = null,
 ) {
     val leftToWithdraw: Money? get() = minimum?.let { (it - withdrawn).let { left -> if (left.isNegative) Money.zero(left.currency) else left } }
     val overMaximum: Boolean get() = maximum != null && withdrawn > maximum
 }
 
-data class RespGrantRecord(val id: String, val accountId: String, val memberId: String, val date: LocalDate, val kind: GrantKind, val amount: Money, val notes: String?)
+/** A grant received; [transactionId] is its deposit in the RESP's register. */
+data class RespGrantRecord(
+    val id: String,
+    val accountId: String,
+    val memberId: String,
+    val date: LocalDate,
+    val kind: GrantKind,
+    val amount: Money,
+    val notes: String?,
+    val transactionId: String? = null,
+)
 
 /**
  * One RESP beneficiary across all the household's RESPs: contributions, grants expected and
@@ -181,6 +193,8 @@ class PlanService internal constructor(private val books: Books) {
         books.require(group, PermissionLevel.EDIT)
         validate(account.type.isRegistered, "error.notRegisteredPlan")
         validate(d.lifReferenceRate == null || (d.lifReferenceRate.signum() > 0 && d.lifReferenceRate < BigDecimal("0.25")), "error.rateRange")
+        // M-28: a spousal RRSP uses its contributor's room; without one it would count against nobody's.
+        validate(account.type != AccountType.SPOUSAL_RRSP || d.contributorMemberId != null, "error.contributorRequired")
         books.ledger(group).plansQueries.upsertPlan(d.accountId, d.contributorMemberId, d.minimumAgeMemberId, d.lifReferenceRate?.toPlainString(), d.notes.blankToNull(), d.jurisdiction?.code)
         books.session.audit("UPDATE", "registered_plan", d.accountId)
     }
@@ -265,11 +279,19 @@ class PlanService internal constructor(private val books: Books) {
         else -> null
     }
 
+    /** M-28: open spousal RRSPs whose contributor is not chosen yet; their deposits count against nobody's room. */
+    fun spousalWithoutContributor(): List<Account> =
+        registeredAccounts().filter { it.type == AccountType.SPOUSAL_RRSP && details(it.id).contributorMemberId == null }
+
     /** Whose room an account uses: the contributor of a spousal RRSP, otherwise its owner. */
     private fun ownersForRoom(account: Account): List<String> =
         if (account.type == AccountType.SPOUSAL_RRSP) listOfNotNull(details(account.id).contributorMemberId) else account.ownerMemberIds.toList()
 
-    /** Money moving in from outside plans of the same kind counts as contributions; for a TFSA, money out is a withdrawal. */
+    /**
+     * Money moving in from outside plans of the same kind counts as contributions; for a TFSA, money
+     * out is a withdrawal. A line with no transfer and no category came from outside the books (cash
+     * imported from a brokerage file, M-32) and counts too.
+     */
     private fun flows(memberId: String, plan: RoomPlan, from: LocalDate, to: LocalDate): List<PlanFlow> {
         val all = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
         val excluded: Set<AccountType> = when (plan) {
@@ -280,8 +302,8 @@ class PlanService internal constructor(private val books: Books) {
         val accounts = all.values.filter { planOf(it.type) == plan && memberId in ownersForRoom(it) }
         val lines = accounts.flatMap { account ->
             books.transactions.register(account.id).map { it.transaction }
-                .filter { it.date in from..to && it.transfer != null }
-                .filter { t -> all[t.transfer!!.otherAccountId]?.type !in excluded }
+                .filter { it.date in from..to && (it.transfer != null || fromOutsideBooks(it)) }
+                .filter { t -> t.transfer == null || all[t.transfer.otherAccountId]?.type !in excluded }
                 .filter { t -> t.amount.isPositive || plan == RoomPlan.TFSA }
                 .map { PlanFlow(account.id, account.name, it.date, it.amount.let { m -> if (m.currency == cad) m else books.rates.convert(m, cad, it.date) ?: zero() }) }
         }
@@ -289,6 +311,9 @@ class PlanService internal constructor(private val books: Books) {
             .map { PlanFlow("", it.notes ?: "", it.date, it.amount, adjustment = true) }
         return (lines + adjustments).sortedBy { it.date }
     }
+
+    /** M-32: a deposit or withdrawal recorded without a transfer or a category, such as cash imported from a brokerage file. */
+    internal fun fromOutsideBooks(t: Transaction): Boolean = t.transfer == null && t.investmentId == null && t.splits.all { it.categoryId == null }
 
     fun room(memberId: String, plan: RoomPlan, year: Int, today: LocalDate): RoomStatus {
         val member = books.members.list(includeArchived = true).first { it.id == memberId }
@@ -372,12 +397,29 @@ class PlanService internal constructor(private val books: Books) {
 
     // --- RRIF and LIF withdrawals (INV-10) -----------------------------------------------------
 
-    /** The plan's value on January 1 of [year]: from the statement when entered, else the books at December 31. */
+    /**
+     * The plan's value on January 1 of [year] from the statement (else the books at December 31 are
+     * used), and for a LIF last year's investment earnings. M-27: a null leaves the stored figure as
+     * it is; [clearValueJanuary1] goes back to the books' value.
+     */
     fun setValueJanuary1(accountId: String, year: Int, value: Money?, lastYearEarnings: Money? = null) {
         val (group, _) = books.accounts.locate(accountId)
         books.require(group, PermissionLevel.EDIT)
         val q = books.ledger(group).plansQueries
-        if (value == null) q.deletePlanValue(accountId, year.toLong()) else q.putPlanValue(accountId, year.toLong(), value.minorUnits, lastYearEarnings?.minorUnits)
+        val stored = q.planValue(accountId, year.toLong()).executeAsOneOrNull()
+        val newValue = value?.minorUnits ?: stored?.value_minor
+        if (newValue == null) {
+            validate(lastYearEarnings == null, "error.planValueFirst")
+            return
+        }
+        q.putPlanValue(accountId, year.toLong(), newValue, lastYearEarnings?.minorUnits ?: stored?.last_year_earnings_minor)
+    }
+
+    /** Forgets the January 1 value entered for [year], so the books' value at December 31 is used again. */
+    fun clearValueJanuary1(accountId: String, year: Int) {
+        val (group, _) = books.accounts.locate(accountId)
+        books.require(group, PermissionLevel.EDIT)
+        books.ledger(group).plansQueries.deletePlanValue(accountId, year.toLong())
     }
 
     fun withdrawals(year: Int): List<WithdrawalStatus> =
@@ -405,7 +447,10 @@ class PlanService internal constructor(private val books: Books) {
         } else {
             null
         }
-        return WithdrawalStatus(account, year, value, entered != null, age, minimum, maximum, withdrawn(account, year), firstYear, jurisdiction)
+        return WithdrawalStatus(
+            account, year, value, entered != null, age, minimum, maximum, withdrawn(account, year), firstYear, jurisdiction,
+            entered?.last_year_earnings_minor?.let { Money.ofMinor(it, account.currency) },
+        )
     }
 
     /** What left the plan in [year]: money moved anywhere but another retirement plan (a TFSA counts), and tax withheld. */
@@ -428,7 +473,7 @@ class PlanService internal constructor(private val books: Books) {
     fun grants(accountId: String): List<RespGrantRecord> {
         val (group, account) = books.accounts.locate(accountId)
         return books.ledger(group).plansQueries.grantsFor(accountId).executeAsList().map {
-            RespGrantRecord(it.id, it.account_id, it.member_id, LocalDate.parse(it.date), GrantKind.valueOf(it.kind), Money.ofMinor(it.amount_minor, account.currency), it.notes)
+            RespGrantRecord(it.id, it.account_id, it.member_id, LocalDate.parse(it.date), GrantKind.valueOf(it.kind), Money.ofMinor(it.amount_minor, account.currency), it.notes, it.txn_id)
         }
     }
 
@@ -443,12 +488,26 @@ class PlanService internal constructor(private val books: Books) {
         books.ledger(group).plansQueries.insertGrant(Ids.newId(), accountId, memberId, date.toString(), kind.name, amount.minorUnits, line.id, notes.blankToNull())
     }
 
-    fun deleteGrant(accountId: String, grantId: String) {
+    /** M-29: the grant recorded with a deposit in an RESP's register, if it is one. */
+    fun grantForTransaction(accountId: String, transactionId: String): RespGrantRecord? {
+        val (_, account) = books.accounts.locate(accountId)
+        if (account.type != AccountType.RESP) return null
+        return grants(accountId).firstOrNull { it.transactionId == transactionId }
+    }
+
+    /**
+     * M-29: deletes a grant record with its deposit in the register (a reconciled deposit only once
+     * [confirmReconciled]). A deposit already deleted from the register is simply not there.
+     */
+    fun deleteGrant(accountId: String, grantId: String, confirmReconciled: Boolean = false) {
         val (group, _) = books.accounts.locate(accountId)
         books.require(group, PermissionLevel.EDIT)
         val q = books.ledger(group).plansQueries
-        q.grantsFor(accountId).executeAsList().firstOrNull { it.id == grantId }?.txn_id?.let { runCatching { books.transactions.delete(it) } }
+        val grant = q.grantsFor(accountId).executeAsList().firstOrNull { it.id == grantId } ?: return
+        grant.txn_id?.takeIf { id -> books.ledger(group).ledgerQueries.txnById(id).executeAsOneOrNull() != null }
+            ?.let { books.transactions.delete(it, confirmReconciled) }
         q.deleteGrant(grantId)
+        books.session.audit("DELETE", "resp_grant", grantId)
     }
 
     private val GrantKind.label get() = when (this) {
@@ -473,7 +532,7 @@ class PlanService internal constructor(private val books: Books) {
             val beneficiaries = beneficiaries(account.id).filter { it.kind == BeneficiaryKind.RESP_BENEFICIARY }.mapNotNull { it.memberId }
             if (beneficiaries.isEmpty()) continue
             books.transactions.register(account.id).map { it.transaction }
-                .filter { it.transfer != null && it.amount.isPositive && all[it.transfer.otherAccountId]?.type != AccountType.RESP }
+                .filter { it.amount.isPositive && (if (it.transfer != null) all[it.transfer.otherAccountId]?.type != AccountType.RESP else fromOutsideBooks(it)) }
                 .forEach { t ->
                     val minor = t.amount.convertTo(t.date).minorUnits
                     val targets = t.memberId?.takeIf { it in beneficiaries }?.let(::listOf) ?: beneficiaries
@@ -593,8 +652,8 @@ class PlanService internal constructor(private val books: Books) {
     // --- Warnings for the reminders ---------------------------------------------------------------------
 
     /**
-     * Over-contributions this year, RRIF and LIF minimums not yet withdrawn from November on, and
-     * RRSPs to convert in the year their holder turns 71.
+     * Over-contributions this year, RRIF and LIF minimums not yet withdrawn from November on, RRSPs
+     * to convert in the year their holder turns 71, and spousal RRSPs without a contributor (M-28).
      */
     fun warnings(today: LocalDate): List<PlanWarning> {
         val out = ArrayList<PlanWarning>()
@@ -617,6 +676,7 @@ class PlanService internal constructor(private val books: Books) {
             val birth = owner.birthDate ?: continue
             if (year - birth.year == RegisteredPlans.RRSP_LAST_AGE && a.balanceOrHoldings(today).isPositive) out += PlanWarning("planWarning.convert", listOf(a.name, owner.displayName), a.id)
         }
+        spousalWithoutContributor().forEach { out += PlanWarning("planWarning.noContributor", listOf(it.name), it.id) }
         respBeneficiaries(year).filter { it.lifetimeLeft.isNegative }.forEach { out += PlanWarning("planWarning.respOver", listOf(it.member.displayName, -it.lifetimeLeft), it.member.id) }
         return out
     }

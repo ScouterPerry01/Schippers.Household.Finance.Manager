@@ -17,6 +17,7 @@ import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.sum
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
@@ -351,6 +352,22 @@ class InvestmentService internal constructor(private val books: Books) {
         val cash = Money.ofMinor(account.openingBalance.minorUnits + books.ledger(group).investmentsQueries.balanceOn(accountId, date.toString()).executeAsOne(), account.currency)
         val metals = if (account.type == AccountType.PRECIOUS_METALS) books.metals.value(accountId, date) else null
         return AccountHoldings(account, cash, holdingsFrom(account, transactions(accountId), date), metals)
+    }
+
+    /**
+     * M-35: bonds and GICs held on [today] that mature within [withinDays] days (at least 30), or
+     * have matured and are still held, one per account holding them; for the reminders and the
+     * Calendar.
+     */
+    fun maturities(today: LocalDate, withinDays: Int = 30): List<Renewal> {
+        val maturing = securities(includeArchived = true).filter { s -> s.maturity?.let { today.daysUntil(it) <= maxOf(withinDays, 30) } == true }.map { it.id }.toSet()
+        if (maturing.isEmpty()) return emptyList()
+        return accounts().flatMap { a ->
+            holdingsFrom(a, transactions(a.id), today).filter { it.security.id in maturing }.map { h ->
+                val s = h.security
+                Renewal(RenewalKind.SECURITY_MATURITY, s.id, s.name, s.maturity!!, today.daysUntil(s.maturity), a.name)
+            }
+        }
     }
 
     /** Every investment account's holdings on [date]. */

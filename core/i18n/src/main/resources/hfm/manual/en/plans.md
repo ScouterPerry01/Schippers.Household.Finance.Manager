@@ -22,7 +22,7 @@ The rules need a few facts that are entered elsewhere:
 
 - Each plan is an account under [Accounts](accounts), with the right type (RRSP, Spousal RRSP, RRIF, Spousal RRIF, LIRA, LIF, TFSA, FHSA, RESP or Pension plan) and its owner. The owner decides whose room a contribution uses and whose age sets a minimum withdrawal.
 - Each person's date of birth, and their province, under [Household members](members). The TFSA estimate starts the year a person turned 18, RRIF and LIF minimums depend on age, RESP grants depend on the child's age and province.
-- Money put into a plan is recorded as a transfer from another of your accounts (chequing, savings...), and money taken out as a transfer to another account. That is what the screen counts as contributions and withdrawals.
+- Money put into a plan is recorded as a transfer from another of your accounts (chequing, savings...), and money taken out as a transfer to another account. That is what the screen counts as contributions and withdrawals, together with deposits and withdrawals in the plan's register that have no transfer and no category, such as cash imported from a brokerage file.
 
 ## Contribution room tab {#contribution-room}
 
@@ -56,7 +56,7 @@ RRSP room is never estimated: enter the RRSP deduction limit for the year, and y
 - The room for the year is the deduction limit minus the unused contributions already waiting to be deducted.
 - Contributions count from the 61st day of the year (early March) to the 60th day of the next year, because contributions made in the first 60 days of a year can be deducted for the year before.
 - Money coming from another RRSP, a spousal RRSP, a RRIF, an FHSA, a LIRA, a LIF or a pension plan is a transfer between plans, not a contribution, and is not counted.
-- Contributions to a spousal RRSP count against the room of the contributing spouse chosen in [Plan details](plans#plan-details). Without a contributor, they are not counted for anyone.
+- Contributions to a spousal RRSP count against the room of the contributing spouse chosen in [Plan details](plans#plan-details). A spousal RRSP needs its contributor: until one is chosen, a red line at the top of this tab names the plan, with a **Plan details** button to choose it, a reminder asks for it too, and the plan's contributions are counted for no one.
 
 ### How TFSA room is worked out {#tfsa-room}
 
@@ -79,7 +79,7 @@ RRSP room is never estimated: enter the RRSP deduction limit for the year, and y
 
 ### What counts as a contribution {#what-counts}
 
-A contribution is a transfer into a plan account from another of your accounts. Lines entered in the plan's register without a transfer (for example deposits imported from a brokerage file) are not counted. Amounts in another currency are converted to your base currency at the rate of the day.
+A contribution is a transfer into a plan account from another of your accounts. A deposit in the plan's register with no transfer and no category also counts: that is how cash deposits imported from a brokerage file arrive. For a TFSA, money out is counted as a withdrawal the same way. A deposit that has a category, such as interest, is not a contribution: to leave an uncategorized deposit out, give it a category. Amounts in another currency are converted to your base currency at the rate of the day.
 
 > Tip: If a contribution is missing from the list, add it with Contribution outside the books, or record the deposit as a transfer from the account it came from.
 
@@ -163,17 +163,16 @@ A withdrawal is money moved out of the plan to an account other than another RRS
 
 **Plan details** opens from a RRIF or LIF card, or from the Beneficiaries tab for a spousal RRSP, spousal RRIF, RESP, RRIF, LIF or LIRA. The fields shown depend on the plan:
 
-- **Contributor**: spousal RRSP and spousal RRIF: the spouse who contributes. For a spousal RRSP, its contributions use this person's RRSP room.
+- **Contributor**: spousal RRSP and spousal RRIF: the spouse who contributes. For a spousal RRSP, its contributions use this person's RRSP room, and the field is required: it shows "Choose the contributor" and **Save** stays unavailable until a person is chosen. For a spousal RRIF it is optional.
 - **Subscriber**: RESP: the person who opened the RESP. Kept for reference.
 - **Governing law**: LIF and LIRA: the pension law the locked-in money answers to. It is the law of the province where the money was earned, or the federal law for a federally regulated employer (banks, airlines, telecoms...), and can differ from where you live now. "The holder's province" is the default. It decides whether a LIF has a maximum.
-- **Value on January 1** (with the year, "(statement)"): RRIF, spousal RRIF and LIF: the value on January 1 from the plan's statement. Leave it empty to use the books' value at December 31. The year is the one shown on the screen when you opened the window.
+- **Value on January 1** (with the year, "(statement)"): RRIF, spousal RRIF and LIF: the value on January 1 from the plan's statement. It shows the value already entered for that year. Left empty, a value entered stays as it is; when none was entered, the books' value at December 31 is used. The year is the one shown on the screen when you opened the window.
+- **Use the books' value at December 31 instead**: shown when a value was entered for the year. It forgets that value (and last year's investment earnings kept with it), so the books' value is used again, and closes the window.
 - **Age used for the minimum**: RRIF, spousal RRIF and LIF: "The holder", or another household member, such as a younger spouse.
 - **Reference rate (%)**: LIF only: the rate for the maximum, 6 unless the rate for the first 15 years is higher. More than 0 and less than 25.
-- **Last year's investment earnings**: LIF only: what the LIF earned last year, which can raise the maximum.
+- **Last year's investment earnings**: LIF only: what the LIF earned last year, which can raise the maximum. It shows the figure already entered; left empty, it stays as it is. It is kept with the value on January 1, so enter that value too, or the app asks for it.
 
 Click **Save** or **Cancel**.
-
-> Note: The Last year's investment earnings field starts empty each time the window opens. If you save the window again, enter it again, or it is cleared. Emptying the Value on January 1 field also removes the value entered for that year.
 
 ## RESP tab {#resp}
 
@@ -198,7 +197,7 @@ One line per beneficiary:
 
 Under the table, a line per child lists the grants still to receive by the rules, and a red line asks for a child's date of birth when it is missing. The table can be folded, exported (CSV, Excel, PDF) and printed.
 
-A contribution is a transfer into an RESP from an account that is not an RESP. When the transaction names a household member who is a beneficiary of that RESP, it counts for that child; otherwise it is shared equally among the plan's beneficiaries.
+A contribution is a transfer into an RESP from an account that is not an RESP, or a deposit in the RESP's register with no transfer and no category (such as cash imported from a brokerage file). When the transaction names a household member who is a beneficiary of that RESP, it counts for that child; otherwise it is shared equally among the plan's beneficiaries.
 
 ### How grants are worked out {#resp-grants-rules}
 
@@ -219,6 +218,10 @@ When a grant arrives in the RESP (it is on the RESP statement), record it:
 - **Amount**: more than zero, in the RESP's currency.
 
 Click **Save**. The grant is counted as received in the table, and a deposit is entered in the RESP's register in the RESP grants category, for that child.
+
+Under the fields, **Grants recorded** lists the grants already recorded in the chosen RESP, newest first: the date, the grant, the child and the amount. **Delete** beside a grant removes it and its deposit in the register at once; if the deposit is reconciled, the app asks first. It cannot be undone, except by recording the grant again.
+
+Deleting the deposit from the RESP's register instead asks "Delete an RESP grant deposit": **Delete both** removes the deposit and the grant, **Only the deposit** keeps the grant, which then still counts as received, and **Cancel** changes nothing.
 
 ## Pensions tab {#pensions}
 
@@ -293,7 +296,8 @@ The app adds reminders, shown with the other reminders and as a system notificat
 - a person is over their RRSP deduction limit by more than $2,000, or over their TFSA or FHSA room (from January and February, the RRSP is checked for the year before);
 - from November on, a RRIF or LIF still has part of its minimum to withdraw by December 31;
 - a person with an open RRSP turns 71 this year: it must be converted to a RRIF or an annuity by December 31;
-- a child's RESP contributions are over the $50,000 lifetime limit.
+- a child's RESP contributions are over the $50,000 lifetime limit;
+- a spousal RRSP has no contributor chosen in Plan details.
 
 Clicking a reminder opens this screen.
 

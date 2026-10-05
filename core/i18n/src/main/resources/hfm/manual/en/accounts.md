@@ -271,6 +271,7 @@ Rules under [Category rules](rules) categorize imported statement lines; they do
 Click a transaction in the register: the form's title becomes Editing transaction and the fields are loaded. Change what you need and save. The transaction keeps its cleared mark and its tags. A transaction recorded in a foreign currency keeps its original amount; when you change the amount, its rate is worked out again.
 
 - **Delete**: asks first, Delete this transaction (...)? This cannot be undone., naming its date, payee and amount; for a transfer it says the transfer is deleted from both accounts. **Delete** confirms; **Cancel** keeps it. A reconciled transaction then asks a second time (see [Changing a reconciled transaction](accounts#reconciled-changes)). Deleting one side of a transfer deletes both sides. Lines of an investment transaction cannot be deleted here.
+  In an RESP, deleting the deposit of a grant recorded under Registered plans asks whether to delete the grant too: see [Record a grant received](plans#record-grant).
 - **Cancel** or Escape: leaves the transaction unchanged and clears the form.
 
 Changing the category of a transfer to an ordinary category (or the reverse) replaces the transaction: the old one is removed and a new one is saved.

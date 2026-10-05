@@ -4,6 +4,7 @@ import ca.schippers.hfm.calc.plans.RegisteredPlans
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.AccountType
+import ca.schippers.hfm.domain.ClearedStatus
 import ca.schippers.hfm.domain.MemberKind
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
@@ -184,5 +185,71 @@ class PlanServiceTest {
         val summary = plans.pensionSummaries(2026).single()
         assertEquals(cad("9299.97"), summary.paymentsThisYear)
         assertEquals(cad("12400"), summary.latest?.projectedAnnual)
+    }
+
+    @Test
+    fun `the January 1 value and last year's earnings stay when left empty (M-27)`() {
+        val lee = books.members.create("Lee", MemberKind.ADULT, d("1960-06-01"))
+        val lif = account("FRV Lee", AccountType.LIF, "0", setOf(lee.id))
+        plans.setValueJanuary1(lif.id, 2026, cad("50000"), cad("2500"))
+        assertEquals(cad("2500"), plans.withdrawalStatus(lif, 2026).lastYearEarnings)
+        plans.setValueJanuary1(lif.id, 2026, null, null)
+        val kept = plans.withdrawalStatus(lif, 2026)
+        assertTrue(kept.valueEntered)
+        assertEquals(cad("50000"), kept.valueJanuary1)
+        assertEquals(cad("2500"), kept.lastYearEarnings, "an empty field no longer erases the earnings")
+        plans.setValueJanuary1(lif.id, 2026, cad("51000"))
+        assertEquals(cad("2500"), plans.withdrawalStatus(lif, 2026).lastYearEarnings)
+        plans.clearValueJanuary1(lif.id, 2026)
+        assertTrue(!plans.withdrawalStatus(lif, 2026).valueEntered)
+        assertFailsWith<ValidationException>("earnings need a value to go with") { plans.setValueJanuary1(lif.id, 2026, null, cad("100")) }
+    }
+
+    @Test
+    fun `a spousal RRSP needs its contributor (M-28)`() {
+        val spousal = account("REER conjoint", AccountType.SPOUSAL_RRSP, "0", setOf(sam.id))
+        assertEquals(listOf(spousal.id), plans.spousalWithoutContributor().map { it.id })
+        assertTrue(plans.warnings(today).any { it.key == "planWarning.noContributor" && it.subjectId == spousal.id })
+        assertFailsWith<ValidationException> { plans.saveDetails(PlanDetails(spousal.id)) }
+        plans.saveDetails(PlanDetails(spousal.id, contributorMemberId = alex.id))
+        assertTrue(plans.spousalWithoutContributor().isEmpty())
+        assertTrue(plans.warnings(today).none { it.key == "planWarning.noContributor" })
+    }
+
+    @Test
+    fun `a grant is deleted with its deposit (M-29)`() {
+        val lea = books.members.create("Léa", MemberKind.CHILD, d("2015-06-12"))
+        val resp = account("REEE", AccountType.RESP, "0", setOf(alex.id))
+        plans.saveBeneficiary(Beneficiary("", resp.id, BeneficiaryKind.RESP_BENEFICIARY, "Léa", lea.id))
+        plans.recordGrant(resp.id, lea.id, d("2026-03-31"), GrantKind.CESG, cad("500"))
+        val grant = plans.grants(resp.id).single()
+        val deposit = books.transactions.register(resp.id).single().transaction
+        assertEquals(grant.id, plans.grantForTransaction(resp.id, deposit.id)?.id)
+        assertNull(plans.grantForTransaction(chequing.id, deposit.id), "only RESP deposits are grants")
+
+        books.transactions.setCleared(deposit.id, ClearedStatus.RECONCILED)
+        assertFailsWith<ReconciledChangeException> { plans.deleteGrant(resp.id, grant.id) }
+        assertEquals(1, plans.grants(resp.id).size, "nothing changes until confirmed")
+        plans.deleteGrant(resp.id, grant.id, confirmReconciled = true)
+        assertTrue(plans.grants(resp.id).isEmpty())
+        assertTrue(books.transactions.register(resp.id).isEmpty())
+
+        // The deposit already deleted from the register: the grant record still goes.
+        plans.recordGrant(resp.id, lea.id, d("2026-06-30"), GrantKind.CESG, cad("200"))
+        books.transactions.delete(books.transactions.register(resp.id).single().transaction.id)
+        plans.deleteGrant(resp.id, plans.grants(resp.id).single().id)
+        assertTrue(plans.grants(resp.id).isEmpty())
+    }
+
+    @Test
+    fun `cash imported into a plan counts as a contribution (M-32)`() {
+        val tfsa = account("CELI Alex", AccountType.TFSA, "0", setOf(alex.id))
+        books.transactions.create(TransactionDraft(tfsa.id, d("2026-03-01"), cad("2000"), "Contribution"))
+        books.transactions.create(TransactionDraft(tfsa.id, d("2026-05-01"), cad("-500"), "Withdrawal"))
+        val interest = books.categories.list().first { it.systemKey == "income.investment.interest" }.id
+        books.transactions.create(TransactionDraft(tfsa.id, d("2026-06-30"), cad("12"), "Interest", listOf(SplitDraft(interest, cad("12")))))
+        val r = plans.room(alex.id, RoomPlan.TFSA, 2026, today)
+        assertEquals(cad("2000"), r.contributions, "the categorized interest is not a contribution")
+        assertEquals(cad("500"), r.withdrawals)
     }
 }

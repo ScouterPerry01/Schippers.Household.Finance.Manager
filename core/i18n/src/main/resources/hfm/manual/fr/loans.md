@@ -120,7 +120,7 @@ Cliquez sur **Enregistrer**. Le remboursement anticipé paraît dans l’onglet 
 - **Fin du nouveau terme** : la fin du nouveau terme ; commence cinq ans après la fin du terme en cours. Elle doit être après la date de renouvellement ; laissez vide s’il n’y a pas de terme fixe.
 - **Note** : un texte libre.
 
-Cliquez sur **Enregistrer**. Le renouvellement est inscrit comme un changement de taux avec versement recalculé, et la fin du terme est remplacée par la nouvelle, ce qui déplace le rappel de renouvellement.
+Cliquez sur **Enregistrer**. Le renouvellement est inscrit comme un changement de taux avec versement recalculé, affiché comme Renouvellement dans la liste des changements, et la fin du terme est remplacée par la nouvelle, ce qui déplace le rappel de renouvellement. Le renouvellement garde la fin de terme qu’il remplace : le supprimer remet donc cette date.
 
 ## Changement de taux {#rate-change}
 
@@ -165,9 +165,9 @@ Les boutons **CSV**, **Excel** et **PDF** enregistrent le tableau affiché dans 
 
 ## Onglet Changements {#changes-tab}
 
-Les remboursements anticipés, les changements de taux (renouvellements compris) et les changements de versement inscrits, des plus récents aux plus anciens : la date, le genre, le montant ou le nouveau taux (avec « versement recalculé » ou « même versement »), et la note.
+Les remboursements anticipés, les changements de taux, les renouvellements et les changements de versement inscrits, des plus récents aux plus anciens : la date, le genre, le montant ou le nouveau taux (avec « versement recalculé » ou « même versement »), et la note.
 
-**Supprimer** à côté d’un changement le retire aussitôt, et le calendrier est recalculé. Supprimer un remboursement anticipé ne retire pas l’argent transféré pour celui-ci : supprimez ce virement dans le registre au besoin (une ligne sous la liste le rappelle). Supprimer un renouvellement ne rétablit pas la fin de terme précédente ; changez-la avec **Modifier les conditions** au besoin.
+**Supprimer** à côté d’un changement le retire aussitôt, et le calendrier est recalculé. Supprimer un remboursement anticipé ne retire pas l’argent transféré pour celui-ci : supprimez ce virement dans le registre au besoin (une ligne sous la liste le rappelle). Supprimer le dernier renouvellement remet la fin de terme qu’il remplaçait, et le rappel de renouvellement avec elle ; supprimer un renouvellement plus ancien ou un changement de taux laisse la fin de terme telle quelle. Les renouvellements inscrits avant cette version de l’application n’ont pas gardé la fin de terme précédente : après en avoir supprimé un, changez la fin de terme avec **Modifier les conditions** au besoin.
 
 ## Et si {#what-if}
 

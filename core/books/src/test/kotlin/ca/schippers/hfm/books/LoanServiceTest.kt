@@ -105,6 +105,26 @@ class LoanServiceTest {
     }
 
     @Test
+    fun `deleting a renewal puts the term end back (M-30)`() {
+        books.loans.save(terms())
+        books.loans.changeRate(mortgage.id, d("2028-01-01"), BigDecimal("0.045"), recalculatePayment = false)
+        books.loans.renew(mortgage.id, d("2031-01-01"), BigDecimal("0.04"), d("2036-01-01"))
+        books.loans.renew(mortgage.id, d("2036-01-01"), BigDecimal("0.035"), d("2041-01-01"))
+        val changes = books.loans.changes(mortgage.id)
+        assertEquals(listOf(false, true, true), changes.map { it.renewal })
+        assertEquals(d("2031-01-01"), changes[1].previousTermEnd)
+        assertNull(changes[1].amount, "a renewal shows no amount")
+
+        books.loans.deleteChange(mortgage.id, changes[0].id)
+        assertEquals(d("2041-01-01"), books.loans.details(mortgage.id)!!.termEnd, "a plain rate change leaves the term end")
+        books.loans.deleteChange(mortgage.id, changes[1].id)
+        assertEquals(d("2041-01-01"), books.loans.details(mortgage.id)!!.termEnd, "an older renewal leaves the latest term end")
+        books.loans.deleteChange(mortgage.id, changes[2].id)
+        assertEquals(d("2036-01-01"), books.loans.details(mortgage.id)!!.termEnd)
+        assertTrue(books.loans.changes(mortgage.id).isEmpty())
+    }
+
+    @Test
     fun `renewal reminders use the loan's own lead time`() {
         books.loans.save(terms())
         assertTrue(books.renewals(d("2030-08-01")).none { it.kind == RenewalKind.LOAN_RENEWAL }, "153 days ahead")

@@ -271,6 +271,7 @@ Les règles de [Règles de catégorie](rules) classent les lignes de relevé imp
 Cliquez sur une opération dans le registre : le titre du formulaire devient Modification de l’opération et les champs sont chargés. Changez ce qu’il faut et enregistrez. L’opération garde sa marque de compensation et ses étiquettes. Une opération inscrite dans une devise étrangère garde son montant d’origine ; si vous changez le montant, son taux est recalculé.
 
 - **Supprimer** : demande d’abord Supprimer cette opération (…)? C’est irréversible., en nommant sa date, son bénéficiaire et son montant ; pour un virement, elle précise que le virement est supprimé des deux comptes. **Supprimer** confirme ; **Annuler** la garde. Une opération rapprochée demande ensuite une deuxième confirmation (voir [Modifier une opération rapprochée](accounts#reconciled-changes)). Supprimer un côté d’un virement supprime les deux côtés. Les lignes d’une opération de placement ne peuvent pas être supprimées ici.
+  Dans un REEE, supprimer le dépôt d’une subvention inscrite sous Régimes enregistrés demande s’il faut supprimer aussi la subvention : voir [Inscrire une subvention reçue](plans#record-grant).
 - **Annuler** ou Échap : laisse l’opération telle quelle et vide le formulaire.
 
 Changer la catégorie d’un virement pour une catégorie ordinaire (ou l’inverse) remplace l’opération : l’ancienne est retirée et une nouvelle est enregistrée.

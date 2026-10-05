@@ -3,6 +3,7 @@ package ca.schippers.hfm.books
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.AccountType
+import ca.schippers.hfm.domain.ClearedStatus
 import ca.schippers.hfm.domain.MemberKind
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
@@ -191,6 +192,36 @@ class InvestmentServiceTest {
         assertTrue(check.cashMatches)
         assertEquals(n("100"), check.positions.single().books)
         assertFailsWith<ValidationException> { inv.reconcile(brokerage.id, st.id) }
+    }
+
+    @Test
+    fun `reconciled cash lines change only once confirmed (M-26)`() {
+        val trade = buy(brokerage, xic, "2026-01-15", "10", "38")
+        val line = books.transactions.register(brokerage.id).single { it.transaction.investmentId == trade.id }.transaction
+        books.transactions.setCleared(line.id, ClearedStatus.RECONCILED)
+        assertFailsWith<ReconciledChangeException> { inv.save(trade.copy(price = n("37"), amount = cad("370"))) }
+        assertFailsWith<ReconciledChangeException> { inv.delete(brokerage.id, trade.id) }
+        assertEquals(cad("9620.00"), cash(brokerage), "nothing changed")
+        inv.save(trade.copy(price = n("37"), amount = cad("370")), confirmReconciled = true)
+        assertEquals(cad("9630.00"), cash(brokerage))
+        inv.delete(brokerage.id, trade.id, confirmReconciled = true)
+        assertTrue(inv.transactions(brokerage.id).isEmpty())
+    }
+
+    @Test
+    fun `a bond held shows its maturity on the calendar (M-35)`() {
+        val bond = inv.saveSecurity(
+            Security("", "", "", "Canada 3.25% 2027", SecurityKind.BOND, Currency.CAD, AssetClass.FIXED_INCOME, maturity = d("2027-06-01"), couponRate = n("0.0325")),
+        )
+        assertTrue(books.renewals(d("2027-05-10")).none { it.kind == RenewalKind.SECURITY_MATURITY }, "not held yet")
+        buy(brokerage, bond, "2026-02-01", "50", "99")
+        assertTrue(books.renewals(d("2027-04-01")).none { it.kind == RenewalKind.SECURITY_MATURITY }, "61 days ahead")
+        val due = books.renewals(d("2027-05-10")).single { it.kind == RenewalKind.SECURITY_MATURITY }
+        assertEquals(22, due.daysLeft)
+        assertEquals("Courtage", due.detail)
+        assertTrue(books.calendar.items(d("2027-06-01"), d("2027-06-30")).any { it is CalendarItem.Renewal && it.renewal.subjectId == bond.id })
+        sell(brokerage, bond, "2027-06-01", "50", "100")
+        assertTrue(books.renewals(d("2027-06-05")).none { it.kind == RenewalKind.SECURITY_MATURITY }, "redeemed: nothing left to remind")
     }
 
     companion object {

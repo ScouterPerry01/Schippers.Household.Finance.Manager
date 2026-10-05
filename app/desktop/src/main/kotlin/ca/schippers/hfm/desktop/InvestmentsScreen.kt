@@ -227,6 +227,12 @@ private fun HoldingsTable(model: BooksModel, h: AccountHoldings) {
                     Column(Modifier.weight(2.5f).padding(horizontal = 6.dp)) {
                         Text(p.security.label, fontWeight = FontWeight.Medium)
                         Text(p.security.name, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        // M-35: a bond's or GIC's coupon and maturity.
+                        val terms = listOfNotNull(
+                            p.security.couponRate?.let { model.t("investments.couponOf", decimal(it.movePointRight(2), locale)) },
+                            p.security.maturity?.let { model.t("investments.maturesOn", model.date(it)) },
+                        )
+                        if (terms.isNotEmpty()) Text(terms.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                     }
                     Cell(quantity(p.quantity, locale))
                     Cell(p.price?.let { decimal(it, locale) + " " + p.security.currency.code }.orEmpty() + (p.priceDate?.let { "\n" + model.date(it) } ?: model.t("investments.noPrice")))
@@ -458,20 +464,22 @@ private fun TransactionDialog(model: BooksModel, account: Account, existing: Inv
         model.t(if (existing == null) "investments.add" else "investments.edit") + " · " + account.name, model.t("common.save"), model.t("common.cancel"),
         onDismiss = onClose,
         onSave = {
-            val saved = model.act(retryConfirmed = null) {
+            // M-26: a change to a transaction whose cash lines are reconciled is asked first, as in the register.
+            fun build(): InvestmentTxn {
                 val zero = Money.zero(c)
-                books.investments.save(
-                    InvestmentTxn(
-                        existing?.id.orEmpty(), account.id, dateOf(date), kind, securityId.takeIf { kind != InvestmentKind.FEE || it != null },
-                        if (kind in WITH_QUANTITY) parseDecimal(qty, locale) else null, if (kind in WITH_PRICE) parseDecimal(price, locale) else null,
-                        if (kind in WITH_AMOUNT) parseAmount(amount, c, locale) ?: zero else zero,
-                        if (kind in WITH_FEES) parseAmount(fees, c, locale) ?: zero else zero,
-                        if (kind == InvestmentKind.INCOME) parseAmount(withheld, c, locale) ?: zero else zero,
-                        if (kind in setOf(InvestmentKind.INCOME, InvestmentKind.REINVEST)) incomeType else null,
-                        if (kind in setOf(InvestmentKind.SPLIT, InvestmentKind.MERGER)) parseDecimal(ratio, locale) else null,
-                        if (kind == InvestmentKind.MERGER) otherId else null, existing?.externalId, memo,
-                    ),
+                return InvestmentTxn(
+                    existing?.id.orEmpty(), account.id, dateOf(date), kind, securityId.takeIf { kind != InvestmentKind.FEE || it != null },
+                    if (kind in WITH_QUANTITY) parseDecimal(qty, locale) else null, if (kind in WITH_PRICE) parseDecimal(price, locale) else null,
+                    if (kind in WITH_AMOUNT) parseAmount(amount, c, locale) ?: zero else zero,
+                    if (kind in WITH_FEES) parseAmount(fees, c, locale) ?: zero else zero,
+                    if (kind == InvestmentKind.INCOME) parseAmount(withheld, c, locale) ?: zero else zero,
+                    if (kind in setOf(InvestmentKind.INCOME, InvestmentKind.REINVEST)) incomeType else null,
+                    if (kind in setOf(InvestmentKind.SPLIT, InvestmentKind.MERGER)) parseDecimal(ratio, locale) else null,
+                    if (kind == InvestmentKind.MERGER) otherId else null, existing?.externalId, memo,
                 )
+            }
+            val saved = model.act(retryConfirmed = { books.investments.save(build(), confirmReconciled = true).also { onClose() } }) {
+                books.investments.save(build())
             }
             if (saved != null) onClose()
         },
@@ -518,10 +526,11 @@ private fun TransactionDialog(model: BooksModel, account: Account, existing: Inv
     }
     if (confirmDelete && existing != null) {
         FormDialog(model.t("investments.delete.title"), model.t("common.delete"), model.t("common.cancel"), onDismiss = { confirmDelete = false }, onSave = {
-            if (model.act { books.investments.delete(account.id, existing.id) } != null) {
-                confirmDelete = false
-                onClose()
-            }
+            val closeAll = { confirmDelete = false; onClose() }
+            if (model.act(retryConfirmed = { books.investments.delete(account.id, existing.id, confirmReconciled = true); closeAll() }) {
+                    books.investments.delete(account.id, existing.id)
+                } != null
+            ) closeAll()
         }) { Text(model.t("investments.delete.body")) }
     }
 }
@@ -673,7 +682,9 @@ private fun StatementDialog(model: BooksModel, account: Account, statementId: St
     if (check == null) {
         var date by remember { mutableStateOf(today().toString()) }
         val held = remember(date) { runCatching { books.investments.holdings(account.id, dateOf(date)) }.getOrNull() }
-        var cash by remember { mutableStateOf(held?.let { MoneyFormat.formatAmount(it.cash, locale) }.orEmpty()) }
+        // M-33: the books' cash on the statement date, until the user types the statement's own.
+        var typedCash by remember { mutableStateOf<String?>(null) }
+        val cash = typedCash ?: held?.let { MoneyFormat.formatAmount(it.cash, locale) }.orEmpty()
         val quantities = remember { mutableStateMapOf<String, String>() }
         FormDialog(model.t("investments.enterStatement") + " · " + account.name, model.t("investments.compare"), model.t("common.cancel"), onDismiss = onClose, onSave = {
             val saved = model.act {
@@ -688,7 +699,7 @@ private fun StatementDialog(model: BooksModel, account: Account, statementId: St
             Text(model.t("investments.statementEntryHint"), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DateInput(model.t("investments.statementDate"), date, Modifier.weight(1f)) { date = it }
-                AmountInput(model.t("investments.cash"), cash, account.currency, locale, Modifier.weight(1f), model::money) { cash = it }
+                AmountInput(model.t("investments.cash"), cash, account.currency, locale, Modifier.weight(1f), model::money) { typedCash = it }
             }
             for (h in held?.holdings.orEmpty()) {
                 TextInput(h.security.label + " · " + h.security.name, quantities[h.security.id] ?: editable(h.quantity, locale)) { quantities[h.security.id] = it }
