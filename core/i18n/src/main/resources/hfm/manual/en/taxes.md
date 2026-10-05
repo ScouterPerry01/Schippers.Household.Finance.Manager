@@ -257,7 +257,8 @@ Income:
 
 - **Employment income**: from **Employment income** in the package (salary, wages, bonuses on pay stubs and income categories).
 - **Pension income eligible for the pension amount**: **Other pensions** (an employer pension), plus **RRIF income** from age 65. It gives the pension income amount.
-- **Other income (OAS, CPP or QPP, EI, plan withdrawals)**: **Old Age Security pension**, **CPP or QPP benefits** and **Employment Insurance benefits**, plus **RRIF income** before 65. Add here any other taxable income the books do not show, such as RRSP withdrawals.
+- **Old Age Security pension**: from **Old Age Security pension**, the pension received before any amount withheld. It gives the OAS recovery tax at high incomes.
+- **Other income (CPP or QPP, EI, plan withdrawals)**: **CPP or QPP benefits** and **Employment Insurance benefits**, plus **RRIF income** before 65. Add here any other taxable income the books do not show, such as RRSP withdrawals.
 - **Interest and other investment income**: from **Interest and other investment income**.
 - **Eligible dividends (taxable amount)** and **Other dividends (taxable amount)**: the grossed-up amounts of the T5 and T3 slips (T5 boxes 25 and 11, T3 boxes 50 and 32), from the investment income report. They give the dividend tax credit.
 - **Taxable capital gains**: from **Taxable capital gains** (half of the net gains of the year).
@@ -296,6 +297,7 @@ Carried forward from earlier years: the balances that last year's notice of asse
 - **Net capital losses of other years**: at their taxable amount (half the losses), as the notice of assessment gives them. They only reduce this year's taxable capital gains, so they lower taxable income, not net income.
 - **Unused RRSP contributions**: contributions made in earlier years and not deducted yet. They are deducted with this year's.
 - **RRSP deduction limit**: the limit on the notice of assessment. Empty means no limit is applied. When it is entered, the RRSP deduction (this year's contributions and the unused ones) stays within it, and the rest is carried forward.
+- **Minimum tax carried forward (federal)**: additional tax paid for the alternative minimum tax in the seven previous years and not recovered yet (Form T691 of those years). In a year without minimum tax, it brings the regular federal tax down to the minimum tax, and the provincial or territorial tax by its share.
 
 Tax already paid:
 
@@ -311,11 +313,12 @@ The box at the top right gives:
 - **Federal tax**: the federal tax after credits (after the Quebec abatement for a Quebec resident).
 - The provincial or territorial tax, named after the province or territory: after credits, with any surtax, reduction or health premium.
 - **Total income tax**: the two together.
+- **Other amounts on the return**: shown when there is any: the OAS recovery tax. It is added to the balance.
 - **Refundable credits**: shown when there are any: the Canada workers benefit, the refundable medical expense supplement and, in Quebec, the work premium and the refundable credit for medical expenses. They come off the balance even below zero.
 - **Deducted at source and instalments**: **Income tax deducted** and **Instalments paid**.
-- **Balance owing** or **Refund**: the total income tax less the refundable credits and what was already paid. A balance owing is due by April 30 of the next year.
+- **Balance owing** or **Refund**: the total income tax, plus the other amounts on the return, less the refundable credits and what was already paid. A balance owing is due by April 30 of the next year.
 - **Average rate**: the total income tax as a share of total income.
-- **Marginal rate**: the tax on one more dollar of ordinary income (such as interest), federal and provincial together; it is what an RRSP deduction saves, roughly, on each dollar.
+- **Marginal rate**: the tax on one more dollar of ordinary income (such as interest), federal and provincial together, with the OAS recovery tax; it is what an RRSP deduction saves, roughly, on each dollar.
 
 When the rates for the year are not yet in Rates and rules, a red line says that those of the latest year known are used.
 
@@ -333,6 +336,7 @@ Income:
 - **CPP or QPP enhanced contributions (deduction)**: the part of the contributions that is deducted rather than credited.
 - **RRSP deduction, with unused contributions**: shown when unused contributions or a deduction limit are entered: the RRSP deduction, with what could be claimed below its name.
 - **Deductions**: the deductions, with that part.
+- **Social benefits repayment (deduction)**: the OAS recovery tax, deducted from net income: 15 % of net income above the threshold, at most the OAS received.
 - **Net income**: total income less the deductions (never below zero).
 - **Net capital losses of other years**: the losses carried forward that are applied, up to this year's taxable capital gains.
 - **Taxable income**: net income less those losses; without them, the two are the same.
@@ -347,10 +351,13 @@ Federal, then the province or territory:
 - **Donation tax credit**: the first $200 at the lowest rate, the rest at a higher rate, and, where the rules have one, a still higher rate on gifts matched by income in the top bracket. This year's gifts and those carried forward count, up to 75 % of net income.
 - **Dividend tax credit**: a share of the taxable amount of eligible and other dividends.
 - **Tax after credits**: never below zero, since these credits are not refundable.
+- **Adjusted taxable income for the minimum tax**, **Minimum tax** and **Additional tax for minimum tax purposes**: shown only when the alternative minimum tax is more than the tax after credits; the tax is then the minimum tax. In a province or territory, **Additional tax for minimum tax purposes** is its share of the federal one. **Minimum tax carryover recovered**: minimum tax of earlier years taken off the tax.
 - **Refundable Quebec abatement**: for a Quebec resident, 16.5 % of the federal tax after credits.
 - **Surtax** and **Tax reduction**: Ontario's surtax on its tax above two thresholds, Ontario's tax reduction, and British Columbia's low-income tax reduction.
 - **Health premium**: the Ontario Health Premium, by tiers of taxable income.
 - **Tax**: the federal, or the provincial or territorial, tax.
+
+Other amounts on the return, when there are any: the **OAS recovery tax**, with **Other amounts on the return** adding them up.
 
 Refundable credits, when the person has any: each with its amount; when it is reduced for income, a line **Before the reduction** and a line **Reduction for income** (a rate of the income above a threshold) come before it. **Refundable credits** adds them up. See [Refundable credits and benefits](taxes#estimate-refundable).
 
@@ -369,6 +376,15 @@ A person who lives in Quebec on December 31 pays federal tax, reduced by the Que
 - QPP replaces CPP: the base part of the contributions is a federal credit, and the rest a deduction on both returns.
 - Net capital losses of other years are deducted from Quebec income as on the federal return.
 - **Tuition amount**: Quebec's credit is 8 % of the tuition fees, on a line of its own after the donation credit. The student uses it as far as it brings the Quebec tax to zero; what is left of this year's fees can go to a parent or grandparent (not to a spouse), and the rest is carried forward.
+
+### OAS recovery tax and minimum tax {#estimate-minimum-tax}
+
+@index: OAS clawback; OAS recovery tax; social benefits repayment; alternative minimum tax; AMT; minimum tax carryover; T691; TP-776.42
+
+- OAS recovery tax: when net income (before this deduction) is above a threshold ($93,454 for 2025), 15 % of the excess is repaid, up to the Old Age Security received. The repayment is deducted from net income and added to the balance; tax withheld from the OAS for it is part of the tax deducted.
+- Alternative minimum tax: a second calculation, at 20.5 % above a large exemption ($177,882 for 2025), on an adjusted taxable income that counts capital gains in full, dividends at their actual amount, and only half of some deductions (union dues, child care, moving and employment expenses, the enhanced CPP or QPP); only half of the non-refundable credits and 80 % of the donation credit are allowed. When it is more than the regular federal tax, the difference is added, the province or territory adds its share (for example 24.63 % in Ontario), and the difference can be recovered in the next seven years when the regular tax is higher than the minimum tax. Quebec has its own minimum tax, at 19 % above its own exemption; the deduction for workers is half added back.
+
+The minimum tax rarely applies, mostly in a year with a large capital gain. The estimate leaves out its rarer adjustments: stock options, donated securities, the capital gains exemption, the special foreign tax credit, and the minimum tax carried forward on the Quebec return.
 
 ### Refundable credits and benefits {#estimate-refundable}
 
@@ -400,13 +416,13 @@ The estimate claims each balance as fully as it can. On the return, some of them
 
 ### What the estimate leaves out {#estimate-left-out}
 
-The estimate does not count: amounts transferred from a spouse or child other than tuition, the education and textbook amounts some provinces and territories still have, the Canada training credit, non-capital losses of other years, low-income tax reductions other than Ontario's and British Columbia's, the disability supplement of the Canada workers benefit and the other refundable credits and benefits (Quebec's solidarity credit, provincial benefits), the OAS recovery tax, the alternative minimum tax, political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, its health services fund contribution and its prescription drug insurance premium, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
+The estimate does not count: amounts transferred from a spouse or child other than tuition, the education and textbook amounts some provinces and territories still have, the Canada training credit, non-capital losses of other years, low-income tax reductions other than Ontario's and British Columbia's, the disability supplement of the Canada workers benefit and the other refundable credits and benefits (Quebec's solidarity credit, provincial benefits), the adjustments of the minimum tax for stock options, donated securities and the capital gains exemption, the minimum tax carried forward on the Quebec return, political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, its health services fund contribution and its prescription drug insurance premium, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
 
 ### Where the rates come from {#estimate-rates}
 
 @index: income tax rates; tax rates by province; rate changes
 
-Every rate, amount and threshold the estimate uses (brackets, basic personal amounts, credit rates, the age, spouse, pension and employment amounts, medical expense thresholds, donation and dividend credit rates, Ontario's surtax and health premium, CPP and QPP, Quebec's deduction for workers, the tuition credits and their transfer maximums, the donation limit, the Canada workers benefit, the refundable medical expense supplements, Quebec's work premium, the GST/HST credit and the Canada child benefit) is a value in [Rates and rules](rates-rules), under **Income tax**, by date and by province or territory. The app comes with the official figures for 2024, 2025 and 2026, each with its source. An administrator can add a value for a year or a province there, for example when a budget changes a rate; the estimate uses it from its date. A year whose figures are not there yet uses the latest ones.
+Every rate, amount and threshold the estimate uses (brackets, basic personal amounts, credit rates, the age, spouse, pension and employment amounts, medical expense thresholds, donation and dividend credit rates, Ontario's surtax and health premium, CPP and QPP, Quebec's deduction for workers, the tuition credits and their transfer maximums, the donation limit, the Canada workers benefit, the refundable medical expense supplements, Quebec's work premium, the GST/HST credit, the Canada child benefit, the OAS recovery tax and the alternative minimum taxes) is a value in [Rates and rules](rates-rules), under **Income tax**, by date and by province or territory. The app comes with the official figures for 2024, 2025 and 2026, each with its source. An administrator can add a value for a year or a province there, for example when a budget changes a rate; the estimate uses it from its date. A year whose figures are not there yet uses the latest ones.
 
 ## Through the year: what feeds the tax screens {#through-the-year}
 

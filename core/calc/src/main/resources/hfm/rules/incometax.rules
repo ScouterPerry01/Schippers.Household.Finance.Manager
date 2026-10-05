@@ -459,3 +459,46 @@ tax.gstCredit | - | 2025-01-01 | 445; 234; 234; 11564; 0.02; 46432; 0.05 | CRA, 
 tax.ccb | - | 2023-01-01 | 7787; 6570; 36502; 79087; 0.07; 0.135; 0.19; 0.23; 0.032; 0.057; 0.08; 0.095 | CRA, Canada child benefit calculation sheet, July 2024 to June 2025 payments (2023 base year)
 tax.ccb | - | 2024-01-01 | 7997; 6748; 37487; 81222; 0.07; 0.135; 0.19; 0.23; 0.032; 0.057; 0.08; 0.095 | CRA, Canada child benefit calculation sheet, July 2025 to June 2026 payments (2024 base year)
 tax.ccb | - | 2025-01-01 | 8157; 6883; 38237; 82847; 0.07; 0.135; 0.19; 0.23; 0.032; 0.057; 0.08; 0.095 | CRA, How we calculate your CCB, July 2026 to June 2027 (2025 base year)
+
+# OAS recovery tax and alternative minimum tax. Read in October 2026 on the CRA's Federal Worksheet
+# (5000-D1), Form T691 and the provincial and territorial 428 forms for 2024 and 2025, ESDC's OAS
+# recovery tax page, the Income Tax Act (s. 127.51 and 127.531) and Revenu Quebec's TP-776.42-V.
+# The 2026 T691 and 428 forms are not published: provinces and territories keep their 2025 values.
+#   oasRecovery: net income threshold; rate (at most the OAS received)
+#   amt: rate; basic exemption; share of the non-refundable credits allowed (other than donations); share of
+#     the donation credit; share of the partly allowed deductions added back; the gross-up share removed from
+#     eligible and from other taxable dividends
+#   prov.amt: provincial or territorial additional tax, as a rate of the federal additional tax; rate of the
+#     federal minimum tax carryover recovered on the provincial or territorial return
+#   qc.amt: rate; basic exemption; share of the credits other than donations; share of the donation credit;
+#     share of the partly allowed deductions (the deduction for workers among them) added back
+rule tax.oasRecovery LIST
+rule tax.amt LIST
+rule tax.prov.amt LIST province
+rule tax.qc.amt LIST
+
+tax.oasRecovery | - | 2024-01-01 | 90997; 0.15 | CRA, Federal Worksheet (5000-D1) 2024, lines 16 to 19 (lines 23500 and 42200); ESDC, Old Age Security recovery tax
+tax.oasRecovery | - | 2025-01-01 | 93454; 0.15 | CRA, Federal Worksheet (5000-D1) 2025, lines 16 to 19; ESDC, Old Age Security recovery tax
+tax.oasRecovery | - | 2026-01-01 | 95323; 0.15 | ESDC, Old Age Security recovery tax (2026 income, recovery period July 2027 to June 2028)
+tax.amt | - | 2024-01-01 | 0.205; 173205; 0.5; 0.8; 0.5; 0.275362; 0.130435 | CRA, Form T691 2024 (lines 95 and 97, credits at 50 % and donations at 80 %, deductions at 50 %, dividend gross-up 27.5362 % and 13.0435 %); Income Tax Act s. 127.51 and 127.531
+tax.amt | - | 2025-01-01 | 0.205; 177882; 0.5; 0.8; 0.5; 0.275362; 0.130435 | CRA, Form T691 2025 (lines 82, 84 to 86, 94, 96, 98 to 102)
+tax.amt | - | 2026-01-01 | 0.205; 181440; 0.5; 0.8; 0.5; 0.275362; 0.130435 | Income Tax Act s. 127.51 (the exemption is the first dollar of the fourth bracket); CRA, tax rates and income brackets 2026 ($181,440); the other figures of Form T691 2025 (the 2026 form is not published)
+tax.prov.amt | NL | 2024-01-01 | 0.58; 0.58 | CRA, Form NL428 2024 (5001-C), additional tax for minimum tax purposes and minimum tax carryover
+tax.prov.amt | NL | 2025-01-01 | 0.60; 0.60 | CRA, Form NL428 2025 (5001-C)
+tax.prov.amt | PE | 2024-01-01 | 0.575; 0.575 | CRA, Form PE428 2024 and 2025 (5002-C)
+tax.prov.amt | NS | 2024-01-01 | 0.575; 0.575 | CRA, Form NS428 2024 and 2025 (5003-C)
+tax.prov.amt | NB | 2024-01-01 | 0.57; 0.57 | CRA, Form NB428 2024 and 2025 (5004-C)
+tax.prov.amt | ON | 2024-01-01 | 0.2463; 0.3367 | CRA, Form ON428 2024 (5006-C) and Worksheet ON428 (additional tax 24.63 %, carryover 33.67 %)
+tax.prov.amt | ON | 2025-01-01 | 0.2463; 0.2463 | CRA, Form ON428 2025 (5006-C)
+tax.prov.amt | MB | 2024-01-01 | 0.50; 0.50 | CRA, Form MB428 2024 and 2025 (5007-C)
+tax.prov.amt | SK | 2024-01-01 | 0.50; 0.50 | CRA, Form SK428 2024 and 2025 (5008-C)
+tax.prov.amt | AB | 2024-01-01 | 0.35; 0.35 | CRA, Form AB428 2024 and 2025 (5009-C)
+tax.prov.amt | BC | 2024-01-01 | 0.337; 0.337 | CRA, Form BC428 2024 (5010-C)
+tax.prov.amt | BC | 2025-01-01 | 0.349; 0.349 | CRA, Form BC428 2025 (5010-C)
+tax.prov.amt | YT | 2024-01-01 | 0.4267; 0.4267 | CRA, Form YT428 2024 (5011-C)
+tax.prov.amt | YT | 2025-01-01 | 0.439; 0.4414 | CRA, Form YT428 2025 (5011-C), as printed (43.9 % and 44.14 %)
+tax.prov.amt | NT | 2024-01-01 | 0.45; 0.45 | CRA, Form NT428 2024 and 2025 (5012-C)
+tax.prov.amt | NU | 2024-01-01 | 0.45; 0.45 | CRA, Form NU428 2024 and 2025 (5014-C)
+tax.qc.amt | - | 2024-01-01 | 0.19; 175000; 0.5; 0.8; 0.5 | Revenu Québec, TP-776.42-V 2024; Finances Québec, Information Bulletin 2023-4
+tax.qc.amt | - | 2025-01-01 | 0.19; 179990; 0.5; 0.8; 0.5 | Revenu Québec, TP-776.42-V 2025
+tax.qc.amt | - | 2026-01-01 | 0.19; 183680; 0.5; 0.8; 0.5 | Revenu Québec, TP-776.42-V 2026

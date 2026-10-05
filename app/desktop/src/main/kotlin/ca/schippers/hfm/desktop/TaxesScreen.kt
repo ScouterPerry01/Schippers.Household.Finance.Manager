@@ -606,6 +606,7 @@ private fun EstimateTab(model: BooksModel) {
                         ResultRow(model.t("taxEstimate.federalTax"), cad(e.federalTax))
                         ResultRow(model.t("taxEstimate.provincialTax", model.t("province.${e.province}")), cad(e.provincialTax))
                         ResultRow(model.t("taxEstimate.totalTax"), cad(e.totalTax), bold = true)
+                        if (e.other.signum() > 0) ResultRow(model.t("taxEstimate.other"), cad(e.other))
                         if (e.refundable.signum() > 0) ResultRow(model.t("taxEstimate.refundable"), cad(e.refundable))
                         ResultRow(model.t("taxEstimate.paid"), cad(e.paid))
                         if (e.balance.signum() >= 0) ResultRow(model.t("taxEstimate.owing"), cad(e.balance), bold = true)
@@ -695,12 +696,19 @@ private val INPUT_HINTS = mapOf(
     TaxInput.DONATIONS_CARRIED to "taxEstimateHint.DONATIONS_CARRIED",
     TaxInput.SPOUSE_WORKING_INCOME to "taxEstimateHint.SPOUSE_WORKING_INCOME",
     TaxInput.CHILDREN to "taxEstimateHint.CHILDREN",
+    TaxInput.OAS to "taxEstimateHint.OAS",
+    TaxInput.AMT_CARRIED to "taxEstimateHint.AMT_CARRIED",
 )
 
 private val TOTAL_LINES = setOf(
     TaxLineKind.NET_INCOME, TaxLineKind.TAXABLE_INCOME, TaxLineKind.TAX_ON_INCOME, TaxLineKind.BASIC_TAX, TaxLineKind.TAX,
     TaxLineKind.CWB, TaxLineKind.MEDICAL_SUPPLEMENT, TaxLineKind.WORK_PREMIUM, TaxLineKind.QC_MEDICAL_CREDIT, TaxLineKind.REFUNDABLE_TOTAL,
-    TaxLineKind.GST_CREDIT, TaxLineKind.CHILD_BENEFIT,
+    TaxLineKind.GST_CREDIT, TaxLineKind.CHILD_BENEFIT, TaxLineKind.MINIMUM_TAX, TaxLineKind.OTHER_TOTAL,
+)
+
+/** Lines worked out as a rate of an amount above a threshold. */
+private val ABOVE_THRESHOLD = setOf(
+    TaxLineKind.BRACKET, TaxLineKind.INCOME_REDUCTION, TaxLineKind.OAS_DEDUCTION, TaxLineKind.OAS_RECOVERY, TaxLineKind.MINIMUM_TAX,
 )
 
 /** A figure as shown in its field: a count as a whole number, an amount in the user's format. */
@@ -722,7 +730,7 @@ private fun lineDetail(model: BooksModel, l: TaxLine, locale: java.util.Locale):
     val rate = l.rate
     val from = l.from
     return when {
-        (l.kind == TaxLineKind.BRACKET || l.kind == TaxLineKind.INCOME_REDUCTION) && rate != null && from != null ->
+        l.kind in ABOVE_THRESHOLD && rate != null && from != null ->
             model.t("taxEstimate.bracketDetail", percentText(rate, locale), cad(base), cad(from))
         rate != null -> model.t("taxEstimate.rateOf", percentText(rate, locale), cad(base))
         else -> model.t("taxEstimate.on", cad(base))

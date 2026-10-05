@@ -257,7 +257,8 @@ Revenus :
 
 - **Revenus d’emploi** : de **Revenus d’emploi** dans la trousse (salaire, traitement, primes des talons de paie et des catégories de revenus).
 - **Revenus de pension admissibles au montant pour revenu de pension** : **Autres pensions** (une pension d’employeur), plus **Revenus d’un FERR** dès 65 ans. Ils donnent le montant pour revenu de pension.
-- **Autres revenus (SV, RPC ou RRQ, AE, retraits de régimes)** : **Pension de la Sécurité de la vieillesse**, **Prestations du RPC ou du RRQ** et **Prestations d’assurance-emploi**, plus **Revenus d’un FERR** avant 65 ans. Ajoutez-y tout autre revenu imposable que les livres ne montrent pas, comme des retraits d’un REER.
+- **Pension de la Sécurité de la vieillesse** : de **Pension de la Sécurité de la vieillesse**, la pension reçue avant toute retenue. Elle donne l’impôt de récupération de la SV aux revenus élevés.
+- **Autres revenus (RPC ou RRQ, AE, retraits de régimes)** : **Prestations du RPC ou du RRQ** et **Prestations d’assurance-emploi**, plus **Revenus d’un FERR** avant 65 ans. Ajoutez-y tout autre revenu imposable que les livres ne montrent pas, comme des retraits d’un REER.
 - **Intérêts et autres revenus de placement** : de **Intérêts et autres revenus de placement**.
 - **Dividendes déterminés (montant imposable)** et **Autres dividendes (montant imposable)** : les montants majorés des feuillets T5 et T3 (cases 25 et 11 du T5, cases 50 et 32 du T3), tirés du rapport des revenus de placement. Ils donnent le crédit d’impôt pour dividendes.
 - **Gains en capital imposables** : de **Gains en capital imposables** (la moitié des gains nets de l’année).
@@ -296,6 +297,7 @@ Reports des années antérieures : les soldes que donne l’avis de cotisation d
 - **Pertes en capital nettes d’autres années** : à leur montant imposable (la moitié des pertes), comme l’avis de cotisation les donne. Elles réduisent seulement les gains en capital imposables de l’année : elles diminuent donc le revenu imposable, pas le revenu net.
 - **Cotisations REER inutilisées** : des cotisations versées les années précédentes et pas encore déduites. Elles sont déduites avec celles de l’année.
 - **Plafond de déduction REER** : le plafond de l’avis de cotisation. Vide, aucun plafond n’est appliqué. Une fois entré, la déduction REER (cotisations de l’année et cotisations inutilisées) le respecte, et le reste est reporté.
+- **Impôt minimum reporté (fédéral)** : l’impôt supplémentaire payé pour l’impôt minimum de remplacement dans les sept années précédentes et pas encore récupéré (formulaire T691 de ces années). Une année sans impôt minimum, il ramène l’impôt fédéral régulier jusqu’à l’impôt minimum, et l’impôt provincial ou territorial selon sa part.
 
 Impôt déjà payé :
 
@@ -311,11 +313,12 @@ L’encadré en haut à droite donne :
 - **Impôt fédéral** : l’impôt fédéral après les crédits (après l’abattement du Québec pour un résident du Québec).
 - L’impôt provincial ou territorial, au nom de la province ou du territoire : après les crédits, avec toute surtaxe, réduction ou contribution-santé.
 - **Impôt sur le revenu total** : les deux ensemble.
+- **Autres montants de la déclaration** : affichés s’il y en a : l’impôt de récupération de la SV. Ils s’ajoutent au solde.
 - **Crédits remboursables** : affichés s’il y en a : l’Allocation canadienne pour les travailleurs, le supplément remboursable pour frais médicaux et, au Québec, la prime au travail et le crédit remboursable pour frais médicaux. Ils réduisent le solde, même sous zéro.
 - **Retenues à la source et acomptes** : **Impôt retenu** et **Acomptes payés**.
-- **Solde dû** ou **Remboursement** : l’impôt total moins les crédits remboursables et ce qui est déjà payé. Un solde dû doit être payé au plus tard le 30 avril de l’année suivante.
+- **Solde dû** ou **Remboursement** : l’impôt total, plus les autres montants de la déclaration, moins les crédits remboursables et ce qui est déjà payé. Un solde dû doit être payé au plus tard le 30 avril de l’année suivante.
 - **Taux moyen** : l’impôt total en proportion du revenu total.
-- **Taux marginal** : l’impôt sur un dollar de plus de revenu ordinaire (comme des intérêts), fédéral et provincial ensemble ; c’est, en gros, ce qu’une déduction REER fait économiser sur chaque dollar.
+- **Taux marginal** : l’impôt sur un dollar de plus de revenu ordinaire (comme des intérêts), fédéral et provincial ensemble, avec l’impôt de récupération de la SV ; c’est, en gros, ce qu’une déduction REER fait économiser sur chaque dollar.
 
 Quand les taux de l’année ne sont pas encore dans Taux et règles, une ligne rouge indique que ceux de la dernière année connue sont utilisés.
 
@@ -333,6 +336,7 @@ Revenus :
 - **Cotisations bonifiées au RPC ou au RRQ (déduction)** : la partie des cotisations qui est déduite plutôt que créditée.
 - **Déduction REER, avec les cotisations inutilisées** : affichée quand des cotisations inutilisées ou un plafond de déduction sont entrés : la déduction REER, avec sous son nom ce qui pourrait être demandé.
 - **Déductions** : les déductions, avec cette partie.
+- **Remboursement des prestations sociales (déduction)** : l’impôt de récupération de la SV, déduit du revenu net : 15 % du revenu net au-delà du seuil, au plus la SV reçue.
 - **Revenu net** : le revenu total moins les déductions (jamais sous zéro).
 - **Pertes en capital nettes d’autres années** : les pertes reportées qui sont appliquées, jusqu’aux gains en capital imposables de l’année.
 - **Revenu imposable** : le revenu net moins ces pertes ; sans elles, les deux sont égaux.
@@ -347,10 +351,13 @@ Le fédéral, puis la province ou le territoire :
 - **Crédit d’impôt pour dons** : les premiers 200 $ au taux le plus bas, le reste à un taux plus élevé et, quand les règles en prévoient un, à un taux encore plus élevé sur les dons correspondant au revenu de la tranche supérieure. Les dons de l’année et ceux reportés comptent, jusqu’à 75 % du revenu net.
 - **Crédit d’impôt pour dividendes** : une part du montant imposable des dividendes déterminés et des autres dividendes.
 - **Impôt après les crédits** : jamais sous zéro, puisque ces crédits ne sont pas remboursables.
+- **Revenu imposable modifié pour l’impôt minimum**, **Impôt minimum** et **Impôt supplémentaire aux fins de l’impôt minimum** : affichés seulement quand l’impôt minimum de remplacement dépasse l’impôt après les crédits ; l’impôt est alors l’impôt minimum. Dans une province ou un territoire, **Impôt supplémentaire aux fins de l’impôt minimum** est sa part de l’impôt fédéral. **Report de l’impôt minimum récupéré** : l’impôt minimum d’années antérieures retranché de l’impôt.
 - **Abattement du Québec remboursable** : pour un résident du Québec, 16,5 % de l’impôt fédéral après les crédits.
 - **Surtaxe** et **Réduction d’impôt** : la surtaxe de l’Ontario sur son impôt au-delà de deux seuils, la réduction d’impôt de l’Ontario et la réduction d’impôt pour faible revenu de la Colombie-Britannique.
 - **Contribution-santé** : la contribution-santé de l’Ontario, par paliers de revenu imposable.
 - **Impôt** : l’impôt fédéral, ou provincial ou territorial.
+
+Autres montants de la déclaration, s’il y en a : l’**Impôt de récupération de la SV**, que **Autres montants de la déclaration** additionne.
 
 Crédits remboursables, si la personne en a : chacun avec son montant ; quand il est réduit selon le revenu, une ligne **Avant la réduction** et une ligne **Réduction selon le revenu** (un taux du revenu au-delà d’un seuil) le précèdent. **Crédits remboursables** les additionne. Voir [Crédits remboursables et prestations](taxes#estimate-refundable).
 
@@ -369,6 +376,15 @@ Une personne qui habite au Québec le 31 décembre paie l’impôt fédéral, r�
 - Le RRQ remplace le RPC : la partie de base des cotisations donne un crédit fédéral, et le reste une déduction dans les deux déclarations.
 - Les pertes en capital nettes d’autres années sont déduites du revenu du Québec comme dans la déclaration fédérale.
 - **Montant pour frais de scolarité** : le crédit du Québec est de 8 % des frais de scolarité, sur une ligne à part après le crédit pour dons. L’étudiant l’utilise dans la mesure où il ramène l’impôt du Québec à zéro ; ce qui reste des frais de l’année peut aller à un parent ou à un grand-parent (pas à un conjoint), et le reste est reporté.
+
+### Impôt de récupération de la SV et impôt minimum {#estimate-minimum-tax}
+
+@index: récupération de la SV; impôt de récupération de la SV; remboursement des prestations sociales; impôt minimum de remplacement; IMR; report de l’impôt minimum; T691; TP-776.42
+
+- Impôt de récupération de la SV : quand le revenu net (avant cette déduction) dépasse un seuil (93 454 $ pour 2025), 15 % de l’excédent est remboursé, jusqu’à concurrence de la Sécurité de la vieillesse reçue. Le remboursement est déduit du revenu net et ajouté au solde ; l’impôt retenu sur la SV à ce titre fait partie de l’impôt retenu.
+- Impôt minimum de remplacement : un second calcul, à 20,5 % au-delà d’une exemption élevée (177 882 $ pour 2025), sur un revenu imposable modifié qui compte les gains en capital en entier, les dividendes à leur montant réel, et seulement la moitié de certaines déductions (cotisations syndicales, frais de garde, frais de déménagement et dépenses d’emploi, RPC ou RRQ bonifié) ; seulement la moitié des crédits non remboursables et 80 % du crédit pour dons sont admis. Quand il dépasse l’impôt fédéral régulier, la différence s’ajoute, la province ou le territoire ajoute sa part (par exemple 24,63 % en Ontario), et la différence peut être récupérée dans les sept années suivantes quand l’impôt régulier dépasse l’impôt minimum. Le Québec a son propre impôt minimum, à 19 % au-delà de sa propre exemption ; la déduction pour travailleur y est rajoutée à moitié.
+
+L’impôt minimum s’applique rarement, surtout l’année d’un gain en capital important. L’estimation laisse de côté ses rajustements plus rares : options d’achat d’actions, dons de titres, exonération des gains en capital, crédit spécial pour impôt étranger, et l’impôt minimum reporté dans la déclaration du Québec.
 
 ### Crédits remboursables et prestations {#estimate-refundable}
 
@@ -400,13 +416,13 @@ L’estimation demande chaque solde le plus complètement possible. Dans la déc
 
 ### Ce que l’estimation laisse de côté {#estimate-left-out}
 
-L’estimation ne compte pas : les montants transférés d’un conjoint ou d’un enfant autres que les frais de scolarité, les montants relatifs aux études et pour manuels que certaines provinces et certains territoires ont encore, le crédit canadien pour la formation, les pertes autres qu’en capital d’autres années, les réductions d’impôt pour faible revenu autres que celles de l’Ontario et de la Colombie-Britannique, le supplément pour personnes handicapées de l’Allocation canadienne pour les travailleurs et les autres crédits et prestations remboursables (crédit d’impôt pour solidarité du Québec, prestations provinciales), l’impôt de récupération de la SV, l’impôt minimum de remplacement, les contributions politiques, les crédits pour impôt étranger, le montant canadien pour aidant naturel et le montant pour personne à charge admissible, le montant pour personne vivant seule du Québec, sa cotisation au Fonds des services de santé et sa prime d’assurance médicaments, et les suppléments de 2024 de la Nouvelle-Écosse aux montants pour époux et pour l’âge. Au Yukon, le montant pour époux n’est pas réduit avec le montant personnel de base aux revenus élevés. Ces éléments peuvent changer le résultat : c’est la déclaration qui compte.
+L’estimation ne compte pas : les montants transférés d’un conjoint ou d’un enfant autres que les frais de scolarité, les montants relatifs aux études et pour manuels que certaines provinces et certains territoires ont encore, le crédit canadien pour la formation, les pertes autres qu’en capital d’autres années, les réductions d’impôt pour faible revenu autres que celles de l’Ontario et de la Colombie-Britannique, le supplément pour personnes handicapées de l’Allocation canadienne pour les travailleurs et les autres crédits et prestations remboursables (crédit d’impôt pour solidarité du Québec, prestations provinciales), les rajustements de l’impôt minimum pour options d’achat d’actions, dons de titres et exonération des gains en capital, l’impôt minimum reporté dans la déclaration du Québec, les contributions politiques, les crédits pour impôt étranger, le montant canadien pour aidant naturel et le montant pour personne à charge admissible, le montant pour personne vivant seule du Québec, sa cotisation au Fonds des services de santé et sa prime d’assurance médicaments, et les suppléments de 2024 de la Nouvelle-Écosse aux montants pour époux et pour l’âge. Au Yukon, le montant pour époux n’est pas réduit avec le montant personnel de base aux revenus élevés. Ces éléments peuvent changer le résultat : c’est la déclaration qui compte.
 
 ### D’où viennent les taux {#estimate-rates}
 
 @index: taux d’impôt sur le revenu; taux d’impôt par province; changements de taux
 
-Chaque taux, montant et seuil utilisé par l’estimation (tranches, montants personnels de base, taux des crédits, montants pour l’âge, pour époux, pour revenu de pension et pour emploi, seuils des frais médicaux, taux des crédits pour dons et pour dividendes, surtaxe et contribution-santé de l’Ontario, RPC et RRQ, déduction pour travailleur du Québec, crédits pour frais de scolarité et leurs transferts maximaux, plafond des dons, Allocation canadienne pour les travailleurs, suppléments remboursables pour frais médicaux, prime au travail du Québec, crédit pour la TPS/TVH et Allocation canadienne pour enfants) est une valeur de [Taux et règles](rates-rules), sous **Impôt sur le revenu**, par date et par province ou territoire. L’application fournit les chiffres officiels de 2024, 2025 et 2026, chacun avec sa source. Un administrateur peut y ajouter une valeur pour une année ou une province, par exemple quand un budget change un taux ; l’estimation l’utilise à partir de sa date. Une année dont les chiffres n’y sont pas encore utilise les derniers connus.
+Chaque taux, montant et seuil utilisé par l’estimation (tranches, montants personnels de base, taux des crédits, montants pour l’âge, pour époux, pour revenu de pension et pour emploi, seuils des frais médicaux, taux des crédits pour dons et pour dividendes, surtaxe et contribution-santé de l’Ontario, RPC et RRQ, déduction pour travailleur du Québec, crédits pour frais de scolarité et leurs transferts maximaux, plafond des dons, Allocation canadienne pour les travailleurs, suppléments remboursables pour frais médicaux, prime au travail du Québec, crédit pour la TPS/TVH, Allocation canadienne pour enfants, impôt de récupération de la SV et impôts minimums de remplacement) est une valeur de [Taux et règles](rates-rules), sous **Impôt sur le revenu**, par date et par province ou territoire. L’application fournit les chiffres officiels de 2024, 2025 et 2026, chacun avec sa source. Un administrateur peut y ajouter une valeur pour une année ou une province, par exemple quand un budget change un taux ; l’estimation l’utilise à partir de sa date. Une année dont les chiffres n’y sont pas encore utilise les derniers connus.
 
 ## Pendant l’année : ce qui alimente les écrans fiscaux {#through-the-year}
 

@@ -157,10 +157,11 @@ class IncomeTaxService internal constructor(private val books: Books) {
         val sources = mapOf(
             TaxInput.EMPLOYMENT to of(PackageItem.EMPLOYMENT_INCOME),
             TaxInput.PENSION to if (rrif == TaxInput.PENSION) of(PackageItem.OTHER_PENSIONS, PackageItem.RRIF_INCOME) else of(PackageItem.OTHER_PENSIONS),
+            TaxInput.OAS to of(PackageItem.OAS_PENSION),
             TaxInput.OTHER_INCOME to if (rrif == TaxInput.OTHER_INCOME) {
-                of(PackageItem.OAS_PENSION, PackageItem.CPP_QPP_BENEFITS, PackageItem.EI_BENEFITS, PackageItem.RRIF_INCOME)
+                of(PackageItem.CPP_QPP_BENEFITS, PackageItem.EI_BENEFITS, PackageItem.RRIF_INCOME)
             } else {
-                of(PackageItem.OAS_PENSION, PackageItem.CPP_QPP_BENEFITS, PackageItem.EI_BENEFITS)
+                of(PackageItem.CPP_QPP_BENEFITS, PackageItem.EI_BENEFITS)
             },
             TaxInput.INTEREST to of(PackageItem.INTEREST),
             TaxInput.ELIGIBLE_DIVIDENDS to ((if (dividends.isEmpty()) null else eligible) to dividends),

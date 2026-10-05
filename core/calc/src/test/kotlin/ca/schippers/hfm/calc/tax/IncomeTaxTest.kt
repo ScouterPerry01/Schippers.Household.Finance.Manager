@@ -256,6 +256,49 @@ class IncomeTaxTest {
     }
 
     @Test
+    fun `OAS recovery tax at a high income, capped at the OAS received`() {
+        val e = IncomeTax.estimate(2025, Province.ON, mapOf(TaxInput.OAS to d("8800"), TaxInput.PENSION to d("120000")), age65 = true)
+        // 15 % of 128,800 − 93,454; deducted from net income and added to the balance.
+        assertEquals(d("5301.90"), e.line(TaxPart.OTHER, TaxLineKind.OAS_RECOVERY))
+        assertEquals(d("-5301.90"), e.line(TaxPart.INCOME, TaxLineKind.OAS_DEDUCTION))
+        assertEquals(d("123498.10"), e.netIncome)
+        assertEquals(e.totalTax + d("5301.90"), e.balance)
+        val richer = IncomeTax.estimate(2025, Province.ON, mapOf(TaxInput.OAS to d("8800"), TaxInput.PENSION to d("200000")), age65 = true)
+        assertEquals(d("8800.00"), richer.other)
+    }
+
+    @Test
+    fun `alternative minimum tax on a large capital gain, and its recovery in a later year`() {
+        val gain = IncomeTax.estimate(2025, Province.ON, mapOf(TaxInput.TAXABLE_CAPITAL_GAINS to d("300000")), age65 = false)
+        // Regular: 73,773.24 on 300,000, less 14,538 × 14.5 % = 71,665.23. Minimum: 20.5 % of 600,000 − 177,882,
+        // less half of 2,108.01 = 85,480.19.
+        assertEquals(d("71665.23"), gain.line(TaxPart.FEDERAL, TaxLineKind.BASIC_TAX))
+        assertEquals(d("85480.19"), gain.line(TaxPart.FEDERAL, TaxLineKind.MINIMUM_TAX))
+        assertEquals(d("13814.96"), gain.line(TaxPart.FEDERAL, TaxLineKind.AMT_ADDITIONAL))
+        assertEquals(d("85480.19"), gain.federalTax)
+        // Ontario adds 24.63 % of the federal additional tax.
+        assertEquals(d("3402.62"), gain.line(TaxPart.PROVINCIAL, TaxLineKind.AMT_ADDITIONAL))
+        assertEquals(d("13814.96"), gain.carry(CarryKind.MINIMUM_TAX).left)
+        // Without a large gain there is no minimum tax line.
+        assertTrue(IncomeTax.estimate(2025, Province.ON, pay("100000"), age65 = false).lines.none { it.kind == TaxLineKind.MINIMUM_TAX })
+
+        // A later year with regular tax: the carryover brings the federal tax down to the minimum (zero here).
+        val later = IncomeTax.estimate(2025, Province.ON, pay("100000") + (TaxInput.AMT_CARRIED to d("13814.96")), age65 = false)
+        assertEquals(d("-13814.96"), later.line(TaxPart.FEDERAL, TaxLineKind.AMT_CARRYOVER))
+        assertEquals(d("690.55"), later.federalTax)
+        assertEquals(d("-3402.62"), later.line(TaxPart.PROVINCIAL, TaxLineKind.AMT_CARRYOVER))
+        assertEquals(d("0.00"), later.carry(CarryKind.MINIMUM_TAX).left)
+    }
+
+    @Test
+    fun `Quebec minimum tax at 19 percent`() {
+        val e = IncomeTax.estimate(2025, Province.QC, mapOf(TaxInput.TAXABLE_CAPITAL_GAINS to d("300000")), age65 = false)
+        // 19 % of 600,000 − 179,990, less half of 18,571 × 14 %; the regular Quebec tax is 64,394.74.
+        assertEquals(d("64394.74"), e.line(TaxPart.PROVINCIAL, TaxLineKind.BASIC_TAX))
+        assertEquals(d("78501.93"), e.provincialTax)
+    }
+
+    @Test
     fun `a year before the first rates has no estimate`() {
         assertFailsWith<RuleException> { IncomeTax.estimate(2023, Province.ON, pay("50000"), age65 = false) }
     }
