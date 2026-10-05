@@ -105,4 +105,18 @@ class IncomeTaxServiceTest {
         books.incomeTax.clear(2025, alex.id)
         assertEquals(SavedEstimate(emptyMap(), null), books.incomeTax.saved(2025, alex.id))
     }
+
+    @Test
+    fun `children are counted from the household members' birth dates`() {
+        val alex = books.members.create("Alex", MemberKind.ADULT)
+        books.members.update(books.members.create("Robin", MemberKind.CHILD).copy(birthDate = LocalDate(2021, 6, 1)))
+        books.members.update(books.members.create("Sky", MemberKind.CHILD).copy(birthDate = LocalDate(2012, 2, 1)))
+        books.members.update(books.members.create("Lee", MemberKind.CHILD).copy(birthDate = LocalDate(2005, 2, 1)))
+        val r = books.incomeTax.estimate(2025, alex.id)
+        fun figure(i: TaxInput) = r.figures.first { it.input == i }
+        assertEquals(0, BigDecimal(2).compareTo(figure(TaxInput.CHILDREN).fromBooks), "Lee is 20")
+        assertEquals(0, BigDecimal.ONE.compareTo(figure(TaxInput.CHILDREN_UNDER_6).fromBooks))
+        assertTrue(figure(TaxInput.CHILDREN).fromMembers)
+        assertTrue(r.estimate!!.lines.any { it.kind == ca.schippers.hfm.calc.tax.TaxLineKind.CHILD_BENEFIT })
+    }
 }

@@ -491,7 +491,7 @@ private fun EstimateTab(model: BooksModel) {
     // What was entered before for this person and year is kept in the books and comes back here.
     val saved = remember(year, person?.id) { person?.let { runCatching { books.incomeTax.saved(year, it.id) }.getOrNull() } }
     val entered = remember(year, person?.id) {
-        mutableStateMapOf<TaxInput, String>().apply { saved?.figures?.forEach { (input, amount) -> put(input, MoneyFormat.formatAmount(Money.of(amount, Currency.CAD), locale)) } }
+        mutableStateMapOf<TaxInput, String>().apply { saved?.figures?.forEach { (input, amount) -> put(input, shownAmount(input, amount, locale)) } }
     }
     var age65 by remember(year, person?.id) { mutableStateOf(saved?.age65) }
     val groupId = remember { model.defaultGroupForPersonalRecords()?.id }
@@ -556,14 +556,22 @@ private fun EstimateTab(model: BooksModel) {
                 }
                 items(figures, key = { "f/${it.input}" }) { f ->
                     Column(Modifier.padding(vertical = 2.dp)) {
-                        val shown = entered[f.input] ?: f.fromBooks?.let { MoneyFormat.formatAmount(Money.of(it, Currency.CAD), locale) }.orEmpty()
-                        AmountInput(model.t("taxEstimateInput.${f.input}"), shown, Currency.CAD, locale, Modifier.fillMaxWidth(), model::money) {
-                            entered[f.input] = it
-                            keep(f.input, it)
+                        val shown = entered[f.input] ?: f.fromBooks?.let { shownAmount(f.input, it, locale) }.orEmpty()
+                        if (f.input.count) {
+                            TextInput(model.t("taxEstimateInput.${f.input}"), shown, Modifier.fillMaxWidth(), error = if (shown.isNotBlank() && shown.trim().toIntOrNull()?.takeIf { it >= 0 } == null) "?" else null) {
+                                entered[f.input] = it
+                                if (it.isBlank() || it.trim().toIntOrNull()?.takeIf { n -> n >= 0 } != null) keep(f.input, it.trim())
+                            }
+                        } else {
+                            AmountInput(model.t("taxEstimateInput.${f.input}"), shown, Currency.CAD, locale, Modifier.fillMaxWidth(), model::money) {
+                                entered[f.input] = it
+                                keep(f.input, it)
+                            }
                         }
                         val source = when {
                             f.input in entered -> model.t(if (groupId != null) "taxEstimate.entered" else "taxEstimate.enteredNotSaved")
                             f.from.isNotEmpty() -> model.t("taxEstimate.from", f.from.joinToString(", ") { model.t("packageItem.$it") })
+                            f.fromMembers -> model.t("taxEstimate.fromMembers")
                             else -> model.t(EMPTY_HINTS[f.input] ?: if (f.input.group == TaxInputGroup.CARRY_FORWARD) "taxEstimate.fromNotice" else "taxEstimate.notInBooks")
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -598,6 +606,7 @@ private fun EstimateTab(model: BooksModel) {
                         ResultRow(model.t("taxEstimate.federalTax"), cad(e.federalTax))
                         ResultRow(model.t("taxEstimate.provincialTax", model.t("province.${e.province}")), cad(e.provincialTax))
                         ResultRow(model.t("taxEstimate.totalTax"), cad(e.totalTax), bold = true)
+                        if (e.refundable.signum() > 0) ResultRow(model.t("taxEstimate.refundable"), cad(e.refundable))
                         ResultRow(model.t("taxEstimate.paid"), cad(e.paid))
                         if (e.balance.signum() >= 0) ResultRow(model.t("taxEstimate.owing"), cad(e.balance), bold = true)
                         else ResultRow(model.t("taxEstimate.refund"), cad(e.balance.negate()), bold = true)
@@ -635,8 +644,15 @@ private fun EstimateTab(model: BooksModel) {
             }
             e.lines.groupBy { it.part }.forEach { (part, lines) ->
                 item(key = "p/$part") {
-                    val title = if (part == TaxPart.PROVINCIAL) model.t("taxEstimatePart.PROVINCIAL", model.t("province.${e.province}")) else model.t("taxEstimatePart.$part")
-                    Text(title, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                    val title = when (part) {
+                        TaxPart.PROVINCIAL -> model.t("taxEstimatePart.PROVINCIAL", model.t("province.${e.province}"))
+                        TaxPart.BENEFITS -> model.t("taxEstimatePart.BENEFITS", (year + 1).toString(), (year + 2).toString())
+                        else -> model.t("taxEstimatePart.$part")
+                    }
+                    Column(Modifier.padding(top = 12.dp, bottom = 4.dp)) {
+                        Text(title, fontWeight = FontWeight.Medium)
+                        if (part == TaxPart.BENEFITS || part == TaxPart.REFUNDABLE) Text(model.t("taxEstimatePartHint.$part"), style = MaterialTheme.typography.bodySmall)
+                    }
                 }
                 items(lines.withIndex().toList(), key = { "l/$part/${it.index}" }) { (_, l) ->
                     val bold = l.kind in TOTAL_LINES
@@ -677,9 +693,19 @@ private val INPUT_HINTS = mapOf(
     TaxInput.TUITION_RECEIVED to "taxEstimateHint.TUITION_RECEIVED",
     TaxInput.CAPITAL_LOSSES_CARRIED to "taxEstimateHint.CAPITAL_LOSSES_CARRIED",
     TaxInput.DONATIONS_CARRIED to "taxEstimateHint.DONATIONS_CARRIED",
+    TaxInput.SPOUSE_WORKING_INCOME to "taxEstimateHint.SPOUSE_WORKING_INCOME",
+    TaxInput.CHILDREN to "taxEstimateHint.CHILDREN",
 )
 
-private val TOTAL_LINES = setOf(TaxLineKind.NET_INCOME, TaxLineKind.TAXABLE_INCOME, TaxLineKind.TAX_ON_INCOME, TaxLineKind.BASIC_TAX, TaxLineKind.TAX)
+private val TOTAL_LINES = setOf(
+    TaxLineKind.NET_INCOME, TaxLineKind.TAXABLE_INCOME, TaxLineKind.TAX_ON_INCOME, TaxLineKind.BASIC_TAX, TaxLineKind.TAX,
+    TaxLineKind.CWB, TaxLineKind.MEDICAL_SUPPLEMENT, TaxLineKind.WORK_PREMIUM, TaxLineKind.QC_MEDICAL_CREDIT, TaxLineKind.REFUNDABLE_TOTAL,
+    TaxLineKind.GST_CREDIT, TaxLineKind.CHILD_BENEFIT,
+)
+
+/** A figure as shown in its field: a count as a whole number, an amount in the user's format. */
+private fun shownAmount(input: TaxInput, amount: BigDecimal, locale: java.util.Locale): String =
+    if (input.count) amount.toInt().toString() else MoneyFormat.formatAmount(Money.of(amount, Currency.CAD), locale)
 
 @Composable
 private fun ResultRow(label: String, value: String, bold: Boolean = false) {
@@ -696,7 +722,8 @@ private fun lineDetail(model: BooksModel, l: TaxLine, locale: java.util.Locale):
     val rate = l.rate
     val from = l.from
     return when {
-        l.kind == TaxLineKind.BRACKET && rate != null && from != null -> model.t("taxEstimate.bracketDetail", percentText(rate, locale), cad(base), cad(from))
+        (l.kind == TaxLineKind.BRACKET || l.kind == TaxLineKind.INCOME_REDUCTION) && rate != null && from != null ->
+            model.t("taxEstimate.bracketDetail", percentText(rate, locale), cad(base), cad(from))
         rate != null -> model.t("taxEstimate.rateOf", percentText(rate, locale), cad(base))
         else -> model.t("taxEstimate.on", cad(base))
     }

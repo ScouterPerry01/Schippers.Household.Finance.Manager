@@ -281,7 +281,12 @@ Crédits :
 - **Frais de scolarité de l’année (T2202, RL-8)** : de **Frais de scolarité** dans la trousse, les frais payés dans les catégories dont le traitement fiscal est frais de scolarité. Le montant qui compte est celui du feuillet T2202 de l’étudiant (le relevé 8 au Québec) : vérifiez-le, et entrez-le s’il diffère. Sous le champ, les feuillets T2202 et relevés 8 de la liste des feuillets de la personne sont affichés avec leur état. L’étudiant demande d’abord les frais de scolarité, dans la mesure nécessaire pour ramener son propre impôt à zéro : voir [Frais de scolarité et reports](taxes#estimate-carry-forward).
 - **Frais de scolarité à transférer à un conjoint ou à un parent** : pour l’étudiant. Vide, rien n’est transféré. Entrez le montant que l’étudiant veut transférer : l’estimation transfère au plus ce qui reste des frais de l’année après sa propre demande, et pas plus de 5 000 $ moins la partie des frais de l’année qu’il a utilisée (au Québec, à un parent ou grand-parent seulement, sans maximum en dollars). Ce qui n’est pas transféré est reporté.
 - **Frais de scolarité transférés par un étudiant** : pour le conjoint, le parent ou le grand-parent qui les reçoit : le montant que l’étudiant transfère, tel que l’estimation de l’étudiant le calcule. Au plus 5 000 $ comptent, au fédéral et dans les provinces et territoires qui ont encore le crédit ; au Québec, ce sont des frais transférés par un enfant ou un petit-enfant, crédités à 8 %.
-- **Revenu net de l’époux ou du conjoint** : vide, aucun montant pour époux n’est demandé. Entrez le revenu net d’un époux ou d’un conjoint de fait pour demander le montant pour époux, qui diminue à mesure que son revenu augmente. Au Québec, il s’ajoute au revenu de la personne pour former le revenu familial qui réduit les montants pour l’âge et pour revenus de retraite et fixe le seuil des frais médicaux.
+
+Famille : la situation du ménage dont dépendent le montant pour époux, les crédits remboursables et les prestations.
+
+- **Revenu net de l’époux ou du conjoint** : vide, la personne n’a pas d’époux ni de conjoint de fait et compte comme personne seule. Entrez le revenu net d’un époux ou d’un conjoint de fait : il donne le montant pour époux, qui diminue à mesure que son revenu augmente, et fait des montants familiaux ceux d’un couple (allocation pour les travailleurs, crédit pour la TPS/TVH, allocation pour enfants et, au Québec, prime au travail et primes). Au Québec, il s’ajoute aussi au revenu de la personne pour former le revenu familial qui réduit les montants pour l’âge et pour revenus de retraite et fixe le seuil des frais médicaux.
+- **Revenu de travail de l’époux ou du conjoint** : ses revenus d’emploi et de travail autonome, pour l’Allocation canadienne pour les travailleurs et la prime au travail du Québec d’un couple. Vide compte pour zéro.
+- **Enfants de moins de 18 ans vivant avec cette personne** et **Dont moins de 6 ans** : comptés parmi les membres du ménage de type enfant qui ont une date de naissance (**Des membres du ménage**), selon leur âge au 31 décembre. Les enfants font d’une personne seule un parent seul pour l’allocation pour les travailleurs et le crédit pour la TPS/TVH, et donnent l’Allocation canadienne pour enfants. Changez-les quand la liste des membres n’est pas complète, ou pour un parent qui ne vit pas avec les enfants.
 
 Reports des années antérieures : les soldes que donne l’avis de cotisation de l’an dernier. Chacun est conservé pour cette personne et cette année. Vide signifie aucun.
 
@@ -306,8 +311,9 @@ L’encadré en haut à droite donne :
 - **Impôt fédéral** : l’impôt fédéral après les crédits (après l’abattement du Québec pour un résident du Québec).
 - L’impôt provincial ou territorial, au nom de la province ou du territoire : après les crédits, avec toute surtaxe, réduction ou contribution-santé.
 - **Impôt sur le revenu total** : les deux ensemble.
+- **Crédits remboursables** : affichés s’il y en a : l’Allocation canadienne pour les travailleurs, le supplément remboursable pour frais médicaux et, au Québec, la prime au travail et le crédit remboursable pour frais médicaux. Ils réduisent le solde, même sous zéro.
 - **Retenues à la source et acomptes** : **Impôt retenu** et **Acomptes payés**.
-- **Solde dû** ou **Remboursement** : l’impôt total moins ce qui est déjà payé. Un solde dû doit être payé au plus tard le 30 avril de l’année suivante.
+- **Solde dû** ou **Remboursement** : l’impôt total moins les crédits remboursables et ce qui est déjà payé. Un solde dû doit être payé au plus tard le 30 avril de l’année suivante.
 - **Taux moyen** : l’impôt total en proportion du revenu total.
 - **Taux marginal** : l’impôt sur un dollar de plus de revenu ordinaire (comme des intérêts), fédéral et provincial ensemble ; c’est, en gros, ce qu’une déduction REER fait économiser sur chaque dollar.
 
@@ -346,6 +352,10 @@ Le fédéral, puis la province ou le territoire :
 - **Contribution-santé** : la contribution-santé de l’Ontario, par paliers de revenu imposable.
 - **Impôt** : l’impôt fédéral, ou provincial ou territorial.
 
+Crédits remboursables, si la personne en a : chacun avec son montant ; quand il est réduit selon le revenu, une ligne **Avant la réduction** et une ligne **Réduction selon le revenu** (un taux du revenu au-delà d’un seuil) le précèdent. **Crédits remboursables** les additionne. Voir [Crédits remboursables et prestations](taxes#estimate-refundable).
+
+Prestations versées de juillet à juin des deux années suivantes : le **Crédit pour la TPS/TVH (Allocation canadienne pour l’épicerie et les besoins essentiels)** et, avec des enfants, l’**Allocation canadienne pour enfants**, calculés de la même façon selon le revenu net familial de l’année. Elles sont versées en dehors de la déclaration et ne sont pas dans le solde.
+
 ### Résidents du Québec {#estimate-quebec}
 
 @index: estimation de l’impôt du Québec; déduction pour travailleur; estimation Revenu Québec
@@ -359,6 +369,21 @@ Une personne qui habite au Québec le 31 décembre paie l’impôt fédéral, r�
 - Le RRQ remplace le RPC : la partie de base des cotisations donne un crédit fédéral, et le reste une déduction dans les deux déclarations.
 - Les pertes en capital nettes d’autres années sont déduites du revenu du Québec comme dans la déclaration fédérale.
 - **Montant pour frais de scolarité** : le crédit du Québec est de 8 % des frais de scolarité, sur une ligne à part après le crédit pour dons. L’étudiant l’utilise dans la mesure où il ramène l’impôt du Québec à zéro ; ce qui reste des frais de l’année peut aller à un parent ou à un grand-parent (pas à un conjoint), et le reste est reporté.
+
+### Crédits remboursables et prestations {#estimate-refundable}
+
+@index: Allocation canadienne pour les travailleurs; ACT; supplément remboursable pour frais médicaux; prime au travail; crédit d’impôt remboursable pour frais médicaux; crédit pour la TPS/TVH; Allocation canadienne pour l’épicerie et les besoins essentiels; Allocation canadienne pour enfants; ACE
+
+Contrairement aux autres crédits, les crédits remboursables sont versés même quand il n’y a pas d’impôt à réduire. L’estimation compte :
+
+- Allocation canadienne pour les travailleurs : 27 % du revenu de travail (emploi et travail autonome) au-delà de 3 000 $, jusqu’à un maximum plus élevé pour une famille (un couple, ou un parent seul) ; elle diminue de 15 % du revenu net familial rajusté au-delà d’un seuil. Pour un couple, une partie du revenu de travail du conjoint au revenu le plus bas est exclue du revenu familial. Le Québec, l’Alberta et le Nunavut ont leurs propres chiffres (au Québec, par exemple, 37,3 % au-delà de 2 400 $ pour une personne seule, avec une réduction de 20 %).
+- Supplément remboursable pour frais médicaux : 25 % des frais médicaux demandés (au-delà du seuil), jusqu’à un maximum, pour une personne qui a au moins un revenu gagné minimal ; il diminue de 5 % du revenu net familial au-delà d’un seuil.
+- Prime au travail du Québec : un taux du revenu de travail au-delà de 2 400 $ (3 600 $ pour un couple), jusqu’à un plafond : 11,6 % sans enfants, 30 % pour un parent seul, 25 % pour un couple avec enfants ; elle diminue de 10 % du revenu familial au-delà de ce plafond.
+- Crédit d’impôt remboursable pour frais médicaux du Québec : 25 % des frais médicaux demandés dans la déclaration du Québec, jusqu’à un maximum, pour une personne qui a un revenu de travail minimal ; il diminue de 5 % du revenu familial au-delà d’un seuil.
+
+Les crédits familiaux d’un couple sont demandés par un seul conjoint : l’estimation les montre pour la personne estimée, ne les comptez donc qu’une fois. Les conditions que les livres ne peuvent pas vérifier (âge, études à temps plein, résidence) ne sont pas appliquées.
+
+Deux prestations sont montrées à part, parce qu’elles sont versées en dehors de la déclaration, du mois de juillet qui suit l’année au mois de juin suivant, selon le revenu net familial de l’année : le crédit pour la TPS/TVH (renommé Allocation canadienne pour l’épicerie et les besoins essentiels, et augmenté de 25 % à partir de juillet 2026), pour les adultes et les enfants de moins de 19 ans, avec un supplément pour les personnes seules ; et l’Allocation canadienne pour enfants, par enfant de moins de 6 ans et de 6 à 17 ans, qui diminue au-delà de deux seuils à un taux qui dépend du nombre d’enfants. Les montants valent pour toute l’année de versements, selon la famille au 31 décembre.
 
 ### Frais de scolarité et reports {#estimate-carry-forward}
 
@@ -375,13 +400,13 @@ L’estimation demande chaque solde le plus complètement possible. Dans la déc
 
 ### Ce que l’estimation laisse de côté {#estimate-left-out}
 
-L’estimation ne compte pas : les montants transférés d’un conjoint ou d’un enfant autres que les frais de scolarité, les montants relatifs aux études et pour manuels que certaines provinces et certains territoires ont encore, le crédit canadien pour la formation, les pertes autres qu’en capital d’autres années, les réductions d’impôt pour faible revenu autres que celles de l’Ontario et de la Colombie-Britannique, les crédits et prestations remboursables (crédit pour la TPS/TVH, Allocation canadienne pour les travailleurs, crédit d’impôt pour solidarité du Québec), l’impôt de récupération de la SV, l’impôt minimum de remplacement, les contributions politiques, les crédits pour impôt étranger, le montant canadien pour aidant naturel et le montant pour personne à charge admissible, le montant pour personne vivant seule du Québec, sa cotisation au Fonds des services de santé et sa prime d’assurance médicaments, et les suppléments de 2024 de la Nouvelle-Écosse aux montants pour époux et pour l’âge. Au Yukon, le montant pour époux n’est pas réduit avec le montant personnel de base aux revenus élevés. Ces éléments peuvent changer le résultat : c’est la déclaration qui compte.
+L’estimation ne compte pas : les montants transférés d’un conjoint ou d’un enfant autres que les frais de scolarité, les montants relatifs aux études et pour manuels que certaines provinces et certains territoires ont encore, le crédit canadien pour la formation, les pertes autres qu’en capital d’autres années, les réductions d’impôt pour faible revenu autres que celles de l’Ontario et de la Colombie-Britannique, le supplément pour personnes handicapées de l’Allocation canadienne pour les travailleurs et les autres crédits et prestations remboursables (crédit d’impôt pour solidarité du Québec, prestations provinciales), l’impôt de récupération de la SV, l’impôt minimum de remplacement, les contributions politiques, les crédits pour impôt étranger, le montant canadien pour aidant naturel et le montant pour personne à charge admissible, le montant pour personne vivant seule du Québec, sa cotisation au Fonds des services de santé et sa prime d’assurance médicaments, et les suppléments de 2024 de la Nouvelle-Écosse aux montants pour époux et pour l’âge. Au Yukon, le montant pour époux n’est pas réduit avec le montant personnel de base aux revenus élevés. Ces éléments peuvent changer le résultat : c’est la déclaration qui compte.
 
 ### D’où viennent les taux {#estimate-rates}
 
 @index: taux d’impôt sur le revenu; taux d’impôt par province; changements de taux
 
-Chaque taux, montant et seuil utilisé par l’estimation (tranches, montants personnels de base, taux des crédits, montants pour l’âge, pour époux, pour revenu de pension et pour emploi, seuils des frais médicaux, taux des crédits pour dons et pour dividendes, surtaxe et contribution-santé de l’Ontario, RPC et RRQ, déduction pour travailleur du Québec, crédits pour frais de scolarité et leurs transferts maximaux, et plafond des dons) est une valeur de [Taux et règles](rates-rules), sous **Impôt sur le revenu**, par date et par province ou territoire. L’application fournit les chiffres officiels de 2024, 2025 et 2026, chacun avec sa source. Un administrateur peut y ajouter une valeur pour une année ou une province, par exemple quand un budget change un taux ; l’estimation l’utilise à partir de sa date. Une année dont les chiffres n’y sont pas encore utilise les derniers connus.
+Chaque taux, montant et seuil utilisé par l’estimation (tranches, montants personnels de base, taux des crédits, montants pour l’âge, pour époux, pour revenu de pension et pour emploi, seuils des frais médicaux, taux des crédits pour dons et pour dividendes, surtaxe et contribution-santé de l’Ontario, RPC et RRQ, déduction pour travailleur du Québec, crédits pour frais de scolarité et leurs transferts maximaux, plafond des dons, Allocation canadienne pour les travailleurs, suppléments remboursables pour frais médicaux, prime au travail du Québec, crédit pour la TPS/TVH et Allocation canadienne pour enfants) est une valeur de [Taux et règles](rates-rules), sous **Impôt sur le revenu**, par date et par province ou territoire. L’application fournit les chiffres officiels de 2024, 2025 et 2026, chacun avec sa source. Un administrateur peut y ajouter une valeur pour une année ou une province, par exemple quand un budget change un taux ; l’estimation l’utilise à partir de sa date. Une année dont les chiffres n’y sont pas encore utilise les derniers connus.
 
 ## Pendant l’année : ce qui alimente les écrans fiscaux {#through-the-year}
 

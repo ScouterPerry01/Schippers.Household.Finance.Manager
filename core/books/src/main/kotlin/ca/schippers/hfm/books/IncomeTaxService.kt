@@ -15,10 +15,17 @@ import java.math.RoundingMode
 
 /**
  * One figure the estimate uses: the amount from the books ([fromBooks]) and the year-end package
- * items it comes from ([from], empty when the books have no source for it), or the amount entered
- * in its place ([entered]).
+ * items it comes from ([from], empty when the books have no source for it; [fromMembers] when it
+ * is counted from the household members' birth dates), or the amount entered in its place
+ * ([entered]).
  */
-data class EstimateFigure(val input: TaxInput, val fromBooks: BigDecimal?, val from: List<PackageItem>, val entered: BigDecimal?) {
+data class EstimateFigure(
+    val input: TaxInput,
+    val fromBooks: BigDecimal?,
+    val from: List<PackageItem>,
+    val entered: BigDecimal?,
+    val fromMembers: Boolean = false,
+) {
     val amount: BigDecimal? get() = entered ?: fromBooks
 }
 
@@ -176,9 +183,14 @@ class IncomeTaxService internal constructor(private val books: Books) {
             TaxInput.TAX_DEDUCTED to of(PackageItem.INCOME_TAX_DEDUCTED),
             TaxInput.INSTALMENTS to of(PackageItem.INSTALMENTS),
         )
+        // Children under 18 (and under 6) on December 31, from the household members of kind child with a birth date.
+        val ages = books.members.list(includeArchived = false).filter { it.kind == MemberKind.CHILD }.mapNotNull { m -> m.birthDate?.let { year - it.year } }
+            .filter { it in 0..17 }
+        val children = mapOf(TaxInput.CHILDREN to ages.size, TaxInput.CHILDREN_UNDER_6 to ages.count { it < 6 })
         return TaxInput.entries.map { i ->
             val (amount, from) = sources[i] ?: (null to emptyList())
-            EstimateFigure(i, amount, from, null)
+            val counted = children[i]?.takeIf { ages.isNotEmpty() }
+            if (counted != null) EstimateFigure(i, BigDecimal(counted), emptyList(), null, fromMembers = true) else EstimateFigure(i, amount, from, null)
         }
     }
 

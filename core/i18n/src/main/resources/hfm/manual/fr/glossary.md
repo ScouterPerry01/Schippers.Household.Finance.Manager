@@ -144,6 +144,8 @@ Voir [Impôts](taxes). Au Québec, les feuillets provinciaux s'appellent des rel
 - **Surtaxe** : un impôt de plus sur l'impôt provincial au-delà d'un seuil (Ontario).
 - **Contribution-santé de l'Ontario** : un montant ajouté à l'impôt de l'Ontario, par paliers de revenu imposable, jusqu'à 900 $.
 - **Crédit d'impôt pour frais de scolarité** : un crédit non remboursable sur les frais de scolarité admissibles (T2202, relevé 8). L'étudiant l'utilise d'abord ; jusqu'à 5 000 $ des frais de l'année peuvent aller à un conjoint, un parent ou un grand-parent (au Québec, un parent ou un grand-parent), et le reste est reporté. Voir [Frais de scolarité et reports](taxes#estimate-carry-forward).
+- **Crédit remboursable** : un crédit versé même quand il dépasse l'impôt, qui peut donc donner un remboursement. Voir [Crédits remboursables et prestations](taxes#estimate-refundable).
+- **Allocation canadienne pour les travailleurs (ACT)** : un crédit remboursable pour les personnes et les familles à faible revenu de travail, qui augmente avec le revenu de travail au-delà d'un seuil et diminue à mesure que le revenu net familial augmente. Le Québec, l'Alberta et le Nunavut ont leurs propres chiffres.
 - **Report** : un montant non utilisé dans son année qu'on peut demander une année ultérieure : frais de scolarité inutilisés, dons (jusqu'à cinq ans), pertes en capital nettes, cotisations REER inutilisées. L'avis de cotisation donne la plupart d'entre eux.
 
 ## La santé et la famille {#health-family}

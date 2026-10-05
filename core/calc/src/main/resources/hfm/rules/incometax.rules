@@ -376,3 +376,86 @@ tax.prov.tuitionTransfer | YT | 2024-01-01 | 5000 | CRA, Schedule YT(S11) 2024 a
 tax.prov.tuitionTransfer | NT | 2024-01-01 | 5000 | CRA, Schedule NT(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
 tax.prov.tuitionTransfer | NU | 2024-01-01 | 5000 | CRA, Schedule NU(S11) 2024 and 2025 (transfer of the current-year amount, maximum $5,000)
 tax.qc.tuition | - | 2024-01-01 | 0.08 | Revenu Québec, Schedule T 2024 and 2025 (TP-1.D.T-V); guide TP-1.G-V 2025, lines 398 and 398.1 (8 % of fees for 2014 and later)
+
+# Refundable credits and benefits. Read in October 2026 on the CRA's Schedule 6 (5000-S6, and 5005-S6,
+# 5009-S6 and 5014-S6 for Quebec, Alberta and Nunavut) and Federal Worksheet (5000-D1) for 2024 and
+# 2025, the CRA's indexation page for 2026, Revenu Quebec's Schedules P and B, Finances Quebec's 2026
+# parameters, and the CRA's GST/HST credit and Canada child benefit amounts. Schedule 6 for 2026 is
+# not published: Quebec, Alberta and Nunavut keep their 2025 values.
+#   cwb.single, cwb.couple, cwb.singleParent, cwb.coupleChildren: working income threshold; phase-in rate;
+#     maximum; adjusted family net income where the reduction starts; reduction rate
+#   cwb.secondaryEarner: the most of the lower earner's working income left out of a couple's family net income
+#   fed.medicalSupplement: maximum; minimum earned income; family net income threshold; rate of the medical
+#     expenses claimed; reduction rate
+#   qc.workPremium: work income excluded, single; couple; ceiling (and reduction threshold), single; couple;
+#     rate without children; single parent; couple with children; reduction rate on family income
+#   qc.medicalRefund: maximum; minimum work income; family income threshold; rate; reduction rate
+#   gstCredit (by base year: paid from July of the next year): adult; child; single supplement; net income
+#     where the supplement starts; its rate; family net income threshold; reduction rate
+#   ccb (by base year): per child under 6; per child 6 to 17; first and second family net income thresholds;
+#     reduction rates between them for 1, 2, 3, 4 or more children; rates above the second, same order
+rule tax.cwb.single LIST province
+rule tax.cwb.couple LIST province
+rule tax.cwb.singleParent LIST province
+rule tax.cwb.coupleChildren LIST province
+rule tax.cwb.secondaryEarner AMOUNT
+rule tax.fed.medicalSupplement LIST
+rule tax.qc.workPremium LIST
+rule tax.qc.medicalRefund LIST
+rule tax.gstCredit LIST
+rule tax.ccb LIST
+
+tax.cwb.single | - | 2024-01-01 | 3000; 0.27; 1590; 26149; 0.15 | CRA, Schedule 6 (5000-S6) 2024
+tax.cwb.couple | - | 2024-01-01 | 3000; 0.27; 2739; 29833; 0.15 | CRA, Schedule 6 (5000-S6) 2024
+tax.cwb.singleParent | - | 2024-01-01 | 3000; 0.27; 2739; 29833; 0.15 | CRA, Schedule 6 (5000-S6) 2024
+tax.cwb.coupleChildren | - | 2024-01-01 | 3000; 0.27; 2739; 29833; 0.15 | CRA, Schedule 6 (5000-S6) 2024
+tax.cwb.single | - | 2025-01-01 | 3000; 0.27; 1633; 26855; 0.15 | CRA, Schedule 6 (5000-S6) 2025
+tax.cwb.couple | - | 2025-01-01 | 3000; 0.27; 2813; 30639; 0.15 | CRA, Schedule 6 (5000-S6) 2025
+tax.cwb.singleParent | - | 2025-01-01 | 3000; 0.27; 2813; 30639; 0.15 | CRA, Schedule 6 (5000-S6) 2025
+tax.cwb.coupleChildren | - | 2025-01-01 | 3000; 0.27; 2813; 30639; 0.15 | CRA, Schedule 6 (5000-S6) 2025
+tax.cwb.single | - | 2026-01-01 | 3000; 0.27; 1665; 27392; 0.15 | CRA, Indexation adjustment for personal income tax and benefit amounts 2026 (the $3,000 threshold, 27 % and 15 % of Schedule 6 2024 and 2025)
+tax.cwb.couple | - | 2026-01-01 | 3000; 0.27; 2869; 31251; 0.15 | CRA, Indexation adjustment for personal income tax and benefit amounts 2026 (the $3,000 threshold, 27 % and 15 % of Schedule 6 2024 and 2025)
+tax.cwb.singleParent | - | 2026-01-01 | 3000; 0.27; 2869; 31251; 0.15 | CRA, Indexation adjustment for personal income tax and benefit amounts 2026 (the $3,000 threshold, 27 % and 15 % of Schedule 6 2024 and 2025)
+tax.cwb.coupleChildren | - | 2026-01-01 | 3000; 0.27; 2869; 31251; 0.15 | CRA, Indexation adjustment for personal income tax and benefit amounts 2026 (the $3,000 threshold, 27 % and 15 % of Schedule 6 2024 and 2025)
+tax.cwb.single | QC | 2024-01-01 | 2400; 0.373; 3705.38; 13829.82; 0.20 | CRA, Schedule 6 for residents of Quebec (5005-S6) 2024
+tax.cwb.couple | QC | 2024-01-01 | 3600; 0.373; 5778.52; 21257.44; 0.20 | CRA, Schedule 6 for residents of Quebec (5005-S6) 2024
+tax.cwb.singleParent | QC | 2024-01-01 | 2400; 0.20; 1986.80; 13981.83; 0.20 | CRA, Schedule 6 for residents of Quebec (5005-S6) 2024
+tax.cwb.coupleChildren | QC | 2024-01-01 | 3600; 0.239; 3702.59; 21456.77; 0.20 | CRA, Schedule 6 for residents of Quebec (5005-S6) 2024
+tax.cwb.single | QC | 2025-01-01 | 2400; 0.373; 3812.06; 14170.05; 0.20 | CRA, Schedule 6 for residents of Quebec (5005-S6) 2025
+tax.cwb.couple | QC | 2025-01-01 | 3600; 0.373; 5943.38; 21787.19; 0.20 | CRA, Schedule 6 for residents of Quebec (5005-S6) 2025
+tax.cwb.singleParent | QC | 2025-01-01 | 2400; 0.20; 2044.00; 14341.56; 0.20 | CRA, Schedule 6 for residents of Quebec (5005-S6) 2025
+tax.cwb.coupleChildren | QC | 2025-01-01 | 3600; 0.239; 3808.23; 22007.75; 0.20 | CRA, Schedule 6 for residents of Quebec (5005-S6) 2025
+tax.cwb.single | AB | 2024-01-01 | 2760; 0.21; 1704; 25472; 0.15 | CRA, Schedule 6 for residents of Alberta (5009-S6) 2024
+tax.cwb.couple | AB | 2024-01-01 | 2760; 0.21; 2551; 31911; 0.15 | CRA, Schedule 6 for residents of Alberta (5009-S6) 2024
+tax.cwb.singleParent | AB | 2024-01-01 | 2760; 0.21; 2551; 31911; 0.15 | CRA, Schedule 6 for residents of Alberta (5009-S6) 2024
+tax.cwb.coupleChildren | AB | 2024-01-01 | 2760; 0.21; 2551; 31911; 0.15 | CRA, Schedule 6 for residents of Alberta (5009-S6) 2024
+tax.cwb.single | AB | 2025-01-01 | 2760; 0.21; 1750; 26159; 0.15 | CRA, Schedule 6 for residents of Alberta (5009-S6) 2025
+tax.cwb.couple | AB | 2025-01-01 | 2760; 0.21; 2619; 32772; 0.15 | CRA, Schedule 6 for residents of Alberta (5009-S6) 2025
+tax.cwb.singleParent | AB | 2025-01-01 | 2760; 0.21; 2619; 32772; 0.15 | CRA, Schedule 6 for residents of Alberta (5009-S6) 2025
+tax.cwb.coupleChildren | AB | 2025-01-01 | 2760; 0.21; 2619; 32772; 0.15 | CRA, Schedule 6 for residents of Alberta (5009-S6) 2025
+tax.cwb.single | NU | 2024-01-01 | 6000; 0.14; 1578; 26127; 0.04 | CRA, Schedule 6 for residents of Nunavut (5014-S6) 2024
+tax.cwb.couple | NU | 2024-01-01 | 6000; 0.14; 2371; 35957; 0.08 | CRA, Schedule 6 for residents of Nunavut (5014-S6) 2024
+tax.cwb.singleParent | NU | 2024-01-01 | 6000; 0.14; 2371; 35957; 0.08 | CRA, Schedule 6 for residents of Nunavut (5014-S6) 2024
+tax.cwb.coupleChildren | NU | 2024-01-01 | 6000; 0.14; 2371; 35957; 0.08 | CRA, Schedule 6 for residents of Nunavut (5014-S6) 2024
+tax.cwb.single | NU | 2025-01-01 | 6000; 0.14; 1621; 26832; 0.04 | CRA, Schedule 6 for residents of Nunavut (5014-S6) 2025
+tax.cwb.couple | NU | 2025-01-01 | 6000; 0.14; 2435; 36927; 0.08 | CRA, Schedule 6 for residents of Nunavut (5014-S6) 2025
+tax.cwb.singleParent | NU | 2025-01-01 | 6000; 0.14; 2435; 36927; 0.08 | CRA, Schedule 6 for residents of Nunavut (5014-S6) 2025
+tax.cwb.coupleChildren | NU | 2025-01-01 | 6000; 0.14; 2435; 36927; 0.08 | CRA, Schedule 6 for residents of Nunavut (5014-S6) 2025
+tax.cwb.secondaryEarner | - | 2024-01-01 | 15955 | CRA, Schedule 6 (5000-S6) 2024
+tax.cwb.secondaryEarner | - | 2025-01-01 | 16386 | CRA, Schedule 6 (5000-S6) 2025
+tax.cwb.secondaryEarner | - | 2026-01-01 | 16714 | CRA, Indexation adjustment for personal income tax and benefit amounts 2026
+tax.fed.medicalSupplement | - | 2024-01-01 | 1464; 4275; 32419; 0.25; 0.05 | CRA, Federal Worksheet (5000-D1) 2024, line 45200; CRA, Indexation adjustment for personal income tax and benefit amounts
+tax.fed.medicalSupplement | - | 2025-01-01 | 1504; 4390; 33294; 0.25; 0.05 | CRA, Federal Worksheet (5000-D1) 2025, line 45200; CRA, Indexation adjustment for personal income tax and benefit amounts
+tax.fed.medicalSupplement | - | 2026-01-01 | 1534; 4478; 33960; 0.25; 0.05 | CRA, Indexation adjustment for personal income tax and benefit amounts 2026 (25 % and 5 % as in the 2024 and 2025 worksheets)
+tax.qc.workPremium | - | 2024-01-01 | 2400; 3600; 12334; 19092; 0.116; 0.30; 0.25; 0.10 | Revenu Québec, Schedule P 2024 (TP-1.D.P-V)
+tax.qc.workPremium | - | 2025-01-01 | 2400; 3600; 12620; 19534; 0.116; 0.30; 0.25; 0.10 | Revenu Québec, Schedule P 2025 (TP-1.D.P-V)
+tax.qc.workPremium | - | 2026-01-01 | 2400; 3600; 12808; 19828; 0.116; 0.30; 0.25; 0.10 | Finances Québec, Paramètres du régime d’imposition des particuliers 2026, tableau 3 (exclusions, ceilings and maximums; the 2025 rates give those maximums)
+tax.qc.medicalRefund | - | 2024-01-01 | 1425; 3645; 27550; 0.25; 0.05 | Revenu Québec, Schedule B 2024 (TP-1.D.B-V), part D
+tax.qc.medicalRefund | - | 2025-01-01 | 1466; 3750; 28335; 0.25; 0.05 | Revenu Québec, Schedule B 2025 (TP-1.D.B-V), part D
+tax.qc.medicalRefund | - | 2026-01-01 | 1496; 3825; 28915; 0.25; 0.05 | Finances Québec, Paramètres du régime d’imposition des particuliers 2026, tableau 3 (25 % and 5 % as in Schedule B 2025)
+tax.gstCredit | - | 2023-01-01 | 340; 179; 179; 11039; 0.02; 44324; 0.05 | CRA, Indexation adjustment for personal income tax and benefit amounts (GST/HST credit, July 2024 to June 2025, base year 2023)
+tax.gstCredit | - | 2024-01-01 | 349; 184; 184; 11337; 0.02; 45521; 0.05 | CRA, Indexation adjustment for personal income tax and benefit amounts (GST/HST credit, July 2025 to June 2026, base year 2024)
+tax.gstCredit | - | 2025-01-01 | 445; 234; 234; 11564; 0.02; 46432; 0.05 | CRA, Canada Groceries and Essentials Benefit, payment amounts and payments chart, July 2026 to June 2027 (base year 2025; 25 % more for five years); CRA, Indexation adjustment for personal income tax and benefit amounts
+tax.ccb | - | 2023-01-01 | 7787; 6570; 36502; 79087; 0.07; 0.135; 0.19; 0.23; 0.032; 0.057; 0.08; 0.095 | CRA, Canada child benefit calculation sheet, July 2024 to June 2025 payments (2023 base year)
+tax.ccb | - | 2024-01-01 | 7997; 6748; 37487; 81222; 0.07; 0.135; 0.19; 0.23; 0.032; 0.057; 0.08; 0.095 | CRA, Canada child benefit calculation sheet, July 2025 to June 2026 payments (2024 base year)
+tax.ccb | - | 2025-01-01 | 8157; 6883; 38237; 82847; 0.07; 0.135; 0.19; 0.23; 0.032; 0.057; 0.08; 0.095 | CRA, How we calculate your CCB, July 2026 to June 2027 (2025 base year)

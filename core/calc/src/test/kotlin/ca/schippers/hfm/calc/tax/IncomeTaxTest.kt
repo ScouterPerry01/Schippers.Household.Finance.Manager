@@ -213,6 +213,49 @@ class IncomeTaxTest {
     }
 
     @Test
+    fun `Canada workers benefit for a low-income single person, reduced above the threshold`() {
+        val low = IncomeTax.estimate(2025, Province.ON, pay("15000") + (TaxInput.TAX_DEDUCTED to d("500")), age65 = false)
+        // 27 % of 12,000 above 3,000 is 3,240: the maximum of 1,633; net income below 26,855.
+        assertEquals(d("1633.00"), low.line(TaxPart.REFUNDABLE, TaxLineKind.CWB))
+        assertEquals(d("1633.00"), low.refundable)
+        assertEquals(low.totalTax - d("1633.00") - d("500.00"), low.balance)
+        val higher = IncomeTax.estimate(2025, Province.ON, pay("30000"), age65 = false)
+        // Less 15 % of 30,000 − 26,855 = 471.75.
+        assertEquals(d("-471.75"), higher.line(TaxPart.REFUNDABLE, TaxLineKind.INCOME_REDUCTION))
+        assertEquals(d("1161.25"), higher.line(TaxPart.REFUNDABLE, TaxLineKind.CWB))
+    }
+
+    @Test
+    fun `refundable medical expense supplement`() {
+        val e = IncomeTax.estimate(2025, Province.ON, pay("20000") + (TaxInput.MEDICAL to d("3000")), age65 = false)
+        // 3,000 above 3 % of 20,000 = 2,400 claimed; 25 % is 600.
+        assertEquals(d("600.00"), e.line(TaxPart.REFUNDABLE, TaxLineKind.MEDICAL_SUPPLEMENT))
+        assertEquals(d("2233.00"), e.refundable)
+    }
+
+    @Test
+    fun `Quebec workers benefit and work premium for a single person`() {
+        val e = IncomeTax.estimate(2025, Province.QC, pay("12000"), age65 = false)
+        // Quebec's CWB: 37.3 % of 12,000 − 2,400. Work premium: 11.6 % of 12,000 − 2,400; Quebec net income 11,280 is below 12,620.
+        assertEquals(d("3580.80"), e.line(TaxPart.REFUNDABLE, TaxLineKind.CWB))
+        assertEquals(d("1113.60"), e.line(TaxPart.REFUNDABLE, TaxLineKind.WORK_PREMIUM))
+        assertEquals(d("4694.40"), e.refundable)
+    }
+
+    @Test
+    fun `GST credit and child benefit are shown apart from the balance`() {
+        val inputs = pay("40000") + mapOf(TaxInput.CHILDREN to d("2"), TaxInput.CHILDREN_UNDER_6 to d("1"))
+        val e = IncomeTax.estimate(2025, Province.ON, inputs, age65 = false)
+        // 445 + 2 × 234 + (445 − 234) for the first child of a single parent + the 234 supplement; below 46,432.
+        assertEquals(d("1358.00"), e.line(TaxPart.BENEFITS, TaxLineKind.GST_CREDIT))
+        // 8,157 + 6,883, less 13.5 % of 40,000 − 38,237.
+        assertEquals(d("14801.99"), e.line(TaxPart.BENEFITS, TaxLineKind.CHILD_BENEFIT))
+        // A single parent gets the family workers benefit: 2,813 less 15 % of 40,000 − 30,639.
+        assertEquals(d("1408.85"), e.line(TaxPart.REFUNDABLE, TaxLineKind.CWB))
+        assertEquals(e.totalTax - e.refundable - e.paid, e.balance)
+    }
+
+    @Test
     fun `a year before the first rates has no estimate`() {
         assertFailsWith<RuleException> { IncomeTax.estimate(2023, Province.ON, pay("50000"), age65 = false) }
     }

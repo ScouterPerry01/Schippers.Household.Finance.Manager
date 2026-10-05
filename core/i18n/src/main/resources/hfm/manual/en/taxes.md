@@ -281,7 +281,12 @@ Credits:
 - **Tuition fees of the year (T2202, RL-8)**: from **Tuition** in the package, the fees paid on categories whose tax treatment is tuition. The amount that counts is the one on the student's T2202 slip (the RL-8 in Quebec): check it, and enter it if it differs. Under the field, the T2202 and RL-8 slips of the person's slip checklist are listed with their status. The student claims tuition first, as far as needed to bring their own tax to zero: see [Tuition and carry-forwards](taxes#estimate-carry-forward).
 - **Tuition to transfer to a spouse or parent**: for the student. Empty means nothing is transferred. Enter the amount the student wants to transfer: the estimate transfers at most what is left of this year's fees after their own claim, and no more than $5,000 less the part of this year's fees they used (in Quebec, to a parent or grandparent only, with no dollar maximum). What is not transferred is carried forward.
 - **Tuition transferred from a student**: for the spouse, parent or grandparent who receives it: the amount the student transfers, as the student's estimate works it out. At most $5,000 counts, federally and in the provinces and territories that still have the credit; in Quebec, it is fees transferred by a child or grandchild, credited at 8 %.
-- **Spouse's or partner's net income**: empty means no spouse amount is claimed. Enter the net income of a spouse or common-law partner to claim the spouse amount, which falls as their income rises. In Quebec, it is added to the person's own income to form the family income that reduces the age and retirement amounts and sets the medical expense threshold.
+
+Family: the household situation that the spouse amount, the refundable credits and the benefits depend on.
+
+- **Spouse's or partner's net income**: empty means the person has no spouse or common-law partner, and counts as single. Enter the net income of a spouse or common-law partner: it claims the spouse amount, which falls as their income rises, and makes the family figures those of a couple (the workers benefit, the GST/HST credit, the child benefit and, in Quebec, the work premium and the premiums). In Quebec, it is also added to the person's own income to form the family income that reduces the age and retirement amounts and sets the medical expense threshold.
+- **Spouse's or partner's working income**: their employment and self-employment income, for a couple's Canada workers benefit and Quebec work premium. Empty counts as zero.
+- **Children under 18 living with this person** and **Of whom under 6**: counted from the household members of kind child who have a birth date (**From Household members**), by their age on December 31. Children make a single person a single parent for the workers benefit and the GST/HST credit, and give the Canada child benefit. Change them when the members list is not complete, or for a parent who does not live with the children.
 
 Carried forward from earlier years: the balances that last year's notice of assessment gives. Each is kept for this person and year. Empty means none.
 
@@ -306,8 +311,9 @@ The box at the top right gives:
 - **Federal tax**: the federal tax after credits (after the Quebec abatement for a Quebec resident).
 - The provincial or territorial tax, named after the province or territory: after credits, with any surtax, reduction or health premium.
 - **Total income tax**: the two together.
+- **Refundable credits**: shown when there are any: the Canada workers benefit, the refundable medical expense supplement and, in Quebec, the work premium and the refundable credit for medical expenses. They come off the balance even below zero.
 - **Deducted at source and instalments**: **Income tax deducted** and **Instalments paid**.
-- **Balance owing** or **Refund**: the total income tax less what was already paid. A balance owing is due by April 30 of the next year.
+- **Balance owing** or **Refund**: the total income tax less the refundable credits and what was already paid. A balance owing is due by April 30 of the next year.
 - **Average rate**: the total income tax as a share of total income.
 - **Marginal rate**: the tax on one more dollar of ordinary income (such as interest), federal and provincial together; it is what an RRSP deduction saves, roughly, on each dollar.
 
@@ -346,6 +352,10 @@ Federal, then the province or territory:
 - **Health premium**: the Ontario Health Premium, by tiers of taxable income.
 - **Tax**: the federal, or the provincial or territorial, tax.
 
+Refundable credits, when the person has any: each with its amount; when it is reduced for income, a line **Before the reduction** and a line **Reduction for income** (a rate of the income above a threshold) come before it. **Refundable credits** adds them up. See [Refundable credits and benefits](taxes#estimate-refundable).
+
+Benefits paid from July to June of the two following years: the **GST/HST credit (Canada Groceries and Essentials Benefit)** and, with children, the **Canada child benefit**, worked out the same way on the year's family net income. They are paid outside the return and are not in the balance.
+
 ### Quebec residents {#estimate-quebec}
 
 @index: Quebec income tax estimate; deduction for workers; Revenu Québec estimate
@@ -359,6 +369,21 @@ A person who lives in Quebec on December 31 pays federal tax, reduced by the Que
 - QPP replaces CPP: the base part of the contributions is a federal credit, and the rest a deduction on both returns.
 - Net capital losses of other years are deducted from Quebec income as on the federal return.
 - **Tuition amount**: Quebec's credit is 8 % of the tuition fees, on a line of its own after the donation credit. The student uses it as far as it brings the Quebec tax to zero; what is left of this year's fees can go to a parent or grandparent (not to a spouse), and the rest is carried forward.
+
+### Refundable credits and benefits {#estimate-refundable}
+
+@index: Canada workers benefit; CWB; refundable medical expense supplement; Quebec work premium; prime au travail; refundable tax credit for medical expenses; GST/HST credit; Canada Groceries and Essentials Benefit; Canada child benefit; CCB
+
+Unlike the other credits, refundable credits are paid even when there is no tax to reduce. The estimate counts:
+
+- Canada workers benefit: 27 % of working income (employment and self-employment) above $3,000, up to a maximum, which is higher for a family (a couple, or a single parent); it falls by 15 % of adjusted family net income above a threshold. For a couple, part of the lower earner's working income is left out of the family income. Quebec, Alberta and Nunavut set their own figures (in Quebec, for example, 37.3 % above $2,400 for a single person, falling by 20 %).
+- Refundable medical expense supplement: 25 % of the medical expenses claimed (above the threshold), up to a maximum, for a person with at least a minimum of earned income; it falls by 5 % of family net income above a threshold.
+- Quebec work premium: a rate of work income above $2,400 ($3,600 for a couple), up to a ceiling: 11.6 % without children, 30 % for a single parent, 25 % for a couple with children; it falls by 10 % of family income above that ceiling.
+- Quebec refundable tax credit for medical expenses: 25 % of the medical expenses claimed on the Quebec return, up to a maximum, for a person with a minimum of work income; it falls by 5 % of family income above a threshold.
+
+A couple's family credits are claimed by one spouse: the estimate shows them for the person estimated, so count them only once. Eligibility rules the books cannot check (age, full-time studies, residence) are not applied.
+
+Two benefits are shown apart, because they are paid outside the return, from the July after the year to the following June, on the year's family net income: the GST/HST credit (renamed the Canada Groceries and Essentials Benefit, and increased by 25 % from July 2026), for adults and children under 19, with a supplement for single people; and the Canada child benefit, per child under 6 and from 6 to 17, which falls by a rate that depends on the number of children above two thresholds. The amounts are for the whole year of payments, as the family is on December 31.
 
 ### Tuition and carry-forwards {#estimate-carry-forward}
 
@@ -375,13 +400,13 @@ The estimate claims each balance as fully as it can. On the return, some of them
 
 ### What the estimate leaves out {#estimate-left-out}
 
-The estimate does not count: amounts transferred from a spouse or child other than tuition, the education and textbook amounts some provinces and territories still have, the Canada training credit, non-capital losses of other years, low-income tax reductions other than Ontario's and British Columbia's, refundable credits and benefits (GST/HST credit, Canada workers benefit, Quebec's solidarity credit), the OAS recovery tax, the alternative minimum tax, political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, its health services fund contribution and its prescription drug insurance premium, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
+The estimate does not count: amounts transferred from a spouse or child other than tuition, the education and textbook amounts some provinces and territories still have, the Canada training credit, non-capital losses of other years, low-income tax reductions other than Ontario's and British Columbia's, the disability supplement of the Canada workers benefit and the other refundable credits and benefits (Quebec's solidarity credit, provincial benefits), the OAS recovery tax, the alternative minimum tax, political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, its health services fund contribution and its prescription drug insurance premium, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
 
 ### Where the rates come from {#estimate-rates}
 
 @index: income tax rates; tax rates by province; rate changes
 
-Every rate, amount and threshold the estimate uses (brackets, basic personal amounts, credit rates, the age, spouse, pension and employment amounts, medical expense thresholds, donation and dividend credit rates, Ontario's surtax and health premium, CPP and QPP, Quebec's deduction for workers, the tuition credits and their transfer maximums, and the donation limit) is a value in [Rates and rules](rates-rules), under **Income tax**, by date and by province or territory. The app comes with the official figures for 2024, 2025 and 2026, each with its source. An administrator can add a value for a year or a province there, for example when a budget changes a rate; the estimate uses it from its date. A year whose figures are not there yet uses the latest ones.
+Every rate, amount and threshold the estimate uses (brackets, basic personal amounts, credit rates, the age, spouse, pension and employment amounts, medical expense thresholds, donation and dividend credit rates, Ontario's surtax and health premium, CPP and QPP, Quebec's deduction for workers, the tuition credits and their transfer maximums, the donation limit, the Canada workers benefit, the refundable medical expense supplements, Quebec's work premium, the GST/HST credit and the Canada child benefit) is a value in [Rates and rules](rates-rules), under **Income tax**, by date and by province or territory. The app comes with the official figures for 2024, 2025 and 2026, each with its source. An administrator can add a value for a year or a province there, for example when a budget changes a rate; the estimate uses it from its date. A year whose figures are not there yet uses the latest ones.
 
 ## Through the year: what feeds the tax screens {#through-the-year}
 

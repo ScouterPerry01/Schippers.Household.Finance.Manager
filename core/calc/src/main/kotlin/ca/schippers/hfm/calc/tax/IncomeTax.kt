@@ -8,17 +8,19 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 /**
- * Where a figure of the estimate belongs on the return; [CARRY_FORWARD] holds the balances from
- * earlier years that the notice of assessment gives.
+ * Where a figure of the estimate belongs on the return; [FAMILY] is the household situation the
+ * credits and benefits depend on, [CARRY_FORWARD] the balances from earlier years that the notice
+ * of assessment gives.
  */
-enum class TaxInputGroup { INCOME, DEDUCTIONS, CREDITS, CARRY_FORWARD, PAYMENTS }
+enum class TaxInputGroup { INCOME, DEDUCTIONS, CREDITS, FAMILY, CARRY_FORWARD, PAYMENTS }
 
 /**
  * A figure the income tax estimate starts from, in dollars for the tax year. Dividends are the
  * taxable (grossed-up) amounts, as on the slips; [SPOUSE_NET_INCOME] is left out when there is no
- * spouse or common-law partner to claim, and [RRSP_LIMIT] when the deduction limit is not known.
+ * spouse or common-law partner (and then the person counts as single), and [RRSP_LIMIT] when the
+ * deduction limit is not known. A [count] is a number of people rather than dollars.
  */
-enum class TaxInput(val group: TaxInputGroup) {
+enum class TaxInput(val group: TaxInputGroup, val count: Boolean = false) {
     EMPLOYMENT(TaxInputGroup.INCOME),
 
     /** Pension income that qualifies for the pension income amount (an employer pension; a RRIF or annuity from 65). */
@@ -56,7 +58,16 @@ enum class TaxInput(val group: TaxInputGroup) {
 
     /** Tuition transferred to this person by a student (their spouse, child or grandchild). */
     TUITION_RECEIVED(TaxInputGroup.CREDITS),
-    SPOUSE_NET_INCOME(TaxInputGroup.CREDITS),
+    SPOUSE_NET_INCOME(TaxInputGroup.FAMILY),
+
+    /** The spouse's or partner's working income (employment and self-employment), for the Canada workers benefit. */
+    SPOUSE_WORKING_INCOME(TaxInputGroup.FAMILY),
+
+    /** Children under 18 living with the person on December 31. */
+    CHILDREN(TaxInputGroup.FAMILY, count = true),
+
+    /** Of [CHILDREN], those under 6. */
+    CHILDREN_UNDER_6(TaxInputGroup.FAMILY, count = true),
 
     /** Unused federal tuition amounts of earlier years. */
     TUITION_CARRIED(TaxInputGroup.CARRY_FORWARD),
@@ -80,7 +91,12 @@ enum class TaxInput(val group: TaxInputGroup) {
 }
 
 /** The part of the estimate a line belongs to. */
-enum class TaxPart { INCOME, FEDERAL, PROVINCIAL }
+/**
+ * The part of the estimate a line belongs to: [REFUNDABLE] credits come off the balance even
+ * below zero; [BENEFITS] are paid outside the return, from the July after the year, and are not in
+ * the balance.
+ */
+enum class TaxPart { INCOME, FEDERAL, PROVINCIAL, REFUNDABLE, BENEFITS }
 
 /** What a line of the estimate is; the apps name it and explain it in the user's language. */
 enum class TaxLineKind {
@@ -88,6 +104,8 @@ enum class TaxLineKind {
     BRACKET, TAX_ON_INCOME,
     BASIC_PERSONAL, AGE, SENIOR_SUPPLEMENT, SPOUSE, EMPLOYMENT_AMOUNT, CPP, EI, PENSION, MEDICAL, AGE_PENSION_REDUCTION,
     TUITION, TUITION_RECEIVED,
+    BEFORE_REDUCTION, INCOME_REDUCTION, CWB, MEDICAL_SUPPLEMENT, WORK_PREMIUM, QC_MEDICAL_CREDIT, REFUNDABLE_TOTAL,
+    GST_CREDIT, CHILD_BENEFIT,
     CREDIT_AMOUNTS, CREDITS, SUPPLEMENTAL_CREDIT, DONATIONS, DIVIDENDS, BASIC_TAX, ABATEMENT, SURTAX, TAX_REDUCTION, HEALTH_PREMIUM, TAX,
 }
 
@@ -135,9 +153,10 @@ data class TaxEstimate(
     val lines: List<TaxLine>,
     val ratesFrom: Int,
     val carryForwards: List<CarryForward> = emptyList(),
+    val refundable: BigDecimal = BigDecimal.ZERO,
 ) {
     val totalTax: BigDecimal get() = federalTax + provincialTax
-    val balance: BigDecimal get() = totalTax - paid
+    val balance: BigDecimal get() = totalTax - refundable - paid
 }
 
 /**
@@ -260,12 +279,142 @@ object IncomeTax {
         provTuition.carry(CarryKind.TUITION_PROVINCIAL)?.let { carry += it }
         lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.TAX, provincial)
 
+        val family = Family(spouse, p(TaxInput.SPOUSE_WORKING_INCOME), v(TaxInput.CHILDREN).max(BigDecimal.ZERO).toInt(), v(TaxInput.CHILDREN_UNDER_6).max(BigDecimal.ZERO).toInt())
+        val refundable = refundable(on, province, inputs, net, family, lines)
+        benefits(on, net, family, lines)
+
         val ratesFrom = Rules.valueOn("tax.fed.brackets", on)!!.from.year
         val paid = v(TaxInput.TAX_DEDUCTED) + v(TaxInput.INSTALMENTS)
         return TaxEstimate(
             year, province, money(total), money(net), money(taxable), federal, provincial, money(paid), BigDecimal.ZERO, BigDecimal.ZERO, lines, ratesFrom,
-            carry.sortedBy { it.kind },
+            carry.sortedBy { it.kind }, refundable,
         )
+    }
+
+    /** The household: a spouse's net income (null: no spouse) and working income, the children under 18 and under 6. */
+    private class Family(val spouseNet: BigDecimal?, val spouseWorking: BigDecimal, val children: Int, val under6: Int) {
+        val couple get() = spouseNet != null
+        val ruleSuffix get() = when {
+            couple && children > 0 -> "coupleChildren"
+            couple -> "couple"
+            children > 0 -> "singleParent"
+            else -> "single"
+        }
+        fun income(net: BigDecimal) = net + (spouseNet ?: BigDecimal.ZERO)
+    }
+
+    /**
+     * Adds a benefit's lines: before the reduction ([gross], with its [base] and [rate]), the
+     * reduction ([rateOff] of [income] above [threshold]), and what is left as [kind]. Returns it.
+     */
+    private fun reducedBenefit(
+        part: TaxPart, kind: TaxLineKind, gross: BigDecimal, base: BigDecimal?, rate: BigDecimal?,
+        income: BigDecimal, threshold: BigDecimal, rateOff: BigDecimal, lines: MutableList<TaxLine>,
+        reduction: BigDecimal = money((income - threshold).max(BigDecimal.ZERO).multiply(rateOff)),
+    ): BigDecimal {
+        val g = money(gross.max(BigDecimal.ZERO))
+        if (g.signum() == 0) return g
+        val off = reduction.min(g)
+        val left = g - off
+        if (off.signum() > 0) {
+            lines += TaxLine(part, TaxLineKind.BEFORE_REDUCTION, g, base?.let(::money), rate)
+            lines += TaxLine(part, TaxLineKind.INCOME_REDUCTION, off.negate(), money((income - threshold).max(BigDecimal.ZERO)), rateOff, money(threshold))
+        }
+        if (left.signum() > 0 || off.signum() > 0) lines += TaxLine(part, kind, left, if (off.signum() > 0) null else base?.let(::money), if (off.signum() > 0) null else rate)
+        return left
+    }
+
+    /**
+     * Refundable credits that change the balance: the Canada workers benefit (Schedule 6, with
+     * Quebec's, Alberta's and Nunavut's own parameters), the refundable medical expense supplement,
+     * and for Quebec residents the work premium (Schedule P) and the refundable credit for medical
+     * expenses. A couple's family credits are shown for the person estimated: one spouse claims them.
+     */
+    private fun refundable(on: LocalDate, province: Province, inputs: Map<TaxInput, BigDecimal>, net: BigDecimal, family: Family, lines: MutableList<TaxLine>): BigDecimal {
+        fun p(i: TaxInput) = (inputs[i] ?: BigDecimal.ZERO).max(BigDecimal.ZERO)
+        val part = TaxPart.REFUNDABLE
+        val working = p(TaxInput.EMPLOYMENT) + p(TaxInput.BUSINESS)
+        var total = BigDecimal.ZERO
+
+        // Canada workers benefit: a rate of family working income above a threshold, up to a maximum, less a rate of
+        // adjusted family net income above another; a couple's lower earner's working income is partly exempt.
+        val (threshold, phaseIn, max, start, rateOff) = Rules.list("tax.cwb.${family.ruleSuffix}", on, province)
+        val familyWorking = working + if (family.couple) family.spouseWorking else BigDecimal.ZERO
+        val exempt = if (family.couple) Rules.decimal("tax.cwb.secondaryEarner", on).min(working.min(family.spouseWorking)) else BigDecimal.ZERO
+        val cwbGross = (familyWorking - threshold).max(BigDecimal.ZERO).multiply(phaseIn).min(max)
+        total += reducedBenefit(part, TaxLineKind.CWB, cwbGross, familyWorking - threshold, phaseIn, family.income(net) - exempt, start, rateOff, lines)
+
+        // Refundable medical expense supplement: a rate of the medical expenses claimed, for a person with enough earned income.
+        val (supMax, minEarned, supThreshold, supRate, supOff) = Rules.list("tax.fed.medicalSupplement", on)
+        val earned = p(TaxInput.EMPLOYMENT) - p(TaxInput.PENSION_PLAN) - p(TaxInput.UNION_DUES) - p(TaxInput.OTHER_DEDUCTIONS) + p(TaxInput.BUSINESS)
+        val fedClaim = medical(federalMedical(on), p(TaxInput.MEDICAL), net)
+        if (earned >= minEarned) {
+            total += reducedBenefit(part, TaxLineKind.MEDICAL_SUPPLEMENT, fedClaim.multiply(supRate).min(supMax), fedClaim, supRate, family.income(net), supThreshold, supOff, lines)
+        }
+
+        if (province == Province.QC) {
+            val qcNet = quebecNet(on, inputs, net)
+            val qcFamily = family.income(qcNet)
+            // The work premium: a rate (by household) of work income above an exclusion, up to a ceiling, less a rate of
+            // family income above that ceiling.
+            val w = Rules.list("tax.qc.workPremium", on)
+            val (exclusion, ceiling) = if (family.couple) w[1] to w[3] else w[0] to w[2]
+            val rate = when {
+                family.children == 0 -> w[4]
+                family.couple -> w[6]
+                else -> w[5]
+            }
+            val work = familyWorking.min(ceiling)
+            total += reducedBenefit(part, TaxLineKind.WORK_PREMIUM, (work - exclusion).max(BigDecimal.ZERO).multiply(rate), (work - exclusion).max(BigDecimal.ZERO), rate, qcFamily, ceiling, w[7], lines)
+            // The refundable credit for medical expenses: a rate of the expenses above 3 % of family income, for a person with enough work income.
+            val (qMax, qMinWork, qThreshold, qRate, qOff) = Rules.list("tax.qc.medicalRefund", on)
+            val (floorRate, _) = Rules.list("tax.qc.medical", on)
+            val qcClaim = medical(listOf(floorRate), p(TaxInput.MEDICAL), qcFamily)
+            if (working >= qMinWork) {
+                total += reducedBenefit(part, TaxLineKind.QC_MEDICAL_CREDIT, qcClaim.multiply(qRate).min(qMax), qcClaim, qRate, qcFamily, qThreshold, qOff, lines)
+            }
+        }
+        if (total.signum() > 0) lines += TaxLine(part, TaxLineKind.REFUNDABLE_TOTAL, money(total))
+        return money(total)
+    }
+
+    /**
+     * Benefits paid outside the return from the July after the year, on the year's family net
+     * income: the GST/HST credit (the Canada Groceries and Essentials Benefit from July 2026) and
+     * the Canada child benefit. Shown apart; they are not in the balance.
+     */
+    private fun benefits(on: LocalDate, net: BigDecimal, family: Family, lines: MutableList<TaxLine>) {
+        val part = TaxPart.BENEFITS
+        val income = family.income(net)
+        val g = Rules.list("tax.gstCredit", on)
+        val (adult, child, single, singleFrom, singleRate) = g
+        val (threshold, rateOff) = g[5] to g[6]
+        var gross = adult + (if (family.couple) adult else BigDecimal.ZERO) + child.multiply(BigDecimal(family.children))
+        // A single parent gets the adult amount for the first child, and every single person the supplement, phased in.
+        if (!family.couple && family.children > 0) gross += adult - child
+        if (!family.couple) gross += single.min((net - singleFrom).max(BigDecimal.ZERO).multiply(singleRate))
+        reducedBenefit(part, TaxLineKind.GST_CREDIT, gross, null, null, income, threshold, rateOff, lines)
+
+        if (family.children > 0) {
+            val c = Rules.list("tax.ccb", on)
+            val under6 = family.under6.coerceIn(0, family.children)
+            val ccbGross = c[0].multiply(BigDecimal(under6)) + c[1].multiply(BigDecimal(family.children - under6))
+            val i = family.children.coerceAtMost(4) - 1
+            val (t1, t2) = c[2] to c[3]
+            val reduction = when {
+                income <= t1 -> BigDecimal.ZERO
+                income <= t2 -> (income - t1).multiply(c[4 + i])
+                else -> (t2 - t1).multiply(c[4 + i]) + (income - t2).multiply(c[8 + i])
+            }
+            reducedBenefit(part, TaxLineKind.CHILD_BENEFIT, ccbGross, null, null, income, t1, c[4 + i], lines, money(reduction))
+        }
+    }
+
+    /** Quebec net income: net income less the deduction for workers. */
+    private fun quebecNet(on: LocalDate, inputs: Map<TaxInput, BigDecimal>, net: BigDecimal): BigDecimal {
+        val (workerRate, workerMax) = Rules.list("tax.qc.workerDeduction", on)
+        val worker = money((inputs[TaxInput.EMPLOYMENT] ?: BigDecimal.ZERO).max(BigDecimal.ZERO).multiply(workerRate).min(workerMax))
+        return (net - worker).max(BigDecimal.ZERO)
     }
 
     /**
