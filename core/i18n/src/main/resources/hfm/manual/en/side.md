@@ -66,10 +66,13 @@ The same dialog creates an invoice (**New invoice**) or changes one (**Edit the 
   Each line's amount is the quantity times the price, rounded to the cent; the subtotal is the sum of the lines. Every line kept needs a description, a quantity and a price.
 - **Add a line**: adds an empty line with a quantity of 1.
 - **Sales tax**: the federal sales tax you charge, **GST** or **HST**.
-- **Rate (%)**: the rate of that tax, such as 5 for GST or 13 for HST in Ontario. Leave empty if you do not charge it.
-- **QST (%)**, in Quebec, or **PST (%)** elsewhere: the provincial sales tax rate, such as 9.975 for QST. Leave empty if you do not charge it. The label follows the province set for the household.
+- **Rate (%)**, next to it: the rate of that tax in percent, such as 5 for GST or 13 for HST in Ontario. Leave empty if you do not charge it.
+- **Provincial tax**: the provincial sales tax you charge: **QST** in Quebec, **PST** in British Columbia and Saskatchewan, **RST** (retail sales tax) in Manitoba. It starts on the tax of the province of the person in **From**.
+- **Rate (%)**, next to it: the rate of that tax in percent, such as 9.975 for the QST, 7 for the PST in British Columbia or the RST in Manitoba. Leave empty if you do not charge it. Rates are kept exactly as typed, decimals included: 9.975 stays 9.975.
+- The line under the taxes shows the rates in effect on the **Issued** date in the province of the person in **From** (their own province, or the household's when they have none or **Household** is chosen), such as "Ontario, in effect on 2026-10-05: HST 13 %". These rates come from **Rates and rules**, where every rate has the date it takes effect, so an invoice dated before a change gets the rate of its day (for example 15 % HST in Nova Scotia until March 31, 2025, and 14 % from April 1, 2025).
+- **Use the rates in effect**: fills both taxes and rates with the ones shown. From then on, changing **Issued** or **From** fills them again, until you type a rate yourself. You can always change the rates before saving.
 
-Leave both rates empty unless you are registered to collect sales taxes. Each tax is the rate applied to the subtotal, rounded to the cent, and the total is the subtotal plus the taxes.
+A new invoice starts with the rates in effect when the last invoice of the same person charged sales tax; otherwise the rates start empty. Leave both rates empty unless you are registered to collect sales taxes. Each tax is the rate applied to the subtotal, rounded to the cent, and the total is the subtotal plus the taxes. For an invoice dated in Quebec before 2013, the QST is worked out on the subtotal plus the GST, as it was then.
 
 - **Notes on the invoice**: printed at the bottom of the PDF, such as payment instructions ("Interac e-Transfer to …") or a thank-you.
 - **Delete**: shown when changing an invoice. Asks "Delete invoice number to customer?" first. When the deposit recorded with **Mark as paid** is still in the books, the question also offers **Also delete its deposit of amount on date in account**, unticked by default: leave it unticked when the money was really received, and the deposit stays in the account; tick it to remove the deposit too, for example when the invoice was marked paid by mistake. A reconciled deposit is deleted only after you confirm it again. Once confirmed, the delete cannot be undone.
@@ -77,7 +80,7 @@ Leave both rates empty unless you are registered to collect sales taxes. Each ta
 
 The invoice's currency is the household's base currency when it is created.
 
-@index: invoice number; small supplier; sales tax on invoices
+@index: invoice number; small supplier; sales tax on invoices; RST; retail sales tax; rates in effect
 
 > Tip: In Canada, you generally do not have to register for the GST/HST while you are a small supplier (taxable sales of $30,000 or less over four calendar quarters). Check the CRA's rules, and Revenu Québec's for the QST.
 

@@ -204,6 +204,28 @@ class TransactionService internal constructor(private val books: Books) {
         }
     }
 
+    /**
+     * TX-04: the province whose sales taxes apply to the transaction: that of the account's owners
+     * when they all have the same one, otherwise the household's.
+     */
+    fun salesTaxProvince(transactionId: String): ca.schippers.hfm.calc.Province {
+        val (_, row) = locate(transactionId)
+        val owners = books.accounts.get(row.account_id).ownerMemberIds
+        return owners.map { books.provinceOf(it) }.distinct().singleOrNull() ?: books.province
+    }
+
+    /**
+     * TX-04: the sales taxes in the transaction's total, at the rates in effect on its date in
+     * [salesTaxProvince] (Rates and rules), as [setSalesTaxes] takes them. Manitoba's RST is a PST.
+     */
+    fun salesTaxesFromTotal(transactionId: String): Map<TaxName, Money> {
+        val txn = get(transactionId)
+        val currency = books.accounts.get(txn.accountId).currency
+        val rates = ca.schippers.hfm.calc.salestax.SalesTaxes.ratesOn(txn.date, salesTaxProvince(transactionId))
+        return ca.schippers.hfm.calc.salestax.SalesTaxes.fromTotal(txn.amount.toBigDecimal(), rates, currency.minorUnits)
+            .associate { TaxName.valueOf(it.tax.kind.name) to Money.of(it.amount, currency) }
+    }
+
     /** TX-05: the refunds recorded against a purchase. */
     fun refundsOf(purchaseId: String): List<Transaction> {
         val (group, _) = locate(purchaseId)

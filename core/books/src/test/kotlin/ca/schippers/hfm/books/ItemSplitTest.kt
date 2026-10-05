@@ -2,6 +2,7 @@ package ca.schippers.hfm.books
 
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
+import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -10,6 +11,7 @@ import kotlin.test.assertEquals
 class ItemSplitTest {
 
     private fun cad(s: String) = Money.parse(s, Currency.CAD)
+    private val ON = LocalDate(2026, 10, 3)
     private fun line(description: String, amount: String, vararg taxes: String, codes: Boolean = true) =
         ReceiptLine(description, BigDecimal(amount), if (codes) taxes.toSet() else null)
     private fun shares(split: ItemSplit?) = split!!.shares.map { it.share.toBigDecimal().toPlainString() }
@@ -21,7 +23,7 @@ class ItemSplitTest {
             line("PAPER TOWELS", "15.99", "HST"), line("SHAMPOO", "44.70", "HST"),
         )
         // 13 % of 60.69 is 7.8897, printed as 7.89.
-        val split = ItemSplitter.split(lines, mapOf("HST" to BigDecimal("7.89")), cad("135.42"))
+        val split = ItemSplitter.split(lines, mapOf("HST" to BigDecimal("7.89")), cad("135.42"), ON)
         assertEquals(SplitMethod.TAX_CODES, split!!.method)
         assertEquals(SplitNote.NONE, split.note)
         assertEquals(listOf("6.49", "17.98", "42.37", "18.07", "50.51"), shares(split))
@@ -31,14 +33,14 @@ class ItemSplitTest {
     @Test
     fun `a Quebec receipt, GST and QST on the taxable line only`() {
         val lines = listOf(line("LAIT 2% 4L", "6.49"), line("PAPIER TOILETTE", "15.49", "GST", "QST"))
-        val split = ItemSplitter.split(lines, mapOf("GST" to BigDecimal("0.77"), "QST" to BigDecimal("1.55")), cad("24.30"))
+        val split = ItemSplitter.split(lines, mapOf("GST" to BigDecimal("0.77"), "QST" to BigDecimal("1.55")), cad("24.30"), ON)
         assertEquals(listOf("6.49", "17.81"), shares(split))
     }
 
     @Test
     fun `a restaurant bill, taxes by their codes, the tip over everything`() {
         val lines = listOf(line("Repas", "40.00", "GST", "QST"), line("Vin", "20.00", "GST", "QST"))
-        val split = ItemSplitter.split(lines, mapOf("GST" to BigDecimal("3.00"), "QST" to BigDecimal("5.99")), cad("78.99"))
+        val split = ItemSplitter.split(lines, mapOf("GST" to BigDecimal("3.00"), "QST" to BigDecimal("5.99")), cad("78.99"), ON)
         assertEquals(SplitMethod.TAX_CODES, split!!.method)
         // Food: 40 + 2.00 GST + 3.99 QST + two thirds of the 10.00 tip.
         assertEquals(listOf("52.66", "26.33"), shares(split))
@@ -48,7 +50,7 @@ class ItemSplitTest {
     fun `codes that cannot account for a printed tax are not trusted`() {
         // 7.89 is not 13, 14 or 15 % of 112.59: the codes were misread.
         val lines = listOf(line("MILK", "6.49"), line("GROCERY", "112.59", "HST"))
-        val split = ItemSplitter.split(lines, mapOf("HST" to BigDecimal("7.89")), cad("126.97"))
+        val split = ItemSplitter.split(lines, mapOf("HST" to BigDecimal("7.89")), cad("126.97"), ON)
         assertEquals(SplitMethod.PROPORTIONAL, split!!.method)
         assertEquals(SplitNote.CODES_DISAGREE, split.note)
         assertEquals(cad("126.97"), split.shares.map { it.share }.reduce(Money::plus))
@@ -57,7 +59,7 @@ class ItemSplitTest {
     @Test
     fun `without codes every tax is shared over every line`() {
         val lines = listOf(line("A", "10.00", codes = false), line("B", "20.00", codes = false))
-        val split = ItemSplitter.split(lines, mapOf("HST" to BigDecimal("3.90")), cad("33.90"))
+        val split = ItemSplitter.split(lines, mapOf("HST" to BigDecimal("3.90")), cad("33.90"), ON)
         assertEquals(SplitNote.NO_CODES, split!!.note)
         assertEquals(listOf("11.30", "22.60"), shares(split))
     }
@@ -68,7 +70,7 @@ class ItemSplitTest {
         for (n in 2..amounts.size) {
             val lines = amounts.take(n).mapIndexed { i, a -> line("item $i", a, *(if (i % 2 == 0) arrayOf("HST") else emptyArray())) }
             for (paid in listOf("50.00", "99.99", "0.37")) {
-                val split = ItemSplitter.split(lines, mapOf("HST" to BigDecimal("1.23")), cad(paid)) ?: continue
+                val split = ItemSplitter.split(lines, mapOf("HST" to BigDecimal("1.23")), cad(paid), ON) ?: continue
                 assertEquals(cad(paid), split.shares.map { it.share }.reduce(Money::plus), "$n items, $paid paid")
             }
         }
@@ -76,7 +78,20 @@ class ItemSplitTest {
 
     @Test
     fun `one item, or items adding up to nothing, cannot be split`() {
-        assertEquals(null, ItemSplitter.split(listOf(line("A", "5.00")), emptyMap(), cad("5.00")))
-        assertEquals(null, ItemSplitter.split(listOf(line("A", "5.00"), line("Return", "-5.00")), emptyMap(), cad("0.00")))
+        assertEquals(null, ItemSplitter.split(listOf(line("A", "5.00")), emptyMap(), cad("5.00"), ON))
+        assertEquals(null, ItemSplitter.split(listOf(line("A", "5.00"), line("Return", "-5.00")), emptyMap(), cad("0.00"), ON))
+    }
+
+    @Test
+    fun `the codes are checked against the rates in effect on the receipt's date`() {
+        val lines = listOf(line("BREAD", "10.00"), line("SOAP", "20.00", "HST"))
+        // 12 % of 20.00: British Columbia's HST, from July 2010 to March 2013 only.
+        val inBc2012 = ItemSplitter.split(lines, mapOf("HST" to BigDecimal("2.40")), cad("32.40"), LocalDate(2012, 5, 1))
+        assertEquals(SplitMethod.TAX_CODES, inBc2012!!.method)
+        val later = ItemSplitter.split(lines, mapOf("HST" to BigDecimal("2.40")), cad("32.40"), ON)
+        assertEquals(SplitNote.CODES_DISAGREE, later!!.note)
+        // Manitoba's RST, at 8 % in 2015.
+        val rst = ItemSplitter.split(listOf(line("A", "10.00"), line("B", "50.00", "GST", "RST")), mapOf("GST" to BigDecimal("2.50"), "RST" to BigDecimal("4.00")), cad("66.50"), LocalDate(2015, 1, 5))
+        assertEquals(SplitMethod.TAX_CODES, rst!!.method)
     }
 }

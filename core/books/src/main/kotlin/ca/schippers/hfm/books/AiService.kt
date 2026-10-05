@@ -166,7 +166,9 @@ class AiService internal constructor(private val books: Books) {
             val amount = o.number("amount") ?: return@mapNotNull null
             (o.text("name")?.uppercase() ?: "OTHER") to amount
         }.groupBy({ it.first }, { it.second }).mapValues { (_, v) -> v.fold(BigDecimal.ZERO, BigDecimal::add) }
-        return ItemSplitter.split(lines, printed, total)
+        // The rates in effect on the receipt's date: as read, else the document's, else today.
+        val on = answer.text("date")?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: books.documents.get(documentId).date ?: books.today()
+        return ItemSplitter.split(lines, printed, total, on)
     }
 
     /**

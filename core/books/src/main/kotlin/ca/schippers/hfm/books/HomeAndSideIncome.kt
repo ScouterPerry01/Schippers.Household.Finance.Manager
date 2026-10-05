@@ -167,9 +167,39 @@ data class InvoiceLine(val description: String, val quantity: String, val unitPr
         Money.of((BigDecimal(quantity) * BigDecimal(unitPrice)).setScale(currency.minorUnits, RoundingMode.HALF_UP), currency)
 }
 
-/** A sales tax charged on an invoice, for a GST/HST or QST registrant: its name and rate in basis points. */
+/**
+ * A sales tax charged on an invoice, for a GST/HST, QST or PST registrant: its [name] (GST, HST,
+ * QST, PST or RST) and its exact [rate] as a fraction (0.09975 is 9.975 %). With [onGst] it is
+ * charged on the subtotal plus the GST or HST, as Quebec's QST was before 2013.
+ */
+@Serializable(with = InvoiceTaxSerializer::class)
+data class InvoiceTax(val name: String, val rate: BigDecimal, val onGst: Boolean = false) {
+    /** The rate in percent, as typed and printed: 9.975 for 0.09975. */
+    val percent: BigDecimal get() = rate.movePointRight(2).stripTrailingZeros().let { if (it.scale() < 0) it.setScale(0) else it }
+
+    companion object {
+        /** A tax at [percent] % (9.975 for the QST). */
+        fun ofPercent(name: String, percent: BigDecimal, onGst: Boolean = false): InvoiceTax = InvoiceTax(name, percent.movePointLeft(2), onGst)
+    }
+}
+
+/** How an invoice's taxes are kept in the invoice.taxes JSON column: the rate as an exact decimal string. */
 @Serializable
-data class InvoiceTax(val name: String, val rateBp: Int)
+private data class InvoiceTaxJson(val name: String, val rate: String? = null, val onGst: Boolean = false, val rateBp: Int? = null)
+
+/** Writes the rate as a decimal string ("0.09975"); reads it, or the basis points ("rateBp") of invoices saved before. */
+internal object InvoiceTaxSerializer : kotlinx.serialization.KSerializer<InvoiceTax> {
+    override val descriptor = InvoiceTaxJson.serializer().descriptor
+
+    override fun serialize(encoder: kotlinx.serialization.encoding.Encoder, value: InvoiceTax) =
+        encoder.encodeSerializableValue(InvoiceTaxJson.serializer(), InvoiceTaxJson(value.name, value.rate.stripTrailingZeros().toPlainString(), value.onGst))
+
+    override fun deserialize(decoder: kotlinx.serialization.encoding.Decoder): InvoiceTax {
+        val j = decoder.decodeSerializableValue(InvoiceTaxJson.serializer())
+        val rate = j.rate?.let(::BigDecimal) ?: BigDecimal(j.rateBp ?: 0).movePointLeft(4)
+        return InvoiceTax(j.name, rate, j.onGst)
+    }
+}
 
 data class Invoice(
     val id: String,
@@ -188,7 +218,11 @@ data class Invoice(
     val notes: String? = null,
 ) {
     val subtotal: Money get() = lines.fold(Money.zero(currency)) { a, l -> a + l.amount(currency) }
-    fun tax(t: InvoiceTax): Money = Money.of((subtotal.toBigDecimal() * BigDecimal(t.rateBp)).divide(BigDecimal(10_000), currency.minorUnits, RoundingMode.HALF_UP), currency)
+    /** The tax [t] on the subtotal (and, for a tax charged on the GST, on the GST or HST too), to the cent. */
+    fun tax(t: InvoiceTax): Money {
+        val base = if (t.onGst) taxes.filter { !it.onGst && (it.name == "GST" || it.name == "HST") }.fold(subtotal) { a, f -> a + tax(f) } else subtotal
+        return Money.of((base.toBigDecimal() * t.rate).setScale(currency.minorUnits, RoundingMode.HALF_UP), currency)
+    }
     val total: Money get() = taxes.fold(subtotal) { a, t -> a + tax(t) }
     fun overdue(today: LocalDate): Boolean = status == InvoiceStatus.SENT && dueDate != null && dueDate < today
 }
@@ -252,7 +286,9 @@ class InvoiceService internal constructor(private val books: Books) {
             val txn = books.transactions.create(
                 TransactionDraft(accountId, date, i.total, i.customer, listOf(SplitDraft(category, i.total, "${i.number}")), "${i.number}", i.memberId),
             )
-            val taxes = i.taxes.mapNotNull { t -> runCatching { ca.schippers.hfm.ocr.TaxName.valueOf(t.name.uppercase()) }.getOrNull()?.let { it to i.tax(t) } }.toMap()
+            // Manitoba's RST is kept with the provincial sales taxes.
+            val taxes = i.taxes.mapNotNull { t -> runCatching { ca.schippers.hfm.ocr.TaxName.valueOf(t.name.uppercase().replace("RST", "PST")) }.getOrNull()?.let { it to i.tax(t) } }
+                .groupBy({ it.first }, { it.second }).mapValues { (_, v) -> v.reduce(Money::plus) }
             if (taxes.isNotEmpty()) books.transactions.setSalesTaxes(txn.id, taxes)
             books.putSetting("$DEPOSIT_KEY.${paid.id}", txn.id)
         }

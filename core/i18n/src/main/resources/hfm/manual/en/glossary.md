@@ -128,7 +128,7 @@ See [Taxes](taxes). In Quebec, provincial slips are called Relevés (RL).
 - **RRSP contribution receipt**: the receipt for RRSP contributions, needed to deduct them.
 - **Official donation receipt**: the receipt a registered charity gives for a gift, with its registration number (nine digits, RR and four digits). See [Taxes](taxes).
 - **Tax instalments**: tax paid ahead, on March 15, June 15, September 15 and December 15, when not enough is withheld at source. They are due when the tax owing at filing is more than $3,000 ($1,800 in Quebec) this year and in either of the two years before.
-- **GST, HST, QST and PST**: sales taxes. The GST is federal; the HST combines it with the provincial tax in some provinces; the QST is Quebec's; a PST is charged in some other provinces.
+- **GST, HST, QST and PST**: sales taxes. The GST is federal; the HST combines it with the provincial tax in some provinces; the QST is Quebec's; a PST is charged in some other provinces (in Manitoba it is called the retail sales tax, RST). Their rates, by date and province, are in **Rates and rules**.
 - **Medical expense tax credit**: a credit for medical expenses paid in any 12 consecutive months ending in the year, above a threshold of 3 % of net income (or a set amount if lower). A couple usually claims them together on one return. See [Medical claims](medical).
 - **CPP and QPP**: the Canada Pension Plan and the Quebec Pension Plan, paid from work income and paying a retirement pension.
 - **OAS**: Old Age Security, the federal pension from age 65.

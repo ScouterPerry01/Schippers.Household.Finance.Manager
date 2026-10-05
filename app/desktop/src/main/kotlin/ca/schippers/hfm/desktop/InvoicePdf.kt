@@ -63,7 +63,7 @@ object InvoicePdf {
             p(" ")
             p(tr("invoice.subtotal", money(i.subtotal)))
             for (tax in i.taxes) {
-                val rate = BigDecimal(tax.rateBp).movePointLeft(2).stripTrailingZeros()
+                val rate = tax.percent
                 p(tr("invoice.taxLine", tr("taxName.${tax.name}"), rate, money(i.tax(tax))))
             }
             p(tr("invoice.totalLine", money(i.total)), b)

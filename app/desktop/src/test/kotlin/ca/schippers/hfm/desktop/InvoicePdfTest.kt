@@ -9,6 +9,7 @@ import kotlinx.datetime.LocalDate
 import org.junit.jupiter.api.io.TempDir
 import org.openpdf.text.pdf.PdfReader
 import org.openpdf.text.pdf.parser.PdfTextExtractor
+import java.math.BigDecimal
 import java.nio.file.Path
 import java.util.Locale
 import kotlin.test.Test
@@ -25,12 +26,12 @@ class InvoicePdfTest {
         val invoice = Invoice(
             "i", "g", "2026-001", "Mme Roy", LocalDate(2026, 9, 1), Currency.CAD,
             listOf(InvoiceLine("Tutoring", "6", "45"), InvoiceLine("Workbook", "1", "19.99")),
-            dueDate = LocalDate(2026, 9, 30), customerDetails = "12 Elm St\nQuébec", taxes = listOf(InvoiceTax("GST", 500), InvoiceTax("QST", 998)),
+            dueDate = LocalDate(2026, 9, 30), customerDetails = "12 Elm St\nQuébec", taxes = listOf(InvoiceTax.ofPercent("GST", BigDecimal("5")), InvoiceTax.ofPercent("QST", BigDecimal("9.975"))),
         )
         val file = temp.resolve("invoice.pdf").toFile()
         InvoicePdf.write(invoice, "Sam", file, { key, args -> listOf(key, *args).joinToString(" ") }, { MoneyFormat.format(it, Locale.CANADA) }, { it.toString() })
         val text = PdfReader(file.readBytes()).use { PdfTextExtractor(it).getTextFromPage(1) }
-        for (expected in listOf("invoice.title 2026-001", "Mme Roy", "Québec", "Workbook", "\$45.00", "invoice.taxLine taxName.QST 9.98 \$28.94", "invoice.totalLine \$333.43")) {
+        for (expected in listOf("invoice.title 2026-001", "Mme Roy", "Québec", "Workbook", "\$45.00", "invoice.taxLine taxName.QST 9.975 \$28.93", "invoice.totalLine \$333.42")) {
             assertTrue(expected in text, "$expected in $text")
         }
     }

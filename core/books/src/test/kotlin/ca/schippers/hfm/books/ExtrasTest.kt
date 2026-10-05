@@ -93,22 +93,43 @@ class ExtrasTest {
         val first = books.invoices.save(
             Invoice("", group, books.invoices.nextNumber(2026), "Mme Roy", LocalDate(2026, 9, 1), Currency.CAD,
                 listOf(InvoiceLine("Tutoring", "6", "45.00"), InvoiceLine("Workbook", "1", "19.99")), InvoiceStatus.SENT, LocalDate(2026, 9, 30),
-                taxes = listOf(InvoiceTax("GST", 500), InvoiceTax("QST", 998))),
+                taxes = listOf(InvoiceTax.ofPercent("GST", BigDecimal("5")), InvoiceTax.ofPercent("QST", BigDecimal("9.975")))),
         )
         assertEquals("2026-001", first.number)
         assertEquals("2026-002", books.invoices.nextNumber(2026))
         assertEquals(cad("289.99"), first.subtotal)
+        assertEquals(BigDecimal("9.975"), first.taxes[1].percent, "the QST rate is kept exactly, not cut to 9.97 %")
         assertEquals(cad("14.50"), first.tax(first.taxes[0]))
-        assertEquals(cad("28.94"), first.tax(first.taxes[1]))
-        assertEquals(cad("333.43"), first.total)
+        assertEquals(cad("28.93"), first.tax(first.taxes[1]))
+        assertEquals(cad("333.42"), first.total)
         assertTrue(first.overdue(LocalDate(2026, 10, 5)))
         assertFailsWith<ValidationException> { books.invoices.save(first.copy(id = "", customer = "Other")) }
 
         val paid = books.invoices.markPaid(first, LocalDate(2026, 10, 6), chequing.id)
         assertEquals(InvoiceStatus.PAID, paid.status)
         val deposit = books.transactions.register(chequing.id).map { it.transaction }.single()
-        assertEquals(cad("333.43"), deposit.amount)
-        assertEquals(mapOf(TaxName.GST to cad("14.50"), TaxName.QST to cad("28.94")), books.transactions.salesTaxes(deposit.id))
+        assertEquals(cad("333.42"), deposit.amount)
+        assertEquals(mapOf(TaxName.GST to cad("14.50"), TaxName.QST to cad("28.93")), books.transactions.salesTaxes(deposit.id))
+    }
+
+    @Test
+    fun `an invoice's tax rates are kept as exact decimals, and invoices saved with basis points still read`() {
+        val saved = books.invoices.save(
+            Invoice("", group, "2012-001", "M. Roy", LocalDate(2012, 6, 1), Currency.CAD, listOf(InvoiceLine("Tutoring", "1", "100.00")),
+                taxes = listOf(InvoiceTax.ofPercent("GST", BigDecimal("5")), InvoiceTax.ofPercent("QST", BigDecimal("9.5"), onGst = true))),
+        )
+        assertEquals(BigDecimal("0.095"), saved.taxes[1].rate)
+        assertEquals(cad("9.98"), saved.tax(saved.taxes[1]), "before 2013 the QST was charged on the price plus the GST")
+        assertEquals(cad("114.98"), saved.total)
+
+        // A row written before rates were kept as decimals: {"name":"GST","rateBp":500}.
+        books.ledger(books.group(group)).extrasQueries.upsertInvoice(
+            "old", "2025-009", "Old", null, "2025-03-01", null, "CAD", "SENT", null, null, """[{"description":"A","quantity":"1","unitPrice":"200.00"}]""",
+            """[{"name":"HST","rateBp":1300}]""", null,
+        )
+        val old = books.invoices.list().single { it.id == "old" }
+        assertEquals(listOf(InvoiceTax("HST", BigDecimal("0.1300"))), old.taxes)
+        assertEquals(cad("226.00"), old.total)
     }
 
     @Test

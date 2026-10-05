@@ -69,6 +69,23 @@ class SalesTaxRefundTest {
     }
 
     @Test
+    fun `the taxes in a total are worked out for the owner's province on the transaction's date`() {
+        books.setProvince(ca.schippers.hfm.calc.Province.QC)
+        val supplies = cat("business.supplies").id
+        val qc = books.transactions.create(TransactionDraft(visa.id, LocalDate(2026, 9, 3), cad("-114.98"), "Bureau en Gros", listOf(SplitDraft(supplies, cad("-114.98")))))
+        assertEquals(ca.schippers.hfm.calc.Province.QC, books.transactions.salesTaxProvince(qc.id))
+        assertEquals(mapOf(TaxName.GST to cad("5.00"), TaxName.QST to cad("9.98")), books.transactions.salesTaxesFromTotal(qc.id))
+
+        val ann = books.members.create("Ann", ca.schippers.hfm.domain.MemberKind.ADULT)
+        books.members.update(ann.copy(province = ca.schippers.hfm.calc.Province.NS))
+        val card = books.accounts.create(AccountDraft(books.groups().single().id, "Ann's card", AccountType.CREDIT_CARD, Currency.CAD, cad("0"), LocalDate(2025, 1, 1), ownerMemberIds = setOf(ann.id)))
+        val before = books.transactions.create(TransactionDraft(card.id, LocalDate(2025, 3, 31), cad("-115.00"), "Store", listOf(SplitDraft(supplies, cad("-115.00")))))
+        val after = books.transactions.create(TransactionDraft(card.id, LocalDate(2025, 4, 1), cad("-114.00"), "Store", listOf(SplitDraft(supplies, cad("-114.00")))))
+        assertEquals(mapOf(TaxName.HST to cad("15.00")), books.transactions.salesTaxesFromTotal(before.id), "Nova Scotia at 15 % until March 31, 2025")
+        assertEquals(mapOf(TaxName.HST to cad("14.00")), books.transactions.salesTaxesFromTotal(after.id), "and 14 % from April 1, 2025")
+    }
+
+    @Test
     fun `a receipt's taxes come with the transaction filed from it`() {
         val group = books.groups().single().id
         val doc = books.documents.import(group, "r".encodeToByteArray(), "r.jpg", "image/jpeg").document

@@ -328,12 +328,16 @@ After saving, the form shows a button such as 3 split lines in place of Category
 
 @index: GST; HST; QST; PST; sales tax; input tax credit; ITC
 
-To note the sales taxes a receipt shows, click the transaction in the register, then **Sales tax…**. The window Sales tax included shows the date, payee and amount of the transaction and explains: The GST, HST, QST or PST the receipt shows. Useful for self-employment (input tax credits) and the year-end package; leave empty otherwise.
+To note the sales taxes a receipt shows, click the transaction in the register, then **Sales tax…**. The window Sales tax included shows the date, payee and amount of the transaction and explains: The GST, HST, QST or PST the receipt shows, or calculated from the total at the rates in effect. Useful for self-employment (input tax credits) and the year-end package; leave empty otherwise.
 
 - **GST**: the federal goods and services tax on the receipt.
 - **HST**: the harmonized sales tax (in the provinces that combine the federal and provincial taxes).
 - **QST**: the Quebec sales tax.
-- **PST**: a provincial sales tax.
+- **PST**: a provincial sales tax (the PST of British Columbia or Saskatchewan, or Manitoba's retail sales tax, RST).
+
+Above the amounts, a line shows the sales taxes in effect on the transaction's date in the province that applies, such as "Quebec, in effect on 2026-09-03: GST 5 %, QST 9.975 %". The province is that of the account's owners when they all have the same one, otherwise the household's. The rates come from **Rates and rules**, by date, so an older transaction uses the rates of its day.
+
+- **Calculate from the total**: fills **GST**, **HST**, **QST** and **PST** with the taxes included in the transaction's amount at those rates, and empties the others. For example, $114.98 in Quebec in 2026 gives GST $5.00 and QST $9.98. The amounts are only proposed: check them against the receipt (items that are not taxed, such as basic groceries, make the real taxes smaller), change them if needed, then **Save**.
 
 Enter each tax as a positive amount in the account's currency; leave the others empty. The taxes cannot add up to more than the transaction. An empty or zero amount removes that tax. **Save** replaces what was recorded before. The amount and category of the transaction do not change: the tax is noted alongside it, and later edits of the transaction keep it. For self-employment and the tax package, see [Side income](side) and [Taxes](taxes).
 
