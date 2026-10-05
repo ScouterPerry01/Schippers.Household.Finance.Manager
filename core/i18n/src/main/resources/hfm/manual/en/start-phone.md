@@ -29,7 +29,7 @@ If the phone cannot reach the computer, check that both are on the same Wi-Fi an
 
 1. On the **Capture** tab, tap **Receipt**.
 2. Hold the receipt flat; the scanner finds its edges. Add more pages for a long receipt, then finish.
-3. The phone reads the receipt and fills in the store, date and amount. Correct them if needed, and add a note if you like. Everything is optional.
+3. The phone reads the receipt and fills in the store, date and amount. Correct them if needed, and choose the account it was paid with, its category, who it was for and a note if you like. Everything is optional.
 4. Tap **Save**.
 
 Use **Bill** for a bill, **Other document** for anything else to keep, **Quick expense** for a purchase without a receipt, and **Odometer or hours** for a vehicle reading. Details: [The capture form](phone-app#capture-form).
@@ -45,7 +45,7 @@ On the **Sent** tab, each capture shows **Waiting**, then **On the computer** on
 ## 5. Review it on the computer {#review}
 
 1. On the computer, open **Documents** and its **To review** tab. Your capture is there with the picture, the text read and what you typed.
-2. Click **Review**, check the details, then attach it to a transaction, record it on a bill, or file it. See [Documents](documents).
+2. Click **Review**, check the details, then attach it to a transaction, record it on a bill, or file it. See [Documents](documents). **New transaction from this document** starts with the account, category and person you chose on the phone.
 
 Odometer readings skip this step: they go straight to the vehicle's readings.
 

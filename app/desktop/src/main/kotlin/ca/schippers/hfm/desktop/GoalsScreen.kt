@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.AccountGoals
+import ca.schippers.hfm.books.GoalEntry
 import ca.schippers.hfm.books.GoalProgress
 import ca.schippers.hfm.books.GoalStatus
 import ca.schippers.hfm.books.SavingsGoal
@@ -285,6 +286,7 @@ private fun MoveDialog(model: BooksModel, goal: SavingsGoal, onClose: () -> Unit
 @Composable
 private fun HistoryDialog(model: BooksModel, goal: SavingsGoal, onClose: () -> Unit) {
     val entries = remember(model.revision) { model.books.goals.entries(goal.id) }
+    var deleting by remember { mutableStateOf<GoalEntry?>(null) }
     WideDialog(model.t("goals.historyOf", goal.name), model.t("common.close"), onClose) {
         if (entries.isEmpty()) Text(model.t("goals.noHistory"))
         LazyColumn(Modifier.heightIn(max = 480.dp)) {
@@ -297,10 +299,15 @@ private fun HistoryDialog(model: BooksModel, goal: SavingsGoal, onClose: () -> U
                         model.money(e.amount), Modifier.width(130.dp),
                         color = if (e.amount.isNegative) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                     )
-                    TextButton(onClick = { model.act { model.books.goals.deleteEntry(goal.id, e.id) } }) { Text(model.t("common.delete")) }
+                    TextButton(onClick = { deleting = e }) { Text(model.t("common.delete")) }
                 }
                 HorizontalDivider()
             }
         }
+    }
+    deleting?.let { e ->
+        FormDialog(model.t("goals.deleteEntry.title"), model.t("common.delete"), model.t("common.cancel"), onDismiss = { deleting = null }, onSave = {
+            if (model.act { model.books.goals.deleteEntry(goal.id, e.id) } != null) deleting = null
+        }) { Text(model.t("goals.deleteEntry.body", model.t("goalEntry.${e.kind}"), model.money(e.amount), model.date(e.date))) }
     }
 }

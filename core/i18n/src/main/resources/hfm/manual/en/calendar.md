@@ -139,7 +139,7 @@ From the earliest reminder you ticked until the appointment starts, it appears i
 Reminders from the calendar, bills, medication refills, renewals and maintenance all appear together:
 
 - in a coloured banner at the top of every screen except the one the reminder belongs to, such as "2 reminders  Dentist: tomorrow at 10:00 · Hydro: due in 7 days". Click the banner to open the screen of the first reminder;
-- as a system notification from RANN's Roost, checked every few minutes while the household is open. Each reminder is announced once per session (for an appointment, once for each reminder time you ticked).
+- as a system notification from RANN's Roost, checked every few minutes while the household is open. Each reminder is announced once a day for each household, remembered on this computer, so opening the app again the same day does not repeat it (for an appointment, once for each reminder time you ticked).
 
 An appointment marked done or cancelled gives no reminder. For bill reminders, see [Reminders and notifications](bills#reminder-banner).
 

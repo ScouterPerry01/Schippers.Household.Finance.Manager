@@ -37,6 +37,9 @@ class AppState(
     /** DIST-05, SEC-08: update checks for Linux packages from GitHub Releases (per computer). */
     val updater: Updater = Updater.create(prefs, System.getProperty("hfm.demo") == "true")
 
+    /** BILL-04: the reminders already shown as a notification today, per household (per computer). */
+    val notified: NotifiedReminders = NotifiedReminders(prefs)
+
     var language: Language by mutableStateOf(
         prefs.get(PREF_LANGUAGE, null)?.let { tag -> Language.entries.firstOrNull { it.tag == tag } }
             ?: Language.of(Locale.getDefault()),
@@ -179,6 +182,39 @@ class AppState(
         const val DEFAULT_AUTO_LOCK = 10
         private const val PREF_RECENT = "recentHouseholds"
         private const val MAX_RECENT = 5
+    }
+}
+
+/**
+ * BILL-04: remembers on this computer which reminders were shown as a system notification today,
+ * per household, so each comes once a day however often the app is opened. Reminders are kept
+ * as short hashes of their keys, and forgotten the next day.
+ */
+class NotifiedReminders(private val prefs: Preferences) {
+
+    /** The [keys] not yet notified today for [householdId]; they are remembered as notified from now on. */
+    @Synchronized
+    fun fresh(householdId: String, today: kotlinx.datetime.LocalDate, keys: List<String>): Set<String> {
+        val name = PREFIX + householdId.take(MAX_ID)
+        val stored = prefs.get(name, "").split(SEPARATOR)
+        val seen = if (stored.firstOrNull() == today.toString()) stored.drop(1).toMutableSet() else mutableSetOf()
+        val fresh = keys.filter { seen.add(hash(it)) }.toSet()
+        if (fresh.isNotEmpty() || stored.firstOrNull() != today.toString()) {
+            // A preference value holds 8 192 characters: about 900 reminders a day, the latest kept.
+            prefs.put(name, (listOf(today.toString()) + seen.toList().takeLast(MAX_KEPT)).joinToString(SEPARATOR))
+            runCatching { prefs.flush() }
+        }
+        return fresh
+    }
+
+    private fun hash(key: String): String =
+        java.security.MessageDigest.getInstance("SHA-256").digest(key.encodeToByteArray()).take(4).joinToString("") { "%02x".format(it) }
+
+    private companion object {
+        const val PREFIX = "notified."
+        const val SEPARATOR = ","
+        const val MAX_ID = 64
+        const val MAX_KEPT = 900
     }
 }
 

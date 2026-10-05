@@ -14,7 +14,7 @@ La barre de titre a deux boutons :
 
 En dessous se trouvent cinq onglets :
 
-- **À payer** : ce qui est en retard, à payer aujourd’hui et à payer dans les 30 prochains jours, avec les boutons pour payer, sauter ou entrer un montant.
+- **À payer** : ce qui est en retard, à payer aujourd’hui et à payer dans les 30 prochains jours, avec les boutons pour payer, sauter ou entrer un montant, et chaque montant à côté du montant habituel.
 - **Toutes les factures** : chaque facture, revenu et virement que vous avez créé.
 - **Calendrier** : les échéances sur une vue du mois.
 - **Abonnements** : ce que coûte chaque abonnement par année.
@@ -116,19 +116,39 @@ Ces éléments n’apparaissent que lorsque vous modifiez une facture existante.
 - **Active** : décochez-la pour mettre une facture en veilleuse, par exemple une facture saisonnière ou un service annulé dont vous voulez garder l’historique. Une facture inactive disparaît de À payer, de l’onglet Calendrier, de l’onglet Abonnements, de la prévision, des rappels et de l’écran Calendrier. Elle reste dans **Toutes les factures**, marquée « (inactive) », où vous pouvez la réactiver.
 - **Supprimer** : demande « Supprimer … et son historique de paiements? Les opérations déjà inscrites sont conservées. » et, après confirmation, supprime la facture et la liste des échéances payées ou sautées. Les opérations inscrites quand vous l’avez marquée payée restent dans les comptes. Cette action ne peut pas être annulée.
 
+### Historique des paiements {#payment-history}
+@index: historique de facture; facture moyenne; montant habituel; montant inhabituel; même mois l’an dernier
+
+Quand vous modifiez une facture existante, **Historique des paiements**, au bas du formulaire, énumère les montants payés, du plus récent au plus ancien (jusqu’aux douze derniers). Chaque ligne montre l’échéance et le montant payé, puis :
+
+- « habituellement … » : la moyenne des paiements précédents (jusqu’aux douze précédents) ;
+- « même mois l’an dernier … » : ce qui a été payé pour l’échéance du même mois un an plus tôt ;
+- « inhabituel », en rouge : le montant dépasse de plus d’un quart le montant habituel, avec au moins trois paiements antérieurs pour comparer.
+
+« Aucun paiement inscrit pour l’instant. » signifie que la facture n’a jamais été marquée payée. L’historique vient des échéances marquées payées : il commence au premier paiement que vous marquez.
+
 ## L’onglet À payer {#to-pay-tab}
 @index: factures en retard; factures à venir; agenda
 
-**À payer** énumère les échéances de toutes les factures, revenus et virements actifs en quatre groupes, chacun avec son nombre :
+**À payer** énumère les échéances de toutes les factures, revenus et virements actifs en cinq groupes au plus, chacun avec son nombre :
 
 - **En retard** : les échéances déjà passées, ni payées ni sautées, jusqu’à un an en arrière.
 - **À payer aujourd’hui**.
 - **30 prochains jours**.
 - **Payées récemment** : les échéances des 31 derniers jours (et les suivantes) déjà marquées payées, de la plus récente à la plus ancienne.
+- **Sautées** : les échéances que vous avez sautées, d’il y a un an au plus jusqu’aux 30 prochains jours, de la plus récente à la plus ancienne. Affiché seulement s’il y en a.
 
-« Rien à payer dans les 30 prochains jours. » signifie que les quatre groupes sont vides.
+« Rien à payer dans les 30 prochains jours. » signifie que rien n’est en retard, à payer aujourd’hui ou à payer dans les 30 prochains jours.
 
 Chaque ligne montre l’échéance, le nom, le mode de paiement, le compte (et « → compte » pour un virement), la date du paiement s’il a eu lieu, et le montant (« ≈ » devant signifie que le montant est prévu, pas connu). Les boutons de la ligne sont décrits ci-dessous. **Modifier** ouvre le formulaire de la facture.
+
+Dès qu’une facture a déjà été payée, sa ligne compare aussi le montant avec son historique :
+
+- « habituellement … » : la moyenne des paiements avant cette échéance (jusqu’aux douze derniers) ;
+- « même mois l’an dernier … » : ce qui a été payé pour l’échéance du même mois un an plus tôt ;
+- « Montant inhabituel : plus d’un quart au-dessus de l’habituel. », en rouge : le montant est connu (entré ou payé, pas seulement prévu) et dépasse de plus de 25 % le montant habituel, avec au moins trois paiements antérieurs pour comparer. Vérifiez la facture avant de la payer.
+
+L’historique complet d’une facture est dans son formulaire. Voir [Historique des paiements](bills#payment-history).
 
 ### Marquer payée ou Marquer reçu {#mark-paid}
 @index: inscrire un paiement; payer une facture
@@ -159,13 +179,17 @@ La ligne montre alors le montant sans « ≈ », et la prévision et les rappels
 
 ### Sauter {#skip}
 
-**Sauter** passe par-dessus cette échéance seulement, par exemple un mois sans facture ou un paiement que vous ne ferez pas. L’échéance est marquée sautée aussitôt, sans question, et quitte la liste ; rien n’est inscrit dans le compte. L’écran n’offre aucun moyen de faire revenir une échéance sautée.
+**Sauter** passe par-dessus cette échéance seulement, par exemple un mois sans facture ou un paiement que vous ne ferez pas. L’échéance est marquée sautée aussitôt et passe dans **Sautées** ; rien n’est inscrit dans le compte, et elle ne compte plus dans les rappels ni dans la prévision. Un montant que vous aviez entré pour elle est gardé.
+
+### Rétablir {#unskip}
+
+Sous **Sautées**, **Rétablir** fait revenir une échéance sautée : elle est de nouveau à payer, dans **En retard**, **À payer aujourd’hui** ou **30 prochains jours** selon sa date, avec le montant que vous aviez entré pour elle. Elle compte de nouveau dans les rappels et la prévision.
 
 ### Annuler un paiement {#undo-payment}
 
-Sous **Payées récemment**, **Annuler** défait un paiement marqué par erreur : l’opération inscrite pour ce paiement est supprimée du compte, et l’échéance revient dans la liste comme non payée. Aucune question n’est posée.
+Sous **Payées récemment**, **Annuler** défait un paiement marqué par erreur : l’opération inscrite pour ce paiement est supprimée du compte, et l’échéance revient dans la liste comme non payée. Le montant payé reste le montant de cette échéance. Si l’opération a déjà été supprimée dans le registre, seule l’échéance revient.
 
-> Remarque : Si vous avez déjà rapproché cette opération avec un relevé, modifiez-la plutôt à partir du registre du compte.
+Si cette opération fait partie d’un rapprochement terminé, l’application demande d’abord « Modifier une opération rapprochée? » : la supprimer fait en sorte que le compte ne concorde plus avec ce relevé, et la modification est inscrite dans l’historique. **Modifier** la supprime et annule le paiement ; **Annuler** ne change rien.
 
 ### Avertissements de découvert {#shortfall-warning}
 @index: découvert; provision insuffisante; fonds insuffisants; solde bas
@@ -234,7 +258,7 @@ Comment le calcul est fait :
 Les rappels de factures apparaissent à deux endroits :
 
 - Un bandeau de couleur en haut de tous les autres écrans, comme « 3 rappels  Hydro : à payer dans 7 jours (≈ 142,00 $) · Loyer : à payer aujourd’hui (1 450,00 $) ». Cliquez dessus pour ouvrir l’écran du premier rappel. Le bandeau porte aussi les rappels de rendez-vous, de renouvellements de médicaments, de renouvellements et d’entretien.
-- Une notification du système de RANN's Roost, vérifiée toutes les quelques minutes tant que le ménage est ouvert. Chaque rappel est annoncé une fois par session.
+- Une notification du système de RANN's Roost, vérifiée toutes les quelques minutes tant que le ménage est ouvert. Chaque rappel est annoncé une fois par jour pour chaque ménage : cet ordinateur retient ce qu’il a annoncé, et fermer puis rouvrir l’application le même jour ne le répète pas. Le bandeau, lui, montre toujours tous les rappels.
 
 Une facture figure dans les rappels :
 
@@ -255,6 +279,6 @@ Une facture papier ou électronique importée dans l’écran [Documents](docume
 
 ## Qui peut faire quoi {#permissions}
 
-- Ajouter, modifier, supprimer, sauter, entrer un montant et annuler un paiement demandent la permission **Modification** sur le groupe de comptes du compte de paiement.
+- Ajouter, modifier, supprimer, sauter et rétablir, entrer un montant et annuler un paiement demandent la permission **Modification** sur le groupe de comptes du compte de paiement.
 - Marquer une échéance payée ou reçue demande au moins la permission **Saisie seulement**.
 - Une facture est visible par tous ceux qui peuvent ouvrir le groupe de comptes de son compte de paiement. Voir [Utilisateurs](users).

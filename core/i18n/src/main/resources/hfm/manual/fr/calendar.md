@@ -139,7 +139,7 @@ Du plus tôt des rappels cochés jusqu’au début du rendez-vous, celui-ci figu
 Les rappels du calendrier, des factures, des renouvellements de médicaments, des renouvellements et de l’entretien apparaissent tous ensemble :
 
 - dans un bandeau de couleur en haut de chaque écran, sauf celui auquel le rappel appartient, comme « 2 rappels  Dentiste : demain à 10:00 · Hydro : à payer dans 7 jours ». Cliquez sur le bandeau pour ouvrir l’écran du premier rappel ;
-- dans une notification du système de RANN's Roost, vérifiée toutes les quelques minutes tant que le ménage est ouvert. Chaque rappel est annoncé une fois par session (pour un rendez-vous, une fois pour chaque moment de rappel coché).
+- dans une notification du système de RANN's Roost, vérifiée toutes les quelques minutes tant que le ménage est ouvert. Chaque rappel est annoncé une fois par jour pour chaque ménage, retenu par cet ordinateur : rouvrir l’application le même jour ne le répète pas (pour un rendez-vous, une fois pour chaque moment de rappel coché).
 
 Un rendez-vous marqué fait ou annulé ne donne aucun rappel. Pour les rappels de factures, voir [Rappels et notifications](bills#reminder-banner).
 

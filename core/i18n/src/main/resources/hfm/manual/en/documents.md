@@ -172,7 +172,7 @@ The left side shows the first page of the document as a picture, which you can s
 These fields start with what was read. Correct anything that is wrong; your changes are saved when you use any filing button or **Save**.
 
 - **Store or biller**: the name of the store, company or biller. It becomes the document's name in the lists, the payee suggested for a new transaction, and what the app uses to recognize the bill it belongs to. If you change it, the app remembers the correction for the next documents read the same way (see [Learning from your corrections](documents#learning)).
-- **Kind**: what sort of document it is. See [Kinds of documents](documents#document-kinds). The kind decides which filing choices are offered and, for AI reading, what the AI is asked to read.
+- **Kind**: what sort of document it is. See [Kinds of documents](documents#document-kinds). The kind decides which filing choices are offered, as soon as you choose it, and, for AI reading, what the AI is asked to read.
 - **Date**: the date printed on the document, as YYYY-MM-DD. It is used to find matching transactions, to place the document in searches, to count the six-year retention period, and as the date of a new transaction. Required: an invalid date stops the save.
 - **Total**: the amount paid or owed, in the document's currency. It is used to find transactions of the same amount, as the amount of a new transaction, and as the amount recorded on a bill. You can type a simple sum, such as 12.50+3.25.
 
@@ -192,14 +192,12 @@ Under the date and total, one line can show other details that were read: the su
 - **Other**: anything else.
 - **Credit card statement** and **Bank statement**: a statement of many transactions. Filed as is; when read by AI it can be reconciled with the account.
 - **Investment statement**: a statement from a broker or plan. Filed as is.
-- **Pay stub**: a pay statement. When AI reading is turned on it can be recorded as your pay.
+- **Pay stub**: a pay statement. It can be recorded as your pay, typed from the stub or filled in by AI reading.
 - **Explanation of benefits**: an insurer's statement of what it paid on a claim. Filed as is, and can be attached to a claim on the Medical claims screen.
 
 Statements, pay stubs and explanations of benefits describe many amounts, not one transaction, so the **File it with** section does not appear for them.
 
-The filing choices follow the kind saved with the document. A kind you change is saved when you use a filing button or **Save**.
-
-> Tip: If a document in To review was read as a receipt but is really one of your bills, change Kind to Bill, click File without attaching, then open it again from All documents: Record the amount on this bill is now offered.
+The filing choices follow the kind chosen in the window at once, before it is saved: change a receipt to **Bill** and **Record the amount on this bill** appears when the app finds the bill; change it to **Pay stub** and **Record the pay…** appears. The kind itself is saved when you use a filing button or **Save**.
 
 ### Learning from your corrections {#learning}
 @index: learning; merchant names; auto-categorize receipts
@@ -261,9 +259,11 @@ The bill must have a due date within 45 days of the document; otherwise an error
 
 The top line repeats the store, date and total from the document window. Then:
 
-- **Paid with**: the account the money came out of. Only accounts in the document's currency are offered. The default is the card whose number ends with the digits read on the receipt; else your first credit card; else the first account. Required.
-- **Category**: the category of the expense. The default is the payee's own default category if the store matches a payee you have, else the category you last used for documents from this store. "(uncategorized)" leaves it without a category.
-- **For**: the person or pet the expense is for, which feeds the per-person reports, medical expenses and taxes. "(the household)" means nobody in particular.
+- **Paid with**: the account the money came out of. Only accounts in the document's currency are offered. The default is the account chosen on the phone with the capture; else the card whose number ends with the digits read on the receipt; else your first credit card; else the first account. Required.
+- **Category**: the category of the expense. The default is the category chosen on the phone with the capture; else the payee's own default category if the store matches a payee you have; else the category you last used for documents from this store. "(uncategorized)" leaves it without a category.
+- **For**: the person or pet the expense is for, which feeds the per-person reports, medical expenses and taxes. The default is the person or pet chosen on the phone with the capture; else "(the household)", which means nobody in particular.
+
+A choice made on the phone is used only if it still exists on the computer (and, for the account, is in the document's currency); otherwise the usual default applies. You can change any of them before saving.
 - **Vehicle**: shown only if you have vehicles. Links the expense to a vehicle for its cost reports.
 - **Split by items**: see [Split by items](documents#split-by-items).
 
@@ -362,7 +362,7 @@ On a card statement, charges are printed as positive amounts; the app records th
 ### Record the pay from a pay stub {#pay-stub}
 @index: pay stub; payslip; paycheque; salary; deductions; CPP; QPP; EI; QPIP; union dues; income tax withheld
 
-When AI reading is turned on, a document of kind **Pay stub** (or read by AI as a pay stub) shows **Record the pay…**. It opens the **Pay from a pay stub** form, filled in from the AI reading when there is one.
+A document of kind **Pay stub** shows **Record the pay…**, whether or not AI reading is turned on. It opens the **Pay from a pay stub** form: filled in from the AI reading when the stub was read by AI as a pay stub; otherwise empty, with the usual deductions listed, for you to type the amounts printed on the stub.
 
 The pay is recorded as one deposit of the net pay, split into the gross pay and each deduction, so that income tax, CPP or QPP, EI or QPIP, union dues and other deductions are all in the books and in your tax figures.
 

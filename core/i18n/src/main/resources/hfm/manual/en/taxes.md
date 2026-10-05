@@ -234,7 +234,7 @@ The Taxes screen only reads the books. These are the places, through the year, w
 
 Entering pay from its stub puts the gross pay and every deduction in the books, not only the net deposit, so the year-end package has employment income, CPP or QPP, EI or QPIP, income tax deducted, pension and union dues, and the slips checklist expects the T4.
 
-Open it with **Pay stub…** under a new transaction in a bank account's register (see [Accounts](accounts)), or with **Record the pay…** on a pay stub in Documents, where the fields are filled in from an AI reading (see [Documents](documents)).
+Open it with **Pay stub…** under a new transaction in a bank account's register (see [Accounts](accounts)), or with **Record the pay…** on a pay stub in Documents, where the fields are filled in from an AI reading when the stub was read by AI, and typed by hand otherwise (see [Documents](documents)).
 
 - **Employer**: the employer, as it will appear as the payee. Required. The slips checklist expects a T4 from this name.
 - **Pay date**: the date of the deposit, as YYYY-MM-DD. Today by default, or the date read from the stub.

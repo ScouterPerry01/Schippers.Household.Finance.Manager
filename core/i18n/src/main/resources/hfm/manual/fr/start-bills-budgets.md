@@ -31,7 +31,7 @@ Le détail de chaque champ se trouve dans [Ajouter ou modifier une facture](bill
 1. Ouvrez l’onglet **À payer** de Factures. Il énumère ce qui est en retard, à payer aujourd’hui et à payer dans les 30 prochains jours. Des rappels apparaissent aussi en haut de chaque écran.
 2. Quand une facture variable arrive, cliquez sur **Entrer le montant** et tapez son montant.
 3. Après l’avoir payée par votre banque, cliquez sur **Marquer payée**, vérifiez la date et le montant, et cliquez sur **Enregistrer**. Le paiement est inscrit dans le compte et sera jumelé au relevé bancaire lors de son importation.
-4. Pour passer par-dessus une échéance, cliquez sur **Sauter**. Un paiement marqué par erreur peut être défait avec **Annuler** sous Payées récemment.
+4. Pour passer par-dessus une échéance, cliquez sur **Sauter** ; **Rétablir** sous Sautées la fait revenir. Un paiement marqué par erreur peut être défait avec **Annuler** sous Payées récemment.
 
 Jetez un œil de temps en temps à l’onglet **Prévision de trésorerie** : il vous avertit quand un paiement ferait passer un compte sous zéro. Voir [L’onglet Prévision de trésorerie](bills#forecast-tab).
 

@@ -14,7 +14,7 @@ The title bar has two buttons:
 
 Under it are five tabs:
 
-- **To pay**: what is overdue, due today and due in the next 30 days, with the buttons to pay, skip or enter an amount.
+- **To pay**: what is overdue, due today and due in the next 30 days, with the buttons to pay, skip or enter an amount, and each amount beside the usual one.
 - **All bills**: every bill, income and transfer you set up.
 - **Calendar**: a month view of due dates.
 - **Subscriptions**: what each subscription costs a year.
@@ -116,19 +116,39 @@ These appear only when you edit an existing bill.
 - **Active**: untick it to put a bill on hold, for example a seasonal bill or a cancelled service whose history you want to keep. An inactive bill disappears from To pay, the Calendar tab, the Subscriptions tab, the forecast, the reminders and the Calendar screen. It stays on **All bills**, marked "(inactive)", where you can make it active again.
 - **Delete**: asks "Delete ... and its payment history? Transactions already recorded are kept." and, on confirmation, deletes the bill and which dates were paid or skipped. The transactions recorded when you marked it paid stay in the accounts. This cannot be undone.
 
+### Payment history {#payment-history}
+@index: bill history; average bill; usual amount; unusual amount; same month last year
+
+When you edit an existing bill, **Payment history** at the bottom of the form lists the amounts paid for it, newest first (up to the last twelve). Each line shows the due date and the amount paid, then:
+
+- "usually ...": the average of the payments before it (up to the twelve before);
+- "same month last year ...": what was paid for the due date in the same month a year earlier;
+- "unusual", in red: the amount is more than a quarter above the usual, with at least three earlier payments to compare.
+
+"No payments recorded yet." means the bill was never marked paid. The history comes from the due dates marked paid, so it starts with the first payment you mark.
+
 ## The To pay tab {#to-pay-tab}
 @index: overdue bills; upcoming bills; agenda
 
-**To pay** lists the due dates of all active bills, income and transfers in four groups, each with its count:
+**To pay** lists the due dates of all active bills, income and transfers in up to five groups, each with its count:
 
 - **Overdue**: due dates already passed and not yet paid or skipped, looking back up to one year.
 - **Due today**.
 - **Next 30 days**.
 - **Paid recently**: due dates of the last 31 days (and any later ones) already marked paid, newest first.
+- **Skipped**: due dates you skipped, from up to a year ago to the next 30 days, newest first. Shown only when there are some.
 
-"Nothing due in the next 30 days." means all four are empty.
+"Nothing due in the next 30 days." means nothing is overdue, due today or due in the next 30 days.
 
 Each line shows the due date, the name, the payment method, the account (and "→ account" for a transfer), the date it was paid if it was, and the amount ("≈" in front means the amount is expected, not known). The buttons on the line are described below. **Edit** opens the bill's form.
+
+Once a bill has been paid before, its line also compares the amount with its history:
+
+- "usually ...": the average of the payments before this due date (up to the last twelve);
+- "same month last year ...": what was paid for the due date in the same month a year earlier;
+- "Unusual amount: more than a quarter above the usual.", in red: the amount is known (entered or paid, not just expected) and more than 25% above the usual, with at least three earlier payments to compare. Check the bill before you pay it.
+
+The whole history of a bill is in its form. See [Payment history](bills#payment-history).
 
 ### Mark paid or Mark received {#mark-paid}
 @index: record payment; pay a bill
@@ -159,13 +179,17 @@ The line then shows the amount without "≈", and the forecast and reminders use
 
 ### Skip {#skip}
 
-**Skip** passes over this one due date, for example a month with no bill or a payment you will not make. The due date is marked skipped at once, with no question, and leaves the list; nothing is recorded in the account. The screen offers no way to bring a skipped date back.
+**Skip** passes over this one due date, for example a month with no bill or a payment you will not make. The due date is marked skipped at once and moves to **Skipped**; nothing is recorded in the account, and it no longer counts in the reminders or the forecast. An amount you entered for it is kept.
+
+### Unskip {#unskip}
+
+Under **Skipped**, **Unskip** brings a skipped due date back: it is due again, in **Overdue**, **Due today** or **Next 30 days** depending on its date, with any amount you had entered for it. It counts again in the reminders and the forecast.
 
 ### Undo a payment {#undo-payment}
 
-Under **Paid recently**, **Undo** reverses a payment marked by mistake: the transaction that was recorded for it is deleted from the account, and the due date goes back to the list as not paid. It asks no question.
+Under **Paid recently**, **Undo** reverses a payment marked by mistake: the transaction that was recorded for it is deleted from the account, and the due date goes back to the list as not paid. The amount paid stays as the amount of that due date. If the transaction was already deleted in the register, only the due date goes back.
 
-> Note: If you already reconciled that transaction with a statement, change it from the account's register instead.
+If that transaction is part of a completed reconciliation, the app first asks "Change a reconciled transaction?": deleting it means the account no longer agrees with that statement, and the change is recorded in the history. **Change it** deletes it and undoes the payment; **Cancel** changes nothing.
 
 ### Overdraft warnings {#shortfall-warning}
 @index: overdraft; NSF; insufficient funds; low balance
@@ -234,7 +258,7 @@ How it is counted:
 Reminders about bills appear in two places:
 
 - A coloured banner at the top of every other screen, such as "3 reminders  Hydro: due in 7 days (≈ 142.00 $) · Rent: due today (1,450.00 $)". Click it to open the screen of the first reminder. The banner also carries reminders for appointments, medication refills, renewals and maintenance.
-- A system notification from RANN's Roost, checked every few minutes while the household is open. Each reminder is announced once per session.
+- A system notification from RANN's Roost, checked every few minutes while the household is open. Each reminder is announced once a day for each household: this computer remembers what it has announced, so closing and opening the app again the same day does not repeat it. The banner still shows every reminder.
 
 A bill is in the reminders:
 
@@ -255,6 +279,6 @@ A paper bill or e-bill imported on the [Documents](documents) screen can be reco
 
 ## Who can do what {#permissions}
 
-- Adding, editing, deleting, skipping, entering an amount and undoing a payment need **Edit** permission on the account group of the paying account.
+- Adding, editing, deleting, skipping and unskipping, entering an amount and undoing a payment need **Edit** permission on the account group of the paying account.
 - Marking a due date paid or received needs at least **Capture only** permission.
 - A bill is visible to everyone who can open the account group of its paying account. See [Users](users).

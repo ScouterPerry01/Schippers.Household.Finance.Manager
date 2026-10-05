@@ -172,7 +172,7 @@ La partie gauche montre la première page du document sous forme d’image, que 
 Ces champs commencent avec ce qui a été lu. Corrigez ce qui est faux ; vos changements sont enregistrés quand vous utilisez un bouton de classement ou **Enregistrer**.
 
 - **Commerce ou fournisseur** : le nom du commerce, de l’entreprise ou du fournisseur. Il devient le nom du document dans les listes, le bénéficiaire proposé pour une nouvelle opération, et ce dont l’application se sert pour reconnaître la facture à laquelle il se rapporte. Si vous le changez, l’application retient la correction pour les prochains documents lus de la même façon (voir [Ce que l’application apprend de vos corrections](documents#learning)).
-- **Type** : la sorte de document. Voir [Les types de documents](documents#document-kinds). Le type détermine les choix de classement offerts et, pour la lecture par l’IA, ce qu’on demande à l’IA de lire.
+- **Type** : la sorte de document. Voir [Les types de documents](documents#document-kinds). Le type détermine les choix de classement offerts, dès que vous le choisissez, et, pour la lecture par l’IA, ce qu’on demande à l’IA de lire.
 - **Date** : la date imprimée sur le document, au format AAAA-MM-JJ. Elle sert à trouver les opérations correspondantes, à placer le document dans les recherches, à calculer la période de conservation de six ans et comme date d’une nouvelle opération. Obligatoire : une date invalide empêche l’enregistrement.
 - **Total** : le montant payé ou dû, dans la devise du document. Il sert à trouver les opérations du même montant, comme montant d’une nouvelle opération et comme montant inscrit sur une facture. Vous pouvez taper une addition simple, comme 12,50+3,25.
 
@@ -192,14 +192,12 @@ Sous la date et le total, une ligne peut montrer d’autres détails lus : le so
 - **Autre** : tout le reste.
 - **Relevé de carte de crédit** et **Relevé bancaire** : le relevé de nombreuses opérations. Classé tel quel ; lu par l’IA, il peut être rapproché avec le compte.
 - **Relevé de placements** : un relevé d’un courtier ou d’un régime. Classé tel quel.
-- **Talon de paie** : un relevé de paie. Quand la lecture par IA est activée, il peut être inscrit comme votre paie.
+- **Talon de paie** : un relevé de paie. Il peut être inscrit comme votre paie, tapé à partir du talon ou rempli par la lecture par IA.
 - **Relevé de prestations** : le relevé d’un assureur indiquant ce qu’il a payé sur une réclamation. Classé tel quel, et peut être joint à une réclamation dans l’écran Réclamations médicales.
 
 Les relevés, les talons de paie et les relevés de prestations décrivent de nombreux montants, pas une seule opération ; la section **Classer avec** n’apparaît donc pas pour eux.
 
-Les choix de classement suivent le type enregistré avec le document. Un type que vous changez est enregistré quand vous utilisez un bouton de classement ou **Enregistrer**.
-
-> Conseil : Si un document à vérifier a été lu comme un reçu mais est en fait l’une de vos factures, changez Type pour Facture, cliquez sur Classer sans joindre, puis rouvrez-le dans Tous les documents : Inscrire le montant sur cette facture est maintenant offert.
+Les choix de classement suivent tout de suite le type choisi dans la fenêtre, avant même qu’il soit enregistré : changez un reçu pour **Facture** et **Inscrire le montant sur cette facture** apparaît quand l’application trouve la facture ; changez-le pour **Talon de paie** et **Inscrire la paie…** apparaît. Le type lui-même est enregistré quand vous utilisez un bouton de classement ou **Enregistrer**.
 
 ### Ce que l’application apprend de vos corrections {#learning}
 @index: apprentissage; noms de commerces; catégorisation automatique des reçus
@@ -261,9 +259,11 @@ La facture doit avoir une échéance à 45 jours ou moins du document ; sinon, u
 
 La ligne du haut reprend le commerce, la date et le total de la fenêtre du document. Ensuite :
 
-- **Payé avec** : le compte d’où l’argent est sorti. Seuls les comptes dans la devise du document sont offerts. Par défaut, la carte dont le numéro se termine par les chiffres lus sur le reçu ; sinon votre première carte de crédit ; sinon le premier compte. Obligatoire.
-- **Catégorie** : la catégorie de la dépense. Par défaut, la catégorie habituelle du bénéficiaire si le commerce correspond à l’un de vos bénéficiaires, sinon la catégorie utilisée la dernière fois pour les documents de ce commerce. « (non catégorisé) » la laisse sans catégorie.
-- **Pour** : la personne ou l’animal à qui la dépense est destinée, ce qui alimente les rapports par personne, les frais médicaux et l’impôt. « (le ménage) » signifie personne en particulier.
+- **Payé avec** : le compte d’où l’argent est sorti. Seuls les comptes dans la devise du document sont offerts. Par défaut, le compte choisi sur le téléphone avec la capture ; sinon la carte dont le numéro se termine par les chiffres lus sur le reçu ; sinon votre première carte de crédit ; sinon le premier compte. Obligatoire.
+- **Catégorie** : la catégorie de la dépense. Par défaut, la catégorie choisie sur le téléphone avec la capture ; sinon la catégorie habituelle du bénéficiaire si le commerce correspond à l’un de vos bénéficiaires ; sinon la catégorie utilisée la dernière fois pour les documents de ce commerce. « (non catégorisé) » la laisse sans catégorie.
+- **Pour** : la personne ou l’animal à qui la dépense est destinée, ce qui alimente les rapports par personne, les frais médicaux et l’impôt. Par défaut, la personne ou l’animal choisi sur le téléphone avec la capture ; sinon « (le ménage) », qui signifie personne en particulier.
+
+Un choix fait sur le téléphone n’est utilisé que s’il existe toujours sur l’ordinateur (et, pour le compte, s’il est dans la devise du document) ; sinon, le choix habituel s’applique. Vous pouvez tous les changer avant d’enregistrer.
 - **Véhicule** : affiché seulement si vous avez des véhicules. Associe la dépense à un véhicule pour ses rapports de coûts.
 - **Ventiler par article** : voir [Ventiler par article](documents#split-by-items).
 
@@ -362,7 +362,7 @@ Sur un relevé de carte, les achats sont imprimés en montants positifs ; l’ap
 ### Inscrire la paie à partir d’un talon de paie {#pay-stub}
 @index: talon de paie; bulletin de paie; chèque de paie; salaire; retenues; RPC; RRQ; AE; RQAP; cotisations syndicales; impôt retenu
 
-Quand la lecture par IA est activée, un document de type **Talon de paie** (ou lu par l’IA comme talon de paie) affiche **Inscrire la paie…**. Ce bouton ouvre le formulaire **Paie selon le talon de paie**, rempli à partir de la lecture par l’IA s’il y en a une.
+Un document de type **Talon de paie** affiche **Inscrire la paie…**, que la lecture par IA soit activée ou non. Ce bouton ouvre le formulaire **Paie selon le talon de paie** : rempli à partir de la lecture par l’IA quand le talon a été lu par l’IA comme talon de paie ; sinon vide, avec les retenues habituelles, pour que vous tapiez les montants imprimés sur le talon.
 
 La paie est inscrite comme un seul dépôt de la paie nette, ventilé entre la paie brute et chaque retenue, pour que l’impôt sur le revenu, le RPC ou le RRQ, l’AE ou le RQAP, les cotisations syndicales et les autres retenues soient tous dans les livres et dans vos chiffres d’impôt.
 

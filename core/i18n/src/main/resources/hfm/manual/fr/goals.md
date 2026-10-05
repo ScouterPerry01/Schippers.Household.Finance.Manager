@@ -138,7 +138,7 @@ Le transfert est daté d’aujourd’hui et apparaît dans les deux historiques,
 
 **Historique** ouvre « Historique de (objectif) », chaque mouvement du plus récent au plus ancien, avec sa date, sa sorte (Mis de côté, Montant prévu, Utilisé, Reçu d’un autre objectif, Transféré à un autre objectif, Repris), sa note et son montant. Les montants qui ont quitté l’objectif sont négatifs, en rouge.
 
-- **Supprimer** sur une ligne retire ce mouvement aussitôt, sans question, par exemple un montant inscrit deux fois. Supprimer un côté d’un transfert ne supprime pas l’autre côté.
+- **Supprimer** sur une ligne retire ce mouvement, par exemple un montant inscrit deux fois. Une question est d’abord posée : « Supprimer cette entrée : (type), (montant) le (date)? Le solde de l’objectif change de ce montant; rien ne bouge dans le compte. Impossible d’annuler. » Supprimer un côté d’un transfert ne supprime pas l’autre côté.
 
 **Fermer** ferme l’historique.
 

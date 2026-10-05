@@ -31,7 +31,7 @@ The details of every field are in [Add or edit a bill](bills#bill-form).
 1. Open the **To pay** tab of Bills. It lists what is overdue, due today and due in the next 30 days. Reminders also appear at the top of every screen.
 2. When a variable bill arrives, click **Enter amount** and type its amount.
 3. After you pay it through your bank, click **Mark paid**, check the date and amount, and click **Save**. The payment is recorded in the account and will match the bank statement when you import it.
-4. To pass over a due date, click **Skip**. A payment marked by mistake can be reversed with **Undo** under Paid recently.
+4. To pass over a due date, click **Skip**; **Unskip** under Skipped brings it back. A payment marked by mistake can be reversed with **Undo** under Paid recently.
 
 Look at the **Cash flow forecast** tab once in a while: it warns you when a payment would take an account below zero. See [The Cash flow forecast tab](bills#forecast-tab).
 

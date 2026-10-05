@@ -20,6 +20,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -155,6 +156,48 @@ class BillServiceTest {
         assertEquals(listOf(d(10, 30), d(11, 30), d(12, 31)), books.bills.occurrences(d(10, 1), d(12, 31)).map { it.dueDate })
         books.bills.skip(pay.id, d(11, 30))
         assertEquals(OccurrenceStatus.SKIPPED, books.bills.occurrences(d(11, 1), d(11, 30)).single().status)
+    }
+
+    @Test
+    fun `a skipped due date can be unskipped, with the amount entered for it`() {
+        val bill = hydro()
+        books.bills.setAmount(bill.id, d(11, 12), cad("151.20"))
+        books.bills.skip(bill.id, d(11, 12))
+        val agenda = books.bills.agenda(today = d(11, 1), days = 30)
+        assertEquals(listOf(d(11, 12)), agenda.skipped.map { it.dueDate })
+        assertTrue(agenda.upcoming.none { it.dueDate == d(11, 12) })
+        books.bills.unskip(bill.id, d(11, 12))
+        val back = books.bills.occurrences(d(11, 1), d(11, 30)).single()
+        assertEquals(OccurrenceStatus.DUE, back.status)
+        assertEquals(cad("151.20"), back.amount)
+        assertTrue(books.bills.agenda(today = d(11, 1), days = 30).skipped.isEmpty())
+    }
+
+    @Test
+    fun `undoing a payment that was reconciled asks first`() {
+        val bill = hydro()
+        val paid = books.bills.markPaid(bill.id, d(3, 12), d(3, 12), cad("142.37"))
+        books.transactions.setCleared(paid.transactionId!!, ClearedStatus.RECONCILED)
+        assertFailsWith<ReconciledChangeException> { books.bills.unmarkPaid(bill.id, d(3, 12), deleteTransaction = true) }
+        assertEquals(OccurrenceStatus.PAID, books.bills.occurrences(d(3, 1), d(3, 31)).single().status, "nothing changed")
+        books.bills.unmarkPaid(bill.id, d(3, 12), deleteTransaction = true, confirmReconciled = true)
+        assertEquals(OccurrenceStatus.DUE, books.bills.occurrences(d(3, 1), d(3, 31)).single().status)
+        assertFailsWith<Exception> { books.transactions.get(paid.transactionId) }
+    }
+
+    @Test
+    fun `a due bill is compared with the usual amount and last year`() {
+        val bill = hydro()
+        listOf(1 to "120.00", 3 to "130.00", 5 to "140.00").forEach { (m, amount) -> books.bills.markPaid(bill.id, d(m, 12), d(m, 12), cad(amount)) }
+        books.bills.markPaid(bill.id, LocalDate(2027, 1, 12), LocalDate(2027, 1, 12), cad("125.00"))
+        val due = books.bills.occurrences(d(7, 1), d(7, 31)).single()
+        val estimate = books.bills.compare(due)
+        assertEquals(cad("130.00"), estimate.average)
+        assertFalse(estimate.unusual, "an estimate is never unusual")
+        books.bills.setAmount(bill.id, d(7, 12), cad("200.00"))
+        assertTrue(books.bills.compare(books.bills.occurrences(d(7, 1), d(7, 31)).single()).unusual)
+        val nextYear = books.bills.occurrences(LocalDate(2027, 3, 1), LocalDate(2027, 3, 31)).single()
+        assertEquals(cad("130.00"), books.bills.compare(nextYear).sameMonthLastYear)
     }
 
     @Test

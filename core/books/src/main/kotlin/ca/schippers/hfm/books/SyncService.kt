@@ -251,6 +251,8 @@ class SyncService internal constructor(private val books: Books) {
                 amount ?: read.amount, read.keepForever, f.note ?: read.notes,
             ),
         )
+        // CAP-07: Paid with, Category and For, offered first when the document is filed.
+        books.documents.recordChoices(doc.id, CaptureChoices(f.accountId, f.categoryId, f.memberId))
         return doc.id
     }
 

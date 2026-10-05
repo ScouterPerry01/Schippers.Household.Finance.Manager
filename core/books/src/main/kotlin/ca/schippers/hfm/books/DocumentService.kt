@@ -39,6 +39,14 @@ object DocumentEntity {
 
 data class DocumentLink(val entity: String, val entityId: String)
 
+/**
+ * CAP-07: the account, category and person chosen on the phone with a capture. They are the
+ * first choices offered when the document is filed as a new transaction.
+ */
+data class CaptureChoices(val accountId: String? = null, val categoryId: String? = null, val memberId: String? = null) {
+    val isEmpty: Boolean get() = accountId == null && categoryId == null && memberId == null
+}
+
 /** A document in the vault, with what was read from it. Amounts are positive. */
 data class VaultDocument(
     val id: String,
@@ -62,6 +70,8 @@ data class VaultDocument(
     val keepForever: Boolean,
     val notes: String?,
     val links: List<DocumentLink>,
+    /** CAP-07: what was chosen on the phone, if the document came from it. */
+    val choices: CaptureChoices? = null,
 ) {
     /** The best short name: the title, else the merchant, else the file name. */
     val label: String get() = title ?: merchant ?: fileName ?: id.take(8)
@@ -167,10 +177,33 @@ class DocumentService internal constructor(private val books: Books) {
         books.ledger(group).ledgerQueries.updateDocumentText(
             pages.toLong(), result.text.take(MAX_TEXT), draft.kind.name, draft.date?.value?.toString() ?: row.doc_date, draft.merchant?.value ?: row.merchant,
             draft.total?.value?.minorUnits ?: row.amount_minor, (draft.total?.value?.currency ?: draft.currency).code,
-            json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft).copy(readKey = key)), engineId, books.now(), documentId,
+            json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft).copy(readKey = key, chosen = storedChoices(row))), engineId, books.now(), documentId,
         )
         return get(documentId)
     }
+
+    /**
+     * CAP-07: keeps the account, category and person chosen on the phone with the document, for
+     * when it is filed. They are kept beside what was read, and survive a later reading.
+     */
+    fun recordChoices(documentId: String, choices: CaptureChoices) {
+        val (group, row) = locate(documentId)
+        books.require(group, PermissionLevel.CAPTURE_ONLY)
+        val chosen = StoredChoices(choices.accountId, choices.categoryId, choices.memberId).takeUnless { choices.isEmpty }
+        val stored = row.extraction?.let { runCatching { json.decodeFromString(StoredDraft.serializer(), it) }.getOrNull() }
+        val extraction = when {
+            stored != null -> json.encodeToString(StoredDraft.serializer(), stored.copy(chosen = chosen))
+            chosen != null -> json.encodeToString(StoredChosen.serializer(), StoredChosen(chosen))
+            else -> null
+        }
+        books.ledger(group).aiQueries.updateDocumentDraft(
+            row.kind, row.doc_date, row.merchant, row.amount_minor, row.currency, extraction, row.ocr_engine, books.now(), documentId,
+        )
+    }
+
+    /** CAP-07: the phone's choices stored with the document, whether or not anything was read from it. */
+    private fun storedChoices(row: DocumentRow): StoredChoices? =
+        row.extraction?.let { runCatching { json.decodeFromString(StoredChosen.serializer(), it) }.getOrNull() }?.chosen
 
     // --- Learning from corrections (OCR-07) ------------------------------------------------------
 
@@ -214,7 +247,7 @@ class DocumentService internal constructor(private val books: Books) {
         books.ledger(group).aiQueries.updateDocumentDraft(
             draft.kind.name, draft.date?.value?.toString() ?: row.doc_date, draft.merchant?.value ?: row.merchant,
             draft.total?.value?.minorUnits ?: row.amount_minor, (draft.total?.value?.currency ?: draft.currency).code,
-            json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft).copy(readKey = key)), engineId, books.now(), documentId,
+            json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft).copy(readKey = key, chosen = storedChoices(row))), engineId, books.now(), documentId,
         )
         return get(documentId)
     }
@@ -431,6 +464,7 @@ class DocumentService internal constructor(private val books: Books) {
             row.page_count.toInt(), row.size_bytes, row.captured_at, row.captured_by, row.source_device, row.recognized_text,
             row.extraction?.let { runCatching { json.decodeFromString(StoredDraft.serializer(), it).toDraft() }.getOrNull() },
             row.keep_forever == 1L, row.notes, links,
+            storedChoices(row)?.let { CaptureChoices(it.account, it.category, it.member) },
         )
     }
 
@@ -485,6 +519,8 @@ internal data class StoredDraft(
     val accountNumber: StoredField? = null,
     /** OCR-07: how the merchant was read, before any learned correction. */
     val readKey: String? = null,
+    /** CAP-07: what was chosen on the phone. */
+    val chosen: StoredChoices? = null,
 ) {
     fun toDraft(): DocumentDraft {
         val c = Currency.of(currency)
@@ -509,3 +545,11 @@ internal data class StoredDraft(
         }
     }
 }
+
+/** CAP-07: the account, category and person chosen on the phone, by id. */
+@Serializable
+internal data class StoredChoices(val account: String? = null, val category: String? = null, val member: String? = null)
+
+/** Reads the phone's choices alone, also when nothing was read from the document (no [StoredDraft]). */
+@Serializable
+internal data class StoredChosen(val chosen: StoredChoices? = null)

@@ -292,12 +292,14 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                 }
                 ExtractedDetails(model, doc)
                 AiPart(model, doc, kind, onClose)
+                // SAL-02: a pay stub is recorded with or without AI; what AI read fills the form, else it is typed.
+                if (kind == DocumentKind.PAY_STUB) PayStubPart(model, doc, onClose)
                 VoicePart(model, doc)
                 Duplicates(model, doc)
                 LabeledCheckbox(model.t("documents.keepForever"), keep) { keep = it }
                 TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
                 HorizontalDivider(Modifier.padding(vertical = 4.dp))
-                FilingActions(model, doc, ::saveDetails, onCreate = { creating = true }, onDone = onClose)
+                FilingActions(model, doc, kind, ::saveDetails, onCreate = { creating = true }, onDone = onClose)
                 HorizontalDivider(Modifier.padding(vertical = 4.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (doc.status == DocumentStatus.INBOX) {
@@ -392,7 +394,6 @@ private fun AiPart(model: BooksModel, doc: VaultDocument, kind: DocumentKind, on
     }
     failure?.let { ErrorText(it) }
     if (reading != null && reading.typeId in ca.schippers.hfm.books.AiService.STATEMENT_TYPES) StatementPart(model, doc, reading.typeId, onClose)
-    if (reading?.typeId == "pay_stub" || (reading == null && kind == DocumentKind.PAY_STUB)) PayStubPart(model, doc, onClose)
     if (asking) AiReadDialog(model, doc, kind) { asking = false }
 }
 
@@ -422,7 +423,10 @@ private fun StatementPart(model: BooksModel, doc: VaultDocument, typeId: String,
     }
 }
 
-/** SAL-02: a pay stub becomes the deposit of its net pay, split into gross pay and deductions (filled in when read by AI). */
+/**
+ * SAL-02: a pay stub becomes the deposit of its net pay, split into gross pay and deductions: filled
+ * in when the stub was read by AI, typed by hand otherwise.
+ */
 @Composable
 private fun PayStubPart(model: BooksModel, doc: VaultDocument, onClose: () -> Unit) {
     var open by remember(doc.id) { mutableStateOf(false) }
@@ -483,12 +487,15 @@ private fun Duplicates(model: BooksModel, doc: VaultDocument) {
     }
 }
 
-/** Matching transactions, the bill it belongs to, or a new transaction (SYNC-05, BILL-03). */
+/**
+ * Matching transactions, the bill it belongs to, or a new transaction (SYNC-05, BILL-03). [kind] is
+ * the kind chosen in the dialog, saved or not: the choices follow it at once.
+ */
 @Composable
-private fun FilingActions(model: BooksModel, doc: VaultDocument, saveDetails: () -> Boolean, onCreate: () -> Unit, onDone: () -> Unit) {
+private fun FilingActions(model: BooksModel, doc: VaultDocument, kind: DocumentKind, saveDetails: () -> Boolean, onCreate: () -> Unit, onDone: () -> Unit) {
     val books = model.books
     val matches = remember(model.revision, doc.id) { books.documents.matches(doc.id) }
-    val bill = remember(model.revision, doc.id) { if (doc.kind == DocumentKind.BILL || doc.kind == DocumentKind.INVOICE) books.documents.billFor(doc.id) else null }
+    val bill = remember(model.revision, doc.id, kind) { if (kind == DocumentKind.BILL || kind == DocumentKind.INVOICE) books.documents.billFor(doc.id) else null }
     val linked = remember(model.revision, doc.id) { linkedDescriptions(model, doc) }
     if (linked.isNotEmpty()) {
         Text(model.t("documents.attachedTo"), style = MaterialTheme.typography.labelLarge)
@@ -496,7 +503,7 @@ private fun FilingActions(model: BooksModel, doc: VaultDocument, saveDetails: ()
     }
     // A statement, pay stub or explanation of benefits is not one transaction: it is filed as is,
     // or (statements read by AI) reconciled above.
-    if (doc.kind in SUMMARY_KINDS) return
+    if (kind in SUMMARY_KINDS) return
     Text(model.t("documents.fileIt"), style = MaterialTheme.typography.labelLarge)
     if (bill != null) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -543,17 +550,23 @@ private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: S
     val people = remember { model.peopleAndPets() }
     val vehicles = remember { model.vehicleChoices() }
     val last4 = doc.draft?.cardLast4?.value
-    // The card whose last digits are on the receipt, else a credit card, else the first account.
+    // CAP-07: what was chosen on the phone comes first, when it still exists here.
+    val chosen = doc.choices
+    // The account chosen on the phone, else the card whose last digits are on the receipt, else a credit card, else the first account.
     var accountId by remember {
         mutableStateOf(
-            (accounts.firstOrNull { last4 != null && it.numberMasked?.endsWith(last4) == true }
+            (accounts.firstOrNull { it.id == chosen?.accountId } ?: accounts.firstOrNull { last4 != null && it.numberMasked?.endsWith(last4) == true }
                 ?: accounts.firstOrNull { it.type == ca.schippers.hfm.domain.AccountType.CREDIT_CARD } ?: accounts.firstOrNull())?.id,
         )
     }
     val payeeDefault = remember { books.payees.list().firstOrNull { ca.schippers.hfm.books.DocumentService.similarNames(it.name, payee) } }
-    // The payee's own category, else the one last used for documents from this merchant (OCR-07).
-    var categoryId by remember { mutableStateOf(payeeDefault?.defaultCategoryId ?: runCatching { books.documents.learnedCategory(doc.id) }.getOrNull()) }
-    var forId by remember { mutableStateOf<String?>(null) }
+    // The category chosen on the phone, else the payee's own, else the one last used for documents from this merchant (OCR-07).
+    var categoryId by remember {
+        mutableStateOf(
+            chosen?.categoryId?.takeIf { id -> tree.any { it.first.id == id } } ?: payeeDefault?.defaultCategoryId ?: runCatching { books.documents.learnedCategory(doc.id) }.getOrNull(),
+        )
+    }
+    var forId by remember { mutableStateOf(chosen?.memberId?.takeIf { id -> people.any { it.id == id } }) }
     var assetId by remember { mutableStateOf<String?>(null) }
     val account = accounts.firstOrNull { it.id == accountId }
     // OCR-03: the items of a receipt read by AI, each with its share of the taxes.

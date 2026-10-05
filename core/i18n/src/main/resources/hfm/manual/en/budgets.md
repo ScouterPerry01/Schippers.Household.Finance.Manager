@@ -71,7 +71,7 @@ The form is titled "Budget for (category)".
 
 The note "The budget covers the subcategories too, unless they have a budget of their own." reminds you how the actual amount is counted.
 
-**Save** sets the budget. **Delete** (shown when the category already has a budget) removes the budget at once, without a question. Your transactions are not affected.
+**Save** sets the budget. **Delete** (shown when the category already has a budget) asks "Delete the budget for ...? Your transactions do not change; the category simply has no budget any more." and, on confirmation, removes the budget. Your transactions are not affected. This cannot be undone; set the budget again to get it back.
 
 ## Monthly and yearly budgets {#monthly-and-yearly}
 @index: annual budget; yearly expenses; irregular expenses; property tax; insurance
@@ -110,7 +110,7 @@ The carry-over counts every month from the budget's starting month up to the mon
 
 ## Change or delete a budget {#change-budget}
 
-Click a category's bar to open its budget form. Change the amount, the period, the carry-over or the starting month and click **Save**, or click **Delete** to remove the budget.
+Click a category's bar to open its budget form. Change the amount, the period, the carry-over or the starting month and click **Save**, or click **Delete** to remove the budget (it asks first).
 
 ## Currencies {#currencies}
 @index: foreign currency; exchange rate; base currency

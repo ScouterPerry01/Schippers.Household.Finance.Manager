@@ -139,6 +139,7 @@ private fun BudgetDialog(model: BooksModel, category: Category, line: BudgetLine
     var amount by remember { mutableStateOf(existing?.amount?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
     var rollover by remember { mutableStateOf(existing?.rollover ?: false) }
     var start by remember { mutableStateOf((existing?.startMonth ?: month).toString()) }
+    var confirmDelete by remember { mutableStateOf(false) }
 
     FormDialog(model.t("budget.edit", category.name(model.language)), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
@@ -154,10 +155,18 @@ private fun BudgetDialog(model: BooksModel, category: Category, line: BudgetLine
         DateInput(model.t("budget.start"), start) { start = it }
         Text(model.t("budget.coversChildren"), style = MaterialTheme.typography.bodySmall)
         if (existing != null) {
-            TextButton(onClick = { if (model.act { books.budgets.remove(category.id) } != null) onClose() }) {
+            TextButton(onClick = { confirmDelete = true }) {
                 Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error)
             }
         }
+    }
+    if (confirmDelete) {
+        FormDialog(model.t("budget.delete.title"), model.t("common.delete"), model.t("common.cancel"), onDismiss = { confirmDelete = false }, onSave = {
+            if (model.act { books.budgets.remove(category.id) } != null) {
+                confirmDelete = false
+                onClose()
+            }
+        }) { Text(model.t("budget.delete.body", category.name(model.language))) }
     }
 }
 

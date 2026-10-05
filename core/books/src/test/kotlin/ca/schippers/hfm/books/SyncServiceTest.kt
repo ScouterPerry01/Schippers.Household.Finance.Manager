@@ -206,6 +206,38 @@ class SyncServiceTest {
     }
 
     @Test
+    fun `Paid with, Category and For chosen on the phone are kept for filing`() {
+        val key = pairAsPhone(books.sync.invitation("Bureau", "127.0.0.1", 47311, now))
+        val visa = books.accounts.list().single().account.id
+        val groceries = books.categories.list().first { it.kind == ca.schippers.hfm.domain.CategoryKind.EXPENSE && it.parentId != null }.id
+        val alex = books.members.create("Alex", ca.schippers.hfm.domain.MemberKind.ADULT).id
+        val chosen = CaptureFields(accountId = visa, categoryId = groceries, memberId = alex)
+        send(
+            key,
+            SyncRequest(
+                now,
+                listOf(
+                    receipt.copy(fields = chosen),
+                    CaptureItem("quick", CaptureKind.QUICK_EXPENSE, now, fields = chosen.copy(merchant = "Stationnement", amount = "6.50", memberId = null)),
+                    receipt.copy(id = "plain", pages = listOf(SyncCrypto.b64("other-jpeg".encodeToByteArray()))),
+                ),
+            ),
+        )
+        val inbox = books.documents.inbox()
+        val read = inbox.first { it.fileName == "receipt-item-1" }
+        assertEquals(CaptureChoices(visa, groceries, alex), read.choices)
+        assertNotNull(read.draft, "what the phone read is still there")
+        // A capture with no photo has nothing read, and still keeps what was chosen.
+        val quick = inbox.first { it.merchant == "Stationnement" }
+        assertNull(quick.draft)
+        assertEquals(CaptureChoices(visa, groceries, null), quick.choices)
+        assertNull(inbox.first { it.fileName == "receipt-plain" }.choices, "nothing chosen, nothing kept")
+        // Reading the document again does not lose the choices.
+        books.documents.recordText(read.id, 1, OcrResult(listOf(ca.schippers.hfm.ocr.OcrLine("Metro Plus", 0.9f)), 0), "desktop", today)
+        assertEquals(CaptureChoices(visa, groceries, alex), books.documents.get(read.id).choices)
+    }
+
+    @Test
     fun `a removed phone is refused, and others cannot read or forge bundles`() {
         val key = pairAsPhone(books.sync.invitation("Bureau", "127.0.0.1", 47311, now))
         val stranger = ByteArray(32) { 7 }

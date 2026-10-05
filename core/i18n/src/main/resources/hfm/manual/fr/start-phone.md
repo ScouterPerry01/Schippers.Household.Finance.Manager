@@ -29,7 +29,7 @@ Si le téléphone ne peut pas joindre l’ordinateur, vérifiez que les deux son
 
 1. Dans l’onglet **Capturer**, touchez **Reçu**.
 2. Tenez le reçu à plat ; le numériseur en trouve les bords. Ajoutez des pages pour un long reçu, puis terminez.
-3. Le téléphone lit le reçu et remplit le commerce, la date et le montant. Corrigez-les au besoin et ajoutez une note si vous le voulez. Tout est facultatif.
+3. Le téléphone lit le reçu et remplit le commerce, la date et le montant. Corrigez-les au besoin et choisissez, si vous le voulez, le compte avec lequel vous avez payé, la catégorie, pour qui c’était et une note. Tout est facultatif.
 4. Touchez **Enregistrer**.
 
 Utilisez **Facture** pour une facture, **Autre document** pour tout autre document à garder, **Dépense rapide** pour un achat sans reçu, et **Odomètre ou heures** pour une lecture de véhicule. Détails : [Le formulaire de capture](phone-app#capture-form).
@@ -45,7 +45,7 @@ Dans l’onglet **Envois**, chaque capture affiche **En attente**, puis **Sur l�
 ## 5. La vérifier sur l’ordinateur {#review}
 
 1. Sur l’ordinateur, ouvrez **Documents** et son onglet **À vérifier**. Votre capture s’y trouve avec l’image, le texte lu et ce que vous avez saisi.
-2. Cliquez sur **Vérifier**, contrôlez les détails, puis rattachez-la à une opération, inscrivez-la sur une facture, ou classez-la. Voir [Documents](documents).
+2. Cliquez sur **Vérifier**, contrôlez les détails, puis rattachez-la à une opération, inscrivez-la sur une facture, ou classez-la. Voir [Documents](documents). **Nouvelle opération à partir de ce document** commence avec le compte, la catégorie et la personne choisis sur le téléphone.
 
 Les lectures d’odomètre sautent cette étape : elles vont directement aux lectures du véhicule.
 

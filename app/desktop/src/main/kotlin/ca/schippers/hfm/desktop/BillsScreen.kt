@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.AmountKind
 import ca.schippers.hfm.books.Bill
 import ca.schippers.hfm.books.BillDraft
+import ca.schippers.hfm.books.BillHistoryEntry
 import ca.schippers.hfm.books.BillKind
 import ca.schippers.hfm.books.Category
 import ca.schippers.hfm.books.Occurrence
@@ -108,6 +109,10 @@ private fun AgendaTab(model: BooksModel, onPay: (Occurrence) -> Unit, onAmount: 
         books.bills.forecast(today, 30).flatMap { f -> f.shortfalls.mapNotNull { it.occurrence?.let { o -> o.bill.id to o.dueDate } } }.toSet()
     }
     val accounts = remember(model.revision) { books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name } }
+    // BILL-09: each amount beside the usual one and the same month last year.
+    val comparisons = remember(model.revision) {
+        (agenda.overdue + agenda.dueToday + agenda.upcoming + agenda.paid).associate { o -> (o.bill.id to o.dueDate) to runCatching { books.bills.compare(o) }.getOrNull() }
+    }
 
     LazyColumn {
         if (agenda.overdue.isEmpty() && agenda.dueToday.isEmpty() && agenda.upcoming.isEmpty()) {
@@ -120,7 +125,7 @@ private fun AgendaTab(model: BooksModel, onPay: (Occurrence) -> Unit, onAmount: 
         ).filter { it.second.isNotEmpty() }.forEach { (title, list) ->
             item { GroupTitle(model.t(title, list.size)) }
             items(list, key = { "${it.bill.id}-${it.dueDate}" }) { o ->
-                OccurrenceRow(model, o, accounts, (o.bill.id to o.dueDate) in shortfalls) {
+                OccurrenceRow(model, o, accounts, (o.bill.id to o.dueDate) in shortfalls, comparisons[o.bill.id to o.dueDate]) {
                     Button(onClick = { onPay(o) }) { Text(model.t(if (o.bill.kind == BillKind.INCOME) "bills.markReceived" else "bills.markPaid")) }
                     if (o.bill.amountKind != AmountKind.FIXED) OutlinedButton(onClick = { onAmount(o) }) { Text(model.t("bills.enterAmount")) }
                     TextButton(onClick = { model.act { books.bills.skip(o.bill.id, o.dueDate) } }) { Text(model.t("bills.skip")) }
@@ -131,10 +136,23 @@ private fun AgendaTab(model: BooksModel, onPay: (Occurrence) -> Unit, onAmount: 
         if (agenda.paid.isNotEmpty()) {
             item { GroupTitle(model.t("bills.paid", agenda.paid.size)) }
             items(agenda.paid, key = { "p-${it.bill.id}-${it.dueDate}" }) { o ->
-                OccurrenceRow(model, o, accounts, false) {
-                    TextButton(onClick = { model.act { books.bills.unmarkPaid(o.bill.id, o.dueDate, deleteTransaction = true) } }) {
+                OccurrenceRow(model, o, accounts, false, comparisons[o.bill.id to o.dueDate]) {
+                    // A payment already reconciled is deleted only after the user confirms it.
+                    TextButton(onClick = {
+                        model.act(retryConfirmed = { books.bills.unmarkPaid(o.bill.id, o.dueDate, deleteTransaction = true, confirmReconciled = true) }) {
+                            books.bills.unmarkPaid(o.bill.id, o.dueDate, deleteTransaction = true)
+                        }
+                    }) {
                         Text(model.t("bills.undoPaid"))
                     }
+                }
+            }
+        }
+        if (agenda.skipped.isNotEmpty()) {
+            item { GroupTitle(model.t("bills.skipped", agenda.skipped.size)) }
+            items(agenda.skipped, key = { "s-${it.bill.id}-${it.dueDate}" }) { o ->
+                OccurrenceRow(model, o, accounts, false, null) {
+                    TextButton(onClick = { model.act { books.bills.unskip(o.bill.id, o.dueDate) } }) { Text(model.t("bills.unskip")) }
                 }
             }
         }
@@ -147,7 +165,7 @@ private fun GroupTitle(text: String) {
 }
 
 @Composable
-private fun OccurrenceRow(model: BooksModel, o: Occurrence, accounts: Map<String, String>, shortfall: Boolean, actions: @Composable () -> Unit) {
+private fun OccurrenceRow(model: BooksModel, o: Occurrence, accounts: Map<String, String>, shortfall: Boolean, comparison: BillHistoryEntry?, actions: @Composable () -> Unit) {
     Card(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
         Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(model.date(o.dueDate), Modifier.width(100.dp))
@@ -162,6 +180,8 @@ private fun OccurrenceRow(model: BooksModel, o: Occurrence, accounts: Map<String
                     ).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                 )
+                comparison?.let { c -> comparisonText(model, c)?.let { Text(it, style = MaterialTheme.typography.bodySmall) } }
+                if (comparison?.unusual == true) Text(model.t("bills.unusual"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 if (shortfall) Text(model.t("bills.shortfall"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
             Text(
@@ -174,6 +194,31 @@ private fun OccurrenceRow(model: BooksModel, o: Occurrence, accounts: Map<String
         }
     }
 }
+
+/** BILL-09: "usually 131,00 $ · same month last year 128,40 $", or null when there is no history yet. */
+private fun comparisonText(model: BooksModel, c: BillHistoryEntry): String? = listOfNotNull(
+    c.average?.let { model.t("bills.usually", model.money(it)) },
+    c.sameMonthLastYear?.let { model.t("bills.lastYear", model.money(it)) },
+).takeIf { it.isNotEmpty() }?.joinToString(" · ")
+
+/** BILL-09: the amounts paid for a bill, newest first, each beside the usual and last year's. */
+@Composable
+private fun BillHistory(model: BooksModel, bill: Bill) {
+    val history = remember(model.revision, bill.id) { runCatching { model.books.bills.history(bill.id) }.getOrDefault(emptyList()) }
+    Text(model.t("bills.history"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 8.dp))
+    if (history.isEmpty()) Text(model.t("bills.history.none"), style = MaterialTheme.typography.bodySmall)
+    for (h in history.take(HISTORY_SHOWN)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(model.date(h.occurrence.dueDate), Modifier.width(100.dp), style = MaterialTheme.typography.bodySmall)
+            Text(model.money(h.occurrence.amount), Modifier.width(110.dp), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+            Text(comparisonText(model, h).orEmpty(), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+            if (h.unusual) Text(model.t("bills.unusualShort"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+/** Paid amounts shown in the bill form; a year of monthly bills. */
+private const val HISTORY_SHOWN = 12
 
 // --- All bills ------------------------------------------------------------------------------------
 
@@ -545,6 +590,7 @@ private fun BillDialog(model: BooksModel, existing: Bill?, onClose: () -> Unit) 
             if (existing != null) {
                 LabeledCheckbox(model.t("bills.active"), active) { active = it }
                 TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+                BillHistory(model, existing)
             }
         }
     }

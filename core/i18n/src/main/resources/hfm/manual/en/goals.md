@@ -138,7 +138,7 @@ The move is dated today and appears in both histories, as "Moved out" and "Moved
 
 **History** opens "History of (goal)", every movement newest first, with its date, kind (Set aside, Planned set-aside, Used, Moved in, Moved out, Taken back), memo and amount. Amounts that left the goal are negative, in red.
 
-- **Delete** on a line removes that movement at once, with no question, for example a set-aside entered twice. Deleting one side of a move does not delete the other side.
+- **Delete** on a line removes that movement, for example a set-aside entered twice. It first asks "Delete this entry: (kind), (amount) on (date)? The goal's balance changes by that amount; nothing moves in the account. This cannot be undone." Deleting one side of a move does not delete the other side.
 
 **Close** closes the history.
 

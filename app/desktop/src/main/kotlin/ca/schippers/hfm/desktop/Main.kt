@@ -61,10 +61,12 @@ private fun desktopApp() = application {
     val main = state.screen as? Screen.Main
     LaunchedEffect(main?.model) {
         val model = main?.model ?: return@LaunchedEffect
-        // Checked every few minutes so timed appointments are announced on time; each reminder once.
-        val notified = HashSet<String>()
+        // Checked every few minutes so timed appointments are announced on time; each reminder once a
+        // day for this household, remembered on this computer so reopening the app does not repeat it.
         while (true) {
-            val fresh = model.reminderLines().filter { notified.add(it.key) }
+            val lines = model.reminderLines()
+            val keys = state.notified.fresh(model.session.householdId, today(), lines.map { it.key })
+            val fresh = lines.filter { it.key in keys }
             if (fresh.isNotEmpty()) {
                 trayState.sendNotification(Notification(model.t("reminder.banner", fresh.size), fresh.take(4).joinToString("\n") { it.text }))
             }

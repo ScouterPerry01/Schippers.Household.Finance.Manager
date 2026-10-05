@@ -82,12 +82,14 @@ data class Occurrence(
     val signedAmount: Money get() = if (bill.kind == BillKind.INCOME) amount else -amount
 }
 
-/** BILL-05: the bill list grouped as overdue, due today, upcoming and recently paid. */
+/** BILL-05: the bill list grouped as overdue, due today, upcoming, recently paid and skipped. */
 data class Agenda(
     val overdue: List<Occurrence>,
     val dueToday: List<Occurrence>,
     val upcoming: List<Occurrence>,
     val paid: List<Occurrence>,
+    /** Due dates skipped in the same period, newest first, so a skip can be undone. */
+    val skipped: List<Occurrence> = emptyList(),
 )
 
 data class Reminder(val occurrence: Occurrence, val daysBefore: Int)
@@ -225,6 +227,7 @@ class BillService internal constructor(private val books: Books) {
             dueToday = due.filter { it.dueDate == today },
             upcoming = due.filter { it.dueDate > today },
             paid = all.filter { it.status == OccurrenceStatus.PAID && it.dueDate >= today.minus(DatePeriod(days = 31)) }.sortedByDescending { it.dueDate },
+            skipped = all.filter { it.status == OccurrenceStatus.SKIPPED }.sortedByDescending { it.dueDate },
         )
     }
 
@@ -268,19 +271,37 @@ class BillService internal constructor(private val books: Books) {
         return occurrencesOf(bill, books.ledger(group).ledgerQueries.occurrencesForBill(billId).executeAsList(), dueDate, dueDate).single()
     }
 
-    /** Reverses "paid"; optionally deletes the transaction that was created for it. */
-    fun unmarkPaid(billId: String, dueDate: LocalDate, deleteTransaction: Boolean) {
+    /**
+     * Reverses "paid"; optionally deletes the transaction that was created for it. A reconciled
+     * transaction is deleted only with [confirmReconciled]; otherwise [ReconciledChangeException]
+     * is thrown so the user can be asked first, and nothing changes.
+     */
+    fun unmarkPaid(billId: String, dueDate: LocalDate, deleteTransaction: Boolean, confirmReconciled: Boolean = false) {
         val (group, _) = locate(billId)
         books.require(group, PermissionLevel.EDIT)
         val stored = storedOccurrence(group, billId, dueDate) ?: return
-        if (deleteTransaction) stored.txn_id?.let { books.transactions.delete(it) }
+        if (deleteTransaction) {
+            // The payment may have been deleted in the register since; then there is nothing to delete.
+            stored.txn_id?.let { id -> if (runCatching { books.transactions.get(id) }.isSuccess) books.transactions.delete(id, confirmReconciled) }
+        }
         upsert(group, billId, dueDate, stored.amount_minor?.let { Money.ofMinor(it, books.bills.get(billId).amount.currency) }, OccurrenceStatus.DUE, null, null)
     }
 
+    /** Skips one due date; an amount already entered for it is kept, in case the skip is undone. */
     fun skip(billId: String, dueDate: LocalDate) {
-        val (group, _) = locate(billId)
+        val (group, bill) = locate(billId)
         books.require(group, PermissionLevel.EDIT)
-        upsert(group, billId, dueDate, null, OccurrenceStatus.SKIPPED, null, null)
+        val existing = storedOccurrence(group, billId, dueDate)
+        validate(existing?.status != OccurrenceStatus.PAID.name, "error.alreadyPaid")
+        upsert(group, billId, dueDate, existing?.amount_minor?.let { Money.ofMinor(it, bill.amount.currency) }, OccurrenceStatus.SKIPPED, null, null)
+    }
+
+    /** Undoes [skip]: the due date is due again, with any amount entered for it. */
+    fun unskip(billId: String, dueDate: LocalDate) {
+        val (group, bill) = locate(billId)
+        books.require(group, PermissionLevel.EDIT)
+        val existing = storedOccurrence(group, billId, dueDate)?.takeIf { it.status == OccurrenceStatus.SKIPPED.name } ?: return
+        upsert(group, billId, dueDate, existing.amount_minor?.let { Money.ofMinor(it, bill.amount.currency) }, OccurrenceStatus.DUE, null, null)
     }
 
     // --- Reminders, history, subscriptions --------------------------------------------------------
@@ -304,17 +325,34 @@ class BillService internal constructor(private val books: Books) {
     /** BILL-09: paid amounts of one bill, newest first, compared with the usual and with last year. */
     fun history(billId: String): List<BillHistoryEntry> {
         val (group, bill) = locate(billId)
-        val paid = books.ledger(group).ledgerQueries.occurrencesForBill(billId).executeAsList()
+        val paid = paidOf(group, bill)
+        return paid.map { compare(it, paid) }.reversed()
+    }
+
+    /**
+     * BILL-09: one due date, paid or not, compared with the bills paid before it: their average and
+     * the amount paid in the same month last year. It is unusual only when its amount is known.
+     */
+    fun compare(occurrence: Occurrence): BillHistoryEntry {
+        val (group, bill) = locate(occurrence.bill.id)
+        return compare(occurrence, paidOf(group, bill))
+    }
+
+    /** The paid due dates of a bill with their amounts, oldest first. */
+    private fun paidOf(group: GroupInfo, bill: Bill): List<Occurrence> =
+        books.ledger(group).ledgerQueries.occurrencesForBill(bill.id).executeAsList()
             .filter { it.status == OccurrenceStatus.PAID.name && it.amount_minor != null }
             .map { Occurrence(bill, LocalDate.parse(it.due_date), Money.ofMinor(it.amount_minor!!, bill.amount.currency), true, OccurrenceStatus.PAID, it.txn_id, it.paid_date?.let(LocalDate::parse)) }
-        return paid.mapIndexed { i, o ->
-            val previous = paid.subList(maxOf(0, i - 12), i)
-            val average = if (previous.isEmpty()) null else Money.ofMinor(previous.sumOf { it.amount.minorUnits } / previous.size, bill.amount.currency)
-            val lastYear = paid.firstOrNull { it.dueDate.year == o.dueDate.year - 1 && it.dueDate.month == o.dueDate.month }?.amount
-            // Unusual: a quarter above the average of the previous bills (at least three of them).
-            val unusual = previous.size >= 3 && average != null && o.amount > average.times(BigDecimal("1.25"))
-            BillHistoryEntry(o, average, lastYear, unusual)
-        }.reversed()
+            .sortedBy { it.dueDate }
+
+    private fun compare(o: Occurrence, paid: List<Occurrence>): BillHistoryEntry {
+        val currency = o.bill.amount.currency
+        val previous = paid.filter { it.dueDate < o.dueDate }.takeLast(12)
+        val average = if (previous.isEmpty()) null else Money.ofMinor(previous.sumOf { it.amount.minorUnits } / previous.size, currency)
+        val lastYear = paid.firstOrNull { it.dueDate.year == o.dueDate.year - 1 && it.dueDate.month == o.dueDate.month }?.amount
+        // Unusual: a quarter above the average of the previous bills (at least three of them).
+        val unusual = o.amountKnown && previous.size >= 3 && average != null && o.amount > average.times(BigDecimal("1.25"))
+        return BillHistoryEntry(o, average, lastYear, unusual)
     }
 
     /** BILL-10: every subscription with its yearly cost. */

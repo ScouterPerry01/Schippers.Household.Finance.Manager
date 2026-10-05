@@ -71,7 +71,7 @@ Le formulaire s’intitule « Budget de (catégorie) ».
 
 La note « Le budget couvre aussi les sous-catégories, sauf celles qui ont leur propre budget. » rappelle comment le montant réel est compté.
 
-**Enregistrer** fixe le budget. **Supprimer** (affiché quand la catégorie a déjà un budget) retire le budget aussitôt, sans question. Vos opérations ne sont pas touchées.
+**Enregistrer** fixe le budget. **Supprimer** (affiché quand la catégorie a déjà un budget) demande « Supprimer le budget de …? Vos opérations ne changent pas; la catégorie n’a simplement plus de budget. » et, après confirmation, retire le budget. Vos opérations ne sont pas touchées. Cette action ne peut pas être annulée ; fixez de nouveau le budget pour le retrouver.
 
 ## Budgets mensuels et annuels {#monthly-and-yearly}
 @index: budget annuel; dépenses annuelles; dépenses irrégulières; taxes foncières; assurances
@@ -110,7 +110,7 @@ Le report compte chaque mois depuis le mois de départ du budget jusqu’au mois
 
 ## Modifier ou supprimer un budget {#change-budget}
 
-Cliquez sur la barre d’une catégorie pour ouvrir son formulaire de budget. Changez le montant, la période, le report ou le mois de départ et cliquez sur **Enregistrer**, ou cliquez sur **Supprimer** pour retirer le budget.
+Cliquez sur la barre d’une catégorie pour ouvrir son formulaire de budget. Changez le montant, la période, le report ou le mois de départ et cliquez sur **Enregistrer**, ou cliquez sur **Supprimer** pour retirer le budget (une confirmation est demandée).
 
 ## Les devises {#currencies}
 @index: devise étrangère; taux de change; devise de base

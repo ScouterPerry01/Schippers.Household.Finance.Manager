@@ -138,12 +138,12 @@ The form's title is the kind of capture. With several pages it shows how many. F
 - **Store or biller**: the store, restaurant or company. Filled in from the reading. On the computer it becomes the document's merchant, and in the Sent list it is the capture's name.
 - **Date (YYYY-MM-DD)**: the date on the receipt or bill, such as 2026-10-05. Filled in from the reading; today for a quick expense. A date the computer cannot read is ignored and the read date is kept.
 - **Amount**: the total, such as 42.17 or 42,17 (a dollar sign is ignored). It is rounded to the cent. Anything that is not a number is left out, and the computer uses what it read.
-- **Paid with**: an account from your computer, or **(none)**.
-- **Category**: a spending category from your computer, shown under its parent such as "Food › Groceries", or **(none)**.
-- **For**: a member of the household or a pet, or **(the household)**.
+- **Paid with**: an account from your computer, or **(none)**. On the computer it becomes the account offered first when a transaction is created from the capture.
+- **Category**: a spending category from your computer, shown under its parent such as "Food › Groceries", or **(none)**. On the computer it becomes the category offered first for that transaction.
+- **For**: a member of the household or a pet, or **(the household)**. On the computer it becomes the person or pet offered first for that transaction.
 - **Note**: anything to remember, such as "Lunch with client" or "Return by Nov. 3". On the computer it becomes the document's notes.
 
-**Paid with**, **Category** and **For** appear once the phone has received a summary from the computer, after the first transfer. They are sent with the capture; in this version the computer files the capture with its store, date, amount and note, so set the account, category and person when you review it there.
+**Paid with**, **Category** and **For** appear once the phone has received a summary from the computer, after the first transfer. They are sent with the capture and kept with the document on the computer. When you review it there and choose **New transaction from this document**, the form starts with them; you can still change them. See [New transaction from this document](documents#new-transaction).
 
 The buttons:
 

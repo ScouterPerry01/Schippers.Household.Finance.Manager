@@ -234,7 +234,7 @@ L’écran Impôts ne fait que lire les livres. Voici les endroits où ce que vo
 
 Inscrire la paie d’après son talon met dans les livres la paie brute et chaque retenue, et non seulement le dépôt net : la trousse de fin d’année a ainsi les revenus d’emploi, le RPC ou le RRQ, l’AE ou le RQAP, l’impôt retenu, le régime de retraite et les cotisations syndicales, et la liste des feuillets attend le T4.
 
-Ouvrez-la avec **Talon de paie…** sous une nouvelle opération dans le registre d’un compte bancaire (voir [Comptes](accounts)), ou avec **Inscrire la paie…** sur un talon de paie dans Documents, où les champs sont remplis d’après une lecture par IA (voir [Documents](documents)).
+Ouvrez-la avec **Talon de paie…** sous une nouvelle opération dans le registre d’un compte bancaire (voir [Comptes](accounts)), ou avec **Inscrire la paie…** sur un talon de paie dans Documents, où les champs sont remplis d’après une lecture par IA quand le talon a été lu par l’IA, et tapés à la main sinon (voir [Documents](documents)).
 
 - **Employeur** : l’employeur, qui sera le bénéficiaire. Obligatoire. La liste des feuillets attend un T4 de ce nom.
 - **Date de paie** : la date du dépôt, au format AAAA-MM-JJ. Par défaut la date du jour, ou la date lue sur le talon.
