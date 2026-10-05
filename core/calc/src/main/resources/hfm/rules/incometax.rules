@@ -1,1 +1,344 @@
 # Rates and rules: incometax. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
+#
+# The income tax estimate (ca.schippers.hfm.calc.tax.IncomeTax). Each value takes effect on January 1
+# of a tax year and stays until the next one: a year whose figures are not published keeps the last.
+# Every value was read on the official source named after it (CRA forms, worksheets, TD1 forms and
+# T4127, Revenu Québec, Finance Canada and the provinces' finance ministries) in October 2026.
+#
+# BRACKETS: the rate on taxable income above each threshold. LIST values, in order:
+#   bpa: the amount; or maximum; minimum; net income where the reduction starts; where it ends
+#   age: maximum; net income threshold; reduction rate (Quebec: on family income, with the retirement amount)
+#   spouse: maximum; the spouse's net income above which it is reduced dollar for dollar
+#   medical: rate of net income; fixed amount (the lesser of the two is the threshold)
+#   donation: first tier limit; its rate; the rate above; the rate on gifts matched by income in the top bracket
+#   dividends: credit rates on the taxable amount of eligible and of other dividends
+#   topUpCredit, supplementalCredit: credit amounts above this threshold; the extra rate on them
+#   surtax: threshold; rate; threshold; rate, on the provincial tax after credits
+#   lowIncomeReduction: maximum; net income threshold; reduction rate
+#   healthPremium: taxable income from; rate; cap, for each tier
+#   cpp, qpp: maximum employee contribution (first tier); base rate; employee rate
+#   qc.workerDeduction: rate of employment income; maximum
+#   qc.retirement: maximum; factor applied to the pension income
+#   qc.medical: rate of family income; credit rate
+
+rule tax.fed.brackets BRACKETS
+rule tax.fed.creditRate RATE
+rule tax.fed.bpa LIST
+rule tax.fed.employmentAmount AMOUNT
+rule tax.fed.age LIST
+rule tax.fed.pension AMOUNT
+rule tax.fed.medical LIST
+rule tax.fed.donation LIST
+rule tax.fed.dividends LIST
+rule tax.fed.topUpCredit LIST
+rule tax.fed.quebecAbatement RATE
+rule tax.cpp LIST
+rule tax.qpp LIST
+rule tax.prov.brackets BRACKETS province
+rule tax.prov.creditRate RATE province
+rule tax.prov.bpa LIST province
+rule tax.prov.spouse LIST province
+rule tax.prov.age LIST province
+rule tax.prov.seniorSupplement AMOUNT province
+rule tax.prov.employmentAmount AMOUNT province
+rule tax.prov.pension AMOUNT province
+rule tax.prov.medical LIST province
+rule tax.prov.donation LIST province
+rule tax.prov.dividends LIST province
+rule tax.prov.supplementalCredit LIST province
+rule tax.prov.surtax LIST province
+rule tax.prov.taxReduction AMOUNT province
+rule tax.prov.lowIncomeReduction LIST province
+rule tax.prov.healthPremium LIST province
+rule tax.qc.workerDeduction LIST
+rule tax.qc.retirement LIST
+rule tax.qc.medical LIST
+
+tax.fed.brackets | - | 2024-01-01 | 0:0.15; 55867:0.205; 111733:0.26; 173205:0.29; 246752:0.33 | CRA, tax rates and income brackets (all years)
+tax.fed.brackets | - | 2025-01-01 | 0:0.145; 57375:0.205; 114750:0.26; 177882:0.29; 253414:0.33 | CRA, tax rates and income brackets 2025 (14 % from July 1, 2025)
+tax.fed.brackets | - | 2026-01-01 | 0:0.14; 58523:0.205; 117045:0.26; 181440:0.29; 258482:0.33 | CRA, tax rates and income brackets 2026
+tax.fed.creditRate | - | 2024-01-01 | 0.15 | CRA, T1 return 2024, line 120
+tax.fed.creditRate | - | 2025-01-01 | 0.145 | CRA, T1 return 2025, line 114
+tax.fed.creditRate | - | 2026-01-01 | 0.14 | Finance Canada, lowest rate and non-refundable credits; CRA T4127 January 2026
+tax.fed.bpa | - | 2024-01-01 | 15705; 14156; 173205; 246752 | CRA, indexation adjustment for personal income tax amounts; Federal Worksheet 2024
+tax.fed.bpa | - | 2025-01-01 | 16129; 14538; 177882; 253414 | CRA, indexation adjustment for personal income tax amounts; Federal Worksheet 2025
+tax.fed.bpa | - | 2026-01-01 | 16452; 14829; 181440; 258482 | CRA, indexation adjustment for personal income tax amounts; CRA T4127 January 2026
+tax.fed.employmentAmount | - | 2024-01-01 | 1433 | CRA, indexation adjustment for personal income tax amounts
+tax.fed.employmentAmount | - | 2025-01-01 | 1471 | CRA, indexation adjustment for personal income tax amounts
+tax.fed.employmentAmount | - | 2026-01-01 | 1501 | CRA, indexation adjustment for personal income tax amounts
+tax.fed.age | - | 2024-01-01 | 8790; 44325; 0.15 | CRA, indexation adjustment for personal income tax amounts; Federal Worksheet 2024
+tax.fed.age | - | 2025-01-01 | 9028; 45522; 0.15 | CRA, indexation adjustment for personal income tax amounts; Federal Worksheet 2025
+tax.fed.age | - | 2026-01-01 | 9208; 46432; 0.15 | CRA, indexation adjustment for personal income tax amounts
+tax.fed.pension | - | 2024-01-01 | 2000 | CRA, T1 return 2024, line 31400
+tax.fed.pension | - | 2025-01-01 | 2000 | CRA, T1 return 2025, line 31400
+tax.fed.medical | - | 2024-01-01 | 0.03; 2759 | CRA, indexation adjustment for personal income tax amounts
+tax.fed.medical | - | 2025-01-01 | 0.03; 2834 | CRA, indexation adjustment for personal income tax amounts
+tax.fed.medical | - | 2026-01-01 | 0.03; 2890 | CRA, indexation adjustment for personal income tax amounts
+tax.fed.donation | - | 2024-01-01 | 200; 0.15; 0.29; 0.33 | CRA, Schedule 9 2024
+tax.fed.donation | - | 2025-01-01 | 200; 0.145; 0.29; 0.33 | CRA, Schedule 9 2025
+tax.fed.donation | - | 2026-01-01 | 200; 0.14; 0.29; 0.33 | Finance Canada, lowest rate and non-refundable credits (first $200 at the lowest rate)
+tax.fed.dividends | - | 2024-01-01 | 0.150198; 0.090301 | CRA, completing the T5 slip; Federal Worksheet 2024
+tax.fed.topUpCredit | - | 2025-01-01 | 57375; 0.005 | CRA, line 34990 top-up tax credit; Federal Worksheet 2025
+tax.fed.topUpCredit | - | 2026-01-01 | 58523; 0.01 | Finance Canada, top-up tax credit keeps 15 % above the first bracket (2025 to 2030)
+tax.fed.quebecAbatement | - | 2024-01-01 | 0.165 | Finance Canada, Quebec abatement; CRA T1 return for Quebec
+tax.cpp | - | 2024-01-01 | 3867.50; 0.0495; 0.0595 | CRA, CPP contribution rates, maximums and exemptions
+tax.cpp | - | 2025-01-01 | 4034.10; 0.0495; 0.0595 | CRA, CPP contribution rates, maximums and exemptions
+tax.cpp | - | 2026-01-01 | 4230.45; 0.0495; 0.0595 | CRA, CPP contribution rates; T4127 January 2026
+tax.qpp | - | 2024-01-01 | 4160.00; 0.054; 0.064 | Revenu Québec, QPP contribution rate; Retraite Québec
+tax.qpp | - | 2025-01-01 | 4339.20; 0.054; 0.064 | Revenu Québec, QPP contribution rate; Retraite Québec
+tax.qpp | - | 2026-01-01 | 4479.30; 0.053; 0.063 | Revenu Québec, QPP contribution rate; Retraite Québec
+tax.prov.brackets | ON | 2024-01-01 | 0:0.0505; 51446:0.0915; 102894:0.1116; 150000:0.1216; 220000:0.1316 | CRA, Form ON428 2024
+tax.prov.brackets | ON | 2025-01-01 | 0:0.0505; 52886:0.0915; 105775:0.1116; 150000:0.1216; 220000:0.1316 | CRA, Form ON428 2025
+tax.prov.brackets | ON | 2026-01-01 | 0:0.0505; 53891:0.0915; 107785:0.1116; 150000:0.1216; 220000:0.1316 | CRA, T4127 January 2026; CRA, tax rates and income brackets 2026
+tax.prov.creditRate | ON | 2024-01-01 | 0.0505 | CRA, Form ON428 2024
+tax.prov.bpa | ON | 2024-01-01 | 12399 | CRA, Form ON428 2024
+tax.prov.bpa | ON | 2025-01-01 | 12747 | CRA, Form ON428 2025
+tax.prov.bpa | ON | 2026-01-01 | 12989 | CRA, TD1ON 2026
+tax.prov.spouse | ON | 2024-01-01 | 10528; 1053 | CRA, Form ON428 2024
+tax.prov.spouse | ON | 2025-01-01 | 10823; 1082 | CRA, Form ON428 2025
+tax.prov.spouse | ON | 2026-01-01 | 11029; 1103 | CRA, TD1ON 2026
+tax.prov.age | ON | 2024-01-01 | 6054; 45068; 0.15 | CRA, Worksheet ON428 2024
+tax.prov.age | ON | 2025-01-01 | 6223; 46330; 0.15 | CRA, Worksheet ON428 2025
+tax.prov.age | ON | 2026-01-01 | 6342; 47210; 0.15 | CRA, TD1ON 2026
+tax.prov.pension | ON | 2024-01-01 | 1714 | CRA, Form ON428 2024
+tax.prov.pension | ON | 2025-01-01 | 1762 | CRA, Form ON428 2025
+tax.prov.pension | ON | 2026-01-01 | 1796 | CRA, TD1ON 2026
+tax.prov.medical | ON | 2024-01-01 | 0.03; 2806 | CRA, Form ON428 2024
+tax.prov.medical | ON | 2025-01-01 | 0.03; 2885 | CRA, Form ON428 2025
+tax.prov.medical | ON | 2026-01-01 | 0.03; 2940 | Ontario, personal income tax rates and credits 2026
+tax.prov.donation | ON | 2024-01-01 | 200; 0.0505; 0.1116 | CRA, Form ON428 2024
+tax.prov.dividends | ON | 2024-01-01 | 0.10; 0.029863 | CRA, Worksheet ON428 2024; Ontario dividend tax credit
+tax.prov.surtax | ON | 2024-01-01 | 5554; 0.20; 7108; 0.36 | CRA, Form ON428 2024
+tax.prov.surtax | ON | 2025-01-01 | 5710; 0.20; 7307; 0.36 | CRA, Form ON428 2025
+tax.prov.surtax | ON | 2026-01-01 | 5818; 0.20; 7446; 0.36 | CRA, T4127 January 2026
+tax.prov.taxReduction | ON | 2024-01-01 | 286 | CRA, Form ON428 2024
+tax.prov.taxReduction | ON | 2025-01-01 | 294 | CRA, Form ON428 2025
+tax.prov.taxReduction | ON | 2026-01-01 | 300 | CRA, T4127 January 2026
+tax.prov.healthPremium | ON | 2024-01-01 | 20000; 0.06; 300; 36000; 0.06; 450; 48000; 0.25; 600; 72000; 0.25; 750; 200000; 0.25; 900 | CRA, Form ON428 2024, Ontario Health Premium chart
+tax.prov.brackets | MB | 2024-01-01 | 0:0.108; 47000:0.1275; 100000:0.174 | CRA, Form MB428 2024; Manitoba Finance (frozen in 2025)
+tax.prov.creditRate | MB | 2024-01-01 | 0.108 | CRA, Form MB428 2024
+tax.prov.bpa | MB | 2024-01-01 | 15780 | CRA, Form MB428 2024
+tax.prov.bpa | MB | 2025-01-01 | 15780; 0; 200000; 400000 | CRA, Worksheet MB428 2025; Manitoba Finance, personal tax credits
+tax.prov.spouse | MB | 2024-01-01 | 9134; 0 | CRA, Form MB428 2024
+tax.prov.age | MB | 2024-01-01 | 3728; 27749; 0.15 | CRA, Worksheet MB428 2024
+tax.prov.pension | MB | 2024-01-01 | 1000 | CRA, Form MB428 2024
+tax.prov.medical | MB | 2024-01-01 | 0.03; 1728 | CRA, Form MB428 2024
+tax.prov.donation | MB | 2024-01-01 | 200; 0.108; 0.174 | CRA, Form MB428 2024
+tax.prov.dividends | MB | 2024-01-01 | 0.08; 0.007835 | CRA, Worksheet MB428 2024
+tax.prov.brackets | SK | 2024-01-01 | 0:0.105; 52057:0.125; 148734:0.145 | CRA, Form SK428 2024
+tax.prov.brackets | SK | 2025-01-01 | 0:0.105; 53463:0.125; 152750:0.145 | CRA, Form SK428 2025
+tax.prov.brackets | SK | 2026-01-01 | 0:0.105; 54532:0.125; 155805:0.145 | Saskatchewan, personal income tax structure 2026
+tax.prov.creditRate | SK | 2024-01-01 | 0.105 | CRA, Form SK428 2024
+tax.prov.bpa | SK | 2024-01-01 | 18491 | CRA, Form SK428 2024
+tax.prov.bpa | SK | 2025-01-01 | 19491 | CRA, Form SK428 2025
+tax.prov.bpa | SK | 2026-01-01 | 20381 | CRA, TD1SK 2026
+tax.prov.spouse | SK | 2024-01-01 | 18491; 1850 | CRA, Form SK428 2024
+tax.prov.spouse | SK | 2025-01-01 | 19491; 1949 | CRA, Form SK428 2025
+tax.prov.spouse | SK | 2026-01-01 | 20381; 2038 | CRA, TD1SK 2026
+tax.prov.age | SK | 2024-01-01 | 5633; 41933; 0.15 | CRA, Worksheet SK428 2024
+tax.prov.age | SK | 2025-01-01 | 5785; 43066; 0.15 | CRA, Worksheet SK428 2025
+tax.prov.age | SK | 2026-01-01 | 5901; 43927; 0.15 | CRA, TD1SK 2026
+tax.prov.seniorSupplement | SK | 2024-01-01 | 1487 | CRA, Form SK428 2024
+tax.prov.seniorSupplement | SK | 2025-01-01 | 2028 | CRA, Form SK428 2025
+tax.prov.seniorSupplement | SK | 2026-01-01 | 2569 | CRA, TD1SK 2026
+tax.prov.pension | SK | 2024-01-01 | 1000 | CRA, Form SK428 2024
+tax.prov.medical | SK | 2024-01-01 | 0.03; 2610 | CRA, Form SK428 2024
+tax.prov.medical | SK | 2025-01-01 | 0.03; 2681 | CRA, Form SK428 2025
+tax.prov.medical | SK | 2026-01-01 | 0.03; 2735 | Saskatchewan, personal income tax structure 2026
+tax.prov.donation | SK | 2024-01-01 | 200; 0.105; 0.145 | CRA, Form SK428 2024
+tax.prov.dividends | SK | 2024-01-01 | 0.11; 0.02519 | CRA, Worksheet SK428 2024
+tax.prov.brackets | BC | 2024-01-01 | 0:0.0506; 47937:0.077; 95875:0.105; 110076:0.1229; 133664:0.147; 181232:0.168; 252752:0.205 | CRA, Form BC428 2024
+tax.prov.brackets | BC | 2025-01-01 | 0:0.0506; 49279:0.077; 98560:0.105; 113158:0.1229; 137407:0.147; 186306:0.168; 259829:0.205 | CRA, Form BC428 2025
+tax.prov.brackets | BC | 2026-01-01 | 0:0.056; 50363:0.077; 100728:0.105; 115648:0.1229; 140430:0.147; 190405:0.168; 265545:0.205 | CRA, tax rates and income brackets 2026; Government of B.C., tax rates (Budget 2026)
+tax.prov.creditRate | BC | 2024-01-01 | 0.0506 | CRA, Form BC428 2024
+tax.prov.creditRate | BC | 2026-01-01 | 0.056 | Government of B.C., basic tax credits 2026
+tax.prov.bpa | BC | 2024-01-01 | 12580 | CRA, Form BC428 2024
+tax.prov.bpa | BC | 2025-01-01 | 12932 | CRA, Form BC428 2025
+tax.prov.bpa | BC | 2026-01-01 | 13216 | CRA, T4127 January 2026; Government of B.C., basic tax credits
+tax.prov.spouse | BC | 2024-01-01 | 10772; 1078 | CRA, Form BC428 2024
+tax.prov.spouse | BC | 2025-01-01 | 11073; 1108 | CRA, Form BC428 2025
+tax.prov.spouse | BC | 2026-01-01 | 11317; 1132 | CRA, TD1BC 2026
+tax.prov.age | BC | 2024-01-01 | 5641; 41993; 0.15 | CRA, Worksheet BC428 2024
+tax.prov.age | BC | 2025-01-01 | 5799; 43169; 0.15 | CRA, Worksheet BC428 2025
+tax.prov.age | BC | 2026-01-01 | 5927; 44119; 0.15 | CRA, TD1BC 2026
+tax.prov.pension | BC | 2024-01-01 | 1000 | CRA, Form BC428 2024
+tax.prov.medical | BC | 2024-01-01 | 0.03; 2616 | CRA, Form BC428 2024
+tax.prov.medical | BC | 2025-01-01 | 0.03; 2689 | CRA, Form BC428 2025
+tax.prov.medical | BC | 2026-01-01 | 0.03; 2748 | Government of B.C., basic tax credits 2026
+tax.prov.donation | BC | 2024-01-01 | 200; 0.0506; 0.168; 0.205 | CRA, Worksheet BC428 2024
+tax.prov.donation | BC | 2026-01-01 | 200; 0.056; 0.168; 0.205 | Government of B.C., basic tax credits 2026
+tax.prov.dividends | BC | 2024-01-01 | 0.12; 0.0196 | CRA, Worksheet BC428 2024; Government of B.C.
+tax.prov.lowIncomeReduction | BC | 2024-01-01 | 547; 24338; 0.0356 | CRA, Form BC428 2024
+tax.prov.lowIncomeReduction | BC | 2025-01-01 | 562; 25020; 0.0356 | CRA, Form BC428 2025
+tax.prov.lowIncomeReduction | BC | 2026-01-01 | 690; 25570; 0.0356 | Government of B.C., basic tax credits 2026
+tax.prov.brackets | AB | 2024-01-01 | 0:0.1; 148269:0.12; 177922:0.13; 237230:0.14; 355845:0.15 | CRA, tax rates and income brackets (all years)
+tax.prov.brackets | AB | 2025-01-01 | 0:0.08; 60000:0.1; 151234:0.12; 181481:0.13; 241974:0.14; 362961:0.15 | CRA, Form AB428 2025; Government of Alberta
+tax.prov.brackets | AB | 2026-01-01 | 0:0.08; 61200:0.1; 154259:0.12; 185111:0.13; 246813:0.14; 370220:0.15 | CRA, tax rates and income brackets 2026; Government of Alberta
+tax.prov.creditRate | AB | 2024-01-01 | 0.10 | CRA, Form AB428 2024
+tax.prov.creditRate | AB | 2025-01-01 | 0.08 | CRA, Form AB428 2025; Alberta Personal Income Tax Act s. 4
+tax.prov.supplementalCredit | AB | 2025-01-01 | 60000; 0.02 | CRA, Worksheet AB428 2025 line 61545; Alberta Personal Income Tax Act s. 20.2
+tax.prov.supplementalCredit | AB | 2026-01-01 | 61200; 0.02 | CRA, T4127 January 2026
+tax.prov.bpa | AB | 2024-01-01 | 21885 | CRA, Form AB428 2024
+tax.prov.bpa | AB | 2025-01-01 | 22323 | CRA, Form AB428 2025
+tax.prov.bpa | AB | 2026-01-01 | 22769 | CRA, T4127 January 2026
+tax.prov.spouse | AB | 2024-01-01 | 21885; 0 | CRA, Form AB428 2024
+tax.prov.spouse | AB | 2025-01-01 | 22323; 0 | CRA, Form AB428 2025
+tax.prov.spouse | AB | 2026-01-01 | 22769; 0 | CRA, TD1AB 2026; CRA, T4127 January 2026
+tax.prov.age | AB | 2024-01-01 | 6099; 45400; 0.15 | CRA, Worksheet AB428 2024
+tax.prov.age | AB | 2025-01-01 | 6221; 46308; 0.15 | CRA, Worksheet AB428 2025
+tax.prov.age | AB | 2026-01-01 | 6345; 47234; 0.15 | CRA, TD1AB 2026
+tax.prov.pension | AB | 2024-01-01 | 1685 | CRA, Form AB428 2024
+tax.prov.pension | AB | 2025-01-01 | 1719 | CRA, Form AB428 2025
+tax.prov.pension | AB | 2026-01-01 | 1753 | CRA, TD1AB 2026
+tax.prov.medical | AB | 2024-01-01 | 0.03; 2828 | CRA, Form AB428 2024
+tax.prov.medical | AB | 2025-01-01 | 0.03; 2884 | CRA, Form AB428 2025
+tax.prov.donation | AB | 2024-01-01 | 200; 0.60; 0.21 | CRA, Form AB428 2024; Alberta Personal Income Tax Act s. 11
+tax.prov.dividends | AB | 2024-01-01 | 0.0812; 0.0218 | CRA, Worksheet AB428 2024; Alberta Personal Income Tax Act s. 21
+tax.prov.brackets | NB | 2024-01-01 | 0:0.094; 49958:0.14; 99916:0.16; 185064:0.195 | CRA, tax rates and income brackets (all years)
+tax.prov.brackets | NB | 2025-01-01 | 0:0.094; 51306:0.14; 102614:0.16; 190060:0.195 | CRA, tax rates and income brackets 2025
+tax.prov.brackets | NB | 2026-01-01 | 0:0.094; 52333:0.14; 104666:0.16; 193861:0.195 | CRA, tax rates and income brackets 2026
+tax.prov.creditRate | NB | 2024-01-01 | 0.094 | CRA, Form NB428 2024
+tax.prov.bpa | NB | 2024-01-01 | 13044 | CRA, Form NB428 2024
+tax.prov.bpa | NB | 2025-01-01 | 13396 | CRA, Form NB428 2025
+tax.prov.bpa | NB | 2026-01-01 | 13664 | CRA, TD1NB 2026
+tax.prov.spouse | NB | 2024-01-01 | 10223; 1023 | CRA, Form NB428 2024
+tax.prov.spouse | NB | 2025-01-01 | 10499; 1051 | CRA, Form NB428 2025
+tax.prov.spouse | NB | 2026-01-01 | 10709; 1072 | CRA, TD1NB 2026
+tax.prov.age | NB | 2024-01-01 | 5878; 43763; 0.15 | CRA, Worksheet NB428 2024
+tax.prov.age | NB | 2025-01-01 | 6037; 44945; 0.15 | CRA, Worksheet NB428 2025
+tax.prov.age | NB | 2026-01-01 | 6158; 45844; 0.15 | CRA, TD1NB 2026
+tax.prov.pension | NB | 2024-01-01 | 1000 | CRA, Form NB428 2024
+tax.prov.medical | NB | 2024-01-01 | 0.03; 2724 | CRA, Form NB428 2024
+tax.prov.medical | NB | 2025-01-01 | 0.03; 2798 | CRA, Form NB428 2025
+tax.prov.donation | NB | 2024-01-01 | 200; 0.094; 0.1795 | CRA, Form NB428 2024
+tax.prov.dividends | NB | 2024-01-01 | 0.14; 0.0275 | CRA, Worksheet NB428 2024
+tax.prov.brackets | NS | 2024-01-01 | 0:0.0879; 29590:0.1495; 59180:0.1667; 93000:0.175; 150000:0.21 | CRA, tax rates and income brackets (all years)
+tax.prov.brackets | NS | 2025-01-01 | 0:0.0879; 30507:0.1495; 61015:0.1667; 95883:0.175; 154650:0.21 | CRA, tax rates and income brackets 2025; CRA, T4127 January 2026
+tax.prov.brackets | NS | 2026-01-01 | 0:0.0879; 30995:0.1495; 61991:0.1667; 97417:0.175; 157124:0.21 | CRA, tax rates and income brackets 2026
+tax.prov.creditRate | NS | 2024-01-01 | 0.0879 | CRA, Form NS428 2024
+tax.prov.bpa | NS | 2024-01-01 | 11481; 8481; 25000; 75000 | CRA, Worksheet NS428 2024 (basic amount and supplement)
+tax.prov.bpa | NS | 2025-01-01 | 11744 | CRA, Form NS428 2025
+tax.prov.bpa | NS | 2026-01-01 | 11932 | CRA, TD1NS 2026
+tax.prov.spouse | NS | 2024-01-01 | 8481; 848 | CRA, Worksheet NS428 2024 (without the supplement)
+tax.prov.spouse | NS | 2025-01-01 | 11744; 874 | CRA, Form NS428 2025
+tax.prov.spouse | NS | 2026-01-01 | 11932; 888 | CRA, TD1NS 2026
+tax.prov.age | NS | 2024-01-01 | 4141; 30828; 0.15 | CRA, Worksheet NS428 2024 (without the supplement)
+tax.prov.age | NS | 2025-01-01 | 5734; 30828; 0.15 | CRA, Worksheet NS428 2025
+tax.prov.age | NS | 2026-01-01 | 5826; 30828; 0.15 | CRA, TD1NS 2026
+tax.prov.pension | NS | 2024-01-01 | 1173 | CRA, Form NS428 2024
+tax.prov.medical | NS | 2024-01-01 | 0.03; 1637 | CRA, Form NS428 2024
+tax.prov.donation | NS | 2024-01-01 | 200; 0.0879; 0.21 | CRA, Form NS428 2024
+tax.prov.dividends | NS | 2024-01-01 | 0.0885; 0.0299 | CRA, Worksheet NS428 2024
+tax.prov.dividends | NS | 2025-01-01 | 0.0885; 0.015 | CRA, Worksheet NS428 2025
+tax.prov.brackets | PE | 2024-01-01 | 0:0.0965; 32656:0.1363; 64313:0.1665; 105000:0.18; 140000:0.1875 | CRA, Form PE428 2024
+tax.prov.brackets | PE | 2025-01-01 | 0:0.095; 33328:0.1347; 64656:0.166; 105000:0.1762; 140000:0.19 | CRA, Form PE428 2025
+tax.prov.brackets | PE | 2026-01-01 | 0:0.095; 33928:0.1347; 65820:0.166; 106890:0.1762; 142520:0.19; 200000:0.2 | CRA, tax rates and income brackets 2026; CRA T4127 July 2026
+tax.prov.creditRate | PE | 2024-01-01 | 0.0965 | CRA, Form PE428 2024
+tax.prov.creditRate | PE | 2025-01-01 | 0.095 | CRA, Form PE428 2025
+tax.prov.bpa | PE | 2024-01-01 | 13500 | CRA, Form PE428 2024
+tax.prov.bpa | PE | 2025-01-01 | 14650 | CRA, Form PE428 2025
+tax.prov.bpa | PE | 2026-01-01 | 15000 | CRA, TD1PE 2026
+tax.prov.spouse | PE | 2024-01-01 | 11466; 1147 | CRA, Form PE428 2024
+tax.prov.spouse | PE | 2025-01-01 | 12443; 1244 | CRA, Form PE428 2025
+tax.prov.spouse | PE | 2026-01-01 | 12740; 1274 | CRA, TD1PE 2026
+tax.prov.age | PE | 2024-01-01 | 5595; 33740; 0.15 | CRA, Worksheet PE428 2024
+tax.prov.age | PE | 2025-01-01 | 6510; 36600; 0.15 | CRA, Worksheet PE428 2025
+tax.prov.pension | PE | 2024-01-01 | 1000 | CRA, Form PE428 2024
+tax.prov.medical | PE | 2024-01-01 | 0.03; 1678 | CRA, Form PE428 2024
+tax.prov.donation | PE | 2024-01-01 | 200; 0.0965; 0.1875 | CRA, Form PE428 2024
+tax.prov.donation | PE | 2025-01-01 | 200; 0.095; 0.19 | CRA, Form PE428 2025
+tax.prov.dividends | PE | 2024-01-01 | 0.105; 0.013 | CRA, Worksheet PE428 2024
+tax.prov.brackets | NL | 2024-01-01 | 0:0.087; 43198:0.145; 86395:0.158; 154244:0.178; 215943:0.198; 275870:0.208; 551739:0.213; 1103478:0.218 | CRA, tax rates and income brackets (all years)
+tax.prov.brackets | NL | 2025-01-01 | 0:0.087; 44192:0.145; 88382:0.158; 157792:0.178; 220910:0.198; 282214:0.208; 564429:0.213; 1128858:0.218 | CRA, tax rates and income brackets 2025
+tax.prov.brackets | NL | 2026-01-01 | 0:0.087; 44678:0.145; 89354:0.158; 159528:0.178; 223340:0.198; 285319:0.208; 570638:0.213; 1141275:0.218 | CRA, tax rates and income brackets 2026
+tax.prov.creditRate | NL | 2024-01-01 | 0.087 | CRA, Form NL428 2024
+tax.prov.bpa | NL | 2024-01-01 | 10818 | CRA, Form NL428 2024
+tax.prov.bpa | NL | 2025-01-01 | 11067 | CRA, Form NL428 2025
+tax.prov.bpa | NL | 2026-01-01 | 13094 | CRA, TD1NL 2026; CRA T4127 July 2026
+tax.prov.spouse | NL | 2024-01-01 | 8840; 885 | CRA, Form NL428 2024
+tax.prov.spouse | NL | 2025-01-01 | 9043; 905 | CRA, Form NL428 2025
+tax.prov.spouse | NL | 2026-01-01 | 9142; 915 | CRA, TD1NL 2026
+tax.prov.age | NL | 2024-01-01 | 6905; 37842; 0.15 | CRA, Worksheet NL428 2024
+tax.prov.age | NL | 2025-01-01 | 7064; 38712; 0.15 | CRA, Worksheet NL428 2025
+tax.prov.age | NL | 2026-01-01 | 7142; 39138; 0.15 | CRA, TD1NL 2026
+tax.prov.pension | NL | 2024-01-01 | 1000 | CRA, Form NL428 2024
+tax.prov.medical | NL | 2024-01-01 | 0.03; 2356 | CRA, Form NL428 2024
+tax.prov.medical | NL | 2025-01-01 | 0.03; 2410 | CRA, Form NL428 2025
+tax.prov.donation | NL | 2024-01-01 | 200; 0.087; 0.218 | CRA, Form NL428 2024
+tax.prov.dividends | NL | 2024-01-01 | 0.063; 0.032 | CRA, Worksheet NL428 2024
+tax.prov.brackets | QC | 2024-01-01 | 0:0.14; 51780:0.19; 103545:0.24; 126000:0.2575 | Revenu Québec, TP-1.D.GR 2024 work chart 401
+tax.prov.brackets | QC | 2025-01-01 | 0:0.14; 53255:0.19; 106495:0.24; 129590:0.2575 | Revenu Québec, income tax rates 2025
+tax.prov.brackets | QC | 2026-01-01 | 0:0.14; 54345:0.19; 108680:0.24; 132245:0.2575 | Revenu Québec, income tax rates 2026
+tax.prov.creditRate | QC | 2024-01-01 | 0.14 | Revenu Québec, TP-1.D 2024 line 377.1
+tax.prov.bpa | QC | 2024-01-01 | 18056 | Revenu Québec, TP-1.D 2024 line 350
+tax.prov.bpa | QC | 2025-01-01 | 18571 | Revenu Québec, principal changes for 2025
+tax.prov.bpa | QC | 2026-01-01 | 18952 | Revenu Québec, principal changes for 2026
+tax.prov.age | QC | 2024-01-01 | 3798; 40925; 0.1875 | Revenu Québec, Schedule B 2024
+tax.prov.age | QC | 2025-01-01 | 3906; 42090; 0.1875 | Revenu Québec, Schedule B 2025
+tax.prov.age | QC | 2026-01-01 | 3986; 42955; 0.1875 | Revenu Québec, principal changes for 2026; TP-1015.3 2026
+tax.prov.donation | QC | 2024-01-01 | 200; 0.20; 0.24; 0.2575 | Revenu Québec, TP-1.D.GR 2024 work chart 395
+tax.prov.dividends | QC | 2024-01-01 | 0.117; 0.0342 | Revenu Québec, guide TP-1.G 2024 (16.146 % and 3.933 % of the actual dividend, over the 138 % and 115 % gross-ups)
+tax.qc.workerDeduction | - | 2024-01-01 | 0.06; 1380 | Revenu Québec, TP-1.D.GR 2024 work chart 201
+tax.qc.workerDeduction | - | 2025-01-01 | 0.06; 1420 | Revenu Québec, principal changes for 2025
+tax.qc.workerDeduction | - | 2026-01-01 | 0.06; 1450 | Revenu Québec, principal changes for 2026
+tax.qc.retirement | - | 2024-01-01 | 3374; 1.25 | Revenu Québec, Schedule B 2024
+tax.qc.retirement | - | 2025-01-01 | 3470; 1.25 | Revenu Québec, Schedule B 2025
+tax.qc.retirement | - | 2026-01-01 | 3541; 1.25 | Revenu Québec, principal changes for 2026
+tax.qc.medical | - | 2024-01-01 | 0.03; 0.20 | Revenu Québec, TP-1.D 2024 and Schedule B part C
+tax.prov.brackets | YT | 2024-01-01 | 0:0.064; 55867:0.09; 111733:0.109; 173205:0.128; 500000:0.15 | CRA, Form YT428 2024
+tax.prov.brackets | YT | 2025-01-01 | 0:0.064; 57375:0.09; 114750:0.109; 177882:0.128; 500000:0.15 | CRA, Form YT428 2025
+tax.prov.brackets | YT | 2026-01-01 | 0:0.064; 58523:0.09; 117045:0.109; 181440:0.128; 500000:0.15 | CRA, tax rates and income brackets 2026
+tax.prov.creditRate | YT | 2024-01-01 | 0.064 | CRA, Form YT428 2024
+tax.prov.bpa | YT | 2024-01-01 | 15705; 14156; 173205; 246752 | CRA, Form YT428 2024; TD1YT-WS 2024
+tax.prov.bpa | YT | 2025-01-01 | 16129; 14538; 177882; 253414 | CRA, Form YT428 2025; TD1YT-WS 2025
+tax.prov.bpa | YT | 2026-01-01 | 16452; 14829; 181440; 258482 | CRA, TD1YT 2026; TD1YT-WS 2026
+tax.prov.spouse | YT | 2024-01-01 | 15705; 0 | CRA, TD1YT 2024
+tax.prov.spouse | YT | 2025-01-01 | 16129; 0 | CRA, TD1YT 2025
+tax.prov.spouse | YT | 2026-01-01 | 16452; 0 | CRA, TD1YT 2026
+tax.prov.age | YT | 2024-01-01 | 8790; 44325; 0.15 | CRA, Form YT428 2024
+tax.prov.age | YT | 2025-01-01 | 9028; 45522; 0.15 | CRA, Form YT428 2025
+tax.prov.age | YT | 2026-01-01 | 9208; 46432; 0.15 | CRA, TD1YT 2026; TD1YT-WS 2026
+tax.prov.employmentAmount | YT | 2024-01-01 | 1433 | CRA, T4127 January 2024
+tax.prov.employmentAmount | YT | 2025-01-01 | 1471 | CRA, Yukon information for 2025, line 58310
+tax.prov.employmentAmount | YT | 2026-01-01 | 1501 | CRA, T4127 January 2026
+tax.prov.pension | YT | 2024-01-01 | 2000 | CRA, Form YT428 2024
+tax.prov.medical | YT | 2024-01-01 | 0.03; 2759 | CRA, Form YT428 2024
+tax.prov.medical | YT | 2025-01-01 | 0.03; 2834 | CRA, Form YT428 2025
+tax.prov.donation | YT | 2024-01-01 | 200; 0.064; 0.128 | CRA, Form YT428 2024
+tax.prov.dividends | YT | 2024-01-01 | 0.1202; 0.0067 | CRA, Worksheet YT428 2024
+tax.prov.brackets | NT | 2024-01-01 | 0:0.059; 50597:0.086; 101198:0.122; 164525:0.1405 | CRA, Form NT428 2024
+tax.prov.brackets | NT | 2025-01-01 | 0:0.059; 51964:0.086; 103930:0.122; 168967:0.1405 | CRA, Form NT428 2025
+tax.prov.brackets | NT | 2026-01-01 | 0:0.059; 53003:0.086; 106009:0.122; 172346:0.1405 | CRA, tax rates and income brackets 2026
+tax.prov.creditRate | NT | 2024-01-01 | 0.059 | CRA, Form NT428 2024
+tax.prov.bpa | NT | 2024-01-01 | 17373 | CRA, Form NT428 2024
+tax.prov.bpa | NT | 2025-01-01 | 17842 | CRA, Form NT428 2025
+tax.prov.bpa | NT | 2026-01-01 | 18198 | CRA, TD1NT 2026
+tax.prov.spouse | NT | 2024-01-01 | 17373; 0 | CRA, Form NT428 2024
+tax.prov.spouse | NT | 2025-01-01 | 17842; 0 | CRA, Form NT428 2025
+tax.prov.spouse | NT | 2026-01-01 | 18198; 0 | CRA, TD1NT 2026
+tax.prov.age | NT | 2024-01-01 | 8498; 44325; 0.15 | CRA, Worksheet NT428 2024
+tax.prov.age | NT | 2025-01-01 | 8727; 45522; 0.15 | CRA, Worksheet NT428 2025
+tax.prov.age | NT | 2026-01-01 | 8902; 46432; 0.15 | CRA, TD1NT 2026
+tax.prov.pension | NT | 2024-01-01 | 1000 | CRA, Form NT428 2024
+tax.prov.medical | NT | 2024-01-01 | 0.03; 2759 | CRA, Form NT428 2024
+tax.prov.medical | NT | 2025-01-01 | 0.03; 2834 | CRA, Form NT428 2025
+tax.prov.donation | NT | 2024-01-01 | 200; 0.059; 0.1405 | CRA, Form NT428 2024
+tax.prov.dividends | NT | 2024-01-01 | 0.115; 0.06 | CRA, Worksheet NT428 2024
+tax.prov.brackets | NU | 2024-01-01 | 0:0.04; 53268:0.07; 106537:0.09; 173205:0.115 | CRA, Form NU428 2024
+tax.prov.brackets | NU | 2025-01-01 | 0:0.04; 54707:0.07; 109413:0.09; 177881:0.115 | CRA, Form NU428 2025
+tax.prov.brackets | NU | 2026-01-01 | 0:0.04; 55801:0.07; 111602:0.09; 181439:0.115 | CRA, tax rates and income brackets 2026; Government of Nunavut, 2026 tax rate sheet
+tax.prov.creditRate | NU | 2024-01-01 | 0.04 | CRA, Form NU428 2024
+tax.prov.bpa | NU | 2024-01-01 | 18767 | CRA, Form NU428 2024
+tax.prov.bpa | NU | 2025-01-01 | 19274 | CRA, Form NU428 2025
+tax.prov.bpa | NU | 2026-01-01 | 19659 | CRA, TD1NU 2026
+tax.prov.spouse | NU | 2024-01-01 | 18767; 0 | CRA, Form NU428 2024
+tax.prov.spouse | NU | 2025-01-01 | 19274; 0 | CRA, Form NU428 2025
+tax.prov.spouse | NU | 2026-01-01 | 19659; 0 | CRA, TD1NU 2026
+tax.prov.age | NU | 2024-01-01 | 11980; 44325; 0.15 | CRA, Worksheet NU428 2024
+tax.prov.age | NU | 2025-01-01 | 12303; 45522; 0.15 | CRA, Worksheet NU428 2025
+tax.prov.age | NU | 2026-01-01 | 12550; 46432; 0.15 | CRA, TD1NU 2026
+tax.prov.pension | NU | 2024-01-01 | 2000 | CRA, Form NU428 2024
+tax.prov.medical | NU | 2024-01-01 | 0.03; 2759 | CRA, Form NU428 2024
+tax.prov.medical | NU | 2025-01-01 | 0.03; 2834 | CRA, Form NU428 2025
+tax.prov.donation | NU | 2024-01-01 | 200; 0.04; 0.115 | CRA, Form NU428 2024
+tax.prov.dividends | NU | 2024-01-01 | 0.0551; 0.0261 | CRA, Worksheet NU428 2024

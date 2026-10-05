@@ -133,6 +133,16 @@ See [Taxes](taxes). In Quebec, provincial slips are called Relevés (RL).
 - **CPP and QPP**: the Canada Pension Plan and the Quebec Pension Plan, paid from work income and paying a retirement pension.
 - **OAS**: Old Age Security, the federal pension from age 65.
 - **EI**: Employment Insurance.
+- **Tax bracket**: a band of taxable income taxed at one rate; each dollar is taxed at the rate of the band it falls in. See [Estimate](taxes#estimate).
+- **Marginal rate**: the tax on one more dollar of income, federal and provincial together. A deduction such as an RRSP contribution saves roughly this rate.
+- **Average rate**: the total income tax as a share of total income.
+- **Net income and taxable income**: total income less deductions (line 23600), and net income less some further deductions (line 26000). Many credits and benefits depend on net income.
+- **Basic personal amount**: the income on which everyone pays no tax, given as a non-refundable credit. The federal one is smaller at high incomes.
+- **Non-refundable credit**: an amount (basic personal, age, CPP, EI, medical...) multiplied by the lowest tax rate and taken off the tax. It cannot bring the tax below zero.
+- **Dividend tax credit**: a credit for the corporate tax already paid on dividends from Canadian companies, worked out on the grossed-up (taxable) amount.
+- **Quebec abatement**: a reduction of 16.5 % of the federal tax for Quebec residents, who pay more Quebec tax in its place.
+- **Surtax**: an extra tax on the provincial tax above a threshold (Ontario).
+- **Ontario Health Premium**: an amount added to Ontario tax, by tiers of taxable income, up to $900.
 
 ## Health and family {#health-family}
 
