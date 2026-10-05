@@ -132,6 +132,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     var splitting by remember { mutableStateOf(false) }
     var salesTaxFor by remember { mutableStateOf<Transaction?>(null) }
     var refunding by remember { mutableStateOf<Transaction?>(null) }
+    var payStub by remember { mutableStateOf(false) }
     var pendingImport by remember { mutableStateOf<PendingImport?>(null) }
     var showStatements by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
@@ -377,6 +378,10 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                         if (entry.choice !is CategoryChoice.TransferWith) {
                             OutlinedButton(onClick = { splitting = true }) { Text(model.t("register.splitButton")) }
                         }
+                        // SAL-02: pay entered from its stub, gross pay less each deduction.
+                        if (entry.editing == null && account.type.kind == AccountKind.BANK) {
+                            OutlinedButton(onClick = { payStub = true }) { Text(model.t("payStub.button")) }
+                        }
                         entry.editing?.takeIf { it.transfer == null && it.investmentId == null }?.let { editing ->
                             // TX-04, TX-05: the sales taxes it included, and money back for a purchase.
                             OutlinedButton(onClick = { salesTaxFor = editing }) { Text(model.t("register.salesTaxButton")) }
@@ -404,6 +409,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
         SplitDialog(model, account, entry, categoryTree) { splitting = false }
     }
     salesTaxFor?.let { txn -> SalesTaxDialog(model, account, txn) { salesTaxFor = null } }
+    if (payStub) PayStubDialog(model, account.id) { done -> payStub = false; if (done) entry.clear() }
     refunding?.let { txn -> RefundDialog(model, account, txn) { done -> refunding = null; if (done) entry.clear() } }
     if (editingAccount) AccountDialog(model, account) { editingAccount = false }
     if (editingCard) CardTermsDialog(model, account) { editingCard = false }

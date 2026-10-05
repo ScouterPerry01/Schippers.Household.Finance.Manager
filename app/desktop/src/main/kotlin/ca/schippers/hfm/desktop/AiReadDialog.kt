@@ -53,9 +53,9 @@ private enum class Tool { HIDE, CROP }
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun AiReadDialog(model: BooksModel, doc: VaultDocument, onClose: (read: Boolean) -> Unit) {
+fun AiReadDialog(model: BooksModel, doc: VaultDocument, kind: ca.schippers.hfm.ocr.DocumentKind? = doc.kind, onClose: (read: Boolean) -> Unit) {
     val types = remember { DesktopAi.types().types }
-    var type by remember { mutableStateOf(types.firstOrNull { it.id == DocumentType.idFor(doc.kind ?: ca.schippers.hfm.ocr.DocumentKind.RECEIPT) } ?: types.first()) }
+    var type by remember { mutableStateOf(types.firstOrNull { it.id == DocumentType.idFor(kind ?: ca.schippers.hfm.ocr.DocumentKind.RECEIPT) } ?: types.first()) }
     var pages by remember { mutableStateOf<List<BufferedImage>?>(null) }
     val edits = remember { mutableStateListOf<PageEdit>() }
     var index by remember { mutableStateOf(0) }

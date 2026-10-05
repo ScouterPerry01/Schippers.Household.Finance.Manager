@@ -164,6 +164,42 @@ class AiService internal constructor(private val books: Books) {
         return ItemSplitter.split(lines, printed, total)
     }
 
+    /**
+     * SAL-02: a pay stub read by AI, ready for the pay stub dialog. Without earnings lines the gross
+     * pay is one line; income taxes of every level share one kind, their printed names kept.
+     */
+    fun payStub(documentId: String, fallback: Currency): PayStub? {
+        val reading = reading(documentId)?.takeIf { it.typeId == "pay_stub" } ?: return null
+        val answer = Json.parseToJsonElement(reading.answer).jsonObject
+        val currency = answer.text("currency")?.let { runCatching { Currency.of(it.uppercase()) }.getOrNull() } ?: fallback
+        fun money(v: BigDecimal) = Money.of(v, currency)
+        fun date(key: String) = answer.text(key)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        val earnings = (answer["earnings"] as? JsonArray).orEmpty().mapNotNull { e ->
+            val o = e as? JsonObject ?: return@mapNotNull null
+            PayEarning(o.text("description") ?: "?", money(o.number("amount") ?: return@mapNotNull null))
+        }.ifEmpty { listOfNotNull(answer.number("gross_pay")?.let { PayEarning("", money(it)) }) }
+        if (earnings.isEmpty()) return null
+        val deductions = (answer["deductions"] as? JsonArray).orEmpty().mapNotNull { e ->
+            val o = e as? JsonObject ?: return@mapNotNull null
+            val description = o.text("description")
+            val kind = when (o.text("kind")) {
+                "income_tax_federal", "income_tax_provincial", "income_tax_quebec" -> DeductionKind.INCOME_TAX
+                "cpp", "qpp" -> DeductionKind.CPP_QPP
+                "ei", "qpip" -> DeductionKind.EI_QPIP
+                "union_dues" -> DeductionKind.UNION_DUES
+                "pension" -> DeductionKind.PENSION
+                "group_insurance" -> DeductionKind.GROUP_INSURANCE
+                "rrsp" -> DeductionKind.RRSP
+                else -> if (description != null && PayStubService.CHARITY.containsMatchIn(description)) DeductionKind.CHARITY else DeductionKind.OTHER
+            }
+            PayDeduction(kind, description, money(o.number("amount")?.abs() ?: return@mapNotNull null))
+        }
+        return PayStub(
+            answer.text("employer").orEmpty(), date("pay_date") ?: return null, earnings, deductions,
+            answer.number("net_pay")?.let(::money), date("period_start"), date("period_end"),
+        )
+    }
+
     private fun JsonObject.number(key: String): BigDecimal? = (this[key] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toBigDecimalOrNull()
 
     /** AI-06: the signed-in user's requests between two instants (epoch milliseconds), newest first. */

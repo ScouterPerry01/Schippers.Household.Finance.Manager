@@ -1,6 +1,11 @@
 package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Account
+import ca.schippers.hfm.books.DeductionKind
+import ca.schippers.hfm.books.DonationReceipt
+import ca.schippers.hfm.books.PayDeduction
+import ca.schippers.hfm.books.PayEarning
+import ca.schippers.hfm.books.PayStub
 import ca.schippers.hfm.books.MeterUnit
 import ca.schippers.hfm.books.AssetServiceRecord
 import ca.schippers.hfm.books.ValueMethod
@@ -198,6 +203,22 @@ object DemoHousehold {
             ),
         )
         var odometer = 61_200
+        fun payStub(date: LocalDate) = PayStub(
+            l("Employeur inc.", "Employer Inc."), date, listOf(PayEarning(l("Salaire", "Regular pay"), cad("4315.00"))),
+            if (!english) {
+                listOf(
+                    PayDeduction(DeductionKind.INCOME_TAX, "Impôt fédéral", cad("410.00")), PayDeduction(DeductionKind.INCOME_TAX, "Impôt du Québec", cad("380.00")),
+                    PayDeduction(DeductionKind.CPP_QPP, "RRQ", cad("255.00")), PayDeduction(DeductionKind.EI_QPIP, "AE", cad("55.00")), PayDeduction(DeductionKind.EI_QPIP, "RQAP", cad("17.00")),
+                    PayDeduction(DeductionKind.UNION_DUES, "Cotisation syndicale", cad("38.00")), PayDeduction(DeductionKind.CHARITY, "Centraide", cad("10.00")),
+                )
+            } else {
+                listOf(
+                    PayDeduction(DeductionKind.INCOME_TAX, "Federal tax", cad("520.00")), PayDeduction(DeductionKind.INCOME_TAX, "Ontario tax", cad("280.00")),
+                    PayDeduction(DeductionKind.CPP_QPP, "CPP", cad("245.00")), PayDeduction(DeductionKind.EI_QPIP, "EI", cad("72.00")),
+                    PayDeduction(DeductionKind.UNION_DUES, "Union dues", cad("38.00")), PayDeduction(DeductionKind.CHARITY, "United Way", cad("10.00")),
+                )
+            },
+        )
 
         // Only past activity: anything that would fall after today is skipped.
         fun add(draft: TransactionDraft) { if (draft.date <= today) books.transactions.create(draft) }
@@ -206,8 +227,10 @@ object DemoHousehold {
         while (month <= today) {
             val m = month
             fun on(day: Int) = LocalDate(m.year, m.month, minOf(day, 28))
-            add(TransactionDraft(chequing.id, on(1), cad("3150.00"), l("Employeur inc.", "Employer Inc."), listOf(SplitDraft(cat("income.employment.salary"), cad("3150.00")))))
-            add(TransactionDraft(chequing.id, on(15), cad("3150.00"), l("Employeur inc.", "Employer Inc."), listOf(SplitDraft(cat("income.employment.salary"), cad("3150.00")))))
+            // SAL-02: Alex's pay, entered from the pay stub: gross pay less each deduction.
+            for (day in listOf(1, 15)) add(books.payStubs.draft(chequing.id, payStub(on(day)), alex.id))
+            // OTH-01: a monthly gift to the food bank.
+            add(TransactionDraft(chequing.id, on(20), cad("-25.00"), l("Moisson Québec", "Ottawa Food Bank"), listOf(SplitDraft(cat("gifts.charity"), cad("-25.00"))), memberId = sam.id))
             add(TransactionDraft(chequing.id, on(1), cad("-1450.00"), l("Propriétaire", "Landlord"), listOf(SplitDraft(cat("housing.rent"), cad("-1450.00")))))
             add(TransactionDraft(chequing.id, on(12), cad("-132.48"), l("Hydro-Québec", "Hydro Ottawa"), listOf(SplitDraft(cat("utilities.electricity"), cad("-132.48")))))
             add(TransactionDraft(chequing.id, on(18), cad("-95.00"), l("Vidéotron", "Rogers"), listOf(SplitDraft(cat("utilities.internet"), cad("-95.00")))))
@@ -235,6 +258,14 @@ object DemoHousehold {
             add(TransferDraft(chequing.id, visa.id, on(10), cad("566.57")))
             add(TransferDraft(chequing.id, savings.id, on(16), cad("500.00"), memo = l("Épargne mensuelle", "Monthly savings")))
             month = month.plus(DatePeriod(months = 1))
+        }
+        // OTH-01: a gala dinner, of which the receipt counts only part, and a political contribution.
+        if (LocalDate(today.year, 5, 9) <= today) {
+            val gala = books.transactions.create(
+                TransactionDraft(visa.id, LocalDate(today.year, 5, 9), cad("-250.00"), l("Fondation du CHU de Québec", "CHEO Foundation"), listOf(SplitDraft(cat("gifts.charity"), cad("-250.00"))), memberId = alex.id),
+            )
+            books.donations.setReceipt(gala.id, DonationReceipt(l("Fondation du CHU de Québec", "CHEO Foundation"), null, "2026-0412", cad("150.00"), received = true))
+            add(TransactionDraft(chequing.id, LocalDate(today.year, 6, 2), cad("-100.00"), l("Association de circonscription", "Riding association"), listOf(SplitDraft(cat("gifts.political"), cad("-100.00"))), memberId = sam.id))
         }
         // LN-02: the mortgage payments since the demo starts, each split from the balance owed.
         while (true) {

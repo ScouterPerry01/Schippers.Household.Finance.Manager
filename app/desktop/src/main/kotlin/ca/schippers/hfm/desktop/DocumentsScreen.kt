@@ -291,7 +291,7 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                     ReviewedField(model, draft?.total) { AmountInput(model.t("documents.total"), amount, currency, locale, it, model::money) { v -> amount = v } }
                 }
                 ExtractedDetails(model, doc)
-                AiPart(model, doc, onClose)
+                AiPart(model, doc, kind, onClose)
                 Duplicates(model, doc)
                 LabeledCheckbox(model.t("documents.keepForever"), keep) { keep = it }
                 TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
@@ -340,10 +340,11 @@ private fun <T> androidx.compose.foundation.layout.RowScope.ReviewedField(model:
 
 /**
  * Section 4.5: reading the document with cloud AI, offered when the user turned it on, and pointed
- * out when the fields read on this computer are uncertain (step 1).
+ * out when the fields read on this computer are uncertain (step 1). [kind] is the kind chosen in
+ * the dialog, saved or not: it picks what the AI is asked to read.
  */
 @Composable
-private fun AiPart(model: BooksModel, doc: VaultDocument, onClose: () -> Unit) {
+private fun AiPart(model: BooksModel, doc: VaultDocument, kind: DocumentKind, onClose: () -> Unit) {
     val settings = remember(model.revision) { model.books.ai.settings() }
     if (!settings.enabled || doc.mimeType == "text/plain") return
     val hasKey = remember(model.revision) { DesktopAi.key(model) != null }
@@ -366,7 +367,7 @@ private fun AiPart(model: BooksModel, doc: VaultDocument, onClose: () -> Unit) {
                     scope.launch {
                         val result = withContext(Dispatchers.IO) {
                             runCatching {
-                                val type = DesktopAi.types().let { t -> t.get(ca.schippers.hfm.ai.DocumentType.idFor(doc.kind ?: DocumentKind.RECEIPT)) ?: t.types.first() }
+                                val type = DesktopAi.types().let { t -> t.get(ca.schippers.hfm.ai.DocumentType.idFor(kind)) ?: t.types.first() }
                                 val pages = DesktopOcr.reader.pageImages(model.books.documents.content(doc.id))
                                 DesktopAi.read(model, doc.id, type, DesktopAi.prepare(pages, emptyList()))
                             }
@@ -390,7 +391,8 @@ private fun AiPart(model: BooksModel, doc: VaultDocument, onClose: () -> Unit) {
     }
     failure?.let { ErrorText(it) }
     if (reading != null && reading.typeId in ca.schippers.hfm.books.AiService.STATEMENT_TYPES) StatementPart(model, doc, reading.typeId, onClose)
-    if (asking) AiReadDialog(model, doc) { asking = false }
+    if (reading?.typeId == "pay_stub" || (reading == null && kind == DocumentKind.PAY_STUB)) PayStubPart(model, doc, onClose)
+    if (asking) AiReadDialog(model, doc, kind) { asking = false }
 }
 
 /**
@@ -416,6 +418,17 @@ private fun StatementPart(model: BooksModel, doc: VaultDocument, typeId: String,
             model.section = Section.ACCOUNTS
             onClose()
         }) { Text(model.t("ai.reconcileStatement")) }
+    }
+}
+
+/** SAL-02: a pay stub becomes the deposit of its net pay, split into gross pay and deductions (filled in when read by AI). */
+@Composable
+private fun PayStubPart(model: BooksModel, doc: VaultDocument, onClose: () -> Unit) {
+    var open by remember(doc.id) { mutableStateOf(false) }
+    Button(onClick = { open = true }) { Text(model.t("payStub.record")) }
+    if (open) {
+        val read = remember(doc.id) { model.books.ai.payStub(doc.id, ca.schippers.hfm.money.Currency.CAD) }
+        PayStubDialog(model, null, read, doc.id) { done -> open = false; if (done) onClose() }
     }
 }
 

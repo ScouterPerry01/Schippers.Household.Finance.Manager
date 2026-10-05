@@ -1,7 +1,7 @@
 """A local stand-in for Anthropic's Messages API, for trying the AI reading screens in the demo
 without a key or cost. It is not the real service: a credit card statement request gets last
-month's lines of the English demo's TD Visa (plus one line the books lack), and every other
-request the same receipt answer.
+month's lines of the English demo's TD Visa (plus one line the books lack), a pay stub request
+the English demo's pay, and every other request the same receipt answer.
 
     python tools/dev/fake_anthropic.py [port] [folder for the received pictures]
     ./gradlew :app:desktop:runDemo -Psection=AI -PaiUrl=http://127.0.0.1:8765
@@ -27,6 +27,18 @@ RECEIPT = {
     ],
     "subtotal": 179.43, "taxes": [{"name": "HST", "amount": 7.89}], "total": 187.32,
     "payment_method": "credit", "card_last4": "1234",
+}
+
+PAY_STUB = {
+    "employer": "Employer Inc.", "employee": "Alex", "pay_date": datetime.date.today().replace(day=1).isoformat(), "currency": "CAD",
+    "earnings": [{"description": "Regular pay", "hours": 75, "amount": 4315.00}], "gross_pay": 4315.00,
+    "deductions": [
+        {"kind": "income_tax_federal", "description": "Federal tax", "amount": 520.00},
+        {"kind": "income_tax_provincial", "description": "Ontario tax", "amount": 280.00},
+        {"kind": "cpp", "description": "CPP", "amount": 245.00}, {"kind": "ei", "description": "EI", "amount": 72.00},
+        {"kind": "union_dues", "description": "Union dues", "amount": 38.00}, {"kind": "other", "description": "United Way", "amount": 10.00},
+    ],
+    "net_pay": 3150.00, "year_to_date_gross": 81985.00,
 }
 
 
@@ -70,9 +82,9 @@ class Handler(BaseHTTPRequestHandler):
                 with open(os.path.join(SAVE, "sent-%d.jpg" % i), "wb") as f:
                     f.write(base64.b64decode(img["source"]["data"]))
         properties = body.get("output_config", {}).get("format", {}).get("schema", {}).get("properties", {})
-        answer = card_statement() if "new_balance" in properties else RECEIPT
-        print("request:", len(images), "page(s),", body.get("model"), "effort", body.get("output_config", {}).get("effort"),
-              "->", "card statement" if answer is not RECEIPT else "receipt", flush=True)
+        kind = "card statement" if "new_balance" in properties else "pay stub" if "net_pay" in properties else "receipt"
+        answer = {"card statement": card_statement, "pay stub": lambda: PAY_STUB, "receipt": lambda: RECEIPT}[kind]()
+        print("request:", len(images), "page(s),", body.get("model"), "effort", body.get("output_config", {}).get("effort"), "->", kind, flush=True)
         self._send(200, {
             "id": "msg_stand_in", "type": "message", "role": "assistant", "model": body.get("model"),
             "content": [{"type": "text", "text": json.dumps(answer)}], "stop_reason": "end_turn", "stop_sequence": None,

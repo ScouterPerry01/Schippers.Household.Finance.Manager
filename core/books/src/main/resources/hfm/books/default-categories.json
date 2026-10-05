@@ -111,6 +111,14 @@
     { "key": "taxes.foreign_tax", "en": "Foreign tax withheld", "fr": "Impôt étranger retenu" },
     { "key": "taxes.instalments", "en": "Tax instalments", "fr": "Acomptes provisionnels" }
   ]},
+  { "key": "payroll", "en": "Payroll deductions", "fr": "Retenues sur la paie", "kind": "EXPENSE", "children": [
+    { "key": "payroll.cpp_qpp", "en": "CPP / QPP contributions", "fr": "Cotisations au RPC / RRQ" },
+    { "key": "payroll.ei_qpip", "en": "EI / QPIP premiums", "fr": "Cotisations d’AE / RQAP" },
+    { "key": "payroll.pension", "en": "Pension plan contributions", "fr": "Cotisations au régime de retraite" },
+    { "key": "payroll.group_insurance", "en": "Group insurance", "fr": "Assurance collective" },
+    { "key": "payroll.rrsp", "en": "Group RRSP contributions", "fr": "Cotisations au REER collectif" },
+    { "key": "payroll.other", "en": "Other payroll deductions", "fr": "Autres retenues sur la paie" }
+  ]},
   { "key": "work", "en": "Work expenses", "fr": "Dépenses d’emploi", "kind": "EXPENSE", "children": [
     { "key": "work.union_dues", "en": "Union and professional dues", "fr": "Cotisations syndicales et professionnelles", "tax": "EMPLOYMENT" },
     { "key": "work.other", "en": "Other employment expenses", "fr": "Autres dépenses d’emploi", "tax": "EMPLOYMENT" }

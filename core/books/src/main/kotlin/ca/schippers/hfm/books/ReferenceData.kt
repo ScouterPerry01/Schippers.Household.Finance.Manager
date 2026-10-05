@@ -151,6 +151,7 @@ class CategoryService internal constructor(private val books: Books) {
             if (version < 5) addMissing(roots, ADDED_IN_5)
             if (version < 6) addMissing(roots, ADDED_IN_6)
             if (version < 7) addMissing(roots, ADDED_IN_7)
+            if (version < 8) addMissing(roots, ADDED_IN_8)
             return
         }
         val province = books.province
@@ -203,7 +204,7 @@ class CategoryService internal constructor(private val books: Books) {
 
     private companion object {
         const val DEFAULTS_VERSION = "categories.defaultsVersion"
-        const val CURRENT_DEFAULTS = 7
+        const val CURRENT_DEFAULTS = 8
 
         /** Default categories added in version 2 (CAT-06). */
         val ADDED_IN_2 = setOf("transport.transit.pass", "transport.transit.fares", "pets.licence", "pets.insurance", "pets.boarding")
@@ -216,6 +217,9 @@ class CategoryService internal constructor(private val books: Books) {
 
         /** Default categories added in version 7 (CAT-05, Phase 5b): moving and employment expenses, with their tax flags. */
         val ADDED_IN_7 = setOf("housing.moving", "work", "work.union_dues", "work.other")
+
+        /** Default categories added in version 8 (SAL-02): what pay stubs take off gross pay. */
+        val ADDED_IN_8 = setOf("payroll", "payroll.cpp_qpp", "payroll.ei_qpip", "payroll.pension", "payroll.group_insurance", "payroll.rrsp", "payroll.other")
     }
 
     @Serializable

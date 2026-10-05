@@ -1,0 +1,10 @@
+-- Version 20 to 21: the official receipts of donations (OTH-01).
+
+CREATE TABLE donation (
+    txn_id TEXT NOT NULL PRIMARY KEY REFERENCES txn(id) ON DELETE CASCADE,
+    charity TEXT,
+    registration TEXT,
+    receipt_number TEXT,
+    eligible_minor INTEGER,
+    received INTEGER NOT NULL DEFAULT 0
+);

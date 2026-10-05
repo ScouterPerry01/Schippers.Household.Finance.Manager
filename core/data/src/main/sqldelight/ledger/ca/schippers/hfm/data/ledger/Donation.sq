@@ -1,0 +1,28 @@
+-- OTH-01 (ledger version 21): the official receipt of a donation. A donation is any split on a
+-- category flagged CHARITABLE or POLITICAL; this row adds what the receipt says, when known.
+CREATE TABLE donation (
+    txn_id TEXT NOT NULL PRIMARY KEY REFERENCES txn(id) ON DELETE CASCADE,
+    -- The registered name and CRA registration number (123456789RR0001), as on the receipt.
+    charity TEXT,
+    registration TEXT,
+    receipt_number TEXT,
+    -- The eligible amount when less than the amount paid (a gala dinner, an auction prize).
+    eligible_minor INTEGER,
+    received INTEGER NOT NULL DEFAULT 0
+);
+
+-- Splits between two dates flagged as donations, by their own flag or their category's.
+donationSplits:
+SELECT t.id AS txn_id, t.date, coalesce(s.member_id, t.member_id) AS member_id, s.category_id, s.tax_flag, s.amount_minor, s.memo
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE t.date >= ? AND t.date <= ? AND t.transfer_id IS NULL
+  AND (s.tax_flag IN ('CHARITABLE', 'POLITICAL') OR (s.tax_flag IS NULL AND s.category_id IN ?))
+ORDER BY t.date, t.created_at;
+
+donationsFor:
+SELECT * FROM donation WHERE txn_id IN ?;
+
+upsertDonation:
+INSERT INTO donation(txn_id, charity, registration, receipt_number, eligible_minor, received) VALUES (?, ?, ?, ?, ?, ?)
+ON CONFLICT(txn_id) DO UPDATE SET charity = excluded.charity, registration = excluded.registration,
+    receipt_number = excluded.receipt_number, eligible_minor = excluded.eligible_minor, received = excluded.received;

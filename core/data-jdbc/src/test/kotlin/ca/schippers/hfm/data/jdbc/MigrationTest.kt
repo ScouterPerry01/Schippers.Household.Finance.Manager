@@ -411,6 +411,27 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 20 ledgers keep their donations and gain their receipts`() {
+        val file = temp.resolve("ledger20.db")
+        older("../data/src/main/sqldelight/ledger/schemas/20.db", file, 20).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_balance_minor, opening_date, created_at, updated_at) VALUES ('a', 'Chequing', 'CHEQUING', 'CAD', 0, '2026-01-01', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO txn(id, account_id, date, amount_minor, created_at, updated_at) VALUES ('d', 'a', '2026-11-30', -25000, 0, 0)", 0)
+            driver.execute(null, "INSERT INTO txn_split(id, txn_id, category_id, amount_minor, tax_flag) VALUES ('s', 'd', 'charity', -25000, NULL)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).donationQueries
+            assertEquals(listOf("d"), q.donationSplits("2026-01-01", "2026-12-31", listOf("charity")).executeAsList().map { it.txn_id })
+            q.upsertDonation("d", "Food Bank", "123456789RR0001", "A-1", null, 0)
+            q.upsertDonation("d", "Food Bank", "123456789RR0001", "A-1", 20000, 1)
+            assertEquals(20000L, q.donationsFor(listOf("d")).executeAsOne().eligible_minor, "updated in place")
+            driver.execute(null, "DELETE FROM txn WHERE id = 'd'", 0)
+            assertEquals(0, q.donationsFor(listOf("d")).executeAsList().size, "the receipt details go with their transaction")
+        }
+    }
+
+    @Test
     fun `version 2 core databases gain pets`() {
         val file = temp.resolve("core2.db")
         older("../data/src/main/sqldelight/core/schemas/2.db", file, 2).close()
