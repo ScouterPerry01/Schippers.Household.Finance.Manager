@@ -88,6 +88,7 @@ Details: [Payees](payees) and [Category rules](rules).
 
 - [Institutions](institutions): your banks' phone numbers, websites, and institution and transit numbers.
 - [Rates and prices](rates): exchange rates for foreign currency accounts (automatic), and optional market prices for stocks, crypto-assets and precious metals.
+- [Rates and rules](rates-rules): every tax rate, plan limit, threshold and lead time the app applies, with its date and province. The official values are built in; an administrator can enter a new figure, such as next year's TFSA limit, as soon as it is announced.
 - [Phones](phones): pair RANN's Roost Mobile to capture receipts.
 - [AI reading](ai): let Claude read hard documents with your own Anthropic key.
 - [About](about): your version, and update checks on Linux packages.

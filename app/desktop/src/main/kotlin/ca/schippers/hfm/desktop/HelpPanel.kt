@@ -41,7 +41,14 @@ import ca.schippers.hfm.i18n.HelpGuide
 fun helpTopicIds(): List<String> =
     HelpGuide.GENERAL + Section.DASHBOARD.helpId + NavGroup.entries.flatMap { g -> g.sections.map { it.helpId } }
 
-val Section.helpId: String get() = name.lowercase()
+/**
+ * The id of a screen's help topic and manual chapter: its name in lower case, except where the
+ * chapter's id has a hyphen, which an enum name cannot (Rates and rules is `rates-rules`).
+ */
+val Section.helpId: String get() = when (this) {
+    Section.RATE_RULES -> "rates-rules"
+    else -> name.lowercase()
+}
 
 /**
  * NFR-12: the user guide beside the screen: the topic for where the user is, every other topic, and
