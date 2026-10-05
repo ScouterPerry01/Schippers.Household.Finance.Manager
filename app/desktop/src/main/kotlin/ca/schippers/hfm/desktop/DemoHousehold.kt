@@ -2,17 +2,26 @@ package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Account
 import ca.schippers.hfm.books.CardReward
+import ca.schippers.hfm.books.Contact
+import ca.schippers.hfm.books.ContactDetail
+import ca.schippers.hfm.books.ContactFilter
+import ca.schippers.hfm.books.ContactKind
 import ca.schippers.hfm.books.Contractor
 import ca.schippers.hfm.books.ContractorJob
+import ca.schippers.hfm.books.DetailType
+import ca.schippers.hfm.books.GatherDecision
 import ca.schippers.hfm.books.HomeProject
 import ca.schippers.hfm.books.Invoice
 import ca.schippers.hfm.books.InvoiceLine
 import ca.schippers.hfm.books.InvoiceStatus
 import ca.schippers.hfm.books.InvoiceTax
+import ca.schippers.hfm.books.LinkRole
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.ProjectStatus
 import ca.schippers.hfm.books.RentalProperty
 import ca.schippers.hfm.books.RewardKind
 import ca.schippers.hfm.books.RewardUnit
+import ca.schippers.hfm.books.SearchService
 import ca.schippers.hfm.books.Trip
 import ca.schippers.hfm.books.TripPurpose
 import ca.schippers.hfm.books.Allowance
@@ -351,6 +360,7 @@ object DemoHousehold {
         addCrypto(books, group, chequing, alex, today)
         addMetals(books, group, alex, sam, desjardins, today)
         addDocuments(books, group, today)
+        addContacts(books, group, alex, sam, lea, rex)
         // HH-05: Sam signs in too, as a member who can view the shared accounts.
         val samUser = books.users.add("sam", "Sam Demo", ca.schippers.hfm.domain.Role.MEMBER, "member-demo-password".toCharArray(), sam.id).userId
         books.users.setAccess(group, samUser, ca.schippers.hfm.domain.PermissionLevel.VIEW)
@@ -792,6 +802,90 @@ object DemoHousehold {
         )
         insurance.saveBeneficiary(PolicyBeneficiary("", life.id, sam.displayName, sam.id, l("Conjoint", "Spouse"), BigDecimal(100)))
         insurance.saveBeneficiary(PolicyBeneficiary("", life.id, lea.displayName, lea.id, l("Enfant", "Child"), BigDecimal(100), contingent = true))
+    }
+
+    /**
+     * CON-01 to CON-06: the contacts gathered from the institutions, providers, contractors, insurers
+     * and estate contacts above (only records with the same name made one), each given what it is
+     * for, then a few more: two banks, two pharmacies and several doctors told apart by that line.
+     */
+    private fun addContacts(books: Books, group: String, alex: Member, sam: Member, lea: Member, rex: Pet) {
+        val contacts = books.contacts
+        contacts.gather(group, contacts.proposals().flatMap { p -> p.sources.groupBy { SearchService.fold(it.name) }.values.map { GatherDecision(it) } })
+        fun named(name: String) = contacts.list(ContactFilter(includeArchived = true)).first { it.name == name }
+        fun update(name: String, change: (Contact) -> Contact) = contacts.save(change(named(name)))
+        fun phone(label: String?, value: String) = ContactDetail(type = DetailType.PHONE, label = label, value = value)
+        val accounts = books.accounts.list().map { it.account }
+
+        val bank = update(l("Desjardins", "TD Canada Trust")) {
+            it.copy(
+                purpose = l("Compte conjoint, Visa, placements et hypothèque du chalet", "Joint chequing, Visa, investments and cottage mortgage"),
+                details = it.details + phone(l("Service à la clientèle", "Customer service"), l("1 800 224-7737", "1 866 222-3456")) + phone(l("Cartes perdues", "Lost cards"), l("1 800 363-3380", "1 800 983-2582")),
+                website = l("desjardins.com", "td.com"),
+            )
+        }
+        update(l("Banque Nationale", "Tangerine")) { it.copy(purpose = l("Compte en dollars US", "US dollar account"), website = l("bnc.ca", "tangerine.ca")) }
+        update(l("Desjardins Assurances", "Intact Insurance")) {
+            it.copy(
+                purpose = l("Assurance maison et auto", "Home and car insurance"),
+                details = it.details + phone(l("Réclamations", "Claims"), l("1 888 776-8343", "1 855 464-6828")) + ContactDetail(type = DetailType.NUMBER, label = l("Numéro de client", "Client number"), value = "C-44719025"),
+            )
+        }
+        update("Sun Life") { it.copy(purpose = l("Assurance vie d’Alex", "Alex's life insurance"), memberIds = setOf(alex.id)) }
+        // The advisor named in Alex's estate papers works at the bank and looks after the RRSP and TFSA.
+        val advisor = update(l("Marc Lavoie", "Daniel Wong")) {
+            it.copy(person = true, organizationId = bank.id, jobTitle = l("Conseiller en placement", "Investment advisor"), purpose = l("REER et CELI", "RRSP and TFSA"), memberIds = setOf(alex.id, sam.id))
+        }
+        accounts.filter { it.type == AccountType.RRSP || it.type == AccountType.TFSA }.forEach { contacts.link(advisor.id, LinkRole.ADVISOR, LinkTarget.ACCOUNT, it.id) }
+
+        update(l("Dre Gagnon (GMF Limoilou)", "Dr. Patel (Glebe Family Health Team)")) {
+            it.copy(purpose = l("Médecin de famille de toute la famille", "Family doctor for all of us"), hours = l("Lun-ven 8 h-17 h; sans rendez-vous le samedi", "Mon-Fri 8-5; walk-in Saturday mornings"))
+        }
+        update(l("Pharmacie Jean Coutu", "Shoppers Drug Mart")) { it.copy(purpose = l("Ordonnances d’Alex et de Sam", "Alex's and Sam's prescriptions"), hours = l("Tous les jours 8 h-22 h", "Every day 8 a.m.-10 p.m.")) }
+        update(l("Clinique dentaire Saint-Roch", "Elgin Street Dental")) { it.copy(purpose = l("Dentiste de la famille", "Family dentist")) }
+        val vet = update(l("Hôpital vétérinaire Charlesbourg", "Riverside Animal Hospital")) { it.copy(purpose = l("Vétérinaire de Rex", "Rex's vet"), memberIds = setOf(rex.id)) }
+        contacts.link(vet.id, LinkRole.VETERINARIAN, LinkTarget.PET, rex.id)
+
+        fun add(c: Contact) = contacts.save(c.copy(groupId = group))
+        add(
+            Contact(
+                "", group, l("Dre Nadia Bélanger", "Dr. Lisa Chen"), person = true, jobTitle = l("Dermatologue", "Dermatologist"), kinds = setOf(ContactKind.SPECIALIST),
+                purpose = l("Dermatologue de Sam", "Sam's dermatologist"), memberIds = setOf(sam.id), details = listOf(phone(l("Clinique", "Clinic"), l("418-555-0161", "613-555-0161"))),
+                address = l("2600, boul. Laurier, Québec", "1081 Carling Ave, Ottawa"), notes = l("Un rendez-vous par année; demander une référence à la Dre Gagnon.", "Once a year; ask Dr. Patel for a referral."),
+            ),
+        )
+        add(
+            Contact(
+                "", group, l("Orthodontie Limoilou", "Ottawa Orthodontics"), kinds = setOf(ContactKind.SPECIALIST, ContactKind.DENTIST),
+                purpose = l("Broches de Léa", "Maya's braces"), memberIds = setOf(lea.id), details = listOf(phone(null, l("418-555-0125", "613-555-0125"))),
+            ),
+        )
+        add(
+            Contact(
+                "", group, l("Pharmacie Uniprix du Lac", "Rexall by the Lake"), kinds = setOf(ContactKind.PHARMACY),
+                purpose = l("Près du chalet", "Near the cottage"), details = listOf(phone(null, l("418-555-0108", "613-555-0108"))), hours = l("Lun-sam 9 h-18 h", "Mon-Sat 9-6"),
+            ),
+        )
+        val hydro = add(
+            Contact(
+                "", group, l("Hydro-Québec", "Hydro Ottawa"), kinds = setOf(ContactKind.UTILITY), purpose = l("Électricité de la maison", "Electricity at home"),
+                details = listOf(phone(l("Service à la clientèle", "Customer service"), l("1 888 385-7252", "613-738-6400")), ContactDetail(type = DetailType.NUMBER, label = l("Numéro de compte", "Account number"), value = "6 1234 5678 9")),
+                website = l("hydroquebec.com", "hydroottawa.com"),
+            ),
+        )
+        books.bills.list().firstOrNull { it.name == l("Hydro-Québec", "Hydro Ottawa") }?.let { contacts.link(hydro.id, LinkRole.BILLER, LinkTarget.BILL, it.id) }
+        add(
+            Contact(
+                "", group, l("Comptabilité Roy", "Kim Accounting"), kinds = setOf(ContactKind.ACCOUNTANT), purpose = l("Déclarations de revenus de Sam (travail autonome)", "Sam's freelance tax returns"),
+                memberIds = setOf(sam.id), details = listOf(ContactDetail(type = DetailType.EMAIL, value = l("info@comptabiliteroy.example", "office@kimaccounting.example"))),
+            ),
+        )
+        add(
+            Contact(
+                "", group, l("École Saint-Fidèle", "Glebe Elementary School"), kinds = setOf(ContactKind.SCHOOL), purpose = l("École de Léa", "Maya's school"),
+                memberIds = setOf(lea.id), details = listOf(phone(l("Secrétariat", "Office"), l("418-555-0150", "613-555-0150")), phone(l("Service de garde", "Daycare"), l("418-555-0151", "613-555-0151"))),
+            ),
+        )
     }
 
     /** Bills from next month on (this month's are already entered), plus a few due within days. */

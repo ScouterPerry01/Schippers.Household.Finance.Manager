@@ -1,6 +1,8 @@
 package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Books
+import ca.schippers.hfm.books.ContactKind
+import ca.schippers.hfm.books.LinkRole
 import ca.schippers.hfm.books.RenewalKind
 import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.data.HouseholdStore
@@ -46,6 +48,12 @@ class DemoHouseholdTest {
             books.portfolio.performance(kotlinx.datetime.LocalDate(today.year, 1, 1), today)
             books.taxSlips.report(today.year - 1)
             books.fxGains.report(today.year, today)
+            // CON-01 to CON-06: everything gathered into contacts, told apart by what each is for.
+            val contacts = books.contacts.list()
+            assertTrue(books.contacts.proposals().isEmpty(), "every institution, provider and insurer has its contact")
+            assertTrue(contacts.count { ContactKind.PHARMACY in it.kinds && it.purpose != null } >= 2, "two pharmacies, each with its what-for line")
+            assertTrue(contacts.any { c -> c.person && c.organizationId != null && books.contacts.links(c.id).any { it.link.role == LinkRole.ADVISOR } }, "the advisor at the bank")
+            assertTrue(contacts.any { c -> books.contacts.links(c.id).any { it.link.role == LinkRole.LENDER } }, "the bank lends the mortgage")
             more(books)
         }
     }
