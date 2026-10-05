@@ -70,6 +70,22 @@ class AppState(
 
     fun t(key: String, vararg args: Any): String = Messages.get(language, key, *args)
 
+    /** NAV-02: whether this user wants the menu as a bar at the top; remembered on this computer. */
+    private var menuTop by mutableStateOf<Map<String, Boolean>>(emptyMap())
+
+    fun menuOnTop(userId: String): Boolean = menuTop[userId] ?: prefs.getBoolean("$PREF_MENU_TOP.$userId", false)
+
+    fun setMenuOnTop(userId: String, top: Boolean) {
+        menuTop = menuTop + (userId to top)
+        prefs.putBoolean("$PREF_MENU_TOP.$userId", top)
+    }
+
+    /** NAV-01: the menu groups this user left closed in the list on the left; Settings starts closed. */
+    fun closedMenuGroups(userId: String): Set<NavGroup> =
+        prefs.get("$PREF_MENU_CLOSED.$userId", NavGroup.SETTINGS.name).split(',').mapNotNull { n -> NavGroup.entries.firstOrNull { it.name == n } }.toSet()
+
+    fun setClosedMenuGroups(userId: String, closed: Set<NavGroup>) = prefs.put("$PREF_MENU_CLOSED.$userId", closed.joinToString(",") { it.name })
+
     fun switchLanguage(to: Language, remember: Boolean = true) {
         language = to
         if (remember) prefs.put(PREF_LANGUAGE, to.tag)
@@ -110,6 +126,8 @@ class AppState(
 
     companion object {
         const val MIN_PASSWORD_LENGTH = 12
+        private const val PREF_MENU_TOP = "nav.menuTop"
+        private const val PREF_MENU_CLOSED = "nav.menuClosed"
         private const val PREF_LANGUAGE = "language"
         private const val PREF_AUTO_LOCK = "autoLockMinutes"
         const val DEFAULT_AUTO_LOCK = 10
