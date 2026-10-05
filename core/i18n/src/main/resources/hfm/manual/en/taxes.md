@@ -128,7 +128,7 @@ The window shows the gift's date, payee and amount, then:
 - **Receipt files**: the receipt itself. **Attach a file…** stores a file in the vault and links it to the transaction; **From the review inbox** links a document waiting there. These files go into the folder for the accountant.
 - **Save**: saves the receipt details. **Cancel**: closes without saving them.
 
-The receipt details belong to the transaction: if one payment holds gifts for two people (or a charitable gift and a political one), both share the same receipt details, and a smaller eligible amount is shared between them in proportion to each gift, so it is counted once. When each person gets a receipt of their own, record the gifts as separate payments. Saving needs the right to edit the account's group.
+Each gift has its own receipt details: when one payment holds gifts for two people (or a charitable gift and a political one), each appears on its own line here, and each line keeps its own receipt. A receipt recorded with an earlier version for the whole payment still applies to the gifts that have none of their own, its eligible amount shared between them in proportion to each gift, so it is counted once. Saving needs the right to edit the account's group.
 
 ## Instalments {#instalments}
 

@@ -140,13 +140,14 @@ private fun DonationDialog(model: BooksModel, d: Donation, onClose: () -> Unit) 
     var charity by remember { mutableStateOf(d.receipt?.charity ?: (if (d.payroll) d.memo else null) ?: d.payee.orEmpty()) }
     var registration by remember { mutableStateOf(d.receipt?.registration.orEmpty()) }
     var number by remember { mutableStateOf(d.receipt?.receiptNumber.orEmpty()) }
-    var eligible by remember { mutableStateOf(d.receipt?.eligible?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
+    var eligible by remember { mutableStateOf((d.eligibleShare ?: d.receipt?.eligible)?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
     var received by remember { mutableStateOf(d.receipt?.received ?: (d.documents > 0)) }
     FormDialog(model.t("taxes.receiptTitle"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.donations.setReceipt(
                 d.transactionId,
                 DonationReceipt(charity, registration, number, parseAmount(eligible, d.amount.currency, locale)?.abs(), received),
+                d.memberId, d.kind,
             )
         }
         if (ok != null) onClose()

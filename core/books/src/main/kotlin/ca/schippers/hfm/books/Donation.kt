@@ -13,6 +13,8 @@ data class DonationReceipt(
     val receiptNumber: String? = null,
     val eligible: Money? = null,
     val received: Boolean = false,
+    /** True when the receipt is for this gift alone, false when kept for the whole transaction. */
+    val ownReceipt: Boolean = false,
 )
 
 /**
@@ -34,9 +36,9 @@ data class Donation(
     /** Given through payroll: the T4 slip (box 46) is the receipt. */
     val payroll: Boolean = false,
     /**
-     * This entry's part of the receipt's eligible amount, when one transaction holds gifts by
-     * several people or of both kinds: the receipt is kept per transaction, so its eligible
-     * amount is shared in proportion to the gifts and counted once.
+     * This entry's part of the eligible amount of a receipt kept for the whole transaction (before
+     * receipts were kept per gift), when the transaction holds gifts by several people or of both
+     * kinds: shared in proportion to the gifts, so it is counted once.
      */
     val eligibleShare: Money? = null,
 ) {
@@ -62,7 +64,10 @@ class DonationService internal constructor(private val books: Books) {
         return books.groups().flatMap { g ->
             val q = books.ledger(g).donationQueries
             val rows = q.donationSplits(LocalDate(year, 1, 1).toString(), LocalDate(year, 12, 31).toString(), flagged.keys).executeAsList()
-            val receipts = rows.map { it.txn_id }.distinct().chunked(500).flatMap { q.donationsFor(it).executeAsList() }.associateBy { it.txn_id }
+            val txnIds = rows.map { it.txn_id }.distinct().chunked(500)
+            val shared = txnIds.flatMap { q.donationsFor(it).executeAsList() }.associateBy { it.txn_id }
+            // M-43: a receipt for one gift (person and kind) within the transaction.
+            val own = txnIds.flatMap { q.donationReceiptsFor(it).executeAsList() }.associateBy { Triple(it.txn_id, it.member_key, it.kind) }
             rows.groupBy { Triple(it.txn_id, it.member_id, it.tax_flag?.let(TaxFlag::valueOf) ?: flagged.getValue(it.category_id!!)) }
                 .mapNotNull { (key, splits) ->
                     val (txnId, memberId, kind) = key
@@ -70,7 +75,9 @@ class DonationService internal constructor(private val books: Books) {
                     val currency = txn.amount.currency
                     val amount = Money.ofMinor(-splits.sumOf { it.amount_minor }, currency)
                     if (amount.isNegative || amount.isZero) return@mapNotNull null
-                    val receipt = receipts[txnId]?.let {
+                    val receipt = own[Triple(txnId, memberId.orEmpty(), kind.name)]?.let {
+                        DonationReceipt(it.charity, it.registration, it.receipt_number, it.eligible_minor?.let { m -> Money.ofMinor(m, currency) }, it.received == 1L, ownReceipt = true)
+                    } ?: shared[txnId]?.let {
                         DonationReceipt(it.charity, it.registration, it.receipt_number, it.eligible_minor?.let { m -> Money.ofMinor(m, currency) }, it.received == 1L)
                     }
                     val documents = books.documents.documentsFor(DocumentEntity.TRANSACTION, txnId).size
@@ -78,9 +85,14 @@ class DonationService internal constructor(private val books: Books) {
                     Donation(txnId, g.id, txn.date, txn.payeeText, memberId, kind, amount, receipt, documents, memo, payroll = txn.amount.isPositive)
                 }
                 .groupBy { it.transactionId }.values.flatMap { entries ->
-                    val eligible = entries.first().receipt?.eligible
-                    if (entries.size == 1 || eligible == null) entries
-                    else entries.zip(eligible.allocate(entries.map { it.amount.toBigDecimal() })).map { (d, share) -> d.copy(eligibleShare = share) }
+                    // A receipt kept for the whole transaction is shared by the gifts without their own.
+                    val sharing = entries.filter { it.receipt?.ownReceipt != true }
+                    val eligible = sharing.firstOrNull()?.receipt?.eligible
+                    if (entries.size == 1 || sharing.size < 2 || eligible == null) entries
+                    else {
+                        val shares = sharing.zip(eligible.allocate(sharing.map { it.amount.toBigDecimal() })).associate { (d, share) -> d to share }
+                        entries.map { d -> shares[d]?.let { d.copy(eligibleShare = it) } ?: d }
+                    }
                 }
         }.sortedBy { it.date }
     }
@@ -92,21 +104,24 @@ class DonationService internal constructor(private val books: Books) {
     }
 
     /**
-     * Records what the receipt for [transactionId] says. A charity's registration number has nine
-     * digits, RR and four digits; the eligible amount cannot exceed what was given.
+     * Records what the receipt for one gift in [transactionId] says: the gift by [memberId] (null
+     * for the household) of [kind] (M-43). A charity's registration number has nine digits, RR and
+     * four digits; the eligible amount cannot exceed what was given.
      */
-    fun setReceipt(transactionId: String, receipt: DonationReceipt) {
+    fun setReceipt(transactionId: String, receipt: DonationReceipt, memberId: String? = null, kind: TaxFlag? = null) {
         val txn = books.transactions.get(transactionId)
         val group = books.group(books.accounts.get(txn.accountId).groupId)
         books.require(group, PermissionLevel.EDIT)
         val registration = receipt.registration?.uppercase()?.replace(Regex("[\\s-]"), "")?.ifEmpty { null }
         validate(registration == null || REGISTRATION.matches(registration), "error.donationRegistration")
         // The gift is the donation lines, not the transaction: a payroll gift is part of a deposit.
-        val gift = -txn.splits.filter { flagOf(it) != null }.sumOf { it.amount.minorUnits }
+        val giftKind = kind ?: txn.splits.firstNotNullOfOrNull { flagOf(it) } ?: TaxFlag.CHARITABLE
+        val member = memberId ?: txn.splits.firstOrNull { flagOf(it) == giftKind }?.let { it.memberId ?: txn.memberId }
+        val gift = -txn.splits.filter { flagOf(it) == giftKind && (it.memberId ?: txn.memberId) == member }.sumOf { it.amount.minorUnits }
         receipt.eligible?.let { validate(it.currency == txn.amount.currency && !it.isNegative && it.minorUnits <= gift, "error.donationEligible") }
-        books.ledger(group).donationQueries.upsertDonation(
-            transactionId, receipt.charity?.trim()?.ifEmpty { null }, registration, receipt.receiptNumber?.trim()?.ifEmpty { null },
-            receipt.eligible?.minorUnits, if (receipt.received) 1 else 0,
+        books.ledger(group).donationQueries.upsertDonationReceipt(
+            transactionId, member.orEmpty(), giftKind.name, receipt.charity?.trim()?.ifEmpty { null }, registration,
+            receipt.receiptNumber?.trim()?.ifEmpty { null }, receipt.eligible?.minorUnits, if (receipt.received) 1 else 0,
         )
     }
 

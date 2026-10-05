@@ -127,10 +127,10 @@ class MultiUserTest {
     fun `a viewer sees the pets but cannot change them`() {
         household()
         perry().use {
-            it.users.add("vic", "Vic", Role.VIEWER, "password3".toCharArray())
+            it.users.add("vic", "Vic", Role.VIEWER, "viewer-password3".toCharArray())
             it.pets.save(Pet("", "Rex", Species.DOG))
         }
-        Books(store.unlock(dir, "vic", "password3".toCharArray())).use { vic ->
+        Books(store.unlock(dir, "vic", "viewer-password3".toCharArray())).use { vic ->
             assertEquals(listOf("Rex"), vic.pets.list().map { it.name })
             assertFalse(vic.pets.canChange)
             assertFailsWith<AccessDeniedException> { vic.pets.save(Pet("", "Mimi", Species.CAT)) }

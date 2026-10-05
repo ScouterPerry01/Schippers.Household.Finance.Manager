@@ -26,3 +26,27 @@ upsertDonation:
 INSERT INTO donation(txn_id, charity, registration, receipt_number, eligible_minor, received) VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(txn_id) DO UPDATE SET charity = excluded.charity, registration = excluded.registration,
     receipt_number = excluded.receipt_number, eligible_minor = excluded.eligible_minor, received = excluded.received;
+
+-- M-43 (version 26): a receipt for one gift within a payment: the person who gave it (empty for
+-- the household) and its kind, CHARITABLE or POLITICAL. One payment holding gifts by two people,
+-- or of both kinds, has a receipt for each. It takes the place of a receipt kept above for the
+-- whole payment, which still serves the gifts that have none of their own.
+CREATE TABLE donation_receipt (
+    txn_id TEXT NOT NULL REFERENCES txn(id) ON DELETE CASCADE,
+    member_key TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    charity TEXT,
+    registration TEXT,
+    receipt_number TEXT,
+    eligible_minor INTEGER,
+    received INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (txn_id, member_key, kind)
+);
+
+donationReceiptsFor:
+SELECT * FROM donation_receipt WHERE txn_id IN ?;
+
+upsertDonationReceipt:
+INSERT INTO donation_receipt(txn_id, member_key, kind, charity, registration, receipt_number, eligible_minor, received) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(txn_id, member_key, kind) DO UPDATE SET charity = excluded.charity, registration = excluded.registration,
+    receipt_number = excluded.receipt_number, eligible_minor = excluded.eligible_minor, received = excluded.received;

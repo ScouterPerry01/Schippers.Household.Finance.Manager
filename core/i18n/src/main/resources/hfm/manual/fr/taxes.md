@@ -128,7 +128,7 @@ La fenêtre affiche la date, le bénéficiaire et le montant du don, puis :
 - **Fichiers du reçu** : le reçu lui-même. **Joindre un fichier…** conserve un fichier dans le coffre et le lie à l’opération ; **Depuis la boîte de révision** lie un document qui y attend. Ces fichiers vont dans le dossier pour le comptable.
 - **Enregistrer** : enregistre les détails du reçu. **Annuler** : ferme sans les enregistrer.
 
-Les détails du reçu appartiennent à l’opération : si un même paiement contient des dons pour deux personnes (ou un don de bienfaisance et une contribution politique), les deux partagent les mêmes détails de reçu, et un montant admissible moindre est réparti entre eux en proportion de chaque don, pour n’être compté qu’une fois. Quand chaque personne reçoit son propre reçu, inscrivez les dons comme des paiements distincts. L’enregistrement exige le droit de modifier le groupe du compte.
+Chaque don a ses propres détails de reçu : quand un même paiement contient des dons pour deux personnes (ou un don de bienfaisance et une contribution politique), chacun paraît sur sa propre ligne ici et garde son propre reçu. Un reçu inscrit avec une version antérieure pour tout le paiement vaut encore pour les dons qui n’ont pas le leur, son montant admissible étant réparti entre eux en proportion de chaque don, pour n’être compté qu’une fois. L’enregistrement exige le droit de modifier le groupe du compte.
 
 ## Acomptes {#instalments}
 

@@ -151,11 +151,9 @@ class LoanService internal constructor(private val books: Books) {
         val (group, account) = books.accounts.locate(accountId)
         return books.ledger(group).loansQueries.loanChanges(accountId).executeAsList().map {
             val kind = LoanChangeKind.valueOf(it.kind)
-            // A rate change has no amount; a renewal keeps there the term end it replaced (see [renew]).
-            val renewal = kind == LoanChangeKind.RATE_CHANGE && it.amount_minor != null
             LoanChangeRecord(
-                it.id, LocalDate.parse(it.date), kind, it.amount_minor?.takeIf { !renewal }?.let { m -> Money.ofMinor(m, account.currency) },
-                it.annual_rate?.let(::BigDecimal), it.recalculate == 1L, it.txn_id, it.notes, renewal, it.amount_minor?.takeIf { renewal }?.let(::termEndOf),
+                it.id, LocalDate.parse(it.date), kind, it.amount_minor?.let { m -> Money.ofMinor(m, account.currency) },
+                it.annual_rate?.let(::BigDecimal), it.recalculate == 1L, it.txn_id, it.notes, it.renewal == 1L, it.previous_term_end?.let(LocalDate::parse),
             )
         }
     }
@@ -292,8 +290,7 @@ class LoanService internal constructor(private val books: Books) {
     /**
      * LN-04: renews the loan at the end of its term: the new rate applies from [date] with the
      * payment recalculated over the remaining amortization, and the next term ends on [newTermEnd].
-     * The change keeps the term end it replaces (in its otherwise unused amount, as a yyyymmdd
-     * number, 0 for none), so deleting the renewal puts it back (M-30).
+     * The change keeps the term end it replaces, so deleting the renewal puts it back (M-30).
      */
     fun renew(accountId: String, date: LocalDate, annualRate: BigDecimal, newTermEnd: LocalDate?, notes: String? = null): LoanChangeRecord {
         validate(newTermEnd == null || newTermEnd > date, "error.endBeforeStart")
@@ -302,10 +299,10 @@ class LoanService internal constructor(private val books: Books) {
         validate(annualRate.signum() >= 0 && annualRate < BigDecimal.ONE, "error.rateRange")
         val previous = requireDetails(accountId).termEnd
         val change = checked(group, accountId) {
-            insertChange(group, accountId, date, LoanChangeKind.RATE_CHANGE, null, annualRate, true, null, notes, previous?.let(::termEndCode) ?: 0L)
+            insertChange(group, accountId, date, LoanChangeKind.RATE_CHANGE, null, annualRate, true, null, notes, renewal = true, previousTermEnd = previous)
         }
         books.ledger(group).loansQueries.setTermEnd(newTermEnd?.toString(), accountId)
-        return change.copy(renewal = true, previousTermEnd = previous)
+        return change
     }
 
     /**
@@ -370,14 +367,15 @@ class LoanService internal constructor(private val books: Books) {
 
     private fun insertChange(
         group: GroupInfo, accountId: String, date: LocalDate, kind: LoanChangeKind, amount: Money?, rate: BigDecimal?,
-        recalculate: Boolean, txnId: String?, notes: String?, previousTermEnd: Long? = null,
+        recalculate: Boolean, txnId: String?, notes: String?, renewal: Boolean = false, previousTermEnd: LocalDate? = null,
     ): LoanChangeRecord {
         val id = Ids.newId()
         books.ledger(group).loansQueries.insertLoanChange(
-            id, accountId, date.toString(), kind.name, amount?.minorUnits ?: previousTermEnd, rate?.toPlainString(), if (recalculate) 1 else 0, txnId, notes.blankToNull(), books.now(),
+            id, accountId, date.toString(), kind.name, amount?.minorUnits, rate?.toPlainString(), if (recalculate) 1 else 0, txnId, notes.blankToNull(), books.now(),
+            if (renewal) 1 else 0, previousTermEnd?.toString(),
         )
         books.session.audit("UPDATE", "loan", accountId)
-        return LoanChangeRecord(id, date, kind, amount, rate, recalculate, txnId, notes.blankToNull())
+        return LoanChangeRecord(id, date, kind, amount, rate, recalculate, txnId, notes.blankToNull(), renewal, previousTermEnd)
     }
 
     /** Applies a change and takes it back if the loan would then never be repaid. */
@@ -391,11 +389,6 @@ class LoanService internal constructor(private val books: Books) {
         }
         return change
     }
-
-    /** A term end kept with a renewal: 2031-01-01 as 20310101. */
-    private fun termEndCode(d: LocalDate): Long = d.year * 10_000L + (d.month.ordinal + 1) * 100 + d.day
-
-    private fun termEndOf(code: Long): LocalDate? = code.takeIf { it > 0 }?.let { LocalDate((it / 10_000).toInt(), (it / 100 % 100).toInt(), (it % 100).toInt()) }
 
     private fun LoanChangeRecord.toChange(): LoanChange = when (kind) {
         LoanChangeKind.PREPAYMENT -> LoanChange.Prepayment(date, amount!!)

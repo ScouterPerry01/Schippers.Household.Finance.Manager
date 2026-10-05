@@ -127,7 +127,32 @@ class PayStubDonationTest {
     }
 
     @Test
-    fun `one receipt for gifts by two people is counted once`() {
+    fun `a receipt kept for the whole payment is shared by the gifts and counted once`() {
+        val (sam, lea, gala) = galaForTwo()
+        // A receipt recorded before version 26 was kept for the whole transaction.
+        val group = books.accounts.locate(chequing.id).first
+        books.ledger(group).donationQueries.upsertDonation(gala, "Hospital Foundation", null, null, 15000, 1)
+        val eligible = books.donations.list(2026).associate { it.memberId to it.eligible }
+        assertEquals(mapOf<String?, Money>(sam to cad("100.00"), lea to cad("50.00")), eligible, "shared in proportion to each gift")
+        assertEquals(cad("150.00"), books.donations.totals(2026).fold(cad("0")) { a, t -> a + t.charitable })
+    }
+
+    @Test
+    fun `each gift in one payment has its own receipt`() {
+        val (sam, lea, gala) = galaForTwo()
+        books.donations.setReceipt(gala, DonationReceipt("Hospital Foundation", receiptNumber = "S-1", eligible = cad("120.00"), received = true), sam, TaxFlag.CHARITABLE)
+        books.donations.setReceipt(gala, DonationReceipt("Hospital Foundation", receiptNumber = "L-1", received = true), lea, TaxFlag.CHARITABLE)
+        val gifts = books.donations.list(2026).associateBy { it.memberId }
+        assertEquals("S-1", gifts.getValue(sam).receipt?.receiptNumber)
+        assertEquals(cad("120.00"), gifts.getValue(sam).eligible)
+        assertEquals("L-1", gifts.getValue(lea).receipt?.receiptNumber)
+        assertEquals(cad("100.00"), gifts.getValue(lea).eligible, "no eligible amount given: the whole gift")
+        assertFailsWith<ValidationException>("more than Léa gave") {
+            books.donations.setReceipt(gala, DonationReceipt(eligible = cad("100.01")), lea, TaxFlag.CHARITABLE)
+        }
+    }
+
+    private fun galaForTwo(): Triple<String, String, String> {
         val sam = books.members.create("Sam", ca.schippers.hfm.domain.MemberKind.ADULT).id
         val lea = books.members.create("Léa", ca.schippers.hfm.domain.MemberKind.ADULT).id
         val gala = books.transactions.create(
@@ -136,9 +161,6 @@ class PayStubDonationTest {
                 listOf(SplitDraft(cat("gifts.charity"), cad("-200.00"), memberId = sam), SplitDraft(cat("gifts.charity"), cad("-100.00"), memberId = lea)),
             ),
         )
-        books.donations.setReceipt(gala.id, DonationReceipt("Hospital Foundation", eligible = cad("150.00"), received = true))
-        val eligible = books.donations.list(2026).associate { it.memberId to it.eligible }
-        assertEquals(mapOf<String?, Money>(sam to cad("100.00"), lea to cad("50.00")), eligible, "shared in proportion to each gift")
-        assertEquals(cad("150.00"), books.donations.totals(2026).fold(cad("0")) { a, t -> a + t.charitable })
+        return Triple(sam, lea, gala.id)
     }
 }

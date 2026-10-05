@@ -37,7 +37,11 @@ CREATE TABLE loan_change (
     recalculate INTEGER NOT NULL DEFAULT 0,
     txn_id TEXT,
     notes TEXT,
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    -- M-30 (version 26): a renewal is a rate change that also moved the term end; it keeps the
+    -- term end it replaced, so deleting it puts that back.
+    renewal INTEGER NOT NULL DEFAULT 0,
+    previous_term_end TEXT
 );
 
 CREATE INDEX loan_change_account ON loan_change(account_id, date);
@@ -64,8 +68,8 @@ deleteLoan:
 DELETE FROM loan WHERE account_id = ?;
 
 insertLoanChange:
-INSERT INTO loan_change(id, account_id, date, kind, amount_minor, annual_rate, recalculate, txn_id, notes, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO loan_change(id, account_id, date, kind, amount_minor, annual_rate, recalculate, txn_id, notes, created_at, renewal, previous_term_end)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 loanChanges:
 SELECT * FROM loan_change WHERE account_id = ? ORDER BY date, created_at;
