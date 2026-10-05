@@ -10,16 +10,17 @@ The app does not prepare or file a return. It gathers what the books already kno
 
 @index: tax; income tax; tax return; tax season
 
-Under the title, four tabs:
+Under the title, five tabs:
 
 - **Slips**: the slips to expect from employers, payers and institutions, and whether they have arrived. See [Slips](taxes#slips).
 - **Donations**: every donation in the books, by person, with its official receipt. See [Donations](taxes#donations).
 - **Instalments**: the instalment schedule from the CRA or Revenu Québec, and what has been paid. See [Instalments](taxes#instalments).
 - **Year-end package**: each person's figures for the return, with the line each goes on, and a folder for the accountant. See [Year-end package](taxes#year-end-package).
+- **Estimate**: an estimate of each person's federal and provincial or territorial income tax, and of the balance owing or the refund. See [Estimate](taxes#estimate).
 
 Each tab has its own **Tax year** at the top.
 
-- On **Slips** and **Year-end package**, the year starts as the tax year being prepared: last year until the end of June, then the current year. You can choose the current year or one of the six before.
+- On **Slips**, **Year-end package** and **Estimate**, the year starts as the tax year being prepared: last year until the end of June, then the current year. You can choose the current year or one of the six before.
 - On **Donations**, the year starts as the current year, with the six before also offered.
 - On **Instalments**, the year starts as the current year; next year and the three before are also offered, so you can enter next year's schedule when the reminder arrives.
 
@@ -221,6 +222,134 @@ The folder opens when it is done, and a line says where it was saved. Making it 
 ### Export one summary {#export-summary}
 
 The **CSV**, **Excel** and **PDF** buttons beside **Folder for the accountant…** save the summary of the person shown only, with its notes, after asking where. The formats are those of the reports: see [The table, export and print](reports#table-export).
+
+## Estimate {#estimate}
+
+@index: income tax estimate; tax estimate; refund; balance owing; how much tax; tax calculator; marginal rate; average rate
+
+The **Estimate** tab works out roughly how much income tax a person will pay for a year, from the figures of the year-end package and the rates of the person's province or territory, and compares it with the tax already deducted from pay and paid in instalments. It shows the result, every step of the calculation, and where each figure comes from. You can change any figure to see its effect, for example to try an RRSP contribution before the deadline.
+
+> Important: This is an estimate, not a return and not tax advice. It applies the main rules to the figures shown and leaves some out (see [What the estimate leaves out](taxes#estimate-left-out)). Your return, your tax software or your accountant, and your notice of assessment have the final word.
+
+At the top:
+
+- **Tax year**: the year to estimate. It starts as the tax year being prepared (last year until the end of June, then the current year); the current year and the six before are offered. Built-in rates start with 2024: for an earlier year, the tab says there are no rates.
+- **Person**: whose tax to estimate. The adults and adult dependants of the household are offered, and anyone else with figures in the package. Each person files their own return, so each has their own estimate.
+- **Use the books' figures again**: shown once you have changed a figure or the age box; puts every figure back as the books have it.
+
+The red line under them is the reminder that this is an estimate. "No one to estimate yet" means the household has no adult member: add them under [Household members](members).
+
+The left side lists the figures used; the right side shows the result and the calculation.
+
+### Figures used {#estimate-figures}
+
+@index: estimate inputs; override tax figures
+
+Under **Figures used**, a line says whose rates apply: those of the province or territory the person lives in (their **Lives in** on Household members), or else the household's. Then:
+
+- **65 or older on December 31**: ticked when the person's birth date says they are 65 or older at the end of the year. It gives the age amount, and counts RRIF income as pension income. Change it when the birth date is not entered.
+
+Each figure is an amount in dollars, with a line under it saying where it comes from: **From the year-end package** and the package items added together, **Not in the books** when the books have no source for it, or **Entered here, not saved** once you change it. **Use the books** beside a changed figure puts the books' amount back. What you enter here is not saved, does not change the books, and is forgotten when you choose another person or year or leave the screen. A blank amount counts as zero. An amount can be a sum, such as 1200 + 350.
+
+The figures are grouped as on a return.
+
+Income:
+
+- **Employment income**: from **Employment income** in the package (salary, wages, bonuses on pay stubs and income categories).
+- **Pension income eligible for the pension amount**: **Other pensions** (an employer pension), plus **RRIF income** from age 65. It gives the pension income amount.
+- **Other income (OAS, CPP or QPP, EI, plan withdrawals)**: **Old Age Security pension**, **CPP or QPP benefits** and **Employment Insurance benefits**, plus **RRIF income** before 65. Add here any other taxable income the books do not show, such as RRSP withdrawals.
+- **Interest and other investment income**: from **Interest and other investment income**.
+- **Eligible dividends (taxable amount)** and **Other dividends (taxable amount)**: the grossed-up amounts of the T5 and T3 slips (T5 boxes 25 and 11, T3 boxes 50 and 32), from the investment income report. They give the dividend tax credit.
+- **Taxable capital gains**: from **Taxable capital gains** (half of the net gains of the year).
+- **Self-employment income, net of expenses**: **Self-employment income** less **Self-employment expenses**; it may be negative.
+
+Deductions:
+
+- **RRSP deduction**: from **RRSP contributions**. The deduction cannot be more than the RRSP deduction limit on the notice of assessment; enter a smaller amount if needed.
+- **FHSA deduction**: from **FHSA contributions**.
+- **Registered pension plan contributions**: from **Pension plan contributions** deducted from pay.
+- **Union and professional dues**: from **Union and professional dues**.
+- **Child care expenses**: from **Child care expenses**. Usually the spouse with the lower income claims them, within limits per child; enter the amount that can be claimed.
+- **Other deductions (moving, employment expenses)**: **Moving expenses** and **Other employment expenses**.
+
+Credits:
+
+- **CPP or QPP contributions**: from **CPP or QPP contributions** on pay stubs. The base part is a credit; the enhanced part and the second contribution are a deduction (see [The calculation](taxes#estimate-lines)).
+- **EI premiums (and QPIP in Quebec)**: from **EI premiums**, or **EI and QPIP premiums** in Quebec.
+- **Charitable donations**: from **Charitable donations**, at their eligible amounts. Spouses may claim each other's: enter here the gifts this person will claim.
+- **Medical expenses claimed**: not filled in, because the household's medical expenses are claimed together by one spouse. A line under the field gives the household's claim from the package; enter it for the spouse who claims it. The threshold (3 % of net income or the fixed amount) is applied by the estimate, so enter the expenses themselves.
+- **Spouse's or partner's net income**: empty means no spouse amount is claimed. Enter the net income of a spouse or common-law partner to claim the spouse amount, which falls as their income rises. In Quebec, it is added to the person's own income to form the family income that reduces the age and retirement amounts and sets the medical expense threshold.
+
+Tax already paid:
+
+- **Income tax deducted**: from **Income tax deducted** (income tax taken off pay, federal and Quebec together).
+- **Instalments paid**: from **Instalments paid** to the CRA and to Revenu Québec.
+
+### The result {#estimate-result}
+
+@index: balance owing; refund estimate; average tax rate; marginal tax rate
+
+The box at the top right gives:
+
+- **Federal tax**: the federal tax after credits (after the Quebec abatement for a Quebec resident).
+- The provincial or territorial tax, named after the province or territory: after credits, with any surtax, reduction or health premium.
+- **Total income tax**: the two together.
+- **Deducted at source and instalments**: **Income tax deducted** and **Instalments paid**.
+- **Balance owing** or **Refund**: the total income tax less what was already paid. A balance owing is due by April 30 of the next year.
+- **Average rate**: the total income tax as a share of total income.
+- **Marginal rate**: the tax on one more dollar of ordinary income (such as interest), federal and provincial together; it is what an RRSP deduction saves, roughly, on each dollar.
+
+When the rates for the year are not yet in Rates and rules, a red line says that those of the latest year known are used.
+
+### The calculation {#estimate-lines}
+
+@index: tax brackets; basic personal amount; non-refundable credits; surtax; Ontario Health Premium; Quebec abatement
+
+Under the result, the calculation line by line, in three parts. Each line shows its amount, and below its name how it was worked out (a rate of an amount, or the amount it is based on).
+
+Income:
+
+- **Total income**: all the income figures added together.
+- **CPP or QPP enhanced contributions (deduction)**: the part of the contributions that is deducted rather than credited.
+- **Deductions**: the deductions, with that part.
+- **Net income** and **Taxable income**: total income less the deductions (never below zero). The estimate counts no other deduction, so the two are the same.
+
+Federal, then the province or territory:
+
+- **Tax bracket**: one line per bracket reached, with its rate, the income taxed at that rate and where the bracket starts.
+- **Tax on taxable income**: the brackets added together.
+- Credit amounts: **Basic personal amount** (reduced at high incomes where the rules say so), **Age amount** (from 65, reduced above an income threshold), **Senior supplementary amount** (Saskatchewan), **Spouse or common-law partner amount**, **Canada employment amount** (federal and Yukon), **CPP or QPP contributions (base part)**, **EI premiums**, **Pension income amount** and **Medical expenses above the threshold**.
+- **Total of the credit amounts**, and **Non-refundable tax credits**: that total at the lowest rate.
+- **Top-up or supplemental tax credit**: the federal top-up credit, which keeps 15 % on credit amounts above the first bracket since the lowest rate went down in 2025, or Alberta's supplemental credit on credit amounts above its 8 % bracket.
+- **Donation tax credit**: the first $200 at the lowest rate, the rest at a higher rate, and, where the rules have one, a still higher rate on gifts matched by income in the top bracket.
+- **Dividend tax credit**: a share of the taxable amount of eligible and other dividends.
+- **Tax after credits**: never below zero, since these credits are not refundable.
+- **Refundable Quebec abatement**: for a Quebec resident, 16.5 % of the federal tax after credits.
+- **Surtax** and **Tax reduction**: Ontario's surtax on its tax above two thresholds, Ontario's tax reduction, and British Columbia's low-income tax reduction.
+- **Health premium**: the Ontario Health Premium, by tiers of taxable income.
+- **Tax**: the federal, or the provincial or territorial, tax.
+
+### Quebec residents {#estimate-quebec}
+
+@index: Quebec income tax estimate; deduction for workers; Revenu Québec estimate
+
+A person who lives in Quebec on December 31 pays federal tax, reduced by the Quebec abatement, and Quebec tax worked out from Quebec's own rules:
+
+- **Deduction for workers**: 6 % of employment income, up to a maximum, deducted from income for the Quebec tax.
+- Quebec's brackets and credits at its own rate. QPP, EI and QPIP give no Quebec credit, since the basic personal amount already allows for them.
+- The age amount and the retirement income amount are reduced together on family income (the person's and their spouse's).
+- The medical expense credit is 20 % of the expenses above 3 % of family income.
+- QPP replaces CPP: the base part of the contributions is a federal credit, and the rest a deduction on both returns.
+
+### What the estimate leaves out {#estimate-left-out}
+
+The estimate does not count: tuition, amounts transferred from a spouse or child, carry-forwards (unused tuition, donations or losses), low-income tax reductions other than Ontario's and British Columbia's, refundable credits and benefits (GST/HST credit, Canada workers benefit, Quebec's solidarity credit), the OAS recovery tax, the alternative minimum tax, political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, its health services fund contribution and its prescription drug insurance premium, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
+
+### Where the rates come from {#estimate-rates}
+
+@index: income tax rates; tax rates by province; rate changes
+
+Every rate, amount and threshold the estimate uses (brackets, basic personal amounts, credit rates, the age, spouse, pension and employment amounts, medical expense thresholds, donation and dividend credit rates, Ontario's surtax and health premium, CPP and QPP, and Quebec's deduction for workers) is a value in **Rates and rules**, under **Income tax**, by date and by province or territory. The app comes with the official figures for 2024, 2025 and 2026, each with its source. An administrator can add a value for a year or a province there, for example when a budget changes a rate; the estimate uses it from its date. A year whose figures are not there yet uses the latest ones.
 
 ## Through the year: what feeds the tax screens {#through-the-year}
 

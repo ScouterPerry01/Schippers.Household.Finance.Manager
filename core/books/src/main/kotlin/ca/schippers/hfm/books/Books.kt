@@ -76,6 +76,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val slipChecklist = SlipChecklistService(this)
     val instalments = InstalmentService(this)
     val taxPackage = TaxPackageService(this)
+    val incomeTax = IncomeTaxService(this)
     val customReports = CustomReportService(this)
     val savedReports = SavedReportService(this)
     val yearReview = YearReviewService(this)

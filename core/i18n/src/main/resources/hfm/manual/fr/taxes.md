@@ -10,16 +10,17 @@ L’application ne prépare pas et ne produit pas de déclaration. Elle rassembl
 
 @index: impôt; impôt sur le revenu; déclaration de revenus; période des impôts
 
-Sous le titre, quatre onglets :
+Sous le titre, cinq onglets :
 
 - **Feuillets** : les feuillets attendus des employeurs, payeurs et institutions, et s’ils sont arrivés. Voir [Feuillets](taxes#slips).
 - **Dons** : chaque don inscrit dans les livres, par personne, avec son reçu officiel. Voir [Dons](taxes#donations).
 - **Acomptes** : le calendrier d’acomptes de l’ARC ou de Revenu Québec, et ce qui a été payé. Voir [Acomptes](taxes#instalments).
 - **Trousse de fin d’année** : les montants de chaque personne pour la déclaration, avec la ligne de chacun, et un dossier pour le comptable. Voir [Trousse de fin d’année](taxes#year-end-package).
+- **Estimation** : une estimation de l’impôt fédéral et provincial ou territorial de chaque personne, et du solde dû ou du remboursement. Voir [Estimation](taxes#estimate).
 
 Chaque onglet a sa propre **Année d’imposition** en haut.
 
-- Dans **Feuillets** et **Trousse de fin d’année**, l’année est au départ celle qu’on prépare : l’an dernier jusqu’à la fin de juin, puis l’année en cours. Vous pouvez choisir l’année en cours ou l’une des six précédentes.
+- Dans **Feuillets**, **Trousse de fin d’année** et **Estimation**, l’année est au départ celle qu’on prépare : l’an dernier jusqu’à la fin de juin, puis l’année en cours. Vous pouvez choisir l’année en cours ou l’une des six précédentes.
 - Dans **Dons**, l’année est au départ l’année en cours, et les six précédentes sont aussi offertes.
 - Dans **Acomptes**, l’année est au départ l’année en cours ; l’année suivante et les trois précédentes sont aussi offertes, pour entrer le calendrier de l’an prochain dès l’arrivée du rappel.
 
@@ -221,6 +222,134 @@ Le dossier s’ouvre une fois terminé, et une ligne indique où il a été enre
 ### Exporter un sommaire {#export-summary}
 
 Les boutons **CSV**, **Excel** et **PDF** à côté de **Dossier pour le comptable…** enregistrent le sommaire de la personne affichée seulement, avec ses notes, après avoir demandé où. Les formats sont ceux des rapports : voir [Le tableau, l’exportation et l’impression](reports#table-export).
+
+## Estimation {#estimate}
+
+@index: estimation de l’impôt sur le revenu; estimation d’impôt; remboursement; solde dû; combien d’impôt; calculatrice d’impôt; taux marginal; taux moyen
+
+L’onglet **Estimation** calcule à peu près l’impôt sur le revenu qu’une personne paiera pour une année, à partir des montants de la trousse de fin d’année et des taux de sa province ou de son territoire, et le compare à l’impôt déjà retenu sur la paie et payé par acomptes. Il montre le résultat, chaque étape du calcul et l’origine de chaque montant. Vous pouvez changer n’importe quel montant pour en voir l’effet, par exemple pour essayer une cotisation REER avant la date limite.
+
+> Important : Il s’agit d’une estimation, pas d’une déclaration ni d’un conseil fiscal. Elle applique les principales règles aux montants affichés et en laisse certaines de côté (voir [Ce que l’estimation laisse de côté](taxes#estimate-left-out)). Votre déclaration, votre logiciel d’impôt ou votre comptable, et votre avis de cotisation ont le dernier mot.
+
+En haut :
+
+- **Année d’imposition** : l’année à estimer. Elle est au départ l’année qu’on prépare (l’an dernier jusqu’à la fin de juin, puis l’année en cours) ; l’année en cours et les six précédentes sont offertes. Les taux intégrés commencent en 2024 : pour une année antérieure, l’onglet indique qu’il n’y a pas de taux.
+- **Personne** : la personne dont on estime l’impôt. Les adultes et les adultes à charge du ménage sont offerts, ainsi que toute autre personne qui a des montants dans la trousse. Chacun produit sa propre déclaration, donc chacun a sa propre estimation.
+- **Reprendre les montants des livres** : affiché dès que vous avez changé un montant ou la case de l’âge ; remet chaque montant tel que les livres l’indiquent.
+
+La ligne rouge en dessous rappelle qu’il s’agit d’une estimation. « Personne à estimer pour l’instant » signifie que le ménage n’a aucun membre adulte : ajoutez-les dans [Membres du ménage](members).
+
+La partie gauche énumère les montants utilisés ; la partie droite montre le résultat et le calcul.
+
+### Montants utilisés {#estimate-figures}
+
+@index: données de l’estimation; remplacer les montants fiscaux
+
+Sous **Montants utilisés**, une ligne indique de quels taux il s’agit : ceux de la province ou du territoire où vit la personne (son **Habite au ou en** dans Membres du ménage), sinon ceux du ménage. Ensuite :
+
+- **65 ans ou plus au 31 décembre** : cochée quand la date de naissance de la personne indique 65 ans ou plus à la fin de l’année. Elle donne le montant en raison de l’âge et fait compter les revenus d’un FERR comme revenus de pension. Changez-la quand la date de naissance n’est pas entrée.
+
+Chaque montant est en dollars, avec une ligne en dessous qui en indique l’origine : **De la trousse de fin d’année** et les éléments de la trousse additionnés, **Absent des livres** quand les livres n’en ont pas la source, ou **Entré ici, non enregistré** dès que vous le changez. **Reprendre les livres** à côté d’un montant changé remet celui des livres. Ce que vous entrez ici n’est pas enregistré, ne change pas les livres et est oublié quand vous choisissez une autre personne ou une autre année ou que vous quittez l’écran. Un montant vide compte pour zéro. Un montant peut être une somme, comme 1200 + 350.
+
+Les montants sont regroupés comme dans une déclaration.
+
+Revenus :
+
+- **Revenus d’emploi** : de **Revenus d’emploi** dans la trousse (salaire, traitement, primes des talons de paie et des catégories de revenus).
+- **Revenus de pension admissibles au montant pour revenu de pension** : **Autres pensions** (une pension d’employeur), plus **Revenus d’un FERR** dès 65 ans. Ils donnent le montant pour revenu de pension.
+- **Autres revenus (SV, RPC ou RRQ, AE, retraits de régimes)** : **Pension de la Sécurité de la vieillesse**, **Prestations du RPC ou du RRQ** et **Prestations d’assurance-emploi**, plus **Revenus d’un FERR** avant 65 ans. Ajoutez-y tout autre revenu imposable que les livres ne montrent pas, comme des retraits d’un REER.
+- **Intérêts et autres revenus de placement** : de **Intérêts et autres revenus de placement**.
+- **Dividendes déterminés (montant imposable)** et **Autres dividendes (montant imposable)** : les montants majorés des feuillets T5 et T3 (cases 25 et 11 du T5, cases 50 et 32 du T3), tirés du rapport des revenus de placement. Ils donnent le crédit d’impôt pour dividendes.
+- **Gains en capital imposables** : de **Gains en capital imposables** (la moitié des gains nets de l’année).
+- **Revenus de travail autonome, nets des dépenses** : **Revenus de travail autonome** moins **Dépenses de travail autonome** ; le montant peut être négatif.
+
+Déductions :
+
+- **Déduction pour REER** : de **Cotisations REER**. La déduction ne peut dépasser le plafond de déduction REER de l’avis de cotisation ; entrez un montant moindre au besoin.
+- **Déduction pour CELIAPP** : de **Cotisations CELIAPP**.
+- **Cotisations à un régime de pension agréé** : de **Cotisations au régime de retraite** retenues sur la paie.
+- **Cotisations syndicales et professionnelles** : de **Cotisations syndicales et professionnelles**.
+- **Frais de garde d’enfants** : de **Frais de garde d’enfants**. C’est habituellement le conjoint au revenu le plus bas qui les déduit, dans des limites par enfant ; entrez le montant déductible.
+- **Autres déductions (déménagement, dépenses d’emploi)** : **Frais de déménagement** et **Autres dépenses d’emploi**.
+
+Crédits :
+
+- **Cotisations au RPC ou au RRQ** : de **Cotisations au RPC ou au RRQ** des talons de paie. La partie de base donne un crédit ; la partie bonifiée et la deuxième cotisation sont déduites (voir [Le calcul](taxes#estimate-lines)).
+- **Cotisations d’AE (et au RQAP au Québec)** : de **Cotisations d’AE**, ou **Cotisations d’AE et au RQAP** au Québec.
+- **Dons de bienfaisance** : de **Dons de bienfaisance**, à leur montant admissible. Les conjoints peuvent demander les dons l’un de l’autre : entrez ici les dons que cette personne demandera.
+- **Frais médicaux demandés** : non rempli, parce que les frais médicaux du ménage sont demandés ensemble par un des conjoints. Une ligne sous le champ donne le montant du ménage tiré de la trousse ; entrez-le pour le conjoint qui le demande. L’estimation applique elle-même le seuil (3 % du revenu net ou le montant fixe) : entrez donc les frais eux-mêmes.
+- **Revenu net de l’époux ou du conjoint** : vide, aucun montant pour époux n’est demandé. Entrez le revenu net d’un époux ou d’un conjoint de fait pour demander le montant pour époux, qui diminue à mesure que son revenu augmente. Au Québec, il s’ajoute au revenu de la personne pour former le revenu familial qui réduit les montants pour l’âge et pour revenus de retraite et fixe le seuil des frais médicaux.
+
+Impôt déjà payé :
+
+- **Impôt retenu** : de **Impôt retenu** (l’impôt retenu sur la paie, fédéral et du Québec ensemble).
+- **Acomptes payés** : de **Acomptes payés** à l’ARC et à Revenu Québec.
+
+### Le résultat {#estimate-result}
+
+@index: solde dû; estimation du remboursement; taux d’imposition moyen; taux d’imposition marginal
+
+L’encadré en haut à droite donne :
+
+- **Impôt fédéral** : l’impôt fédéral après les crédits (après l’abattement du Québec pour un résident du Québec).
+- L’impôt provincial ou territorial, au nom de la province ou du territoire : après les crédits, avec toute surtaxe, réduction ou contribution-santé.
+- **Impôt sur le revenu total** : les deux ensemble.
+- **Retenues à la source et acomptes** : **Impôt retenu** et **Acomptes payés**.
+- **Solde dû** ou **Remboursement** : l’impôt total moins ce qui est déjà payé. Un solde dû doit être payé au plus tard le 30 avril de l’année suivante.
+- **Taux moyen** : l’impôt total en proportion du revenu total.
+- **Taux marginal** : l’impôt sur un dollar de plus de revenu ordinaire (comme des intérêts), fédéral et provincial ensemble ; c’est, en gros, ce qu’une déduction REER fait économiser sur chaque dollar.
+
+Quand les taux de l’année ne sont pas encore dans Taux et règles, une ligne rouge indique que ceux de la dernière année connue sont utilisés.
+
+### Le calcul {#estimate-lines}
+
+@index: tranches d’imposition; montant personnel de base; crédits non remboursables; surtaxe; contribution-santé de l’Ontario; abattement du Québec
+
+Sous le résultat, le calcul ligne par ligne, en trois parties. Chaque ligne montre son montant et, sous son nom, comment il a été calculé (un taux d’un montant, ou le montant sur lequel il repose).
+
+Revenus :
+
+- **Revenu total** : tous les revenus additionnés.
+- **Cotisations bonifiées au RPC ou au RRQ (déduction)** : la partie des cotisations qui est déduite plutôt que créditée.
+- **Déductions** : les déductions, avec cette partie.
+- **Revenu net** et **Revenu imposable** : le revenu total moins les déductions (jamais sous zéro). L’estimation ne compte aucune autre déduction : les deux sont donc égaux.
+
+Le fédéral, puis la province ou le territoire :
+
+- **Tranche d’imposition** : une ligne par tranche atteinte, avec son taux, le revenu imposé à ce taux et le début de la tranche.
+- **Impôt sur le revenu imposable** : les tranches additionnées.
+- Les montants donnant droit aux crédits : **Montant personnel de base** (réduit aux revenus élevés quand les règles le prévoient), **Montant en raison de l’âge** (dès 65 ans, réduit au-delà d’un seuil de revenu), **Montant supplémentaire pour aînés** (Saskatchewan), **Montant pour époux ou conjoint de fait**, **Montant canadien pour emploi** (fédéral et Yukon), **Cotisations au RPC ou au RRQ (partie de base)**, **Cotisations d’AE**, **Montant pour revenu de pension** et **Frais médicaux au-delà du seuil**.
+- **Total des montants donnant droit aux crédits**, et **Crédits d’impôt non remboursables** : ce total au taux le plus bas.
+- **Crédit d’impôt complémentaire ou supplémentaire** : le crédit complémentaire fédéral, qui maintient 15 % sur les montants au-delà de la première tranche depuis la baisse du taux le plus bas en 2025, ou le crédit supplémentaire de l’Alberta sur les montants au-delà de sa tranche à 8 %.
+- **Crédit d’impôt pour dons** : les premiers 200 $ au taux le plus bas, le reste à un taux plus élevé et, quand les règles en prévoient un, à un taux encore plus élevé sur les dons correspondant au revenu de la tranche supérieure.
+- **Crédit d’impôt pour dividendes** : une part du montant imposable des dividendes déterminés et des autres dividendes.
+- **Impôt après les crédits** : jamais sous zéro, puisque ces crédits ne sont pas remboursables.
+- **Abattement du Québec remboursable** : pour un résident du Québec, 16,5 % de l’impôt fédéral après les crédits.
+- **Surtaxe** et **Réduction d’impôt** : la surtaxe de l’Ontario sur son impôt au-delà de deux seuils, la réduction d’impôt de l’Ontario et la réduction d’impôt pour faible revenu de la Colombie-Britannique.
+- **Contribution-santé** : la contribution-santé de l’Ontario, par paliers de revenu imposable.
+- **Impôt** : l’impôt fédéral, ou provincial ou territorial.
+
+### Résidents du Québec {#estimate-quebec}
+
+@index: estimation de l’impôt du Québec; déduction pour travailleur; estimation Revenu Québec
+
+Une personne qui habite au Québec le 31 décembre paie l’impôt fédéral, réduit de l’abattement du Québec, et l’impôt du Québec calculé selon les règles du Québec :
+
+- **Déduction pour travailleur** : 6 % des revenus d’emploi, jusqu’à un maximum, déduits du revenu pour l’impôt du Québec.
+- Les tranches et les crédits du Québec, à son propre taux. Le RRQ, l’AE et le RQAP ne donnent aucun crédit au Québec, puisque le montant personnel de base en tient déjà compte.
+- Le montant en raison de l’âge et le montant pour revenus de retraite sont réduits ensemble selon le revenu familial (celui de la personne et de son conjoint).
+- Le crédit pour frais médicaux est de 20 % des frais qui dépassent 3 % du revenu familial.
+- Le RRQ remplace le RPC : la partie de base des cotisations donne un crédit fédéral, et le reste une déduction dans les deux déclarations.
+
+### Ce que l’estimation laisse de côté {#estimate-left-out}
+
+L’estimation ne compte pas : les frais de scolarité, les montants transférés d’un conjoint ou d’un enfant, les reports (frais de scolarité, dons ou pertes inutilisés), les réductions d’impôt pour faible revenu autres que celles de l’Ontario et de la Colombie-Britannique, les crédits et prestations remboursables (crédit pour la TPS/TVH, Allocation canadienne pour les travailleurs, crédit d’impôt pour solidarité du Québec), l’impôt de récupération de la SV, l’impôt minimum de remplacement, les contributions politiques, les crédits pour impôt étranger, le montant canadien pour aidant naturel et le montant pour personne à charge admissible, le montant pour personne vivant seule du Québec, sa cotisation au Fonds des services de santé et sa prime d’assurance médicaments, et les suppléments de 2024 de la Nouvelle-Écosse aux montants pour époux et pour l’âge. Au Yukon, le montant pour époux n’est pas réduit avec le montant personnel de base aux revenus élevés. Ces éléments peuvent changer le résultat : c’est la déclaration qui compte.
+
+### D’où viennent les taux {#estimate-rates}
+
+@index: taux d’impôt sur le revenu; taux d’impôt par province; changements de taux
+
+Chaque taux, montant et seuil utilisé par l’estimation (tranches, montants personnels de base, taux des crédits, montants pour l’âge, pour époux, pour revenu de pension et pour emploi, seuils des frais médicaux, taux des crédits pour dons et pour dividendes, surtaxe et contribution-santé de l’Ontario, RPC et RRQ, déduction pour travailleur du Québec) est une valeur de **Taux et règles**, sous **Impôt sur le revenu**, par date et par province ou territoire. L’application fournit les chiffres officiels de 2024, 2025 et 2026, chacun avec sa source. Un administrateur peut y ajouter une valeur pour une année ou une province, par exemple quand un budget change un taux ; l’estimation l’utilise à partir de sa date. Une année dont les chiffres n’y sont pas encore utilise les derniers connus.
 
 ## Pendant l’année : ce qui alimente les écrans fiscaux {#through-the-year}
 

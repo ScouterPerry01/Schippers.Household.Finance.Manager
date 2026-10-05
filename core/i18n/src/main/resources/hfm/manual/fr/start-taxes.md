@@ -33,6 +33,18 @@ L’application ne produit pas votre déclaration, mais elle peut tout avoir pr�
 
 Voir [Acomptes](taxes#instalments).
 
+## Estimer l’impôt {#estimate-steps}
+
+@index: estimation de l’impôt; estimation du remboursement
+
+1. Ouvrez **Impôts**, puis l’onglet **Estimation**.
+2. Choisissez l’**Année d’imposition** et la **Personne**.
+3. Lisez **Montants utilisés** à gauche : chaque montant en indique l’origine. Entrez ce que les livres ne peuvent pas savoir, comme les frais médicaux que cette personne demande ou le revenu net d’un conjoint, et corrigez ce qui n’est pas juste. Rien de ce qui y est entré n’est enregistré.
+4. Lisez le résultat à droite : l’impôt fédéral et provincial ou territorial, ce qui est déjà payé, et le **Solde dû** ou le **Remboursement**, avec chaque étape du calcul en dessous.
+5. Pour voir ce qu’une cotisation REER ferait économiser, changez **Déduction pour REER** et suivez le solde et le **Taux marginal**.
+
+Les taux viennent de Taux et règles, sous Impôt sur le revenu. Voir [Estimation](taxes#estimate).
+
 ## Au moment des impôts {#at-tax-time}
 
 @index: période des impôts; production de la déclaration

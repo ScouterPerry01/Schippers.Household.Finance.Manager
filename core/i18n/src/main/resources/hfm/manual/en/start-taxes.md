@@ -33,6 +33,18 @@ The app does not file your return, but it can have everything ready for it: the 
 
 See [Instalments](taxes#instalments).
 
+## Estimate the tax {#estimate-steps}
+
+@index: tax estimate; refund estimate
+
+1. Open **Taxes**, then the **Estimate** tab.
+2. Choose the **Tax year** and the **Person**.
+3. Read **Figures used** on the left: each amount says where it comes from. Enter what the books cannot know, such as the medical expenses this person claims or a spouse's net income, and correct anything that is not right. Nothing entered there is saved.
+4. Read the result on the right: the federal and provincial or territorial tax, what was already paid, and the **Balance owing** or **Refund**, with every step of the calculation below it.
+5. To see what an RRSP contribution would save, change **RRSP deduction** and watch the balance and the **Marginal rate**.
+
+The rates come from Rates and rules, under Income tax. See [Estimate](taxes#estimate).
+
 ## At tax time {#at-tax-time}
 
 @index: tax season; filing

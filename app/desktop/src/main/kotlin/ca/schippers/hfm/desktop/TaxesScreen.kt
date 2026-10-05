@@ -23,6 +23,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,15 +47,23 @@ import ca.schippers.hfm.books.SlipChecklistService
 import ca.schippers.hfm.books.SlipStatus
 import ca.schippers.hfm.books.SlipType
 import ca.schippers.hfm.books.TaxAuthority
+import ca.schippers.hfm.calc.tax.TaxInput
+import ca.schippers.hfm.calc.tax.TaxLine
+import ca.schippers.hfm.calc.tax.TaxLineKind
+import ca.schippers.hfm.calc.tax.TaxPart
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.TaxFlag
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
+import java.math.BigDecimal
 
-private enum class TaxesTab { SLIPS, DONATIONS, INSTALMENTS, YEAR_END }
+private enum class TaxesTab { SLIPS, DONATIONS, INSTALMENTS, YEAR_END, ESTIMATE }
 
-/** Phase 5b: the tax year in one place: the slips (TAX-01), donations and their receipts (OTH-01), instalments (TAX-03) and the year-end package (TAX-02). */
+/**
+ * Phase 5b: the tax year in one place: the slips (TAX-01), donations and their receipts (OTH-01),
+ * instalments (TAX-03), the year-end package (TAX-02) and the income tax estimate.
+ */
 @Composable
 fun TaxesScreen(model: BooksModel) {
     var tab by remember { mutableStateOf(TaxesTab.SLIPS) }
@@ -69,6 +78,7 @@ fun TaxesScreen(model: BooksModel) {
             TaxesTab.DONATIONS -> DonationsTab(model)
             TaxesTab.INSTALMENTS -> InstalmentsTab(model)
             TaxesTab.YEAR_END -> PackageTab(model)
+            TaxesTab.ESTIMATE -> EstimateTab(model)
         }
     }
 }
@@ -457,3 +467,158 @@ private fun exportPackageFolder(model: BooksModel, pkg: TaxPackage): java.io.Fil
     runCatching { java.awt.Desktop.getDesktop().open(dir) }
     return dir
 }
+
+// --- Income tax estimate -----------------------------------------------------------------------------
+
+/**
+ * One person's income tax for a year, estimated from the year-end package with the rates of Rates
+ * and rules: the figures used, each with where it comes from and a field to replace it (not saved),
+ * the calculation line by line, and the balance owing or refund. An aid, not a return (TAX-04).
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun EstimateTab(model: BooksModel) {
+    val books = model.books
+    val locale = model.language.locale
+    val thisYear = today().year
+    var year by remember { mutableStateOf(taxSeasonYear()) }
+    val pkg = remember(model.revision, year) { books.taxPackage.build(year) }
+    val people = remember(pkg) { books.incomeTax.people(year, pkg) }
+    var who by remember(year) { mutableStateOf(people.firstOrNull()?.id) }
+    val person = people.firstOrNull { it.id == who } ?: people.firstOrNull()
+    val entered = remember(year, person?.id) { mutableStateMapOf<TaxInput, String>() }
+    var age65 by remember(year, person?.id) { mutableStateOf<Boolean?>(null) }
+
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Picker(model.t("taxes.year"), (thisYear downTo thisYear - 6).toList(), year, { it.toString() }, Modifier.width(190.dp)) { year = it }
+        if (people.isNotEmpty()) Picker(model.t("report.person"), people, person, { it.displayName }, Modifier.width(220.dp)) { who = it.id }
+        if (entered.isNotEmpty() || age65 != null) {
+            OutlinedButton(onClick = { entered.clear(); age65 = null }, modifier = Modifier.padding(top = 8.dp)) { Text(model.t("taxEstimate.reset")) }
+        }
+    }
+    Text(model.t("taxEstimate.notice"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(vertical = 4.dp))
+    if (person == null) {
+        Text(model.t("taxEstimate.none"), Modifier.padding(vertical = 12.dp))
+        return
+    }
+    // A blank field counts as zero; a blank spouse's net income claims no spouse amount.
+    val values = entered.mapNotNull { (input, text) ->
+        if (text.isBlank()) {
+            if (input == TaxInput.SPOUSE_NET_INCOME) null else input to BigDecimal.ZERO
+        } else {
+            runCatching { parseAmount(text, Currency.CAD, locale) }.getOrNull()?.let { input to it.toBigDecimal() }
+        }
+    }.toMap()
+    val result = remember(pkg, person.id, values, age65) { books.incomeTax.estimate(year, person.id, values, age65, pkg) }
+    fun cad(x: BigDecimal) = model.money(Money.of(x, Currency.CAD))
+
+    Row(Modifier.fillMaxSize().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+        LazyColumn(Modifier.weight(1f)) {
+            item(key = "head") {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(model.t("taxEstimate.figures"), fontWeight = FontWeight.Medium)
+                    Text(model.t("taxEstimate.figuresHint"), style = MaterialTheme.typography.bodySmall)
+                    Text(model.t("taxEstimate.province", model.t("province.${result.province}")), style = MaterialTheme.typography.bodySmall)
+                    LabeledCheckbox(model.t("taxEstimate.age65"), result.age65) { age65 = it }
+                }
+            }
+            result.figures.groupBy { it.input.group }.forEach { (group, figures) ->
+                item(key = "g/$group") {
+                    Text(model.t("taxEstimateGroup.$group"), fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                }
+                items(figures, key = { "f/${it.input}" }) { f ->
+                    Column(Modifier.padding(vertical = 2.dp)) {
+                        val shown = entered[f.input] ?: f.fromBooks?.let { MoneyFormat.formatAmount(Money.of(it, Currency.CAD), locale) }.orEmpty()
+                        AmountInput(model.t("taxEstimateInput.${f.input}"), shown, Currency.CAD, locale, Modifier.fillMaxWidth(), model::money) { entered[f.input] = it }
+                        val source = when {
+                            f.input in entered -> model.t("taxEstimate.entered")
+                            f.from.isNotEmpty() -> model.t("taxEstimate.from", f.from.joinToString(", ") { model.t("packageItem.$it") })
+                            f.input == TaxInput.SPOUSE_NET_INCOME -> model.t("taxEstimate.noSpouse")
+                            else -> model.t("taxEstimate.notInBooks")
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(source, Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                            if (f.input in entered) TextButton(onClick = { entered.remove(f.input) }) { Text(model.t("taxEstimate.useBooks")) }
+                        }
+                        if (f.input == TaxInput.MEDICAL && result.householdMedical.signum() > 0) {
+                            Text(model.t("taxEstimate.householdMedical", cad(result.householdMedical)), style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
+        }
+        LazyColumn(Modifier.weight(1f)) {
+            val e = result.estimate
+            if (e == null) {
+                item(key = "none") { Text(model.t("taxEstimate.noRates", year.toString()), Modifier.padding(vertical = 12.dp)) }
+                return@LazyColumn
+            }
+            item(key = "result") {
+                OutlinedCard(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        ResultRow(model.t("taxEstimate.federalTax"), cad(e.federalTax))
+                        ResultRow(model.t("taxEstimate.provincialTax", model.t("province.${e.province}")), cad(e.provincialTax))
+                        ResultRow(model.t("taxEstimate.totalTax"), cad(e.totalTax), bold = true)
+                        ResultRow(model.t("taxEstimate.paid"), cad(e.paid))
+                        if (e.balance.signum() >= 0) ResultRow(model.t("taxEstimate.owing"), cad(e.balance), bold = true)
+                        else ResultRow(model.t("taxEstimate.refund"), cad(e.balance.negate()), bold = true)
+                        ResultRow(model.t("taxEstimate.averageRate"), percentText(e.averageRate, locale))
+                        ResultRow(model.t("taxEstimate.marginalRate"), percentText(e.marginalRate, locale))
+                        if (e.ratesFrom < year) {
+                            Text(model.t("taxEstimate.olderRates", e.ratesFrom.toString(), year.toString()), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
+            }
+            e.lines.groupBy { it.part }.forEach { (part, lines) ->
+                item(key = "p/$part") {
+                    val title = if (part == TaxPart.PROVINCIAL) model.t("taxEstimatePart.PROVINCIAL", model.t("province.${e.province}")) else model.t("taxEstimatePart.$part")
+                    Text(title, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                }
+                items(lines.withIndex().toList(), key = { "l/$part/${it.index}" }) { (_, l) ->
+                    val bold = l.kind in TOTAL_LINES
+                    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(model.t("taxEstimateLine.${l.kind}"), fontWeight = if (bold) FontWeight.Medium else null)
+                            lineDetail(model, l, locale)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline) }
+                        }
+                        Text(cad(l.amount), fontWeight = if (bold) FontWeight.Medium else null)
+                    }
+                    HorizontalDivider()
+                }
+            }
+            item(key = "notes") {
+                Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(model.t("taxEstimate.leftOut"), style = MaterialTheme.typography.bodySmall)
+                    Text(model.t("taxEstimate.rates"), style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
+    }
+}
+
+private val TOTAL_LINES = setOf(TaxLineKind.NET_INCOME, TaxLineKind.TAXABLE_INCOME, TaxLineKind.TAX_ON_INCOME, TaxLineKind.BASIC_TAX, TaxLineKind.TAX)
+
+@Composable
+private fun ResultRow(label: String, value: String, bold: Boolean = false) {
+    Row {
+        Text(label, Modifier.weight(1f), fontWeight = if (bold) FontWeight.Medium else null)
+        Text(value, fontWeight = if (bold) FontWeight.Medium else null)
+    }
+}
+
+/** How a line was worked out: a bracket's rate and the income taxed at it, a credit's rate and base. */
+private fun lineDetail(model: BooksModel, l: TaxLine, locale: java.util.Locale): String? {
+    fun cad(x: BigDecimal) = model.money(Money.of(x, Currency.CAD))
+    val base = l.base ?: return null
+    val rate = l.rate
+    val from = l.from
+    return when {
+        l.kind == TaxLineKind.BRACKET && rate != null && from != null -> model.t("taxEstimate.bracketDetail", percentText(rate, locale), cad(base), cad(from))
+        rate != null -> model.t("taxEstimate.rateOf", percentText(rate, locale), cad(base))
+        else -> model.t("taxEstimate.on", cad(base))
+    }
+}
+
+private fun percentText(rate: BigDecimal, locale: java.util.Locale): String =
+    java.text.NumberFormat.getNumberInstance(locale).apply { minimumFractionDigits = 1; maximumFractionDigits = 3 }.format(rate.movePointRight(2)) + " %"

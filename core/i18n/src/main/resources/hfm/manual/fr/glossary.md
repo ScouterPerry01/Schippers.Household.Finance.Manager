@@ -133,6 +133,16 @@ Voir [Impôts](taxes). Au Québec, les feuillets provinciaux s'appellent des rel
 - **RPC et RRQ** : le Régime de pensions du Canada et le Régime de rentes du Québec, financés par les revenus de travail et qui versent une rente de retraite.
 - **SV** : la Sécurité de la vieillesse, la pension fédérale versée dès 65 ans.
 - **AE** : l'assurance-emploi.
+- **Tranche d'imposition** : une partie du revenu imposable imposée à un même taux ; chaque dollar est imposé au taux de la tranche où il se trouve. Voir [Estimation](taxes#estimate).
+- **Taux marginal** : l'impôt sur un dollar de plus de revenu, fédéral et provincial ensemble. Une déduction comme une cotisation REER fait économiser à peu près ce taux.
+- **Taux moyen** : l'impôt sur le revenu total en proportion du revenu total.
+- **Revenu net et revenu imposable** : le revenu total moins les déductions (ligne 23600), et le revenu net moins certaines autres déductions (ligne 26000). Plusieurs crédits et prestations dépendent du revenu net.
+- **Montant personnel de base** : le revenu sur lequel personne ne paie d'impôt, accordé sous forme de crédit non remboursable. Le montant fédéral est moins élevé aux revenus élevés.
+- **Crédit non remboursable** : un montant (personnel de base, âge, RPC, AE, frais médicaux...) multiplié par le taux d'imposition le plus bas et retranché de l'impôt. Il ne peut pas rendre l'impôt négatif.
+- **Crédit d'impôt pour dividendes** : un crédit pour l'impôt des sociétés déjà payé sur les dividendes de sociétés canadiennes, calculé sur le montant majoré (imposable).
+- **Abattement du Québec** : une réduction de 16,5 % de l'impôt fédéral pour les résidents du Québec, qui paient plus d'impôt au Québec en échange.
+- **Surtaxe** : un impôt de plus sur l'impôt provincial au-delà d'un seuil (Ontario).
+- **Contribution-santé de l'Ontario** : un montant ajouté à l'impôt de l'Ontario, par paliers de revenu imposable, jusqu'à 900 $.
 
 ## La santé et la famille {#health-family}
 
