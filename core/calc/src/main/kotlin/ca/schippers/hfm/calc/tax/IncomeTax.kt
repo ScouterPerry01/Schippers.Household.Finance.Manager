@@ -18,9 +18,10 @@ enum class TaxInputGroup { INCOME, DEDUCTIONS, CREDITS, FAMILY, CARRY_FORWARD, P
  * A figure the income tax estimate starts from, in dollars for the tax year. Dividends are the
  * taxable (grossed-up) amounts, as on the slips; [SPOUSE_NET_INCOME] is left out when there is no
  * spouse or common-law partner (and then the person counts as single), and [RRSP_LIMIT] when the
- * deduction limit is not known. A [count] is a number of people rather than dollars.
+ * deduction limit is not known. A [count] is a number rather than dollars; a [quebec] figure only
+ * matters to a Quebec resident.
  */
-enum class TaxInput(val group: TaxInputGroup, val count: Boolean = false) {
+enum class TaxInput(val group: TaxInputGroup, val count: Boolean = false, val quebec: Boolean = false) {
     EMPLOYMENT(TaxInputGroup.INCOME),
 
     /** Pension income that qualifies for the pension income amount (an employer pension; a RRIF or annuity from 65). */
@@ -72,6 +73,9 @@ enum class TaxInput(val group: TaxInputGroup, val count: Boolean = false) {
     /** Of [CHILDREN], those under 6. */
     CHILDREN_UNDER_6(TaxInputGroup.FAMILY, count = true),
 
+    /** Months of the year covered by Quebec's public prescription drug insurance plan (RAMQ); 12 when left out. */
+    DRUG_PLAN_MONTHS(TaxInputGroup.FAMILY, count = true, quebec = true),
+
     /** Unused federal tuition amounts of earlier years. */
     TUITION_CARRIED(TaxInputGroup.CARRY_FORWARD),
 
@@ -115,7 +119,7 @@ enum class TaxLineKind {
     GST_CREDIT, CHILD_BENEFIT,
     CREDIT_AMOUNTS, CREDITS, SUPPLEMENTAL_CREDIT, DONATIONS, DIVIDENDS, BASIC_TAX,
     ADJUSTED_TAXABLE_INCOME, MINIMUM_TAX, AMT_ADDITIONAL, AMT_CARRYOVER,
-    ABATEMENT, SURTAX, TAX_REDUCTION, HEALTH_PREMIUM, TAX, OAS_RECOVERY, OTHER_TOTAL,
+    ABATEMENT, SURTAX, TAX_REDUCTION, HEALTH_PREMIUM, TAX, OAS_RECOVERY, HEALTH_FUND, DRUG_PREMIUM, OTHER_TOTAL,
 }
 
 /** A balance carried from year to year. */
@@ -173,11 +177,15 @@ data class TaxEstimate(
  * Estimates a person's federal and provincial or territorial income tax from their year's figures,
  * with the rates in effect on January 1 of the year (Rates and rules, area incometax): brackets,
  * the basic personal, age, spouse, Canada employment, pension income, CPP or QPP, EI and medical
- * expense amounts, the donation and dividend tax credits, Ontario's surtax and health premium, and
- * for Quebec residents the federal abatement and Quebec's own tax. It leaves out what the books
- * cannot know or that is rarely needed (tuition and transfers, carry-forwards, low-income
- * reductions, refundable credits, the OAS recovery, alternative minimum tax, political
- * contributions); it is an estimate, not a return.
+ * expense amounts, tuition and its transfer, the donation and dividend tax credits, the balances
+ * carried forward (tuition, donations, net capital losses, RRSP contributions, minimum tax),
+ * Ontario's surtax and health premium, the alternative minimum tax, the OAS recovery tax, the
+ * refundable credits (workers benefit, medical expense supplement), and for Quebec residents the
+ * federal abatement, Quebec's own tax, minimum tax, work premium and refundable medical credit,
+ * health services fund contribution and drug insurance premium. The GST/HST credit and the Canada
+ * child benefit are shown apart. It leaves out what the books cannot know or that is rarely needed
+ * (other low-income reductions and refundable credits, political contributions, foreign tax
+ * credits); it is an estimate, not a return.
  */
 object IncomeTax {
 
@@ -326,9 +334,10 @@ object IncomeTax {
             lines += TaxLine(TaxPart.OTHER, TaxLineKind.OAS_RECOVERY, recovery, money(beforeRecovery - oasThreshold), oasRate, money(oasThreshold))
             other += recovery
         }
+        if (quebec) other += quebecContributions(on, inputs, total, net, spouse, familyOf(inputs, spouse), lines)
         if (other.signum() > 0) lines += TaxLine(TaxPart.OTHER, TaxLineKind.OTHER_TOTAL, other)
 
-        val family = Family(spouse, p(TaxInput.SPOUSE_WORKING_INCOME), v(TaxInput.CHILDREN).max(BigDecimal.ZERO).toInt(), v(TaxInput.CHILDREN_UNDER_6).max(BigDecimal.ZERO).toInt())
+        val family = familyOf(inputs, spouse)
         val refundable = refundable(on, province, inputs, net, family, lines)
         benefits(on, net, family, lines)
 
@@ -338,6 +347,49 @@ object IncomeTax {
             year, province, money(total), money(net), money(taxable), federal, provincial, money(paid), BigDecimal.ZERO, BigDecimal.ZERO, lines, ratesFrom,
             carry.sortedBy { it.kind }, refundable, other,
         )
+    }
+
+    private fun familyOf(inputs: Map<TaxInput, BigDecimal>, spouse: BigDecimal?): Family {
+        fun count(i: TaxInput) = (inputs[i] ?: BigDecimal.ZERO).max(BigDecimal.ZERO).toInt()
+        return Family(spouse, (inputs[TaxInput.SPOUSE_WORKING_INCOME] ?: BigDecimal.ZERO).max(BigDecimal.ZERO), count(TaxInput.CHILDREN), count(TaxInput.CHILDREN_UNDER_6))
+    }
+
+    /**
+     * Quebec's contributions on the return: the health services fund contribution (Schedule F), 1 %
+     * of income other than employment income, OAS and the dividend gross-up above a threshold, up to
+     * a first cap, then 1 % above a second threshold up to the maximum; and the prescription drug
+     * insurance premium (Schedule K), a rate of family income above an exemption that depends on
+     * the household, up to the year's maximum, for the months covered by the public plan.
+     */
+    private fun quebecContributions(
+        on: LocalDate, inputs: Map<TaxInput, BigDecimal>, total: BigDecimal, net: BigDecimal, spouse: BigDecimal?, family: Family, lines: MutableList<TaxLine>,
+    ): BigDecimal {
+        fun p(i: TaxInput) = (inputs[i] ?: BigDecimal.ZERO).max(BigDecimal.ZERO)
+        val amt = Rules.list("tax.amt", on)
+        val grossUp = p(TaxInput.ELIGIBLE_DIVIDENDS).multiply(amt[5]) + p(TaxInput.OTHER_DIVIDENDS).multiply(amt[6])
+        val base = (total - p(TaxInput.EMPLOYMENT) - p(TaxInput.OAS) - grossUp).max(BigDecimal.ZERO)
+        val (first, second, rate, cap, max) = Rules.list("tax.qc.fss", on)
+        val fss = when {
+            base <= first -> BigDecimal.ZERO
+            base <= second -> money((base - first).multiply(rate).min(cap))
+            else -> money((cap + (base - second).multiply(rate)).min(max))
+        }
+        if (fss.signum() > 0) {
+            val from = if (base <= second) first else second
+            lines += TaxLine(TaxPart.OTHER, TaxLineKind.HEALTH_FUND, fss, money(base - from), rate, money(from))
+        }
+
+        val d = Rules.list("tax.qc.drugPremium", on)
+        val kids = family.children.coerceAtMost(2)
+        val exemption = if (family.couple) d[4 + kids] else d[1 + kids]
+        val familyIncome = quebecNet(on, inputs, net) + (spouse ?: BigDecimal.ZERO)
+        val excess = (familyIncome - exemption).max(BigDecimal.ZERO)
+        val (low, high) = if (family.couple) d[10] to d[11] else d[8] to d[9]
+        val formula = excess.min(d[7]).multiply(low) + (excess - d[7]).max(BigDecimal.ZERO).multiply(high)
+        val months = (inputs[TaxInput.DRUG_PLAN_MONTHS] ?: BigDecimal(12)).max(BigDecimal.ZERO).min(BigDecimal(12))
+        val premium = money(formula.min(d[0]).multiply(months).divide(BigDecimal(12), 10, RoundingMode.HALF_UP))
+        if (premium.signum() > 0) lines += TaxLine(TaxPart.OTHER, TaxLineKind.DRUG_PREMIUM, premium, money(excess), null, money(exemption))
+        return fss + premium
     }
 
     /** The household: a spouse's net income (null: no spouse) and working income, the children under 18 and under 6. */

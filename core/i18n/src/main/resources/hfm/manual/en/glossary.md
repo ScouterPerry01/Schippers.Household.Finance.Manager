@@ -148,6 +148,8 @@ See [Taxes](taxes). In Quebec, provincial slips are called Relevés (RL).
 - **Canada workers benefit (CWB)**: a refundable credit for people and families with low working income, which rises with working income above a threshold and falls as family net income rises. Quebec, Alberta and Nunavut set their own figures.
 - **OAS recovery tax**: the repayment of Old Age Security by people whose net income is above a threshold: 15 % of the excess, up to the OAS received. Also called the OAS clawback. See [OAS recovery tax and minimum tax](taxes#estimate-minimum-tax).
 - **Alternative minimum tax (AMT)**: a second calculation of tax, at a flat rate above a large exemption, with capital gains in full and fewer deductions and credits; it applies when it is more than the regular tax, mostly in a year with a large capital gain. What it adds can be recovered in the next seven years.
+- **Health services fund contribution (FSS)**: a Quebec contribution, on the return, of 1 % of income other than employment income above a threshold, up to $1,000.
+- **RAMQ prescription drug insurance premium**: what a Quebec resident covered by the public prescription drug plan pays on the return, by family income, up to a yearly maximum; people with a group plan all year do not pay it.
 - **Carry-forward**: an amount not used in its year that can be claimed in a later year: unused tuition, donations (up to five years), net capital losses, unused RRSP contributions. The notice of assessment gives most of them.
 
 ## Health and family {#health-family}

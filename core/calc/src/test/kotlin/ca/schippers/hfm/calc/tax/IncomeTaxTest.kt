@@ -299,6 +299,34 @@ class IncomeTaxTest {
     }
 
     @Test
+    fun `a Quebec retiree pays the health services fund contribution and the drug insurance premium`() {
+        val inputs = mapOf(TaxInput.PENSION to d("70000"), TaxInput.OAS to d("8000"), TaxInput.INTEREST to d("10000"))
+        val e = IncomeTax.estimate(2025, Province.QC, inputs, age65 = true)
+        // Health services fund: 88,000 less the OAS is 80,000, above 63,060: 150 + 1 % of 16,940.
+        assertEquals(d("319.40"), e.line(TaxPart.OTHER, TaxLineKind.HEALTH_FUND))
+        // Drug insurance: 88,000 is far above the 19,890 exemption: the year's maximum, 755, for 12 months.
+        assertEquals(d("755.00"), e.line(TaxPart.OTHER, TaxLineKind.DRUG_PREMIUM))
+        assertEquals(d("1074.40"), e.other)
+        // Covered by a group plan half the year: half the premium.
+        val half = IncomeTax.estimate(2025, Province.QC, inputs + (TaxInput.DRUG_PLAN_MONTHS to d("6")), age65 = true)
+        assertEquals(d("377.50"), half.line(TaxPart.OTHER, TaxLineKind.DRUG_PREMIUM))
+        assertTrue(IncomeTax.estimate(2025, Province.QC, inputs + (TaxInput.DRUG_PLAN_MONTHS to d("0")), age65 = true).lines.none { it.kind == TaxLineKind.DRUG_PREMIUM })
+    }
+
+    @Test
+    fun `the drug insurance premium at a low income, and no Quebec contributions outside Quebec`() {
+        // Pay of 26,000: the deduction for workers (1,420) leaves 24,580; 4,690 above 19,890 at 7.84 % = 367.70.
+        // Employment income gives no health services fund contribution.
+        val e = IncomeTax.estimate(2025, Province.QC, pay("26000"), age65 = false)
+        assertEquals(d("367.70"), e.line(TaxPart.OTHER, TaxLineKind.DRUG_PREMIUM))
+        assertTrue(e.lines.none { it.kind == TaxLineKind.HEALTH_FUND })
+        // Self-employment of 20,000: 1 % of 20,000 − 18,130.
+        val self = IncomeTax.estimate(2025, Province.QC, mapOf(TaxInput.BUSINESS to d("20000")), age65 = false)
+        assertEquals(d("18.70"), self.line(TaxPart.OTHER, TaxLineKind.HEALTH_FUND))
+        assertTrue(IncomeTax.estimate(2025, Province.ON, mapOf(TaxInput.BUSINESS to d("90000")), age65 = false).lines.none { it.part == TaxPart.OTHER })
+    }
+
+    @Test
     fun `a year before the first rates has no estimate`() {
         assertFailsWith<RuleException> { IncomeTax.estimate(2023, Province.ON, pay("50000"), age65 = false) }
     }

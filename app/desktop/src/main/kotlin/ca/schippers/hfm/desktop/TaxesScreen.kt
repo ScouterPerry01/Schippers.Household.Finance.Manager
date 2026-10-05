@@ -47,6 +47,7 @@ import ca.schippers.hfm.books.SlipChecklistService
 import ca.schippers.hfm.books.SlipStatus
 import ca.schippers.hfm.books.SlipType
 import ca.schippers.hfm.books.TaxAuthority
+import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.calc.tax.TaxInput
 import ca.schippers.hfm.calc.tax.TaxInputGroup
 import ca.schippers.hfm.calc.tax.TaxLine
@@ -547,7 +548,7 @@ private fun EstimateTab(model: BooksModel) {
                     }
                 }
             }
-            result.figures.groupBy { it.input.group }.forEach { (group, figures) ->
+            result.figures.filter { !it.input.quebec || result.province == Province.QC }.groupBy { it.input.group }.forEach { (group, figures) ->
                 item(key = "g/$group") {
                     Column(Modifier.padding(top = 12.dp, bottom = 4.dp)) {
                         Text(model.t("taxEstimateGroup.$group"), fontWeight = FontWeight.Medium)
@@ -678,13 +679,14 @@ private fun EstimateTab(model: BooksModel) {
 }
 
 /** Figures where a blank amount means "none" rather than zero. */
-private val BLANK_IS_NONE = setOf(TaxInput.SPOUSE_NET_INCOME, TaxInput.RRSP_LIMIT)
+private val BLANK_IS_NONE = setOf(TaxInput.SPOUSE_NET_INCOME, TaxInput.RRSP_LIMIT, TaxInput.DRUG_PLAN_MONTHS)
 
 /** What the line under an empty figure says, where it is not "Not in the books". */
 private val EMPTY_HINTS = mapOf(
     TaxInput.SPOUSE_NET_INCOME to "taxEstimate.noSpouse",
     TaxInput.RRSP_LIMIT to "taxEstimate.noRrspLimit",
     TaxInput.TUITION_TO_TRANSFER to "taxEstimate.noTransfer",
+    TaxInput.DRUG_PLAN_MONTHS to "taxEstimate.drugPlanAllYear",
 )
 
 /** A further explanation under some figures. */
@@ -698,6 +700,7 @@ private val INPUT_HINTS = mapOf(
     TaxInput.CHILDREN to "taxEstimateHint.CHILDREN",
     TaxInput.OAS to "taxEstimateHint.OAS",
     TaxInput.AMT_CARRIED to "taxEstimateHint.AMT_CARRIED",
+    TaxInput.DRUG_PLAN_MONTHS to "taxEstimateHint.DRUG_PLAN_MONTHS",
 )
 
 private val TOTAL_LINES = setOf(

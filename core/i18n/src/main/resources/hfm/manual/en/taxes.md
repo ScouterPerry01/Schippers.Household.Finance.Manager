@@ -288,6 +288,7 @@ Family: the household situation that the spouse amount, the refundable credits a
 - **Spouse's or partner's net income**: empty means the person has no spouse or common-law partner, and counts as single. Enter the net income of a spouse or common-law partner: it claims the spouse amount, which falls as their income rises, and makes the family figures those of a couple (the workers benefit, the GST/HST credit, the child benefit and, in Quebec, the work premium and the premiums). In Quebec, it is also added to the person's own income to form the family income that reduces the age and retirement amounts and sets the medical expense threshold.
 - **Spouse's or partner's working income**: their employment and self-employment income, for a couple's Canada workers benefit and Quebec work premium. Empty counts as zero.
 - **Children under 18 living with this person** and **Of whom under 6**: counted from the household members of kind child who have a birth date (**From Household members**), by their age on December 31. Children make a single person a single parent for the workers benefit and the GST/HST credit, and give the Canada child benefit. Change them when the members list is not complete, or for a parent who does not live with the children.
+- **Months covered by the public prescription drug plan (Quebec)**: shown for a Quebec resident only. Empty means covered all year (12 months), the usual case for someone without a group plan. Enter 0 for a year covered by a group plan (through work, or a spouse's or parent's plan) or when exempt (under 18, a full-time student under 26 living with their parents, last-resort assistance, 65 or older with at least 94 % of the maximum Guaranteed Income Supplement), or the number of months covered by the public plan. The premium is counted for those months.
 
 Carried forward from earlier years: the balances that last year's notice of assessment gives. Each is kept for this person and year. Empty means none.
 
@@ -313,12 +314,12 @@ The box at the top right gives:
 - **Federal tax**: the federal tax after credits (after the Quebec abatement for a Quebec resident).
 - The provincial or territorial tax, named after the province or territory: after credits, with any surtax, reduction or health premium.
 - **Total income tax**: the two together.
-- **Other amounts on the return**: shown when there is any: the OAS recovery tax. It is added to the balance.
+- **Other amounts on the return**: shown when there are any: the OAS recovery tax and, in Quebec, the contribution to the health services fund and the prescription drug insurance premium. They are added to the balance.
 - **Refundable credits**: shown when there are any: the Canada workers benefit, the refundable medical expense supplement and, in Quebec, the work premium and the refundable credit for medical expenses. They come off the balance even below zero.
 - **Deducted at source and instalments**: **Income tax deducted** and **Instalments paid**.
 - **Balance owing** or **Refund**: the total income tax, plus the other amounts on the return, less the refundable credits and what was already paid. A balance owing is due by April 30 of the next year.
 - **Average rate**: the total income tax as a share of total income.
-- **Marginal rate**: the tax on one more dollar of ordinary income (such as interest), federal and provincial together, with the OAS recovery tax; it is what an RRSP deduction saves, roughly, on each dollar.
+- **Marginal rate**: the tax on one more dollar of ordinary income (such as interest), federal and provincial together, with the OAS recovery tax and Quebec's contributions; it is what an RRSP deduction saves, roughly, on each dollar.
 
 When the rates for the year are not yet in Rates and rules, a red line says that those of the latest year known are used.
 
@@ -357,7 +358,7 @@ Federal, then the province or territory:
 - **Health premium**: the Ontario Health Premium, by tiers of taxable income.
 - **Tax**: the federal, or the provincial or territorial, tax.
 
-Other amounts on the return, when there are any: the **OAS recovery tax**, with **Other amounts on the return** adding them up.
+Other amounts on the return, when there are any: the **OAS recovery tax**, and in Quebec the **Contribution to the health services fund** and the **Prescription drug insurance premium**, with **Other amounts on the return** adding them up.
 
 Refundable credits, when the person has any: each with its amount; when it is reduced for income, a line **Before the reduction** and a line **Reduction for income** (a rate of the income above a threshold) come before it. **Refundable credits** adds them up. See [Refundable credits and benefits](taxes#estimate-refundable).
 
@@ -375,6 +376,8 @@ A person who lives in Quebec on December 31 pays federal tax, reduced by the Que
 - The medical expense credit is 20 % of the expenses above 3 % of family income.
 - QPP replaces CPP: the base part of the contributions is a federal credit, and the rest a deduction on both returns.
 - Net capital losses of other years are deducted from Quebec income as on the federal return.
+- **Contribution to the health services fund** (Schedule F): 1 % of income other than employment income (pensions, investment and self-employment income; not OAS, and dividends at their actual amount) above a threshold ($18,130 for 2025), at most $150; above a second threshold ($63,060 for 2025), $150 plus 1 % of the income above it, at most $1,000.
+- **Prescription drug insurance premium** (Schedule K): for the months covered by the RAMQ public plan, a rate of family income (the person's and their spouse's Quebec net income) above an exemption that depends on the household ($19,890 for a person alone in 2025, more for a couple or with children), up to the year's maximum ($755 for 2025). A couple each pays their own, on their family income at the couple's rates.
 - **Tuition amount**: Quebec's credit is 8 % of the tuition fees, on a line of its own after the donation credit. The student uses it as far as it brings the Quebec tax to zero; what is left of this year's fees can go to a parent or grandparent (not to a spouse), and the rest is carried forward.
 
 ### OAS recovery tax and minimum tax {#estimate-minimum-tax}
@@ -416,13 +419,13 @@ The estimate claims each balance as fully as it can. On the return, some of them
 
 ### What the estimate leaves out {#estimate-left-out}
 
-The estimate does not count: amounts transferred from a spouse or child other than tuition, the education and textbook amounts some provinces and territories still have, the Canada training credit, non-capital losses of other years, low-income tax reductions other than Ontario's and British Columbia's, the disability supplement of the Canada workers benefit and the other refundable credits and benefits (Quebec's solidarity credit, provincial benefits), the adjustments of the minimum tax for stock options, donated securities and the capital gains exemption, the minimum tax carried forward on the Quebec return, political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, its health services fund contribution and its prescription drug insurance premium, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
+The estimate does not count: amounts transferred from a spouse or child other than tuition, the education and textbook amounts some provinces and territories still have, the Canada training credit, non-capital losses of other years, low-income tax reductions other than Ontario's and British Columbia's, the disability supplement of the Canada workers benefit and the other refundable credits and benefits (Quebec's solidarity credit, provincial benefits), the adjustments of the minimum tax for stock options, donated securities and the capital gains exemption, the minimum tax carried forward on the Quebec return, political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, the deductions and exclusions of the health services fund contribution other than employment income and OAS, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
 
 ### Where the rates come from {#estimate-rates}
 
 @index: income tax rates; tax rates by province; rate changes
 
-Every rate, amount and threshold the estimate uses (brackets, basic personal amounts, credit rates, the age, spouse, pension and employment amounts, medical expense thresholds, donation and dividend credit rates, Ontario's surtax and health premium, CPP and QPP, Quebec's deduction for workers, the tuition credits and their transfer maximums, the donation limit, the Canada workers benefit, the refundable medical expense supplements, Quebec's work premium, the GST/HST credit, the Canada child benefit, the OAS recovery tax and the alternative minimum taxes) is a value in [Rates and rules](rates-rules), under **Income tax**, by date and by province or territory. The app comes with the official figures for 2024, 2025 and 2026, each with its source. An administrator can add a value for a year or a province there, for example when a budget changes a rate; the estimate uses it from its date. A year whose figures are not there yet uses the latest ones.
+Every rate, amount and threshold the estimate uses (brackets, basic personal amounts, credit rates, the age, spouse, pension and employment amounts, medical expense thresholds, donation and dividend credit rates, Ontario's surtax and health premium, CPP and QPP, Quebec's deduction for workers, the tuition credits and their transfer maximums, the donation limit, the Canada workers benefit, the refundable medical expense supplements, Quebec's work premium, the GST/HST credit, the Canada child benefit, the OAS recovery tax, the alternative minimum taxes, and Quebec's health services fund contribution and prescription drug insurance premium) is a value in [Rates and rules](rates-rules), under **Income tax**, by date and by province or territory. The app comes with the official figures for 2024, 2025 and 2026, each with its source. An administrator can add a value for a year or a province there, for example when a budget changes a rate; the estimate uses it from its date. A year whose figures are not there yet uses the latest ones.
 
 ## Through the year: what feeds the tax screens {#through-the-year}
 
