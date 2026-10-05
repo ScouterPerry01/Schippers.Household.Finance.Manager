@@ -1,0 +1,8 @@
+-- Version 22 to 23: estate records, where a person's will and other papers are (EST-01, EST-02).
+
+CREATE TABLE estate_record (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL UNIQUE,
+    plan TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+);

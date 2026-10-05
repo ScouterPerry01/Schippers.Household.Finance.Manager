@@ -74,13 +74,22 @@ fun HealthScreen(model: BooksModel) {
     var personId by remember { mutableStateOf(model.healthSubjectId) }
     var tab by remember { mutableStateOf(HealthTab.MEDICATIONS) }
     var edit by remember { mutableStateOf<HealthEdit?>(null) }
+    var summaryFor by remember { mutableStateOf<String?>(null) }
     val person = people.firstOrNull { it.id == personId } ?: people.firstOrNull()
+    summaryFor?.let { id ->
+        val name = people.firstOrNull { it.id == id }?.name.orEmpty()
+        ExportPdfDialog(model, model.t("health.summaryTitle", name), healthSections(model, id)) { summaryFor = null }
+    }
 
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(model.t("nav.health"), style = MaterialTheme.typography.titleLarge)
             if (person != null) Picker(model.t("health.person"), people, person, { it.name }, Modifier.width(260.dp)) { personId = it.id }
             Box(Modifier.weight(1f))
+            // HLT-09: a printable summary for appointments and emergencies.
+            if (person != null && !person.isPet) {
+                OutlinedButton(onClick = { summaryFor = person.id }) { Text(model.t("health.summary")) }
+            }
             if (person != null && tab != HealthTab.PROVIDERS) {
                 Button(onClick = { edit = newRecord(model, tab, person) }) { Text(model.t("health.add.${tab.name}")) }
             }

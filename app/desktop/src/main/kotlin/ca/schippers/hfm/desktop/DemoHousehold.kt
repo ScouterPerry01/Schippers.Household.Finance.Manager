@@ -1,7 +1,10 @@
 package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Account
+import ca.schippers.hfm.books.ContactRole
 import ca.schippers.hfm.books.DeductionKind
+import ca.schippers.hfm.books.EstateContact
+import ca.schippers.hfm.books.EstatePlan
 import ca.schippers.hfm.books.DonationReceipt
 import ca.schippers.hfm.books.PayDeduction
 import ca.schippers.hfm.books.PayEarning
@@ -268,6 +271,25 @@ object DemoHousehold {
             books.donations.setReceipt(gala.id, DonationReceipt(l("Fondation du CHU de Québec", "CHEO Foundation"), null, "2026-0412", cad("150.00"), received = true))
             add(TransactionDraft(chequing.id, LocalDate(today.year, 6, 2), cad("-100.00"), l("Association de circonscription", "Riding association"), listOf(SplitDraft(cat("gifts.political"), cad("-100.00"))), memberId = sam.id))
         }
+        // EST-02: where Alex's papers are and who to call.
+        books.estate.save(
+            alex.id, group,
+            EstatePlan(
+                willLocation = l("Chez la notaire, Me Gagnon (testament notarié)", "Lawyer's office, Ms. Patel (original); copy in the filing cabinet"),
+                willDate = "2023-04-18",
+                powerOfAttorneyLocation = l("Avec le testament, chez la notaire", "Filing cabinet, top drawer"),
+                mandateLocation = l("Mandat de protection, chez la notaire", "Power of attorney for personal care, filing cabinet"),
+                safeDepositBox = l("Desjardins Sainte-Foy, coffret 214", "TD Bank Sparks St., box 214"),
+                safeDepositKeys = l("Tiroir du bureau, enveloppe bleue", "Desk drawer, blue envelope"),
+                digitalAccounts = l("Trousse d'urgence du gestionnaire de mots de passe, dans le coffret", "Password manager's emergency kit, in the safe deposit box"),
+                organDonor = true,
+                contacts = listOf(
+                    EstateContact(if (english) ContactRole.EXECUTOR else ContactRole.LIQUIDATOR, "Sam"),
+                    EstateContact(if (english) ContactRole.LAWYER else ContactRole.NOTARY, l("Me Isabelle Gagnon", "Priya Patel"), l("Gagnon notaires", "Patel Law"), l("418-555-0142", "613-555-0142")),
+                    EstateContact(ContactRole.FINANCIAL_ADVISOR, l("Marc Lavoie", "Daniel Wong"), l("Desjardins", "TD Wealth"), l("418-555-0190", "613-555-0190")),
+                ),
+            ),
+        )
         // TAX-03: Sam pays quarterly instalments on freelance income.
         books.instalments.save(chequing.id, sam.id, today.year, TaxAuthority.CRA, List(4) { cad("450.00") })
         for (month in listOf(3, 6, 9)) {

@@ -76,6 +76,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val customReports = CustomReportService(this)
     val savedReports = SavedReportService(this)
     val yearReview = YearReviewService(this)
+    val estate = EstateService(this)
     val sync = SyncService(this)
     val quicken = QifImportService(this)
     val users = UserService(this)

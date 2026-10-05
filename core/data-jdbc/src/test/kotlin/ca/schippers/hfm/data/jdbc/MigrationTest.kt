@@ -452,6 +452,20 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 22 ledgers gain estate records`() {
+        val file = temp.resolve("ledger22.db")
+        older("../data/src/main/sqldelight/ledger/schemas/22.db", file, 22).close()
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).estateQueries
+            q.upsertEstateRecord("e", "m", "{}", 0)
+            q.upsertEstateRecord("e", "m", """{"willLocation":"Notary"}""", 1)
+            assertEquals("""{"willLocation":"Notary"}""", q.estateRecords().executeAsOne().plan, "updated in place")
+        }
+    }
+
+    @Test
     fun `version 6 core databases gain saved reports`() {
         val file = temp.resolve("core6.db")
         older("../data/src/main/sqldelight/core/schemas/6.db", file, 6).use { driver ->
