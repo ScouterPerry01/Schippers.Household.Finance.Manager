@@ -3,31 +3,39 @@
 # (on January 1 of that year). The national ones (New Year, Good Friday, Victoria Day, Canada Day,
 # Labour Day, Thanksgiving, Remembrance Day, Christmas, Boxing Day) are always observed.
 
-# Third Monday of February: Family Day (AB, BC, NB, ON, SK), Louis Riel Day (MB), Islander Day (PE), Heritage Day (NS).
-# B.C. kept it on the second Monday from 2013 to 2018, and P.E.I. in 2009; the app uses the third Monday.
+# A Monday of February: Family Day (AB, BC, NB, ON, SK), Louis Riel Day (MB), Islander Day (PE), Heritage Day (NS).
 rule holiday.familyDay YES_NO province
 holiday.familyDay | - | 2000-01-01 | false | No February holiday by default
-holiday.familyDay | AB | 2000-01-01 | true | Government of Alberta, Employment Standards Code (Family Day since 1990)
-holiday.familyDay | SK | 2007-01-01 | true | Government of Saskatchewan, Employment Act (Family Day since 2007)
-holiday.familyDay | ON | 2008-01-01 | true | Government of Ontario, Employment Standards Act (Family Day since 2008)
-holiday.familyDay | MB | 2008-01-01 | true | Government of Manitoba, Employment Standards Code (Louis Riel Day since 2008)
-holiday.familyDay | PE | 2009-01-01 | true | Government of Prince Edward Island, Employment Standards Act (Islander Day since 2009)
-holiday.familyDay | BC | 2013-01-01 | true | Government of British Columbia, Employment Standards Act (Family Day since 2013; third Monday since 2019)
-holiday.familyDay | NS | 2015-01-01 | true | Government of Nova Scotia, Labour Standards Code (Heritage Day since 2015)
-holiday.familyDay | NB | 2018-01-01 | true | Government of New Brunswick, Employment Standards Act (Family Day since 2018)
+holiday.familyDay | AB | 1990-01-01 | true | Government of Alberta, Family Day Act, RSA 2000 c. F-4 (1989 c. F-1.5: the 3rd Monday in February in each year, Alberta Family Day); Alberta general holidays
+holiday.familyDay | SK | 2007-01-01 | true | Government of Saskatchewan, news release February 16, 2007 (Saskatchewan celebrates first-ever Family Day)
+holiday.familyDay | ON | 2008-01-01 | true | Ontario Gazette, October 27, 2007 (Family Day, the third Monday of February of every year); Ontario, Your guide to the Employment Standards Act, public holidays
+holiday.familyDay | MB | 2008-01-01 | true | Manitoba, The Statutory Holidays Act (Various Acts Amended), S.M. 2007 c. 18 (Louis Riel Day, the third Monday in February, added to the Employment Standards Code)
+holiday.familyDay | PE | 2009-01-01 | true | Prince Edward Island, Islander Day Act (2008 c. 48; 2009 c. 76); Employment Standards Act
+holiday.familyDay | BC | 2013-01-01 | true | Government of British Columbia, news release 2018PREM0018-000188 (Family Day was established in British Columbia in 2013); Family Day Act, S.B.C. 2012 c. 24
+holiday.familyDay | NS | 2015-01-01 | true | Government of Nova Scotia, news release February 6, 2015 (Nova Scotia celebrates first Heritage Day, the third Monday in February)
+holiday.familyDay | NB | 2018-01-01 | true | New Brunswick, An Act Respecting Family Day, S.N.B. 2017 c. 38 (in force January 1, 2018; the third Monday in February)
+
+# Which Monday of February the February holiday falls on (3: the third).
+rule holiday.familyDay.week NUMBER province
+holiday.familyDay.week | - | 1990-01-01 | 3 | The third Monday of February (Family Day Act of Alberta; Ontario, Manitoba, Nova Scotia, New Brunswick and the Islander Day Act)
+holiday.familyDay.week | PE | 2009-01-01 | 2 | Treasury Board of Canada Secretariat, Prince Edward Island designated paid holiday, January 19, 2009 (Islander Day, the 2nd Monday of February)
+holiday.familyDay.week | PE | 2010-01-01 | 3 | Prince Edward Island, Islander Day Act, as amended 2009 c. 76 (the third Monday in February)
+holiday.familyDay.week | BC | 2013-01-01 | 2 | Government of British Columbia, news release 2018PREM0018-000188 (the government of the day decided on the second Monday)
+holiday.familyDay.week | BC | 2019-01-01 | 3 | Government of British Columbia, B.C. Reg. 149/2012 as amended by B.C. Reg. 75/2018 (the third Monday of February); news release 2018PREM0018-000188
 
 # First Monday of August: Civic Holiday, B.C. Day, Heritage Day (AB), Terry Fox Day (MB), New Brunswick Day, Natal Day (NS), Saskatchewan Day.
 rule holiday.civicHoliday YES_NO province
 holiday.civicHoliday | - | 2000-01-01 | false | No August holiday by default
-holiday.civicHoliday | AB | 2000-01-01 | true | Government of Alberta (Heritage Day, observed by banks)
-holiday.civicHoliday | BC | 2000-01-01 | true | Government of British Columbia, Employment Standards Act (B.C. Day)
-holiday.civicHoliday | MB | 2000-01-01 | true | Government of Manitoba (Civic Holiday, observed by banks)
-holiday.civicHoliday | NB | 2000-01-01 | true | Government of New Brunswick, Employment Standards Act (New Brunswick Day)
-holiday.civicHoliday | NS | 2000-01-01 | true | Government of Nova Scotia (Natal Day, observed by banks)
-holiday.civicHoliday | NT | 2000-01-01 | true | Government of the Northwest Territories, Employment Standards Act (Civic Holiday)
-holiday.civicHoliday | NU | 2000-01-01 | true | Government of Nunavut, Labour Standards Act (Civic Holiday)
-holiday.civicHoliday | ON | 2000-01-01 | true | Government of Ontario (Civic Holiday, observed by banks)
-holiday.civicHoliday | SK | 2000-01-01 | true | Government of Saskatchewan, Employment Act (Saskatchewan Day)
+# In AB, MB, NS and ON it is not a general holiday under employment standards law, but banks close.
+holiday.civicHoliday | AB | 2000-01-01 | true | Government of Alberta, Alberta general holidays (Heritage Day, first Monday in August, an optional general holiday); Bank of Canada, Civic Holiday (provincial holiday: Alberta, British Columbia, Nova Scotia and Ontario)
+holiday.civicHoliday | BC | 2000-01-01 | true | Government of British Columbia, Employment Standards Act, s. 1 (statutory holiday: British Columbia Day)
+holiday.civicHoliday | MB | 2000-01-01 | true | Government of Manitoba, general holidays fact sheet (Terry Fox Day is not a general holiday); observed by banks (not confirmed from an official source)
+holiday.civicHoliday | NB | 2000-01-01 | true | Government of New Brunswick, Employment Standards, holidays (paid public holidays: New Brunswick Day)
+holiday.civicHoliday | NS | 2000-01-01 | true | Government of Nova Scotia, holiday chart (Natal Day is commonly recognized but not a paid general holiday); Bank of Canada, Civic Holiday (provincial holiday)
+holiday.civicHoliday | NT | 2000-01-01 | true | Government of the Northwest Territories, Employment Standards Act, s. 22(1)(f) (the first Monday in August)
+holiday.civicHoliday | NU | 2000-01-01 | true | Government of Nunavut, Labour Standards Act, s. 1 (general holiday: the first Monday in August)
+holiday.civicHoliday | ON | 2000-01-01 | true | Government of Ontario, Your guide to the Employment Standards Act (the first Monday in August is not a public holiday under the ESA); Bank of Canada, Civic Holiday (provincial holiday)
+holiday.civicHoliday | SK | 2000-01-01 | true | Government of Saskatchewan, list of Saskatchewan public holidays (Saskatchewan Day)
 
 # June 24: Fête nationale du Québec.
 rule holiday.fetNationale YES_NO province
@@ -37,13 +45,13 @@ holiday.fetNationale | QC | 2000-01-01 | true | Gouvernement du Québec, Loi sur
 # June 21: National Indigenous Peoples Day.
 rule holiday.indigenousPeoplesDay YES_NO province
 holiday.indigenousPeoplesDay | - | 2000-01-01 | false | Northwest Territories and Yukon only
-holiday.indigenousPeoplesDay | NT | 2001-01-01 | true | Government of the Northwest Territories, Employment Standards Act (since 2001)
-holiday.indigenousPeoplesDay | YT | 2017-01-01 | true | Government of Yukon, Employment Standards Act, SY 2017 c 1 (since 2017)
+holiday.indigenousPeoplesDay | NT | 2002-01-01 | true | Government of the Northwest Territories, Minister statement June 14, 2012 (in 2002 National Aboriginal Day was declared a statutory holiday; National Aboriginal Day Act, SNWT 2001 c. 14); Employment Standards Act, s. 22(1)(d)
+holiday.indigenousPeoplesDay | YT | 2017-01-01 | true | Government of Yukon, news release 17-098 (National Aboriginal Day an annual statutory holiday beginning on June 21, 2017; Employment Standards Act amended)
 
 # July 9: Nunavut Day.
 rule holiday.nunavutDay YES_NO province
 holiday.nunavutDay | - | 2000-01-01 | false | Nunavut only
-holiday.nunavutDay | NU | 2001-01-01 | true | Government of Nunavut (territorial holiday since 2001; statutory since 2020, Bill 29)
+holiday.nunavutDay | NU | 2020-01-01 | true | Government of Nunavut, Labour Standards Act, s. 1 (general holiday: Nunavut Day; S.Nu. 2019 c. 21 s. 2, in force November 7, 2019)
 
 # Third Monday of August: Discovery Day.
 rule holiday.discoveryDay YES_NO province

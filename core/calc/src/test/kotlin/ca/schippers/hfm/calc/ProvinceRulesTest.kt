@@ -39,6 +39,21 @@ class ProvinceRulesTest {
     }
 
     @Test
+    fun `the February holiday's Monday and when territorial holidays began`() {
+        // B.C. Family Day: second Monday 2013 to 2018, third from 2019.
+        assertTrue(d("2018-02-12") in BusinessDays.holidays(2018, Province.BC) && d("2018-02-19") !in BusinessDays.holidays(2018, Province.BC))
+        assertTrue(d("2019-02-18") in BusinessDays.holidays(2019, Province.BC))
+        assertTrue(d("2012-02-13") !in BusinessDays.holidays(2012, Province.BC))
+        // P.E.I. Islander Day: second Monday in 2009, third from 2010.
+        assertTrue(d("2009-02-09") in BusinessDays.holidays(2009, Province.PE))
+        assertTrue(d("2010-02-15") in BusinessDays.holidays(2010, Province.PE))
+        assertTrue(d("2018-02-19") in BusinessDays.holidays(2018, Province.ON))
+        // Nunavut Day a general holiday from 2020.
+        assertTrue(d("2019-07-09") !in BusinessDays.holidays(2019, Province.NU))
+        assertTrue(d("2020-07-09") in BusinessDays.holidays(2020, Province.NU))
+    }
+
+    @Test
     fun `the last business day follows the household's province`() {
         BusinessDays.province = Province.ON
         assertEquals(d("2026-07-31"), BusinessDays.lastBusinessDayOfMonth(2026, Month.JULY))

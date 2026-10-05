@@ -63,6 +63,18 @@ class SalesTaxesTest {
     }
 
     @Test
+    fun `P_E_I_ charged its 10 percent PST on the GST before the HST`() {
+        val y2012 = SalesTaxes.ratesOn(LocalDate(2012, 6, 1), Province.PE)
+        assertEquals(listOf("GST 5", "PST 10"), rates(2012, 6, 1, Province.PE))
+        assertTrue(y2012[1].onGst)
+        assertEquals(listOf(BigDecimal("5.00"), BigDecimal("10.50")), SalesTaxes.taxesOn(BigDecimal("100.00"), y2012).map { it.amount }, "15.5 % in all")
+        assertEquals(listOf(BigDecimal("5.00"), BigDecimal("10.50")), SalesTaxes.fromTotal(BigDecimal("115.50"), y2012).map { it.amount })
+        assertEquals(listOf("HST 13"), rates(2008, 1, 1, Province.NB))
+        assertEquals(listOf("HST 14"), rates(2013, 4, 1, Province.PE))
+        assertTrue(SalesTaxes.ratesOn(LocalDate(2012, 6, 1), Province.MB).none { it.onGst })
+    }
+
+    @Test
     fun `the taxes in a total`() {
         val qc = SalesTaxes.ratesOn(LocalDate(2026, 1, 15), Province.QC)
         assertEquals(listOf(BigDecimal("5.00"), BigDecimal("9.98")), SalesTaxes.fromTotal(BigDecimal("114.98"), qc).map { it.amount })

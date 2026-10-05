@@ -71,7 +71,11 @@ object BusinessDays {
         return buildSet {
             add(observed(jan1))
             // Family Day, Louis Riel Day (MB), Islander Day (PE), Heritage Day (NS).
-            if (observes("holiday.familyDay")) add(nthMonday(year, Month.FEBRUARY, 3))
+            // The third Monday, but the second in B.C. from 2013 to 2018 and in P.E.I. in 2009 (holiday.familyDay.week).
+            if (observes("holiday.familyDay")) {
+                val week = Rules.valueOn("holiday.familyDay.week", jan1, province)?.value?.toIntOrNull()?.takeIf { it in 1..4 } ?: 3
+                add(nthMonday(year, Month.FEBRUARY, week))
+            }
             add(easter.minus(DatePeriod(days = 2))) // Good Friday
             add(mondayBefore(LocalDate(year, Month.MAY, 25))) // Victoria Day / Journée nationale des patriotes
             if (observes("holiday.indigenousPeoplesDay")) add(observed(LocalDate(year, Month.JUNE, 21)))

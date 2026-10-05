@@ -13,12 +13,12 @@ sales.gst | - | 2008-01-01 | 0.05 | Revenu Québec, Tables of GST and QST rates 
 # The harmonized sales tax (HST): the federal and provincial parts together, in place of the GST.
 rule sales.hst RATE province
 sales.hst | - | 2008-01-01 | 0 | CRA, GST/HST calculator and rates (5 % GST, no HST, outside the participating provinces)
-sales.hst | NS | 2010-01-01 | 0.13 | CRA, GST/HST statistics tables 2011-2015 (HST for Nova Scotia increased from 13 % to 15 % on July 1, 2010)
+sales.hst | NS | 2008-01-01 | 0.13 | CRA, GI-040 (the rate of the HST will be reduced from 14% to 13%, January 1, 2008); CRA, 19-3-8-1 New Housing Rebates and HST at 13% (Nova Scotia, New Brunswick and Newfoundland and Labrador)
 sales.hst | NS | 2010-07-01 | 0.15 | CRA, GST/HST statistics tables 2011-2015 (HST for Nova Scotia increased from 13 % to 15 % on July 1, 2010)
 sales.hst | NS | 2025-04-01 | 0.14 | CRA, GST/HST calculator and rates (as of April 1, 2025, the HST rate decreased to 14 % in Nova Scotia)
-sales.hst | NB | 2010-01-01 | 0.13 | CRA, GST/HST statistics tables 2011-2015 and 2016-2020 (HST 13 % in New Brunswick until June 30, 2016)
+sales.hst | NB | 2008-01-01 | 0.13 | CRA, GI-040 (the rate of the HST will be reduced from 14% to 13%, January 1, 2008); CRA, GST/HST statistics tables 2011-2015 and 2016-2020 (HST 13 % in New Brunswick until June 30, 2016)
 sales.hst | NB | 2016-07-01 | 0.15 | CRA, GST/HST statistics tables 2016-2020 (HST for New Brunswick increased from 13 % to 15 % on July 1, 2016)
-sales.hst | NL | 2010-01-01 | 0.13 | CRA, GST/HST statistics tables 2011-2015 and 2016-2020 (HST 13 % in Newfoundland and Labrador until June 30, 2016)
+sales.hst | NL | 2008-01-01 | 0.13 | CRA, GI-040 (the rate of the HST will be reduced from 14% to 13%, January 1, 2008); CRA, GST/HST statistics tables 2011-2015 and 2016-2020 (HST 13 % in Newfoundland and Labrador until June 30, 2016)
 sales.hst | NL | 2016-07-01 | 0.15 | CRA, GST/HST statistics tables 2016-2020 (HST for Newfoundland and Labrador increased from 13 % to 15 % on July 1, 2016)
 sales.hst | ON | 2010-07-01 | 0.13 | CRA, GST/HST statistics tables 2011-2015 (Ontario joined the HST on July 1, 2010, at 13 %); Ontario Ministry of Finance, Harmonized Sales Tax
 sales.hst | BC | 2010-07-01 | 0.12 | CRA, GST/HST statistics tables 2011-2015 (British Columbia joined the HST on July 1, 2010, at 12 %)
@@ -40,6 +40,15 @@ sales.pst | SK | 2010-01-01 | 0.05 | Government of Saskatchewan, Tax changes sin
 sales.pst | SK | 2017-03-23 | 0.06 | Government of Saskatchewan, Tax changes since 2007 (PST rate from 5 % to 6 %, effective March 23, 2017)
 sales.pst | ON | 2010-01-01 | 0.08 | Ontario Ministry of Finance, Harmonized Sales Tax (the HST replaced the 8 % retail sales tax effective July 1, 2010)
 sales.pst | ON | 2010-07-01 | 0 | Ontario Ministry of Finance, Harmonized Sales Tax (effective July 1, 2010)
+sales.pst | PE | 2008-01-01 | 0.10 | Government of Prince Edward Island, Budget Address 2012 (the provincial rate will be reduced from 10 per cent to 9 per cent under the HST; 14 per cent compared to 15.5 per cent currently)
+sales.pst | PE | 2013-04-01 | 0 | CRA, GST/HST statistics tables 2011-2015 (Prince Edward Island joined the HST on April 1, 2013)
+
+# Whether the provincial sales tax is charged on the price plus the GST (true) or on the price
+# alone (false): P.E.I. charged its 10 % on top of the GST until the HST.
+rule sales.pstOnGst YES_NO province
+sales.pstOnGst | - | 2008-01-01 | false | Manitoba Finance, Retail Sales Tax (the tax is calculated on the selling price before the GST is applied); P.E.I. was the exception (Budget Address 2012)
+sales.pstOnGst | PE | 2008-01-01 | true | Government of Prince Edward Island, Budget Address 2012 (harmonization will end the practice of applying the provincial sales tax on top of the GST); Annual Statistical Review 2007 (compounded provincial sales tax rate)
+sales.pstOnGst | PE | 2013-04-01 | false | CRA, GST/HST statistics tables 2011-2015 (Prince Edward Island joined the HST on April 1, 2013)
 
 # The Quebec sales tax (QST), charged in Quebec with the GST.
 rule sales.qst RATE

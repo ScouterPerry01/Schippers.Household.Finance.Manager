@@ -13,7 +13,8 @@ enum class SalesTaxKind { GST, HST, QST, PST }
 /**
  * A sales tax in effect: its [kind], the [label] a receipt or invoice gives it (GST, HST, QST, PST,
  * or RST for Manitoba's and Ontario's retail sales tax), its [rate] as a fraction (0.09975 is
- * 9.975 %), and whether it is charged on the price plus the GST ([onGst], Quebec before 2013).
+ * 9.975 %), and whether it is charged on the price plus the GST ([onGst]: Quebec's QST before 2013,
+ * P.E.I.'s PST before the HST in 2013).
  */
 data class SalesTaxRate(val kind: SalesTaxKind, val label: String, val rate: BigDecimal, val onGst: Boolean = false)
 
@@ -22,7 +23,7 @@ data class SalesTaxAmount(val tax: SalesTaxRate, val amount: BigDecimal)
 
 /**
  * Sales taxes by date and province or territory, from the rules `sales.gst`, `sales.hst`,
- * `sales.pst`, `sales.qst` and `sales.qstOnGst` (Rates and rules), so the household's own values
+ * `sales.pst`, `sales.pstOnGst`, `sales.qst` and `sales.qstOnGst` (Rates and rules), so the household's own values
  * apply as soon as they are set.
  */
 object SalesTaxes {
@@ -46,7 +47,9 @@ object SalesTaxes {
                 result += SalesTaxRate(SalesTaxKind.QST, "QST", it, Rules.valueOn("sales.qstOnGst", on)?.value == "true")
             }
         } else if (hst == null) {
-            positive(Rules.decimalOrNull("sales.pst", on, province))?.let { result += SalesTaxRate(SalesTaxKind.PST, provincialLabel(province), it) }
+            positive(Rules.decimalOrNull("sales.pst", on, province))?.let {
+                result += SalesTaxRate(SalesTaxKind.PST, provincialLabel(province), it, Rules.valueOn("sales.pstOnGst", on, province)?.value == "true")
+            }
         }
         return result
     }

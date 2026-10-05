@@ -69,10 +69,12 @@ lif.reference.rate | - | 2000-01-01 | 0.06 | Pension Benefits Standards Regulati
 rule lif.last.age NUMBER
 lif.last.age | - | 2000-01-01 | 90 | Pension Benefits Standards Regulations, 1985, Schedule III (until December 31 of the year the holder reaches 90)
 # Whether a LIF has a yearly maximum: everywhere, federal plans too, but Saskatchewan and P.E.I.
+# P.E.I. has no pension standards law in force, so nothing there sets a LIF or its maximum; money
+# locked in under another jurisdiction's plan follows that jurisdiction (chosen in Plan details).
 rule lif.maximum YES_NO province
 lif.maximum | - | 2000-01-01 | true | Pension Benefits Standards Regulations, 1985, Schedule III
 lif.maximum | SK | 2002-04-01 | false | Government of Saskatchewan, Pension restrictions removed (April 3, 2002): prescribed RRIFs, no maximum
-lif.maximum | PE | 2000-01-01 | false | No locked-in plan legislation in force in Prince Edward Island (not confirmed from an official source)
+lif.maximum | PE | 2000-01-01 | false | Government of Prince Edward Island, Legislative Counsel, Table of Regulations (Pension Benefits Act, 1990 c. 41, not proclaimed): no locked-in plan law in force
 
 # RESP lifetime contribution limit per beneficiary.
 rule resp.lifetime AMOUNT
@@ -119,15 +121,16 @@ resp.qesi.offered | - | 2007-01-01 | false | Only Quebec offers the QESI
 resp.qesi.offered | QC | 2007-01-01 | true | Finances Québec, fiche 110503
 rule resp.bctesg.offered YES_NO province
 resp.bctesg.offered | - | 2007-01-01 | false | Only British Columbia offers the BCTESG
-resp.bctesg.offered | BC | 2015-08-15 | true | Government of British Columbia, BC Training and Education Savings Grant (from August 2015)
+resp.bctesg.offered | BC | 2015-08-15 | true | ESDC, CESP bulletin 2015-626 (beginning August 15, 2015, British Columbia contributes grants of $1,200 into the RESPs of eligible children)
 
 # B.C. Training and Education Savings Grant: the amount, the ages it can be applied for between
 # (from the 6th birthday to the day before the 9th), and the first year of birth that qualifies.
 rule resp.bctesg.amount AMOUNT
-resp.bctesg.amount | - | 2015-08-15 | 1200 | Government of British Columbia, BC Training and Education Savings Grant
+resp.bctesg.amount | - | 2015-08-15 | 1200 | ESDC, CESP bulletin 2015-626; Government of British Columbia, BC Training and Education Savings Grant
 rule resp.bctesg.age.from NUMBER
-resp.bctesg.age.from | - | 2015-08-15 | 6 | Government of British Columbia, BC Training and Education Savings Grant
+resp.bctesg.age.from | - | 2015-08-15 | 6 | Government of British Columbia, BC Training and Education Savings Grant (between the 6th birthday and the day before the 9th)
 rule resp.bctesg.age.until NUMBER
-resp.bctesg.age.until | - | 2015-08-15 | 9 | Government of British Columbia, BC Training and Education Savings Grant
+resp.bctesg.age.until | - | 2015-08-15 | 9 | Government of British Columbia, BC Training and Education Savings Grant (between the 6th birthday and the day before the 9th)
 rule resp.bctesg.born.from NUMBER
-resp.bctesg.born.from | - | 2015-08-15 | 2006 | Government of British Columbia, BC Training and Education Savings Grant (born in 2006 or later)
+resp.bctesg.born.from | - | 2015-08-15 | 2007 | Government of British Columbia, news release 2016EDUC0073-001357 (until then, eligible children must have been born in 2007 or later)
+resp.bctesg.born.from | - | 2016-08-15 | 2006 | Government of British Columbia, news release 2016EDUC0073-001357 (starting Aug. 15, 2016, children born on or after Jan. 1, 2006)

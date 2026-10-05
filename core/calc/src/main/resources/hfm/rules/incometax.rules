@@ -66,14 +66,15 @@ tax.fed.employmentAmount | - | 2025-01-01 | 1471 | CRA, indexation adjustment fo
 tax.fed.employmentAmount | - | 2026-01-01 | 1501 | CRA, indexation adjustment for personal income tax amounts
 tax.fed.age | - | 2024-01-01 | 8790; 44325; 0.15 | CRA, indexation adjustment for personal income tax amounts; Federal Worksheet 2024
 tax.fed.age | - | 2025-01-01 | 9028; 45522; 0.15 | CRA, indexation adjustment for personal income tax amounts; Federal Worksheet 2025
-tax.fed.age | - | 2026-01-01 | 9208; 46432; 0.15 | CRA, indexation adjustment for personal income tax amounts
+tax.fed.age | - | 2026-01-01 | 9208; 46432; 0.15 | CRA, indexation adjustment for personal income tax amounts 2026 (age amount and threshold); Income Tax Act s. 118(2) (reduced by 15 % of income above the threshold)
 tax.fed.pension | - | 2024-01-01 | 2000 | CRA, T1 return 2024, line 31400
 tax.fed.pension | - | 2025-01-01 | 2000 | CRA, T1 return 2025, line 31400
+tax.fed.pension | - | 2026-01-01 | 2000 | Income Tax Act s. 118(3) (the lesser of $2,000 and the eligible pension income; not indexed)
 tax.fed.donation | - | 2024-01-01 | 200; 0.15; 0.29; 0.33 | CRA, Schedule 9 2024
 tax.fed.donation | - | 2025-01-01 | 200; 0.145; 0.29; 0.33 | CRA, Schedule 9 2025
-tax.fed.donation | - | 2026-01-01 | 200; 0.14; 0.29; 0.33 | Finance Canada, lowest rate and non-refundable credits (first $200 at the lowest rate)
+tax.fed.donation | - | 2026-01-01 | 200; 0.14; 0.29; 0.33 | Finance Canada, Report on the impact of reducing the lowest marginal personal income tax rate on non-refundable tax credits (the first $200 at the lowest rate, 14 % from 2026; Bill C-4, Royal Assent March 12, 2026); Income Tax Act s. 118.1(3) (29 %, and 33 % on gifts matched by income in the top bracket)
 tax.fed.topUpCredit | - | 2025-01-01 | 57375; 0.005 | CRA, line 34990 top-up tax credit; Federal Worksheet 2025
-tax.fed.topUpCredit | - | 2026-01-01 | 58523; 0.01 | Finance Canada, top-up tax credit keeps 15 % above the first bracket (2025 to 2030)
+tax.fed.topUpCredit | - | 2026-01-01 | 58523; 0.01 | Finance Canada, Report on Federal Tax Expenditures 2026, part 2 (top-up tax credit of 0.5 % in 2025 and 1 % from 2026 to 2030; Bill C-15, Royal Assent March 26, 2026); CRA, tax rates and brackets 2026 (first bracket $58,523)
 tax.fed.quebecAbatement | - | 2024-01-01 | 0.165 | Finance Canada, Quebec abatement; CRA T1 return for Quebec
 tax.cpp | - | 2024-01-01 | 3867.50; 0.0495; 0.0595 | CRA, CPP contribution rates, maximums and exemptions
 tax.cpp | - | 2025-01-01 | 4034.10; 0.0495; 0.0595 | CRA, CPP contribution rates, maximums and exemptions
@@ -109,14 +110,14 @@ tax.prov.taxReduction | ON | 2024-01-01 | 286 | CRA, Form ON428 2024
 tax.prov.taxReduction | ON | 2025-01-01 | 294 | CRA, Form ON428 2025
 tax.prov.taxReduction | ON | 2026-01-01 | 300 | CRA, T4127 January 2026
 tax.prov.healthPremium | ON | 2024-01-01 | 20000; 0.06; 300; 36000; 0.06; 450; 48000; 0.25; 600; 72000; 0.25; 750; 200000; 0.25; 900 | CRA, Form ON428 2024, Ontario Health Premium chart
-tax.prov.brackets | MB | 2024-01-01 | 0:0.108; 47000:0.1275; 100000:0.174 | CRA, Form MB428 2024; Manitoba Finance (frozen in 2025)
+tax.prov.brackets | MB | 2024-01-01 | 0:0.108; 47000:0.1275; 100000:0.174 | Manitoba, The Income Tax Act, s. 4.1(2) (2024 and later years: 10.8 %, 1.95 % more above $47,000, 4.65 % more above $100,000); Manitoba Finance, Budget 2025 bulletin (thresholds kept at their 2024 levels from 2025); CRA T4127 January and July 2026 (the CRA rates page showing $47,564 and $101,200 does not match Manitoba law)
 tax.prov.creditRate | MB | 2024-01-01 | 0.108 | CRA, Form MB428 2024
 tax.prov.bpa | MB | 2024-01-01 | 15780 | CRA, Form MB428 2024
 tax.prov.bpa | MB | 2025-01-01 | 15780; 0; 200000; 400000 | CRA, Worksheet MB428 2025; Manitoba Finance, personal tax credits
 tax.prov.spouse | MB | 2024-01-01 | 9134; 0 | CRA, Form MB428 2024
 tax.prov.age | MB | 2024-01-01 | 3728; 27749; 0.15 | CRA, Worksheet MB428 2024
 tax.prov.pension | MB | 2024-01-01 | 1000 | CRA, Form MB428 2024
-tax.prov.medical | MB | 2024-01-01 | 0.03; 1728 | CRA, Form MB428 2024
+tax.prov.medical | MB | 2024-01-01 | 0.03; 1728 | CRA, Form MB428 2024; Manitoba, The Income Tax Act, s. 4.6(17) (the lesser of $1,728 and 3 %; not indexed)
 tax.prov.donation | MB | 2024-01-01 | 200; 0.108; 0.174 | CRA, Form MB428 2024
 tax.prov.dividends | MB | 2024-01-01 | 0.08; 0.007835 | CRA, Worksheet MB428 2024
 tax.prov.brackets | SK | 2024-01-01 | 0:0.105; 52057:0.125; 148734:0.145 | CRA, Form SK428 2024
@@ -171,7 +172,7 @@ tax.prov.brackets | AB | 2026-01-01 | 0:0.08; 61200:0.1; 154259:0.12; 185111:0.1
 tax.prov.creditRate | AB | 2024-01-01 | 0.10 | CRA, Form AB428 2024
 tax.prov.creditRate | AB | 2025-01-01 | 0.08 | CRA, Form AB428 2025; Alberta Personal Income Tax Act s. 4
 tax.prov.supplementalCredit | AB | 2025-01-01 | 60000; 0.02 | CRA, Worksheet AB428 2025 line 61545; Alberta Personal Income Tax Act s. 20.2
-tax.prov.supplementalCredit | AB | 2026-01-01 | 61200; 0.02 | CRA, T4127 January 2026
+tax.prov.supplementalCredit | AB | 2026-01-01 | 61200; 0.02 | CRA, T4127 January 2026 (K5P = (K1P + K2P - $4,896) x 0.25, that is 2 % of credit amounts above $61,200); Alberta Personal Income Tax Act s. 20.2 and 44.2 (indexed 2 % for 2026)
 tax.prov.bpa | AB | 2024-01-01 | 21885 | CRA, Form AB428 2024
 tax.prov.bpa | AB | 2025-01-01 | 22323 | CRA, Form AB428 2025
 tax.prov.bpa | AB | 2026-01-01 | 22769 | CRA, T4127 January 2026
@@ -220,13 +221,13 @@ tax.prov.age | NS | 2024-01-01 | 4141; 30828; 0.15 | CRA, Worksheet NS428 2024 (
 tax.prov.age | NS | 2025-01-01 | 5734; 30828; 0.15 | CRA, Worksheet NS428 2025
 tax.prov.age | NS | 2026-01-01 | 5826; 30828; 0.15 | CRA, TD1NS 2026
 tax.prov.pension | NS | 2024-01-01 | 1173 | CRA, Form NS428 2024
-tax.prov.medical | NS | 2024-01-01 | 0.03; 1637 | CRA, Form NS428 2024
+tax.prov.medical | NS | 2024-01-01 | 0.03; 1637 | CRA, Form NS428 2024; Nova Scotia, Income Tax Act, s. 13 (the lesser of $1,637 and three per cent; not indexed)
 tax.prov.donation | NS | 2024-01-01 | 200; 0.0879; 0.21 | CRA, Form NS428 2024
 tax.prov.dividends | NS | 2024-01-01 | 0.0885; 0.0299 | CRA, Worksheet NS428 2024
-tax.prov.dividends | NS | 2025-01-01 | 0.0885; 0.015 | CRA, Worksheet NS428 2025
+tax.prov.dividends | NS | 2025-01-01 | 0.0885; 0.015 | CRA, Worksheet NS428 2025; Nova Scotia, Income Tax Act, s. 21 (1.5 % for taxation years after December 31, 2024; 8.85 %)
 tax.prov.brackets | PE | 2024-01-01 | 0:0.0965; 32656:0.1363; 64313:0.1665; 105000:0.18; 140000:0.1875 | CRA, Form PE428 2024
 tax.prov.brackets | PE | 2025-01-01 | 0:0.095; 33328:0.1347; 64656:0.166; 105000:0.1762; 140000:0.19 | CRA, Form PE428 2025
-tax.prov.brackets | PE | 2026-01-01 | 0:0.095; 33928:0.1347; 65820:0.166; 106890:0.1762; 142520:0.19; 200000:0.2 | CRA, tax rates and income brackets 2026; CRA T4127 July 2026
+tax.prov.brackets | PE | 2026-01-01 | 0:0.095; 33928:0.1347; 65820:0.166; 106890:0.1762; 142520:0.19; 200000:0.2 | Prince Edward Island, Income Tax Act, s. 7 (2026 and subsequent taxation years; 20.00 % above $200,000); CRA, tax rates and income brackets 2026; CRA T4127 July 2026
 tax.prov.creditRate | PE | 2024-01-01 | 0.0965 | CRA, Form PE428 2024
 tax.prov.creditRate | PE | 2025-01-01 | 0.095 | CRA, Form PE428 2025
 tax.prov.bpa | PE | 2024-01-01 | 13500 | CRA, Form PE428 2024
@@ -238,9 +239,10 @@ tax.prov.spouse | PE | 2026-01-01 | 12740; 1274 | CRA, TD1PE 2026
 tax.prov.age | PE | 2024-01-01 | 5595; 33740; 0.15 | CRA, Worksheet PE428 2024
 tax.prov.age | PE | 2025-01-01 | 6510; 36600; 0.15 | CRA, Worksheet PE428 2025
 tax.prov.pension | PE | 2024-01-01 | 1000 | CRA, Form PE428 2024
-tax.prov.medical | PE | 2024-01-01 | 0.03; 1678 | CRA, Form PE428 2024
+tax.prov.medical | PE | 2024-01-01 | 0.03; 1678 | CRA, Form PE428 2024; Prince Edward Island, Income Tax Act, s. 11 (the lesser of $1,678 and 3 %; not indexed)
 tax.prov.donation | PE | 2024-01-01 | 200; 0.0965; 0.1875 | CRA, Form PE428 2024
 tax.prov.donation | PE | 2025-01-01 | 200; 0.095; 0.19 | CRA, Form PE428 2025
+tax.prov.donation | PE | 2026-01-01 | 200; 0.095; 0.2 | Prince Edward Island, Income Tax Act, s. 6 and 10 (the first $200 at the lowest rate of s. 7, the rest at the highest, 20.00 % from 2026)
 tax.prov.dividends | PE | 2024-01-01 | 0.105; 0.013 | CRA, Worksheet PE428 2024
 tax.prov.brackets | NL | 2024-01-01 | 0:0.087; 43198:0.145; 86395:0.158; 154244:0.178; 215943:0.198; 275870:0.208; 551739:0.213; 1103478:0.218 | CRA, tax rates and income brackets (all years)
 tax.prov.brackets | NL | 2025-01-01 | 0:0.087; 44192:0.145; 88382:0.158; 157792:0.178; 220910:0.198; 282214:0.208; 564429:0.213; 1128858:0.218 | CRA, tax rates and income brackets 2025
@@ -248,7 +250,7 @@ tax.prov.brackets | NL | 2026-01-01 | 0:0.087; 44678:0.145; 89354:0.158; 159528:
 tax.prov.creditRate | NL | 2024-01-01 | 0.087 | CRA, Form NL428 2024
 tax.prov.bpa | NL | 2024-01-01 | 10818 | CRA, Form NL428 2024
 tax.prov.bpa | NL | 2025-01-01 | 11067 | CRA, Form NL428 2025
-tax.prov.bpa | NL | 2026-01-01 | 13094 | CRA, TD1NL 2026; CRA T4127 July 2026
+tax.prov.bpa | NL | 2026-01-01 | 13094 | Newfoundland and Labrador Finance, personal income tax credits 2026; CRA T4127 July 2026 (increase from $11,188 to $13,094 effective January 1, 2026)
 tax.prov.spouse | NL | 2024-01-01 | 8840; 885 | CRA, Form NL428 2024
 tax.prov.spouse | NL | 2025-01-01 | 9043; 905 | CRA, Form NL428 2025
 tax.prov.spouse | NL | 2026-01-01 | 9142; 915 | CRA, TD1NL 2026
@@ -258,8 +260,9 @@ tax.prov.age | NL | 2026-01-01 | 7142; 39138; 0.15 | CRA, TD1NL 2026
 tax.prov.pension | NL | 2024-01-01 | 1000 | CRA, Form NL428 2024
 tax.prov.medical | NL | 2024-01-01 | 0.03; 2356 | CRA, Form NL428 2024
 tax.prov.medical | NL | 2025-01-01 | 0.03; 2410 | CRA, Form NL428 2025
-tax.prov.donation | NL | 2024-01-01 | 200; 0.087; 0.218 | CRA, Form NL428 2024
-tax.prov.dividends | NL | 2024-01-01 | 0.063; 0.032 | CRA, Worksheet NL428 2024
+tax.prov.medical | NL | 2026-01-01 | 0.03; 2437 | Newfoundland and Labrador Finance, personal income tax credits 2026 (medical expense amount threshold)
+tax.prov.donation | NL | 2024-01-01 | 200; 0.087; 0.218 | CRA, Form NL428 2024; Newfoundland and Labrador Finance, personal income tax credits 2025 and 2026
+tax.prov.dividends | NL | 2024-01-01 | 0.063; 0.032 | CRA, Worksheet NL428 2024; Newfoundland and Labrador Finance, personal income tax credits 2025 and 2026
 tax.prov.brackets | QC | 2024-01-01 | 0:0.14; 51780:0.19; 103545:0.24; 126000:0.2575 | Revenu Québec, TP-1.D.GR 2024 work chart 401
 tax.prov.brackets | QC | 2025-01-01 | 0:0.14; 53255:0.19; 106495:0.24; 129590:0.2575 | Revenu Québec, income tax rates 2025
 tax.prov.brackets | QC | 2026-01-01 | 0:0.14; 54345:0.19; 108680:0.24; 132245:0.2575 | Revenu Québec, income tax rates 2026
