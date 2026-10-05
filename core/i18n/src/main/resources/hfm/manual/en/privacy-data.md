@@ -65,7 +65,9 @@ Full account numbers are kept encrypted like everything else, and the screens sh
 
 @index: phone storage; PIN
 
-RANN's Roost Mobile keeps its settings, the lists it receives from the computer and its queue of captures in files encrypted with a key held in the phone's own secure hardware. It is locked by a PIN, with fingerprint or face unlock if you choose, and it is left out of the phone's cloud backups. A phone never holds the household's keys: it can only send captures and receive short lists. See [RANN's Roost Mobile](phone-app).
+RANN's Roost Mobile keeps its settings, the lists and contacts it receives from the computer and its queue of captures and new contacts in files encrypted with a key held in the phone's own secure hardware. It is locked by a PIN, with fingerprint or face unlock if you choose, and it is left out of the phone's cloud backups. A phone never holds the household's keys: it can only send captures and new contacts, and receive short lists. See [RANN's Roost Mobile](phone-app).
+
+What goes to the phone: the household's name and language, the base currency, the accounts and their balances, the categories, payees, members and pets, vehicles and metered equipment with their readings, the bills due in the next 60 days, this month's budgets and maintenance, and the contacts its owner can see (not archived ones). Full account numbers, contacts' account and client numbers, transactions, documents and health records do not go to the phone. Only what its owner can see on this computer goes to a phone: another user's private groups never do. See [What the phone receives](phones#sent-to-phone).
 
 ## Passwords and the recovery key {#passwords}
 
@@ -155,7 +157,7 @@ AI reading is off until you turn it on under [AI reading](ai) and add your own A
 
 @index: Wi-Fi; phone sync; transfer folder; cloud folder
 
-RANN's Roost Mobile talks only to this computer, over your home Wi-Fi, encrypted between the two. Nothing goes through the internet. Away from home, the phone can leave its captures, encrypted, in a folder of your own Google Drive, OneDrive, Dropbox or Nextcloud; that service sees only files it cannot read. RANN holds no account with those services. See [Phones](phones).
+RANN's Roost Mobile talks only to this computer, over your home Wi-Fi, encrypted between the two. Nothing goes through the internet. The phone sends captures and new contacts, and receives the summary and contacts described in [On the phone](#on-the-phone). Away from home, the phone can leave its captures and new contacts, encrypted, in a folder of your own Google Drive, OneDrive, Dropbox or Nextcloud; that service sees only files it cannot read. RANN holds no account with those services. See [Phones](phones).
 
 ### Update checks {#update-checks}
 

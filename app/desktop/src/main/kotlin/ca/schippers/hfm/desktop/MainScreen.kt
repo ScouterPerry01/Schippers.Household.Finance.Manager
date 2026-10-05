@@ -31,6 +31,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
     // Lines the books write themselves are written in the language in use.
     LaunchedEffect(model.language) { model.books.language = model.language }
     val inboxCount = remember(model.revision) { runCatching { model.books.documents.inboxCount() }.getOrDefault(0) }
+    val phoneContacts = remember(model.revision) { runCatching { model.books.phoneContacts.count() }.getOrDefault(0) }
     // FX-02: fetch missing Bank of Canada rates in the background; offline is fine (NFR-10).
     LaunchedEffect(model) {
         val added = withContext(Dispatchers.IO) { runCatching { model.books.rates.updateAll(today(), Http::get) }.getOrDefault(0) }
@@ -88,8 +89,8 @@ fun MainScreen(model: BooksModel, app: AppState) {
                 )
             }
         }
-        // SYNC-05, NAV-03: how many documents wait for review, in either menu.
-        val counts = mapOf(Section.DOCUMENTS to inboxCount)
+        // SYNC-05, NAV-03, CON-07: how many documents and contacts from the phone wait for review, in either menu.
+        val counts = mapOf(Section.DOCUMENTS to inboxCount, Section.CONTACTS to phoneContacts)
         val onTop = app.menuOnTop(model.books.userId)
         if (onTop) TopMenu(model, app, counts)
         Row(Modifier.fillMaxSize()) {

@@ -1,8 +1,8 @@
 # RANN’s Roost Mobile
 
-RANN’s Roost Mobile est l’application compagnon pour téléphones Android. Elle photographie les reçus, les factures et d’autres documents, inscrit des dépenses rapides et des lectures d’odomètre, et les envoie à RANN’s Roost sur votre ordinateur. En retour, elle affiche un résumé de vos soldes, des factures à payer, des budgets et de l’entretien, et vous rappelle les factures et les budgets.
+RANN’s Roost Mobile est l’application compagnon pour téléphones Android. Elle photographie les reçus, les factures et d’autres documents, inscrit des dépenses rapides et des lectures d’odomètre, et les envoie à RANN’s Roost sur votre ordinateur. En retour, elle affiche un résumé de vos soldes, des factures à payer, des budgets et de l’entretien ainsi que les contacts du ménage, et vous rappelle les factures et les budgets. Les contacts rencontrés en chemin peuvent être ajoutés sur le téléphone et envoyés à l’ordinateur pour vérification.
 
-Le téléphone n’est pas une deuxième copie de vos livres : l’ordinateur garde l’exemplaire de référence. Le téléphone ne garde que ce qui attend d’être envoyé et le dernier résumé venu de l’ordinateur. Sous son icône, l’application s’appelle RANN’s Roost.
+Le téléphone n’est pas une deuxième copie de vos livres : l’ordinateur garde l’exemplaire de référence. Le téléphone ne garde que ce qui attend d’être envoyé et le dernier résumé et les contacts venus de l’ordinateur. Sous son icône, l’application s’appelle RANN’s Roost.
 
 Pour un parcours rapide, voir [Premiers pas avec l’application mobile](start-phone). Pour le côté ordinateur, voir [Téléphones](phones).
 
@@ -21,7 +21,7 @@ RANN’s Roost Mobile existe en deux éditions qui fonctionnent de la même faç
 
 @index: chiffrement; magasin de clés Android; sauvegarde; confidentialité
 
-- Tout ce que l’application garde (ses réglages, les captures en attente et le résumé) est chiffré avec une clé conservée dans le magasin de clés sécurisé du téléphone. La clé ne quitte jamais le téléphone.
+- Tout ce que l’application garde (ses réglages, les captures et nouveaux contacts en attente, le résumé et les contacts) est chiffré avec une clé conservée dans le magasin de clés sécurisé du téléphone. La clé ne quitte jamais le téléphone.
 - L’application est exclue des sauvegardes infonuagiques d’Android : rien n’en est copié chez Google.
 - Les captures ne vont qu’à votre ordinateur, chiffrées avec la clé créée au jumelage. Loin de la maison, elles peuvent passer par un dossier de votre propre stockage infonuagique, toujours chiffrées.
 - La seule autre connexion est la vérification quotidienne des mises à jour de l’édition GitHub, si vous l’autorisez. Elle n’envoie rien sur vous ni sur votre ménage.
@@ -74,11 +74,12 @@ Ce qui reste : tout ce que l’ordinateur a déjà reçu, et le ménage sur l’
 
 ## Les onglets principaux {#tabs}
 
-Quatre onglets s’alignent au bas de l’écran :
+Cinq onglets s’alignent au bas de l’écran :
 
 - **Capturer** : photographier ou inscrire quelque chose de nouveau. Voir [L’onglet Capturer](#capture-tab).
 - **Envois** : ce que vous avez capturé et où il en est. Voir [L’onglet Envois](#sent-tab).
 - **Résumé** : les soldes, les factures, l’entretien et les budgets venus de votre ordinateur. Voir [L’onglet Résumé](#summary-tab).
+- **Contacts** : les contacts du ménage venus de votre ordinateur, et les nouveaux contacts à envoyer. Voir [L’onglet Contacts](#contacts-tab).
 - **Réglages** : le jumelage, le dossier de transfert, le verrou et les mises à jour. Voir [L’onglet Réglages](#settings-tab).
 
 Quand une version plus récente est offerte (édition GitHub), une bande en haut des autres onglets l’indique ; touchez-la pour aller aux Réglages.
@@ -231,7 +232,7 @@ Sur l’ordinateur, importez les fichiers avec **Importer un fichier de transfer
 
 ### La liste des captures {#queue}
 
-Chaque capture affiche son nom (le commerce, ou le genre de capture, ou le véhicule et la lecture), son genre, le montant s’il y en a un, et le moment de la capture. À droite, son état :
+Chaque capture affiche son nom (le commerce, ou le genre de capture, ou le véhicule et la lecture, ou le nom d’un nouveau contact), son genre, le montant s’il y en a un, et le moment de la capture. À droite, son état :
 
 - **En attente** : pas encore reçue par l’ordinateur.
 - **Envoyé** : déposée dans le dossier de transfert ou partagée en fichier, en attente de la confirmation de l’ordinateur.
@@ -262,6 +263,57 @@ Le Résumé affiche les chiffres de votre ordinateur au dernier transfert : le n
 - **Budgets du mois** : chaque catégorie de dépenses qui a un budget : ce qui a été dépensé sur le budget, par exemple « 412,30 $ sur 600,00 $ ».
 
 Les chiffres ne changent pas avant le prochain transfert. Touchez **Envoyer maintenant** dans l’onglet Envois pour les mettre à jour.
+
+## L’onglet Contacts {#contacts-tab}
+
+@index: contacts; carnet d’adresses; appeler; courriel; carte; itinéraire
+
+L’onglet Contacts affiche les contacts du ménage venus de votre ordinateur : les banques, conseillers, médecins, pharmacies, entrepreneurs et autres que vous gardez à l’écran Contacts. Le téléphone reçoit les contacts que vous pouvez voir sur l’ordinateur, pas ceux gardés dans le groupe privé de quelqu’un d’autre, ni les contacts archivés. Les numéros de compte et de client ne viennent jamais sur le téléphone. Les contacts y sont en lecture seule : modifiez-les sur l’ordinateur, et le téléphone a la modification après le prochain transfert (touchez **Envoyer maintenant** dans l’onglet Envois pour l’obtenir).
+
+Avant le premier transfert, l’onglet indique **Jumelez avec votre ordinateur pour voir ici les contacts du ménage.** Vous pouvez quand même ajouter un nouveau contact ; il attend sur le téléphone.
+
+### La liste {#contacts-list}
+
+- **Nouveau contact** : en haut, ouvre le formulaire [Nouveau contact](#new-contact).
+- **Chercher un contact** : trouve les contacts à mesure que vous tapez, par le nom, le « pour quoi », l’organisation, le poste, les personnes servies, les numéros de téléphone, les courriels, l’adresse et les notes. Les accents et les majuscules sont ignorés : « medecin » trouve « Médecin ». Des chiffres trouvent un numéro de téléphone peu importe comment il est écrit : « 6135550101 » trouve « 613 555-0101 ».
+- **Type** : n’affiche que les contacts d’un type, comme Pharmacie ou Banque. La liste n’offre que les types de vos contacts. **Tous les types** les affiche tous de nouveau.
+
+Chaque ligne affiche le nom du contact, son « pour quoi » en couleur et ses types ; une personne dont l’organisation n’est pas dans la liste affiche aussi cette organisation. Les personnes qui travaillent dans une organisation sont listées juste sous elle, en retrait. Touchez une ligne pour ouvrir la page du contact. Quand rien ne correspond, l’onglet indique **Aucun contact ne correspond.**
+
+### La page d’un contact {#contact-page}
+
+- **Retour à la liste** : revient à la liste (le geste de retour d’Android fait de même).
+- Le nom, puis **Pour :** et le « pour quoi », et les types du contact.
+- Pour une personne : son poste et l’organisation où elle travaille. Touchez l’organisation pour ouvrir sa page.
+- **Pour tout le ménage**, ou **Pour :** et les noms des personnes et des animaux qu’il sert.
+- Chaque téléphone, avec son étiquette (comme Bureau ou Cellulaire) ou **Téléphone** : touchez-le pour ouvrir le composeur du téléphone avec le numéro inscrit. Rien n’est composé avant que vous touchiez appeler.
+- Chaque courriel, avec son étiquette ou **Courriel** : touchez-le pour commencer un message dans votre application de courriel.
+- **Adresse** : touchez-la pour chercher l’adresse dans votre application de cartes.
+- **Site Web** : touchez-le pour ouvrir le site dans votre navigateur.
+- **Heures** et **Notes** : affichées comme elles sont écrites sur l’ordinateur.
+- **Personnes** : sur la page d’une organisation, les personnes qui y travaillent ; touchez-en une pour ouvrir sa page.
+
+## Nouveau contact {#new-contact}
+
+@index: ajouter un contact sur le téléphone; nouveau contact
+
+Nouveau contact inscrit quelqu’un que vous rencontrez en chemin, comme un plombier qui vient de laisser sa carte. Il est envoyé à votre ordinateur, qui le présente pour vérification avant qu’il devienne un contact : rien n’est ajouté aux contacts du ménage avant votre choix sur l’ordinateur. Seul le nom est obligatoire.
+
+- **Nom** : le nom de la personne ou de l’organisation, comme vous voulez le voir.
+- **Organisation** ou **Personne** : ce qu’est le contact. Organisation est choisi au départ.
+- **Travaille chez** : pour une personne, l’organisation où elle travaille, choisie parmi les organisations du téléphone. **(aucun)** quand elle n’est pas dans la liste.
+- **Organisation, si elle n’est pas dans la liste** : pour une personne dont l’organisation n’est pas dans la liste, son nom. Sur l’ordinateur, elle devient l’organisation de la personne si un contact de ce nom existe ; sinon, elle va dans les notes.
+- **Type** : ce qu’est le contact, comme Entrepreneur, Pharmacie ou Banque. **(aucun)** le laisse à l’ordinateur.
+- **Pour quoi** : quelques mots pour le reconnaître, comme « Chauffe-eau » ou « dermatologue de Sam ».
+- **Téléphone** et son **Étiquette (bureau, cellulaire…)** : une ligne pour commencer. **Ajouter un téléphone** en ajoute une autre. Les lignes laissées vides ne sont pas envoyées.
+- **Courriel** et son **Étiquette (bureau, cellulaire…)** : de même pour les courriels ; **Ajouter un courriel** en ajoute un autre.
+- **Adresse** et **Notes** : texte libre, sur plusieurs lignes au besoin.
+- **Annuler** : ferme sans enregistrer.
+- **Enregistrer** : met le contact dans la file, avec les captures, et l’envoie aussitôt si l’ordinateur est à portée.
+
+Un nouveau contact prend les mêmes chemins que les captures : par votre Wi-Fi, par le dossier de transfert, ou dans un fichier partagé avec **Partager en fichier…**. Il figure dans l’onglet Envois comme **Nouveau contact**, avec les mêmes états. Quand l’ordinateur l’a reçu, le téléphone supprime sa copie. Un nouveau contact n’apparaît pas dans l’onglet Contacts : une fois ajouté sur l’ordinateur, il revient avec les autres contacts après le prochain transfert.
+
+> Remarque : un ordinateur qui a une version plus ancienne de RANN’s Roost ne prend pas les contacts du téléphone. Ils restent **En attente** sur le téléphone jusqu’à la mise à jour de l’ordinateur.
 
 ## Notifications {#notifications}
 

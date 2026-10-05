@@ -8,12 +8,12 @@ Pour le côté téléphone, voir [RANN’s Roost Mobile](phone-app). Pour un par
 
 ## Comment les téléphones et cet ordinateur travaillent ensemble {#how-it-works}
 
-- L’ordinateur garde l’exemplaire de référence. Le téléphone ne garde que ses captures en attente d’envoi et un résumé venu de l’ordinateur.
+- L’ordinateur garde l’exemplaire de référence. Le téléphone ne garde que ses captures et nouveaux contacts en attente d’envoi, et un résumé et les contacts venus de l’ordinateur.
 - À la maison, le téléphone envoie par votre Wi-Fi directement à cet ordinateur. Rien ne passe par Internet ni par un serveur de RANN.
 - Tout ce qui circule entre le téléphone et cet ordinateur est chiffré avec une clé que les deux ont créée au jumelage. Aucun autre téléphone ni ordinateur ne peut le lire.
 - Les téléphones peuvent joindre cet ordinateur seulement pendant que le ménage est ouvert dans RANN’s Roost. Verrouiller le ménage ou fermer l’application arrête l’écoute ; le téléphone garde ses captures et les envoie plus tard.
 - Loin de la maison, le téléphone peut déposer ses captures, toujours chiffrées, dans un dossier de votre propre stockage infonuagique, que cet ordinateur surveille (voir [Loin de la maison](#away-from-home)).
-- Ce qui arrive n’entre jamais directement dans vos livres. Les reçus, factures, documents et dépenses rapides attendent dans l’onglet **À vérifier** de [Documents](documents) ; les lectures d’odomètre et d’heures sont ajoutées directement au véhicule ou à l’équipement.
+- Ce qui arrive n’entre jamais directement dans vos livres. Les reçus, factures, documents et dépenses rapides attendent dans l’onglet **À vérifier** de [Documents](documents) ; les lectures d’odomètre et d’heures sont ajoutées directement au véhicule ou à l’équipement ; les nouveaux contacts attendent d’être vérifiés à l’écran [Contacts](contacts#from-phone).
 
 @index: chiffrement; Wi-Fi; réseau local; réseau de la maison; confidentialité
 
@@ -78,7 +78,7 @@ Les boutons :
 ### Boîte du téléphone {#phone-dialog}
 
 - **Nom** : le nom affiché sur la carte, par exemple « Téléphone d’Alex ». Obligatoire.
-- **Enregistrer dans** : le groupe de comptes où sont enregistrés les reçus, factures, documents et dépenses rapides du téléphone. Seuls les groupes où vous pouvez ajouter des données sont offerts ; un groupe privé affiche « (privé) » après son nom. Le changement vaut pour ce que le téléphone enverra désormais ; les documents déjà reçus restent où ils sont.
+- **Enregistrer dans** : le groupe de comptes où sont enregistrés les reçus, factures, documents et dépenses rapides du téléphone, et où ses nouveaux contacts attendent d’être vérifiés. Seuls les groupes où vous pouvez ajouter des données sont offerts ; un groupe privé affiche « (privé) » après son nom. Le changement vaut pour ce que le téléphone enverra désormais ; les documents déjà reçus restent où ils sont.
 
 ## Loin de la maison {#away-from-home}
 
@@ -120,10 +120,13 @@ Pendant que le ménage est ouvert, RANN’s Roost consulte le dossier de transfe
 - Une dépense rapide sans photo devient un court document texte avec le commerce, la date, le montant et la note, à vérifier comme les autres.
 - Une note vocale enregistrée avec une capture est gardée avec son document ; écoutez-la depuis la fenêtre de vérification du document.
 - Une lecture d’odomètre ou d’heures est ajoutée aux lectures de ce véhicule dans l’écran [Véhicules](vehicles), ou au compteur de cet équipement dans [Maison et biens](assets), sans vérification.
-- Chaque capture n’est reçue qu’une fois, même quand le téléphone l’envoie de nouveau.
+- Un contact ajouté sur le téléphone attend d’être vérifié à l’écran [Contacts](contacts#from-phone), qui affiche **Du téléphone** et leur nombre. Rien ne devient un contact avant que vous l’ajoutiez, que vous ajoutiez ses coordonnées à un contact existant, ou que vous l’écartiez.
+- Chaque capture et chaque contact n’est reçu qu’une fois, même quand le téléphone l’envoie de nouveau.
 
 Vérifiez chaque document dans l’onglet **À vérifier** : rattachez-le à une opération, inscrivez-le sur une facture, ou classez-le.
 
 ## Ce que reçoit le téléphone {#sent-to-phone}
 
-Après chaque transfert, le téléphone reçoit un résumé à jour quand quelque chose y a changé : le nom du ménage, la langue dans laquelle l’application est affichée sur cet ordinateur, la devise de base, vos comptes et leurs soldes, les catégories, jusqu’à 400 bénéficiaires, les membres et les animaux, les véhicules et les équipements à compteur avec leur dernière lecture, les factures à payer dans les 60 prochains jours avec leurs jours de rappel, les budgets du mois pour les catégories de dépenses, et l’entretien prévu ce mois-ci. Le téléphone l’affiche dans son onglet **Résumé** et s’en sert pour ses rappels et ses listes de choix. Voir [L’onglet Résumé](phone-app#summary-tab).
+Après chaque transfert, le téléphone reçoit un résumé à jour quand quelque chose y a changé : le nom du ménage, la langue dans laquelle l’application est affichée sur cet ordinateur, la devise de base, vos comptes et leurs soldes, les catégories, jusqu’à 400 bénéficiaires, les membres et les animaux, les véhicules et les équipements à compteur avec leur dernière lecture, les factures à payer dans les 60 prochains jours avec leurs jours de rappel, les budgets du mois pour les catégories de dépenses, l’entretien prévu ce mois-ci, et les contacts. Le téléphone l’affiche dans son onglet **Résumé** et s’en sert pour ses rappels et ses listes de choix. Voir [L’onglet Résumé](phone-app#summary-tab).
+
+Les contacts sont ceux que le propriétaire du téléphone peut voir sur cet ordinateur, sauf les contacts archivés : leur nom, organisation ou personne, poste et organisation, types, « pour quoi », les noms des personnes qu’ils servent, téléphones et courriels avec leurs étiquettes, adresse, site Web, heures et notes. Les numéros de compte et de client ne sont jamais envoyés, pas plus que les liens vers les éléments. Le téléphone les affiche dans son onglet Contacts. Voir [Les contacts envoyés au téléphone](contacts#sent-to-phone).

@@ -1,0 +1,10 @@
+-- Version 28 to 29: contacts made on a phone, waiting for review (CON-07).
+-- Only additions: no existing table changes.
+
+CREATE TABLE phone_contact (
+    id TEXT NOT NULL PRIMARY KEY,
+    device_id TEXT NOT NULL,
+    received_at INTEGER NOT NULL,
+    -- The contact as the phone sent it (JSON): name, kinds, what for, phones, emails, address, notes.
+    content TEXT NOT NULL
+);

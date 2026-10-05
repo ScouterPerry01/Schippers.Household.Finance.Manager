@@ -586,7 +586,6 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(28L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val db = LedgerDatabase(driver)
             assertEquals("418 555-0199", db.healthQueries.providers().executeAsOne().phone, "providers stay")
@@ -600,6 +599,27 @@ class MigrationTest {
             assertEquals(1L, count(driver, "SELECT count(*) FROM contact_link"), "saving the contact again keeps its links")
             assertEquals(1L, count(driver, "SELECT count(*) FROM contact_detail"), "and its details")
             assertEquals("k", q.linksTo("HEALTH_PROVIDER", "p").executeAsOne().contact_id)
+        }
+    }
+
+    @Test
+    fun `version 28 ledgers keep their contacts and gain contacts waiting from the phone`() {
+        val file = temp.resolve("ledger28.db")
+        older("../data/src/main/sqldelight/ledger/schemas/28.db", file, 28).use { driver ->
+            driver.execute(null, "INSERT INTO contact(id, name, kinds, created_at, updated_at) VALUES ('k', 'Pharmacie Roy', 'PHARMACY', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO contact_detail(id, contact_id, kind, content) VALUES ('d', 'k', 'PHONE', '418 555-0199')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(29L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val db = LedgerDatabase(driver)
+            assertEquals("418 555-0199", db.contactsQueries.detailsFor("k").executeAsOne().content, "contacts stay")
+            val q = db.phoneContactsQueries
+            q.insertPhoneContact("p", "pixel-8", 5, "{\"name\":\"Plomberie Roy\"}")
+            q.insertPhoneContact("p", "pixel-8", 6, "{}")
+            assertEquals(1L, q.countPhoneContacts().executeAsOne(), "received once")
+            assertEquals(5L, q.phoneContactById("p").executeAsOne().received_at)
         }
     }
 }

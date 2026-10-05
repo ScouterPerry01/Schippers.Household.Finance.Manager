@@ -53,6 +53,15 @@ Odometer readings skip this step: they go straight to the vehicle's readings.
 
 The phone's **Summary** tab shows your accounts' balances, bills due, budgets this month and maintenance due, as of the last transfer. See [The Summary tab](phone-app#summary-tab).
 
+## 7. Look up a contact {#contacts}
+
+1. On the phone, open the **Contacts** tab: the household's contacts from your computer, without account numbers.
+2. Type part of a name, or "pharmacy", in **Search contacts**, or choose a **Kind**.
+3. Tap a contact, then a phone number to call, an email to write, or the address to see it on a map.
+4. Met someone new? Tap **New contact**, fill in the name and what you know, and **Save**. On the computer, it waits under **From the phone** on the Contacts screen until you add it.
+
+Details: [The Contacts tab](phone-app#contacts-tab) and [Contacts from the phone](contacts#from-phone).
+
 ## If the phone is lost {#lost}
 
 On the computer, go to **Phones** and click **Remove** beside the phone. It can no longer send or receive anything. The app's own PIN also protects what is on it. See [The list of phones](phones#phone-list).

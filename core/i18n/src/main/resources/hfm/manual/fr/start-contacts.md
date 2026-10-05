@@ -30,6 +30,12 @@
 2. Ou, depuis l’écran de l’élément (un compte, une police, un médicament, une facture, un entrepreneur ou certains de ses travaux...), choisissez **Lier un contact…**.
 3. Dès lors, le contact s’affiche dans l’écran de l’élément, et l’élément sur la page du contact.
 
+## Étape 5 : les emporter sur votre téléphone {#phone}
+
+1. Jumelez RANN’s Roost Mobile à cet ordinateur, si ce n’est pas déjà fait (voir [Premiers pas avec l’application mobile](start-phone)).
+2. Après le prochain transfert, l’onglet **Contacts** du téléphone liste les contacts que vous pouvez voir ici, sans les numéros de compte ni de client. Touchez un numéro pour appeler, un courriel pour écrire, une adresse pour voir la carte.
+3. Les contacts que vous ajoutez sur le téléphone avec **Nouveau contact** reviennent ici sous **Du téléphone** : ajoutez chacun comme nouveau contact, ajoutez ses coordonnées à un contact existant, ou écartez-le.
+
 ## Retrouver quelqu’un plus tard {#find}
 
 Utilisez les filtres : **Type** Banque pour toutes vos banques, **Pour qui** un enfant pour tous ceux qui s’en occupent, **Lié à** Police d’assurance pour vos assureurs et courtiers. La boîte de recherche en haut de la fenêtre trouve aussi les contacts.
