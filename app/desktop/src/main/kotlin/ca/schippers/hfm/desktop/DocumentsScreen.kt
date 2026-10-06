@@ -91,6 +91,7 @@ fun DocumentsScreen(model: BooksModel) {
     var busy by remember { mutableStateOf(false) }
     var dragOver by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showLearned by remember { mutableStateOf(false) }
 
     fun import(files: List<Path>) {
         val group = model.defaultDocumentGroup() ?: run { model.error = model.t("error.noEditableGroup"); return }
@@ -128,6 +129,7 @@ fun DocumentsScreen(model: BooksModel) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(model.t("nav.documents"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+            TextButton(onClick = { showLearned = true }) { Text(model.t("learned.button")) }
             TextButton(onClick = { showSettings = true }) { Text(model.t("documents.watchFolder")) }
             Button(enabled = !busy, onClick = { import(chooseFiles(model)) }) { Text(model.t(if (busy) "documents.reading" else "documents.import")) }
         }
@@ -150,6 +152,44 @@ fun DocumentsScreen(model: BooksModel) {
 
     reviewing?.let { doc -> ReviewDialog(model, doc.id) { reviewing = null } }
     if (showSettings) WatchFolderDialog(model) { showSettings = false }
+    if (showLearned) LearnedDialog(model) { showLearned = false }
+}
+
+/** OCR-07: what was learned from corrections, store by store, each of which can be forgotten. */
+@Composable
+private fun LearnedDialog(model: BooksModel, onClose: () -> Unit) {
+    val books = model.books
+    val learned = remember(model.revision) { books.documents.learned() }
+    val categories = remember(model.revision) { books.categories.list(includeArchived = true).associateBy { it.id } }
+    var forgetting by remember { mutableStateOf<ca.schippers.hfm.books.LearnedMerchant?>(null) }
+    WideDialog(model.t("learned.title"), model.t("common.close"), onClose) {
+        Column(Modifier.width(720.dp).heightIn(max = 480.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(model.t("learned.hint"), style = MaterialTheme.typography.bodySmall)
+            if (learned.isEmpty()) Text(model.t("learned.none"), Modifier.padding(vertical = 8.dp))
+            for (l in learned) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text(model.t("learned.read", l.readKey), style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            listOfNotNull(
+                                l.merchant,
+                                l.kind?.let { model.t("documentKind.$it") },
+                                l.categoryId?.let { categories[it]?.name(model.language) },
+                                model.t("learned.uses", l.uses),
+                            ).joinToString(" · "),
+                        )
+                    }
+                    TextButton(onClick = { forgetting = l }) { Text(model.t("learned.forget")) }
+                }
+                HorizontalDivider()
+            }
+        }
+    }
+    forgetting?.let { l ->
+        AskBeforeDeleting(model, model.t("learned.forgetQuestion", l.merchant ?: l.readKey), onDismiss = { forgetting = null }) {
+            model.act { books.documents.forgetLearned(l.groupId, l.readKey) } != null
+        }
+    }
 }
 
 private fun chooseFiles(model: BooksModel): List<Path> {

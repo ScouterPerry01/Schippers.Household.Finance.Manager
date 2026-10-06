@@ -184,6 +184,15 @@ class DocumentServiceTest {
         val third = importReceipt("photo-c".encodeToByteArray(), receipt.replace("IGA Extra Famille Jodoin", "IGA EXTRA FAMILLE"))
         assertEquals("IGA Jodoin", third.merchant)
 
+        // What was learned can be looked over and forgotten.
+        val learned = books.documents.learned().single()
+        assertEquals("iga extra famille" to "IGA Jodoin", learned.readKey to learned.merchant)
+        assertEquals(groceries, learned.categoryId)
+        books.documents.forgetLearned(learned.groupId, learned.readKey)
+        assertTrue(books.documents.learned().isEmpty())
+        assertEquals("IGA EXTRA FAMILLE #7", importReceipt("photo-f".encodeToByteArray(), receipt.replace("IGA Extra Famille Jodoin", "IGA EXTRA FAMILLE #7")).merchant)
+        books.documents.update(second.id, DocumentDetails("IGA Jodoin", DocumentKind.RECEIPT, second.date, "IGA Jodoin", second.amount, false, null))
+
         // Another store is not affected, and a private group keeps its own memory.
         assertEquals(null, books.documents.learnedCategory(importReceipt("photo-d".encodeToByteArray(), receipt.replace("IGA Extra Famille Jodoin", "Metro Plus Lebourgneuf")).id))
         val own = books.session.createGroup("Perry - privé", private = true)

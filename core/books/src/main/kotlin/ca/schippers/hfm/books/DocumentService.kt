@@ -84,6 +84,12 @@ data class DocumentImport(val document: VaultDocument, val alreadyInVault: Boole
 /** OCR-10: another document that looks like the same receipt or bill. */
 data class PossibleDuplicate(val document: VaultDocument, val identical: Boolean)
 
+/**
+ * OCR-07: what was learned about a store: [readKey] is how its name was read (simplified), then the
+ * name, kind and category the user gave, and how many corrections taught it.
+ */
+data class LearnedMerchant(val groupId: String, val readKey: String, val merchant: String?, val kind: DocumentKind?, val categoryId: String?, val uses: Int)
+
 /** Section 4.4 search: by text, date and amount. */
 data class DocumentQuery(
     val text: String? = null,
@@ -227,6 +233,20 @@ class DocumentService internal constructor(private val books: Books) {
     /** How the document's merchant was read, for learning from what the user changes. */
     private fun storedKey(row: DocumentRow): String? = row.extraction?.let { runCatching { json.decodeFromString(StoredDraft.serializer(), it) }.getOrNull() }
         ?.let { it.readKey ?: readKey(it.merchant?.v) }
+
+    /** OCR-07: what was learned from the user's corrections, in every group they can see. */
+    fun learned(): List<LearnedMerchant> = books.groups().flatMap { g ->
+        books.ledger(g).learningQueries.allMerchantMemory().executeAsList().map {
+            LearnedMerchant(g.id, it.read_key, it.merchant, it.kind?.let { k -> runCatching { DocumentKind.valueOf(k) }.getOrNull() }, it.category_id, it.uses.toInt())
+        }
+    }
+
+    /** OCR-07: forgets what was learned for a store, so its next documents are read as they come. Needs edit rights. */
+    fun forgetLearned(groupId: String, readKey: String) {
+        val group = books.group(groupId)
+        books.require(group, PermissionLevel.EDIT)
+        books.ledger(group).learningQueries.forgetMerchant(readKey)
+    }
 
     /** OCR-07: the category last used when filing a document from this merchant. */
     fun learnedCategory(documentId: String): String? {

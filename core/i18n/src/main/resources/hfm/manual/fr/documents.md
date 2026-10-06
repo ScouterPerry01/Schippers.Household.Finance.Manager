@@ -209,6 +209,8 @@ L’application apprend de ce que vous changez, commerce par commerce :
 
 Cet apprentissage est conservé dans le groupe de comptes du document.
 
+**Commerces appris…** (en haut de l’écran Documents) ouvre Ce qui a été appris de vos corrections : chaque commerce tel qu’il a été lu (« Lu comme … », simplifié : en minuscules, sans chiffres ni ponctuation), puis le nom, le type et la catégorie appris et le nombre de corrections qui les ont appris. **Oublier** demande d’abord, puis oublie ce commerce : ses prochains documents sont lus tels quels, et les documents déjà classés ne changent pas. Oublier demande la permission Modifier sur le groupe.
+
 ### Doublons possibles {#duplicates}
 @index: reçu en double; même reçu deux fois
 

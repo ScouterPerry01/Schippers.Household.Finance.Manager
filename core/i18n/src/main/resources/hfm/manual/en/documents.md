@@ -209,6 +209,8 @@ The app learns from what you change, store by store:
 
 The learning is kept in the account group of the document.
 
+**Learned stores…** (at the top of the Documents screen) opens What was learned from your corrections: each store as it was read ("Read as …", simplified: lower case, without digits or punctuation), then the name, kind and category it learned and how many corrections taught it. **Forget** asks first, then forgets that store: its next documents are read as they come, and documents already filed do not change. Forgetting needs the Edit permission on the group.
+
 ### Possible duplicates {#duplicates}
 @index: duplicate receipt; same receipt twice
 
