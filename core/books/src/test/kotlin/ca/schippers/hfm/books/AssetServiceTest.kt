@@ -66,7 +66,10 @@ class AssetServiceTest {
         assertEquals(cad("654600"), worth.assets, "the account, the house and the furnace; the fridge is not counted")
 
         val tv = assets.save(Asset("", group, AssetKind.ELECTRONICS, "Télé", purchasePrice = cad("800")))
-        assets.dispose(tv.id, AssetStatus.SOLD, d("2026-03-01"), cad("200"))
+        // SAL-03: the sale deposit is linked; its payee is the buyer.
+        val deposit = books.transactions.create(TransactionDraft(visa.id, d("2026-03-01"), cad("200"), "Marketplace: J. Tremblay"))
+        assets.dispose(tv.id, AssetStatus.SOLD, d("2026-03-01"), cad("200"), deposit.id)
+        assertEquals(deposit.id, assets.get(tv.id).disposalTransactionId)
         assertTrue(assets.list().none { it.id == tv.id }, "no longer listed")
         assertEquals(AssetStatus.SOLD, assets.get(tv.id).status)
         assertEquals(cad("0"), assets.get(tv.id).copy(valueMethod = ValueMethod.MANUAL, value = cad("500")).valueOn(d("2026-04-01")))

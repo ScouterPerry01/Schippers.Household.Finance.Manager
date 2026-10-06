@@ -92,6 +92,8 @@ The value falls by the same amount each full month after the purchase, until it 
 - **Status**: **Owned** (the default), **Sold**, **Given away** or **Discarded**.
 - **Date**: when it left the household. Required when the status is not **Owned**.
 - **Sale price**: shown when **Sold**.
+- The sale in the books, shown when **Sold**: type a few letters of the buyer or the memo, or the amount, in **Find the sale**, then choose the deposit under **Matching deposits**. The line then reads "Sale: date · buyer · amount", the buyer being the deposit's payee; the date and price are filled in when empty. **Unlink** removes the link; the deposit itself stays.
+- With a purchase price and a sale price, a line gives the gain or loss on the sale: the sale price less the purchase price. It is for your information; a personal item sold for less than it cost is not a deductible loss.
 
 From the date, the asset is worth nothing in net worth, and it leaves the list (unless **Show those sold or discarded** is ticked), the maintenance lists, the **Is it covered?** search, the uninsured list and the reminders.
 

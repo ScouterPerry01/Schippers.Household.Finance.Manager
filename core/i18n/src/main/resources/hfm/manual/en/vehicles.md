@@ -55,7 +55,7 @@ Each date gives a line on the overview, in bold within 30 days and red once pass
 When editing a saved vehicle:
 
 - **Status**: **In use** (the default), **Sold** or **Retired**. A vehicle sold or retired is hidden from the **Vehicle** list (unless **Show sold and retired** is ticked), from reminders, from the maintenance lists and from the **Is it covered?** search. Its records are kept.
-- **Date** and **Sale price**: shown when the status is not **In use**: when it was sold or retired, and for how much. The overview then shows a line such as "Sold on date for price".
+- **Date** and **Sale price**: shown when the status is not **In use**: when it was sold or retired, and for how much. The overview then shows a line such as "Sold on date for price" and, for a sale with a purchase price, the gain or loss on the sale (the sale price less the purchase price), for your information.
 
 ### Store in and delete {#store-delete}
 

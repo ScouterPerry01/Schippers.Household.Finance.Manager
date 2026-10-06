@@ -92,6 +92,8 @@ La valeur baisse du même montant chaque mois complet après l’achat, jusqu’
 - **Statut** : **Possédé** (par défaut), **Vendu**, **Donné** ou **Jeté**.
 - **Date** : quand il a quitté le ménage. Obligatoire quand le statut n’est pas **Possédé**.
 - **Prix de vente** : affiché quand **Vendu**.
+- La vente dans les livres, affichée quand **Vendu** : tapez quelques lettres de l’acheteur ou de la note, ou le montant, dans **Trouver la vente**, puis choisissez le dépôt sous **Dépôts correspondants**. La ligne indique alors « Vente : date · acheteur · montant », l’acheteur étant le bénéficiaire du dépôt ; la date et le prix sont remplis s’ils sont vides. **Délier** retire le lien ; le dépôt lui-même reste.
+- Avec un prix d’achat et un prix de vente, une ligne donne le gain ou la perte sur la vente : le prix de vente moins le prix d’achat. C’est à titre indicatif ; un bien personnel vendu moins cher qu’il a coûté n’est pas une perte déductible.
 
 À partir de la date, le bien ne vaut plus rien dans la valeur nette, et il quitte la liste (à moins que **Afficher ceux vendus ou jetés** soit coché), les listes d’entretien, la recherche **Est-ce couvert ?**, la liste des biens non assurés et les rappels.
 
