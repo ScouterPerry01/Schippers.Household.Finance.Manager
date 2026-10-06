@@ -177,6 +177,10 @@ private val SHOTS: List<Shot> = buildList {
     add(Shot("bills-calendar") { section(Section.BILLS); click(t("bills.tab.CALENDAR")) })
     add(Shot("bills-forecast") { section(Section.BILLS); click(t("bills.tab.FORECAST")) })
     add(Shot("calendar-month") { section(Section.CALENDAR); click(t("calendar.tab.MONTH")) })
+    // CSY-01 to CSY-05: items brought in from Alex's phone, the list of those calendars, and the .ics import.
+    add(Shot("calendar-brought-in") { section(Section.CALENDAR); scrollTo(l("Planification trimestrielle", "Quarterly planning")) })
+    add(Shot("calendar-phone-calendars") { section(Section.CALENDAR); click(t("calendar.broughtIn.manage")) })
+    add(Shot("calendar-ics") { section(Section.CALENDAR); click(t("calendar.ics.import")) })
     add(Shot("reports-spending") { model.reportState.kind = ReportKind.SPENDING_BY_CATEGORY; section(Section.REPORTS) })
     add(Shot("reports-net-worth") { model.reportState.kind = ReportKind.NET_WORTH; section(Section.REPORTS) })
     add(Shot("reports-portfolio") { model.reportState.kind = ReportKind.PORTFOLIO; section(Section.REPORTS) })

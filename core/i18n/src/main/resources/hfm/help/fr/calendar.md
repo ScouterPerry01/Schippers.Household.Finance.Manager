@@ -25,3 +25,7 @@ Choisissez Ajouter un rendez-vous. Indiquez de quoi il s’agit, le type, la dat
 - Annuler celui-ci annule seulement cette occurrence; les autres répétitions restent.
 - Annuler remet le rendez-vous comme avant.
 - Modifier ouvre le rendez-vous pour le changer ou le supprimer. La suppression efface toutes ses répétitions.
+
+## Calendriers des téléphones et fichiers .ics
+
+Les éléments importés du téléphone d’une personne paraissent en lecture seule, avec le calendrier d’où ils viennent et le téléphone qui les a envoyés ; les éléments « occupé seulement » d’une autre personne paraissent comme « Alex : occupé(e) ». Les calendriers se choisissent sur le téléphone, dans Réglages, Calendriers de ce téléphone. Calendriers du téléphone liste les vôtres et permet de choisir le groupe où les autres les voient. Importer un fichier .ics copie une fois un fichier de calendrier, comme des rendez-vous ordinaires.

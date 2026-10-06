@@ -2,7 +2,7 @@
 
 *English version: https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en*
 
-En vigueur le 3 octobre 2026
+En vigueur le 6 octobre 2026
 
 RANN's Roost (pour Windows et Linux) et RANN's Roost Mobile (pour Android) sont publiés par Perry Schippers, faisant affaire sous le nom de RANN, au Canada (« RANN », « nous »). Cette politique vise les deux applications. Elle est publiée à l'adresse https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr.
 
@@ -22,6 +22,16 @@ RANN n'en a jamais de copie et ne peut récupérer ni vos données ni votre mot 
 ## Entre votre téléphone et votre ordinateur
 
 Le téléphone envoie les captures directement à votre ordinateur sur votre réseau domestique. Chaque échange est chiffré de bout en bout avec une clé que les deux appareils créent au jumelage. Rien ne passe par RANN ni par une autre entreprise.
+
+## Les calendriers de votre téléphone
+
+L'application mobile peut envoyer à votre ordinateur les calendriers que votre téléphone affiche déjà (Google, Outlook ou Exchange, Samsung et autres). Cette fonction est désactivée tant que vous ne l'activez pas dans les réglages de l'application ; Android vous demande alors l'accès au calendrier.
+
+- L'application ne lit que les calendriers que vous cochez, pour le nombre de jours à l'avance que vous choisissez : le titre, le lieu, le début et la fin de chaque élément. Elle ne lit ni les descriptions, ni les invités, ni les pièces jointes, ni les rappels, et ne modifie jamais vos calendriers.
+- L'application ne se connecte jamais à vos comptes de calendrier. Elle lit ce qu'Android garde déjà sur le téléphone.
+- Ce qu'elle lit ne va qu'à votre propre ordinateur, chiffré de bout en bout comme vos captures, par votre réseau domestique ou par votre propre dossier infonuagique ou courriel. Ni RANN ni le fournisseur infonuagique ou de courriel ne peuvent le lire.
+- Sur votre ordinateur, chaque calendrier est gardé privé, montré aux autres personnes de votre ménage comme heures occupées seulement, ou partagé avec elles, selon votre choix. Les calendriers privés sont gardés dans votre propre groupe de comptes chiffré.
+- La désactiver arrête toute lecture, et les calendriers importés auparavant sont retirés de votre ordinateur au prochain transfert. Vous pouvez aussi retirer la permission dans les paramètres d'Android en tout temps.
 
 ## Ce que les applications envoient sur Internet
 

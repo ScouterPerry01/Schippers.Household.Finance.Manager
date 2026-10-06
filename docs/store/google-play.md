@@ -102,6 +102,10 @@ never see it. That covers:
 - From the phone: photos, PDFs and shared files, the text read from them, shared email text, quick
   expenses, odometer and hours readings, typed or dictated notes, voice notes (WAV audio), and new
   contacts the user types.
+- From the phone, only when the user turns on "Calendars on this phone" (CSY-01 to CSY-03): the
+  items of the phone's calendars the user ticks (title, place, start and end; never descriptions,
+  guests or reminders), for the days ahead chosen, read with `READ_CALENDAR` through Android's
+  CalendarContract. The app never signs in to a calendar account and never writes to a calendar.
 - To the phone: account balances, bills due, this month's budgets, maintenance due, calendar
   events (appointments), medication refills and the contacts the user may see (names, kinds,
   phone numbers, emails, addresses, hours; never account or client numbers).
@@ -120,12 +124,12 @@ The answers:
   - Collection required: yes, since it cannot be turned off.
 - **Is all of the user data collected by your app encrypted in transit?** Yes (ML Kit uses HTTPS; the phone-to-computer transfer is encrypted end to end).
 - **Can users request deletion?** RANN holds no user data. Everything the app keeps is on the phone and is deleted when the app is uninstalled. Answer "No" to providing a way to request deletion, and explain this in the description field if Play Console asks.
-- **Not collected (end-to-end encrypted, to the user's own computer):** photos and videos, files and documents, audio (voice notes), financial information, health information (medication refills, medical appointments), calendar events, and the household's contacts. None of these is declared.
+- **Not collected (end-to-end encrypted, to the user's own computer):** photos and videos, files and documents, audio (voice notes), financial information, health information (medication refills, medical appointments), calendar events (those from the computer, and those read from the phone's own calendars when the user turns it on), and the household's contacts. None of these is declared.
 - **Not collected at all:** location, the phone's own address book (the app never reads it), app activity, web history and personal identifiers.
 
 For the owner to confirm before submitting:
 
 1. That the end-to-end encryption exception is applied as above, rather than declaring photos, files, audio, financial and health information, calendar events and contacts as "collected". Both RANN's computer program and the cloud folder or email only ever hold sealed files; if in doubt, declaring them (purpose: App functionality, not shared, optional where the user chooses to capture) is the cautious answer.
 2. Dictation: **Dictate the note** hands over to Android's speech input (an intent to the phone's speech service, often Google's), which handles the voice under its own policy; the app receives only the words. Not declared, since the app itself sends no audio for it. The privacy policy (`website/privacy-policy-en.md` and `-fr.md`) does not mention dictation yet; a line there would be clearer.
-3. Permissions Play will ask about: `RECORD_AUDIO` (asked only when the user first records a voice note), `POST_NOTIFICATIONS` (reminders), `SCHEDULE_EXACT_ALARM` (reminders on the minute; off by default on Android 14 and later until the user allows it, so no exact-alarm declaration should be needed, but check the Play Console's questions on it), `RECEIVE_BOOT_COMPLETED` (reminders after a restart), `USE_BIOMETRIC` and network access. The Play build has no `REQUEST_INSTALL_PACKAGES`.
+3. Permissions Play will ask about: `RECORD_AUDIO` (asked only when the user first records a voice note), `POST_NOTIFICATIONS` (reminders), `SCHEDULE_EXACT_ALARM` (reminders on the minute; off by default on Android 14 and later until the user allows it, so no exact-alarm declaration should be needed, but check the Play Console's questions on it), `RECEIVE_BOOT_COMPLETED` (reminders after a restart), `READ_CALENDAR` (asked only when the user turns on "Calendars on this phone" in Settings, after the app says why; only the calendars ticked are read, and only sent to the user's computer), `USE_BIOMETRIC` and network access. The Play build has no `REQUEST_INSTALL_PACKAGES`.
 4. That Google's ML Kit page still lists the same categories for text recognition, the document scanner and the code scanner: Google may update it.
