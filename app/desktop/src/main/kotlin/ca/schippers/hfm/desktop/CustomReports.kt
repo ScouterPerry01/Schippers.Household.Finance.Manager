@@ -42,7 +42,7 @@ import java.io.File
 
 /** RPT-03: the screen's choices as a definition to save. */
 fun ReportState.definition(): ReportDefinition = ReportDefinition(
-    kind.name, preset.name, customFrom, customTo, groupId, memberId, tagId, accountSet, currency?.code, compare.name, layout.takeIf { kind == ReportKind.CUSTOM },
+    kind.name, preset.name, customFrom, customTo, groupId, memberId, tagId, accountSet, currency?.code?.takeIf { kind in BY_CURRENCY }, compare.name, layout.takeIf { kind == ReportKind.CUSTOM },
     taxYear.takeIf { kind in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.MEDICAL) },
     planYear.takeIf { kind in setOf(ReportKind.PLANS, ReportKind.MAINTENANCE) },
     reviewYear.takeIf { kind == ReportKind.YEAR_IN_REVIEW },
@@ -200,7 +200,7 @@ fun makeDueReports(model: BooksModel, today: LocalDate = today()): List<String> 
         val d = ReportDefinition.fromJson(report.definition) ?: continue
         val layout = d.layout ?: continue
         val folder = report.folder?.let(::File)?.takeIf { it.isDirectory } ?: continue
-        val filter = ReportFilter(period.from, period.to, model.reportAccounts(d.groupId, d.accountIds), d.memberId, d.tagId, d.currency?.let { runCatching { Currency.of(it) }.getOrNull() })
+        val filter = ReportFilter(period.from, period.to, model.reportAccounts(d.groupId, d.accountIds), d.memberId, d.tagId, null) // always in the base currency, as on screen
         val pivot = books.customReports.run(filter, layout, model.pivotLabels(), model.language == Language.FRENCH)
         val title = "${report.name} · ${period.id}"
         val file = File(folder, "${report.name.replace(Regex("""[\\/:*?"<>|]"""), "-")} ${period.id}.pdf")

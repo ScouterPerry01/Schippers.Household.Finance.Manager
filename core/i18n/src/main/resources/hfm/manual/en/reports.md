@@ -117,7 +117,7 @@ The Investment portfolio also warns when a security has no price on some dates: 
 
 A saved report keeps your choices under a name, so you can come back to the same view in one click. Saved reports are your own: other users of the household do not see them.
 
-What is kept: the report, the period (or the custom dates), the account group, the chosen accounts, the person, the tag, the currency, the comparison, the **Year** or **Tax year** of the reports that have one and, for a custom report, its rows, columns, measure and chart. A report saved before the year was kept opens with the year shown at the time. No amounts are kept: the report is worked out again from the books each time.
+What is kept: the report, the period (or the custom dates), the account group, the chosen accounts, the person, the tag, the currency (for the reports that have one), the comparison, the **Year** or **Tax year** of the reports that have one and, for a custom report, its rows, columns, measure and chart. A report saved before the year was kept opens with the year shown at the time. No amounts are kept: the report is worked out again from the books each time.
 
 ### Save the report {#save-dialog}
 
@@ -222,7 +222,7 @@ How the figures are worked out:
 - When **Tag** is the rows, a transaction with several tags counts under each of its tags, so the tag lines can add up to more than what was spent. Untagged lines are under "No tag".
 - Rows that are not time periods are sorted largest first. When there are more than 12, the eleven largest are kept and the rest are added together in a line "Other".
 - Time columns are in date order; other columns are sorted largest first.
-- The filters above apply too: period, account group, chosen accounts, person, tag and currency.
+- The filters above apply too: period, account group, chosen accounts, person and tag. A custom report is always in the base currency, every account converted at the exchange rate of each transaction's date.
 
 The chart:
 

@@ -52,7 +52,7 @@ import java.time.format.DateTimeFormatter
 
 enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, CUSTOM, YEAR_IN_REVIEW, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, PLANS, FX, MEDICAL, ASSETS, MAINTENANCE, DEBT, BUDGET, RECONCILIATION }
 /** FX-06: reports that can show one currency's accounts in their own amounts. */
-private val BY_CURRENCY = setOf(ReportKind.INCOME_EXPENSE, ReportKind.SPENDING_BY_CATEGORY, ReportKind.INCOME_BY_CATEGORY, ReportKind.SPENDING_BY_PAYEE, ReportKind.NET_WORTH)
+internal val BY_CURRENCY = setOf(ReportKind.INCOME_EXPENSE, ReportKind.SPENDING_BY_CATEGORY, ReportKind.INCOME_BY_CATEGORY, ReportKind.SPENDING_BY_PAYEE, ReportKind.NET_WORTH)
 /** RPT-07: reports that do not use the account group and the chosen accounts, so those choices are not shown. */
 private val NO_ACCOUNT_CHOICE = setOf(
     ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE,

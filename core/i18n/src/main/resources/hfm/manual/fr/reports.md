@@ -117,7 +117,7 @@ Le Portefeuille de placements avertit aussi quand un titre n’a pas de cours à
 
 Un rapport enregistré garde vos choix sous un nom, pour retrouver la même vue en un clic. Les rapports enregistrés vous appartiennent : les autres utilisateurs du ménage ne les voient pas.
 
-Ce qui est conservé : le rapport, la période (ou les dates au choix), le groupe de comptes, les comptes choisis, la personne, l’étiquette, la devise, la comparaison, l’**Année** ou l’**Année d’imposition** des rapports qui en ont une et, pour un rapport personnalisé, ses lignes, colonnes, mesure et graphique. Un rapport enregistré avant que l’année soit conservée s’ouvre avec l’année affichée à ce moment. Aucun montant n’est conservé : le rapport est recalculé à partir des livres chaque fois.
+Ce qui est conservé : le rapport, la période (ou les dates au choix), le groupe de comptes, les comptes choisis, la personne, l’étiquette, la devise (pour les rapports qui en ont une), la comparaison, l’**Année** ou l’**Année d’imposition** des rapports qui en ont une et, pour un rapport personnalisé, ses lignes, colonnes, mesure et graphique. Un rapport enregistré avant que l’année soit conservée s’ouvre avec l’année affichée à ce moment. Aucun montant n’est conservé : le rapport est recalculé à partir des livres chaque fois.
 
 ### Enregistrer le rapport {#save-dialog}
 
@@ -222,7 +222,7 @@ Comment les montants sont calculés :
 - Quand les lignes sont des **Étiquette**, une opération qui porte plusieurs étiquettes compte sous chacune : les lignes d’étiquettes peuvent donc dépasser ce qui a été dépensé. Les lignes sans étiquette sont sous « Sans étiquette ».
 - Les lignes qui ne sont pas des périodes sont triées de la plus grande à la plus petite. Au-delà de 12, les onze plus grandes sont gardées et les autres sont additionnées dans une ligne « Autres ».
 - Les colonnes de temps sont dans l’ordre des dates ; les autres colonnes sont triées de la plus grande à la plus petite.
-- Les filtres du dessus s’appliquent aussi : période, groupe de comptes, comptes choisis, personne, étiquette et devise.
+- Les filtres du dessus s’appliquent aussi : période, groupe de comptes, comptes choisis, personne et étiquette. Un rapport personnalisé est toujours dans la devise de base, chaque compte converti au taux de change de la date de chaque opération.
 
 Le graphique :
 
