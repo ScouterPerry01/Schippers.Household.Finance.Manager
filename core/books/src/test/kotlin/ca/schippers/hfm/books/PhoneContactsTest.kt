@@ -87,7 +87,7 @@ class PhoneContactsTest {
                     details = listOf(
                         ContactDetail(type = DetailType.PHONE, label = "Branch", value = "613 555-0101"),
                         ContactDetail(type = DetailType.EMAIL, value = "branch@rbc.example"),
-                        ContactDetail(type = DetailType.NUMBER, label = "Client card", value = "4519 0000 1111 2222"),
+                        ContactDetail(type = DetailType.NUMBER, label = "Client card", value = "4519 0000 1111 QXZW"),
                     ),
                     address = "90 Sparks St, Ottawa", website = "rbc.com", hours = "Mon-Fri 9-5", notes = "Ask for Jane",
                 ),
@@ -118,7 +118,7 @@ class PhoneContactsTest {
             assertEquals(listOf(), rbc.forWhom, "for the whole household")
             // Account and client numbers never leave the computer, not even masked.
             val text = kotlinx.serialization.json.Json.encodeToString(ca.schippers.hfm.sync.ReferenceData.serializer(), p.sync.reference(today, now))
-            assertFalse("2222" in text || "Client card" in text || "••••" in text, text)
+            assertFalse("QXZW" in text || "Client card" in text || "••••" in text, text)
         }
     }
 
