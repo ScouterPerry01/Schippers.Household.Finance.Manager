@@ -44,13 +44,16 @@ class SaveKeepsChildrenTest {
     fun `a vehicle keeps its log`() {
         val v = books.vehicles.save(Vehicle("", group, "Civic"))
         books.vehicles.addReading(v.id, d("2026-01-10"), 41000)
-        books.vehicles.saveWarranty(Warranty("", v.id, WarrantyKind.MANUFACTURER, "Honda", endDate = d("2028-01-01")))
+        val w = books.vehicles.saveWarranty(Warranty("", v.id, WarrantyKind.MANUFACTURER, "Honda", endDate = d("2028-01-01")))
+        books.vehicles.saveClaim(v.id, WarrantyClaim("", w.id, d("2026-03-01"), "Radio"))
+        books.vehicles.saveWarranty(w.copy(provider = "Honda Canada"))
         val task = books.vehicles.saveTask(MaintenanceTask("", v.id, "Vidange", intervalMonths = 6))
         books.vehicles.saveService(ServiceRecord("", v.id, d("2026-02-01"), 41500, taskIds = setOf(task.id)))
         books.vehicles.save(books.vehicles.get(v.id).copy(colour = "Bleu"))
         books.vehicles.saveTask(books.vehicles.tasks(v.id).single().copy(intervalMonths = 12))
         assertEquals(2, books.vehicles.readings(v.id).size, "the reading, and the one the service recorded")
         assertEquals(1, books.vehicles.warranties(v.id).size)
+        assertEquals(1, books.vehicles.claims(v.id, w.id).size, "saving the warranty again keeps its claims")
         assertEquals(1, books.vehicles.services(v.id).size)
         assertEquals(setOf(task.id), books.vehicles.services(v.id).single().taskIds)
     }

@@ -642,6 +642,12 @@ class MigrationTest {
             val vehicles = LedgerDatabase(driver).vehiclesQueries
             assertEquals(null, vehicles.vehicleById("v").executeAsOne().disposal_txn_id, "a vehicle sold before has no linked deposit")
             assertEquals(1850000L, vehicles.vehicleById("v").executeAsOne().disposal_price_minor)
+            vehicles.upsertWarranty("w", "v", "POWERTRAIN", "Honda", null, "2029-01-01", null, null, null)
+            vehicles.upsertWarrantyClaim("c", "w", "2026-03-02", "Transmission", "Repaired", 240000, 10000, null)
+            vehicles.upsertWarranty("w", "v", "POWERTRAIN", "Honda Canada", null, "2029-01-01", null, null, null)
+            assertEquals(1, vehicles.warrantyClaims("w").executeAsList().size, "saving the warranty again keeps its claims")
+            vehicles.deleteWarranty("w")
+            assertEquals(0L, count(driver, "SELECT count(*) FROM vehicle_warranty_claim"), "and deleting it removes them")
         }
     }
 }

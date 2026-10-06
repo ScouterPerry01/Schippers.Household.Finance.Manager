@@ -7,3 +7,17 @@ ALTER TABLE med_plan ADD COLUMN claim_rule TEXT NOT NULL DEFAULT 'AFTER_SERVICE'
 
 -- SAL-03, AST-05: a sold vehicle's sale deposit in the books (its payee is the buyer).
 ALTER TABLE vehicle ADD COLUMN disposal_txn_id TEXT;
+
+-- WAR-03 for vehicles (version 30): each claim made under a vehicle warranty, in the vehicle's currency.
+CREATE TABLE vehicle_warranty_claim (
+    id TEXT NOT NULL PRIMARY KEY,
+    warranty_id TEXT NOT NULL REFERENCES vehicle_warranty(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    problem TEXT NOT NULL,
+    outcome TEXT,
+    covered_minor INTEGER,
+    paid_minor INTEGER,
+    notes TEXT
+);
+
+CREATE INDEX vehicle_warranty_claim_warranty ON vehicle_warranty_claim(warranty_id, date);

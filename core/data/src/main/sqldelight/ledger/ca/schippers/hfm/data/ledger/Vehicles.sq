@@ -106,6 +106,20 @@ CREATE TABLE vehicle_warranty (
     notes TEXT
 );
 
+-- WAR-03 for vehicles (version 30): each claim made under a vehicle warranty, in the vehicle's currency.
+CREATE TABLE vehicle_warranty_claim (
+    id TEXT NOT NULL PRIMARY KEY,
+    warranty_id TEXT NOT NULL REFERENCES vehicle_warranty(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    problem TEXT NOT NULL,
+    outcome TEXT,
+    covered_minor INTEGER,
+    paid_minor INTEGER,
+    notes TEXT
+);
+
+CREATE INDEX vehicle_warranty_claim_warranty ON vehicle_warranty_claim(warranty_id, date);
+
 CREATE INDEX vehicle_reading_vehicle ON vehicle_reading(vehicle_id, date);
 CREATE INDEX service_record_vehicle ON service_record(vehicle_id, date);
 CREATE INDEX fuel_entry_vehicle ON fuel_entry(vehicle_id, date);
@@ -224,11 +238,39 @@ fuelEntries:
 SELECT * FROM fuel_entry WHERE vehicle_id = ? ORDER BY date, odometer, created_at;
 
 upsertWarranty:
-INSERT OR REPLACE INTO vehicle_warranty(id, vehicle_id, kind, provider, start_date, end_date, end_km, phone, notes)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+-- Updates in place: INSERT OR REPLACE would delete the row first and, through ON DELETE
+-- CASCADE, its claims.
+INSERT INTO vehicle_warranty(id, vehicle_id, kind, provider, start_date, end_date, end_km, phone, notes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET
+    vehicle_id = excluded.vehicle_id,
+    kind = excluded.kind,
+    provider = excluded.provider,
+    start_date = excluded.start_date,
+    end_date = excluded.end_date,
+    end_km = excluded.end_km,
+    phone = excluded.phone,
+    notes = excluded.notes;
 
 deleteWarranty:
 DELETE FROM vehicle_warranty WHERE id = ?;
+
+upsertWarrantyClaim:
+INSERT INTO vehicle_warranty_claim(id, warranty_id, date, problem, outcome, covered_minor, paid_minor, notes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET
+    date = excluded.date,
+    problem = excluded.problem,
+    outcome = excluded.outcome,
+    covered_minor = excluded.covered_minor,
+    paid_minor = excluded.paid_minor,
+    notes = excluded.notes;
+
+warrantyClaims:
+SELECT * FROM vehicle_warranty_claim WHERE warranty_id = ? ORDER BY date DESC, id;
+
+deleteWarrantyClaim:
+DELETE FROM vehicle_warranty_claim WHERE id = ? AND warranty_id = ?;
 
 warranties:
 SELECT * FROM vehicle_warranty WHERE vehicle_id = ? ORDER BY end_date;

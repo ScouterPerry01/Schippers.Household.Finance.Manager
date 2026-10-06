@@ -153,7 +153,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - MED-09 (claim deadline reminders, including by plan year end): Fixed: a plan's deadline can now be counted from the end of the plan year (Deadline counted from: The end of the plan year, with 0 or more days after it), and reminders and the calendar use it (ledger schema version 30).
 - MED-14 (federal and Quebec totals, dependants): Met for federal and dependants. Gap: no separate Quebec total; adult dependants are labelled as claimed apart in Quebec too. Needs checking against Revenu Québec's rules before changing (another agent owns the tax rules).
 - MED-15: Met.
-- WAR-03 (claim log): Met for assets. Gap: vehicle warranties have no claim log. Small to medium.
+- WAR-03 (claim log): Met for assets. Fixed: vehicle warranties now have a claim log too (date, problem, outcome, cost covered, cost paid), and saving a vehicle warranty again keeps its claims (ledger schema version 30).
 - INS-02, INS-05: Met.
 - INS-04 (insurance claims with documents): Fixed: documents could not be attached to a claim; Claim documents added.
 - MNT-02: Met.

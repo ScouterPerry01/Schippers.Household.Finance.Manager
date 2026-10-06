@@ -442,6 +442,40 @@ class VehicleService internal constructor(private val books: Books) {
         return w.copy(id = id)
     }
 
+    /** WAR-03: the claims made under a vehicle warranty, newest first, in the vehicle's currency. */
+    fun claims(vehicleId: String, warrantyId: String): List<WarrantyClaim> {
+        val (group, v) = locate(vehicleId)
+        val q = books.ledger(group).vehiclesQueries
+        if (q.warranties(vehicleId).executeAsList().none { it.id == warrantyId }) return emptyList()
+        return q.warrantyClaims(warrantyId).executeAsList().map {
+            WarrantyClaim(it.id, it.warranty_id, LocalDate.parse(it.date), it.problem, it.outcome, it.covered_minor?.let { m -> Money.ofMinor(m, v.currency) }, it.paid_minor?.let { m -> Money.ofMinor(m, v.currency) }, it.notes)
+        }
+    }
+
+    /** WAR-03: records a claim under one of [vehicleId]'s warranties: date, problem, outcome, cost covered and cost paid. */
+    fun saveClaim(vehicleId: String, c: WarrantyClaim): WarrantyClaim {
+        validate(c.problem.isNotBlank(), "error.descriptionRequired")
+        val (group, v) = locate(vehicleId)
+        books.require(group, PermissionLevel.EDIT)
+        val q = books.ledger(group).vehiclesQueries
+        validate(q.warranties(vehicleId).executeAsList().any { it.id == c.warrantyId }, "error.notFound")
+        listOfNotNull(c.covered, c.paid).forEach {
+            validate(it.currency == v.currency, "error.currencyMismatch", v.currency.code)
+            validate(!it.isNegative, "error.amountPositive")
+        }
+        val id = c.id.ifBlank { Ids.newId() }
+        q.upsertWarrantyClaim(id, c.warrantyId, c.date.toString(), c.problem.trim(), c.outcome.blankToNull(), c.covered?.minorUnits, c.paid?.minorUnits, c.notes.blankToNull())
+        books.session.audit("UPDATE", "vehicle_warranty_claim", id)
+        return c.copy(id = id)
+    }
+
+    fun deleteClaim(vehicleId: String, warrantyId: String, claimId: String) {
+        val (group, _) = locate(vehicleId)
+        books.require(group, PermissionLevel.EDIT)
+        books.ledger(group).vehiclesQueries.deleteWarrantyClaim(claimId, warrantyId)
+        books.session.audit("DELETE", "vehicle_warranty_claim", claimId)
+    }
+
     fun deleteWarranty(vehicleId: String, warrantyId: String) {
         val (group, _) = locate(vehicleId)
         books.require(group, PermissionLevel.EDIT)

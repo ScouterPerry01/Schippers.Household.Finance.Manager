@@ -245,7 +245,21 @@ Chaque garantie affiche son type et son fournisseur, sa date de fin, sa limite d
 - Au moins l’un de **Fin** et **Jusqu’à (km)** est obligatoire, et la fin ne peut pas précéder le début.
 - **Téléphone pour les réclamations**.
 - **Notes** : ce qu’elle couvre, la franchise.
-- **Supprimer** (en modification) : demande « Supprimer cette garantie (type)? » et, une fois confirmé, la supprime.
+- **Supprimer** (en modification) : demande « Supprimer cette garantie (type) avec ses réclamations? » et, une fois confirmé, la supprime avec ses réclamations.
+
+### Réclamations de garantie {#vehicle-warranty-claims}
+@index: réclamation de garantie; registre des réclamations
+
+Une nouvelle garantie indique « Enregistrez la garantie pour tenir le registre de ses réclamations. » Une fois enregistrée, la boîte affiche ses **Réclamations**, les plus récentes d’abord, chacune avec la date, le problème et le résultat, le montant couvert et le montant payé par vous, et un **Supprimer**, qui demande d’abord « Supprimer la réclamation « problème » du date? ». Pour en ajouter une :
+
+- **Date** : quand le problème a été signalé ; la date du jour est proposée.
+- **Problème** : ce qui s’est brisé, par exemple « La transmission patine ». Obligatoire.
+- **Résultat** : par exemple « réparé sous garantie » ou « refusé : usure ».
+- **Couvert** : ce que la garantie a payé, dans la devise du véhicule.
+- **Payé par vous** : ce que vous avez payé vous-même (une franchise, des pièces non couvertes), dans la devise du véhicule.
+- **Ajouter une réclamation** : l’inscrit tout de suite ; **Enregistrer** ou **Annuler** au bas de la boîte ne concernent que les champs de la garantie.
+
+Les réclamations servent à vos dossiers : ce que vous avez payé n’est pas ajouté à l’onglet **Coûts** ; inscrivez le paiement au [Carnet d’entretien](vehicles#service-tab) avec **Inscrire aussi le paiement** pour cela.
 
 Le rappel arrive à partir de 60 jours avant la date de **Fin** et jusqu’à cette date ; une garantie limitée seulement en kilomètres ne donne pas de rappel, alors surveillez l’odomètre.
 

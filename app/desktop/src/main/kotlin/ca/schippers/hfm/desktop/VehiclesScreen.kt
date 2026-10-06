@@ -48,6 +48,7 @@ import ca.schippers.hfm.books.Vehicle
 import ca.schippers.hfm.books.VehicleStatus
 import ca.schippers.hfm.books.Transaction
 import ca.schippers.hfm.books.Warranty
+import ca.schippers.hfm.books.WarrantyClaim
 import ca.schippers.hfm.books.WarrantyKind
 import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.domain.AccountType
@@ -776,11 +777,65 @@ private fun WarrantyDialog(model: BooksModel, existing: Warranty, onClose: () ->
         }
         TextInput(model.t("vehicles.claimPhone"), phone) { phone = it }
         TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
-        if (existing.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+        if (existing.id.isNotBlank()) {
+            TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+            HorizontalDivider(Modifier.padding(vertical = 6.dp))
+            WarrantyClaims(model, existing)
+        } else {
+            Text(model.t("vehicles.claimsLater"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
     if (asking) {
         AskBeforeDeleting(model, model.t("vehicles.delete.warranty", model.t("warrantyKind.${existing.kind}")), onDismiss = { asking = false }) {
             (model.act { model.books.vehicles.deleteWarranty(existing.vehicleId, existing.id) } != null).also { if (it) onClose() }
+        }
+    }
+}
+
+/** WAR-03: the claim log of a saved vehicle warranty: date, problem, outcome, cost covered, cost paid. */
+@Composable
+private fun WarrantyClaims(model: BooksModel, warranty: Warranty) {
+    val books = model.books
+    val locale = model.language.locale
+    val currency = remember(warranty.vehicleId) { books.vehicles.get(warranty.vehicleId).currency }
+    val claims = remember(model.revision, warranty.id) { books.vehicles.claims(warranty.vehicleId, warranty.id) }
+    var date by remember { mutableStateOf(today().toString()) }
+    var problem by remember { mutableStateOf("") }
+    var outcome by remember { mutableStateOf("") }
+    var covered by remember { mutableStateOf("") }
+    var paid by remember { mutableStateOf("") }
+    var deleting by remember { mutableStateOf<WarrantyClaim?>(null) }
+    Text(model.t("assets.claims"), style = MaterialTheme.typography.titleSmall)
+    for (c in claims) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("${model.date(c.date)} · ${c.problem}" + (c.outcome?.let { " → $it" }.orEmpty()), Modifier.weight(1f))
+            Text(
+                listOfNotNull(c.covered?.let { model.t("assets.coveredAmount", model.money(it)) }, c.paid?.let { model.t("vehicles.paidAmount", model.money(it)) }).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            TextButton(onClick = { deleting = c }) { Text(model.t("common.delete")) }
+        }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        DateInput(model.t("report.date"), date, Modifier.width(150.dp)) { date = it }
+        TextInput(model.t("assets.problem"), problem, Modifier.weight(1f)) { problem = it }
+        TextInput(model.t("assets.outcome"), outcome, Modifier.weight(1f)) { outcome = it }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        AmountInput(model.t("assets.coveredLabel"), covered, currency, locale, Modifier.width(150.dp), model::money) { covered = it }
+        AmountInput(model.t("vehicles.claimPaid"), paid, currency, locale, Modifier.width(150.dp), model::money) { paid = it }
+        OutlinedButton(onClick = {
+            model.act {
+                books.vehicles.saveClaim(
+                    warranty.vehicleId,
+                    WarrantyClaim("", warranty.id, optionalDate(date) ?: today(), problem, outcome, parseAmount(covered, currency, locale), parseAmount(paid, currency, locale)),
+                )
+            }?.let { problem = ""; outcome = ""; covered = ""; paid = "" }
+        }) { Text(model.t("assets.addClaim")) }
+    }
+    deleting?.let { c ->
+        AskBeforeDeleting(model, model.t("assets.delete.claim", c.problem, model.date(c.date)), onDismiss = { deleting = null }) {
+            model.act { books.vehicles.deleteClaim(warranty.vehicleId, warranty.id, c.id) } != null
         }
     }
 }

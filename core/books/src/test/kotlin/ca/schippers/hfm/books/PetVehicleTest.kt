@@ -136,6 +136,26 @@ class PetVehicleTest {
     }
 
     @Test
+    fun `vehicle warranty claims are logged`() {
+        val v = civic()
+        val w = books.vehicles.saveWarranty(Warranty("", v.id, WarrantyKind.POWERTRAIN, "Honda", d(1, 10), LocalDate(2029, 1, 10), 100_000))
+        books.vehicles.saveClaim(v.id, WarrantyClaim("", w.id, d(3, 2), "Transmission", "Repaired", cad("2400"), cad("100")))
+        val later = books.vehicles.saveClaim(v.id, WarrantyClaim("", w.id, d(8, 15), "Noise", "Refused: wear", paid = cad("350")))
+        val claims = books.vehicles.claims(v.id, w.id)
+        assertEquals(listOf("Noise", "Transmission"), claims.map { it.problem }, "newest first")
+        assertEquals(cad("2400"), claims.last().covered)
+        assertEquals(cad("100"), claims.last().paid)
+        assertFailsWith<ValidationException> { books.vehicles.saveClaim(v.id, WarrantyClaim("", w.id, d(9, 1), " ")) }
+        assertFailsWith<ValidationException>("not this vehicle's warranty") { books.vehicles.saveClaim(v.id, WarrantyClaim("", "other", d(9, 1), "Brakes")) }
+        books.vehicles.saveClaim(v.id, later.copy(outcome = "Repaired after all", covered = cad("350"), paid = null))
+        assertEquals("Repaired after all", books.vehicles.claims(v.id, w.id).first().outcome, "edited in place")
+        books.vehicles.deleteClaim(v.id, w.id, later.id)
+        assertEquals(1, books.vehicles.claims(v.id, w.id).size)
+        books.vehicles.deleteWarranty(v.id, w.id)
+        assertTrue(books.vehicles.claims(v.id, w.id).isEmpty(), "the claims go with the warranty")
+    }
+
+    @Test
     fun `maintenance falls due by date, by distance, or by the forecast`() {
         val v = civic()
         val oil = books.vehicles.saveTask(MaintenanceTask("", v.id, "Vidange", "oil", 6, 8_000, startDate = d(1, 10), startOdometer = 40_000))

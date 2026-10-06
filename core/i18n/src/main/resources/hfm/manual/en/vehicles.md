@@ -245,7 +245,21 @@ Each warranty shows its kind and provider, its end date, its distance limit and 
 - At least one of **Ends** and **Up to (km)** is required, and the end cannot be before the start.
 - **Claims phone number**.
 - **Notes**: what it covers, the deductible.
-- **Delete** (when editing): asks "Delete this warranty (kind)?" and, once confirmed, deletes it.
+- **Delete** (when editing): asks "Delete this warranty (kind) with its claims?" and, once confirmed, deletes it with its claims.
+
+### Warranty claims {#vehicle-warranty-claims}
+@index: warranty claim; claim log
+
+A new warranty says "Save the warranty to keep a log of claims under it." Once it is saved, the dialog shows its **Claims**, newest first, each with the date, problem and outcome, the amount covered and the amount you paid, and a **Delete**, which asks "Delete the claim "problem" of date?" first. To add one:
+
+- **Date**: when the problem was reported; today is proposed.
+- **Problem**: what went wrong, for example "Transmission slipping". Required.
+- **Outcome**: for example "repaired under warranty" or "refused: wear".
+- **Covered**: what the warranty paid for, in the vehicle's currency.
+- **You paid**: what you paid yourself (a deductible, parts not covered), in the vehicle's currency.
+- **Add a claim**: records it at once; **Save** or **Cancel** at the bottom only concern the warranty's own fields.
+
+The claims are for your records: what you paid is not added to the **Costs** tab; enter the payment in the [Service log](vehicles#service-tab) with **Also enter the payment** for that.
 
 The reminder comes from 60 days before the **Ends** date until that date; a warranty limited only by distance gives no reminder, so watch the odometer.
 
