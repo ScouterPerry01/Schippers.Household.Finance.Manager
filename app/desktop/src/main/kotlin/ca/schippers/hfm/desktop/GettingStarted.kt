@@ -43,7 +43,10 @@ fun BooksModel.setupDone(): Set<SetupStep> {
 }
 
 /** OTH-04: the guide is hidden per user, in the household's settings. */
-private fun BooksModel.gettingStartedKey() = "onboarding.hidden.${books.userId}"
+private fun BooksModel.gettingStartedKey() = gettingStartedSetting(books.userId)
+
+/** The household setting that hides the guide for [userId]. */
+internal fun gettingStartedSetting(userId: String) = "onboarding.hidden.$userId"
 
 /** Whether this user hid the Getting started guide. */
 fun BooksModel.gettingStartedHidden(): Boolean = books.setting(gettingStartedKey()) == "1"

@@ -322,11 +322,14 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (choosing) {
-                        Checkbox(
-                            checked = txn.id in chosen,
-                            onCheckedChange = { on -> if (on) chosen.add(txn.id) else chosen.remove(txn.id) },
-                            modifier = Modifier.width(40.dp),
-                        )
+                        // Compact, so the register keeps its line height while choosing.
+                        androidx.compose.runtime.CompositionLocalProvider(androidx.compose.material3.LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified) {
+                            Checkbox(
+                                checked = txn.id in chosen,
+                                onCheckedChange = { on -> if (on) chosen.add(txn.id) else chosen.remove(txn.id) },
+                                modifier = Modifier.width(40.dp),
+                            )
+                        }
                     }
                     Cell(model.date(txn.date), Modifier.width(100.dp))
                     Cell(txn.payeeId?.let(payeeNames::get) ?: txn.payeeText.orEmpty(), Modifier.weight(2f))

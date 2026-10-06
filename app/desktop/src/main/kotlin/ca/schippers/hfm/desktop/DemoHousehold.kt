@@ -172,6 +172,9 @@ object DemoHousehold {
         )
         val books = Books(created.session).also { it.language = language }
         fill(books)
+        // The demo shows a household already set up; its statement is left open to try reconciling,
+        // so the Getting started guide is hidden rather than asking for that last step.
+        books.putSetting(gettingStartedSetting(books.userId), "1")
         return created.session
     }
 
