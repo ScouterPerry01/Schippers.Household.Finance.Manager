@@ -810,6 +810,12 @@ class VehicleService internal constructor(private val books: Books) {
             Template("cabin_filter", 12, 20_000),
             Template("engine_filter", 24, 30_000, combustion = true),
             Template("inspection", 12, null),
+            // SEA-01: the seasons' checks: winter wiper blades and a block heater check before the cold,
+            // the winter emergency kit, and coolant and air conditioning before the summer heat.
+            Template("wiper_blades", 12, null, seasonStart = { _, _ -> 10 to 15 }),
+            Template("block_heater", 12, null, combustion = true, seasonStart = { _, _ -> 11 to 1 }),
+            Template("winter_kit", 12, null, seasonStart = { _, _ -> 11 to 1 }),
+            Template("summer_check", 12, null, seasonStart = { _, _ -> 5 to 15 }),
         )
 
         val TEMPLATE_KEYS: List<String> = TEMPLATES.map { it.key }

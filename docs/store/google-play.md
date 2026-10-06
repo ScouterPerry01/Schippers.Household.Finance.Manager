@@ -100,15 +100,22 @@ shared by email. Play does not count end-to-end encrypted data as collected, and
 never see it. That covers:
 
 - From the phone: photos, PDFs and shared files, the text read from them, shared email text, quick
-  expenses, odometer and hours readings, typed or dictated notes, voice notes (WAV audio), and new
-  contacts the user types; trips (times, odometers, the places at each end: a saved place's name,
-  or the coordinates of an unnamed end), fill-ups and charges, and the places saved on the phone
-  with their coordinates.
+  expenses, odometer and hours readings, typed or dictated notes, voice notes (WAV audio), new
+  contacts the user types, maintenance tasks ticked as done in the seasonal checklist (date,
+  optional cost, reading and note), and what the log forms record (UTL-01, UTL-02, HRS-01,
+  CHO-01, VOL-01): utility meter readings and fuel tank levels, hours worked for a client (date,
+  start, time, task and note; the running timer stays on the phone), chores ticked as done, and
+  volunteer hours (person, organization, kind, date, time and activity); trips (times, odometers,
+  the places at each end: a saved place's name, or the coordinates of an unnamed end), fill-ups
+  and charges, and the places saved on the phone with their coordinates.
 - From the phone, only when the user turns on "Calendars on this phone" (CSY-01 to CSY-03): the
   items of the phone's calendars the user ticks (title, place, start and end; never descriptions,
   guests or reminders), for the days ahead chosen, read with `READ_CALENDAR` through Android's
   CalendarContract. The app never signs in to a calendar account and never writes to a calendar.
-- To the phone: account balances, bills due, this month's budgets, maintenance due, calendar
+- To the phone: account balances, bills due, this month's budgets, maintenance due, the season's
+  maintenance checklist (task and vehicle or asset names, due and done dates), what the log
+  forms pick from (utility meters and fuel tanks with their last reading, side-income clients and
+  their tasks, the children's chores with what each is worth, organizations volunteered for), calendar
   events (appointments), medication refills and the contacts the user may see (names, kinds,
   phone numbers, emails, addresses, hours; never account or client numbers).
 - On the phone only: event, refill, bill, maintenance and budget reminders are scheduled and shown
@@ -126,8 +133,8 @@ The answers:
   - Collection required: yes, since it cannot be turned off.
 - **Is all of the user data collected by your app encrypted in transit?** Yes (ML Kit uses HTTPS; the phone-to-computer transfer is encrypted end to end).
 - **Can users request deletion?** RANN holds no user data. Everything the app keeps is on the phone and is deleted when the app is uninstalled. Answer "No" to providing a way to request deletion, and explain this in the description field if Play Console asks.
-- **Not collected (end-to-end encrypted, to the user's own computer):** photos and videos, files and documents, audio (voice notes), financial information, health information (medication refills, medical appointments), calendar events (those from the computer, and those read from the phone's own calendars when the user turns it on), the household's contacts, and location (precise and approximate: one fix at the start and end of a trip, or when saving a place, matched to saved places on the phone; only a place's name, or the coordinates of an unnamed end or a saved place, reach the user's computer). None of these is declared.
-- **Not collected at all:** the phone's own address book (the app never reads it), background location (the app has none), app activity, web history and personal identifiers.
+- **Not collected (end-to-end encrypted, to the user's own computer):** photos and videos, files and documents, audio (voice notes), financial information (including hours worked, chores earned and utility readings), health information (medication refills, medical appointments), calendar events (those from the computer, and those read from the phone's own calendars when the user turns it on), the household's contacts, and location (precise and approximate: one fix at the start and end of a trip, or when saving a place, matched to saved places on the phone; only a place's name, or the coordinates of an unnamed end or a saved place, reach the user's computer). None of these is declared.
+- **Not collected at all:** background location (the app has none), the phone's own address book (the app never reads it), app activity, web history and personal identifiers.
 
 For the owner to confirm before submitting:
 

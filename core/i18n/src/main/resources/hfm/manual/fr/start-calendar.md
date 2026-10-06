@@ -6,14 +6,15 @@ Le Calendrier place vos rendez-vous à côté des factures, des dates de santé,
 
 1. Ouvrez **Calendrier** dans le groupe Argent du menu.
 2. L’onglet **Agenda** énumère tout ce qui arrive dans les 60 prochains jours, jour par jour : rendez-vous, factures à payer, renouvellements de médicaments, renouvellements et entretien.
-3. L’onglet **Mois** montre un mois entier. Utilisez **◀** et **▶** pour vous déplacer, et **Aujourd’hui** pour revenir.
-4. Sur les éléments qui viennent d’autres écrans, un bouton comme **Ouvrir les factures** vous mène là où ils sont gérés.
+3. Les onglets **Jour**, **Semaine**, **Mois** et **Année** montrent le calendrier par jour, semaine, mois ou année. Utilisez **◀** et **▶** pour vous déplacer, **Aujourd’hui** pour revenir, et **Aller à une date** pour sauter à une date. Dans les onglets Mois et Année, cliquez sur un jour pour l’ouvrir dans l’onglet Jour.
+4. Décochez des cases dans le panneau **Afficher**, à droite, pour masquer des sortes d’éléments, ou ceux d’une personne. Votre choix est retenu sur cet ordinateur.
+5. Sur les éléments qui viennent d’autres écrans, un bouton comme **Ouvrir les factures** vous mène là où ils sont gérés.
 
 Plus vous remplissez les autres écrans (factures, médicaments, véhicules, assurances), plus le calendrier en montre, sans rien entrer deux fois.
 
 ## Ajouter un rendez-vous {#add}
 
-1. Cliquez sur **Ajouter un rendez-vous**, ou cliquez sur un jour dans l’onglet **Mois**.
+1. Cliquez sur **Ajouter un rendez-vous**, ou cliquez sur une heure libre dans l’onglet **Jour** ou **Semaine**.
 2. Entrez **Quoi**, par exemple « Dentiste - Léa », et choisissez un **Type**.
 3. Réglez la **Date** et l’**Heure** (au format HH:MM), ou cochez **Toute la journée**.
 4. Si vous le voulez, remplissez **Minutes**, **Où**, **Qui** et **Professionnel**.
@@ -22,6 +23,16 @@ Plus vous remplissez les autres écrans (factures, médicaments, véhicules, ass
 7. Cliquez sur **Enregistrer**.
 
 Voir [Ajouter ou modifier un rendez-vous](calendar#appointment-form).
+
+Pour l’entraînement, le match ou le cours d’un enfant, choisissez le type **Activité d’enfant** : le formulaire demande alors qui conduit à l’aller et au retour, et ce que ça coûte. Voir [Activités : conducteurs et coût](calendar#activity-fields).
+
+## Heures de travail et d’école {#schedules}
+
+1. Cliquez sur **Horaires de travail et d’école**, puis sur **Ajouter un horaire**.
+2. Choisissez la **Personne** et le **Genre**, et cochez les jours avec leur **Début** et leur **Fin**. Pour le travail par quarts, choisissez une **Rotation** de plusieurs semaines sous **Répétition**.
+3. Cliquez sur **Enregistrer**. Chaque jour montre maintenant une barre comme « Alex · Travail 8:00–16:30 ».
+
+Voir [Horaires de travail et d’école](calendar#schedules).
 
 ## Les rappels {#reminders}
 

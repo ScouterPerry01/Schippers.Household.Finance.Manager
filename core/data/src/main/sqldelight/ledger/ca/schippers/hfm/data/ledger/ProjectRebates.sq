@@ -1,0 +1,31 @@
+-- SEA-05: rebates and grants applied for on a home project (an energy upgrade, usually), in the
+-- project's currency. status: PLANNED, APPLIED, APPROVED, RECEIVED, REFUSED.
+CREATE TABLE home_project_rebate (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES home_project(id) ON DELETE CASCADE,
+    program TEXT NOT NULL,
+    status TEXT NOT NULL,
+    reference TEXT,
+    amount_minor INTEGER,
+    applied_date TEXT,
+    decision_date TEXT,
+    received_date TEXT,
+    received_minor INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX home_project_rebate_project ON home_project_rebate(project_id);
+
+rebates:
+SELECT * FROM home_project_rebate WHERE project_id = ? ORDER BY COALESCE(applied_date, received_date, ''), created_at;
+
+upsertRebate:
+INSERT INTO home_project_rebate(id, project_id, program, status, reference, amount_minor, applied_date, decision_date, received_date, received_minor, notes, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET program = excluded.program, status = excluded.status, reference = excluded.reference, amount_minor = excluded.amount_minor,
+    applied_date = excluded.applied_date, decision_date = excluded.decision_date, received_date = excluded.received_date,
+    received_minor = excluded.received_minor, notes = excluded.notes;
+
+deleteRebate:
+DELETE FROM home_project_rebate WHERE id = ?;

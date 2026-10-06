@@ -10,11 +10,12 @@ Nothing on this screen creates transactions in your accounts or changes your bal
 
 ## The Family money screen {#screen}
 
-The screen has a short explanation at the top and three tabs:
+The screen has a short explanation at the top and four tabs:
 
 - **Shared expenses**: groups of people who share costs, with each person's balance and the payments that settle everyone.
 - **Family loans**: money lent between family members or friends, with optional simple interest and a repayment log.
 - **Allowances**: a child's regular allowance, what is still owed to them, and the money they have.
+- **Chores**: each child's chores, ticked here or on the phone, and the money and points they earn (see [Chores](#chores)).
 
 The screen opens on **Shared expenses**. The tab you choose is kept only while you stay on the screen.
 
@@ -161,6 +162,7 @@ An allowance is a fixed amount a child receives on a schedule. RANN's Roost coun
 - **Set up an allowance…**: opens the [allowance dialog](#allowance-dialog). It appears once the household has at least one member (see [Household members](members)); it starts with the first member whose kind is a child, or else the first member.
 - Each allowance shows the person, the amount and how often (such as "Léa · $10.00 a week"), and below it **Has** (the child's money today) and, while the allowance runs, **next on** (the next allowance day).
 - When allowance days have passed without being paid, the line shows **… owed** in red and a **Mark paid** button. **Mark paid** records one payment, dated today, for the whole amount owed.
+- When the child has [chores](#chores) done and not paid yet, the line also shows **Chores:** with their amount, and **Mark paid** pays them too, as one **Earned or received** entry.
 - Click an allowance to open [the child's money](#allowance-entries).
 
 ### Set up an allowance dialog {#allowance-dialog}
@@ -194,3 +196,32 @@ Clicking an allowance opens this window.
 - **Close**: closes the window.
 
 > Tip: Use the child's money as a savings jar you keep for them: record what they earn and spend, and **Has** always tells you how much is theirs.
+
+## Chores {#chores}
+
+@index: chores; jobs around the house; points; earned money; chore chart
+
+![The Chores tab](images/family-chores.png)
+
+The **Chores** tab keeps each child's chores, worth an amount, points, or both. A chore is ticked each time it is done, here or on the phone (by a parent, or by the child on their own phone). The money earned is paid with the allowance: it goes into the child's money as **Earned or received**.
+
+### The list of chores {#chore-list}
+
+- **Add a chore**: opens the [chore dialog](#chore-dialog). It appears once the household has a member; it starts with the first child.
+- One card per child: **To pay** (the money earned by chores done up to today and not paid yet, and how many) and the points, in all and this month.
+- **Pay with the allowance**: when the child has an allowance in the same currency, adds one **Earned or received** entry for what is to pay, noted **Chores**, and marks those chores paid. **Mark paid** on the [list of allowances](#allowance-list) does the same when it pays the allowance. Without an allowance, **Mark as paid** marks them paid without adding anything.
+- Each chore: its name (click it to change it), what it is worth, how many times it was done in the last seven days, **History**, and **Done today** (or **Done again** once done today), which ticks it for today.
+
+### Add a chore dialog {#chore-dialog}
+
+- **Child**: the household member who does it; children are listed first.
+- **Chore**: the name, such as "Empty the dishwasher". Required.
+- **Amount**: what it earns each time, in the household's base currency; optional.
+- **Points**: whole points each time; optional.
+- **Store in**, **Archived** (it leaves the list and the phone; its history stays) and **Delete** (asks first; what was paid stays in the child's money).
+
+Each tick earns what the chore is worth when it is ticked; changing the amount later does not change past ticks.
+
+### History window {#chore-history}
+
+**History** lists the times the chore was done, newest first: the date, what it earned, **paid** with the date when paid, and **from the phone**. ✕ removes a tick not paid yet, after asking. To tick it on another day, choose the **Date** and click **Tick on this date**.

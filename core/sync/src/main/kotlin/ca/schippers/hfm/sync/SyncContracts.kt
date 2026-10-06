@@ -54,10 +54,12 @@ enum class TransferStatus { PENDING, SENT, IMPORTED, FAILED }
 /**
  * Kinds of item a phone can capture (CAP-01..08, MNT-03). [CONTACT] only marks a new contact in the
  * phone's own queue: contacts travel in [SyncRequest.contacts], never as a [CaptureItem], so a
- * desktop that does not know them still reads the request.
+ * desktop that does not know them still reads the request. [TASK_DONE] marks a task ticked in the
+ * seasonal checklist the same way (SEA-04, [SyncRequest.tasksDone]), and [TRACKER] a meter
+ * reading, tank level, hours, chore or volunteer hours ([SyncRequest.trackers]).
  */
 enum class CaptureKind {
-    RECEIPT, BILL, DOCUMENT, QUICK_EXPENSE, METER_READING, CONTACT,
+    RECEIPT, BILL, DOCUMENT, QUICK_EXPENSE, METER_READING, CONTACT, TASK_DONE, TRACKER,
 
     /** TRP-01, TRP-05, TRP-02: like [CONTACT], only marks in the phone's queue what travels in [SyncRequest.trips], [SyncRequest.fuel] and [SyncRequest.places]. */
     TRIP, FUEL, PLACE,
@@ -128,8 +130,28 @@ data class PhoneContact(
 )
 
 /**
- * [contacts] (CON-07) were added after the first phones: a desktop that predates them ignores the
- * field and does not acknowledge them, so they stay queued on the phone until it is updated.
+ * SEA-04: a task ticked in the seasonal checklist on the phone, for the desktop to record in the
+ * service log of the vehicle or asset ([vehicle] tells which). [id] is made on the phone, so the
+ * desktop records it at most once. [date] is ISO (yyyy-MM-dd); [cost] a decimal string in the
+ * vehicle's or asset's currency; [reading] the odometer or meter reading, all optional.
+ */
+@Serializable
+data class PhoneTaskDone(
+    val id: String,
+    val createdAtMillis: Long,
+    val taskId: String,
+    val subjectId: String,
+    val vehicle: Boolean,
+    val date: String,
+    val note: String? = null,
+    val cost: String? = null,
+    val reading: Int? = null,
+)
+
+/**
+ * [contacts] (CON-07) and [tasksDone] (SEA-04) were added after the first phones: a desktop that
+ * predates them ignores the field and does not acknowledge them, so they stay queued on the phone
+ * until it is updated.
  */
 @Serializable
 data class SyncRequest(
@@ -142,6 +164,9 @@ data class SyncRequest(
      * them ignores the field and does not acknowledge them, so the phone keeps sending them.
      */
     val calendars: List<CalendarSnapshot> = emptyList(),
+    val tasksDone: List<PhoneTaskDone> = emptyList(),
+    /** UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: what the phone's log forms recorded; ignored (and kept on the phone) by older desktops. */
+    val trackers: List<PhoneTracker> = emptyList(),
     /** TRP-01: trips driven, started and ended on the phone; a desktop that predates them leaves them queued. */
     val trips: List<PhoneTrip> = emptyList(),
     /** TRP-05, TRP-10: fill-ups and charges entered on the phone. */
@@ -192,6 +217,12 @@ data class ReferenceData(
     val events: List<RefEvent> = emptyList(),
     /** CAL-03, HLT-03 on the phone: medication refills coming up or overdue. */
     val refills: List<RefRefill> = emptyList(),
+    /** SEA-04 on the phone: the current season's checklist. */
+    val seasonal: RefSeasonal? = null,
+    /** UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: the meters, tanks, clients, chores and organizations the log forms pick from. */
+    val trackers: RefTrackers = RefTrackers(),
+    /** CAL-10 on the phone: each person's work and school hours today and tomorrow, from the groups the phone's user can see. */
+    val schedules: List<RefSchedule> = emptyList(),
     /** TRP-02: the saved places of the groups the phone's user can see. They stay on the user's devices. */
     val places: List<RefPlace> = emptyList(),
     /** TRP-04: trailers (assets of the kind trailer) a trip may tow. */
@@ -202,7 +233,7 @@ data class ReferenceData(
     companion object {
         /**
          * What a phone app understands of the reference data: 1 up to maintenance and budgets, 2
-         * with contacts, 3 with events and refills, 4 with places, trailers and the vehicles' fuel type and use. A phone that kept its copy with an older app asks for all of it again
+         * with contacts, 3 with events and refills, 4 with the seasonal checklist, what the log forms pick from, schedules, places, trailers and the vehicles' fuel type and use. A phone that kept its copy with an older app asks for all of it again
          * ([knownVersion]), since that app dropped what it did not know.
          */
         const val FORMAT = 4
@@ -309,6 +340,45 @@ data class RefRefill(
     val reminderDays: Int = 7,
     val forWhom: String? = null,
     val renewal: Boolean = false,
+)
+
+/**
+ * CAL-10: one person's hours on [date]: [kind] is WORK, SCHOOL or OTHER, [start] and [end] are "HH:mm"
+ * (an [end] before [start] ends the next day); [label] is where, when given.
+ */
+@Serializable
+data class RefSchedule(
+    val person: String,
+    val kind: String,
+    val date: String,
+    val start: String,
+    val end: String,
+    val label: String? = null,
+)
+
+/**
+ * SEA-04: the current season's checklist. [season] is SPRING, SUMMER, FALL or WINTER; it runs from
+ * [start] up to the day before [end] (ISO dates).
+ */
+@Serializable
+data class RefSeasonal(val season: String, val start: String, val end: String, val tasks: List<RefSeasonalTask> = emptyList())
+
+/**
+ * SEA-04: one task of the checklist. [state] is DONE, DUE, SOON or TO_DO; [unit] (KM or HOURS) is
+ * set when a reading may be given with the tick; [currency] is that of a cost.
+ */
+@Serializable
+data class RefSeasonalTask(
+    val taskId: String,
+    val subjectId: String,
+    val subject: String,
+    val task: String,
+    val vehicle: Boolean,
+    val state: String,
+    val dueDate: String? = null,
+    val doneOn: String? = null,
+    val unit: String? = null,
+    val currency: String = "CAD",
 )
 
 /**

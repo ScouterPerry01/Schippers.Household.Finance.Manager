@@ -61,32 +61,6 @@ internal fun importedSource(model: BooksModel, item: BroughtInItem): String =
     item.sourceName?.ifBlank { null }?.let { name -> item.accountName?.let { model.t("calendar.broughtIn.sourceAccount", name, it) } ?: name }
         ?: model.t("calendar.broughtIn.ownersCalendar", item.ownerName)
 
-/** CSY-04: an item brought in from a phone in the agenda, read-only. */
-@Composable
-internal fun RowScope.ImportedAgendaRow(model: BooksModel, item: CalendarItem.Imported) {
-    val i = item.item
-    val starts = item.date == i.startDate
-    val whenText = when {
-        i.allDay -> model.t("calendar.allDay")
-        starts -> hhmm(i.startTime!!)
-        else -> model.t("calendar.broughtIn.continues")
-    }
-    Text(whenText, Modifier.width(110.dp).padding(start = 12.dp))
-    Column(Modifier.weight(1f)) {
-        Text(importedTitle(model, i), fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(
-            listOfNotNull(
-                i.startTime?.let { s -> i.endTime?.let { e -> model.t("calendar.broughtIn.range", hhmm(s), hhmm(e)) } },
-                i.location,
-                model.t("calendar.broughtIn.from", importedSource(model, i), i.ownerName),
-                model.t("calendar.broughtIn.visibility.${i.visibility}"),
-            ).joinToString(" · "),
-            style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
-        )
-    }
-    Text(model.t("calendar.broughtIn.readOnly"), style = MaterialTheme.typography.bodySmall)
-}
-
 private fun hhmm(t: LocalTime) = "%02d:%02d".format(t.hour, t.minute)
 
 private fun updatedText(model: BooksModel, millis: Long): String =

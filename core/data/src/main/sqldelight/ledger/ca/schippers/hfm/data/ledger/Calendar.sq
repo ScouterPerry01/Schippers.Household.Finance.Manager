@@ -20,7 +20,17 @@ CREATE TABLE event (
     -- Reminder lead times in minutes, e.g. "1440,60" for a day and an hour before.
     reminder_minutes TEXT NOT NULL DEFAULT '1440',
     created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+    updated_at INTEGER NOT NULL,
+    -- CAL-11 (version 31): a child's activity (practice, game, lesson), stored with category PERSONAL.
+    activity INTEGER NOT NULL DEFAULT 0,
+    -- Who drives there and back: a household member, or a name typed in (another parent).
+    driver_there_member_id TEXT,
+    driver_there_name TEXT,
+    driver_back_member_id TEXT,
+    driver_back_name TEXT,
+    -- The cost of each occurrence, in cost_currency; it can become a transaction (event_activity_day).
+    cost_minor INTEGER,
+    cost_currency TEXT
 );
 
 -- One occurrence marked done or cancelled, without changing the series (CAL-05).
@@ -33,12 +43,15 @@ CREATE TABLE event_occurrence (
 
 insertEvent:
 INSERT INTO event(id, title, category, start_date, start_time, duration_minutes, location, notes, member_id, provider_id,
-    account_id, recurrence, end_date, reminder_minutes, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    account_id, recurrence, end_date, reminder_minutes, created_at, updated_at, activity, driver_there_member_id, driver_there_name,
+    driver_back_member_id, driver_back_name, cost_minor, cost_currency)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateEvent:
 UPDATE event SET title = ?, category = ?, start_date = ?, start_time = ?, duration_minutes = ?, location = ?, notes = ?,
-    member_id = ?, provider_id = ?, account_id = ?, recurrence = ?, end_date = ?, reminder_minutes = ?, updated_at = ?
+    member_id = ?, provider_id = ?, account_id = ?, recurrence = ?, end_date = ?, reminder_minutes = ?, updated_at = ?,
+    activity = ?, driver_there_member_id = ?, driver_there_name = ?, driver_back_member_id = ?, driver_back_name = ?,
+    cost_minor = ?, cost_currency = ?
 WHERE id = ?;
 
 deleteEvent:

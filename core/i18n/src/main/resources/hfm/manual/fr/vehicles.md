@@ -159,8 +159,12 @@ Les tâches sont triées par prochaine date. Les tâches en pause suivent, marqu
 - **Filtre à air de l’habitacle** : aux 12 mois ou aux 20 000 km.
 - **Filtre à air du moteur** : aux 24 mois ou aux 30 000 km (pas pour un véhicule électrique).
 - **Inspection annuelle** : aux 12 mois.
+- **Essuie-glaces d’hiver** : chaque année, le 15 octobre.
+- **Vérifier le chauffe-moteur et son cordon** : chaque année, le 1er novembre (pas pour un véhicule électrique).
+- **Trousse d’urgence d’hiver dans la voiture** : chaque année, le 1er novembre : une couverture, une pelle, un grattoir et une brosse, du sable ou de la litière, des câbles de démarrage, une lampe de poche, de l’eau et des collations.
+- **Vérification d’été : liquide de refroidissement et climatisation** : chaque année, le 15 mai.
 
-Elles partent d’aujourd’hui et de l’odomètre actuel, sauf les pneus d’hiver, qui reviennent à leur date. Modifiez chaque tâche selon le manuel du propriétaire, ou mettez en pause celles dont vous n’avez pas besoin.
+Elles partent d’aujourd’hui et de l’odomètre actuel, sauf les saisonnières (pneus d’hiver, essuie-glaces, chauffe-moteur, trousse d’urgence et vérification d’été), qui reviennent à leur date. Elles paraissent toutes dans la [Liste saisonnière](assets#seasonal-tab) de leur saison. Modifiez chaque tâche selon le manuel du propriétaire, ou mettez en pause celles dont vous n’avez pas besoin.
 
 > Remarque : Au Québec, les pneus d’hiver sont obligatoires du 1er décembre au 15 mars (du 15 décembre avant 2019). Ailleurs, les dates sont des suggestions. Les deux dates, par province, sont dans [Taux et règles](rates-rules).
 

@@ -39,6 +39,7 @@ import ca.schippers.hfm.books.AssetKind
 import ca.schippers.hfm.books.CardReward
 import ca.schippers.hfm.books.Contractor
 import ca.schippers.hfm.books.ContractorJob
+import ca.schippers.hfm.books.EnergyUpgrade
 import ca.schippers.hfm.books.HomeProject
 import ca.schippers.hfm.books.Invoice
 import ca.schippers.hfm.books.InvoiceLine
@@ -504,7 +505,8 @@ internal fun ProjectsTab(model: BooksModel) {
             val base = books.homeProjects.costBase(h.id)
             if (base.improvements.isZero && base.purchase == null) continue
             Text(
-                model.t("project.costBase", h.name, base.total?.let(model::money) ?: "—", model.money(base.improvements)),
+                model.t("project.costBase", h.name, base.total?.let(model::money) ?: "—", model.money(base.improvements)) +
+                    if (base.rebates.isZero) "" else " · " + model.t("rebate.costBase", model.money(base.rebates)),
                 fontWeight = FontWeight.Medium, modifier = Modifier.padding(vertical = 4.dp),
             )
         }
@@ -517,6 +519,7 @@ internal fun ProjectsTab(model: BooksModel) {
                         listOfNotNull(
                             model.t("projectStatus.${p.status}"), homes.firstOrNull { it.id == p.assetId }?.name,
                             model.t(if (p.capital) "project.capital" else "project.repair"),
+                            p.energyKind?.let { model.t("project.energyOf", model.t("energyUpgrade.$it")) },
                             p.budget?.let { model.t("project.budgetOf", model.money(it)) },
                         ).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
@@ -544,11 +547,12 @@ private fun ProjectDialog(model: BooksModel, p: HomeProject, homes: List<ca.schi
     var end by remember { mutableStateOf(p.end?.toString().orEmpty()) }
     var budget by remember { mutableStateOf(p.budget?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
     var capital by remember { mutableStateOf(p.capital) }
+    var energy by remember { mutableStateOf(p.energyKind) }
     var notes by remember { mutableStateOf(p.notes.orEmpty()) }
     var asking by remember { mutableStateOf(false) }
     FormDialog(model.t(if (p.id.isBlank()) "project.add" else "project.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
-            model.books.homeProjects.save(p.copy(name = name, status = status, assetId = home?.id, start = optionalDate(start), end = optionalDate(end), budget = parseAmount(budget, p.currency, locale)?.abs(), capital = capital, notes = notes))
+            model.books.homeProjects.save(p.copy(name = name, status = status, assetId = home?.id, start = optionalDate(start), end = optionalDate(end), budget = parseAmount(budget, p.currency, locale)?.abs(), capital = capital, notes = notes, energyKind = energy))
         }
         if (ok != null) onClose()
     }) {
@@ -562,6 +566,8 @@ private fun ProjectDialog(model: BooksModel, p: HomeProject, homes: List<ca.schi
             DateInput(model.t("project.end"), end, Modifier.weight(1f)) { end = it }
         }
         AmountInput(model.t("project.budget"), budget, p.currency, locale, Modifier.fillMaxWidth(), model::money) { budget = it }
+        // SEA-05: an energy upgrade, whose rebates and grants are kept in the project's costs.
+        Picker(model.t("project.energy"), listOf<EnergyUpgrade?>(null) + EnergyUpgrade.entries, energy, { it?.let { e -> model.t("energyUpgrade.$e") } ?: model.t("project.notEnergy") }) { energy = it }
         LabeledCheckbox(model.t("project.capitalCheck"), capital) { capital = it }
         Text(model.t("project.capitalHint"), style = MaterialTheme.typography.bodySmall)
         TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
@@ -589,22 +595,25 @@ private fun ProjectCostsDialog(model: BooksModel, p: HomeProject, onClose: () ->
         }
         if (ok != null) onClose()
     }) {
-        Text(model.t("project.spent", model.money(p.spent), p.budget?.let(model::money) ?: "—"), fontWeight = FontWeight.Medium)
-        for (c in p.costs) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(model.date(c.date), Modifier.width(100.dp))
-                Text(c.description + (contractors.firstOrNull { it.id == c.contractorId }?.let { " · ${it.name}" } ?: ""), Modifier.weight(1f))
-                MoneyText(model, c.amount)
-                RemoveButton(model.t("common.delete")) { deleting = c }
+        Column(Modifier.heightIn(max = 600.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(model.t("project.spent", model.money(p.spent), p.budget?.let(model::money) ?: "—"), fontWeight = FontWeight.Medium)
+            for (c in p.costs) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(model.date(c.date), Modifier.width(100.dp))
+                    Text(c.description + (contractors.firstOrNull { it.id == c.contractorId }?.let { " · ${it.name}" } ?: ""), Modifier.weight(1f))
+                    MoneyText(model, c.amount)
+                    RemoveButton(model.t("common.delete")) { deleting = c }
+                }
             }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DateInput(model.t("report.date"), day, Modifier.width(170.dp)) { day = it }
-            TextInput(model.t("share.description"), description, Modifier.weight(1f)) { description = it }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            AmountInput(model.t("share.amount"), amount, p.currency, locale, Modifier.weight(1f), model::money) { amount = it }
-            if (contractors.isNotEmpty()) Picker(model.t("project.contractor"), listOf(null) + contractors, contractor, { it?.name ?: "—" }, Modifier.weight(1f)) { contractor = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DateInput(model.t("report.date"), day, Modifier.width(170.dp)) { day = it }
+                TextInput(model.t("share.description"), description, Modifier.weight(1f)) { description = it }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                AmountInput(model.t("share.amount"), amount, p.currency, locale, Modifier.weight(1f), model::money) { amount = it }
+                if (contractors.isNotEmpty()) Picker(model.t("project.contractor"), listOf(null) + contractors, contractor, { it?.name ?: "—" }, Modifier.weight(1f)) { contractor = it }
+            }
+            ProjectRebatesBlock(model, p)
         }
     }
     deleting?.let { c ->
@@ -616,7 +625,7 @@ private fun ProjectCostsDialog(model: BooksModel, p: HomeProject, onClose: () ->
 
 // --- Side income: invoices (SAL-04) and rental properties (SAL-05) -----------------------------------
 
-private enum class SideTab { INVOICES, RENTALS }
+private enum class SideTab { INVOICES, HOURS, RENTALS }
 
 /** SAL-04, SAL-05: invoices for side income, and rental properties' income and expenses. */
 @Composable
@@ -630,6 +639,7 @@ fun SideIncomeScreen(model: BooksModel) {
         }
         when (tab) {
             SideTab.INVOICES -> InvoicesTab(model)
+            SideTab.HOURS -> HoursTab(model)
             SideTab.RENTALS -> RentalsTab(model)
         }
     }

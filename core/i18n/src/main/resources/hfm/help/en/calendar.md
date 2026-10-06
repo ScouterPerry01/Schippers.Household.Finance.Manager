@@ -8,12 +8,21 @@ Besides the appointments you add, it shows:
 - Health items that are due, from Health.
 - Renewals, such as insurance, registrations, warranties ending or a loan term ending.
 - Maintenance due on your vehicles and your home and assets.
+- Each person's work and school hours, as a bar in the person's colour.
 
 Each of these has a button, such as Open bills or Open health, that takes you to the screen where it is managed.
 
-## Agenda and Month
+## Views
 
-The Agenda tab lists what is coming in the next 60 days, by day. The Month tab shows a whole month. On the month view, click a day to add an appointment, and click an appointment to change it.
+The Agenda tab lists what is coming in the next 60 days, by day. Day and Week show the hours, with work and school hours shaded; click an empty hour to add an appointment then. Month shows a whole month and Year the twelve months; click a day to open it in the Day tab. Today, ◀ and ▶ move the view, and Go to a date jumps to a date. Click an appointment to change it.
+
+## Show and hide
+
+Untick boxes in the Show panel on the right to hide a kind of item, or everything about a person. Your choice is remembered for you on this computer.
+
+## Schedules and activities
+
+Work and school schedules holds each person's hours: days and times every week or on a rotation of several weeks, days off, and the province's bank holidays off if chosen. For a child's practice or lesson, choose the kind Child's activity to note who drives there and back and what it costs; Drivers changes one date's drivers, and Record the cost enters the cost in the books.
 
 ## Add an appointment
 

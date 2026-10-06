@@ -1,6 +1,6 @@
 # Argent en famille
 
-Argent en famille suit l’argent entre les personnes. L’écran se trouve dans le groupe Argent du menu et compte trois onglets.
+Argent en famille suit l’argent entre les personnes. L’écran se trouve dans le groupe Argent du menu et compte quatre onglets.
 
 ## Dépenses partagées
 
@@ -16,4 +16,8 @@ L’ARC a des règles sur les prêts à faible taux entre conjoints; consultez u
 
 ## Allocations
 
-Prévoir une allocation… pour un enfant : le montant, la fréquence et le premier jour. Chaque jour d’allocation s’ajoute à ce qui est dû jusqu’à ce que Marquer payé l’inscrive. Cliquez sur une allocation pour inscrire l’argent que l’enfant a gagné, reçu ou dépensé : son solde est ce qu’il a.
+Prévoir une allocation… pour un enfant : le montant, la fréquence et le premier jour. Chaque jour d’allocation s’ajoute à ce qui est dû jusqu’à ce que Marquer payé l’inscrive. Cliquez sur une allocation pour inscrire l’argent que l’enfant a gagné, reçu ou dépensé : son solde est ce qu’il a. Marquer payé paie aussi les tâches faites et pas encore payées.
+
+## Tâches ménagères
+
+Ajoutez une tâche pour un enfant, qui vaut un montant, des points, ou les deux. Faite aujourd’hui la coche ; l’enfant ou un parent peut aussi la cocher sur le téléphone (Tâches ménagères à l’onglet Capturer). Chaque enfant montre ce qui reste à payer ; Payer avec l’allocation l’ajoute à l’argent de l’enfant comme gagné, et les points s’additionnent.

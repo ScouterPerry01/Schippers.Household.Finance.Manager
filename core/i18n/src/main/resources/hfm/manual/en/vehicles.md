@@ -159,8 +159,12 @@ Tasks are sorted by their next date. Paused tasks follow, marked "(paused)", wit
 - **Cabin air filter**: every 12 months or 20,000 km.
 - **Engine air filter**: every 24 months or 30,000 km (not for an electric vehicle).
 - **Yearly inspection**: every 12 months.
+- **Winter wiper blades**: every year, due October 15.
+- **Check the block heater and cord**: every year, due November 1 (not for an electric vehicle).
+- **Winter emergency kit in the car**: every year, due November 1: a blanket, a shovel, a scraper and brush, sand or kitty litter, booster cables, a flashlight, water and snacks.
+- **Summer check: coolant and air conditioning**: every year, due May 15.
 
-They count from today and the current odometer, except the winter tires, which fall due on their date. Edit any task to match your owner's manual, or pause the ones you do not need.
+They count from today and the current odometer, except the seasonal ones (winter tires, wiper blades, block heater, emergency kit and summer check), which fall due on their date. They all appear in the [Seasonal checklist](assets#seasonal-tab) of their season. Edit any task to match your owner's manual, or pause the ones you do not need.
 
 > Note: In Quebec, winter tires are required from December 1 to March 15 (from December 15 before 2019). Elsewhere the dates are suggestions. Both dates, by province, are in [Rates and rules](rates-rules).
 

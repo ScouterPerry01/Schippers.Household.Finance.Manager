@@ -1,6 +1,6 @@
 # Family money
 
-Family money keeps track of money between people. It is in the Money group of the menu, and has three tabs.
+Family money keeps track of money between people. It is in the Money group of the menu, and has four tabs.
 
 ## Shared expenses
 
@@ -16,4 +16,8 @@ The CRA has rules on low-interest loans between spouses; ask an advisor before s
 
 ## Allowances
 
-Set up an allowance… for a child: the amount, how often and the first day. Each allowance day adds to what is owed until Mark paid records it. Click an allowance to record money the child earned or received, or spent: the child's balance is what they have.
+Set up an allowance… for a child: the amount, how often and the first day. Each allowance day adds to what is owed until Mark paid records it. Click an allowance to record money the child earned or received, or spent: the child's balance is what they have. Mark paid also pays the chores done and not paid yet.
+
+## Chores
+
+Add a chore for a child, worth an amount, points, or both. Done today ticks it; the child or a parent can also tick it on the phone (Chores on the Capture tab). Each child shows what is still to pay; Pay with the allowance adds it to the child's money as earned, and the points add up.

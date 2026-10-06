@@ -77,7 +77,7 @@ class MigrationTest {
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
             assertEquals(1L, count(driver, "SELECT count(*) FROM txn"))
             val q = LedgerDatabase(driver)
-            q.calendarQueries.insertEvent("e", "Garage", "VEHICLE", "2026-10-05", "09:30", 60, null, null, null, null, null, null, null, "1440,60", 0, 0)
+            q.calendarQueries.insertEvent("e", "Garage", "VEHICLE", "2026-10-05", "09:30", 60, null, null, null, null, null, null, null, "1440,60", 0, 0, 0, null, null, null, null, null, null)
             q.healthQueries.upsertProvider("p", "Pharmacie", "PHARMACY", null, null, null, 0)
             assertEquals(1L, count(driver, "SELECT count(*) FROM event"))
             assertEquals(1L, count(driver, "SELECT count(*) FROM health_provider"))
@@ -100,7 +100,7 @@ class MigrationTest {
             assertEquals(1L, count(driver, "SELECT count(*) FROM health_provider"))
             val q = LedgerDatabase(driver)
             q.healthQueries.upsertProvider("v", "Clinique vétérinaire", "VET", null, null, null, 0)
-            q.calendarQueries.insertEvent("g", "Toilettage", "PET", "2026-10-09", null, null, null, null, null, null, null, null, null, "1440", 0, 0)
+            q.calendarQueries.insertEvent("g", "Toilettage", "PET", "2026-10-09", null, null, null, null, null, null, null, null, null, "1440", 0, 0, 0, null, null, null, null, null, null)
             q.calendarQueries.deleteEvent("e")
             assertEquals(0L, count(driver, "SELECT count(*) FROM event_occurrence"), "the foreign key still cascades after the rename")
             assertEquals(0L, count(driver, "SELECT count(*) FROM vehicle") + count(driver, "SELECT count(*) FROM savings_goal"))
@@ -343,7 +343,7 @@ class MigrationTest {
             fun saveBoat() = db.assetsQueries.upsertAsset("b", null, "BOAT", "Bateau", null, null, null, null, null, null, "CAD", null, null, null, "NONE", null, null, null, null, 0, "ACTIVE", null, null, null, null, 0, 0, "HOURS")
             saveBoat()
             val q = db.assetMaintenanceQueries
-            q.upsertTask("t", "b", "Vidange", null, 12, 100, "2026-05-01", 0, 14, 10, 1, null)
+            q.upsertTask("t", "b", "Vidange", null, 12, 100, "2026-05-01", 0, 14, 10, 1, null, null, null, null)
             q.insertReading("r", "b", "2026-08-01", 42, null)
             saveBoat()
             assertEquals(1, q.tasks("b").executeAsList().size)
@@ -623,6 +623,100 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 30 ledgers keep their data, and gain calendars brought in, weekly tasks, energy upgrades, rebates, meters, tanks, hours, chores, volunteer hours, activities and schedules, trips, places and vehicle details`() {
+        val file = temp.resolve("ledger30.db")
+        older("../data/src/main/sqldelight/ledger/schemas/30.db", file, 30).use { driver ->
+            driver.execute(null, "INSERT INTO asset(id, kind, name, created_at, updated_at) VALUES ('p', 'POOL', 'Piscine', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO asset_task(id, asset_id, name, interval_months) VALUES ('t', 'p', 'Ouvrir', 12)", 0)
+            driver.execute(null, "INSERT INTO home_project(id, name, status, currency) VALUES ('h', 'Isolation', 'DONE', 'CAD')", 0)
+            driver.execute(null, "INSERT INTO event(id, title, category, start_date, created_at, updated_at) VALUES ('e', 'Garage', 'VEHICLE', '2026-10-05', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO allowance(id, member_id, amount_minor, currency, frequency, start_date) VALUES ('a', 'kid', 500, 'CAD', 'WEEKLY', '2026-01-02')", 0)
+            driver.execute(null, "INSERT INTO vehicle(id, name, created_at, updated_at) VALUES ('v', 'Civic', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO fuel_entry(id, vehicle_id, date, odometer, quantity, created_at) VALUES ('f', 'v', '2026-09-01', 61200, '41.8', 0)", 0)
+            driver.execute(null, "INSERT INTO trip(id, date, vehicle_id, destination, km_tenths, round_trip, purpose) VALUES ('t', '2026-09-02', 'v', 'Client', 280, 1, 'BUSINESS')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(31L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val db = LedgerDatabase(driver)
+            assertEquals("Garage", db.calendarQueries.eventById("e").executeAsOne().title, "events stay")
+            val q = db.broughtInCalendarQueries
+            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "BUSY", null, 1, 1)
+            q.insertBroughtInItem("i", "c", "10", "BUSY", null, null, "2026-10-07", "10:00", "2026-10-07", "11:00", 1)
+            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "SHARED", "g", 2, 2)
+            assertEquals(1, q.broughtInItemsOf("c").executeAsList().size, "saving the calendar again keeps its items")
+            q.deleteBroughtInCalendar("c")
+            assertEquals(0L, count(driver, "SELECT count(*) FROM brought_in_item"), "and deleting it removes them")
+            val task = db.assetMaintenanceQueries.tasks("p").executeAsOne()
+            assertEquals(12L, task.interval_months)
+            assertEquals(null, task.interval_weeks)
+            assertEquals(null, db.extrasQueries.homeProjects().executeAsOne().energy_kind)
+            db.projectRebatesQueries.upsertRebate("r", "h", "Renoclimat", "RECEIVED", null, 100000, null, null, "2026-08-01", 100000, null, 0)
+            assertEquals(1, db.projectRebatesQueries.rebates("h").executeAsList().size)
+            assertEquals(1, db.familyMoneyQueries.allowances().executeAsList().size, "allowances stay")
+            val tq = db.trackersQueries
+            tq.upsertUtilityMeter("m", "Hydro", "ELECTRICITY", null, 1, null, 0, null, 0)
+            tq.insertUtilityReading("r", "m", "2026-09-01", "1200.5", "300", "400", "500.5", null, null, 0)
+            tq.upsertUtilityMeter("m", "Hydro One", "ELECTRICITY", null, 1, null, 0, null, 0)
+            assertEquals(1, tq.utilityReadings("m").executeAsList().size, "saving a meter again keeps its readings")
+            tq.upsertFuelTank("t", "Propane", "PROPANE", null, "500", null, null, 0, null, 0)
+            tq.insertTankReading("tr", "t", "2026-09-01", "60", null, null, 0)
+            tq.insertTankDelivery("td", "t", "2026-09-02", "200", 22000, "CAD", null, null, 0)
+            tq.upsertFuelTank("t", "Propane tank", "PROPANE", null, "500", 25, null, 0, null, 0)
+            assertEquals(1, tq.tankDeliveries("t").executeAsList().size, "saving a tank again keeps its deliveries")
+            tq.upsertWorkClient("c", "Lee", null, 4500, "CAD", null, 0, null, 0)
+            tq.upsertWorkTask("k", "c", "Tutoring", null, 0)
+            tq.upsertWorkHours("h", "c", "k", null, null, "2026-09-03", "16:00", 90, null, null, null, null, 0)
+            tq.upsertWorkClient("c", "Lee family", null, 5000, "CAD", null, 0, null, 0)
+            assertEquals(1, tq.workHours("c").executeAsList().size, "saving a client again keeps its hours")
+            tq.upsertChore("ch", "kid", "Dishes", 100, "CAD", null, 0, 0)
+            tq.insertChoreTick("x", "ch", "2026-09-04", 100, null, null, null, null, 0)
+            tq.upsertChore("ch", "kid", "Dishes", 150, "CAD", null, 0, 0)
+            assertEquals(1, tq.choreTicks("ch").executeAsList().size, "saving a chore again keeps its ticks")
+            tq.upsertVolunteerHours("v", "kid", "Food bank", null, "SCHOOL", "2026-09-05", 180, null, null, null, 0)
+            assertEquals(180L, tq.volunteerHours().executeAsOne().minutes)
+            val e = db.calendarQueries.eventById("e").executeAsOne()
+            assertEquals(0L, e.activity, "existing events are not activities")
+            assertEquals(null, e.cost_minor)
+            db.eventActivitiesQueries.setActivityDrivers("e", "2026-10-14", null, "Jen", null, null)
+            db.eventActivitiesQueries.setActivityCostTxn("e", "2026-10-14", "t")
+            assertEquals("t", db.eventActivitiesQueries.activityDays().executeAsOne().cost_txn_id, "the drivers' row keeps the cost")
+            val s = db.personSchedulesQueries
+            s.insertSchedule("s", "alex", "WORK", null, "2026-09-01", null, 2, 1, null, 0, 0)
+            s.insertShift("s", 1, 3, "19:00", "07:00")
+            s.setException("s", "2026-10-12", 0, "09:00", "13:00", null)
+            s.setException("s", "2026-10-12", 1, null, null, "Holiday")
+            assertEquals(1L, s.exceptions().executeAsOne().off)
+            driver.execute(null, "PRAGMA foreign_keys = ON", 0)
+            s.deleteSchedule("s")
+            assertEquals(0L, count(driver, "SELECT count(*) FROM person_schedule_shift") + count(driver, "SELECT count(*) FROM person_schedule_exception"))
+            db.calendarQueries.deleteEvent("e")
+            assertEquals(0L, count(driver, "SELECT count(*) FROM event_activity_day"), "an event's dates go with it")
+            // TRP-01 to TRP-10: vehicle details, trips, fill-ups and places.
+            val vehicle = db.vehiclesQueries.vehicleById("v").executeAsOne()
+            assertEquals("PERSONAL", vehicle.vehicle_use, "existing vehicles are for personal use")
+            assertEquals(null, vehicle.engine)
+            val fuel = db.vehiclesQueries.fuelEntries("v").executeAsOne()
+            assertEquals(null, fuel.energy, "an old fill-up buys the vehicle's own energy")
+            assertEquals(null, fuel.place_id)
+            val trip = db.extrasQueries.tripById("t").executeAsOne()
+            assertEquals("NONE", trip.load_kind)
+            assertEquals(null, trip.start_odometer)
+            assertEquals(1, db.extrasQueries.tripsForVehicle("v").executeAsList().size)
+            db.placesQueries.upsertPlace("pl", "Home", "HOME", null, 45.4, -75.7, 150, "ON", null, 0, null, 0, 0)
+            db.placesQueries.upsertPlace("pl", "Maison", "HOME", null, 45.4, -75.7, 150, "ON", null, 0, null, 0, 1)
+            assertEquals("Maison", db.placesQueries.placeById("pl").executeAsOne().name)
+            db.vehiclesQueries.upsertVehicle(
+                "v", "Civic", "Honda", null, null, null, null, null, null, "GASOLINE", null, null, null, null, null, "CAD", null, null, null, null, "ACTIVE", null, null, null, 0, 1, null,
+                "2.0 L", "CVT", "FWD", "47", null, null, null, "0W-20", "4.4", 680, 1_800, "MIXED", "2027-05-01", null,
+            )
+            assertEquals(1, db.vehiclesQueries.fuelEntries("v").executeAsList().size, "saving the vehicle again keeps its fill-ups")
+            assertEquals("MIXED", db.vehiclesQueries.vehicleById("v").executeAsOne().vehicle_use)
+        }
+    }
+
+    @Test
     fun `version 29 ledgers keep their medical plans and gain the plan year deadline`() {
         val file = temp.resolve("ledger29.db")
         older("../data/src/main/sqldelight/ledger/schemas/29.db", file, 29).use { driver ->
@@ -665,50 +759,6 @@ class MigrationTest {
             matching.insertMatch("g", "s", "t1")
             matching.setLineGroup("g", "PROPOSED", null, "l")
             assertEquals("g", matching.linesInGroup("g").executeAsOne().match_group, "statement lines gain their group")
-        }
-    }
-
-    @Test
-    fun `version 30 ledgers gain calendars brought in, places and trip and vehicle details`() {
-        val file = temp.resolve("ledger30.db")
-        older("../data/src/main/sqldelight/ledger/schemas/30.db", file, 30).use { driver ->
-            driver.execute(null, "INSERT INTO event(id, title, category, start_date, created_at, updated_at) VALUES ('e', 'Garage', 'VEHICLE', '2026-10-05', 0, 0)", 0)
-            driver.execute(null, "INSERT INTO vehicle(id, name, created_at, updated_at) VALUES ('v', 'Civic', 0, 0)", 0)
-            driver.execute(null, "INSERT INTO fuel_entry(id, vehicle_id, date, odometer, quantity, created_at) VALUES ('f', 'v', '2026-09-01', 61200, '41.8', 0)", 0)
-            driver.execute(null, "INSERT INTO trip(id, date, vehicle_id, destination, km_tenths, round_trip, purpose) VALUES ('t', '2026-09-02', 'v', 'Client', 280, 1, 'BUSINESS')", 0)
-        }
-        factory.open(file, key).use { driver ->
-            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(31L, LedgerDatabase.Schema.version)
-            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
-            val db = LedgerDatabase(driver)
-            assertEquals("Garage", db.calendarQueries.eventById("e").executeAsOne().title, "events stay")
-            val q = db.broughtInCalendarQueries
-            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "BUSY", null, 1, 1)
-            q.insertBroughtInItem("i", "c", "10", "BUSY", null, null, "2026-10-07", "10:00", "2026-10-07", "11:00", 1)
-            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "SHARED", "g", 2, 2)
-            assertEquals(1, q.broughtInItemsOf("c").executeAsList().size, "saving the calendar again keeps its items")
-            q.deleteBroughtInCalendar("c")
-            assertEquals(0L, count(driver, "SELECT count(*) FROM brought_in_item"), "and deleting it removes them")
-            val vehicle = db.vehiclesQueries.vehicleById("v").executeAsOne()
-            assertEquals("PERSONAL", vehicle.vehicle_use, "existing vehicles are for personal use")
-            assertEquals(null, vehicle.engine)
-            val fuel = db.vehiclesQueries.fuelEntries("v").executeAsOne()
-            assertEquals(null, fuel.energy, "an old fill-up buys the vehicle's own energy")
-            assertEquals(null, fuel.place_id)
-            val trip = db.extrasQueries.tripById("t").executeAsOne()
-            assertEquals("NONE", trip.load_kind)
-            assertEquals(null, trip.start_odometer)
-            assertEquals(1, db.extrasQueries.tripsForVehicle("v").executeAsList().size)
-            db.placesQueries.upsertPlace("p", "Home", "HOME", null, 45.4, -75.7, 150, "ON", null, 0, null, 0, 0)
-            db.placesQueries.upsertPlace("p", "Maison", "HOME", null, 45.4, -75.7, 150, "ON", null, 0, null, 0, 1)
-            assertEquals("Maison", db.placesQueries.placeById("p").executeAsOne().name)
-            db.vehiclesQueries.upsertVehicle(
-                "v", "Civic", "Honda", null, null, null, null, null, null, "GASOLINE", null, null, null, null, null, "CAD", null, null, null, null, "ACTIVE", null, null, null, 0, 1, null,
-                "2.0 L", "CVT", "FWD", "47", null, null, null, "0W-20", "4.4", 680, 1_800, "MIXED", "2027-05-01", null,
-            )
-            assertEquals(1, db.vehiclesQueries.fuelEntries("v").executeAsList().size, "saving the vehicle again keeps its fill-ups")
-            assertEquals("MIXED", db.vehiclesQueries.vehicleById("v").executeAsOne().vehicle_use)
         }
     }
 }

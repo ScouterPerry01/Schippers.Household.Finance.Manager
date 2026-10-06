@@ -1,0 +1,82 @@
+-- CAL-09 (version 31): a person's work or school schedule, kept in the ledger of the account group the
+-- user chooses (the household's shared group by default; a private group keeps it private).
+CREATE TABLE person_schedule (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('WORK', 'SCHOOL', 'OTHER')),
+    -- Where or what, such as "Hospital" or "École Saint-Roch"; optional.
+    label TEXT,
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    -- 1 for the same hours every week; 2 or more for a rotation of that many weeks (shift work).
+    rotation_weeks INTEGER NOT NULL DEFAULT 1,
+    -- 1 when the person is off on the bank holidays of their province.
+    holidays_off INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- The hours of one day of one week of the rotation (week 0 is the week of start_date). An end_time
+-- earlier than start_time ends the next day (a night shift).
+CREATE TABLE person_schedule_shift (
+    schedule_id TEXT NOT NULL REFERENCES person_schedule(id) ON DELETE CASCADE,
+    week INTEGER NOT NULL,
+    -- 1 = Monday ... 7 = Sunday.
+    day_of_week INTEGER NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    PRIMARY KEY (schedule_id, week, day_of_week)
+);
+
+-- A date that differs: a day off (off = 1: holiday, sick day, professional development day) or other hours.
+CREATE TABLE person_schedule_exception (
+    schedule_id TEXT NOT NULL REFERENCES person_schedule(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    off INTEGER NOT NULL DEFAULT 1,
+    start_time TEXT,
+    end_time TEXT,
+    reason TEXT,
+    PRIMARY KEY (schedule_id, date)
+);
+
+CREATE INDEX person_schedule_member ON person_schedule(member_id);
+
+schedules:
+SELECT * FROM person_schedule ORDER BY member_id, start_date;
+
+scheduleById:
+SELECT * FROM person_schedule WHERE id = ?;
+
+insertSchedule:
+INSERT INTO person_schedule(id, member_id, kind, label, start_date, end_date, rotation_weeks, holidays_off, notes, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateSchedule:
+UPDATE person_schedule SET member_id = ?, kind = ?, label = ?, start_date = ?, end_date = ?, rotation_weeks = ?, holidays_off = ?, notes = ?, updated_at = ?
+WHERE id = ?;
+
+deleteSchedule:
+DELETE FROM person_schedule WHERE id = ?;
+
+shifts:
+SELECT * FROM person_schedule_shift ORDER BY schedule_id, week, day_of_week;
+
+deleteShifts:
+DELETE FROM person_schedule_shift WHERE schedule_id = ?;
+
+insertShift:
+INSERT INTO person_schedule_shift(schedule_id, week, day_of_week, start_time, end_time) VALUES (?, ?, ?, ?, ?);
+
+exceptions:
+SELECT * FROM person_schedule_exception ORDER BY schedule_id, date;
+
+setException:
+INSERT INTO person_schedule_exception(schedule_id, date, off, start_time, end_time, reason) VALUES (?, ?, ?, ?, ?, ?)
+ON CONFLICT(schedule_id, date) DO UPDATE SET off = excluded.off, start_time = excluded.start_time, end_time = excluded.end_time, reason = excluded.reason;
+
+deleteException:
+DELETE FROM person_schedule_exception WHERE schedule_id = ? AND date = ?;
+
+deleteExceptions:
+DELETE FROM person_schedule_exception WHERE schedule_id = ?;

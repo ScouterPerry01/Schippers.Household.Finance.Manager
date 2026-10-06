@@ -70,7 +70,9 @@ CREATE TABLE home_project (
     budget_minor INTEGER,
     currency TEXT NOT NULL,
     capital INTEGER NOT NULL DEFAULT 1,
-    notes TEXT
+    notes TEXT,
+    -- SEA-05 (version 31): the kind of energy upgrade (HEAT_PUMP, INSULATION...), null for other projects.
+    energy_kind TEXT
 );
 
 CREATE TABLE project_cost (
@@ -184,9 +186,10 @@ homeProjects:
 SELECT * FROM home_project ORDER BY status = 'DONE', start_date DESC;
 
 upsertHomeProject:
-INSERT INTO home_project(id, asset_id, name, status, start_date, end_date, budget_minor, currency, capital, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO home_project(id, asset_id, name, status, start_date, end_date, budget_minor, currency, capital, notes, energy_kind) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET asset_id = excluded.asset_id, name = excluded.name, status = excluded.status, start_date = excluded.start_date,
-    end_date = excluded.end_date, budget_minor = excluded.budget_minor, currency = excluded.currency, capital = excluded.capital, notes = excluded.notes;
+    end_date = excluded.end_date, budget_minor = excluded.budget_minor, currency = excluded.currency, capital = excluded.capital, notes = excluded.notes,
+    energy_kind = excluded.energy_kind;
 
 deleteHomeProject:
 DELETE FROM home_project WHERE id = ?;

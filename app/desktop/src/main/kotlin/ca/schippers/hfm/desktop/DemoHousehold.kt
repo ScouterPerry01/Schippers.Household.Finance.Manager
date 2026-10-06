@@ -53,6 +53,16 @@ import ca.schippers.hfm.books.AssetWarrantyKind
 import ca.schippers.hfm.books.AssetWarranty
 import ca.schippers.hfm.books.AssetKind
 import ca.schippers.hfm.books.Asset
+import ca.schippers.hfm.books.Chore
+import ca.schippers.hfm.books.FuelKind
+import ca.schippers.hfm.books.FuelTank
+import ca.schippers.hfm.books.MeterKind
+import ca.schippers.hfm.books.UtilityMeter
+import ca.schippers.hfm.books.VolunteerEntry
+import ca.schippers.hfm.books.VolunteerKind
+import ca.schippers.hfm.books.WorkClient
+import ca.schippers.hfm.books.WorkEntry
+import ca.schippers.hfm.books.WorkTask
 import ca.schippers.hfm.books.AccountDraft
 import ca.schippers.hfm.books.AllocationBy
 import ca.schippers.hfm.books.AllocationTarget
@@ -366,6 +376,7 @@ object DemoHousehold {
         addPetAndCarRecords(books, group, visa, rex, civic, today)
         addAssets(books, group, visa, alex, sam, lea, civic, today)
         addExtras(books, group, chequing, visa, alex, sam, civic, today)
+        addTrackers(books, group, chequing, alex, sam, lea, allowance, today)
         DemoTrips(books, english).add(group, visa, alex, sam, lea, civic, today)
         addInvestments(books, group, alex, sam, desjardins, today)
         addPlans(books, group, chequing, savings, alex, sam, lea, desjardins, today)
@@ -637,6 +648,43 @@ object DemoHousehold {
     }
 
     /**
+     * CAL-09: Alex works office hours, Sam works twelve-hour shifts on a two-week rotation at the
+     * hospital, and the child goes to school, with a professional development day coming up.
+     */
+    private fun addSchedules(books: Books, shared: String, alex: Member, sam: Member, child: Member, today: LocalDate) {
+        fun t(h: Int, m: Int = 0) = LocalTime(h, m)
+        fun dow(n: Int) = kotlinx.datetime.DayOfWeek(n)
+        val weekdays = (1..5)
+        books.schedules.save(
+            ca.schippers.hfm.books.PersonSchedule(
+                "", shared, alex.id, ca.schippers.hfm.books.ScheduleKind.WORK, l("Bureau", "Office"), today.minus(DatePeriod(years = 2)), null, 1, true, null,
+                weekdays.map { ca.schippers.hfm.books.ScheduleShift(0, dow(it), t(8), t(16, 30)) },
+            ),
+        )
+        // Days in week 1, then nights in week 2: the rotation starts on this week's Monday.
+        val monday = today.minus(DatePeriod(days = today.dayOfWeek.ordinal))
+        books.schedules.save(
+            ca.schippers.hfm.books.PersonSchedule(
+                "", shared, sam.id, ca.schippers.hfm.books.ScheduleKind.WORK, l("Hôpital de l'Enfant-Jésus", "Civic Hospital"), monday.minus(DatePeriod(days = 28)), null, 2, false, null,
+                listOf(1, 2, 5).map { ca.schippers.hfm.books.ScheduleShift(0, dow(it), t(7), t(19)) } +
+                    listOf(3, 4).map { ca.schippers.hfm.books.ScheduleShift(1, dow(it), t(19), t(7)) } +
+                    ca.schippers.hfm.books.ScheduleShift(1, dow(6), t(7), t(19)),
+            ),
+        )
+        val schoolYear = if (today.month.ordinal >= 7) today.year else today.year - 1
+        // A weekday about ten days ahead is a professional development day.
+        val pdDay = today.plus(DatePeriod(days = 10)).let { d -> if (d.dayOfWeek.ordinal >= 5) d.plus(DatePeriod(days = 7 - d.dayOfWeek.ordinal)) else d }
+        books.schedules.save(
+            ca.schippers.hfm.books.PersonSchedule(
+                "", shared, child.id, ca.schippers.hfm.books.ScheduleKind.SCHOOL, l("École Saint-Roch", "Hopewell Public School"),
+                LocalDate(schoolYear, 9, 2), LocalDate(schoolYear + 1, 6, 23), 1, true, null,
+                weekdays.map { ca.schippers.hfm.books.ScheduleShift(0, dow(it), t(8, 15), t(15, 5)) },
+                listOf(ca.schippers.hfm.books.ScheduleException(pdDay, true, reason = l("Journée pédagogique", "PD day"))),
+            ),
+        )
+    }
+
+    /**
      * CSY-01 to CSY-04: two calendars Alex brought in from the phone: work, busy only (one lunch shared,
      * one appointment kept private), and the family's, shared.
      */
@@ -688,7 +736,30 @@ object DemoHousehold {
         calendar.create(EventDraft(shared, l("Nettoyage dentaire", "Dental cleaning"), EventCategory.MEDICAL, day(9), LocalTime(10, 15), 60, memberId = lea.id, providerId = dentist.id))
         calendar.create(EventDraft(private, l("Bilan annuel", "Annual physical"), EventCategory.MEDICAL, day(14), LocalTime(8, 40), 30, memberId = alex.id, providerId = doctor.id))
         calendar.create(EventDraft(shared, l("Ramonage de la cheminée", "Chimney sweep"), EventCategory.HOME, day(20), reminderMinutes = listOf(2 * 1440)))
-        calendar.create(EventDraft(shared, l("Cours de natation", "Swimming lessons"), EventCategory.PERSONAL, day(-3), LocalTime(18, 0), 60, memberId = lea.id, recurrence = Recurrence.WEEKLY, endDate = day(60), reminderMinutes = listOf(120)))
+        // CAL-11: the child's activities, with the carpool and the cost of each lesson.
+        val cad = { v: String -> ca.schippers.hfm.money.Money.parse(v, ca.schippers.hfm.money.Currency.CAD) }
+        val noahsMom = ca.schippers.hfm.books.Driver(name = l("Julie (maman de Noah)", "Jen (Noah's mom)"))
+        // Swimming is on Wednesdays, from the last one before today.
+        val lastWednesday = today.minus(DatePeriod(days = ((today.dayOfWeek.ordinal + 5) % 7).let { if (it == 0) 7 else it }))
+        val swimming = calendar.create(
+            EventDraft(
+                shared, l("Cours de natation", "Swimming lessons"), EventCategory.ACTIVITY, lastWednesday, LocalTime(18, 0), 60, l("Centre aquatique", "Brewer Pool"),
+                memberId = lea.id, recurrence = Recurrence.WEEKLY, endDate = day(60), reminderMinutes = listOf(120),
+                driverThere = ca.schippers.hfm.books.Driver(memberId = sam.id), driverBack = noahsMom, cost = cad("15.00"),
+            ),
+        )
+        calendar.recordCost(swimming.id, lastWednesday, chequing.id, books.categories.list().first { it.systemKey == "children.activities" }.id)
+        // In two weeks the other family drives both ways.
+        calendar.setDrivers(swimming.id, lastWednesday.plus(DatePeriod(days = 14)), noahsMom, noahsMom)
+        val saturday = today.plus(DatePeriod(days = (5 - today.dayOfWeek.ordinal + 7) % 7))
+        calendar.create(
+            EventDraft(
+                shared, l("Match de soccer", "Soccer game"), EventCategory.ACTIVITY, saturday, LocalTime(9, 30), 90, l("Parc Victoria", "Lansdowne Park"),
+                memberId = lea.id, recurrence = Recurrence.WEEKLY, endDate = saturday.plus(DatePeriod(days = 42)), reminderMinutes = listOf(1440),
+                driverThere = ca.schippers.hfm.books.Driver(memberId = alex.id), driverBack = ca.schippers.hfm.books.Driver(memberId = alex.id),
+            ),
+        )
+        addSchedules(books, shared, alex, sam, lea, today)
 
         health.saveMedication(Medication("", private, alex.id, l("Atorvastatine", "Atorvastatin"), "20 mg", l("1 comprimé au coucher", "1 tablet at bedtime"), doctor.id, pharmacy.id, "RX-448120", day(-400), null, 30, 2, day(-27), 5, true, null))
         health.saveMedication(Medication("", private, alex.id, l("Vitamine D", "Vitamin D"), l("1000 UI", "1000 IU"), l("1 par jour", "1 a day"), null, null, null, null, null, null, null, null, 5, true, null))
@@ -788,6 +859,96 @@ object DemoHousehold {
         books.rewards.addEntry(visa.id, day(-20), BigDecimal("5000"), RewardKind.REDEEMED, cad("25.00"), l("Carte-cadeau", "Gift card"))
     }
 
+    /**
+     * UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: the house's and the cottage's meters (one month unusual),
+     * the cottage's propane tank, Sam's hours for the invoice clients, the child's chores and the
+     * household's volunteer hours.
+     */
+    private fun addTrackers(books: Books, group: String, chequing: Account, alex: Member, sam: Member, lea: Member, allowance: Allowance, today: LocalDate) {
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        fun day(n: Int) = today.plus(DatePeriod(days = n))
+        val house = books.assets.list().first { it.kind == AssetKind.HOME }
+        val cottage = books.assets.save(Asset("", group, AssetKind.COTTAGE, l("Chalet (lac Sergent)", "Cottage (Big Rideau Lake)"), location = l("Lac-Sergent", "Portland")))
+        // UTL-01: a reading early each month for 26 months; electricity follows the seasons, and last month ran high.
+        val hydro = books.bills.list().firstOrNull { it.name == l("Hydro-Québec", "Hydro Ottawa") }
+        val houseMeter = books.utilities.saveMeter(
+            UtilityMeter("", group, l("Électricité de la maison", "House electricity"), MeterKind.ELECTRICITY, house.id, timeOfUse = english, billId = hydro?.id),
+        )
+        val water = books.utilities.saveMeter(UtilityMeter("", group, l("Eau de la maison", "House water"), MeterKind.WATER, house.id))
+        val cottageMeter = books.utilities.saveMeter(UtilityMeter("", group, l("Électricité du chalet", "Cottage electricity"), MeterKind.ELECTRICITY, cottage.id))
+        val seasonal = listOf(950, 880, 800, 650, 560, 600, 720, 700, 580, 640, 780, 920)
+        val cottageUse = listOf(220, 210, 190, 170, 240, 420, 610, 590, 300, 180, 200, 230)
+        val first = LocalDate(today.year, today.month, 3).minus(DatePeriod(months = 26))
+        val lastMonth = LocalDate(today.year, today.month, 3).minus(DatePeriod(months = 1))
+        var total = BigDecimal(9_200)
+        var waterTotal = BigDecimal(2_210)
+        var cottageTotal = BigDecimal(2_210)
+        var d = first
+        while (d <= today) {
+            val tou = if (english) Triple(total * BigDecimal("0.18"), total * BigDecimal("0.18"), total * BigDecimal("0.64")) else null
+            books.utilities.addReading(houseMeter.id, d, total, tou?.first, tou?.second, tou?.third)
+            books.utilities.addReading(water.id, d, waterTotal)
+            books.utilities.addReading(cottageMeter.id, d, cottageTotal)
+            val month = d.month.ordinal
+            total += BigDecimal(seasonal[month]).let { if (d == lastMonth) it * BigDecimal("1.45") else it }
+            waterTotal += BigDecimal(if (month in 5..7) 24 else 17)
+            cottageTotal += BigDecimal(cottageUse[month])
+            d = d.plus(DatePeriod(months = 1))
+        }
+        // UTL-02: the cottage's propane tank, read every few weeks, with a delivery paid from the joint account.
+        val tank = books.utilities.saveTank(FuelTank("", group, l("Propane du chalet", "Cottage propane"), FuelKind.PROPANE, BigDecimal(1000), cottage.id, supplier = l("Propane Sélect", "Rideau Propane")))
+        for ((n, percent) in listOf(-150 to 78, -120 to 72, -90 to 66, -62 to 58)) books.utilities.addTankReading(tank.id, day(n), BigDecimal(percent))
+        books.utilities.addDelivery(tank.id, day(-50), BigDecimal(350), cad("329.00"), chequing.id)
+        for ((n, percent) in listOf(-40 to 86, -25 to 80, -8 to 71)) books.utilities.addTankReading(tank.id, day(n), BigDecimal(percent))
+
+        // HRS-01: Sam's clients (those of the invoices), the hours billed on the last invoice, and hours not billed yet.
+        val lavoie = books.workHours.saveClient(
+            WorkClient(
+                "", group, l("Atelier Lavoie inc.", "Lavoie Studio Inc."), Currency.CAD, cad("65.00"), l("200, rue Saint-Joseph Est, Québec", "200 Elgin Street, Ottawa"), sam.id,
+                tasks = listOf(WorkTask("", l("Conception graphique", "Graphic design")), WorkTask("", l("Site Web", "Website"), cad("75.00"))),
+            ),
+        )
+        val cafe = books.workHours.saveClient(WorkClient("", group, l("Café du Quai", "Harbour Café"), Currency.CAD, cad("65.00"), memberId = sam.id, tasks = listOf(WorkTask("", l("Menus et affiches", "Menus and posters")))))
+        val (design, website) = lavoie.tasks.sortedBy { it.rate != null }
+        val lastInvoice = books.invoices.list().filter { it.customer == lavoie.name }.maxByOrNull { it.issueDate }
+        for ((n, minutes) in listOf(-16 to 300, -14 to 360, -12 to 240)) {
+            books.workHours.save(WorkEntry("", lavoie.id, day(n), minutes, website.id, l("Maquettes", "Mock-ups"), rate = cad("65.00"), invoiceId = lastInvoice?.id, billedDate = lastInvoice?.issueDate))
+        }
+        for ((n, minutes, start) in listOf(Triple(-6, 150, "09:00"), Triple(-5, 210, "13:00"), Triple(-2, 90, "19:30"))) {
+            books.workHours.save(WorkEntry("", lavoie.id, day(n), minutes, website.id, l("Pages du site", "Site pages"), startTime = start))
+        }
+        books.workHours.save(WorkEntry("", lavoie.id, day(-3), 120, design.id, l("Logo, retouches", "Logo touch-ups")))
+        books.workHours.save(WorkEntry("", cafe.id, day(-4), 180, cafe.tasks.single().id, l("Menu d'automne", "Fall menu"), startTime = "10:00"))
+
+        // CHO-01: the child's chores; those done before the last allowance day were paid with it.
+        fun chore(name: String, amount: String?, points: Int?) = books.chores.save(Chore("", group, lea.id, name, Currency.CAD, amount?.let(::cad), points))
+        val dishes = chore(l("Vider le lave-vaisselle", "Empty the dishwasher"), "1.00", null)
+        val recycling = chore(l("Sortir le recyclage", "Take out the recycling"), "2.00", null)
+        val bed = chore(l("Faire son lit", "Make the bed"), null, 2)
+        val table = chore(l("Mettre la table", "Set the table"), "0.50", 1)
+        for (n in listOf(-19, -17, -15, -10, -8, -5, -3, -1)) books.chores.tick(dishes.id, day(n))
+        for (n in listOf(-18, -11, -4)) books.chores.tick(recycling.id, day(n))
+        for (n in -14..0) books.chores.tick(bed.id, day(n))
+        for (n in listOf(-9, -6, -2, 0)) books.chores.tick(table.id, day(n))
+        books.chores.pay(allowance, day(-13))
+
+        // VOL-01: Sam with the volunteer fire department, the child's community hours, Alex at the food bank.
+        val fire = l("Service incendie de Lac-Sergent", "Rideau Lakes Fire Department")
+        var m = LocalDate(today.year, 1, 1)
+        while (m <= today) {
+            for ((dayOfMonth, minutes, activity) in listOf(Triple(4, 240, l("Pratique", "Training")), Triple(17, 840, l("Appels et garde", "Calls and standby")))) {
+                val date = LocalDate(m.year, m.month, dayOfMonth)
+                if (date <= today) books.volunteer.save(VolunteerEntry("", group, sam.id, fire, VolunteerKind.FIREFIGHTER, date, minutes, activity = activity))
+            }
+            m = m.plus(DatePeriod(months = 1))
+        }
+        val foodBank = l("Moisson Québec", "Ottawa Food Bank")
+        for ((n, minutes) in listOf(-60 to 180, -32 to 180, -11 to 120)) {
+            books.volunteer.save(VolunteerEntry("", group, lea.id, foodBank, VolunteerKind.SCHOOL, day(n), minutes, activity = l("Tri des denrées", "Sorting food")))
+        }
+        for (n in listOf(-45, -17)) books.volunteer.save(VolunteerEntry("", group, alex.id, foodBank, VolunteerKind.OTHER, day(n), 240, activity = l("Distribution", "Distribution")))
+    }
+
     /** AST, WAR, INS: the house and what is in it, warranties, and the household's policies. */
     private fun addAssets(books: Books, group: String, visa: Account, alex: Member, sam: Member, lea: Member, civic: Vehicle, today: LocalDate) {
         fun cad(s: String) = Money.parse(s, Currency.CAD)
@@ -835,6 +996,7 @@ object DemoHousehold {
             AssetServiceRecord("", boat.id, day(-140), 214, l("Marina du Lac-Beauport", "Lakeside Marina"), parts = l("Huile 10W-30, filtre", "10W-30 oil, filter"), cost = cad("189.50"), taskIds = setOfNotNull(boatTasks["engine_oil"]?.id, boatTasks["boat_launch"]?.id)),
             PaymentDraft(visa.id, books.categories.list().first { it.systemKey == "leisure.cottage_rv" }.id, l("Marina du Lac-Beauport", "Lakeside Marina")),
         )
+        addSeasonalDemo(books, group, house, setOfNotNull(homeTasks["furnace_filter"]?.id), today, ::l)
 
         val insurance = books.insurance
         insurance.save(

@@ -63,7 +63,7 @@ import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
 
-private enum class AssetsTab { ASSETS, UPKEEP, PROJECTS, CONTRACTORS, COVERED, INSURANCE }
+private enum class AssetsTab { ASSETS, UPKEEP, SEASONAL, PROJECTS, CONTRACTORS, COVERED, INSURANCE }
 
 /** AST, WAR and INS: the home and other assets, what covers them, and insurance policies. */
 @Composable
@@ -82,6 +82,7 @@ fun AssetsScreen(model: BooksModel) {
                 UpkeepTab(model) { open = it }
                 open?.let { a -> AssetDialog(model, a) { open = null } }
             }
+            AssetsTab.SEASONAL -> SeasonalTab(model)
             AssetsTab.PROJECTS -> ProjectsTab(model)
             AssetsTab.CONTRACTORS -> ContractorsTab(model)
             AssetsTab.COVERED -> CoveredTab(model)

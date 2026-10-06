@@ -29,7 +29,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
 
-enum class Section { DASHBOARD, CONTACTS, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, FAMILY, SIDE, INVESTMENTS, PLANS, LOANS, REPORTS, TAXES, CALENDAR, HEALTH, MEDICAL, ESTATE, PETS, VEHICLES, TRIPS, ASSETS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, RATE_RULES, PHONES, AI, USERS, BACKUPS, SECURITY, DISPLAY, ABOUT }
+enum class Section { DASHBOARD, CONTACTS, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, FAMILY, SIDE, INVESTMENTS, PLANS, LOANS, REPORTS, TAXES, CALENDAR, HEALTH, MEDICAL, ESTATE, PETS, VEHICLES, TRIPS, ASSETS, UTILITIES, VOLUNTEER, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, RATE_RULES, PHONES, AI, USERS, BACKUPS, SECURITY, DISPLAY, ABOUT }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -94,6 +94,28 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     var pendingReconciledChange by mutableStateOf<(() -> Unit)?>(null)
 
     val language: Language get() = app.language
+
+    /** CAL-08: what the calendar hides for this user on this computer (kinds as "K:<kind>", people as "P:<id>"). */
+    var calendarHidden by mutableStateOf(app.calendarHidden(session.userId))
+        private set
+
+    fun changeCalendarHidden(hidden: Set<String>) {
+        calendarHidden = hidden
+        app.setCalendarHidden(session.userId, hidden)
+    }
+
+    private var calendarViewState by mutableStateOf(app.calendarView(session.userId))
+
+    /** CAL-07: the calendar view last shown to this user on this computer. */
+    var calendarView: String?
+        get() = calendarViewState
+        set(value) {
+            calendarViewState = value
+            if (value != null) app.setCalendarView(session.userId, value)
+        }
+
+    /** CAL-07: the date the calendar's views are on, kept while moving between screens. */
+    var calendarDate by mutableStateOf(today())
 
     fun t(key: String, vararg args: Any): String = app.t(key, *args)
 
@@ -201,6 +223,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         RenewalKind.ASSET_WARRANTY, RenewalKind.INSURANCE_RENEWAL -> Section.ASSETS
         RenewalKind.TAX_INSTALMENT -> Section.TAXES
         RenewalKind.SECURITY_MATURITY -> Section.INVESTMENTS
+        RenewalKind.FUEL_ORDER -> Section.UTILITIES
         else -> Section.VEHICLES
     }
 

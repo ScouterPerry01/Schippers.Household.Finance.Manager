@@ -430,6 +430,11 @@ private fun packageTable(model: BooksModel, year: Int, p: PersonPackage): Report
         if (p.missingSlips.isNotEmpty()) add(model.t("package.missing", p.missingSlips.joinToString(", ") { "${model.t("slipType.${it.type}")} (${it.issuer})" }))
         if (p.lines.any { it.item == PackageItem.RRSP_CONTRIBUTIONS }) add(model.t("package.rrspNote", year.toString(), (year + 1).toString()))
         if (p.province == ca.schippers.hfm.calc.Province.QC) add(model.t("package.quebecNote"))
+        // VOL-01: volunteer hours, as information; firefighting and search and rescue against the hours the two amounts need.
+        p.memberId?.let { id -> runCatching { model.books.volunteer.year(id, year) }.getOrNull() }?.takeIf { it.minutes > 0 }?.let { v ->
+            add(model.t("package.volunteer", year.toString(), model.duration(v.minutes)))
+            if (v.emergencyMinutes > 0) add(model.t(if (v.meetsThreshold) "package.volunteerMeets" else "package.volunteerShort", model.duration(v.emergencyMinutes), v.thresholdHours))
+        }
         add(model.t("package.notice"))
     }
     return ReportTable(

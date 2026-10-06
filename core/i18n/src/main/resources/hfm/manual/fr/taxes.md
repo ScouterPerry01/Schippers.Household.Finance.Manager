@@ -211,6 +211,7 @@ Sous les lignes, et à la fin de chaque exportation, des notes indiquent ce qui 
 - Les feuillets encore attendus : ceux de cette personne toujours marqués **Attendu** dans l’onglet **Feuillets**, à réclamer avant de produire la déclaration.
 - Pour les cotisations REER : la déduction d’une année vise les cotisations du 2 mars de cette année au 1er mars de la suivante ; celles des 60 premiers jours de l’année ont pu être déduites l’année précédente.
 - Pour une personne au Québec : la déclaration du Québec a ses propres lignes ; les Relevés en donnent les montants.
+- Les heures de bénévolat : les heures de bénévolat de la personne dans l’année, de l’écran [Bénévolat](volunteer), à titre d’information et, avec des heures de pompier volontaire ou de recherche et sauvetage, si elles atteignent les 200 heures qu’exigent les montants des lignes 31220 et 31240.
 - L’avis que ces montants ne sont pas des conseils fiscaux.
 
 ### Dossier pour le comptable {#accountant-folder}

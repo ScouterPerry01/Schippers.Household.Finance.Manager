@@ -10,13 +10,17 @@ On the Assets tab, choose Add an asset. Enter the kind, name, make, model, seria
 
 Inside an asset, add tasks with Add usual tasks or Add a task. A task repeats after a number of months, hours or kilometres on its meter, or every year in its season, whichever comes first. The Maintenance tab lists what is due on vehicles and everything else, for This month or the Next 12 months.
 
+## Seasonal checklist
+
+The Seasonal checklist tab lists every task of a season on the vehicles, home, cottage, pool, yard and other assets, the current season first, with how many are done. Tick a task to record it as done in its service log, with the date and, if you like, the cost and a reading. Print or Save as PDF gives a checklist to take outside. Season dates are in Rates and rules.
+
 ## Is it covered?
 
 On the Is it covered? tab, type in Find an item to search by name, make, model or serial number. You see right away whether it is under warranty or protection. To record a warranty claim, open the warranty on the asset and choose Add a claim.
 
 ## Projects
 
-On the Projects tab, Add a project records work on a home: a new roof, a renovation, a repair. Give it a status, dates and a budget, and say whether it is a capital improvement. Click a project to add its costs as they come, with the contractor who did the work.
+On the Projects tab, Add a project records work on a home: a new roof, a renovation, a repair. Give it a status, dates and a budget, and say whether it is a capital improvement. Click a project to add its costs as they come, with the contractor who did the work. For an energy upgrade (insulation, a heat pump, windows, solar panels), choose its kind under Energy upgrade, and under Rebates and grants note each program applied for, its status and the amount received, with its papers. What is received lowers the net cost and the cost base.
 
 A capital improvement done or under way adds to the home's cost base, shown above the list: the purchase price plus those improvements. A repair adds nothing.
 

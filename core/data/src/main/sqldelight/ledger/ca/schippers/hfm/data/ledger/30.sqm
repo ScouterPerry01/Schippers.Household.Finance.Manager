@@ -43,6 +43,264 @@ CREATE TABLE brought_in_item (
 CREATE INDEX brought_in_item_dates ON brought_in_item(start_date, end_date);
 CREATE INDEX brought_in_item_calendar ON brought_in_item(calendar_id);
 
+-- SEA-01: a task on an asset may repeat every interval_weeks (a pool's weekly water test), and may
+-- be limited to part of the year, from season_from to season_to (month-day, "06-01" to "09-15"):
+-- a due date outside that part moves to its next start.
+ALTER TABLE asset_task ADD COLUMN interval_weeks INTEGER;
+ALTER TABLE asset_task ADD COLUMN season_from TEXT;
+ALTER TABLE asset_task ADD COLUMN season_to TEXT;
+
+-- SEA-05: an energy upgrade (insulation, heat pump, windows, solar...): the kind of upgrade, or
+-- null for any other project.
+ALTER TABLE home_project ADD COLUMN energy_kind TEXT;
+
+-- SEA-05: rebates and grants applied for on a home project, in the project's currency.
+-- status: PLANNED, APPLIED, APPROVED, RECEIVED, REFUSED. A received amount lowers the project's
+-- net cost, and so what a capital project adds to the home's cost base.
+CREATE TABLE home_project_rebate (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES home_project(id) ON DELETE CASCADE,
+    program TEXT NOT NULL,
+    status TEXT NOT NULL,
+    reference TEXT,
+    amount_minor INTEGER,
+    applied_date TEXT,
+    decision_date TEXT,
+    received_date TEXT,
+    received_minor INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX home_project_rebate_project ON home_project_rebate(project_id);
+
+-- Other trackers (ledger version 31): utility meters and fuel tanks (UTL-01, UTL-02), hours worked
+-- for side income (HRS-01), children's chores (CHO-01) and volunteer hours (VOL-01). Each lives in
+-- the ledger of the account group the user chooses (HH-11). Quantities are exact decimal text.
+
+-- UTL-01: a utility meter of a home or cottage ([asset_id]), or of the household (null).
+-- [kind] is ELECTRICITY (kWh), GAS or WATER (cubic metres). With [time_of_use], readings may give
+-- the on-, mid- and off-peak registers. [bill_id] is the bill whose amounts give the cost per unit.
+CREATE TABLE utility_meter (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    asset_id TEXT,
+    time_of_use INTEGER NOT NULL DEFAULT 0,
+    bill_id TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+-- A meter's reading on a date: [value] is the meter's total; with time of use, also each register.
+-- [device_id]: the phone it came from, if any.
+CREATE TABLE utility_reading (
+    id TEXT NOT NULL PRIMARY KEY,
+    meter_id TEXT NOT NULL REFERENCES utility_meter(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    value TEXT NOT NULL,
+    on_peak TEXT,
+    mid_peak TEXT,
+    off_peak TEXT,
+    notes TEXT,
+    device_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX utility_reading_meter ON utility_reading(meter_id, date);
+
+-- UTL-02: a fuel tank (PROPANE or HEATING_OIL) of a home or cottage, or of the household. Its
+-- capacity in litres; [order_percent]: order when the level is expected to fall to it (null: the
+-- level of Rates and rules).
+CREATE TABLE fuel_tank (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    fuel TEXT NOT NULL,
+    asset_id TEXT,
+    capacity_litres TEXT NOT NULL,
+    order_percent INTEGER,
+    supplier TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+-- The tank's gauge on a date, in percent of its capacity (a reading in litres is kept as its percent).
+CREATE TABLE fuel_tank_reading (
+    id TEXT NOT NULL PRIMARY KEY,
+    tank_id TEXT NOT NULL REFERENCES fuel_tank(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    percent TEXT NOT NULL,
+    notes TEXT,
+    device_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX fuel_tank_reading_tank ON fuel_tank_reading(tank_id, date);
+
+-- A delivery: litres and, optionally, what it cost and the transaction that paid it.
+CREATE TABLE fuel_tank_delivery (
+    id TEXT NOT NULL PRIMARY KEY,
+    tank_id TEXT NOT NULL REFERENCES fuel_tank(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    litres TEXT NOT NULL,
+    cost_minor INTEGER,
+    currency TEXT,
+    txn_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX fuel_tank_delivery_tank ON fuel_tank_delivery(tank_id, date);
+
+-- HRS-01: a client of side work, with an hourly rate (in [currency]) and who does the work.
+CREATE TABLE work_client (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    details TEXT,
+    rate_minor INTEGER,
+    currency TEXT NOT NULL,
+    member_id TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+-- A kind of work for a client, with its own rate when it differs from the client's.
+CREATE TABLE work_task (
+    id TEXT NOT NULL PRIMARY KEY,
+    client_id TEXT NOT NULL REFERENCES work_client(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    rate_minor INTEGER,
+    archived INTEGER NOT NULL DEFAULT 0
+);
+
+-- Time worked: [minutes] on [date], from [start_time] (HH:mm) when timed. [rate_minor] overrides the
+-- task's and client's rate. Billed once on an invoice ([invoice_id], [billed_date]).
+CREATE TABLE work_hours (
+    id TEXT NOT NULL PRIMARY KEY,
+    client_id TEXT NOT NULL REFERENCES work_client(id) ON DELETE CASCADE,
+    task_id TEXT,
+    description TEXT,
+    member_id TEXT,
+    date TEXT NOT NULL,
+    start_time TEXT,
+    minutes INTEGER NOT NULL,
+    rate_minor INTEGER,
+    invoice_id TEXT,
+    billed_date TEXT,
+    device_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX work_hours_client ON work_hours(client_id, date);
+
+-- CHO-01: a child's chore, worth an amount (in [currency]) or points, or both.
+CREATE TABLE chore (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    amount_minor INTEGER,
+    currency TEXT NOT NULL,
+    points INTEGER,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+);
+
+-- A chore done on a date, with what it earned then. Paid with the allowance: [allowance_entry_id] is
+-- the allowance entry (EARNED) that paid it, [paid_date] when.
+CREATE TABLE chore_tick (
+    id TEXT NOT NULL PRIMARY KEY,
+    chore_id TEXT NOT NULL REFERENCES chore(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    amount_minor INTEGER,
+    points INTEGER,
+    allowance_entry_id TEXT,
+    paid_date TEXT,
+    device_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX chore_tick_chore ON chore_tick(chore_id, date);
+
+-- VOL-01: volunteer time of a person for an organization (a contact when linked). [kind] is
+-- FIREFIGHTER, SEARCH_RESCUE, SCHOOL (a student's community hours) or OTHER.
+CREATE TABLE volunteer_hours (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    organization TEXT NOT NULL,
+    contact_id TEXT,
+    kind TEXT NOT NULL,
+    date TEXT NOT NULL,
+    minutes INTEGER NOT NULL,
+    activity TEXT,
+    notes TEXT,
+    device_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX volunteer_hours_member ON volunteer_hours(member_id, date);
+-- CAL-09 to CAL-11: calendar views, schedules and activities.
+
+-- CAL-11: a child's activity, with who drives each way and its cost.
+ALTER TABLE event ADD COLUMN activity INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE event ADD COLUMN driver_there_member_id TEXT;
+ALTER TABLE event ADD COLUMN driver_there_name TEXT;
+ALTER TABLE event ADD COLUMN driver_back_member_id TEXT;
+ALTER TABLE event ADD COLUMN driver_back_name TEXT;
+ALTER TABLE event ADD COLUMN cost_minor INTEGER;
+ALTER TABLE event ADD COLUMN cost_currency TEXT;
+
+-- CAL-11: one date of an activity: drivers that differ from the series, and the transaction its cost became.
+CREATE TABLE event_activity_day (
+    event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    drivers_set INTEGER NOT NULL DEFAULT 0,
+    driver_there_member_id TEXT,
+    driver_there_name TEXT,
+    driver_back_member_id TEXT,
+    driver_back_name TEXT,
+    cost_txn_id TEXT,
+    PRIMARY KEY (event_id, date)
+);
+
+-- CAL-09: work and school schedules per person, with their hours and exceptions.
+CREATE TABLE person_schedule (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('WORK', 'SCHOOL', 'OTHER')),
+    label TEXT,
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    rotation_weeks INTEGER NOT NULL DEFAULT 1,
+    holidays_off INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE person_schedule_shift (
+    schedule_id TEXT NOT NULL REFERENCES person_schedule(id) ON DELETE CASCADE,
+    week INTEGER NOT NULL,
+    day_of_week INTEGER NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    PRIMARY KEY (schedule_id, week, day_of_week)
+);
+
+CREATE TABLE person_schedule_exception (
+    schedule_id TEXT NOT NULL REFERENCES person_schedule(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    off INTEGER NOT NULL DEFAULT 1,
+    start_time TEXT,
+    end_time TEXT,
+    reason TEXT,
+    PRIMARY KEY (schedule_id, date)
+);
+
+CREATE INDEX person_schedule_member ON person_schedule(member_id);
+
 -- TRP-07: a vehicle's technical details. Capacities are decimal strings (litres or kWh);
 -- weights in kilograms. [vehicle_use] is PERSONAL, COMMERCIAL or MIXED.
 ALTER TABLE vehicle ADD COLUMN engine TEXT;

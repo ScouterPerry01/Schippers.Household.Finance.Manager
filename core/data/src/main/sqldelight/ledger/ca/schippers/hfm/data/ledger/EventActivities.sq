@@ -1,0 +1,34 @@
+-- CAL-11 (version 31): one date of a child's activity: who drives that day when it differs from the
+-- series (carpool turns), and the transaction its cost became. Kept with the event in its group's ledger.
+CREATE TABLE event_activity_day (
+    event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    -- 1 when the drivers below replace the series' drivers for this date (null then means nobody).
+    drivers_set INTEGER NOT NULL DEFAULT 0,
+    driver_there_member_id TEXT,
+    driver_there_name TEXT,
+    driver_back_member_id TEXT,
+    driver_back_name TEXT,
+    cost_txn_id TEXT,
+    PRIMARY KEY (event_id, date)
+);
+
+activityDays:
+SELECT * FROM event_activity_day;
+
+setActivityDrivers:
+INSERT INTO event_activity_day(event_id, date, drivers_set, driver_there_member_id, driver_there_name, driver_back_member_id, driver_back_name)
+VALUES (?, ?, 1, ?, ?, ?, ?)
+ON CONFLICT(event_id, date) DO UPDATE SET drivers_set = 1, driver_there_member_id = excluded.driver_there_member_id,
+    driver_there_name = excluded.driver_there_name, driver_back_member_id = excluded.driver_back_member_id, driver_back_name = excluded.driver_back_name;
+
+clearActivityDrivers:
+UPDATE event_activity_day SET drivers_set = 0, driver_there_member_id = NULL, driver_there_name = NULL, driver_back_member_id = NULL, driver_back_name = NULL
+WHERE event_id = ? AND date = ?;
+
+setActivityCostTxn:
+INSERT INTO event_activity_day(event_id, date, cost_txn_id) VALUES (?, ?, ?)
+ON CONFLICT(event_id, date) DO UPDATE SET cost_txn_id = excluded.cost_txn_id;
+
+deleteEmptyActivityDays:
+DELETE FROM event_activity_day WHERE drivers_set = 0 AND cost_txn_id IS NULL;

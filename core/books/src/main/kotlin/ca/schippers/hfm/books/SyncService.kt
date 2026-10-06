@@ -1,6 +1,7 @@
 package ca.schippers.hfm.books
 
 import ca.schippers.hfm.calc.rules.LeadTimes
+import ca.schippers.hfm.calc.schedule.Seasons
 import ca.schippers.hfm.i18n.Messages
 import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.domain.CategoryKind
@@ -21,6 +22,7 @@ import ca.schippers.hfm.sync.Direction
 import ca.schippers.hfm.sync.PairRequest
 import ca.schippers.hfm.sync.PairResponse
 import ca.schippers.hfm.sync.PairingInvitation
+import ca.schippers.hfm.sync.PhoneTaskDone
 import ca.schippers.hfm.sync.PhoneFuel
 import ca.schippers.hfm.sync.RefTrailer
 import ca.schippers.hfm.sync.RefAccount
@@ -30,6 +32,9 @@ import ca.schippers.hfm.sync.RefCategory
 import ca.schippers.hfm.sync.RefDue
 import ca.schippers.hfm.sync.RefEvent
 import ca.schippers.hfm.sync.RefRefill
+import ca.schippers.hfm.sync.RefSchedule
+import ca.schippers.hfm.sync.RefSeasonal
+import ca.schippers.hfm.sync.RefSeasonalTask
 import ca.schippers.hfm.sync.RefPayee
 import ca.schippers.hfm.sync.RefPerson
 import ca.schippers.hfm.sync.RefVehicle
@@ -210,11 +215,39 @@ class SyncService internal constructor(private val books: Books) {
                 }
                 .onFailure { failed += failure(contact.id, it) }
         }
+        // SEA-04: tasks ticked in the seasonal checklist on the phone go into the service log.
+        for (done in request.tasksDone.take(MAX_ITEMS)) {
+            if (books.core.syncItemById(done.id).executeAsOneOrNull() != null) {
+                imported += done.id
+                continue
+            }
+            runCatching { recordTaskDone(done, today) }
+                .onSuccess {
+                    books.core.insertSyncItem(done.id, deviceId, CaptureKind.TASK_DONE.name, now, null, "IMPORTED")
+                    imported += done.id
+                    added++
+                }
+                .onFailure { failed += failure(done.id, it) }
+        }
         // CSY-02: each calendar brought in replaces the copy kept; a snapshot already stored is acknowledged again.
         for (snapshot in request.calendars.take(MAX_CALENDARS)) {
             runCatching { books.broughtIn.receive(deviceId, snapshot, now) }
                 .onSuccess { imported += snapshot.id }
                 .onFailure { failed += failure(snapshot.id, it) }
+        }
+        // UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: readings, hours, chores and volunteer hours are stored as they come.
+        for (tracker in request.trackers.take(MAX_ITEMS)) {
+            if (books.core.syncItemById(tracker.id).executeAsOneOrNull() != null) {
+                imported += tracker.id
+                continue
+            }
+            runCatching { books.trackerSync.receive(tracker, device.group_id ?: defaultGroup(), deviceId) }
+                .onSuccess {
+                    books.core.insertSyncItem(tracker.id, deviceId, CaptureKind.TRACKER.name, now, null, "IMPORTED")
+                    imported += tracker.id
+                    added++
+                }
+                .onFailure { failed += failure(tracker.id, it) }
         }
         // TRP-02, TRP-01, TRP-05: places first, so the trips and fill-ups that name them find them.
         val group = device.group_id ?: defaultGroup()
@@ -260,6 +293,14 @@ class SyncService internal constructor(private val books: Books) {
         val (answer, added) = process(header.deviceId, sealed, converter, now, today, confirmRecent = true)
         val reply = BundleFile.Header(desktopId, header.deviceId, Direction.TO_PHONE, now)
         return FileReply(BundleFile.name(reply), BundleFile.write(reply, answer), header.deviceId, added)
+    }
+
+    /** SEA-04: a task ticked on the phone, recorded as done in its vehicle's or asset's service log. */
+    private fun recordTaskDone(done: PhoneTaskDone, today: LocalDate) {
+        val date = runCatching { LocalDate.parse(done.date) }.getOrElse { throw ValidationException("error.invalidDate") }
+        validate(date <= today.plus(DatePeriod(days = 1)), "error.invalidDate")
+        val cost = done.cost?.trim()?.takeIf { it.isNotEmpty() }?.let { c -> runCatching { BigDecimal(c.replace(',', '.')) }.getOrElse { throw ValidationException("error.invalidNumber") } }
+        books.seasonal.record(done.vehicle, done.subjectId, done.taskId, date, done.note, cost, done.reading)
     }
 
     /** Stores one captured item; returns the document it became, if any. */
@@ -367,6 +408,20 @@ class SyncService internal constructor(private val books: Books) {
             places = runCatching { books.places.forPhone() }.getOrDefault(emptyList()),
             trailers = books.assets.list().filter { it.kind == AssetKind.TRAILER }.map { RefTrailer(it.id, it.name) },
             userMemberId = runCatching { books.users.list().firstOrNull { it.isMe }?.memberId }.getOrNull(),
+            schedules = runCatching { schedules(today) }.getOrDefault(emptyList()),
+            trackers = books.trackerSync.reference(today),
+            seasonal = runCatching { seasonal(today) }.getOrNull(),
+        )
+    }
+
+    /** SEA-04: the current season's checklist. */
+    private fun seasonal(today: LocalDate): RefSeasonal {
+        val c = books.seasonal.checklist(Seasons.windowOf(today), today)
+        return RefSeasonal(
+            c.window.season.name, c.window.start.toString(), c.window.end.toString(),
+            c.items.take(MAX_SEASONAL).map {
+                RefSeasonalTask(it.taskId, it.subjectId, it.subjectName, it.taskName, it.vehicle, it.state.name, it.dueDate?.toString(), it.doneOn?.toString(), it.unit?.name, it.currency.code)
+            },
         )
     }
 
@@ -388,6 +443,17 @@ class SyncService internal constructor(private val books: Books) {
             )
         }
     }
+
+    /** CAL-10: each person's work and school hours today and tomorrow, from the groups the signed-in user can see. */
+    private fun schedules(today: LocalDate): List<RefSchedule> {
+        val who = names()
+        return books.schedules.days(today, today.plus(DatePeriod(days = 1))).mapNotNull { d ->
+            val person = who[d.memberId] ?: return@mapNotNull null
+            RefSchedule(person, d.schedule.kind.name, d.date.toString(), hhmm(d.start), hhmm(d.end), d.schedule.label)
+        }
+    }
+
+    private fun hhmm(t: kotlinx.datetime.LocalTime) = "%02d:%02d".format(t.hour, t.minute)
 
     /** HLT-03: active medications running out within [EVENT_DAYS] days, or already out. */
     private fun refills(today: LocalDate): List<RefRefill> {
@@ -432,6 +498,7 @@ class SyncService internal constructor(private val books: Books) {
         private const val MAX_RECENT_CONFIRM = 1000L
         private const val MAX_PAYEES = 400
         private const val MAX_DUE = 50
+        private const val MAX_SEASONAL = 200
 
         /** Events and refills up to two months ahead: the longest reminder lead time the computer allows. */
         private const val EVENT_DAYS = 61

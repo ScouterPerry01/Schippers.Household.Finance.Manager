@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.hasScrollToNodeAction
 import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.test.DesktopComposeUiTest
 import ca.schippers.hfm.books.StatementStatus
@@ -105,6 +106,13 @@ private class ShotScope(val app: AppState, val model: BooksModel, val test: Desk
 
     fun l(fr: String, en: String) = if (model.language == Language.FRENCH) fr else en
 
+    /** CAL-11: the next date of a child's activity from today, for the calendar's Week and Day pictures. */
+    fun activityDay(): kotlinx.datetime.LocalDate {
+        val today = ca.schippers.hfm.desktop.today()
+        return model.books.calendar.occurrences(today, today.plus(kotlinx.datetime.DatePeriod(days = 14)))
+            .first { it.event.category == ca.schippers.hfm.books.EventCategory.ACTIVITY && it.event.cost != null }.date
+    }
+
     /** MAN-05: the templates the Templates window shows, added once to the credit card's account group. */
     fun addTemplates(cardId: String) {
         val books = model.books
@@ -176,9 +184,16 @@ private val SHOTS: List<Shot> = buildList {
     add(Shot("documents-all") { section(Section.DOCUMENTS); click(t("documents.tab.ALL")) })
     add(Shot("bills-calendar") { section(Section.BILLS); click(t("bills.tab.CALENDAR")) })
     add(Shot("bills-forecast") { section(Section.BILLS); click(t("bills.tab.FORECAST")) })
-    add(Shot("calendar-month") { section(Section.CALENDAR); click(t("calendar.tab.MONTH")) })
+    add(Shot("calendar-month") { model.calendarView = "AGENDA"; model.calendarDate = ca.schippers.hfm.desktop.today(); section(Section.CALENDAR); click(t("calendar.tab.MONTH")) })
+    // CAL-07 to CAL-11: the other views, on the day of the child's next swimming lesson (an activity with its carpool).
+    add(Shot("calendar-week") { model.calendarDate = activityDay(); section(Section.CALENDAR); click(t("calendar.tab.WEEK")) })
+    add(Shot("calendar-day") { model.calendarDate = activityDay(); section(Section.CALENDAR); click(t("calendar.tab.DAY")) })
+    add(Shot("calendar-year") { model.calendarDate = ca.schippers.hfm.desktop.today(); section(Section.CALENDAR); click(t("calendar.tab.YEAR")) })
+    add(Shot("calendar-activity") { model.calendarDate = activityDay(); section(Section.CALENDAR); click(t("calendar.tab.DAY")); click(l("Cours de natation", "Swimming lessons")) })
+    add(Shot("calendar-schedules") { model.calendarView = "AGENDA"; section(Section.CALENDAR); click(t("schedule.title")) })
+    add(Shot("calendar-schedule-edit") { model.calendarView = "AGENDA"; section(Section.CALENDAR); click(t("schedule.title")); click(t("common.edit")) })
     // CSY-01 to CSY-05: items brought in from Alex's phone, the list of those calendars, and the .ics import.
-    add(Shot("calendar-brought-in") { section(Section.CALENDAR); scrollTo(l("Planification trimestrielle", "Quarterly planning")) })
+    add(Shot("calendar-brought-in") { model.calendarView = "AGENDA"; section(Section.CALENDAR); scrollTo(l("Planification trimestrielle", "Quarterly planning")) })
     add(Shot("calendar-phone-calendars") { section(Section.CALENDAR); click(t("calendar.broughtIn.manage")) })
     add(Shot("calendar-ics") { section(Section.CALENDAR); click(t("calendar.ics.import")) })
     add(Shot("reports-spending") { model.reportState.kind = ReportKind.SPENDING_BY_CATEGORY; section(Section.REPORTS) })
@@ -196,6 +211,15 @@ private val SHOTS: List<Shot> = buildList {
     add(Shot("trips-places") { section(Section.TRIPS); click(t("places.title")) })
     add(Shot("trips-logbook") { section(Section.TRIPS); click(t("trips.logbook")) })
     add(Shot("assets-insurance") { section(Section.ASSETS); click(t("assets.tab.INSURANCE")) })
+    // SEA-02, SEA-05: the seasonal checklist, and an energy upgrade's costs with its rebates.
+    add(Shot("assets-seasonal") { section(Section.ASSETS); click(t("assets.tab.SEASONAL")) })
+    add(
+        Shot("assets-rebates") {
+            section(Section.ASSETS)
+            click(t("assets.tab.PROJECTS"))
+            click(l("Isolation de l’entretoit", "Attic insulation and air sealing"))
+        },
+    )
     add(Shot("users-access") { section(Section.USERS); click(t("users.tab.ACCESS")) })
     // The basics: search, help, the menu at the top, dark colours.
     add(
@@ -255,6 +279,10 @@ private val SHOTS: List<Shot> = buildList {
     )
     add(Shot("reports-cash-flow") { model.reportState.kind = ReportKind.CASH_FLOW; section(Section.REPORTS) })
     add(Shot("taxes-estimate-carry-forward") { section(Section.TAXES); click(t("taxes.tab.ESTIMATE")); scrollTo(t("taxEstimateGroup.CARRY_FORWARD")) })
+    // UTL-02, HRS-01, CHO-01: the fuel tanks, hours worked and chores tabs.
+    add(Shot("utilities-tanks") { section(Section.UTILITIES); click(t("utilities.tab.TANKS")) })
+    add(Shot("side-hours") { section(Section.SIDE); click(t("side.tab.HOURS")) })
+    add(Shot("family-chores") { section(Section.FAMILY); click(t("family.tab.CHORES")) })
     // Before a household is open: last, since leaving the household's screens stops its phone listener.
     // The manual's own window, on the Bills chapter with its first picture.
     add(Shot("manual-window") { section(Section.BILLS); app.openManual("bills"); manualShown = true })

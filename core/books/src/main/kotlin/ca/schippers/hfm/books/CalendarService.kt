@@ -6,6 +6,8 @@ import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
+import ca.schippers.hfm.money.Currency
+import ca.schippers.hfm.money.Money
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -15,7 +17,11 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import ca.schippers.hfm.data.ledger.Event as EventRow
 
-enum class EventCategory { MEDICAL, FINANCIAL, VEHICLE, HOME, PET, PERSONAL, OTHER }
+/**
+ * [ACTIVITY] (CAL-11): a child's practice, game or lesson, with who drives each way and its cost. It is
+ * stored as PERSONAL with the event's activity flag, since the table's list of categories is fixed.
+ */
+enum class EventCategory { MEDICAL, FINANCIAL, VEHICLE, HOME, PET, PERSONAL, ACTIVITY, OTHER }
 enum class OccurrenceMark { DONE, CANCELLED }
 
 /** CAL-01, CAL-02: an appointment or event, one-time or repeating. */
@@ -38,7 +44,19 @@ data class CalendarEvent(
     val endDate: LocalDate?,
     /** CAL-03: reminder lead times in minutes, e.g. 1440 and 60. */
     val reminderMinutes: List<Int>,
+    /** CAL-11: who drives there and back, for an activity. */
+    val driverThere: Driver? = null,
+    val driverBack: Driver? = null,
+    /** CAL-11: what each occurrence costs; it can become a transaction. */
+    val cost: Money? = null,
 )
+
+/** CAL-11: who drives: a household member ([memberId]) or a name typed in ([name]), such as another parent. */
+data class Driver(val memberId: String? = null, val name: String? = null) {
+    init {
+        require((memberId == null) != (name.isNullOrBlank())) { "A driver is a member or a name" }
+    }
+}
 
 data class EventDraft(
     val groupId: String,
@@ -55,9 +73,25 @@ data class EventDraft(
     val recurrence: Recurrence? = null,
     val endDate: LocalDate? = null,
     val reminderMinutes: List<Int> = listOf(LeadTimes.newEvent()),
+    val driverThere: Driver? = null,
+    val driverBack: Driver? = null,
+    val cost: Money? = null,
 )
 
-data class EventOccurrence(val event: CalendarEvent, val date: LocalDate, val mark: OccurrenceMark?) {
+/**
+ * One date of an event. For an activity (CAL-11), [driverThere] and [driverBack] are that date's
+ * drivers (the series' unless changed for the date, [driversChanged]), and [costTransactionId] the
+ * transaction its cost became.
+ */
+data class EventOccurrence(
+    val event: CalendarEvent,
+    val date: LocalDate,
+    val mark: OccurrenceMark?,
+    val driverThere: Driver? = event.driverThere,
+    val driverBack: Driver? = event.driverBack,
+    val driversChanged: Boolean = false,
+    val costTransactionId: String? = null,
+) {
     /** When it starts; all-day events count from 08:00 for reminders. */
     val start: LocalDateTime get() = LocalDateTime(date, event.startTime ?: ALL_DAY_REMINDER_TIME)
 
@@ -107,6 +141,12 @@ sealed interface CalendarItem {
         override val kind get() = CalendarKind.RENEWALS
     }
 
+    /** CAL-09, CAL-10: a person's work or school hours that day. */
+    data class Schedule(val day: ScheduleDay) : CalendarItem {
+        override val date get() = day.date
+        override val kind get() = CalendarKind.SCHEDULES
+    }
+
     /** CSY-04: an item brought in from a person's phone, read-only, on one of the days it covers. */
     data class Imported(val item: BroughtInItem, override val date: LocalDate) : CalendarItem {
         override val kind get() = CalendarKind.IMPORTED
@@ -134,9 +174,10 @@ class CalendarService internal constructor(private val books: Books) {
         val now = books.now()
         with(draft) {
             books.ledger(group).calendarQueries.insertEvent(
-                id, title.trim(), category.name, startDate.toString(), startTime?.let(::time), durationMinutes?.toLong(), location?.ifBlank { null },
+                id, title.trim(), storedCategory(category), startDate.toString(), startTime?.let(::time), durationMinutes?.toLong(), location?.ifBlank { null },
                 notes?.ifBlank { null }, memberId, providerId, accountId, recurrence?.encode(), endDate?.toString(),
-                reminderMinutes.sorted().reversed().joinToString(","), now, now,
+                reminderMinutes.sorted().reversed().joinToString(","), now, now, if (category == EventCategory.ACTIVITY) 1 else 0,
+                driverThere?.memberId, driverThere?.name?.trim(), driverBack?.memberId, driverBack?.name?.trim(), cost?.minorUnits, cost?.currency?.code,
             )
         }
         return get(id)
@@ -147,11 +188,12 @@ class CalendarService internal constructor(private val books: Books) {
         books.require(group, PermissionLevel.EDIT)
         validate(event.groupId == existing.groupId, "error.cannotChangeAccount")
         with(event) {
-            validate(EventDraft(groupId, title, category, startDate, startTime, durationMinutes, location, notes, memberId, providerId, accountId, recurrence, endDate, reminderMinutes))
+            validate(EventDraft(groupId, title, category, startDate, startTime, durationMinutes, location, notes, memberId, providerId, accountId, recurrence, endDate, reminderMinutes, driverThere, driverBack, cost))
             books.ledger(group).calendarQueries.updateEvent(
-                title.trim(), category.name, startDate.toString(), startTime?.let(::time), durationMinutes?.toLong(), location?.ifBlank { null },
+                title.trim(), storedCategory(category), startDate.toString(), startTime?.let(::time), durationMinutes?.toLong(), location?.ifBlank { null },
                 notes?.ifBlank { null }, memberId, providerId, accountId, recurrence?.encode(), endDate?.toString(),
-                reminderMinutes.sorted().reversed().joinToString(","), books.now(), id,
+                reminderMinutes.sorted().reversed().joinToString(","), books.now(), if (category == EventCategory.ACTIVITY) 1 else 0,
+                driverThere?.memberId, driverThere?.name?.trim(), driverBack?.memberId, driverBack?.name?.trim(), cost?.minorUnits, cost?.currency?.code, id,
             )
         }
     }
@@ -173,13 +215,58 @@ class CalendarService internal constructor(private val books: Books) {
     fun occurrences(from: LocalDate, to: LocalDate): List<EventOccurrence> = books.groups().flatMap { group ->
         val q = books.ledger(group).calendarQueries
         val marks = q.occurrenceStatuses().executeAsList().associate { (it.event_id to it.date) to OccurrenceMark.valueOf(it.status) }
+        val days = books.ledger(group).eventActivitiesQueries.activityDays().executeAsList().associateBy { it.event_id to it.date }
         q.events().executeAsList().map { it.toEvent(group.id) }.flatMap { event ->
             val rule = event.recurrence ?: Recurrence(Frequency.ONCE)
             rule.occurrences(event.startDate, from, to, event.endDate).map { date ->
-                EventOccurrence(event, date, marks[event.id to date.toString()])
+                val day = days[event.id to date.toString()]
+                val changed = day?.drivers_set == 1L
+                EventOccurrence(
+                    event, date, marks[event.id to date.toString()],
+                    if (changed) driver(day.driver_there_member_id, day.driver_there_name) else event.driverThere,
+                    if (changed) driver(day.driver_back_member_id, day.driver_back_name) else event.driverBack,
+                    changed, day?.cost_txn_id,
+                )
             }
         }
     }.sortedWith(compareBy({ it.date }, { it.event.startTime ?: LocalTime(0, 0) }))
+
+    /**
+     * CAL-11: who drives on one date of an activity, in place of the series' drivers (a carpool turn).
+     * [there] and [back] null mean nobody drives that way that day.
+     */
+    fun setDrivers(eventId: String, date: LocalDate, there: Driver?, back: Driver?) {
+        val (group, _) = locate(eventId)
+        books.require(group, PermissionLevel.EDIT)
+        books.ledger(group).eventActivitiesQueries.setActivityDrivers(eventId, date.toString(), there?.memberId, there?.name?.trim(), back?.memberId, back?.name?.trim())
+    }
+
+    /** CAL-11: the date's drivers are the series' again. */
+    fun clearDrivers(eventId: String, date: LocalDate) {
+        val (group, _) = locate(eventId)
+        books.require(group, PermissionLevel.EDIT)
+        val q = books.ledger(group).eventActivitiesQueries
+        q.clearActivityDrivers(eventId, date.toString())
+        q.deleteEmptyActivityDays()
+    }
+
+    /**
+     * CAL-11: records the cost of an activity's date as a spending transaction from [accountId] in
+     * [categoryId], for the activity's person, and keeps it with the date. Returns the transaction's id.
+     */
+    fun recordCost(eventId: String, date: LocalDate, accountId: String, categoryId: String?): String {
+        val (group, event) = locate(eventId)
+        books.require(group, PermissionLevel.EDIT)
+        val cost = event.cost
+        validate(cost != null && cost.isPositive, "error.amountPositive")
+        val account = books.accounts.get(accountId)
+        validate(account.currency == cost!!.currency, "error.currencyMismatch", account.currency.code)
+        val txn = books.transactions.create(
+            TransactionDraft(account.id, date, -cost, event.location ?: event.title, listOf(SplitDraft(categoryId, -cost)), event.title, memberId = event.memberId),
+        )
+        books.ledger(group).eventActivitiesQueries.setActivityCostTxn(eventId, date.toString(), txn.id)
+        return txn.id
+    }
 
     /**
      * CAL-04: events, bills and health due dates between [from] and [to], in date order. Paid bills
@@ -191,6 +278,7 @@ class CalendarService internal constructor(private val books: Books) {
             books.health.due(from, to).map { CalendarItem.Health(it) } +
             renewals(from, to).map { CalendarItem.Renewal(it) } +
             books.upkeepBetween(from, to, books.today()).map { CalendarItem.Maintenance(it) } +
+            books.schedules.days(from, to).map { CalendarItem.Schedule(it) } +
             broughtIn(from, to))
             .sortedBy { it.date }
 
@@ -225,6 +313,16 @@ class CalendarService internal constructor(private val books: Books) {
         validate(draft.endDate == null || draft.endDate >= draft.startDate, "error.endBeforeStart")
         validate(draft.durationMinutes == null || draft.durationMinutes in 1..(60 * 24 * 31), "error.invalidNumber")
         validate(draft.reminderMinutes.all { it in 0..(60 * 24 * 60) }, "error.reminderDays")
+        validate(draft.cost == null || draft.cost.isPositive, "error.amountPositive")
+    }
+
+    /** ACTIVITY is kept as PERSONAL with the activity flag (the table's categories are fixed). */
+    private fun storedCategory(c: EventCategory) = if (c == EventCategory.ACTIVITY) EventCategory.PERSONAL.name else c.name
+
+    private fun driver(memberId: String?, name: String?): Driver? = when {
+        memberId != null -> Driver(memberId = memberId)
+        !name.isNullOrBlank() -> Driver(name = name)
+        else -> null
     }
 
     private fun locate(eventId: String): Pair<GroupInfo, CalendarEvent> {
@@ -236,9 +334,11 @@ class CalendarService internal constructor(private val books: Books) {
     }
 
     private fun EventRow.toEvent(groupId: String) = CalendarEvent(
-        id, groupId, title, EventCategory.valueOf(category), LocalDate.parse(start_date), start_time?.let(LocalTime::parse),
+        id, groupId, title, if (activity == 1L) EventCategory.ACTIVITY else EventCategory.valueOf(category), LocalDate.parse(start_date), start_time?.let(LocalTime::parse),
         duration_minutes?.toInt(), location, notes, member_id, provider_id, account_id, recurrence?.let(Recurrence::decode),
         end_date?.let(LocalDate::parse), reminder_minutes.split(',').mapNotNull { it.trim().toIntOrNull() },
+        driver(driver_there_member_id, driver_there_name), driver(driver_back_member_id, driver_back_name),
+        cost_minor?.let { Money.ofMinor(it, cost_currency?.let(Currency::of) ?: Currency.CAD) },
     )
 
     private fun time(t: LocalTime) = "%02d:%02d".format(t.hour, t.minute)
