@@ -105,7 +105,25 @@ data class Subscription(val bill: Bill, val annualCost: Money, val nextDue: Loca
 data class ForecastPoint(val date: LocalDate, val balance: Money, val occurrence: Occurrence?)
 
 /** BILL-07 / BILL-08: projected balance of one account and the payments that would overdraw it. */
-data class AccountForecast(val account: Account, val start: Money, val points: List<ForecastPoint>, val lowest: Money, val shortfalls: List<ForecastPoint>)
+data class AccountForecast(val account: Account, val start: Money, val points: List<ForecastPoint>, val lowest: Money, val shortfalls: List<ForecastPoint>) {
+    /** The projected balance at the end of [date]. */
+    fun balanceOn(date: LocalDate): Money = points.lastOrNull { it.date <= date }?.balance ?: start
+}
+
+/**
+ * BILL-08, section 12 cash flow forecast: the balance of every bank account day by day, and their
+ * total in the base currency (at today's rate). Bank accounts in a currency with no rate are left
+ * out of [total] and listed in [missingRates].
+ */
+data class CashFlowForecast(
+    val dates: List<LocalDate>,
+    val accounts: List<AccountForecast>,
+    val total: List<Money>,
+    val missingRates: Set<Currency>,
+) {
+    /** The first day the bank accounts together would be below zero, if any. */
+    val firstShortfall: LocalDate? get() = dates.indices.firstOrNull { total[it].isNegative }?.let { dates[it] }
+}
 
 /**
  * Bills and payment scheduling (section 9). The application records, reminds and forecasts;
@@ -401,6 +419,21 @@ class BillService internal constructor(private val books: Books) {
             }
             AccountForecast(account, summary.balance, points, points.minOf { it.balance }, shortfalls)
         }
+    }
+
+    /** BILL-08: the bank accounts' forecast day by day from [today] for [days] days, for the chart. */
+    fun cashFlow(today: LocalDate, days: Int = LeadTimes.billsForecast(today)): CashFlowForecast {
+        val base = books.rates.baseCurrency
+        val banks = forecast(today, days).filter { it.account.type.kind == AccountKind.BANK && !it.account.currency.isCrypto }
+        val dates = (0..days).map { today.plus(DatePeriod(days = it)) }
+        val missing = HashSet<Currency>()
+        val rates = banks.map { it.account.currency }.distinct().associateWith { c ->
+            if (c == base) java.math.BigDecimal.ONE else books.rates.rate(c, base, today).also { if (it == null) missing += c }
+        }
+        val total = dates.map { date ->
+            banks.fold(Money.zero(base)) { sum, f -> rates[f.account.currency]?.let { sum + f.balanceOn(date).convert(base, it) } ?: sum }
+        }
+        return CashFlowForecast(dates, banks, total, missing)
     }
 
     // --- Calendar export ------------------------------------------------------------------------

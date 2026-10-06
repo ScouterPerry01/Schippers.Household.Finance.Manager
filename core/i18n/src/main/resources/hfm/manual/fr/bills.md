@@ -234,6 +234,8 @@ Le coût annuel est le montant multiplié par le nombre de paiements dans une an
 
 - **30 jours**, **60 jours**, **90 jours** : jusqu’où regarder. Par défaut : 30 jours.
 
+En haut, un graphique montre les comptes bancaires jour par jour : une ligne pour tous ensemble (dans la devise de base au taux du jour) et une pour chaque compte dans la devise de base qui a quelque chose de prévu, avec une ligne rouge à zéro. Pointez un jour pour lire les soldes. Le même graphique, avec un tableau à exporter, est le rapport [Prévision de trésorerie](reports#cash-flow).
+
 Pour chaque compte qui a quelque chose de prévu (ou dont le solde est déjà sous zéro), une carte montre :
 
 - « Aujourd’hui … · à la fin … · plus bas … » : le solde d’aujourd’hui, le solde à la fin de la période et le point le plus bas entre les deux.

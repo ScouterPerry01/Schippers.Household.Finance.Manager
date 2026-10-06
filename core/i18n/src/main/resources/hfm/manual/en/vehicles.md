@@ -256,16 +256,17 @@ Two buttons choose the period: this year, or **All years**. The tab shows:
 - **Total**: the running costs of the period;
 - "distance driven" and "amount per km", from the odometer readings of the period (at least two are needed);
 - the total of each category, largest first;
-- with **All years**, the total of each year;
+- "Share of insurance premiums (estimate, not in the total)": when an insurance policy names the vehicle (see [Home and assets](assets)), its yearly premium split evenly between the things the policy names, for the days of the period the vehicle was owned (from its purchase date, or its first odometer reading) and the policy was in force. It is an estimate shown beside the running costs, not added to them, since the premium payments may also be linked to the vehicle in the register;
+- with **All years**, costs by year and category: a bar chart with a group of bars per year, one bar for each of the four largest categories and one for the others together, then the table **Year**, **Category**, **Amount**, with each year's total and its insurance share, which you can export or print;
 - "The purchase price (price) is not a running cost and is not included.";
 - a note when amounts in another currency have no exchange rate;
-- "Includes the transactions linked to this vehicle in the register, and fuel and service entries that have no payment of their own."
+- "Includes the transactions linked to this vehicle in the register, and fuel and service entries that have no payment of their own. The share of insurance premiums is an estimate from the policies that name the vehicle, shown on its own and not added to the total."
 
 ![The Costs tab](images/vehicles-costs.png)
 
 A transaction is linked to the vehicle when it was entered from a service or fill-up with **Also enter the payment in an account**, or when the vehicle is chosen in its "Vehicle" field in the register: insurance, registration, parking, tolls, repairs. Amounts are converted to the base currency at the rate of their date.
 
-The **Maintenance and cost of ownership** report under [Reports](reports) brings the vehicles and other assets together.
+The **Maintenance and cost of ownership** report under [Reports](reports) brings the vehicles and other assets together, with each one's insurance share.
 
 ## Reminders and calendar {#reminders}
 @index: reminder; renewal; notification

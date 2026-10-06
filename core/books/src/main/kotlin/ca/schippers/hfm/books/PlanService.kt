@@ -523,7 +523,7 @@ class PlanService internal constructor(private val books: Books) {
         GrantKind.QESI -> "QESI / IQEE"
         GrantKind.BCTESG -> "BCTESG"
         GrantKind.CLB -> "CLB / BEC"
-        GrantKind.OTHER -> "RESP grant"
+        GrantKind.OTHER -> "RESP grant / Subvention REEE"
     }
 
     /**

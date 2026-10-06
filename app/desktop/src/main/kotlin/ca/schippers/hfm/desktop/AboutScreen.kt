@@ -146,7 +146,7 @@ private fun UpdatesCard(state: AppState) {
                         SelectionContainer { Text(command, fontFamily = FontFamily.Monospace) }
                     }
                 }
-                is UpdateStatus.Failed -> Text(state.t(status.messageKey, status.detail), color = MaterialTheme.colorScheme.error)
+                is UpdateStatus.Failed -> Text(state.t(status.messageKey, status.cause?.let { networkError(it, state.language) } ?: status.detail), color = MaterialTheme.colorScheme.error)
             }
             val busy = updater.status == UpdateStatus.Checking || updater.status is UpdateStatus.Downloading
             if (updater.enabled == true && !busy) {

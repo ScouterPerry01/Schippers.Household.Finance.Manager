@@ -46,6 +46,8 @@ data class CostSummary(
     val byYear: Map<Int, Money>,
     /** Lines in another currency with no exchange rate, left out of the totals. */
     val unconverted: Int,
+    /** VEH-10: each year's costs by category, largest first. */
+    val byYearCategory: Map<Int, List<Pair<String?, Money>>> = emptyMap(),
 )
 
 /**
@@ -146,5 +148,8 @@ internal fun Books.costs(
         .map { (category, list) -> category to list.fold(zero) { a, b -> a + b } }
         .sortedByDescending { it.second.minorUnits }
     val byYear = items.groupBy({ it.first.year }, { it.second.second }).mapValues { (_, list) -> list.fold(zero) { a, b -> a + b } }.toSortedMap()
-    return CostSummary(items.fold(zero) { a, b -> a + b.second.second }, byCategory, byYear, unconverted)
+    val byYearCategory = items.groupBy { it.first.year }.mapValues { (_, list) ->
+        list.groupBy({ it.second.first }, { it.second.second }).map { (category, amounts) -> category to amounts.fold(zero) { a, b -> a + b } }.sortedByDescending { it.second.minorUnits }
+    }.toSortedMap()
+    return CostSummary(items.fold(zero) { a, b -> a + b.second.second }, byCategory, byYear, unconverted, byYearCategory)
 }

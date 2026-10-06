@@ -102,6 +102,14 @@ class MessageKeysTest {
             "goalEntry" to ca.schippers.hfm.books.GoalEntryKind.entries,
             "goals.amount" to listOf("SET_ASIDE", "SPEND", "RELEASE"),
             "goals.amount" to listOf("SET_ASIDE.explain", "SPEND.explain", "RELEASE.explain", "SPEND.why", "RELEASE.why"),
+            "secretStore" to ca.schippers.hfm.ai.SecretStoreException.Reason.entries,
+            "ai.failure" to ca.schippers.hfm.ai.AiFailure.Reason.entries,
+            "aiProblem" to listOf(
+                "references", "notClosed", "noType", "noForm", "mustBe", "notOneOf", "expected", "missing", "notAllowed", "fewerFields", "fewerItems",
+                "moreItems", "notDate", "shorter", "longer", "noMatch", "below", "above", "notJson", "fileName", "fileSize", "fileNotJson",
+            ) + listOf("linesSubtotal", "subtotalTotal", "linesTotal", "amountDue", "newBalance", "closingBalance", "netPay", "grossPay", "totalPaid", "totalValue").map { "sum.$it" },
+            "importWarning" to listOf("noDate", "unknownAction", "withheldAlone", "refused", "marketValue", "notInvestment", "invalidDate", "noAccount", "quickenAction"),
+            "network" to listOf("http", "tooLarge", "timeout", "noConnection", "secure", "other"),
             "repeat" to listOf("ONCE", "WEEKLY", "BI_WEEKLY", "SEMI_MONTHLY", "MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL", "EVERY_N_DAYS", "EVERY_N_WEEKS", "EVERY_N_MONTHS"),
         ).flatMap { (prefix, values) -> values.map { "$prefix.$it" } }
 

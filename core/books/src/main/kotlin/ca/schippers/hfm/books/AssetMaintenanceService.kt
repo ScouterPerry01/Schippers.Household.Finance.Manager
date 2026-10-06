@@ -10,11 +10,8 @@ import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
-import java.math.BigDecimal
-import java.math.RoundingMode
 import ca.schippers.hfm.data.ledger.Asset_service as ServiceRow
 import ca.schippers.hfm.data.ledger.Asset_task as TaskRow
 
@@ -251,12 +248,7 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
             q.assetLines(assetId, from.toString(), to.toString()).executeAsList().map { CostLine(it.date, it.account_id, it.category_id, it.amount_minor) }
         }
         val base = summary.total.currency
-        val days = from.daysUntil(to) + 1
-        val insurance = books.insurance.policies(includeInactive = false).filter { assetId in it.assetIds }.mapNotNull { p ->
-            val annual = p.annualPremium ?: return@mapNotNull null
-            val converted = (if (annual.currency == base) annual else books.rates.convert(annual, base, to)) ?: return@mapNotNull null
-            converted.times(BigDecimal(days).divide(BigDecimal(365 * p.assetIds.size), 10, RoundingMode.HALF_UP))
-        }.takeIf { it.isNotEmpty() }?.fold(Money.zero(base), Money::plus)
+        val insurance = books.insurance.premiumShare(assetId, from, to)
         val inRange = readings(assetId).filter { it.date in from..to }
         val usage = if (a.meter != null && inRange.size >= 2) inRange.maxOf { it.usage } - inRange.minOf { it.usage } else null
         val perUnit = usage?.takeIf { it > 0 }?.let { Money.ofMinor((summary.total.minorUnits + it / 2) / it, base) }

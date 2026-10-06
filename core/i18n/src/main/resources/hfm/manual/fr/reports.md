@@ -30,10 +30,11 @@ Cliquez sur le nom d’un rapport pour l’afficher. Les rapports, dans l’ordr
 - **Portefeuille de placements** : rendements, répartition et placements détenus. Voir [Portefeuille de placements](reports#portfolio).
 - **Revenus de placement et gains en capital** : les feuillets T5, T3, Relevé 3 et Relevé 16 et l’annexe 3, par personne. Voir [Revenus de placement et gains en capital](reports#investment-income).
 - **Régimes enregistrés** : droits de cotisation, valeur des régimes, minimums des FERR et FRV, subventions des REEE et rentes. Voir [Régimes enregistrés](reports#registered-plans).
-- **Gains de change et exposition aux devises** : les devises détenues et les gains de change réalisés. Voir [Gains de change et exposition aux devises](reports#foreign-exchange).
+- **Gains de change et exposition aux devises** : ce qui est détenu et dû dans chaque devise, et les gains de change réalisés. Voir [Gains de change et exposition aux devises](reports#foreign-exchange).
 - **Frais médicaux** : coûts, remboursements et crédit d’impôt pour frais médicaux. Voir [Frais médicaux](reports#medical-expenses).
 - **Biens et garanties** : l’inventaire du domicile, les garanties qui se terminent bientôt et ce qu’aucune police ne couvre. Voir [Biens et garanties](reports#assets-warranties).
 - **Entretien et coût de possession** : ce que coûtent les véhicules et les autres biens, et ce qui arrive à échéance. Voir [Entretien et coût de possession](reports#maintenance).
+- **Prévision de trésorerie** : les comptes bancaires jour par jour pour les semaines à venir, selon les factures et revenus prévus. Voir [Prévision de trésorerie](reports#cash-flow).
 - **Sommaire des dettes** : tous les prêts, hypothèques, marges de crédit et cartes. Voir [Sommaire des dettes](reports#debt-summary).
 - **Budget et réel** : les budgets comparés à ce qui a vraiment été dépensé et reçu. Voir [Budget et réel](reports#budget-vs-actual).
 - **État des rapprochements** : la date du dernier rapprochement de chaque compte. Voir [État des rapprochements](reports#reconciliation-status).
@@ -255,7 +256,9 @@ L’année d’un coup d’œil, comparée à la précédente, à lire, imprimer
 - Les plus fréquentés : les cinq bénéficiaires où l’on a fait le plus d’achats, avec le nombre de visites et la somme dépensée.
 - Mois le plus chargé : le mois où l’on a le plus dépensé.
 
-Le tableau reprend les mêmes lignes avec **Section**, **Élément** et **Montant**, pour l’exportation.
+Deux graphiques viennent d’abord. **Mois par mois** montre les revenus et les dépenses en paire de barres pour chaque mois ; cliquez sur une barre pour voir les opérations qui la composent. **Où est allé l’argent** montre en barres les cinq groupes de catégories où l’on a le plus dépensé, chacun avec son montant de l’année précédente ; cliquez sur une barre pour voir ses opérations.
+
+Le tableau reprend les mêmes lignes avec **Section**, **Élément** et **Montant**, et les revenus et dépenses de chaque mois, pour l’exportation.
 
 ## Rapports sur le patrimoine et les placements {#wealth-reports}
 
@@ -383,11 +386,12 @@ Les montants sont ceux de l’écran Régimes enregistrés : voir [Régimes enre
 
 @index: change; gain de change; devises; dollars américains; exposition aux devises; exemption de 200 $
 
-Les devises détenues dans les comptes bancaires et de placement non enregistrés, et les gains et pertes de change réalisés dans l’**Année d’imposition**, dans la devise de base.
+Ce que le ménage détient et doit dans chaque devise, les devises détenues dans les comptes bancaires et de placement non enregistrés, et les gains et pertes de change réalisés dans l’**Année d’imposition**, dans la devise de base.
 
 Fonctionnement : une devise est achetée quand elle entre dans un compte (au prix payé par l’autre compte, ou au taux du jour) et vendue quand elle en sort (au montant reçu par l’autre compte, ou au taux du jour). Chaque devise est mise en commun pour les mêmes titulaires, comme des actions. Les virements entre ces comptes ne sont ni l’un ni l’autre. Les dettes en devises et les cryptoactifs ne sont pas inclus. Les problèmes trouvés dans l’historique sont énumérés en rouge.
 
-- Les devises détenues à la fin de l’année (ou aujourd’hui, pour l’année en cours) : une barre classée par devise et par titulaires, avec sa valeur et son solde, et un tableau avec **Devise**, **Titulaires**, **Solde**, **PBR**, **Valeur marchande** et **Gain non réalisé**.
+- L’exposition aux devises à la fin de l’année (ou aujourd’hui, pour l’année en cours) : pour chaque devise, au taux du jour, **Encaisse** (l’encaisse en devises des comptes non enregistrés), **Titres** (les titres des comptes non enregistrés, selon la devise dans laquelle ils se négocient : une action américaine dans un compte en dollars canadiens compte en dollars américains), **Régimes enregistrés** (l’encaisse et les titres des REER, CELI et autres régimes) et **Dettes** (cartes, marges de crédit et prêts dans cette devise). Un graphique à barres montre les quatre côte à côte pour chaque devise ; le tableau ajoute **Exposition nette**, ce qui est détenu moins ce qui est dû. Un titre sans prix compte à son coût comptable ; les cryptoactifs ne sont pas inclus.
+- Les devises détenues à la même date, pour les gains de change : un tableau avec **Devise**, **Titulaires**, **Solde**, **PBR**, **Valeur marchande** et **Gain non réalisé**.
 - Les gains et pertes de change réalisés dans l’année : pour chaque personne, le résultat net et **À déclarer après l’exemption** ; puis chaque disposition avec **Date**, **Devise**, **Titulaires**, **Montant**, **Produit**, **PBR** et **Gain**.
 
 Un particulier exclut les premiers 200 $ du gain ou de la perte de change net de l’année sur ses opérations personnelles ; seul l’excédent est un gain ou une perte en capital pour l’annexe 3. Les gains sur des devises utilisées dans une entreprise, ou pour des placements détenus pour la revente, peuvent être traités autrement.
@@ -448,11 +452,24 @@ Les biens sont tenus dans l’écran Maison et biens : voir [Maison et biens](as
 Les véhicules et les autres biens ensemble, pour une **Année** (jusqu’à aujourd’hui pour l’année en cours), dans la devise de base. Les articles dont on s’est départi avant l’année sont exclus ; un bien autre qu’un véhicule ne paraît que s’il a ses propres tâches d’entretien, entretiens, frais ou assurance.
 
 - **Dépensé en entretien** : le coût des entretiens inscrits dans l’année. **Entretiens** : leur nombre. **En retard** : les tâches à faire maintenant.
-- Coût de possession : par article, **Type**, **Frais courants**, **Assurance (part)**, **Utilisation** (distance ou heures dans l’année) et **Par km ou par heure**. Les frais courants sont les paiements liés à l’article et les entretiens inscrits sans paiement ; l’assurance est sa part des primes des polices qui le nomment.
+- Coût de possession : par article, **Type**, **Frais courants**, **Assurance (part)**, **Utilisation** (distance ou heures dans l’année) et **Par km ou par heure**. Les frais courants sont les paiements liés à l’article et les entretiens inscrits sans paiement ; l’assurance, pour les véhicules comme pour les autres biens, est sa part des primes des polices qui le nomment.
 - Carnet d’entretien : chaque entretien de l’année avec **Date**, **Article**, **Tâches**, **Fait par** (le fournisseur, ou « Fait moi-même »), **Pièces** et **Coût**.
 - À faire d’ici 12 mois : chaque tâche avec **Article**, **Tâches**, **Échéance** (une date, un relevé de compteur, ou les deux, avec la date prévue pour un relevé) et **Statut**.
 
 Voir [Véhicules](vehicles) et [Maison et biens](assets) pour les tâches et les entretiens.
+
+### Prévision de trésorerie {#cash-flow}
+
+@index: trésorerie; prévision; solde bas; découvert; manquerons-nous d’argent
+
+Les comptes bancaires jour par jour pour les semaines à venir, selon les factures, revenus et virements prévus encore dus (celui qui est en retard compte aujourd’hui). Choisissez jusqu’où regarder avec **Horizon** : 30, 60, 90 ou 180 jours, ou la période de prévision des Taux et règles.
+
+- **Aujourd’hui**, le solde du dernier jour et **Le plus bas** : les comptes bancaires ensemble, dans la devise de base au taux du jour.
+- Une ligne en rouge indique le jour où les comptes bancaires ensemble passeraient sous zéro, et les comptes qu’un paiement mettrait à découvert.
+- Le graphique : une ligne pour tous les comptes bancaires ensemble et une pour chaque compte dans la devise de base qui a quelque chose de prévu, avec une ligne rouge à zéro. Pointez un jour pour lire les soldes.
+- Le tableau : chaque élément prévu avec **Date**, **Comptes**, **Facture ou revenu**, **Montant** et **Solde** après celui-ci.
+
+Le même graphique est en haut de l’onglet Prévision des [Factures](bills).
 
 ### Sommaire des dettes {#debt-summary}
 
@@ -465,6 +482,8 @@ Tous les prêts, hypothèques, marges de crédit et cartes ouverts, à la date d
 - Pour un prêt ou une hypothèque, le taux, le versement, la date de remboursement et les intérêts restants viennent de ses modalités dans l’écran Prêts et hypothèques (voir [Prêts et hypothèques](loans)). Pour une carte ou une marge de crédit, le taux est le taux des achats, le taux des avances de fonds a sa propre colonne, et le versement est le paiement minimum, tous selon les modalités de la carte (voir [Détails de la carte de crédit](accounts#card-details)).
 
 « Aucune dette. Bravo. » paraît quand rien n’est dû.
+
+Sous le tableau, **Remboursement des prêts** montre chaque prêt et hypothèque dont les conditions sont saisies, du solde d’aujourd’hui jusqu’au remboursement, dans la devise de base au taux du jour : une ligne par prêt pour ce qui reste dû à la fin de chaque année, et **Intérêts par année**, une barre par année pour les intérêts que porteront les versements. Cliquez sur la barre d’une année pour voir les opérations du prêt déjà inscrites cette année-là. Le tableau en dessous reprend les mêmes chiffres pour l’exportation. Les cartes et marges de crédit n’ont pas d’échéance fixe et ne sont pas montrées.
 
 ### Budget et réel {#budget-vs-actual}
 

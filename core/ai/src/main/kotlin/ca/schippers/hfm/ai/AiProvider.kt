@@ -76,8 +76,18 @@ data class AiModel(
     }
 }
 
-/** Why a reading failed, so the screen can say what to do. */
-class AiFailure(val reason: Reason, detail: String? = null, cause: Throwable? = null) : Exception(detail ?: reason.name, cause) {
+/**
+ * A problem with an answer or a document type: [code] names its text (key `aiProblem.<code>`),
+ * [args] fill it (the JSON path first), and [english] is what is sent back to the provider and logged.
+ */
+data class AiProblem(val code: String, val english: String, val args: List<String>) {
+    constructor(code: String, english: String, vararg args: String) : this(code, english, args.toList())
+
+    override fun toString() = english
+}
+
+/** Why a reading failed, so the screen can say what to do; [problems] for an answer that could not be checked. */
+class AiFailure(val reason: Reason, detail: String? = null, cause: Throwable? = null, val problems: List<AiProblem> = emptyList()) : Exception(detail ?: reason.name, cause) {
     enum class Reason {
         /** The key is missing, wrong or revoked. */
         KEY,
@@ -91,6 +101,8 @@ class AiFailure(val reason: Reason, detail: String? = null, cause: Throwable? = 
         INVALID,
         /** The document is too long for one request. */
         TOO_LONG,
+        /** No pages, or more than [AiReader.MAX_PAGES]. */
+        PAGES,
         /** Any other error from the service. */
         SERVICE,
     }

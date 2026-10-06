@@ -101,7 +101,7 @@ fun WalletView(model: BooksModel, account: Account) {
                 busy = true
                 scope.launch {
                     val r = withContext(Dispatchers.IO) { runCatching { books.crypto.sync(account.id, Http::get) } }
-                    status = r.fold({ model.t("wallet.synced", it.added, it.addresses) }, { (it as? ValidationException)?.message(model.language) ?: model.t("rates.failed", it.message.orEmpty()) })
+                    status = r.fold({ model.t("wallet.synced", it.added, it.addresses) }, { (it as? ValidationException)?.message(model.language) ?: model.t("rates.failed", networkError(it, model.language)) })
                     busy = false
                     model.changed()
                 }
@@ -242,7 +242,7 @@ fun ExchangeImportDialog(model: BooksModel, file: File, onClose: () -> Unit) {
         WideDialog(model.t("quicken.done"), model.t("common.close"), onClose) {
             Text(model.t("wallet.importResult", r.added, r.walletsCreated, r.linked))
             if (r.alreadyThere > 0) Text(model.t("investments.alreadyThere", r.alreadyThere))
-            if (r.warnings.isNotEmpty()) Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) { r.warnings.take(50).forEach { Text(it, style = MaterialTheme.typography.bodySmall) } }
+            if (r.warnings.isNotEmpty()) Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) { r.warnings.take(50).forEach { Text(model.userText(it), style = MaterialTheme.typography.bodySmall) } }
         }
         return
     }
@@ -275,7 +275,7 @@ fun ExchangeImportDialog(model: BooksModel, file: File, onClose: () -> Unit) {
                 Text(model.t("wallet.importOwners"), style = MaterialTheme.typography.labelLarge)
                 for (m in members) LabeledCheckbox(m.displayName, m.id in owners) { checked -> owners = if (checked) owners + m.id else owners - m.id }
             }
-            p.warnings.take(10).forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+            p.warnings.take(10).forEach { Text(model.userText(it), style = MaterialTheme.typography.bodySmall) }
         }
     }
 }

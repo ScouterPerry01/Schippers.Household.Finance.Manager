@@ -48,7 +48,8 @@ sealed interface UpdateStatus {
     data class Ready(val offer: UpdateOffer, val file: Path, val replacedAppImage: Boolean) : UpdateStatus
 
     /** [messageKey] is user text; [detail] says what went wrong. */
-    data class Failed(val messageKey: String, val detail: String) : UpdateStatus
+    /** [cause] gives [detail] in the user's language when it is a network error. */
+    data class Failed(val messageKey: String, val detail: String, val cause: Throwable? = null) : UpdateStatus
 }
 
 /** Where releases come from: GitHub Releases, or a folder in the demo. */
@@ -120,7 +121,7 @@ class Updater(
         } catch (e: UpdateRejected) {
             UpdateStatus.Failed("update.rejected", e.message.orEmpty())
         } catch (e: Exception) {
-            UpdateStatus.Failed("update.unreachable", e.message ?: e.javaClass.simpleName)
+            UpdateStatus.Failed("update.unreachable", e.message ?: e.javaClass.simpleName, e)
         }
     }
 
@@ -175,7 +176,7 @@ class Updater(
         } catch (e: UpdateRejected) {
             UpdateStatus.Failed("update.badDownload", e.message.orEmpty())
         } catch (e: Exception) {
-            UpdateStatus.Failed("update.downloadFailed", e.message ?: e.javaClass.simpleName)
+            UpdateStatus.Failed("update.downloadFailed", e.message ?: e.javaClass.simpleName, e)
         }
     }
 
@@ -234,7 +235,7 @@ private object GitHubSource : UpdateSource {
         val response = client.send(request(url, Duration.ofMinutes(30)), HttpResponse.BodyHandlers.ofInputStream())
         if (response.statusCode() != 200) {
             response.body().close()
-            throw IOException("HTTP ${response.statusCode()}")
+            throw HttpStatusException(response.statusCode())
         }
         return response.body()
     }

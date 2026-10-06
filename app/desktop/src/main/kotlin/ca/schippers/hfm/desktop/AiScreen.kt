@@ -90,7 +90,7 @@ fun AiScreen(model: BooksModel) {
                     keyState = true
                     message = model.t("ai.keyStored")
                 } catch (e: SecretStoreException) {
-                    message = model.t("ai.keyRefused", e.message.orEmpty())
+                    message = model.t("ai.keyRefused", model.t("secretStore.${e.reason}", e.detail.orEmpty()))
                 }
             }) { Text(model.t("ai.saveKey")) }
         }
@@ -126,7 +126,7 @@ private fun DocumentTypesPart(model: BooksModel) {
         val name = t.kind?.let { model.t("documentKind.$it") } ?: t.id
         Text("$name · ${t.version}" + if (t.builtIn) "" else " · " + model.t("ai.typeAdded"), style = MaterialTheme.typography.bodySmall)
     }
-    for (r in loaded.rejected) Text(model.t("ai.typeRejected", r.file, r.reason), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+    for (r in loaded.rejected) Text(model.t("ai.typeRejected", r.file, model.aiProblems(r.problems).ifEmpty { r.reason }), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(model.t("ai.typesFolder", DesktopAi.typesFolder.toString()), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f, fill = false))
         TextButton(onClick = {
@@ -182,6 +182,14 @@ internal fun BooksModel.usd(amount: BigDecimal): String {
 
 /** What a failed reading means, in the user's language. */
 internal fun BooksModel.aiFailure(e: Throwable): String = when (e) {
-    is AiFailure -> t("ai.failure.${e.reason}") + if (e.reason == AiFailure.Reason.INVALID || e.reason == AiFailure.Reason.SERVICE) " (${e.message.orEmpty().take(200)})" else ""
+    is AiFailure -> t("ai.failure.${e.reason}", ca.schippers.hfm.ai.AiReader.MAX_PAGES) + when {
+        e.problems.isNotEmpty() -> " (${aiProblems(e.problems)})"
+        e.reason == AiFailure.Reason.INVALID || e.reason == AiFailure.Reason.SERVICE -> " (${e.message.orEmpty().take(200)})"
+        else -> ""
+    }
     else -> t("ai.failure.SERVICE") + " (${e.message.orEmpty().take(200)})"
 }
+
+/** Problems with an answer or a document type, in the user's language, the JSON path first. */
+internal fun BooksModel.aiProblems(problems: List<ca.schippers.hfm.ai.AiProblem>): String =
+    problems.joinToString("; ") { p -> t("aiProblem.${p.code}", *p.args.toTypedArray()) }

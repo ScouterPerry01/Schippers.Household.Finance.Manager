@@ -797,7 +797,7 @@ private fun ImportResultDialog(model: BooksModel, r: InvestmentImportResult, onC
         if (r.statementSaved) Text(model.t("investments.statementSaved"))
         if (r.warnings.isNotEmpty()) {
             Text(model.t("quicken.notes"), style = MaterialTheme.typography.labelLarge)
-            Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) { r.warnings.take(50).forEach { Text(it, style = MaterialTheme.typography.bodySmall) } }
+            Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) { r.warnings.take(50).forEach { Text(model.userText(it), style = MaterialTheme.typography.bodySmall) } }
         }
     }
 }

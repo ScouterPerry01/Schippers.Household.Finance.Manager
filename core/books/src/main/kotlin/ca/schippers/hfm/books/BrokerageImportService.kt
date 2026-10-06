@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.domain.UserText
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.importers.DateOrder
 import ca.schippers.hfm.importers.ImportOptions
@@ -74,7 +75,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
             if (external in existing) { already++; continue }
             runCatching { add(account, a, a.securityKey?.let(ids::get), external, warnings) }
                 .onSuccess { ok -> if (ok) { added++; existing += external } else already++ }
-                .onFailure { e -> warnings += "${a.date} ${a.action}: ${(e as? ValidationException)?.message ?: e.message}" }
+                .onFailure { e -> warnings += UserText.of("importWarning.refused", a.date, a.action, (e as? ValidationException)?.let { v -> UserText.of(v.key, *v.args) } ?: e.message.orEmpty()) }
         }
         val saved = statement.asOf != null && (statement.positions.isNotEmpty() || statement.cash != null)
         if (saved) {
@@ -105,7 +106,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
             ImportedAction.RETURN_OF_CAPITAL -> base.copy(kind = InvestmentKind.RETURN_OF_CAPITAL)
             ImportedAction.SPLIT -> base.copy(kind = InvestmentKind.SPLIT, ratio = a.ratio)
             ImportedAction.TRANSFER_IN -> {
-                warnings += "${a.date}: units moved in at market value; enter their real book cost if it differs."
+                warnings += UserText.of("importWarning.marketValue", a.date)
                 base.copy(kind = InvestmentKind.TRANSFER_IN, amount = m(a.quantity?.let { q -> a.price?.let { q.multiply(it) } }))
             }
             ImportedAction.TRANSFER_OUT -> base.copy(kind = InvestmentKind.TRANSFER_OUT)
@@ -172,7 +173,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
             val accountId = accountIds[qifAccount] ?: continue
             val account = books.accounts.get(accountId)
             if (account.type.kind != AccountKind.INVESTMENT) {
-                warnings += "\"$qifAccount\" holds investment actions but was imported as ${account.type}; they were skipped."
+                warnings += UserText.of("importWarning.notInvestment", qifAccount, UserText.of("accountType.${account.type}"))
                 continue
             }
             val group = books.accounts.locate(accountId).first
@@ -196,7 +197,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
             }
             val existing = investments.transactions(accountId).mapNotNull { it.externalId }.toMutableSet()
             val seen = HashMap<String, Int>()
-            val dated = actions.mapNotNull { a -> a.date.toLocalDate(dateOrder)?.let { it to a } ?: run { warnings += "Invalid date in $qifAccount"; null } }
+            val dated = actions.mapNotNull { a -> a.date.toLocalDate(dateOrder)?.let { it to a } ?: run { warnings += UserText.of("importWarning.invalidDate", qifAccount); null } }
             for ((date, a) in dated.sortedBy { it.first }) {
                 val action = qifAction(a, date, warnings) ?: continue
                 if (action.action in setOf(ImportedAction.CASH_IN, ImportedAction.CASH_OUT) && a.transferAccount != null && a.transferAccount in importedAccounts) continue
@@ -204,7 +205,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
                 if (external in existing) { already++; continue }
                 runCatching { add(account, action, a.security?.let(::securityFor), external, warnings) }
                     .onSuccess { ok -> if (ok) { added++; existing += external } else already++ }
-                    .onFailure { e -> warnings += "$date ${a.action} ${a.security.orEmpty()}: ${(e as? ValidationException)?.message ?: e.message}" }
+                    .onFailure { e -> warnings += UserText.of("importWarning.refused", date, "${a.action} ${a.security.orEmpty()}".trim(), (e as? ValidationException)?.let { v -> UserText.of(v.key, *v.args) } ?: e.message.orEmpty()) }
             }
         }
         return InvestmentImportResult(added, already, created, false, warnings.distinct())
@@ -229,7 +230,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
         val result = importQif(file, dateOrder ?: file.dateOrder ?: DateOrder.MONTH_DAY, map, imported)
         val doc = books.documents.get(documentId)
         books.documents.update(documentId, DocumentDetails(doc.title ?: "Quicken (QIF)", doc.kind, doc.date, doc.merchant, doc.amount, doc.keepForever, notes = READ_NOTE))
-        return result.copy(warnings = missing.map { "No investment account named \"$it\"; its actions were not imported." } + result.warnings)
+        return result.copy(warnings = missing.map { UserText.of("importWarning.noAccount", it) } + result.warnings)
     }
 
     // --- Helpers ---------------------------------------------------------------------------------
@@ -278,7 +279,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
             "miscexp", "margint" -> act(ImportedAction.FEE)
             "xin", "contrib", "cash" -> if ((a.amount ?: BigDecimal.ZERO).signum() < 0 && base == "cash") act(ImportedAction.CASH_OUT) else act(ImportedAction.CASH_IN)
             "xout", "withdrw" -> act(ImportedAction.CASH_OUT)
-            else -> { warnings += "$date: Quicken action \"${a.action}\" is not supported and was skipped."; null }
+            else -> { warnings += UserText.of("importWarning.quickenAction", date, a.action); null }
         }
     }
 

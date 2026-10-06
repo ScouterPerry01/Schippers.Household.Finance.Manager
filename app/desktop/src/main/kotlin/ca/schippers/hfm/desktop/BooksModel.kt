@@ -94,6 +94,9 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
 
     fun t(key: String, vararg args: Any): String = app.t(key, *args)
 
+    /** A warning or note from the books: a [ca.schippers.hfm.domain.UserText] in the user's language, or plain text as it is. */
+    fun userText(text: String): String = ca.schippers.hfm.domain.UserText.decode(text) { key, args -> t(key, *args.toTypedArray()) } ?: text
+
     fun money(m: Money): String = MoneyFormat.format(m, language.locale)
 
     fun date(d: LocalDate): String = d.toString()

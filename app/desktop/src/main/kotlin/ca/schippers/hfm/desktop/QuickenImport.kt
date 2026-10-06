@@ -85,7 +85,7 @@ fun QuickenImportDialog(model: BooksModel, file: File, onClose: () -> Unit) {
                     for ((i, plan) in plans.withIndex()) {
                         PlanRow(model, plan, existing) { changed -> plans = plans.toMutableList().also { it[i] = changed } }
                     }
-                    preview.warnings.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                    preview.warnings.forEach { Text(model.userText(it), style = MaterialTheme.typography.bodySmall) }
                     Button(enabled = !running && order != null && groupId != null && plans.any { it.include }, onClick = {
                         running = true
                         scope.launch {
@@ -142,6 +142,6 @@ private fun ResultView(model: BooksModel, r: QifImportResult) {
     if (r.alreadyThere > 0) Text(model.t("quicken.alreadyThere", r.alreadyThere))
     if (r.warnings.isNotEmpty()) {
         Text(model.t("quicken.notes"), style = MaterialTheme.typography.labelLarge)
-        r.warnings.take(30).forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+        r.warnings.take(30).forEach { Text(model.userText(it), style = MaterialTheme.typography.bodySmall) }
     }
 }
