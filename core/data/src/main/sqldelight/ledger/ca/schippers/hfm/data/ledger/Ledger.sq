@@ -135,7 +135,10 @@ CREATE TABLE statement_line (
     -- PROPOSED: a likely match waiting for confirmation; DUPLICATE: already imported before;
     -- UNMATCHED: needs a decision; IGNORED: deliberately left out.
     status TEXT NOT NULL CHECK (status IN ('MATCHED', 'CREATED', 'PROPOSED', 'DUPLICATE', 'UNMATCHED', 'IGNORED')),
-    txn_id TEXT
+    txn_id TEXT,
+    -- REC-03 (version 30): lines matched together with several transactions, or one transaction
+    -- matched by several lines, share this id (see Matching.sq).
+    match_group TEXT
 );
 
 CREATE INDEX statement_line_statement ON statement_line(statement_id, line_no);

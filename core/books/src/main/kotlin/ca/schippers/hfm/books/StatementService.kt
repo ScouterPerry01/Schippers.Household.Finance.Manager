@@ -67,7 +67,18 @@ data class StatementLine(
     val checkNumber: String?,
     val status: LineStatus,
     val transactionId: String?,
+    /** REC-03: the group match this line is part of, if any. */
+    val matchGroup: String? = null,
 )
+
+/**
+ * REC-03: statement lines and recorded transactions matched together because their amounts add
+ * up: one line for several transactions (a deposit of several cheques), or several lines for one
+ * transaction (a purchase charged in two parts). [confirmed] is false while it is only proposed.
+ */
+data class MatchGroup(val id: String, val lines: List<StatementLine>, val transactionIds: List<String>, val confirmed: Boolean) {
+    val total: Money get() = lines.map { it.amount }.reduce(Money::plus)
+}
 
 data class ImportResult(
     val statementId: String,
@@ -75,6 +86,8 @@ data class ImportResult(
     val matched: Int,
     val proposed: Int,
     val duplicates: Int,
+    /** REC-03: group matches proposed (several lines or several transactions adding up). */
+    val groups: Int = 0,
 )
 
 /** Everything the reconciliation screen shows (section 8, steps 3 and 4). */
@@ -89,6 +102,8 @@ data class ReconciliationView(
     val clearedBalance: Money,
     /** Statement closing balance minus the cleared balance; must be zero to finish (REC-05). Null until the closing balance is known. */
     val difference: Money?,
+    /** REC-03: group matches, proposed or confirmed. */
+    val groups: List<MatchGroup> = emptyList(),
 ) {
     val unresolved: List<StatementLine> get() = lines.filter { it.status == LineStatus.PROPOSED || it.status == LineStatus.UNMATCHED }
     val canFinish: Boolean get() = statement.status == StatementStatus.OPEN && difference?.isZero == true && unresolved.isEmpty()
@@ -102,10 +117,19 @@ data class ReconciliationReport(
     val currency: String,
     val cleared: List<ReportItem>,
     val outstanding: List<ReportItem>,
+    /** REC-03: the group matches, each with its statement lines and the transactions they cover. */
+    val groups: List<ReportGroup> = emptyList(),
 )
 
 @Serializable
 data class ReportItem(val transactionId: String, val date: String, val payee: String? = null, val amountMinor: Long)
+
+/** REC-03: in the report, statement lines matched together with transactions whose amounts add up. */
+@Serializable
+data class ReportGroup(val lines: List<ReportLine>, val transactions: List<ReportItem>)
+
+@Serializable
+data class ReportLine(val date: String, val payee: String? = null, val amountMinor: Long)
 
 data class ImportSettings(
     /** Lines match recorded transactions with the same amount within this many days (REC-02). */
@@ -155,6 +179,7 @@ class StatementService internal constructor(private val books: Books) {
         val statementId = Ids.newId()
         val periodEnd = imported.periodEnd ?: imported.lines.maxOfOrNull { it.date } ?: today()
         val counts = IntArray(4) // created, matched, proposed, duplicates
+        var groups = 0
         ledger.transaction {
             q.insertStatement(
                 statementId, accountId, sourceName, imported.format, fileHash, imported.periodStart?.toString(), periodEnd.toString(),
@@ -162,6 +187,9 @@ class StatementService internal constructor(private val books: Books) {
             )
             val used = HashSet<String>()
             val occurrences = HashMap<String, Int>()
+            // Lines that match nothing one to one wait for the group matches (REC-03) before a new
+            // transaction is added for them.
+            val pending = ArrayList<PendingLine>()
             imported.lines.forEachIndexed { index, line ->
                 val externalId = line.externalId ?: fingerprint(line.date, line.amount, line.payee, occurrences)
                 val lineId = Ids.newId()
@@ -170,9 +198,10 @@ class StatementService internal constructor(private val books: Books) {
                     line.payee, line.memo, line.checkNumber, status.name, txnId,
                 )
 
-                val existing = q.txnByExternalId(accountId, externalId).executeAsOneOrNull()
+                val existing = q.txnByExternalId(accountId, externalId).executeAsOneOrNull()?.id
+                    ?: ledger.matchingQueries.groupedLineByExternalId(accountId, externalId).executeAsOneOrNull()
                 if (existing != null) {
-                    record(LineStatus.DUPLICATE, existing.id)
+                    record(LineStatus.DUPLICATE, existing)
                     counts[3]++
                     return@forEachIndexed
                 }
@@ -190,16 +219,108 @@ class StatementService internal constructor(private val books: Books) {
                         record(LineStatus.PROPOSED, candidate.first.id)
                         counts[2]++
                     }
-                    else -> {
-                        val txn = createFromLine(account, line.date, line.amount, line.payee, line.memo, externalId)
-                        record(LineStatus.CREATED, txn.id)
-                        counts[0]++
-                    }
+                    else -> pending += PendingLine(lineId, index, externalId, line.date, line.amount, line.payee, line.memo, line.checkNumber)
                 }
+            }
+            // REC-03: lines and recorded transactions whose amounts add up are proposed together,
+            // never linked without asking.
+            val grouped = HashSet<String>()
+            for ((lines, txnIds) in proposeGroups(ledger, accountId, pending, used, settings)) {
+                val groupId = Ids.newId()
+                lines.forEach { p ->
+                    q.insertStatementLine(p.id, statementId, p.index.toLong(), p.externalId, p.date.toString(), p.amount.minorUnits, p.payee, p.memo, p.checkNumber, LineStatus.PROPOSED.name, null)
+                    ledger.matchingQueries.setLineGroup(groupId, LineStatus.PROPOSED.name, null, p.id)
+                    grouped += p.id
+                }
+                txnIds.forEach { ledger.matchingQueries.insertMatch(groupId, statementId, it) }
+                counts[2] += lines.size
+                groups++
+            }
+            pending.filter { it.id !in grouped }.forEach { p ->
+                val txn = createFromLine(account, p.date, p.amount, p.payee, p.memo, p.externalId)
+                q.insertStatementLine(p.id, statementId, p.index.toLong(), p.externalId, p.date.toString(), p.amount.minorUnits, p.payee, p.memo, p.checkNumber, LineStatus.CREATED.name, txn.id)
+                counts[0]++
             }
         }
         books.session.audit("IMPORT", "statement", statementId, "${imported.format}: ${imported.lines.size} lines")
-        return ImportResult(statementId, counts[0], counts[1], counts[2], counts[3])
+        return ImportResult(statementId, counts[0], counts[1], counts[2], counts[3], groups)
+    }
+
+    /** A statement line not matched one to one during an import, waiting for a group match or a new transaction. */
+    private class PendingLine(
+        val id: String, val index: Int, val externalId: String, val date: LocalDate, val amount: Money,
+        val payee: String?, val memo: String?, val checkNumber: String?,
+    )
+
+    /**
+     * REC-03: group matches among the [pending] lines and the recorded transactions not yet used:
+     * first one line for several transactions, then several lines for one transaction. Amounts
+     * must add up to the cent, every transaction and line must fall within the date tolerance of
+     * the other side, and all must go the same way (money in or money out). Up to [MAX_GROUP] items
+     * on the many side, among the [MAX_GROUP_CANDIDATES] closest in date.
+     */
+    private fun proposeGroups(
+        ledger: LedgerDatabase,
+        accountId: String,
+        pending: List<PendingLine>,
+        used: MutableSet<String>,
+        settings: ImportSettings,
+    ): List<Pair<List<PendingLine>, List<String>>> {
+        val out = ArrayList<Pair<List<PendingLine>, List<String>>>()
+        val taken = HashSet<String>()
+        fun window(date: LocalDate) =
+            LocalDate.fromEpochDays(date.toEpochDays() - settings.dateToleranceDays).toString() to LocalDate.fromEpochDays(date.toEpochDays() + settings.dateToleranceDays).toString()
+        // One line, several transactions.
+        for (p in pending) {
+            val (from, to) = window(p.date)
+            val candidates = ledger.matchingQueries.groupCandidates(accountId, from, to).executeAsList()
+                .filter { it.id !in used && sameWay(it.amount_minor, p.amount.minorUnits) && abs(it.amount_minor) < abs(p.amount.minorUnits) }
+                .sortedBy { abs(LocalDate.parse(it.date).daysUntil(p.date)) }
+                .take(MAX_GROUP_CANDIDATES)
+            val subset = subsetSum(candidates.map { it.amount_minor }, p.amount.minorUnits) ?: continue
+            val ids = subset.map { candidates[it].id }
+            used += ids
+            taken += p.id
+            out += listOf(p) to ids
+        }
+        // Several lines, one transaction.
+        val left = pending.filter { it.id !in taken }
+        if (left.size >= 2) {
+            val from = LocalDate.fromEpochDays(left.minOf { it.date }.toEpochDays() - settings.dateToleranceDays).toString()
+            val to = LocalDate.fromEpochDays(left.maxOf { it.date }.toEpochDays() + settings.dateToleranceDays).toString()
+            for (t in ledger.matchingQueries.groupCandidates(accountId, from, to).executeAsList()) {
+                if (t.id in used) continue
+                val date = LocalDate.parse(t.date)
+                val lines = left.filter { it.id !in taken && sameWay(it.amount.minorUnits, t.amount_minor) && abs(it.amount.minorUnits) < abs(t.amount_minor) && abs(it.date.daysUntil(date)) <= settings.dateToleranceDays }
+                    .sortedBy { abs(it.date.daysUntil(date)) }
+                    .take(MAX_GROUP_CANDIDATES)
+                val subset = subsetSum(lines.map { it.amount.minorUnits }, t.amount_minor) ?: continue
+                val chosen = subset.map { lines[it] }.sortedBy { it.index }
+                used += t.id
+                taken += chosen.map { it.id }
+                out += chosen to listOf(t.id)
+            }
+        }
+        return out
+    }
+
+    private fun sameWay(a: Long, b: Long) = a != 0L && (a > 0) == (b > 0)
+
+    /** The smallest set of 2 to [MAX_GROUP] of [amounts] (by index) adding up to [target], or null. */
+    private fun subsetSum(amounts: List<Long>, target: Long): List<Int>? {
+        for (size in 2..minOf(MAX_GROUP, amounts.size)) {
+            val chosen = IntArray(size)
+            fun search(start: Int, depth: Int, sum: Long): Boolean {
+                if (depth == size) return sum == target
+                for (i in start until amounts.size) {
+                    chosen[depth] = i
+                    if (search(i + 1, depth + 1, sum + amounts[i])) return true
+                }
+                return false
+            }
+            if (search(0, 0, 0L)) return chosen.toList()
+        }
+        return null
     }
 
     /**
@@ -356,12 +477,116 @@ class StatementService internal constructor(private val books: Books) {
         val q = books.ledger(group).ledgerQueries
         val statement = row.toStatement(account)
         val lines = q.statementLines(statementId).executeAsList().map { it.toLine(account) }
+        val groups = groupsOf(books.ledger(group), statementId, lines)
         val linked = lines.mapNotNullTo(HashSet()) { it.transactionId }
+        groups.forEach { linked += it.transactionIds }
         val unreconciled = q.unreconciledThrough(row.account_id, statement.periodEnd.toString()).executeAsList().filter { it.id !in linked }
         val outstanding = unreconciled.filter { it.cleared == ClearedStatus.UNCLEARED.name }.map { books.transactions.get(it.id) }
         val clearedByHand = unreconciled.filter { it.cleared == ClearedStatus.CLEARED.name }.map { books.transactions.get(it.id) }
         val cleared = Money.ofMinor(q.clearedBalance(row.account_id).executeAsOne(), account.currency)
-        return ReconciliationView(statement, lines, outstanding, clearedByHand, cleared, statement.closingBalance?.minus(cleared))
+        return ReconciliationView(statement, lines, outstanding, clearedByHand, cleared, statement.closingBalance?.minus(cleared), groups)
+    }
+
+    private fun groupsOf(ledger: LedgerDatabase, statementId: String, lines: List<StatementLine>): List<MatchGroup> {
+        val txns = ledger.matchingQueries.matchesForStatement(statementId).executeAsList().groupBy({ it.group_id }, { it.txn_id })
+        return lines.filter { it.matchGroup != null }.groupBy { it.matchGroup!! }.map { (id, members) ->
+            MatchGroup(id, members, txns[id].orEmpty(), members.all { it.status == LineStatus.MATCHED })
+        }
+    }
+
+    // --- Group matches (REC-03) -----------------------------------------------------------------
+
+    /**
+     * REC-03: matches the chosen statement lines with the chosen transactions together, when their
+     * amounts add up to the cent: one line for several transactions, several lines for one, or
+     * several of each. The user chose them, so they are linked at once; [unlinkGroup] undoes it.
+     */
+    fun matchGroup(statementId: String, lineIds: Collection<String>, transactionIds: Collection<String>): MatchGroup {
+        val (group, row) = locateOpen(statementId)
+        val ledger = books.ledger(group)
+        val q = ledger.ledgerQueries
+        validate(lineIds.isNotEmpty() && transactionIds.isNotEmpty() && lineIds.size + transactionIds.size >= 3, "error.groupSize")
+        val lines = lineIds.distinct().map { id -> q.statementLineById(id).executeAsOneOrNull()?.takeIf { it.statement_id == statementId } ?: throw ValidationException("error.lineState") }
+        validate(lines.all { it.status in setOf(LineStatus.PROPOSED.name, LineStatus.UNMATCHED.name, LineStatus.IGNORED.name) }, "error.lineState")
+        val txns = transactionIds.distinct().map { id -> q.txnById(id).executeAsOneOrNull()?.takeIf { it.account_id == row.account_id } ?: throw ValidationException("error.lineState") }
+        validate(txns.all { it.external_id == null && it.cleared != ClearedStatus.RECONCILED.name }, "error.alreadyLinked")
+        val taken = ledger.matchingQueries.matchesForStatement(statementId).executeAsList().map { it.txn_id }.toSet()
+        validate(txns.none { it.id in taken }, "error.alreadyLinked")
+        val account = books.accounts.get(row.account_id)
+        val lineTotal = lines.sumOf { it.amount_minor }
+        val txnTotal = txns.sumOf { it.amount_minor }
+        validate(lineTotal == txnTotal, "error.groupTotal", Money.ofMinor(lineTotal, account.currency), Money.ofMinor(txnTotal, account.currency))
+        val groupId = Ids.newId()
+        ledger.transaction {
+            // A line still proposed in another group leaves that group first.
+            lines.mapNotNull { it.match_group }.distinct().forEach { rejectGroupIn(ledger, it) }
+            txns.forEach { ledger.matchingQueries.insertMatch(groupId, statementId, it.id) }
+            linkGroup(ledger, groupId, lines.sortedBy { it.line_no }.map { it.id }, txns.map { it.id })
+        }
+        books.session.audit("MATCH", "statement", statementId, "group")
+        return view(statementId).groups.first { it.id == groupId }
+    }
+
+    /** REC-03: accepts a proposed group match. */
+    fun confirmGroup(groupId: String) {
+        val (group, lines, statement) = locateGroup(groupId)
+        validate(lines.all { it.status == LineStatus.PROPOSED.name }, "error.lineState")
+        val ledger = books.ledger(group)
+        val txnIds = ledger.matchingQueries.matchTxns(groupId).executeAsList()
+        val txns = txnIds.map { ledger.ledgerQueries.txnById(it).executeAsOneOrNull() }
+        validate(txns.all { it != null && it.external_id == null && it.cleared != ClearedStatus.RECONCILED.name }, "error.alreadyLinked")
+        validate(lines.sumOf { it.amount_minor } == txns.sumOf { it!!.amount_minor }, "error.linkAmount")
+        ledger.transaction { linkGroup(ledger, groupId, lines.map { it.id }, txnIds) }
+        books.session.audit("MATCH", "statement", statement.id, "group")
+    }
+
+    /** REC-03: turns down a proposed group match; its lines need a decision again. */
+    fun rejectGroup(groupId: String) {
+        val (group, lines, _) = locateGroup(groupId)
+        validate(lines.all { it.status == LineStatus.PROPOSED.name }, "error.lineState")
+        val ledger = books.ledger(group)
+        ledger.transaction { rejectGroupIn(ledger, groupId) }
+    }
+
+    /** REC-03: undoes a confirmed group match: its transactions are no longer cleared by it and its lines need a decision again. */
+    fun unlinkGroup(groupId: String) {
+        val (group, lines, _) = locateGroup(groupId)
+        validate(lines.all { it.status == LineStatus.MATCHED.name }, "error.lineState")
+        val ledger = books.ledger(group)
+        ledger.transaction {
+            ledger.matchingQueries.matchTxns(groupId).executeAsList().forEach { id ->
+                ledger.ledgerQueries.setExternalId(null, books.now(), id)
+                books.transactions.setCleared(id, ClearedStatus.UNCLEARED)
+            }
+            ledger.matchingQueries.deleteMatchGroup(groupId)
+            lines.forEach { ledger.matchingQueries.setLineGroup(null, LineStatus.UNMATCHED.name, null, it.id) }
+        }
+    }
+
+    /**
+     * Links a group: the first transaction takes the first line's bank id, the others the same id
+     * with #2, #3..., so none can be matched again; every line points at the first transaction and
+     * is recognized on a later import of the same lines (REC-10).
+     */
+    private fun linkGroup(ledger: LedgerDatabase, groupId: String, lineIds: List<String>, txnIds: List<String>) {
+        val first = ledger.ledgerQueries.statementLineById(lineIds.first()).executeAsOne()
+        txnIds.forEachIndexed { i, id -> linkTransaction(ledger, id, if (i == 0) first.external_id else "${first.external_id}#${i + 1}") }
+        lineIds.forEach { ledger.matchingQueries.setLineGroup(groupId, LineStatus.MATCHED.name, txnIds.first(), it) }
+    }
+
+    private fun rejectGroupIn(ledger: LedgerDatabase, groupId: String) {
+        ledger.matchingQueries.linesInGroup(groupId).executeAsList().forEach { ledger.matchingQueries.setLineGroup(null, LineStatus.UNMATCHED.name, null, it.id) }
+        ledger.matchingQueries.deleteMatchGroup(groupId)
+    }
+
+    private fun locateGroup(groupId: String): Triple<GroupInfo, List<LineRow>, StatementRow> {
+        for (group in books.groups()) {
+            val lines = books.ledger(group).matchingQueries.linesInGroup(groupId).executeAsList()
+            if (lines.isEmpty()) continue
+            val (_, statement) = locateOpen(lines.first().statement_id)
+            return Triple(group, lines, statement)
+        }
+        throw ValidationException("error.notFound")
     }
 
     /** Accepts a proposed match (step 3). */
@@ -391,6 +616,8 @@ class StatementService internal constructor(private val books: Books) {
         validate(txn.external_id == null, "error.alreadyLinked")
         val account = books.accounts.get(statement.account_id)
         ledger.transaction {
+            // A line proposed in a group match leaves it (REC-03).
+            line.match_group?.let { rejectGroupIn(ledger, it) }
             postFxFee(transactionId, Money.ofMinor(line.amount_minor, account.currency))
             linkTransaction(ledger, transactionId, line.external_id)
             ledger.ledgerQueries.setLineStatus(LineStatus.MATCHED.name, transactionId, lineId)
@@ -405,6 +632,7 @@ class StatementService internal constructor(private val books: Books) {
         val ledger = books.ledger(group)
         lateinit var txn: Transaction
         ledger.transaction {
+            line.match_group?.let { rejectGroupIn(ledger, it) }
             txn = createFromLine(account, LocalDate.parse(line.date), Money.ofMinor(line.amount_minor, account.currency), line.payee, line.memo, line.external_id)
             ledger.ledgerQueries.setLineStatus(LineStatus.CREATED.name, txn.id, lineId)
         }
@@ -415,6 +643,8 @@ class StatementService internal constructor(private val books: Books) {
     fun unlink(lineId: String) {
         val (group, line, _) = locateLine(lineId)
         validate(line.status == LineStatus.MATCHED.name || line.status == LineStatus.CREATED.name, "error.lineState")
+        // REC-03: a line of a group match undoes the whole group.
+        line.match_group?.let { unlinkGroup(it); return }
         val ledger = books.ledger(group)
         ledger.transaction {
             line.txn_id?.let { id ->
@@ -432,7 +662,11 @@ class StatementService internal constructor(private val books: Books) {
     fun ignore(lineId: String) {
         val (group, line, _) = locateLine(lineId)
         validate(line.status == LineStatus.PROPOSED.name || line.status == LineStatus.UNMATCHED.name, "error.lineState")
-        books.ledger(group).ledgerQueries.setLineStatus(LineStatus.IGNORED.name, null, lineId)
+        val ledger = books.ledger(group)
+        ledger.transaction {
+            line.match_group?.let { rejectGroupIn(ledger, it) }
+            ledger.ledgerQueries.setLineStatus(LineStatus.IGNORED.name, null, lineId)
+        }
     }
 
     /**
@@ -460,6 +694,12 @@ class StatementService internal constructor(private val books: Books) {
                 currency = account.currency.code,
                 cleared = toReconcile.map { r -> item(q.txnById(r.id).executeAsOne()) },
                 outstanding = view.outstanding.map { t -> item(q.txnById(t.id).executeAsOne()) },
+                groups = view.groups.map { g ->
+                    ReportGroup(
+                        g.lines.map { l -> ReportLine(l.date.toString(), l.payee, l.amount.minorUnits) },
+                        g.transactionIds.mapNotNull { id -> q.txnById(id).executeAsOneOrNull()?.let(::item) },
+                    )
+                },
             )
             toReconcile.forEach { books.transactions.setCleared(it.id, ClearedStatus.RECONCILED) }
             q.completeStatement(books.now(), books.userId, json.encodeToString(ReconciliationReport.serializer(), report), statementId)
@@ -506,8 +746,15 @@ class StatementService internal constructor(private val books: Books) {
                 reopenedId, row.account_id, row.source_name, row.format, null, row.period_start, row.period_end,
                 row.opening_balance_minor, row.closing_balance_minor, books.now(), books.userId,
             )
+            // REC-03: group matches come along, under new ids.
+            val groupIds = HashMap<String, String>()
             q.statementLines(statementId).executeAsList().forEach { l ->
-                q.insertStatementLine(Ids.newId(), reopenedId, l.line_no, l.external_id, l.date, l.amount_minor, l.payee, l.memo, l.check_number, l.status, l.txn_id)
+                val id = Ids.newId()
+                q.insertStatementLine(id, reopenedId, l.line_no, l.external_id, l.date, l.amount_minor, l.payee, l.memo, l.check_number, l.status, l.txn_id)
+                l.match_group?.let { old -> ledger.matchingQueries.setLineGroup(groupIds.getOrPut(old) { Ids.newId() }, l.status, l.txn_id, id) }
+            }
+            ledger.matchingQueries.matchesForStatement(statementId).executeAsList().forEach { m ->
+                groupIds[m.group_id]?.let { ledger.matchingQueries.insertMatch(it, reopenedId, m.txn_id) }
             }
         }
         // The reason stays with the statement in the group's ledger; the shared audit log only records the undo (HH-11).
@@ -562,7 +809,7 @@ class StatementService internal constructor(private val books: Books) {
 
     private fun LineRow.toLine(account: Account) = StatementLine(
         id, line_no.toInt(), LocalDate.parse(date), Money.ofMinor(amount_minor, account.currency), payee, memo, check_number,
-        LineStatus.valueOf(status), txn_id,
+        LineStatus.valueOf(status), txn_id, match_group,
     )
 
     companion object {
@@ -586,6 +833,12 @@ class StatementService internal constructor(private val books: Books) {
             val ka = key(a)
             return ka != null && ka == key(b)
         }
+
+        /** REC-03: at most this many items on the many side of a proposed group match. */
+        private const val MAX_GROUP = 4
+
+        /** REC-03: the closest candidates in date looked at for a proposed group match. */
+        private const val MAX_GROUP_CANDIDATES = 12
 
         private fun today(): LocalDate = java.time.LocalDate.now().let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
     }

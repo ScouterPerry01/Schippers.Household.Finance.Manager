@@ -144,7 +144,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - SAL-03 (sales of personal items with buyer, price and the asset): Fixed for assets: the sale deposit can be linked (its payee is the buyer) and the gain or loss against the purchase price is shown; vehicles show the gain or loss too. Fixed: a vehicle sale is now linked to its deposit the same way (Find the sale, the buyer from its payee, the gain or loss in the form and the overview; ledger schema version 30).
 - AST-02, AST-03, AST-04: Met.
 - AST-05 (disposal linked to the sale): Fixed with SAL-03, for assets and vehicles.
-- REC-03 (one-to-many and many-to-one matching): Gap: deferred in Phase 1 and never built. Large (a link table, a multi-select matching screen, changes to finish and undo).
+- REC-03 (one-to-many and many-to-one matching): Fixed: on import, a line equal to two to four recorded transactions together, or two to four lines equal to one transaction (to the cent, within the date tolerance), is proposed as a group and never linked without asking (Same money / Not the same); Match several… in the reconciliation groups lines and transactions by hand when the totals are equal; Undo match undoes a whole group; groups are kept by the reconciliation undo, recognized on re-import, and listed in the reconciliation report (new Report button under Statements). Foreign currency purchases are not grouped (ledger schema version 30).
 - REC-04, REC-07, REC-08, REC-09: Met.
 - BILL-07, BILL-08, BILL-09: Met.
 - BILL-10 (subscriptions): Met; the renewal date cannot be entered, the next due date stands in for it.

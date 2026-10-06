@@ -659,6 +659,12 @@ class MigrationTest {
             alerts.upsertAlert("a", 40000, null, 0, "3", 20000, 1)
             assertEquals(40000L, alerts.alertFor("a").executeAsOne().low_balance_minor)
             assertEquals(0L, count(driver, "SELECT count(*) FROM txn_suggested_category"))
+            driver.execute(null, "INSERT INTO statement(id, account_id, period_end, imported_at) VALUES ('s', 'a', '2026-03-31', 0)", 0)
+            driver.execute(null, "INSERT INTO statement_line(id, statement_id, line_no, external_id, date, amount_minor, status) VALUES ('l', 's', 0, 'D1', '2026-03-05', 50000, 'UNMATCHED')", 0)
+            val matching = LedgerDatabase(driver).matchingQueries
+            matching.insertMatch("g", "s", "t1")
+            matching.setLineGroup("g", "PROPOSED", null, "l")
+            assertEquals("g", matching.linesInGroup("g").executeAsOne().match_group, "statement lines gain their group")
         }
     }
 }

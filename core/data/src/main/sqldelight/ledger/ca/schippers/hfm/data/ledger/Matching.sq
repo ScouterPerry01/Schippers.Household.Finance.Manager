@@ -1,0 +1,41 @@
+-- REC-03: matches between several statement lines and transactions whose amounts add up. The
+-- lines carry the group in statement_line.match_group; the transactions are listed here.
+CREATE TABLE statement_match (
+    group_id TEXT NOT NULL,
+    statement_id TEXT NOT NULL REFERENCES statement(id) ON DELETE CASCADE,
+    txn_id TEXT NOT NULL,
+    PRIMARY KEY (group_id, txn_id)
+);
+
+CREATE INDEX statement_match_statement ON statement_match(statement_id);
+
+insertMatch:
+INSERT OR IGNORE INTO statement_match(group_id, statement_id, txn_id) VALUES (?, ?, ?);
+
+matchesForStatement:
+SELECT * FROM statement_match WHERE statement_id = ? ORDER BY group_id, rowid;
+
+matchTxns:
+SELECT txn_id FROM statement_match WHERE group_id = ? ORDER BY rowid;
+
+deleteMatchGroup:
+DELETE FROM statement_match WHERE group_id = ?;
+
+setLineGroup:
+UPDATE statement_line SET match_group = ?, status = ?, txn_id = ? WHERE id = ?;
+
+linesInGroup:
+SELECT * FROM statement_line WHERE match_group = ? ORDER BY line_no;
+
+-- A line matched as part of a group in a statement still in force: its transaction, so importing
+-- the same line again is recognized as a duplicate (REC-10).
+groupedLineByExternalId:
+SELECT l.txn_id FROM statement_line l JOIN statement s ON s.id = l.statement_id
+WHERE s.account_id = ? AND s.status != 'UNDONE' AND l.external_id = ? AND l.match_group IS NOT NULL AND l.status = 'MATCHED' AND l.txn_id IS NOT NULL
+LIMIT 1;
+
+-- Recorded transactions that could be part of a group match: not linked yet, not reconciled.
+groupCandidates:
+SELECT * FROM txn
+WHERE account_id = ? AND external_id IS NULL AND cleared != 'RECONCILED' AND date BETWEEN ? AND ?
+ORDER BY date, created_at;

@@ -77,3 +77,17 @@ CREATE TABLE txn_alert_dismissed (
     txn_id TEXT NOT NULL PRIMARY KEY REFERENCES txn(id) ON DELETE CASCADE,
     dismissed_at INTEGER NOT NULL
 );
+
+-- REC-03: one statement line matched to several transactions, or several lines to one
+-- transaction, whose amounts add up. The lines of such a match share [match_group]; the
+-- transactions are listed in statement_match.
+ALTER TABLE statement_line ADD COLUMN match_group TEXT;
+
+CREATE TABLE statement_match (
+    group_id TEXT NOT NULL,
+    statement_id TEXT NOT NULL REFERENCES statement(id) ON DELETE CASCADE,
+    txn_id TEXT NOT NULL,
+    PRIMARY KEY (group_id, txn_id)
+);
+
+CREATE INDEX statement_match_statement ON statement_match(statement_id);

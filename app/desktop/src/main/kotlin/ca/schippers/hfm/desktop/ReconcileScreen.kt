@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -54,6 +57,7 @@ fun ReconcileScreen(model: BooksModel, account: Account, statementId: String) {
     val payeeNames = remember(model.revision) { books.payees.list(true).associate { it.id to it.name } }
     val open = statement.status == StatementStatus.OPEN
     var report by remember { mutableStateOf<ReconciliationReport?>(null) }
+    var matchingSeveral by remember { mutableStateOf(false) }
     fun payeeOf(t: Transaction) = t.payeeId?.let(payeeNames::get) ?: t.payeeText.orEmpty()
 
     Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -70,6 +74,7 @@ fun ReconcileScreen(model: BooksModel, account: Account, statementId: String) {
         }
         model.lastImport?.takeIf { it.statementId == statementId }?.let { r ->
             Text(model.t("reconcile.imported", r.created, r.matched, r.proposed, r.duplicates), style = MaterialTheme.typography.bodyMedium)
+            if (r.groups > 0) Text(model.t("reconcile.importedGroups", r.groups), style = MaterialTheme.typography.bodyMedium)
         }
 
         // Step 1 and 4: statement balance and the running difference (REC-05).
@@ -92,14 +97,21 @@ fun ReconcileScreen(model: BooksModel, account: Account, statementId: String) {
         LazyColumn(Modifier.weight(1f)) {
             // Step 3: lines that need a decision.
             if (view.unresolved.isNotEmpty()) {
-                item { SectionTitle(model.t("reconcile.attention", view.unresolved.size)) }
-                items(view.unresolved, key = { it.id }) { line -> UnresolvedLine(model, line, view.outstanding, ::payeeOf, open) }
+                item {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        SectionTitle(model.t("reconcile.attention", view.unresolved.size))
+                        // REC-03: one line for several transactions, or several lines for one.
+                        if (open) TextButton(onClick = { matchingSeveral = true }) { Text(model.t("reconcile.matchSeveral")) }
+                    }
+                }
+                items(view.groups.filter { !it.confirmed }, key = { "g" + it.id }) { g -> ProposedGroup(model, g, ::payeeOf, open) }
+                items(view.unresolved.filter { it.matchGroup == null }, key = { it.id }) { line -> UnresolvedLine(model, line, view.outstanding, ::payeeOf, open) }
             }
             item { SectionTitle(model.t("reconcile.lines", view.lines.size)) }
             items(view.lines.filter { it !in view.unresolved }, key = { it.id }) { line ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                     LineCells(model, line)
-                    Text(model.t("lineStatus.${line.status}"), Modifier.width(150.dp), style = MaterialTheme.typography.bodySmall)
+                    Text(model.t(if (line.matchGroup != null && line.status == LineStatus.MATCHED) "reconcile.inGroup" else "lineStatus.${line.status}"), Modifier.width(150.dp), style = MaterialTheme.typography.bodySmall)
                     if (open && (line.status == LineStatus.MATCHED || line.status == LineStatus.CREATED)) {
                         TextButton(onClick = { model.act { books.statements.unlink(line.id) } }) { Text(model.t("reconcile.unlink")) }
                     }
@@ -146,13 +158,91 @@ fun ReconcileScreen(model: BooksModel, account: Account, statementId: String) {
         }
     }
 
+    if (matchingSeveral) MatchSeveralDialog(model, view, ::payeeOf) { matchingSeveral = false }
     report?.let { r ->
         AlertDialog(
             onDismissRequest = { report = null; model.reconcilingStatementId = null },
             title = { Text(model.t("reconcile.done.title")) },
-            text = { Text(model.t("reconcile.done.body", r.cleared.size, r.outstanding.size, model.date(LocalDate.parse(r.periodEnd)))) },
+            text = {
+                Text(
+                    model.t("reconcile.done.body", r.cleared.size, r.outstanding.size, model.date(LocalDate.parse(r.periodEnd))) +
+                        (if (r.groups.isNotEmpty()) " " + model.t("reconcile.done.groups", r.groups.size) else ""),
+                )
+            },
             confirmButton = { TextButton(onClick = { report = null; model.reconcilingStatementId = null; model.lastImport = null }) { Text(model.t("common.ok")) } },
         )
+    }
+}
+
+/** REC-03: a proposed group match, to confirm or turn down. */
+@Composable
+private fun ProposedGroup(model: BooksModel, g: ca.schippers.hfm.books.MatchGroup, payeeOf: (Transaction) -> String, open: Boolean) {
+    val books = model.books
+    val txns = remember(model.revision, g.id) { g.transactionIds.mapNotNull { id -> runCatching { books.transactions.get(id) }.getOrNull() } }
+    Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Column(Modifier.padding(8.dp)) {
+            Text(model.t("reconcile.groupProposed", model.money(g.total)), fontWeight = FontWeight.Medium)
+            Text(model.t("reconcile.groupLines"), style = MaterialTheme.typography.labelMedium)
+            for (line in g.lines) Row(verticalAlignment = Alignment.CenterVertically) { LineCells(model, line) }
+            Text(model.t("reconcile.groupTxns"), style = MaterialTheme.typography.labelMedium)
+            for (t in txns) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(model.date(t.date), Modifier.width(100.dp))
+                    Text(payeeOf(t), Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    MoneyText(model, t.amount, modifier = Modifier.width(130.dp))
+                }
+            }
+            if (open) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { model.act { books.statements.confirmGroup(g.id) } }) { Text(model.t("reconcile.groupConfirm")) }
+                    TextButton(onClick = { model.act { books.statements.rejectGroup(g.id) } }) { Text(model.t("reconcile.groupReject")) }
+                }
+            }
+        }
+    }
+}
+
+/** REC-03: ticks statement lines and recorded transactions that are the same money, totals equal. */
+@Composable
+private fun MatchSeveralDialog(model: BooksModel, view: ca.schippers.hfm.books.ReconciliationView, payeeOf: (Transaction) -> String, onClose: () -> Unit) {
+    val books = model.books
+    val lines = view.unresolved
+    val txns = view.outstanding
+    val chosenLines = remember { androidx.compose.runtime.mutableStateListOf<String>() }
+    val chosenTxns = remember { androidx.compose.runtime.mutableStateListOf<String>() }
+    val currency = view.statement.closingBalance?.currency ?: lines.firstOrNull()?.amount?.currency ?: txns.first().amount.currency
+    val lineTotal = lines.filter { it.id in chosenLines }.fold(Money.zero(currency)) { a, l -> a + l.amount }
+    val txnTotal = txns.filter { it.id in chosenTxns }.fold(Money.zero(currency)) { a, t -> a + t.amount }
+    val ready = chosenLines.isNotEmpty() && chosenTxns.isNotEmpty() && chosenLines.size + chosenTxns.size >= 3 && lineTotal == txnTotal
+    FormDialog(
+        model.t("reconcile.matchSeveral.title"), model.t("reconcile.matchSeveral.match"), model.t("common.cancel"), canSave = ready, onDismiss = onClose,
+        onSave = { if (model.act { books.statements.matchGroup(view.statement.id, chosenLines.toList(), chosenTxns.toList()) } != null) onClose() },
+    ) {
+        Column(Modifier.width(640.dp).heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(model.t("reconcile.matchSeveral.explain"), style = MaterialTheme.typography.bodySmall)
+            Text(model.t("reconcile.matchSeveral.lines"), style = MaterialTheme.typography.labelLarge)
+            for (l in lines) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(l.id in chosenLines, { on -> if (on) chosenLines.add(l.id) else chosenLines.remove(l.id) })
+                    LineCells(model, l)
+                }
+            }
+            Text(model.t("reconcile.matchSeveral.txns"), style = MaterialTheme.typography.labelLarge)
+            if (txns.isEmpty()) Text(model.t("reconcile.matchSeveral.noTxns"), style = MaterialTheme.typography.bodySmall)
+            for (t in txns) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(t.id in chosenTxns, { on -> if (on) chosenTxns.add(t.id) else chosenTxns.remove(t.id) })
+                    Text(model.date(t.date), Modifier.width(100.dp))
+                    Text(payeeOf(t), Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    MoneyText(model, t.amount, modifier = Modifier.width(130.dp))
+                }
+            }
+            Text(
+                model.t("reconcile.matchSeveral.totals", model.money(lineTotal), model.money(txnTotal), model.money(lineTotal - txnTotal)),
+                fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 6.dp),
+                color = if (lineTotal == txnTotal) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+            )
+        }
     }
 }
 
@@ -233,6 +323,7 @@ fun StatementsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
     var undoing by remember { mutableStateOf<Statement?>(null) }
     var reason by remember { mutableStateOf("") }
     var newStatement by remember { mutableStateOf(false) }
+    var showing by remember { mutableStateOf<Pair<Statement, ReconciliationReport>?>(null) }
     val latestReconciled = statements.filter { it.status == StatementStatus.RECONCILED }.maxByOrNull { it.periodEnd }
 
     AlertDialog(
@@ -252,6 +343,9 @@ fun StatementsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
                         }
                         if (s.status == StatementStatus.OPEN) {
                             TextButton(onClick = { model.reconcilingStatementId = s.id; onClose() }) { Text(model.t("statements.open")) }
+                        }
+                        if (s.status != StatementStatus.OPEN) {
+                            books.statements.report(s.id)?.let { r -> TextButton(onClick = { showing = s to r }) { Text(model.t("statements.report")) } }
                         }
                         if (s.id == latestReconciled?.id) {
                             TextButton(onClick = { undoing = s }) { Text(model.t("statements.undo")) }
@@ -280,7 +374,34 @@ fun StatementsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
             TextInput(model.t("statements.undo.reason"), reason) { reason = it }
         }
     }
+    showing?.let { (s, r) -> StatementReportDialog(model, account, s, r) { showing = null } }
     if (newStatement) ManualStatementDialog(model, account, { newStatement = false }) { id -> model.reconcilingStatementId = id; onClose() }
+}
+
+/** REC-06: what a finished reconciliation recorded, with the group matches (REC-03). */
+@Composable
+private fun StatementReportDialog(model: BooksModel, account: Account, s: Statement, r: ReconciliationReport, onClose: () -> Unit) {
+    val currency = account.currency
+    fun amount(minor: Long) = model.money(Money.ofMinor(minor, currency))
+    fun item(i: ca.schippers.hfm.books.ReportItem) = "${model.date(LocalDate.parse(i.date))} · ${i.payee.orEmpty()} · ${amount(i.amountMinor)}"
+    WideDialog(model.t("statements.report.title", model.date(s.periodEnd)), model.t("common.close"), onClose) {
+        Column(Modifier.width(620.dp).heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(model.t("reconcile.closing") + ": " + amount(r.closingBalanceMinor), fontWeight = FontWeight.Medium)
+            Text(model.t("statements.report.cleared", r.cleared.size), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+            r.cleared.forEach { Text(item(it), style = MaterialTheme.typography.bodySmall) }
+            Text(model.t("statements.report.outstanding", r.outstanding.size), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+            r.outstanding.forEach { Text(item(it), style = MaterialTheme.typography.bodySmall) }
+            if (r.groups.isNotEmpty()) {
+                Text(model.t("statements.report.groups", r.groups.size), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+                for (g in r.groups) {
+                    Text(
+                        model.t("statements.report.group", g.lines.joinToString(" + ") { "${model.date(LocalDate.parse(it.date))} ${amount(it.amountMinor)}" }, g.transactions.joinToString(" + ") { item(it) }),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        }
+    }
 }
 
 /** A statement typed in from paper, for reconciling without a file. */

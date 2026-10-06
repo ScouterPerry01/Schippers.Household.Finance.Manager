@@ -491,6 +491,7 @@ Importing records the statement and goes through its lines one by one:
 - A line already imported from an earlier statement (same bank number, or same date, amount and description) is marked Already imported and skipped, so overlapping downloads never create duplicates.
 - A line that matches a transaction you already recorded (for example a receipt sent from the phone, or a transaction typed by hand) is linked to it. A match needs the same amount within 5 days. When the dates are within 3 days and it is the only candidate, or the payee looks the same, the link is made at once (Matched) and the transaction becomes cleared. Otherwise the line is marked To confirm, for you to decide.
 - A purchase you recorded in a foreign currency can match a line that differs by up to 3.5 % by default (the conversion fee and the day's rate; set in [Rates and rules](rates-rules)); such a match is always To confirm.
+- A line that matches nothing alone but adds up with others is proposed as a group, To confirm: one line equal to two to four recorded transactions together (a deposit of several cheques), or two to four lines equal to one recorded transaction (a purchase charged in two parts). The amounts must add up to the cent, within the same 5 days, all money in or all money out. Nothing is linked or added for them until you decide (see [Lines and transactions that add up](accounts#reconcile-groups)).
 - Every other line becomes a new transaction, already cleared (Added). Its category comes from your [Category rules](rules), or else from the payee's default category, or else from the category the payee had last time. A category from the payee is marked to review (see below); one from a rule is not.
 
 The same file cannot be imported twice into the same account: This statement file has already been imported into this account.
@@ -540,6 +541,19 @@ Under Needs your attention, with the count, each line the import could not settl
 - **Link to a recorded transaction**: for a line with No match, when recorded transactions of the same amount are outstanding: pick the one it is, in a list showing their date and payee.
 - **Ignore**: the line is left out, for example an information line that is not a real transaction. No transaction is created for it, and the line can no longer be acted on in this reconciliation.
 
+### Lines and transactions that add up {#reconcile-groups}
+
+@index: group match; several cheques; one deposit; split charge; one-to-many; many-to-one
+
+Sometimes one statement line is several recorded transactions, or the reverse: two cheques you recorded were deposited together, or one purchase was charged in two parts. The import proposes such groups when it finds them (the reconciliation then also says, for example, 1 group of lines and transactions that add up, to confirm.). Each one is a box under Needs your attention, These add up to amount: probably the same money, listing what is On the statement and what is Recorded:
+
+- **Same money**: links them. The transactions become cleared and the lines read Matched together.
+- **Not the same**: the lines go back to No match, for you to settle one by one.
+
+**Match several…**, next to Needs your attention, groups lines and transactions yourself. The window Match several lines and transactions lists the Statement lines that need a decision and the Recorded transactions not on the statement, each with a box to tick. Under them, a line gives Lines total · transactions total · difference, in red until the two totals are equal. **Match them** is offered once at least one line and one transaction are ticked, three or more in all, and the totals are equal to the cent; it links them at once. For one line and one transaction, use **Link to a recorded transaction** instead.
+
+A group counts like any match: it is undone with **Undo match** on any of its lines (which undoes the whole group), it is part of the reconciliation's report, and undoing the reconciliation keeps it. Importing the same lines again later finds them as Already imported. Foreign currency purchases are not grouped: a group's amounts must be equal.
+
 ### Statement lines {#reconcile-lines}
 
 Under Statement lines, with the count, every other line of the statement is listed with its status:
@@ -581,6 +595,7 @@ When you recorded a purchase made in another currency (for example from a receip
 **Statements** in the register opens Statements for followed by the account name. Each statement is listed with its date and closing balance, then its status (In progress, Reconciled or Undone), the file it came from and, for an undone one, the reason given.
 
 - **Continue**: for a statement In progress: opens its reconciliation.
+- **Report**: for a reconciled or undone statement: the window Reconciliation of date shows the closing balance, the Reconciled transactions, those Outstanding, and the lines and transactions Matched together, as Statement date amount = recorded transactions.
 - **Undo reconciliation**: for the most recent reconciled statement only (see [Undo the last reconciliation](accounts#undo-reconciliation)).
 - **Enter a paper statement**: starts a statement typed in by hand (see [Enter a paper statement](accounts#paper-statement)).
 - **Close**: closes the window.

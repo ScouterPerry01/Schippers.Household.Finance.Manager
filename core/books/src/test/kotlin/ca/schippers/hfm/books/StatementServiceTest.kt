@@ -21,6 +21,7 @@ import java.math.BigDecimal
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -120,6 +121,81 @@ class StatementServiceTest {
         assertEquals(1, books.transactions.suggestedCategories(account.id).size, "a memo alone leaves it to review")
         books.transactions.acceptSuggestedCategories(account.id)
         assertTrue(books.transactions.suggestedCategoryIds(account.id).isEmpty(), "keep all")
+    }
+
+    private fun lines(vararg lines: Triple<String, Int, String>) = ImportedStatement(
+        "OFX", null, Currency.CAD, march(1), march(31), null, null,
+        lines.map { (id, day, amount) -> ImportedLine(id, march(day), cad(amount), "LINE $id", null, null) },
+    )
+
+    @Test
+    fun `one deposit for several cheques, and one purchase in two charges, are proposed as groups`() {
+        // Two cheques received, deposited together: the bank shows one deposit.
+        val c1 = books.transactions.create(TransactionDraft(account.id, march(3), cad("200.00"), "Cheque Marie"))
+        val c2 = books.transactions.create(TransactionDraft(account.id, march(4), cad("300.00"), "Cheque Luc"))
+        // One receipt of $120, charged as $70 and $50.
+        val purchase = books.transactions.create(TransactionDraft(account.id, march(10), cad("-120.00"), "Rona"))
+        val result = books.statements.import(account.id, lines(Triple("D1", 5, "500.00"), Triple("R1", 10, "-70.00"), Triple("R2", 11, "-50.00")))
+        assertEquals(2, result.groups)
+        assertEquals(0, result.created, "nothing is added while a group is proposed")
+        val view = books.statements.view(result.statementId)
+        assertEquals(2, view.groups.size)
+        assertTrue(view.groups.none { it.confirmed }, "proposed, never linked without asking")
+        assertEquals(3, view.unresolved.size)
+        assertEquals(ClearedStatus.UNCLEARED, books.transactions.get(c1.id).cleared)
+
+        val deposit = view.groups.single { it.lines.size == 1 }
+        assertEquals(setOf(c1.id, c2.id), deposit.transactionIds.toSet())
+        val charges = view.groups.single { it.lines.size == 2 }
+        assertEquals(listOf(purchase.id), charges.transactionIds)
+        assertEquals(cad("-120.00"), charges.total)
+
+        books.statements.confirmGroup(deposit.id)
+        books.statements.confirmGroup(charges.id)
+        val after = books.statements.view(result.statementId)
+        assertTrue(after.unresolved.isEmpty())
+        assertTrue(after.groups.all { it.confirmed })
+        assertEquals(listOf(ClearedStatus.CLEARED, ClearedStatus.CLEARED, ClearedStatus.CLEARED), listOf(c1, c2, purchase).map { books.transactions.get(it.id).cleared })
+        assertTrue(after.outstanding.isEmpty(), "the grouped transactions are on the statement")
+
+        // Undo works: the group's transactions are no longer cleared and the lines need a decision.
+        books.statements.unlink(after.lines.first { it.matchGroup == charges.id }.id)
+        assertEquals(ClearedStatus.UNCLEARED, books.transactions.get(purchase.id).cleared)
+        assertEquals(2, books.statements.view(result.statementId).unresolved.size)
+        assertEquals(1, books.statements.view(result.statementId).groups.size)
+    }
+
+    @Test
+    fun `groups chosen by hand must add up, show in the report, survive undo and are not imported twice`() {
+        val c1 = books.transactions.create(TransactionDraft(account.id, march(3), cad("200.00"), "Cheque Marie"))
+        val c2 = books.transactions.create(TransactionDraft(account.id, march(20), cad("300.00"), "Cheque Luc"))
+        val statement = lines(Triple("D1", 22, "500.00"))
+        val result = books.statements.import(account.id, statement)
+        assertEquals(0, result.groups, "the first cheque is too far in date to propose")
+        val created = books.statements.view(result.statementId).lines.single()
+        books.statements.unlink(created.id)
+        val line = books.statements.view(result.statementId).unresolved.single()
+        assertFailsWith<ValidationException>("200 + 300 is not 450") {
+            books.statements.matchGroup(result.statementId, listOf(line.id), listOf(c1.id))
+        }
+        val group = books.statements.matchGroup(result.statementId, listOf(line.id), listOf(c1.id, c2.id))
+        assertTrue(group.confirmed, "chosen by hand: linked at once")
+        books.statements.updateBalances(result.statementId, march(1), march(31), cad("2450.00"), cad("2950.00"))
+        val report = books.statements.finish(result.statementId)
+        assertEquals(1, report.groups.size)
+        assertEquals(listOf(50000L), report.groups.single().lines.map { it.amountMinor })
+        assertEquals(setOf(c1.id, c2.id), report.groups.single().transactions.map { it.transactionId }.toSet())
+        assertEquals(ClearedStatus.RECONCILED, books.transactions.get(c2.id).cleared)
+
+        // The same line again is a duplicate, not a new deposit.
+        val again = books.statements.import(account.id, statement)
+        assertEquals(1, again.duplicates)
+
+        val reopened = books.statements.undo(result.statementId, "Wrong closing balance")
+        val copy = books.statements.view(reopened)
+        assertEquals(1, copy.groups.size, "the group comes back with the reopened statement")
+        assertEquals(setOf(c1.id, c2.id), copy.groups.single().transactionIds.toSet())
+        assertTrue(copy.groups.single().confirmed)
     }
 
     @Test

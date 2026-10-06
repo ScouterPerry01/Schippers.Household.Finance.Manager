@@ -491,6 +491,7 @@ L’importation inscrit le relevé et passe ses lignes une à une :
 - Une ligne déjà importée d’un relevé précédent (même numéro de la banque, ou même date, même montant et même description) est marquée Déjà importée et sautée ; des téléchargements qui se chevauchent ne créent donc jamais de doublons.
 - Une ligne qui correspond à une opération déjà inscrite (par exemple un reçu envoyé du téléphone, ou une opération tapée à la main) y est jumelée. Il faut le même montant, à 5 jours près. Quand les dates sont à 3 jours près et que c’est la seule candidate, ou que le bénéficiaire se ressemble, le jumelage se fait aussitôt (Jumelée) et l’opération devient compensée. Sinon la ligne est marquée À confirmer, pour que vous décidiez.
 - Un achat inscrit dans une devise étrangère peut correspondre à une ligne qui en diffère d’au plus 3,5 % par défaut (les frais de conversion et le taux du jour ; réglable dans [Taux et règles](rates-rules)) ; un tel jumelage est toujours À confirmer.
+- Une ligne qui ne correspond à rien seule mais qui concorde avec d’autres est proposée en groupe, À confirmer : une ligne égale à deux à quatre opérations inscrites ensemble (un dépôt de plusieurs chèques), ou deux à quatre lignes égales à une opération inscrite (un achat facturé en deux parties). Les montants doivent concorder au cent près, dans les mêmes 5 jours, tous des entrées ou tous des sorties d’argent. Rien n’est jumelé ni ajouté pour elles avant votre décision (voir [Lignes et opérations qui concordent](accounts#reconcile-groups)).
 - Toute autre ligne devient une nouvelle opération, déjà compensée (Ajoutée). Sa catégorie vient de vos [Règles de catégorie](rules), sinon de la catégorie par défaut du bénéficiaire, sinon de la catégorie que le bénéficiaire avait la dernière fois. Une catégorie venue du bénéficiaire est marquée à vérifier (voir plus bas) ; celle d’une règle ne l’est pas.
 
 Le même fichier ne peut pas être importé deux fois dans le même compte : Ce fichier de relevé a déjà été importé dans ce compte.
@@ -540,6 +541,19 @@ Sous À vérifier, avec le nombre, chaque ligne que l’importation n’a pas pu
 - **Jumeler à une opération inscrite** : pour une ligne sans correspondance, quand des opérations inscrites du même montant sont en suspens : choisissez la bonne dans une liste qui affiche leur date et leur bénéficiaire.
 - **Ignorer** : la ligne est laissée de côté, par exemple une ligne d’information qui n’est pas une vraie opération. Aucune opération n’est créée pour elle, et on ne peut plus agir sur cette ligne dans ce rapprochement.
 
+### Lignes et opérations qui concordent {#reconcile-groups}
+
+@index: jumelage en groupe; plusieurs chèques; un seul dépôt; achat en deux parties; un à plusieurs; plusieurs à un
+
+Parfois, une ligne du relevé représente plusieurs opérations inscrites, ou l’inverse : deux chèques inscrits ont été déposés ensemble, ou un achat a été facturé en deux parties. L’importation propose ces groupes quand elle les trouve (le rapprochement l’indique aussi, par exemple 1 groupe de lignes et d’opérations qui concordent, à confirmer.). Chacun est une boîte sous À vérifier, Ces montants totalisent montant : probablement le même argent, qui liste ce qui est Au relevé et ce qui est Inscrit :
+
+- **Même argent** : les jumelle. Les opérations deviennent compensées et les lignes indiquent Jumelée en groupe.
+- **Pas le même** : les lignes reviennent à Aucune correspondance, à régler une à une.
+
+**Jumeler plusieurs…**, à côté de À vérifier, groupe vous-même des lignes et des opérations. La fenêtre Jumeler plusieurs lignes et opérations liste les Lignes du relevé qui demandent une décision et les Opérations inscrites absentes du relevé, chacune avec une case à cocher. Dessous, une ligne donne Lignes total · opérations total · écart, en rouge tant que les deux totaux diffèrent. **Les jumeler** est offert dès qu’au moins une ligne et une opération sont cochées, trois ou plus en tout, et que les totaux sont égaux au cent près ; il les jumelle aussitôt. Pour une ligne et une opération, utilisez plutôt **Jumeler à une opération inscrite**.
+
+Un groupe compte comme tout jumelage : il s’annule avec **Annuler le jumelage** sur n’importe laquelle de ses lignes (ce qui annule tout le groupe), il fait partie du rapport du rapprochement, et l’annulation du rapprochement le garde. Importer plus tard les mêmes lignes les trouve Déjà importées. Les achats en devise étrangère ne sont pas groupés : les montants d’un groupe doivent être égaux.
+
 ### Lignes du relevé {#reconcile-lines}
 
 Sous Lignes du relevé, avec le nombre, toutes les autres lignes du relevé sont listées avec leur état :
@@ -581,6 +595,7 @@ Quand vous avez inscrit un achat fait dans une autre devise (par exemple d’apr
 **Relevés** dans le registre ouvre Relevés de suivi du nom du compte. Chaque relevé est listé avec sa date et son solde de clôture, puis son état (En cours, Rapproché ou Annulé), le fichier d’où il vient et, pour un relevé annulé, la raison donnée.
 
 - **Continuer** : pour un relevé En cours : ouvre son rapprochement.
+- **Rapport** : pour un relevé rapproché ou annulé : la fenêtre Rapprochement du date affiche le solde de clôture, les opérations Rapprochées, celles En suspens, et les lignes et opérations Jumelées en groupe, sous la forme Relevé date montant = inscrit opérations.
 - **Annuler le rapprochement** : pour le relevé rapproché le plus récent seulement (voir [Annuler le dernier rapprochement](accounts#undo-reconciliation)).
 - **Entrer un relevé papier** : commence un relevé tapé à la main (voir [Entrer un relevé papier](accounts#paper-statement)).
 - **Fermer** : ferme la fenêtre.
