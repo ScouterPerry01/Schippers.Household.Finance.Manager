@@ -107,6 +107,20 @@ class IncomeTaxServiceTest {
     }
 
     @Test
+    fun `the disability box and the Quebec minimum tax carried forward are kept like the other figures`() {
+        val sam = books.members.create("Sam", MemberKind.ADULT)
+        books.incomeTax.save(2025, sam.id, TaxInput.EMPLOYMENT, BigDecimal("15000"), group)
+        books.incomeTax.save(2025, sam.id, TaxInput.DISABILITY, BigDecimal.ONE, group)
+        books.incomeTax.save(2025, sam.id, TaxInput.AMT_CARRIED_QC, BigDecimal("1200"), group)
+        val kept = books.incomeTax.saved(2025, sam.id)
+        assertEquals(0, BigDecimal.ONE.compareTo(kept.figures[TaxInput.DISABILITY]))
+        assertEquals(0, BigDecimal("1200").compareTo(kept.figures[TaxInput.AMT_CARRIED_QC]))
+        val lines = books.incomeTax.estimate(2025, sam.id).estimate!!.lines
+        assertTrue(lines.any { it.kind == ca.schippers.hfm.calc.tax.TaxLineKind.DISABILITY })
+        assertTrue(lines.any { it.kind == ca.schippers.hfm.calc.tax.TaxLineKind.CWB_DISABILITY })
+    }
+
+    @Test
     fun `children are counted from the household members' birth dates`() {
         val alex = books.members.create("Alex", MemberKind.ADULT)
         books.members.update(books.members.create("Robin", MemberKind.CHILD).copy(birthDate = LocalDate(2021, 6, 1)))

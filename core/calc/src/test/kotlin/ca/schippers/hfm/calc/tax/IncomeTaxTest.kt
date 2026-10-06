@@ -326,6 +326,134 @@ class IncomeTaxTest {
         assertTrue(IncomeTax.estimate(2025, Province.ON, mapOf(TaxInput.BUSINESS to d("90000")), age65 = false).lines.none { it.part == TaxPart.OTHER })
     }
 
+    private val disabled = TaxInput.DISABILITY to BigDecimal.ONE
+
+    @Test
+    fun `the disability amount, federal, provincial and Quebec`() {
+        val base = IncomeTax.estimate(2025, Province.ON, pay("60000"), age65 = false)
+        val e = IncomeTax.estimate(2025, Province.ON, pay("60000") + disabled, age65 = false)
+        // TD1 2025: 10,138 federal, 10,298 Ontario. Federal credits (16,129 + 1,471 + 10,138) × 14.5 % = 4,022.01, 1,470.01 more;
+        // Ontario (12,747 + 10,298) × 5.05 % = 1,163.77, 520.05 more.
+        assertEquals(d("10138.00"), e.line(TaxPart.FEDERAL, TaxLineKind.DISABILITY))
+        assertEquals(d("10298.00"), e.line(TaxPart.PROVINCIAL, TaxLineKind.DISABILITY))
+        assertEquals(d("1470.01"), base.federalTax - e.federalTax)
+        assertEquals(d("520.05"), base.provincialTax - e.provincialTax)
+        // Quebec: the amount for a severe and prolonged impairment, 4,123 in 2025 (line 376).
+        val qc = IncomeTax.estimate(2025, Province.QC, pay("60000") + disabled, age65 = false)
+        assertEquals(d("4123.00"), qc.line(TaxPart.PROVINCIAL, TaxLineKind.DISABILITY))
+        assertTrue(base.lines.none { it.kind == TaxLineKind.DISABILITY })
+    }
+
+    @Test
+    fun `the workers benefit disability supplement, phased in on own working income and reduced on family income`() {
+        // Schedule 6 2025: 27 % of 15,000 − 1,150 is more than the 843 maximum; net income below 37,740.
+        val low = IncomeTax.estimate(2025, Province.ON, pay("15000") + disabled, age65 = false)
+        assertEquals(d("843.00"), low.line(TaxPart.REFUNDABLE, TaxLineKind.CWB_DISABILITY))
+        assertEquals(d("2476.00"), low.refundable)
+        assertTrue(IncomeTax.estimate(2025, Province.ON, pay("15000"), age65 = false).lines.none { it.kind == TaxLineKind.CWB_DISABILITY })
+        // At 40,000 the basic benefit is gone; the supplement loses 15 % of 40,000 − 37,740 = 339.
+        val single = IncomeTax.estimate(2025, Province.ON, pay("40000") + disabled, age65 = false)
+        assertEquals(d("504.00"), single.line(TaxPart.REFUNDABLE, TaxLineKind.CWB_DISABILITY))
+        // A couple: family net income 70,000 less the secondary earner's 16,386 is 53,614, 4,225 above 49,389.
+        val couple = pay("40000") + disabled + mapOf(TaxInput.SPOUSE_NET_INCOME to d("30000"), TaxInput.SPOUSE_WORKING_INCOME to d("30000"))
+        assertEquals(d("209.25"), IncomeTax.estimate(2025, Province.ON, couple, age65 = false).line(TaxPart.REFUNDABLE, TaxLineKind.CWB_DISABILITY))
+        // Both spouses eligible: reduced at 7.5 %, 316.88.
+        val both = IncomeTax.estimate(2025, Province.ON, couple + (TaxInput.SPOUSE_DISABILITY to BigDecimal.ONE), age65 = false)
+        assertEquals(d("526.12"), both.line(TaxPart.REFUNDABLE, TaxLineKind.CWB_DISABILITY))
+    }
+
+    @Test
+    fun `Quebec's own disability supplement`() {
+        // 5005-S6 2025: 40 % without a spouse, maximum 851.31; a single person's reduction starts at 33,230.35.
+        val single = IncomeTax.estimate(2025, Province.QC, pay("20000") + disabled, age65 = false)
+        assertEquals(d("851.31"), single.line(TaxPart.REFUNDABLE, TaxLineKind.CWB_DISABILITY))
+        // With a dependant and no spouse it starts at 24,561.56: 20 % of 1,438.44 = 287.69 off.
+        val parent = IncomeTax.estimate(2025, Province.QC, pay("26000") + disabled + (TaxInput.CHILDREN to d("1")), age65 = false)
+        assertEquals(d("563.62"), parent.line(TaxPart.REFUNDABLE, TaxLineKind.CWB_DISABILITY))
+    }
+
+    @Test
+    fun `minimum tax counts 30 percent of the gains on donated listed securities`() {
+        val e = IncomeTax.estimate(2025, Province.ON, pay("100000") + (TaxInput.DONATED_SECURITIES_GAINS to d("1000000")), age65 = false)
+        // Not in income; for the minimum tax 300,000 is added (T691 line 26): 20.5 % of 400,000 − 177,882, less half of 2,552.
+        assertEquals(d("100000.00"), e.totalIncome)
+        assertEquals(d("400000.00"), e.line(TaxPart.FEDERAL, TaxLineKind.ADJUSTED_TAXABLE_INCOME))
+        assertEquals(d("44258.19"), e.line(TaxPart.FEDERAL, TaxLineKind.MINIMUM_TAX))
+        assertEquals(d("44258.19"), e.federalTax)
+    }
+
+    @Test
+    fun `the capital gains deduction lowers taxable income and 30 percent of the gains count for the minimum tax`() {
+        val inputs = mapOf(TaxInput.TAXABLE_CAPITAL_GAINS to d("500000"), TaxInput.CAPITAL_GAINS_DEDUCTION to d("500000"))
+        val e = IncomeTax.estimate(2025, Province.ON, inputs, age65 = false)
+        assertEquals(d("-500000.00"), e.line(TaxPart.INCOME, TaxLineKind.CAPITAL_GAINS_DEDUCTION))
+        assertEquals(d("0.00"), e.taxableIncome)
+        // 500,000 (the other half of the gain) less 40 % of the deduction (T691 line 87): 300,000. 20.5 % of 300,000 − 177,882,
+        // less half of 14,538 × 14.5 % = 23,980.19; Ontario adds 24.63 % of it.
+        assertEquals(d("300000.00"), e.line(TaxPart.FEDERAL, TaxLineKind.ADJUSTED_TAXABLE_INCOME))
+        assertEquals(d("23980.19"), e.federalTax)
+        assertEquals(d("5906.32"), e.line(TaxPart.PROVINCIAL, TaxLineKind.AMT_ADDITIONAL))
+        // The deduction is at most the taxable capital gains.
+        val more = IncomeTax.estimate(2025, Province.ON, pay("50000") + inputs + (TaxInput.CAPITAL_GAINS_DEDUCTION to d("600000")), age65 = false)
+        assertEquals(d("50000.00"), more.taxableIncome)
+    }
+
+    @Test
+    fun `security options deduction, added back for the minimum tax except 70 percent of donated option shares`() {
+        val inputs = mapOf(
+            TaxInput.EMPLOYMENT to d("1000000"),
+            TaxInput.SECURITY_OPTIONS_DEDUCTION to d("1000000"),
+            TaxInput.SECURITY_OPTIONS_GIFTS to d("500000"),
+        )
+        val e = IncomeTax.estimate(2025, Province.ON, inputs, age65 = false)
+        assertEquals(d("-1000000.00"), e.line(TaxPart.INCOME, TaxLineKind.SECURITY_OPTIONS))
+        assertEquals(d("0.00"), e.taxableIncome)
+        // T691 lines 28 to 32: 500,000 less 40 % of the 500,000 for donated shares = 300,000, 30 % of the benefit.
+        assertEquals(d("300000.00"), e.line(TaxPart.FEDERAL, TaxLineKind.ADJUSTED_TAXABLE_INCOME))
+        // 25,034.19 less half of (14,538 + 1,471) × 14.5 %.
+        assertEquals(d("23873.54"), e.federalTax)
+    }
+
+    @Test
+    fun `Quebec's own security option deduction when entered`() {
+        val inputs = pay("200000") + (TaxInput.SECURITY_OPTIONS_DEDUCTION to d("50000"))
+        val same = IncomeTax.estimate(2025, Province.QC, inputs, age65 = false)
+        assertEquals(d("150000.00"), same.taxableIncome)
+        // Quebec: 200,000 less the deduction for workers (1,420) and the same 50,000.
+        assertEquals(d("148580.00"), same.line(TaxPart.PROVINCIAL, TaxLineKind.TAXABLE_INCOME))
+        val own = IncomeTax.estimate(2025, Province.QC, inputs + (TaxInput.SECURITY_OPTIONS_DEDUCTION_QC to d("25000")), age65 = false)
+        assertEquals(d("173580.00"), own.line(TaxPart.PROVINCIAL, TaxLineKind.TAXABLE_INCOME))
+    }
+
+    @Test
+    fun `Quebec minimum tax carried forward, recovered against the Quebec tax`() {
+        val gain = IncomeTax.estimate(2025, Province.QC, mapOf(TaxInput.TAXABLE_CAPITAL_GAINS to d("300000")), age65 = false)
+        assertEquals(d("14107.19"), gain.carry(CarryKind.MINIMUM_TAX_QC).left)
+
+        val base = IncomeTax.estimate(2025, Province.QC, pay("100000"), age65 = false)
+        val later = IncomeTax.estimate(2025, Province.QC, pay("100000") + (TaxInput.AMT_CARRIED_QC to d("5000")), age65 = false)
+        assertEquals(d("-5000.00"), later.line(TaxPart.PROVINCIAL, TaxLineKind.AMT_CARRYOVER))
+        assertEquals(base.provincialTax - d("5000.00"), later.provincialTax)
+        assertEquals(d("0.00"), later.carry(CarryKind.MINIMUM_TAX_QC).left)
+        // At most the Quebec tax (the minimum tax is zero here); the rest stays for later years.
+        val big = IncomeTax.estimate(2025, Province.QC, pay("100000") + (TaxInput.AMT_CARRIED_QC to d("100000")), age65 = false)
+        assertEquals(d("0.00"), big.provincialTax)
+        assertEquals(d("100000.00") - base.provincialTax, big.carry(CarryKind.MINIMUM_TAX_QC).left)
+        // Not on a return outside Quebec.
+        assertTrue(IncomeTax.estimate(2025, Province.ON, pay("100000") + (TaxInput.AMT_CARRIED_QC to d("5000")), age65 = false).carryForwards.isEmpty())
+    }
+
+    @Test
+    fun `the health services fund leaves out income not subject to it and takes off its deductions`() {
+        val inputs = mapOf(TaxInput.PENSION to d("70000"), TaxInput.OAS to d("8000"), TaxInput.INTEREST to d("10000"))
+        // Schedule F: 80,000, less 10,000 of income not subject (line 34) and 5,000 of deductions (line 68) = 65,000:
+        // 150 + 1 % of 65,000 − 63,060.
+        val e = IncomeTax.estimate(2025, Province.QC, inputs + mapOf(TaxInput.FSS_EXEMPT_INCOME to d("10000"), TaxInput.FSS_DEDUCTIONS to d("5000")), age65 = true)
+        assertEquals(d("169.40"), e.line(TaxPart.OTHER, TaxLineKind.HEALTH_FUND))
+        // They are parts of other figures: total income does not change.
+        assertEquals(d("88000.00"), e.totalIncome)
+    }
+
     @Test
     fun `a year before the first rates has no estimate`() {
         assertFailsWith<RuleException> { IncomeTax.estimate(2023, Province.ON, pay("50000"), age65 = false) }

@@ -18,10 +18,18 @@ enum class TaxInputGroup { INCOME, DEDUCTIONS, CREDITS, FAMILY, CARRY_FORWARD, P
  * A figure the income tax estimate starts from, in dollars for the tax year. Dividends are the
  * taxable (grossed-up) amounts, as on the slips; [SPOUSE_NET_INCOME] is left out when there is no
  * spouse or common-law partner (and then the person counts as single), and [RRSP_LIMIT] when the
- * deduction limit is not known. A [count] is a number rather than dollars; a [quebec] figure only
- * matters to a Quebec resident.
+ * deduction limit is not known. A [count] is a number rather than dollars, a [flag] a yes or no (1 or
+ * 0); a [quebec] figure only matters to a Quebec resident. A figure that is not [summed] is not added
+ * into total income or the deductions of net income: it is a deduction of taxable income, or a part of
+ * other figures that some calculation treats apart.
  */
-enum class TaxInput(val group: TaxInputGroup, val count: Boolean = false, val quebec: Boolean = false) {
+enum class TaxInput(
+    val group: TaxInputGroup,
+    val count: Boolean = false,
+    val quebec: Boolean = false,
+    val flag: Boolean = false,
+    val summed: Boolean = true,
+) {
     EMPLOYMENT(TaxInputGroup.INCOME),
 
     /** Pension income that qualifies for the pension income amount (an employer pension; a RRIF or annuity from 65). */
@@ -39,12 +47,45 @@ enum class TaxInput(val group: TaxInputGroup, val count: Boolean = false, val qu
 
     /** Self-employment income less its expenses; may be negative. */
     BUSINESS(TaxInputGroup.INCOME),
+
+    /**
+     * Capital gains on gifts of publicly listed securities (Form T1170): not in income (their
+     * inclusion rate is zero), but 30 % of them count for the minimum tax.
+     */
+    DONATED_SECURITIES_GAINS(TaxInputGroup.INCOME, summed = false),
+
+    /**
+     * Of total income, what Quebec's health services fund leaves out besides employment income, the
+     * OAS pension and the dividend gross-up (Schedule F, lines 20 to 33): support received, social
+     * assistance, income replacement indemnities and net federal supplements, scholarships,
+     * profit-sharing allocations, a spousal RRSP recovery.
+     */
+    FSS_EXEMPT_INCOME(TaxInputGroup.INCOME, quebec = true, summed = false),
     RRSP(TaxInputGroup.DEDUCTIONS),
     FHSA(TaxInputGroup.DEDUCTIONS),
     PENSION_PLAN(TaxInputGroup.DEDUCTIONS),
     UNION_DUES(TaxInputGroup.DEDUCTIONS),
     CHILD_CARE(TaxInputGroup.DEDUCTIONS),
     OTHER_DEDUCTIONS(TaxInputGroup.DEDUCTIONS),
+
+    /** Security options deductions (line 24900; T4 boxes 39, 41, 91 and 92), from net income to taxable income. */
+    SECURITY_OPTIONS_DEDUCTION(TaxInputGroup.DEDUCTIONS, summed = false),
+
+    /** Of [SECURITY_OPTIONS_DEDUCTION], the deduction for option shares given to a charity (paragraph 110(1)(d.01)). */
+    SECURITY_OPTIONS_GIFTS(TaxInputGroup.DEDUCTIONS, summed = false),
+
+    /** Quebec's security option deduction (line 297, point 02), when it differs from the federal one; left out, the federal one applies. */
+    SECURITY_OPTIONS_DEDUCTION_QC(TaxInputGroup.DEDUCTIONS, quebec = true, summed = false),
+
+    /** The capital gains deduction claimed (lifetime capital gains exemption; line 25400, Quebec line 292), at most the taxable capital gains. */
+    CAPITAL_GAINS_DEDUCTION(TaxInputGroup.DEDUCTIONS, summed = false),
+
+    /**
+     * Of the deductions, those that also reduce the income subject to Quebec's health services fund
+     * (Schedule F, lines 41 to 62): support paid, carrying charges, a business investment loss,
+     * retirement income transferred to a spouse, repayments of amounts received.
+     */
+    FSS_DEDUCTIONS(TaxInputGroup.DEDUCTIONS, quebec = true, summed = false),
 
     /** CPP or QPP contributions paid on employment income, both tiers together. */
     CPP_QPP(TaxInputGroup.CREDITS),
@@ -62,10 +103,16 @@ enum class TaxInput(val group: TaxInputGroup, val count: Boolean = false, val qu
 
     /** Tuition transferred to this person by a student (their spouse, child or grandchild). */
     TUITION_RECEIVED(TaxInputGroup.CREDITS),
+
+    /** 1 when the person is eligible for the disability tax credit (Form T2201 approved): the disability amount and the workers benefit's disability supplement. */
+    DISABILITY(TaxInputGroup.CREDITS, flag = true),
     SPOUSE_NET_INCOME(TaxInputGroup.FAMILY),
 
     /** The spouse's or partner's working income (employment and self-employment), for the Canada workers benefit. */
     SPOUSE_WORKING_INCOME(TaxInputGroup.FAMILY),
+
+    /** 1 when the spouse or partner is also eligible for the disability tax credit: each spouse's disability supplement is then reduced at half the rate. */
+    SPOUSE_DISABILITY(TaxInputGroup.FAMILY, flag = true),
 
     /** Children under 18 living with the person on December 31. */
     CHILDREN(TaxInputGroup.FAMILY, count = true),
@@ -96,11 +143,13 @@ enum class TaxInput(val group: TaxInputGroup, val count: Boolean = false, val qu
 
     /** Federal minimum tax of the seven previous years that can still be recovered. */
     AMT_CARRIED(TaxInputGroup.CARRY_FORWARD),
+
+    /** Quebec minimum tax (additional income tax) of the seven previous years that can still be recovered (TP-776.42-V, line 49). */
+    AMT_CARRIED_QC(TaxInputGroup.CARRY_FORWARD, quebec = true),
     TAX_DEDUCTED(TaxInputGroup.PAYMENTS),
     INSTALMENTS(TaxInputGroup.PAYMENTS),
 }
 
-/** The part of the estimate a line belongs to. */
 /**
  * The part of the estimate a line belongs to: [OTHER] amounts on the return are added to the
  * balance (the OAS recovery tax, Quebec's contributions); [REFUNDABLE] credits come off it even
@@ -111,11 +160,12 @@ enum class TaxPart { INCOME, FEDERAL, PROVINCIAL, OTHER, REFUNDABLE, BENEFITS }
 
 /** What a line of the estimate is; the apps name it and explain it in the user's language. */
 enum class TaxLineKind {
-    TOTAL_INCOME, CPP_ENHANCED, RRSP_DEDUCTION, DEDUCTIONS, OAS_DEDUCTION, NET_INCOME, WORKER_DEDUCTION, CAPITAL_LOSSES, TAXABLE_INCOME,
+    TOTAL_INCOME, CPP_ENHANCED, RRSP_DEDUCTION, DEDUCTIONS, OAS_DEDUCTION, NET_INCOME, WORKER_DEDUCTION, CAPITAL_LOSSES,
+    SECURITY_OPTIONS, CAPITAL_GAINS_DEDUCTION, TAXABLE_INCOME,
     BRACKET, TAX_ON_INCOME,
     BASIC_PERSONAL, AGE, SENIOR_SUPPLEMENT, SPOUSE, EMPLOYMENT_AMOUNT, CPP, EI, PENSION, MEDICAL, AGE_PENSION_REDUCTION,
-    TUITION, TUITION_RECEIVED,
-    BEFORE_REDUCTION, INCOME_REDUCTION, CWB, MEDICAL_SUPPLEMENT, WORK_PREMIUM, QC_MEDICAL_CREDIT, REFUNDABLE_TOTAL,
+    TUITION, TUITION_RECEIVED, DISABILITY,
+    BEFORE_REDUCTION, INCOME_REDUCTION, CWB, CWB_DISABILITY, MEDICAL_SUPPLEMENT, WORK_PREMIUM, QC_MEDICAL_CREDIT, REFUNDABLE_TOTAL,
     GST_CREDIT, CHILD_BENEFIT,
     CREDIT_AMOUNTS, CREDITS, SUPPLEMENTAL_CREDIT, DONATIONS, DIVIDENDS, BASIC_TAX,
     ADJUSTED_TAXABLE_INCOME, MINIMUM_TAX, AMT_ADDITIONAL, AMT_CARRYOVER,
@@ -123,7 +173,7 @@ enum class TaxLineKind {
 }
 
 /** A balance carried from year to year. */
-enum class CarryKind { TUITION_FEDERAL, TUITION_PROVINCIAL, DONATIONS, CAPITAL_LOSSES, RRSP, MINIMUM_TAX }
+enum class CarryKind { TUITION_FEDERAL, TUITION_PROVINCIAL, DONATIONS, CAPITAL_LOSSES, RRSP, MINIMUM_TAX, MINIMUM_TAX_QC }
 
 /**
  * What became of a balance carried forward this year: [available] (with this year's own amounts,
@@ -177,11 +227,13 @@ data class TaxEstimate(
  * Estimates a person's federal and provincial or territorial income tax from their year's figures,
  * with the rates in effect on January 1 of the year (Rates and rules, area incometax): brackets,
  * the basic personal, age, spouse, Canada employment, pension income, CPP or QPP, EI and medical
- * expense amounts, tuition and its transfer, the donation and dividend tax credits, the balances
- * carried forward (tuition, donations, net capital losses, RRSP contributions, minimum tax),
- * Ontario's surtax and health premium, the alternative minimum tax, the OAS recovery tax, the
- * refundable credits (workers benefit, medical expense supplement), and for Quebec residents the
- * federal abatement, Quebec's own tax, minimum tax, work premium and refundable medical credit,
+ * expense amounts, the disability amount, tuition and its transfer, the donation and dividend tax
+ * credits, the security options and capital gains deductions, the balances carried forward
+ * (tuition, donations, net capital losses, RRSP contributions, minimum tax), Ontario's surtax and
+ * health premium, the alternative minimum tax (with donated securities, security options and the
+ * capital gains deduction), the OAS recovery tax, the refundable credits (workers benefit and its
+ * disability supplement, medical expense supplement), and for Quebec residents the federal
+ * abatement, Quebec's own tax, minimum tax and its carryover, work premium and refundable medical credit,
  * health services fund contribution and drug insurance premium. The GST/HST credit and the Canada
  * child benefit are shown apart. It leaves out what the books cannot know or that is rarely needed
  * (other low-income reductions and refundable credits, political contributions, foreign tax
@@ -216,13 +268,13 @@ object IncomeTax {
 
         val carry = ArrayList<CarryForward>()
         fun p(i: TaxInput) = v(i).max(BigDecimal.ZERO)
-        val total = TaxInput.entries.filter { it.group == TaxInputGroup.INCOME }.fold(BigDecimal.ZERO) { a, i -> a + v(i) }
+        val total = TaxInput.entries.filter { it.group == TaxInputGroup.INCOME && it.summed }.fold(BigDecimal.ZERO) { a, i -> a + v(i) }
 
         // RRSP: this year's contributions and the unused ones of earlier years, within the deduction limit when it is known.
         val rrspClaim = p(TaxInput.RRSP) + p(TaxInput.RRSP_UNUSED)
         val rrspLimit = inputs[TaxInput.RRSP_LIMIT]?.max(BigDecimal.ZERO)
         val rrsp = rrspLimit?.let { rrspClaim.min(it) } ?: rrspClaim
-        val deductions = TaxInput.entries.filter { it.group == TaxInputGroup.DEDUCTIONS && it != TaxInput.RRSP }.fold(BigDecimal.ZERO) { a, i -> a + p(i) } + rrsp + cppDeduction
+        val deductions = TaxInput.entries.filter { it.group == TaxInputGroup.DEDUCTIONS && it != TaxInput.RRSP && it.summed }.fold(BigDecimal.ZERO) { a, i -> a + p(i) } + rrsp + cppDeduction
         val beforeRecovery = (total - deductions).max(BigDecimal.ZERO)
         // The OAS recovery tax: a rate of net income above a threshold, at most the OAS received; deducted from net income.
         val (oasThreshold, oasRate) = Rules.list("tax.oasRecovery", on)
@@ -245,8 +297,15 @@ object IncomeTax {
             lines += TaxLine(TaxPart.INCOME, TaxLineKind.CAPITAL_LOSSES, money(losses).negate(), money(p(TaxInput.TAXABLE_CAPITAL_GAINS)))
             carry += CarryForward(CarryKind.CAPITAL_LOSSES, money(lossesCarried), money(losses), BigDecimal.ZERO.setScale(2), money(lossesCarried - losses))
         }
-        val taxable = net - losses
+        // Division C deductions: security options (line 24900) and the capital gains deduction (line 25400), at most
+        // the taxable capital gains left after the losses.
+        val options = p(TaxInput.SECURITY_OPTIONS_DEDUCTION).min(net - losses)
+        if (options.signum() > 0) lines += TaxLine(TaxPart.INCOME, TaxLineKind.SECURITY_OPTIONS, money(options).negate())
+        val lcge = p(TaxInput.CAPITAL_GAINS_DEDUCTION).min(p(TaxInput.TAXABLE_CAPITAL_GAINS) - losses).min(net - losses - options).max(BigDecimal.ZERO)
+        if (lcge.signum() > 0) lines += TaxLine(TaxPart.INCOME, TaxLineKind.CAPITAL_GAINS_DEDUCTION, money(lcge).negate())
+        val taxable = net - losses - options - lcge
         lines += TaxLine(TaxPart.INCOME, TaxLineKind.TAXABLE_INCOME, money(taxable))
+        val disabled = v(TaxInput.DISABILITY).signum() > 0
         val spouse = inputs[TaxInput.SPOUSE_NET_INCOME]?.max(BigDecimal.ZERO)
 
         // Donations: this year's and those carried from the five years before, up to a share of net income; the oldest first.
@@ -269,6 +328,7 @@ object IncomeTax {
             add(TaxLineKind.CPP to cppCredit)
             add(TaxLineKind.EI to v(TaxInput.EI_QPIP).max(BigDecimal.ZERO))
             add(TaxLineKind.PENSION to Rules.decimal("tax.fed.pension", on).min(v(TaxInput.PENSION).max(BigDecimal.ZERO)))
+            if (disabled) add(TaxLineKind.DISABILITY to Rules.decimal("tax.fed.disability", on))
             add(TaxLineKind.MEDICAL to medical(federalMedical(on), v(TaxInput.MEDICAL), net))
         }
         val fedTuition = Tuition(
@@ -287,7 +347,7 @@ object IncomeTax {
         // Alternative minimum tax (Form T691): shown only when it is more than the regular tax; otherwise the
         // minimum tax carried forward recovers the difference.
         val amt = Rules.list("tax.amt", on)
-        val fedAdjusted = adjustedTaxable(taxable, inputs, cppDeduction, amt[4], amt[5], amt[6], BigDecimal.ZERO)
+        val fedAdjusted = adjustedTaxable(taxable, inputs, cppDeduction, amt[4], amt[5], amt[6], BigDecimal.ZERO, Rules.list("tax.amt.gains", on), options, lcge)
         val fedMinimum = money((fedAdjusted - amt[1]).max(BigDecimal.ZERO).multiply(amt[0]) - fedCredits.amountCredit.multiply(amt[2]) - fedCredits.donation.multiply(amt[3]))
             .max(BigDecimal.ZERO)
         var fedBasic = fedCredits.basic
@@ -321,7 +381,7 @@ object IncomeTax {
         // Provincial or territorial.
         val provTuition = provincialTuition(on, province, inputs)
         val provincial = if (quebec) {
-            quebec(on, inputs, net, losses, gifts, spouse, age65, lines, provTuition, cppDeduction)
+            quebec(on, inputs, net, losses, lcge, gifts, spouse, age65, lines, provTuition, cppDeduction, carry)
         } else {
             provincial(on, province, inputs, net, taxable, claimedGifts, cppCredit, spouse, age65, lines, provTuition, amtAdded, amtUsed)
         }
@@ -355,9 +415,12 @@ object IncomeTax {
     }
 
     /**
-     * Quebec's contributions on the return: the health services fund contribution (Schedule F), 1 %
-     * of income other than employment income, OAS and the dividend gross-up above a threshold, up to
-     * a first cap, then 1 % above a second threshold up to the maximum; and the prescription drug
+     * Quebec's contributions on the return: the health services fund contribution (Schedule F, line
+     * 446), 1 % of the income subject to it above a threshold, up to a first cap, then 1 % above a
+     * second threshold up to the maximum. The income subject to it is total income less employment
+     * income, the OAS pension, the dividend gross-up and the other income it leaves out (lines 20 to
+     * 33, [TaxInput.FSS_EXEMPT_INCOME]), less the deductions of lines 41 to 62
+     * ([TaxInput.FSS_DEDUCTIONS]); and the prescription drug
      * insurance premium (Schedule K), a rate of family income above an exemption that depends on
      * the household, up to the year's maximum, for the months covered by the public plan.
      */
@@ -367,7 +430,7 @@ object IncomeTax {
         fun p(i: TaxInput) = (inputs[i] ?: BigDecimal.ZERO).max(BigDecimal.ZERO)
         val amt = Rules.list("tax.amt", on)
         val grossUp = p(TaxInput.ELIGIBLE_DIVIDENDS).multiply(amt[5]) + p(TaxInput.OTHER_DIVIDENDS).multiply(amt[6])
-        val base = (total - p(TaxInput.EMPLOYMENT) - p(TaxInput.OAS) - grossUp).max(BigDecimal.ZERO)
+        val base = (total - p(TaxInput.EMPLOYMENT) - p(TaxInput.OAS) - grossUp - p(TaxInput.FSS_EXEMPT_INCOME) - p(TaxInput.FSS_DEDUCTIONS)).max(BigDecimal.ZERO)
         val (first, second, rate, cap, max) = Rules.list("tax.qc.fss", on)
         val fss = when {
             base <= first -> BigDecimal.ZERO
@@ -426,8 +489,9 @@ object IncomeTax {
     }
 
     /**
-     * Refundable credits that change the balance: the Canada workers benefit (Schedule 6, with
-     * Quebec's, Alberta's and Nunavut's own parameters), the refundable medical expense supplement,
+     * Refundable credits that change the balance: the Canada workers benefit and its disability
+     * supplement (Schedule 6, with Quebec's, Alberta's and Nunavut's own parameters), the refundable
+     * medical expense supplement,
      * and for Quebec residents the work premium (Schedule P) and the refundable credit for medical
      * expenses. A couple's family credits are shown for the person estimated: one spouse claims them.
      */
@@ -444,6 +508,23 @@ object IncomeTax {
         val exempt = if (family.couple) Rules.decimal("tax.cwb.secondaryEarner", on).min(working.min(family.spouseWorking)) else BigDecimal.ZERO
         val cwbGross = (familyWorking - threshold).max(BigDecimal.ZERO).multiply(phaseIn).min(max)
         total += reducedBenefit(part, TaxLineKind.CWB, cwbGross, familyWorking - threshold, phaseIn, family.income(net) - exempt, start, rateOff, lines)
+
+        // Its disability supplement (Schedule 6, Step 3), for a person eligible for the disability tax credit: a rate of their own
+        // working income above a threshold, up to a maximum, less a rate of the same adjusted family net income above a start that
+        // depends on the household; at half the rate when both spouses are eligible, each claiming their own.
+        if (p(TaxInput.DISABILITY).signum() > 0) {
+            val d = Rules.list("tax.cwb.disability", on, province)
+            val rate = if (family.couple) d[2] else d[1]
+            val from = when {
+                family.couple && family.children > 0 -> d[7]
+                family.couple -> d[5]
+                family.children > 0 -> d[6]
+                else -> d[4]
+            }
+            val off = if (family.couple && p(TaxInput.SPOUSE_DISABILITY).signum() > 0) d[9] else d[8]
+            val gross = (working - d[0]).max(BigDecimal.ZERO).multiply(rate).min(d[3])
+            total += reducedBenefit(part, TaxLineKind.CWB_DISABILITY, gross, (working - d[0]).max(BigDecimal.ZERO), rate, family.income(net) - exempt, from, off, lines)
+        }
 
         // Refundable medical expense supplement: a rate of the medical expenses claimed, for a person with enough earned income.
         val (supMax, minEarned, supThreshold, supRate, supOff) = Rules.list("tax.fed.medicalSupplement", on)
@@ -556,6 +637,7 @@ object IncomeTax {
             add(TaxLineKind.CPP to cppCredit)
             add(TaxLineKind.EI to v(TaxInput.EI_QPIP).max(BigDecimal.ZERO))
             add(TaxLineKind.PENSION to Rules.decimal("tax.prov.pension", on, p).min(v(TaxInput.PENSION).max(BigDecimal.ZERO)))
+            if (v(TaxInput.DISABILITY).signum() > 0) add(TaxLineKind.DISABILITY to Rules.decimal("tax.prov.disability", on, p))
             add(TaxLineKind.MEDICAL to medical(Rules.list("tax.prov.medical", on, p), v(TaxInput.MEDICAL), net))
         }
         val beforeAmt = credits(
@@ -613,11 +695,12 @@ object IncomeTax {
      * Quebec's own tax: the deduction for workers, Quebec's brackets and credits. The age and
      * retirement income amounts are reduced together on family income (the person's and their
      * spouse's), as is the floor of the medical expense credit; QPP, EI and QPIP give no Quebec
-     * credit.
+     * credit. Quebec's minimum tax is added when it is more than the regular tax; otherwise the
+     * minimum tax of the seven previous years ([TaxInput.AMT_CARRIED_QC]) recovers the difference.
      */
     private fun quebec(
-        on: LocalDate, inputs: Map<TaxInput, BigDecimal>, net: BigDecimal, losses: BigDecimal, gifts: BigDecimal, spouse: BigDecimal?, age65: Boolean,
-        lines: MutableList<TaxLine>, tuition: Tuition, cppDeduction: BigDecimal,
+        on: LocalDate, inputs: Map<TaxInput, BigDecimal>, net: BigDecimal, losses: BigDecimal, lcgeFederal: BigDecimal, gifts: BigDecimal, spouse: BigDecimal?,
+        age65: Boolean, lines: MutableList<TaxLine>, tuition: Tuition, cppDeduction: BigDecimal, carry: MutableList<CarryForward>,
     ): BigDecimal {
         fun v(i: TaxInput) = inputs[i] ?: BigDecimal.ZERO
         val p = Province.QC
@@ -627,7 +710,12 @@ object IncomeTax {
         if (worker.signum() > 0) lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.WORKER_DEDUCTION, worker, v(TaxInput.EMPLOYMENT), workerRate)
         val qcLosses = losses.min(qcNet)
         if (qcLosses.signum() > 0) lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.CAPITAL_LOSSES, money(qcLosses).negate())
-        val qcTaxable = qcNet - qcLosses
+        // Quebec's security option deduction (line 297, point 02; the federal one unless entered) and the capital gains deduction (line 292).
+        val qcOptions = (inputs[TaxInput.SECURITY_OPTIONS_DEDUCTION_QC] ?: v(TaxInput.SECURITY_OPTIONS_DEDUCTION)).max(BigDecimal.ZERO).min(qcNet - qcLosses)
+        if (qcOptions.signum() > 0) lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.SECURITY_OPTIONS, money(qcOptions).negate())
+        val qcLcge = lcgeFederal.min(qcNet - qcLosses - qcOptions).max(BigDecimal.ZERO)
+        if (qcLcge.signum() > 0) lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.CAPITAL_GAINS_DEDUCTION, money(qcLcge).negate())
+        val qcTaxable = qcNet - qcLosses - qcOptions - qcLcge
         lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.TAXABLE_INCOME, money(qcTaxable))
         val qcGifts = gifts.min(money(qcNet.multiply(Rules.decimal("tax.donationLimit", on))))
         val brackets = Rules.brackets("tax.prov.brackets", on, p)
@@ -641,6 +729,7 @@ object IncomeTax {
             val pension = retirementMax.min(v(TaxInput.PENSION).max(BigDecimal.ZERO).multiply(retirementFactor))
             if (age65) add(TaxLineKind.AGE to ageAmount)
             if (pension.signum() > 0) add(TaxLineKind.PENSION to pension)
+            if (v(TaxInput.DISABILITY).signum() > 0) add(TaxLineKind.DISABILITY to Rules.decimal("tax.prov.disability", on, p))
             if (ageAmount + pension > BigDecimal.ZERO) {
                 val reduction = (family - age[1]).max(BigDecimal.ZERO).multiply(age[2]).min(ageAmount + pension)
                 if (reduction.signum() > 0) add(TaxLineKind.AGE_PENSION_REDUCTION to reduction.negate())
@@ -659,16 +748,31 @@ object IncomeTax {
         // half of the credits other than donations and 80 % of the donation credit.
         val (qRate, qExemption, qShare, qDonationShare, qDeductionShare) = Rules.list("tax.qc.amt", on)
         val fed = Rules.list("tax.amt", on)
-        val adjusted = adjustedTaxable(qcTaxable, inputs, cppDeduction, qDeductionShare, fed[5], fed[6], worker)
+        val adjusted = adjustedTaxable(qcTaxable, inputs, cppDeduction, qDeductionShare, fed[5], fed[6], worker, Rules.list("tax.qc.amtGains", on), qcOptions, qcLcge)
         val minimum = money((adjusted - qExemption).max(BigDecimal.ZERO).multiply(qRate) - (c.amountCredit + c.others).multiply(qShare) - c.donation.multiply(qDonationShare))
             .max(BigDecimal.ZERO)
+        val carried = (inputs[TaxInput.AMT_CARRIED_QC] ?: BigDecimal.ZERO).max(BigDecimal.ZERO)
+        var added = BigDecimal.ZERO
+        var used = BigDecimal.ZERO
+        var tax = c.basic
         if (minimum > c.basic) {
+            added = minimum - c.basic
             lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.ADJUSTED_TAXABLE_INCOME, money(adjusted))
             lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.MINIMUM_TAX, minimum, money(adjusted - qExemption), qRate, money(qExemption))
-            lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.AMT_ADDITIONAL, minimum - c.basic)
-            return minimum
+            lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.AMT_ADDITIONAL, added)
+            tax = minimum
+        } else if (carried.signum() > 0) {
+            // TP-776.42-V, line 50: the least of the tax, the tax less the minimum tax, and the amount carried.
+            used = money(carried.min(c.basic - minimum))
+            if (used.signum() > 0) {
+                lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.AMT_CARRYOVER, used.negate(), c.basic - minimum)
+                tax -= used
+            }
         }
-        return c.basic
+        if (carried.signum() > 0 || added.signum() > 0) {
+            carry += CarryForward(CarryKind.MINIMUM_TAX_QC, money(carried + added), used, BigDecimal.ZERO.setScale(2), money(carried + added - used))
+        }
+        return tax
     }
 
     /**
@@ -676,16 +780,26 @@ object IncomeTax {
      * taxable capital gains (gains count in full), plus the share of the deductions allowed only in
      * part (union dues, child care, other deductions, the enhanced CPP or QPP, and [more], such as
      * Quebec's deduction for workers), less the dividends' gross-up (dividends count at their actual
-     * amount).
+     * amount). With the 2024 rules ([gains]: the share of the gains on donated listed securities
+     * added, then the share taken off): that share of the gains on gifts of publicly listed
+     * securities; the security [options] deduction added back, less the share taken off of the part
+     * for donated option shares; and that share of the capital gains deduction ([lcge]) taken off,
+     * so that 30 % of those gains count (T691 lines 24 to 32 and 87; TP-776.42-V lines 146.1, 159.4
+     * and 171.1 to 171.5).
      */
     private fun adjustedTaxable(
         taxable: BigDecimal, inputs: Map<TaxInput, BigDecimal>, cppDeduction: BigDecimal, share: BigDecimal,
         eligibleGrossUp: BigDecimal, otherGrossUp: BigDecimal, more: BigDecimal,
+        gains: List<BigDecimal>, options: BigDecimal, lcge: BigDecimal,
     ): BigDecimal {
         fun p(i: TaxInput) = (inputs[i] ?: BigDecimal.ZERO).max(BigDecimal.ZERO)
+        val (giftShare, offShare) = gains
         val partly = p(TaxInput.UNION_DUES) + p(TaxInput.CHILD_CARE) + p(TaxInput.OTHER_DEDUCTIONS) + cppDeduction + more
+        val optionGifts = p(TaxInput.SECURITY_OPTIONS_GIFTS).min(options)
+        val optionsBack = (options - optionGifts - optionGifts.multiply(offShare)).max(BigDecimal.ZERO)
         return taxable + p(TaxInput.TAXABLE_CAPITAL_GAINS) + partly.multiply(share) -
-            p(TaxInput.ELIGIBLE_DIVIDENDS).multiply(eligibleGrossUp) - p(TaxInput.OTHER_DIVIDENDS).multiply(otherGrossUp)
+            p(TaxInput.ELIGIBLE_DIVIDENDS).multiply(eligibleGrossUp) - p(TaxInput.OTHER_DIVIDENDS).multiply(otherGrossUp) +
+            p(TaxInput.DONATED_SECURITIES_GAINS).multiply(giftShare) + optionsBack - lcge.multiply(offShare)
     }
 
     /**

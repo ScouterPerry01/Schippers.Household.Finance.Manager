@@ -22,3 +22,7 @@ Click Set up instalments… and enter the amounts from the CRA or Revenu Québec
 ## Year-end package
 
 The Year-end package tab shows each person's figures for the return, gathered from the books, with the federal line each one goes on. Choose the year and the person. Click Folder for the accountant… to save a folder with every summary and the slips and receipts filed for them, or export one summary as PDF, Excel or CSV.
+
+## Estimate
+
+The Estimate tab works out each person's federal and provincial or territorial income tax for a year, and the balance owing or the refund. Choose the year and the person. The figures come from the year-end package; change any of them to try another amount, and what you enter is kept for that person and year. Enter from the notice of assessment the amounts carried forward (tuition, donations, losses, RRSP, federal and Quebec minimum tax). Tick Eligible for the disability tax credit when Form T2201 is approved: it adds the disability amount and the workers benefit disability supplement. Security options, the capital gains deduction, donated listed securities and, in Quebec, the health services fund figures have their own lines. It is an estimate, not a return.

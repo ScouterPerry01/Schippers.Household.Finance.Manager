@@ -184,6 +184,21 @@ Suppose a budget lowers the rate of a bracket or adds one from January 1:
 
 The whole table is the new value: brackets left as they were stay the same, and the app uses the new set for every tax year from 2027 on.
 
+### A figure not published yet {#example-unpublished}
+
+@index: unpublished figure; 2026 forms; disability supplement; Schedule 6
+
+Some figures are only published on the year's tax forms, which come out late in the year or early the next. Until then, the app keeps the latest published value and its source says so. For example, the Canada workers benefit disability supplement for Quebec, Alberta and Nunavut keeps its 2025 values until the CRA publishes Schedule 6 for 2026. When it does:
+
+1. Open **Rates and rules** and type "cwb" in **Filter by name or key**.
+2. Click **Canada workers benefit disability supplement** (Income tax).
+3. Under **Add a value**, set **Effective from** to January 1 of the year, such as 2026-01-01, and choose the province or territory, such as Alberta.
+4. In **Values, separated by ;**, type the ten numbers in the order the rule's description gives, from lines 30 to 38 of that province's Schedule 6, such as 910; 0.26; 0.26; 860; 38583; 51237; 51237; 51237; 0.15; 0.075 (an illustration, not the published figures).
+5. In **Note**, type where they come from, such as "CRA, Schedule 6 for residents of Alberta (5009-S6) 2026".
+6. Click **Add a value**.
+
+The income tax estimate on the [Taxes](taxes#estimate-refundable) screen uses the new figures for 2026 and later.
+
 ## Related chapters {#related}
 
 - [Rates and prices](rates): exchange rates and market prices, which are downloaded rather than set by law.
