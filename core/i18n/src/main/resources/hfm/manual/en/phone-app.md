@@ -286,6 +286,7 @@ The trip under way is kept on the phone, encrypted, until you arrive: closing th
 - **Vehicle**: the vehicles from your computer that count kilometres. The list fills in after the first transfer; with none, the form says "No vehicles yet: add them on the computer."
 - **Driver**: the household's people; the person your user is on the computer is proposed.
 - **Odometer (km)**: the vehicle's latest reading is proposed: the computer's, or the last one this phone recorded if higher. Check it against the dashboard and correct it. Required.
+  A reading lower than that one shows "Lower than the last reading, 61,480 km. Check it; to keep it anyway, tap Start again.", so a typo is caught before the trip starts.
 - **Where you leave from**: see [Where you are](#trip-where).
 - **Towing or load**: **Normal** (the default), **Towing a trailer** or **Heavy load**. Towing and heavy loads are measured apart in the vehicle's fuel consumption.
 - **Trailer**: when towing, the trailers from your computer (assets of the kind trailer).
@@ -357,6 +358,7 @@ The app uses Android's own location service (no Google service), takes one fix a
 - **Vehicle**: the vehicles from your computer.
 - **Fuel or electricity**: for a plug-in hybrid only.
 - **Odometer (km)**: the latest reading is proposed; needed for the consumption.
+  A reading lower than the last one is pointed out the same way; tap **Save** again to keep it.
 - **Litres** (or **kWh** for a charge): the quantity. Required, above zero.
 - **Cost**: what you paid, such as 68.55.
 - **Full tank** (or **Charged to full**): ticked by default; untick it for a partial fill. Consumption is measured from one full tank to the next.

@@ -236,7 +236,8 @@ private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
     val trailers = remember { model.books.assets.list(includeDisposed = true).filter { it.kind == AssetKind.TRAILER } }
     var startTime by remember { mutableStateOf(t.startAt?.let(::hhmm).orEmpty()) }
     var endTime by remember { mutableStateOf(t.endAt?.let(::hhmm).orEmpty()) }
-    var startOdo by remember { mutableStateOf(t.startOdometer?.toString().orEmpty()) }
+    // A new trip starts from the vehicle's latest reading, as on the phone.
+    var startOdo by remember { mutableStateOf(t.startOdometer?.toString() ?: vehicle?.takeIf { t.id.isBlank() }?.let { model.books.vehicles.latestOdometer(it.id)?.odometer?.toString() }.orEmpty()) }
     var endOdo by remember { mutableStateOf(t.endOdometer?.toString().orEmpty()) }
     var startPlace by remember { mutableStateOf(places.firstOrNull { it.id == t.startPlaceId }) }
     var endPlace by remember { mutableStateOf(places.firstOrNull { it.id == t.endPlaceId }) }
@@ -245,7 +246,19 @@ private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
     var passengers by remember { mutableStateOf(t.passengers.orEmpty()) }
     var province by remember { mutableStateOf(t.province.orEmpty()) }
     val byOdometer = startOdo.isNotBlank() && endOdo.isNotBlank()
-    FormDialog(model.t(if (t.id.isBlank()) "trips.add" else "trips.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
+    // A start below the vehicle's last reading on or before the trip's date (this trip's own left out) is pointed out;
+    // a second Save keeps it.
+    val lastBefore = remember(vehicle?.id, day) {
+        val d = runCatching { date(day) }.getOrNull()
+        vehicle?.let { v -> model.books.vehicles.readings(v.id).filter { r -> r.id != t.id && (d == null || r.date <= d) }.maxOfOrNull { it.odometer } }
+    }
+    val lowStart = lastBefore != null && startOdo.trim().toIntOrNull()?.let { it < lastBefore } == true
+    var lowSeen by remember(startOdo, vehicle?.id) { mutableStateOf(false) }
+    FormDialog(model.t(if (t.id.isBlank()) "trips.add" else "trips.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = save@{
+        if (lowStart && !lowSeen) {
+            lowSeen = true
+            return@save
+        }
         val ok = model.act {
             val d = date(day)
             val start = timeOn(d, startTime)
@@ -294,6 +307,7 @@ private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
                     Text(diff?.takeIf { it > 0 }?.let { model.t("trips.km", odometer(model, it)) } ?: "—", fontWeight = FontWeight.Medium)
                 }
             }
+            if (lowStart) Text(model.t("trips.odometerLower", odometer(model, lastBefore)), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             if (byOdometer) Text(model.t("trips.byOdometerHint"), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Picker(model.t("report.person"), listOf(null) + members, member, { it?.displayName ?: model.t("taxes.household") }, Modifier.weight(1f)) { member = it }

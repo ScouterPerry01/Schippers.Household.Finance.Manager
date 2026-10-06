@@ -286,6 +286,7 @@ Le déplacement en cours est gardé sur le téléphone, chiffré, jusqu’à l�
 - **Véhicule** : les véhicules de votre ordinateur qui comptent des kilomètres. La liste se remplit après le premier transfert ; sans véhicule, le formulaire indique « Aucun véhicule : ajoutez-les sur l’ordinateur. »
 - **Conducteur** : les personnes du ménage ; la personne qu’est votre utilisateur sur l’ordinateur est proposée.
 - **Odomètre (km)** : la dernière lecture du véhicule est proposée : celle de l’ordinateur, ou la dernière inscrite sur ce téléphone si elle est plus haute. Vérifiez-la au tableau de bord et corrigez-la. Obligatoire.
+  Une lecture inférieure affiche « Inférieur au dernier relevé, 61 480 km. Vérifiez-le; pour le garder quand même, touchez de nouveau Partir. », pour repérer une faute de frappe avant le départ.
 - **Lieu de départ** : voir [Où vous êtes](#trip-where).
 - **Remorque ou charge** : **Normal** (par défaut), **Avec une remorque** ou **Charge lourde**. Le remorquage et les charges lourdes se mesurent à part dans la consommation du véhicule.
 - **Remorque** : avec une remorque, les remorques de votre ordinateur (biens du type remorque).
@@ -357,6 +358,7 @@ L’application utilise le service de localisation d’Android même (aucun serv
 - **Véhicule** : les véhicules de votre ordinateur.
 - **Carburant ou électricité** : pour un hybride rechargeable seulement.
 - **Odomètre (km)** : la dernière lecture est proposée ; nécessaire pour la consommation.
+  Une lecture inférieure à la dernière est signalée de la même façon; touchez de nouveau **Enregistrer** pour la garder.
 - **Litres** (ou **kWh** pour une recharge) : la quantité. Obligatoire, plus grande que zéro.
 - **Coût** : ce que vous avez payé, par exemple 68,55.
 - **Plein complet** (ou **Recharge complète**) : coché par défaut ; décochez-le pour un plein partiel. La consommation se mesure d’un plein à l’autre.

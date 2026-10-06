@@ -66,6 +66,7 @@ The same dialog adds a trip (**Add a trip**) or changes one (**Edit the trip**).
 - **From**: where you left from, such as "Home". Optional.
 - **To**: where you went, such as a client's address or a hospital. Required, unless **To the place** is chosen.
 - **Odometer at start** and **Odometer at arrival**: the readings, in whole kilometres. With both, the distance is their difference, shown beside them, and the trip is one way: "With both odometer readings, the distance is their difference, one way; the readings also count as the vehicle's odometer readings." The arrival must be higher than the start, by less than 10,000 km.
+  A new trip proposes the vehicle's latest reading at the start. A start below the vehicle's last reading on or before the trip's date shows "Lower than the vehicle's last reading, 61,480 km. Check it; to keep it anyway, choose Save again.": a typo is caught, and a reading you know is right is kept with a second **Save**.
 - **Kilometres one way**: shown without both odometer readings: the distance one way, such as 23.5 (a comma also works). Required, more than zero and under 10,000. It is kept to one decimal.
 - **Round trip**: shown without both odometer readings: on when you came back the same way; the trip then counts twice the distance. On by default.
 - **Person**: who made the trip, or **Household**. It decides which person's card the trip counts in and is suggested as the patient when adding it to medical expenses.
