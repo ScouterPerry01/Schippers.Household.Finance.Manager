@@ -95,7 +95,7 @@ class EstateService internal constructor(private val books: Books) {
             SummaryAccount(a, a.institutionId?.let(byId::get), a.ownerMemberIds.mapNotNull(members::get), s.balance, if (a.id in registered) books.plans.beneficiaries(a.id) else emptyList())
         }
         val policies = books.insurance.policies(includeInactive = false).map { p -> SummaryPolicy(p, p.insuredMemberId?.let(members::get), books.insurance.beneficiaries(p.id)) }
-        val kept = books.documents.search(DocumentQuery(limit = 1000)).filter { it.keepForever }
+        val kept = books.documents.kept()
         return EmergencySummary(records(), institutions, accounts, policies, books.plans.pensions(), kept)
     }
 }

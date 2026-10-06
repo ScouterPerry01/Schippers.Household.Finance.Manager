@@ -284,6 +284,10 @@ class DocumentService internal constructor(private val books: Books) {
         }.sortedWith(compareByDescending<VaultDocument> { it.date ?: dateOf(it.capturedAt) }.thenByDescending { it.capturedAt }).take(query.limit)
     }
 
+    /** EST-01: every document marked to keep forever, in every group this user can open, newest first. */
+    fun kept(): List<VaultDocument> = books.groups().flatMap { g -> toDocuments(g, books.ledger(g).ledgerQueries.keptDocuments().executeAsList()) }
+        .sortedWith(compareByDescending<VaultDocument> { it.date ?: dateOf(it.capturedAt) }.thenByDescending { it.capturedAt })
+
     /** Documents attached to a record, for example a transaction's receipt. */
     fun documentsFor(entity: String, entityId: String): List<VaultDocument> = books.groups().flatMap { g ->
         toDocuments(g, books.ledger(g).ledgerQueries.documentsFor(entity, entityId).executeAsList())

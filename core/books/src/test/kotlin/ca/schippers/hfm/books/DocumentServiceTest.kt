@@ -151,6 +151,7 @@ class DocumentServiceTest {
         assertEquals(listOf(old.id), books.documents.discardable(today).map { it.id }, "older than six years")
         books.documents.update(old.id, DocumentDetails("Épicerie", DocumentKind.RECEIPT, LocalDate(2019, 5, 4), "IGA", cad("42.16"), true, "Garantie"))
         assertTrue(books.documents.discardable(today).isEmpty(), "kept on purpose")
+        assertEquals(listOf(old.id), books.documents.kept().map { it.id }, "listed for the emergency summary (EST-01)")
         assertEquals("Épicerie", books.documents.get(old.id).label)
 
         books.documents.delete(old.id)

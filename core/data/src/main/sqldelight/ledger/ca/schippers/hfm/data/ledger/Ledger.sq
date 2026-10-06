@@ -676,6 +676,11 @@ WHERE (:text IS NULL OR recognized_text LIKE :text ESCAPE '!' OR title LIKE :tex
 ORDER BY coalesce(doc_date, date(captured_at / 1000, 'unixepoch')) DESC, captured_at DESC
 LIMIT :limit;
 
+-- EST-01: every document marked to keep, however many there are.
+keptDocuments:
+SELECT * FROM document WHERE keep_forever = 1
+ORDER BY coalesce(doc_date, date(captured_at / 1000, 'unixepoch')) DESC, captured_at DESC;
+
 -- OCR-10: earlier documents with the same merchant, date and amount.
 similarDocuments:
 SELECT * FROM document WHERE id != :id AND doc_date = :date AND amount_minor = :amount;
