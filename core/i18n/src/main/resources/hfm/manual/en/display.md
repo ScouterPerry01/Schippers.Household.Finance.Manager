@@ -2,6 +2,8 @@
 
 Display and accessibility sets how RANN's Roost looks on this computer: the colours and the size of the text. This chapter also covers the other ways to adjust the app to you: where the menu sits, which menu groups stay open, the language, and the keyboard. The screen is in the **Settings** group of the menu, under **Display and accessibility**.
 
+![The Display and accessibility screen](images/display.png)
+
 ## Settings for this computer {#per-computer}
 
 @index: preferences; personal settings; per computer
@@ -13,6 +15,8 @@ Display settings are kept on this computer, not in the household. A large deskto
 ### Colours {#colours}
 
 @index: theme; dark mode; light mode; colours; contrast
+
+![The Dashboard in dark colours](images/display-dark.png)
 
 - **Colours**: how the app is coloured.
   - As the system is (light or dark): follows the light or dark setting of Windows or Linux. This is the default.
@@ -61,6 +65,8 @@ Unlike the other settings on this screen, this one is kept in the household, for
 @index: navigation; menu position; side menu; top menu; menu bar
 
 The menu can sit in two places. Each user's choice is remembered on this computer.
+
+![The menu as a bar at the top](images/menu-top.png)
 
 - A list on the left (the default): the **Dashboard** at the top, then the groups Money, Investing and borrowing, Reports and taxes, Home and family, and Settings, each with its screens.
 - A bar at the top: the **Dashboard** and one button per group, each opening a drop-down list of its screens. The group of the screen shown is in bold.

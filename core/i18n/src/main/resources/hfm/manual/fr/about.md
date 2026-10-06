@@ -2,6 +2,8 @@
 
 L'écran À propos montre la version de RANN's Roost que vous avez, vérifie les mises à jour sur les copies qui le font, et rassemble le résumé de confidentialité, les avis, la licence, le soutien et les avis des logiciels de tiers. C'est le dernier élément du groupe **Réglages** du menu, sous **À propos**. Avant qu'un ménage soit ouvert, **À propos et confidentialité** à l'écran de départ montre le même contenu, avec **Retour** pour revenir.
 
+![L’écran À propos](images/about.png)
+
 ## Version {#version}
 
 @index: numéro de version; quelle version; parution

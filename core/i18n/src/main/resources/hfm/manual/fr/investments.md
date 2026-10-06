@@ -6,6 +6,8 @@ L’écran a trois parties : la liste des comptes à gauche, le compte ou la vue
 
 > Remarque : Les chiffres de cet écran sont une aide à l’organisation, et non des conseils fiscaux. Vos feuillets, vos relevés de courtage et l’ARC ou Revenu Québec ont le dernier mot.
 
+![L’écran Placements avec les titres d’un compte de courtage](images/investments.png)
+
 ## L’écran Placements {#investments-screen}
 
 @index: portefeuille; courtage; titres détenus; titres; actions; FNB; fonds commun de placement

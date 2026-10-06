@@ -6,6 +6,8 @@ A household often deals with several banks, several doctors or two pharmacies. E
 
 Contacts are linked to the records they concern: the accounts a bank holds, the policies an insurer covers, the medications a pharmacy fills, the appointments with a doctor, the contractor who did a job on the house, the estate papers an executor needs. A contact's page lists all of them; each record's own screen shows its contacts.
 
+![The Contacts screen: the list on the left, a contact's details on the right](images/contacts.png)
+
 ## What a contact holds {#about-contacts}
 
 @index: address book; directory; phone book; contact list; who to call

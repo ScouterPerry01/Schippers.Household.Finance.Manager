@@ -4,6 +4,8 @@ Bills keeps track of everything that comes back on a schedule: rent or mortgage,
 
 RANN's Roost does not pay bills for you. You pay through your bank as usual; the app records, reminds and forecasts.
 
+![The Bills screen, To pay tab](images/bills.png)
+
 ## What the Bills screen does {#overview}
 @index: bill payment; recurring payments; scheduled transactions; due dates; reminders
 
@@ -206,6 +208,8 @@ A red line "The paying account would go below zero." appears on a bill whose pay
 
 **Calendar** shows a month, weeks starting on Monday, with each day's due dates and amounts. Use **◀** and **▶** to change month. Today's date is in bold.
 
+![The Calendar tab: the month's bills by due date](images/bills-calendar.png)
+
 - Due dates still to pay are in normal text; overdue ones in red.
 - Paid due dates are greyed; skipped ones are paler still.
 - A day shows up to three bills, then "+n" for the others.
@@ -225,6 +229,8 @@ The yearly cost is the amount multiplied by the number of payments in a year: 12
 @index: cash flow; forecast; projected balance; will I have enough money
 
 **Cash flow forecast** projects the balance of each account from today, using the bills, income and transfers still to pay.
+
+![The Cash flow forecast tab for the next 30 days](images/bills-forecast.png)
 
 - **30 days**, **60 days**, **90 days**: how far ahead to look. Default: 30 days.
 

@@ -2,6 +2,8 @@
 
 Your household is stored encrypted on this computer and opens only with a user's password or recovery key. This chapter covers the **Security** screen (the auto-lock delay and the household's password rules), locking, passwords and the recovery key. The screen is in the **Settings** group of the menu, under **Security**.
 
+![The Security screen](images/security.png)
+
 ## How your household is protected {#protection}
 
 @index: encryption; encrypted; master password; data protection; security model

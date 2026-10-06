@@ -2,6 +2,8 @@
 
 Les institutions financières sont les banques, coopératives de crédit, caisses, courtiers et autres entreprises qui détiennent vos comptes : RBC, Desjardins, Tangerine, Wealthsimple. Les inscrire garde leurs coordonnées au même endroit et permet à l'application de se souvenir de la présentation des relevés de chacune. L'écran se trouve dans le groupe **Réglages** du menu, sous **Institutions financières**.
 
+![L’écran Institutions financières](images/institutions.png)
+
 ## À quoi servent les institutions {#about-institutions}
 
 @index: banque; institution financière; coopérative de crédit; caisse; courtier; succursale

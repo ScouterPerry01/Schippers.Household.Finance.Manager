@@ -6,6 +6,8 @@ Rien sur cet écran ne crée d’opérations dans vos comptes ni ne change vos s
 
 @index: argent entre personnes; reconnaissance de dette; qui doit quoi
 
+![L’écran Argent en famille, onglet Dépenses partagées](images/family.png)
+
 ## L’écran Argent en famille {#screen}
 
 L’écran présente une courte explication en haut et trois onglets :

@@ -2,6 +2,8 @@
 
 Affichage et accessibilité règle l'apparence de RANN's Roost sur cet ordinateur : les couleurs et la taille du texte. Ce chapitre couvre aussi les autres façons d'adapter l'application à vous : la place du menu, les groupes du menu qui restent ouverts, la langue et le clavier. L'écran se trouve dans le groupe **Réglages** du menu, sous **Affichage et accessibilité**.
 
+![L’écran Affichage et accessibilité](images/display.png)
+
 ## Des réglages pour cet ordinateur {#per-computer}
 
 @index: préférences; réglages personnels; par ordinateur
@@ -13,6 +15,8 @@ Les réglages d'affichage sont gardés sur cet ordinateur, pas dans le ménage. 
 ### Couleurs {#colours}
 
 @index: thème; mode sombre; mode clair; couleurs; contraste
+
+![Le tableau de bord en couleurs sombres](images/display-dark.png)
 
 - **Couleurs** : comment l'application est colorée.
   - Comme le système (clair ou sombre) : suit le réglage clair ou sombre de Windows ou de Linux. C'est la valeur par défaut.
@@ -61,6 +65,8 @@ Contrairement aux autres réglages de cet écran, celui-ci est conservé dans le
 @index: navigation; position du menu; menu latéral; menu du haut; barre de menu
 
 Le menu peut se placer à deux endroits. Le choix de chaque utilisateur est retenu sur cet ordinateur.
+
+![Le menu en barre en haut](images/menu-top.png)
 
 - Une liste à gauche (par défaut) : le **Tableau de bord** en haut, puis les groupes Argent, Placements et emprunts, Rapports et impôts, Maison et famille, et Réglages, chacun avec ses écrans.
 - Une barre en haut : le **Tableau de bord** et un bouton par groupe, qui ouvre chacun une liste déroulante de ses écrans. Le groupe de l'écran affiché est en gras.

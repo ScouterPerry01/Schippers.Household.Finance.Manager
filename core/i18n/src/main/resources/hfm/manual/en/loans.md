@@ -4,6 +4,8 @@ Loans and mortgages shows the terms of each loan and mortgage, its full payment 
 
 > Note: The schedule is worked out from the terms you enter, the way Canadian lenders do. Your lender's statement has the final word; when they differ, adjust the terms or the payment to match it.
 
+![The Loans and mortgages screen with a mortgage's schedule](images/loans.png)
+
 ## The Loans and mortgages screen {#loans-screen}
 
 @index: loan; mortgage; amortization; car loan; student loan; hypothèque

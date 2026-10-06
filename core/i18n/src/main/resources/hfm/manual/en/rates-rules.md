@@ -2,6 +2,8 @@
 
 Rates and rules lists every rate, limit, threshold and lead time the app applies in its calculations: registered plan limits, sales taxes, income tax brackets, medical and investment figures, reminder lead times, security settings, bank holidays and more. Each value has the date it takes effect and, when it differs across Canada, the province or territory it is for. The screen is in the **Settings** group of the menu, under **Rates and rules**, just after **Rates and prices**.
 
+![The Rates and rules screen](images/rates-rules.png)
+
 ## What this screen is for {#purpose}
 
 @index: tax rates; limits; thresholds; lead times; official figures; government rates; TFSA limit; sales tax rate; GST; HST; PST; QST; tax brackets; rates and rules

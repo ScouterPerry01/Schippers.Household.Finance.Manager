@@ -38,6 +38,8 @@ Look at the **Cash flow forecast** tab once in a while: it warns you when a paym
 ## Set up budgets {#set-up-budgets}
 @index: first budget
 
+![The Budgets screen](images/budgets.png)
+
 1. Open **Budgets** in the Money group of the menu.
 2. If you have several months of transactions, click **Suggest from last 12 months**, untick the categories you do not want to budget, and click **Create budgets**.
 3. Otherwise, click **Add a budget**, pick a category such as Groceries, click **Continue**, enter the monthly amount and click **Save**.

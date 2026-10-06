@@ -2,6 +2,8 @@
 
 AI reading lets Claude, Anthropic's AI, read documents that are hard to read on this computer, such as a crumpled receipt, a long credit card statement or a pay stub, with your own Anthropic account and key. It is off until you turn it on. The screen is in the **Settings** group of the menu, under **AI reading**.
 
+![The AI reading screen](images/ai.png)
+
 ## How AI reading works {#how-it-works}
 
 @index: artificial intelligence; Claude; Anthropic; cloud reading; OCR; read with AI; API key

@@ -4,6 +4,8 @@ The **Health** screen is an organizer for your family's health information: medi
 
 > Important: The screen says it plainly: it is an organizer for your family's health information and does not give medical advice. Follow what your doctor, pharmacist or veterinarian tells you.
 
+![The Health screen, Medications tab](images/health.png)
+
 ## The Health screen at a glance {#overview}
 @index: health records; medical records; dossier
 
@@ -114,6 +116,8 @@ When **Refills remaining** reaches 0, the list shows "Prescription needs renewal
 @index: doctor's appointment; vet appointment; dentist
 
 The **Appointments** tab lists the calendar appointments of the person or pet chosen, from one year ago to one year ahead, of the kind **Medical** (or **Pets** for a pet). They are the same appointments as on the [Calendar](calendar): adding, changing or deleting one here changes the calendar too. When there is none, the tab says "No medical appointments in the past or next year."
+
+![The Appointments tab](images/health-appointments.png)
 
 **Add an appointment** opens the calendar's appointment form, with today's date, the kind **Medical** (or **Pets** for a pet) and the person or pet already filled in. Its fields, such as **What**, **Date**, **Time**, **Where**, **Who**, **Provider**, **Remind me** and the repeat, are described in the [Calendar](calendar) chapter. The **Provider** list offers the providers of the **Providers** tab.
 

@@ -4,6 +4,8 @@ The **Emergency and estate** screen gathers what a spouse or an executor would n
 
 > Important: The app does not give legal advice. It records where your papers are; it does not replace a will, a power of attorney or a protection mandate. For those, see a notary or a lawyer.
 
+![The Emergency and estate screen, Emergency summary tab](images/estate.png)
+
 ## The screen at a glance {#overview}
 @index: estate planning; executor; liquidator; in case of death; emergency binder
 

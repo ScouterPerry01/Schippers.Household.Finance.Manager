@@ -30,6 +30,8 @@ Sur une copie Linux installée à partir d'un paquet .deb ou .rpm ou d'une AppIm
 
 @index: créer un ménage; nouveau ménage
 
+![Le formulaire Créer un ménage](images/create-household.png)
+
 1. Cliquez sur **Créer un nouveau ménage**.
 2. Cliquez sur **Choisir un dossier…** et choisissez où le ménage sera rangé, par exemple votre dossier Documents. L'application y crée un dossier au nom du ménage.
 3. Remplissez le formulaire :
@@ -74,6 +76,8 @@ Les personnes permettent aux comptes, aux dépenses, aux dossiers de santé et a
 ## Étape 6 : Ajouter vos comptes {#accounts}
 
 @index: ajouter un compte; solde d'ouverture
+
+![Le formulaire Ajouter un compte](images/accounts-add.png)
 
 1. Cliquez sur **Ajouter un compte** dans le guide. La fenêtre **Ajouter un compte** s'ouvre.
 2. Entrez le **Nom du compte** (comme Compte chèques conjoint), choisissez le **Type** (Compte chèques, Compte d'épargne, Carte de crédit, Prêt hypothécaire, REER, CELI, etc.) et laissez **Devise (p. ex. CAD, USD, BTC)** à CAD, sauf si le compte est dans une autre monnaie.

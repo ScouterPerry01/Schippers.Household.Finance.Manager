@@ -2,6 +2,8 @@
 
 Categories sort money in and money out: Groceries, Electricity, Salary and wages. Every transaction, or each split of a transaction, can have a category, and budgets, reports and the tax package add amounts up by category. The screen is in the **Settings** group of the menu, under **Categories**.
 
+![The Categories screen](images/categories.png)
+
 ## How categories work {#about-categories}
 
 @index: category tree; subcategory; expense category; income category; classification

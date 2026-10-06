@@ -2,6 +2,8 @@
 
 Le Calendrier réunit vos rendez-vous et toutes les dates que le reste de l’application connaît déjà : les factures à payer, les médicaments à renouveler, les vaccins, les renouvellements et l’entretien. Un seul coup d’œil montre ce que réservent les prochaines semaines. Calendrier se trouve dans le groupe Argent du menu.
 
+![L’écran Calendrier, onglet Agenda](images/calendar.png)
+
 ## Ce que montre le calendrier {#overview}
 @index: agenda; horaire; rendez-vous; échéances; ce qui s’en vient
 
@@ -72,6 +74,8 @@ Les boutons de la ligne d’un rendez-vous n’agissent que sur cette date. Pour
 ## L’onglet Mois {#month-tab}
 
 **Mois** montre un mois entier sous forme de grille, les semaines commençant le lundi. La date du jour est en gras.
+
+![L’onglet Mois](images/calendar-month.png)
 
 - **◀** et **▶** : mois précédent et mois suivant.
 - **Aujourd’hui** : revient au mois courant.

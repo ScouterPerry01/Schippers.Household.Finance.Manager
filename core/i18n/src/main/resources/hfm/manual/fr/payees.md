@@ -2,6 +2,8 @@
 
 Les bénéficiaires sont les personnes et les entreprises à qui l'argent va ou de qui il vient : l'épicerie, Hydro-Québec, votre employeur, le propriétaire du logement. Une liste de bénéficiaires bien tenue rend les opérations faciles à lire, à chercher et à analyser, et permet à l'application de suggérer la bonne catégorie. L'écran se trouve dans le groupe **Réglages** du menu, sous **Bénéficiaires**.
 
+![L’écran Bénéficiaires](images/payees.png)
+
 ## Comment fonctionnent les bénéficiaires {#about-payees}
 
 @index: marchand; commerçant; magasin; fournisseur; payeur

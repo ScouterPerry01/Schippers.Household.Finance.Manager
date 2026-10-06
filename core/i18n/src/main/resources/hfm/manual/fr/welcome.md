@@ -55,6 +55,8 @@ Inutile de lire le manuel du début à la fin. Le Démarrage rapide et les chapi
 
 Le manuel s'ouvre dans sa propre fenêtre, à côté de l'application. Vous pouvez la garder ouverte pendant que vous travaillez et passer de l'une à l'autre.
 
+![La fenêtre du manuel : la table des matières à gauche, un chapitre et sa première image à droite](images/manual-window.png)
+
 ### Ouvrir le manuel {#opening}
 
 @index: Maj+F1; bouton Manuel; ouvrir le manuel
@@ -131,6 +133,8 @@ L'application offre deux sortes d'aide :
 @index: Chercher dans le guide; sujets d'aide
 
 Appuyez sur F1, ou cliquez sur **Aide (F1)** dans la barre du haut, pour ouvrir le panneau d'aide. Il présente le sujet de l'écran où vous êtes et, à gauche, la liste de tous les autres sujets : d'abord les sujets généraux (premiers pas, confidentialité, envoi à partir du téléphone, raccourcis clavier), puis un sujet par écran, dans l'ordre du menu.
+
+![Le panneau d’aide, ouvert sur l’écran Factures](images/help.png)
 
 - **Chercher dans le guide** : tapez des mots pour ne lister que les sujets qui les contiennent, chacun avec la ligne qui correspond. Si rien n'est trouvé, le panneau le dit ; essayez d'autres mots.
 - **Fermer** : ferme le panneau. Échap ou F1 le ferment aussi.

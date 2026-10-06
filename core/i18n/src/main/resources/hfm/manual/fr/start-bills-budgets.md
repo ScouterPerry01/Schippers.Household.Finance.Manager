@@ -38,6 +38,8 @@ Jetez un œil de temps en temps à l’onglet **Prévision de trésorerie** : il
 ## Mettre en place les budgets {#set-up-budgets}
 @index: premier budget
 
+![L’écran Budgets](images/budgets.png)
+
 1. Ouvrez **Budgets** dans le groupe Argent du menu.
 2. Si vous avez plusieurs mois d’opérations, cliquez sur **Suggérer d’après les 12 derniers mois**, décochez les catégories que vous ne voulez pas budgéter et cliquez sur **Créer les budgets**.
 3. Sinon, cliquez sur **Ajouter un budget**, choisissez une catégorie comme Épicerie, cliquez sur **Continuer**, entrez le montant mensuel et cliquez sur **Enregistrer**.

@@ -6,6 +6,8 @@ L’application ne prépare pas et ne produit pas de déclaration. Elle rassembl
 
 > Important : Ces montants aident à préparer une déclaration ; ce ne sont pas des conseils fiscaux. Les feuillets et reçus font foi : vérifiez chaque montant, et consultez un fiscaliste en cas de doute.
 
+![L’écran Impôts, onglet Feuillets](images/taxes.png)
+
 ## L’écran Impôts {#taxes-screen}
 
 @index: impôt; impôt sur le revenu; déclaration de revenus; période des impôts
@@ -181,6 +183,8 @@ Les paiements comptent d’abord pour les acomptes les plus anciens. Les sommes 
 
 L’onglet **Trousse de fin d’année** présente les montants de chaque personne pour la déclaration, tirés des livres, avec la ligne fédérale de chacun. Choisissez l’**Année d’imposition** et la **Personne** ; le ménage (les montants qui ne sont à personne en particulier) vient en dernier.
 
+![L’onglet Trousse de fin d’année](images/taxes-year-end.png)
+
 Chaque ligne affiche l’élément, sa provenance (un payeur, un compte, une période), la ligne ou le formulaire, et le montant. Les lignes de même provenance sont additionnées. Les montants dans d’autres devises sont convertis en dollars canadiens à la date de chaque opération. Les opérations propres aux régimes enregistrés sont exclues.
 
 « Rien pour cette année encore » signifie qu’aucune paie, déduction, aucun crédit ni feuillet n’a été inscrit pour l’année.
@@ -228,6 +232,8 @@ Les boutons **CSV**, **Excel** et **PDF** à côté de **Dossier pour le comptab
 @index: estimation de l’impôt sur le revenu; estimation d’impôt; remboursement; solde dû; combien d’impôt; calculatrice d’impôt; taux marginal; taux moyen
 
 L’onglet **Estimation** calcule à peu près l’impôt sur le revenu qu’une personne paiera pour une année, à partir des montants de la trousse de fin d’année et des taux de sa province ou de son territoire, et le compare à l’impôt déjà retenu sur la paie et payé par acomptes. Il montre le résultat, chaque étape du calcul et l’origine de chaque montant. Vous pouvez changer n’importe quel montant pour en voir l’effet, par exemple pour essayer une cotisation REER avant la date limite.
+
+![L’onglet Estimation](images/taxes-estimate.png)
 
 > Important : Il s’agit d’une estimation, pas d’une déclaration ni d’un conseil fiscal. Elle applique les principales règles aux montants affichés et en laisse certaines de côté (voir [Ce que l’estimation laisse de côté](taxes#estimate-left-out)). Votre déclaration, votre logiciel d’impôt ou votre comptable, et votre avis de cotisation ont le dernier mot.
 

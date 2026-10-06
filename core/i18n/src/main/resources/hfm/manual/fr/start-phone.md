@@ -27,6 +27,8 @@ Si le téléphone ne peut pas joindre l’ordinateur, vérifiez que les deux son
 
 ## 3. Capturer un reçu {#capture}
 
+![L’onglet Capturer](images/phone-capture.png)
+
 1. Dans l’onglet **Capturer**, touchez **Reçu**.
 2. Tenez le reçu à plat ; le numériseur en trouve les bords. Ajoutez des pages pour un long reçu, puis terminez.
 3. Le téléphone lit le reçu et remplit le commerce, la date et le montant. Corrigez-les au besoin et choisissez, si vous le voulez, le compte avec lequel vous avez payé, la catégorie, pour qui c’était et une note. Tout est facultatif.
@@ -53,7 +55,11 @@ Les lectures d’odomètre sautent cette étape : elles vont directement aux lec
 
 L’onglet **Résumé** du téléphone affiche les soldes de vos comptes, les factures à payer, les budgets du mois et l’entretien à faire, au dernier transfert. Voir [L’onglet Résumé](phone-app#summary-tab).
 
+![L’onglet Résumé](images/phone-summary.png)
+
 ## 7. Trouver un contact {#contacts}
+
+![L’onglet Contacts](images/phone-contacts.png)
 
 1. Sur le téléphone, ouvrez l’onglet **Contacts** : les contacts du ménage venus de votre ordinateur, sans les numéros de compte.
 2. Tapez une partie d’un nom, ou « pharmacie », dans **Chercher un contact**, ou choisissez un **Type**.

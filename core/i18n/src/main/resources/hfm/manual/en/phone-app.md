@@ -115,6 +115,8 @@ The phone is paired to the user signed in on the computer at that moment. Pairin
 
 At the top, a card shows the pairing: **Paired with** your household and **Last transfer** with its date and time (or **Nothing sent yet**), or **Not paired yet** with a **Pair with a computer** button. You can capture before pairing: everything waits on the phone.
 
+![The Capture tab on a paired phone](images/phone-capture.png)
+
 The buttons:
 
 - **Receipt**: scan a receipt.
@@ -190,6 +192,8 @@ A recorded voice note is sent with the capture and kept with its document on the
 
 **Quick expense** opens the same form with no pages and today's date. Use it for a cash purchase or anything without a receipt. On the computer it becomes a short text document with the store, date, amount and note, waiting on the **To review** tab of Documents like the others.
 
+![A quick expense, ready to save](images/phone-quick-expense.png)
+
 ## Odometer or hours {#odometer-form}
 
 @index: odometer; mileage; meter reading; hours of use; kilometres
@@ -209,6 +213,8 @@ On the computer, the reading is added straight to the vehicle on the Vehicles sc
 @index: queue; outbox; send; transfer status
 
 The Sent tab lists what you captured, newest first, and how far it got.
+
+![The Sent tab: a meter reading and a quick expense, both on the computer](images/phone-sent.png)
 
 ### Send now {#send-now}
 
@@ -257,6 +263,8 @@ Items are sent in small batches, oldest first. A capture already left in the fol
 
 The Summary shows figures from your computer, as of the last transfer: the household's name, then **From your computer** and the date and time of that transfer. Before the first transfer it asks you to pair.
 
+![The Summary tab: balances and bills due, from the computer](images/phone-summary.png)
+
 - **Accounts**: each account and its balance.
 - **Bills due**: the bills due in the next 60 days that are not yet paid, up to 15, with the due date and the amount, or **about** an amount when it is estimated.
 - **Maintenance this month**: shown when something is due: each task, such as "Civic: Oil change", with **due now**, **due soon** or its date.
@@ -270,6 +278,8 @@ The figures do not change until the next transfer. Tap **Send now** on the Sent 
 
 The Contacts tab shows the household's contacts from your computer: the banks, advisors, doctors, pharmacies, contractors and others you keep on the Contacts screen there. The phone receives the contacts you can see on the computer, not those kept in someone else's private group, and not archived contacts. Account and client numbers never come to the phone. The contacts are read-only here: change them on the computer, and the phone has the change after the next transfer (tap **Send now** on the Sent tab to fetch it).
 
+![The Contacts tab](images/phone-contacts.png)
+
 Before the first transfer, the tab says **Pair with your computer to see the household's contacts here.** You can still add a new contact; it waits on the phone.
 
 ### The list {#contacts-list}
@@ -281,6 +291,8 @@ Before the first transfer, the tab says **Pair with your computer to see the hou
 Each line shows the contact's name, its what-for line in colour, and its kinds; a person whose organization is not in the list also shows that organization. People who work at an organization are listed just under it, indented. Tap a line to open the contact's page. When nothing matches, the tab says **No contact matches.**
 
 ### A contact's page {#contact-page}
+
+![A contact's page on the phone](images/phone-contact.png)
 
 - **Back to the list**: returns to the list (Android's back gesture does the same).
 - The name, then **For:** and the what-for line, and the contact's kinds.

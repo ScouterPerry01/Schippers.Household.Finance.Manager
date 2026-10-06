@@ -19,6 +19,8 @@ See [Getting documents in](documents#adding-documents).
 
 ## Check what was read {#check}
 
+![Documents waiting for review](images/documents.png)
+
 1. On **To review**, click **Review** on a document. The document is on the left, what was read on the right.
 2. Check **Store or biller**, **Kind**, **Date** and **Total** against the picture. Fields marked "Check this: it was hard to read" deserve a close look.
 3. Correct what is wrong. The app remembers your corrections for the next documents from the same store.

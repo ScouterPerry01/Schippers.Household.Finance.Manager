@@ -2,6 +2,8 @@
 
 The About screen shows which version of RANN's Roost you have, checks for updates on the copies that do, and gathers the privacy summary, the notices, the licence, support and the third-party software notices. It is the last item of the **Settings** group of the menu, under **About**. Before any household is open, the start screen's **About and privacy** shows the same content, with **Back** to return.
 
+![The About screen](images/about.png)
+
 ## Version {#version}
 
 @index: version number; which version; release

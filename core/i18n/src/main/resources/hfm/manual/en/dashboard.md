@@ -4,6 +4,8 @@ The Dashboard is the first screen you see after you open the household. In one p
 
 Nothing on the Dashboard is typed in. Every number comes from the rest of the books: accounts, bills, budgets, statements, backups and exchange rates. It is worked out again each time something changes, so it is always current. Almost everything on it can be clicked to open the screen behind it.
 
+![The Dashboard of the sample household](images/dashboard.png)
+
 ## What the Dashboard shows {#overview}
 
 @index: home screen; summary; overview

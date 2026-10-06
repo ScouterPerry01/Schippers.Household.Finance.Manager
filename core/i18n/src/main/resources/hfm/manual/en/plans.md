@@ -6,6 +6,8 @@ What the plans hold (their securities, prices and gains) is on the [Investments]
 
 > Important: Contribution room, penalties and minimum withdrawals are worked out from the figures entered here; they are an organizational aid, not tax advice. Your notice of assessment and your plan's issuer have the final word.
 
+![The Registered plans screen, Contribution room tab](images/plans.png)
+
 ## The Registered plans screen {#plans-screen}
 
 @index: RRSP; TFSA; FHSA; RRIF; LIF; LIRA; RESP; registered plan; REER; CELI

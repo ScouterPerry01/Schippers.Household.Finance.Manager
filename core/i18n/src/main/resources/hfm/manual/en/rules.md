@@ -2,6 +2,8 @@
 
 Category rules give imported transactions their category automatically. A rule says: when the description of an imported line contains this text (and, optionally, the amount is in this range), use this category. The screen is in the **Settings** group of the menu, under **Category rules**.
 
+![The Category rules screen](images/rules.png)
+
 ## How rules are applied {#how-rules-apply}
 
 @index: automatic categorization; auto-categorize; import rules; categorize imports; matching

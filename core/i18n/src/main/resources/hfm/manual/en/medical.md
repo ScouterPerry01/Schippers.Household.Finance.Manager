@@ -4,6 +4,8 @@ The **Medical claims** screen follows each medical or dental expense from the re
 
 > Important: The app does not give medical or tax advice. Amounts it expects a plan to pay are estimates from what you entered from your benefit booklet; the plan decides. Check the CRA's or Revenu Québec's rules before claiming the tax credit.
 
+![The Medical claims screen, Expenses and claims tab](images/medical.png)
+
 ## The screen at a glance {#overview}
 @index: health insurance; dental insurance; group insurance; benefits; claims
 
@@ -218,6 +220,8 @@ Once the plan is saved, **Benefit booklets** lets you attach the plan's booklet 
 @index: remaining coverage; maximum left; eligible again
 
 "What is left of each plan's yearly maximums this plan year, and when a limited service is covered again."
+
+![The Coverage left tab](images/medical-coverage.png)
 
 For each household member covered by an active plan, the tab lists every plan and kind of care:
 

@@ -115,6 +115,8 @@ Le téléphone est jumelé à l’utilisateur connecté sur l’ordinateur à ce
 
 En haut, une carte montre le jumelage : **Jumelé à** votre ménage et **Dernier transfert** avec sa date et son heure (ou **Rien d’envoyé pour l’instant**), ou **Pas encore jumelé** avec un bouton **Jumeler à un ordinateur**. Vous pouvez capturer avant de jumeler : tout attend sur le téléphone.
 
+![L’onglet Capturer sur un téléphone jumelé](images/phone-capture.png)
+
 Les boutons :
 
 - **Reçu** : numériser un reçu.
@@ -190,6 +192,8 @@ Une note vocale enregistrée est envoyée avec la capture et gardée avec son do
 
 **Dépense rapide** ouvre le même formulaire, sans page et avec la date du jour. Utilisez-la pour un achat comptant ou tout ce qui n’a pas de reçu. Sur l’ordinateur, elle devient un court document texte avec le commerce, la date, le montant et la note, qui attend dans l’onglet **À vérifier** de Documents comme les autres.
 
+![Une dépense rapide, prête à enregistrer](images/phone-quick-expense.png)
+
 ## Odomètre ou heures {#odometer-form}
 
 @index: odomètre; kilométrage; relevé de compteur; heures d’utilisation; kilomètres
@@ -209,6 +213,8 @@ Sur l’ordinateur, la lecture est ajoutée directement au véhicule dans l’é
 @index: file d’attente; boîte d’envoi; envoyer; état du transfert
 
 L’onglet Envois liste ce que vous avez capturé, du plus récent au plus ancien, et où chaque élément en est.
+
+![L’onglet Envois : un relevé de compteur et une dépense rapide, tous deux sur l’ordinateur](images/phone-sent.png)
 
 ### Envoyer maintenant {#send-now}
 
@@ -257,6 +263,8 @@ Les éléments sont envoyés par petits lots, les plus anciens d’abord. Une ca
 
 Le Résumé affiche les chiffres de votre ordinateur au dernier transfert : le nom du ménage, puis **De votre ordinateur** et la date et l’heure de ce transfert. Avant le premier transfert, il vous invite à jumeler.
 
+![L’onglet Résumé : soldes et factures à payer, venus de l’ordinateur](images/phone-summary.png)
+
 - **Comptes** : chaque compte et son solde.
 - **Factures à payer** : les factures dues dans les 60 prochains jours et pas encore payées, jusqu’à 15, avec la date d’échéance et le montant, ou **environ** un montant quand il est estimé.
 - **Entretien du mois** : affiché quand quelque chose est prévu : chaque tâche, comme « Civic : Vidange d’huile », avec **à faire**, **bientôt** ou sa date.
@@ -270,6 +278,8 @@ Les chiffres ne changent pas avant le prochain transfert. Touchez **Envoyer main
 
 L’onglet Contacts affiche les contacts du ménage venus de votre ordinateur : les banques, conseillers, médecins, pharmacies, entrepreneurs et autres que vous gardez à l’écran Contacts. Le téléphone reçoit les contacts que vous pouvez voir sur l’ordinateur, pas ceux gardés dans le groupe privé de quelqu’un d’autre, ni les contacts archivés. Les numéros de compte et de client ne viennent jamais sur le téléphone. Les contacts y sont en lecture seule : modifiez-les sur l’ordinateur, et le téléphone a la modification après le prochain transfert (touchez **Envoyer maintenant** dans l’onglet Envois pour l’obtenir).
 
+![L’onglet Contacts](images/phone-contacts.png)
+
 Avant le premier transfert, l’onglet indique **Jumelez avec votre ordinateur pour voir ici les contacts du ménage.** Vous pouvez quand même ajouter un nouveau contact ; il attend sur le téléphone.
 
 ### La liste {#contacts-list}
@@ -281,6 +291,8 @@ Avant le premier transfert, l’onglet indique **Jumelez avec votre ordinateur p
 Chaque ligne affiche le nom du contact, son « pour quoi » en couleur et ses types ; une personne dont l’organisation n’est pas dans la liste affiche aussi cette organisation. Les personnes qui travaillent dans une organisation sont listées juste sous elle, en retrait. Touchez une ligne pour ouvrir la page du contact. Quand rien ne correspond, l’onglet indique **Aucun contact ne correspond.**
 
 ### La page d’un contact {#contact-page}
+
+![La fiche d’un contact sur le téléphone](images/phone-contact.png)
 
 - **Retour à la liste** : revient à la liste (le geste de retour d’Android fait de même).
 - Le nom, puis **Pour :** et le « pour quoi », et les types du contact.

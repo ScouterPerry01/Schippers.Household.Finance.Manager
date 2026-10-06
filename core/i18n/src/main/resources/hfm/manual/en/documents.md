@@ -2,6 +2,8 @@
 
 The Documents screen is your household's filing cabinet. It keeps receipts, bills, invoices, statements, pay stubs and other papers in an encrypted vault, reads them on this computer, and helps you file each one with the transaction or bill it belongs to. Documents is in the Money group of the menu.
 
+![The Documents screen, To review tab](images/documents.png)
+
 ## What the Documents screen does {#overview}
 @index: vault; document vault; receipts; scanning; paperless; filing cabinet
 
@@ -135,6 +137,8 @@ Each line shows:
 @index: search documents; find a receipt
 
 **All documents** finds any document in the vault, filed or not, newest first (by the document's date). Fill in any of the search fields; the list updates as you type.
+
+![The All documents tab with its search fields](images/documents-all.png)
 
 - **Search the text**: words to find in the document's text, store, title, notes or file name. Leave empty to list all.
 - **From**: the earliest document date, as YYYY-MM-DD. Leave empty for no limit.

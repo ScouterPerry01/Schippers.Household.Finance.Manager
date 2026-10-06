@@ -2,6 +2,8 @@
 
 Taux et règles liste chaque taux, plafond, seuil et délai que l'application applique dans ses calculs : plafonds des régimes enregistrés, taxes de vente, paliers d'impôt sur le revenu, chiffres médicaux et de placement, délais des rappels, réglages de sécurité, jours fériés et plus encore. Chaque valeur a sa date d'entrée en vigueur et, quand elle varie au Canada, la province ou le territoire auquel elle s'applique. L'écran se trouve dans le groupe **Réglages** du menu, sous **Taux et règles**, juste après **Taux et cours**.
 
+![L’écran Taux et règles](images/rates-rules.png)
+
 ## À quoi sert cet écran {#purpose}
 
 @index: taux d'imposition; plafonds; seuils; délais; chiffres officiels; taux gouvernementaux; plafond du CELI; taux de taxe de vente; TPS; TVH; TVP; TVQ; paliers d'imposition; taux et règles

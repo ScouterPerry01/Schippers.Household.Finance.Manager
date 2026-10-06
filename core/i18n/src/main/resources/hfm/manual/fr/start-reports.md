@@ -16,6 +16,8 @@ Les rapports ne valent que ce que valent les livres. Avant de vous y fier :
 
 ## Produire un premier rapport {#first-report}
 
+![Le rapport Revenus et dépenses](images/reports.png)
+
 1. Ouvrez **Rapports** dans le groupe **Rapports et impôts** du menu.
 2. Cliquez sur **Revenus et dépenses** dans la liste de gauche.
 3. Dans **Période**, choisissez **Cette année** (par défaut) ou **12 derniers mois**.

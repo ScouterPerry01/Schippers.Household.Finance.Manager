@@ -2,6 +2,8 @@
 
 Institutions are the banks, credit unions, caisses, brokerages and other companies that hold your accounts: RBC, Desjardins, Tangerine, Wealthsimple. Recording them keeps their contact details in one place and lets the app remember how each one's statements are laid out. The screen is in the **Settings** group of the menu, under **Institutions**.
 
+![The Institutions screen](images/institutions.png)
+
 ## What institutions are for {#about-institutions}
 
 @index: bank; financial institution; credit union; caisse; brokerage; branch

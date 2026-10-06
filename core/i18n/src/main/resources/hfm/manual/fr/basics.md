@@ -20,6 +20,8 @@ L'écran Bienvenue est le premier que vous voyez. Il présente le nom de l'appli
 - **À propos et confidentialité** : présente la page [À propos](about) (version, mises à jour, confidentialité, licence, soutien) avant qu'un ménage soit ouvert. **Retour** ramène à Bienvenue.
 - **Ménages récents** : les cinq derniers ménages ouverts sur cet ordinateur, du plus récent au plus ancien. Cliquez sur l'un d'eux pour aller directement à son écran de déverrouillage. Un ménage dont le dossier a été déplacé, renommé ou supprimé n'y paraît plus ; utilisez **Ouvrir un ménage existant** pour le retrouver.
 
+![L’écran d’accueil](images/welcome-screen.png)
+
 ### Restaurer une sauvegarde {#restore}
 
 @index: restaurer; fichier de sauvegarde; hfmbak; nouvel ordinateur
@@ -37,6 +39,8 @@ Si la sauvegarde ne peut pas être restaurée, un message sous le bouton en donn
 @index: créer un ménage; nouveau ménage; dossier du ménage; administrateur
 
 Cet écran crée un nouveau ménage vide. La province, votre nom et votre mot de passe peuvent être changés plus tard ; le dossier, le nom du ménage et le nom d'utilisateur ne le peuvent pas.
+
+![Le formulaire Créer un ménage](images/create-household.png)
 
 - **Choisir un dossier…** : obligatoire. Ouvre un sélecteur de dossier pour l'Emplacement : le dossier où le ménage sera gardé, comme Documents. Le chemin choisi s'affiche à côté du bouton. L'application crée dedans un nouveau dossier au nom du ménage, terminé par .hfm (Famille Tremblay.hfm). Ce dossier ne doit pas déjà exister avec des fichiers ; sinon, choisissez un autre emplacement ou un autre nom.
 - **Nom du ménage** : obligatoire. Le nom du ménage, utilisé pour le nom du dossier et présenté aux téléphones que vous jumelez. Évitez les caractères que votre système refuse dans les noms de dossier, comme / ou :.
@@ -111,6 +115,8 @@ La question est posée une fois par ordinateur ; changez la réponse plus tard a
 @index: fenêtre principale; disposition
 
 Une fois un ménage ouvert, la fenêtre présente, de haut en bas : la barre du haut, les bandeaux s'il y en a, et en dessous le menu (à gauche ou en haut) à côté de l'écran choisi.
+
+![La fenêtre principale : la barre du haut, la bannière des rappels, le menu à gauche et l’écran](images/dashboard.png)
 
 ### La barre du haut {#top-bar}
 
@@ -190,6 +196,8 @@ Les résultats s'ouvrent dans une fenêtre intitulée Recherche : suivi de ce qu
 - Comptes : cliquez sur un compte pour l'ouvrir.
 - Bénéficiaires, Catégories, Factures et Institutions : cliquez sur un résultat pour ouvrir cet écran.
 - Documents : cliquez sur un document pour ouvrir l'écran Documents sur lui.
+
+![La fenêtre des résultats de recherche](images/search.png)
 
 Quand rien ne correspond, la fenêtre affiche « Aucun résultat. ». **Fermer** ferme la fenêtre sans aller nulle part.
 

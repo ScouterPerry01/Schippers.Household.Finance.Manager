@@ -27,6 +27,8 @@ If the phone cannot reach the computer, check that both are on the same Wi-Fi an
 
 ## 3. Capture a receipt {#capture}
 
+![The Capture tab](images/phone-capture.png)
+
 1. On the **Capture** tab, tap **Receipt**.
 2. Hold the receipt flat; the scanner finds its edges. Add more pages for a long receipt, then finish.
 3. The phone reads the receipt and fills in the store, date and amount. Correct them if needed, and choose the account it was paid with, its category, who it was for and a note if you like. Everything is optional.
@@ -53,7 +55,11 @@ Odometer readings skip this step: they go straight to the vehicle's readings.
 
 The phone's **Summary** tab shows your accounts' balances, bills due, budgets this month and maintenance due, as of the last transfer. See [The Summary tab](phone-app#summary-tab).
 
+![The Summary tab](images/phone-summary.png)
+
 ## 7. Look up a contact {#contacts}
+
+![The Contacts tab](images/phone-contacts.png)
 
 1. On the phone, open the **Contacts** tab: the household's contacts from your computer, without account numbers.
 2. Type part of a name, or "pharmacy", in **Search contacts**, or choose a **Kind**.

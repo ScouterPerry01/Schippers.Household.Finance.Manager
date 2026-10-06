@@ -2,6 +2,8 @@
 
 Users are the people who sign in to the household, each with their own login name and password. This screen decides who can sign in, what each person can open, and shows who did what. It is in the **Settings** group of the menu, under **Users**.
 
+![The Users screen, Users tab](images/users.png)
+
 ## Users, roles and account groups {#concepts}
 
 @index: user account; sign-in; login; role; permission; access rights; account group; private group; shared group
@@ -48,6 +50,8 @@ Each user has a card with:
 @index: permissions; no access; view; capture only; edit; grant access; share an account group
 
 The Access tab is a table. Each row is an account group you can see, with "private" or "shared" under its name. Each column is a user who can sign in.
+
+![The Access tab](images/users-access.png)
 
 In each cell, a level:
 

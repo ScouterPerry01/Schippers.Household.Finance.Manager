@@ -6,6 +6,8 @@ Pour le côté téléphone, voir [RANN’s Roost Mobile](phone-app). Pour un par
 
 @index: Android; application mobile; application compagnon; synchronisation; synchroniser; jumelage; code QR
 
+![L’écran Téléphones avant le jumelage d’un téléphone](images/phones.png)
+
 ## Comment les téléphones et cet ordinateur travaillent ensemble {#how-it-works}
 
 - L’ordinateur garde l’exemplaire de référence. Le téléphone ne garde que ses captures et nouveaux contacts en attente d’envoi, et un résumé et les contacts venus de l’ordinateur.

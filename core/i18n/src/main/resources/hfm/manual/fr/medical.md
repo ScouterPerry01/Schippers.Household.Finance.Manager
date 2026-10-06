@@ -4,6 +4,8 @@ L’écran **Réclamations médicales** suit chaque dépense médicale ou dentai
 
 > Important : L’application ne donne pas de conseils médicaux ni fiscaux. Les montants qu’elle s’attend à recevoir d’un régime sont des estimations tirées de ce que vous avez entré d’après votre brochure ; c’est le régime qui décide. Vérifiez les règles de l’ARC ou de Revenu Québec avant de demander le crédit d’impôt.
 
+![L’écran Réclamations médicales, onglet Dépenses et réclamations](images/medical.png)
+
 ## L’écran en bref {#overview}
 @index: assurance santé; assurance dentaire; assurance collective; avantages sociaux; réclamations
 
@@ -218,6 +220,8 @@ Une fois le régime enregistré, **Brochures du régime** permet de joindre la b
 @index: couverture restante; maximum restant; de nouveau admissible
 
 « Ce qui reste des maximums annuels de chaque régime pour l’année du régime, et quand un service limité est de nouveau couvert. »
+
+![L’onglet Couverture restante](images/medical-coverage.png)
 
 Pour chaque membre du ménage couvert par un régime actif, l’onglet énumère chaque régime et type de soins :
 

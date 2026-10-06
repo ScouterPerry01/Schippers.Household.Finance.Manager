@@ -6,6 +6,8 @@ For the phone side, see [RANN's Roost Mobile](phone-app). For a short walk-throu
 
 @index: Android; mobile app; companion app; sync; synchronize; pairing; QR code
 
+![The Phones screen before a phone is paired](images/phones.png)
+
 ## How phones and this computer work together {#how-it-works}
 
 - The computer is the master copy. The phone keeps only its captures and new contacts waiting to be sent, and a summary and the contacts from the computer.

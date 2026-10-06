@@ -2,6 +2,8 @@
 
 Les membres du ménage sont les personnes que vos dossiers concernent : les adultes, les enfants et toute autre personne à la charge du ménage. Les comptes leur appartiennent, les dépenses et les réclamations médicales sont les leurs, les régimes enregistrés sont détenus pour eux et les feuillets fiscaux leur sont émis. L'écran est le premier élément du groupe **Réglages** du menu, sous le nom **Membres du ménage**.
 
+![L’écran Membres du ménage](images/members.png)
+
 ## Ce qu'est un membre du ménage {#about-members}
 
 @index: personne; famille; membre de la famille; conjoint; conjointe; enfant; personne à charge

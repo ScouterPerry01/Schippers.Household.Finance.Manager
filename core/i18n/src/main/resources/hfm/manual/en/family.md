@@ -6,6 +6,8 @@ Nothing on this screen creates transactions in your accounts or changes your bal
 
 @index: money between people; IOU; who owes whom
 
+![The Family money screen, Shared expenses tab](images/family.png)
+
 ## The Family money screen {#screen}
 
 The screen has a short explanation at the top and three tabs:

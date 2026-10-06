@@ -60,6 +60,8 @@ Les catégories rendent les budgets et les rapports utiles.
 
 Le rapprochement prouve que le compte concorde avec la banque au cent près, et verrouille la période.
 
+![Le rapprochement d’un relevé](images/accounts-reconcile.png)
+
 1. Importez le relevé (étape 2). Le rapprochement s’ouvre. Avec un relevé papier, choisissez **Rapprocher…**, puis **Entrer un relevé papier**, et tapez la date et le solde de clôture.
 2. Vérifiez la **Date du relevé** et le **Solde de clôture du relevé** ; corrigez-les et choisissez **Appliquer** au besoin.
 3. Sous À vérifier, réglez chaque ligne : **Même opération**, **Ajouter comme nouvelle**, **Jumeler à une opération inscrite** ou **Ignorer**.

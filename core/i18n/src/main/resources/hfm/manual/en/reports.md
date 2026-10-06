@@ -6,6 +6,8 @@ Every report reads the books as they are now. Nothing is stored with a report ex
 
 > Note: Tax figures in reports (slips, capital gains, contribution room, medical expenses and the like) are organizational aids, not tax advice. Check them against your slips and statements, and ask a tax professional when in doubt.
 
+![The Reports screen: the list of reports, the filter bar and the Income and expense report](images/reports.png)
+
 ## The Reports screen {#reports-screen}
 
 @index: report; chart; graph; statement of income
@@ -173,6 +175,8 @@ Income is everything on income categories (and uncategorized money in); expense 
 
 What was spent in each top-level category, each including its subcategories, largest first.
 
+![Spending by category](images/reports-spending.png)
+
 - The line above the chart starts with **All categories**, then the path of categories you went into, each one clickable to go back up, and the **Total** of what is shown.
 - Each bar shows the amount, its share of the total in percent and, with **Compare with**, what it "was" in the comparison period.
 - A category with subcategories has a › after its name: click it to see its subcategories. Inside a category, an extra line such as "Groceries (directly)" holds what was put on the category itself rather than on one of its subcategories.
@@ -260,6 +264,8 @@ The table holds the same lines with **Section**, **Item** and **Amount**, for ex
 
 What the household owns (assets) and owes (liabilities) at the end of each month of the period; the last point is the period's end date.
 
+![The Net worth report](images/reports-net-worth.png)
+
 - The totals give, at the end of the period, **Net worth**, **Assets**, **Liabilities** and **Change over the period** (the last net worth less the first).
 - The line chart shows the three over time; the table lists them by **Date**.
 - Bank and cash accounts count at their balance; investment accounts at their cash plus their securities at market value; loans, mortgages, lines of credit and cards as liabilities. Closed accounts count for the dates they were open.
@@ -271,6 +277,8 @@ What the household owns (assets) and owes (liabilities) at the end of each month
 @index: returns; rate of return; performance; time-weighted return; money-weighted return; TWR; MWR; investment report
 
 How the investment accounts did over the period, in the base currency, after fees and foreign tax. **Account group**, **Choose accounts…** and **Person** choose the investment accounts; "No investment accounts in this selection." means none matched.
+
+![The Investment portfolio report](images/reports-portfolio.png)
 
 The totals at the top:
 

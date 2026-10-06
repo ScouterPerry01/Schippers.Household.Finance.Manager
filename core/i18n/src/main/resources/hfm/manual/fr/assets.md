@@ -2,6 +2,8 @@
 
 L’écran **Maison et biens** suit la maison et tout ce qui vaut la peine d’être suivi : où c’est, ce que ça a coûté et ce que ça vaut, ses garanties, son entretien, les travaux faits sur la maison et les entrepreneurs qui les ont faits, et les assurances qui couvrent le tout. Les véhicules ont leur propre écran, [Véhicules](vehicles), mais ils paraissent aussi ici là où c’est utile : dans la liste d’entretien, la recherche **Est-ce couvert ?** et les assurances. Il se trouve dans le groupe **Maison et famille** du menu.
 
+![L’écran Maison et biens, onglet Biens](images/assets.png)
+
 ## L’écran en bref {#overview}
 @index: inventaire de la maison; biens; propriété; effets personnels
 
@@ -311,6 +313,8 @@ Pour inscrire une réclamation de garantie, ouvrez le bien à l’onglet **Biens
 @index: police d’assurance; assurance habitation; assurance locataire; assurance auto; assurance vie; assurance invalidité; primes
 
 En haut, **Ajouter une police**. Chaque police affiche son type et son assureur (« inactif » pour une police qui n’est plus en vigueur), le numéro de police, « renouvellement le date », « couvre montant », et la prime par année. Cliquez sur une police pour l’ouvrir. « Aucune police pour l’instant. » quand il n’y en a pas.
+
+![L’onglet Assurances](images/assets-insurance.png)
 
 Sous la liste viennent deux sommaires : [Non couverts par une police](assets#uninsured) et [Assurance vie et invalidité](assets#life-cover).
 

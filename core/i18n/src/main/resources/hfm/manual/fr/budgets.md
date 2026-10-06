@@ -2,6 +2,8 @@
 
 Budgets compare ce que vous prévoyez dépenser, ou recevoir, dans chaque catégorie avec ce qui s’est réellement passé. Vous fixez un montant par catégorie, mensuel ou annuel, et l’écran montre d’un coup d’œil les catégories qui respectent le budget et celles qui le dépassent. Budgets se trouve dans le groupe Argent du menu.
 
+![L’écran Budgets pour le mois en cours](images/budgets.png)
+
 ## Ce que font les budgets {#overview}
 @index: budget; plan de dépenses; budget et réel; dépassement
 

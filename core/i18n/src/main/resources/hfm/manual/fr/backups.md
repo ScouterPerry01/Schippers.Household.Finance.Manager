@@ -2,6 +2,8 @@
 
 Les sauvegardes sont des copies de tout le ménage, faites automatiquement, vérifiées et gardées dans un dossier de votre choix, pour vous remettre d'un disque brisé, d'un ordinateur perdu ou volé, ou d'une erreur, et pour déplacer le ménage vers un nouvel ordinateur. L'écran se trouve dans le groupe **Réglages** du menu, sous **Sauvegardes**. Il contient aussi **Exporter toutes les données**.
 
+![L’écran Sauvegardes](images/backups.png)
+
 ## Ce qu'est une sauvegarde {#about-backups}
 
 @index: sauvegarde; copie de sécurité; hfmbak; point de restauration; reprise après sinistre

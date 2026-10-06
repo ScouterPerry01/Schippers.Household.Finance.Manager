@@ -16,6 +16,8 @@ Reports are only as good as the books behind them. Before relying on them:
 
 ## Run your first report {#first-report}
 
+![The Income and expense report](images/reports.png)
+
 1. Open **Reports** in the **Reports and taxes** group of the menu.
 2. Click **Income and expense** in the list on the left.
 3. In **Period**, choose **This year** (the default) or **Last 12 months**.

@@ -6,6 +6,8 @@ The trip log keeps the trips you make by car for work or for medical care. From 
 
 > Note: The CRA expects a logbook of business or employment driving (date, destination, purpose and distance) to support a claim for vehicle expenses, along with the total kilometres driven in the year. RANN's Roost does not give tax advice; check the CRA's rules before claiming.
 
+![The Trip log screen](images/trips.png)
+
 ## The Trip log screen {#screen}
 
 At the top of the screen:

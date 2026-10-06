@@ -6,6 +6,8 @@ Chaque rapport lit les livres tels qu’ils sont maintenant. Rien n’est conser
 
 > Remarque : Les chiffres fiscaux des rapports (feuillets, gains en capital, droits de cotisation, frais médicaux, etc.) sont une aide à l’organisation et non des conseils fiscaux. Vérifiez-les avec vos feuillets et relevés, et consultez un fiscaliste en cas de doute.
 
+![L’écran Rapports : la liste des rapports, la barre de filtres et le rapport Revenus et dépenses](images/reports.png)
+
 ## L’écran Rapports {#reports-screen}
 
 @index: rapport; graphique; état des résultats
@@ -173,6 +175,8 @@ Les revenus sont tout ce qui est dans des catégories de revenus (et l’argent 
 
 Ce qui a été dépensé dans chaque catégorie principale, sous-catégories comprises, la plus grande d’abord.
 
+![Dépenses par catégorie](images/reports-spending.png)
+
 - La ligne au-dessus du graphique commence par **Toutes les catégories**, suivie du chemin des catégories que vous avez ouvertes, chacune cliquable pour remonter, puis du **Total** de ce qui est affiché.
 - Chaque barre indique le montant, sa part du total en pourcentage et, avec **Comparer avec**, ce qu’il était « avant », dans la période de comparaison.
 - Une catégorie qui a des sous-catégories porte un › après son nom : cliquez pour voir ses sous-catégories. Dans une catégorie, une ligne de plus comme « Épicerie (directement) » regroupe ce qui a été inscrit dans la catégorie elle-même plutôt que dans l’une de ses sous-catégories.
@@ -260,6 +264,8 @@ Le tableau reprend les mêmes lignes avec **Section**, **Élément** et **Montan
 
 Ce que le ménage possède (l’actif) et doit (le passif) à la fin de chaque mois de la période ; le dernier point est la date de fin de la période.
 
+![Le rapport Valeur nette](images/reports-net-worth.png)
+
 - Les totaux donnent, à la fin de la période, **Valeur nette**, **Actif**, **Passif** et **Variation sur la période** (la dernière valeur nette moins la première).
 - Le graphique en lignes présente les trois dans le temps ; le tableau les énumère par **Date**.
 - Les comptes bancaires et l’encaisse comptent pour leur solde ; les comptes de placement pour leur encaisse plus leurs titres à la valeur marchande ; les prêts, hypothèques, marges de crédit et cartes au passif. Les comptes fermés comptent pour les dates où ils étaient ouverts.
@@ -271,6 +277,8 @@ Ce que le ménage possède (l’actif) et doit (le passif) à la fin de chaque m
 @index: rendement; taux de rendement; performance; rendement pondéré en fonction du temps; rendement pondéré en fonction des capitaux; TRPT; rapport de placements
 
 Comment les comptes de placement se sont comportés pendant la période, dans la devise de base, après les frais et l’impôt étranger. **Groupe de comptes**, **Choisir des comptes…** et **Personne** choisissent les comptes de placement ; « Aucun compte de placement dans cette sélection. » signifie qu’aucun ne correspond.
+
+![Le rapport Portefeuille de placements](images/reports-portfolio.png)
 
 Les totaux en haut :
 

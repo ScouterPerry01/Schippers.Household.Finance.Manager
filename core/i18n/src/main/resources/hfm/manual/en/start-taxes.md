@@ -37,6 +37,8 @@ See [Instalments](taxes#instalments).
 
 @index: tax estimate; refund estimate
 
+![The Estimate tab](images/taxes-estimate.png)
+
 1. Open **Taxes**, then the **Estimate** tab.
 2. Choose the **Tax year** and the **Person**.
 3. Read **Figures used** on the left: each amount says where it comes from. Enter what the books cannot know, such as the medical expenses this person claims or a spouse's net income, and correct anything that is not right. Enter also, under Carried forward from earlier years, the balances of last year's notice of assessment: unused tuition, donations, net capital losses, unused RRSP contributions and the RRSP deduction limit. What you enter is kept for that person and year.
