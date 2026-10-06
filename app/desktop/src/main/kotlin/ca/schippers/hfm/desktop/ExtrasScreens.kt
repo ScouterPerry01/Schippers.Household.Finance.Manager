@@ -734,7 +734,7 @@ private fun RentalsTab(model: BooksModel) {
                         TextButton(onClick = { editing = p }) { Text(model.t("rental.edit")) }
                     }
                     Text(model.t("rental.income", model.money(y.income.total)))
-                    for (r in y.expenses.rows) Text("   ${r.label}: ${model.money(y.expenses.rowTotal(r))}", style = MaterialTheme.typography.bodySmall)
+                    for (r in y.expenses.rows) Text("   " + model.t("rental.expenseLine", r.label, model.money(y.expenses.rowTotal(r))), style = MaterialTheme.typography.bodySmall)
                     Text(model.t("rental.expenses", model.money(y.expenses.total)))
                     Text(model.t("rental.net", model.money(y.net)), fontWeight = FontWeight.Medium)
                     if (p.shareBp < 10_000) Text(model.t("rental.share", BigDecimal(p.shareBp).movePointLeft(2).stripTrailingZeros().toPlainString().replace(".", if (model.language == Language.FRENCH) "," else "."), model.money(y.share)))
