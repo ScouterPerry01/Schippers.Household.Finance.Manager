@@ -357,6 +357,14 @@ SELECT * FROM txn WHERE id = ?;
 txnsByTransfer:
 SELECT * FROM txn WHERE transfer_id = ?;
 
+-- Several transactions at once, by id (NFR-02).
+txnsByIds:
+SELECT * FROM txn WHERE id IN ?;
+
+-- One account's transactions between two dates, oldest first, read from the index (NFR-02).
+txnsForAccountBetween:
+SELECT * FROM txn WHERE account_id = ? AND date >= ? AND date <= ? ORDER BY date, created_at, id;
+
 -- Account register with running balance, oldest first.
 register:
 SELECT t.*,
@@ -397,6 +405,10 @@ DELETE FROM txn_split WHERE txn_id = ?;
 
 splitsForTxn:
 SELECT * FROM txn_split WHERE txn_id = ?;
+
+-- The splits of several transactions at once, for lists such as search results (NFR-02).
+splitsForTxns:
+SELECT * FROM txn_split WHERE txn_id IN ?;
 
 
 -- Most recent use of each payee, for auto-complete (MAN-02).
@@ -449,11 +461,13 @@ setClearedFor:
 UPDATE txn SET cleared = ?, updated_at = ? WHERE account_id = ? AND cleared = ? AND date <= ?;
 
 -- Global search (OTH-03): text in the payee or memo, a known payee, or an amount either way.
+-- "+date": read the table straight and sort only what matches; walking the date index for a word
+-- that matches little read every transaction one by one (NFR-02).
 searchTxns:
 SELECT * FROM txn
 WHERE payee_text LIKE :pattern ESCAPE '!' OR memo LIKE :pattern ESCAPE '!' OR payee_id IN :payeeIds
    OR amount_minor = :amount OR amount_minor = :negativeAmount
-ORDER BY date DESC, created_at DESC
+ORDER BY +date DESC, created_at DESC
 LIMIT :limit;
 
 -- Reports (section 12) ---------------------------------------------------------------------
@@ -516,6 +530,22 @@ WHERE t.date >= :from AND t.date <= :to AND t.transfer_id IS NULL AND t.trade = 
   AND (:member IS NULL OR t.member_id = :member)
   AND (:tag IS NULL OR EXISTS (SELECT 1 FROM txn_tag g WHERE g.txn_id = t.id AND g.tag_id = :tag))
 GROUP BY t.account_id, t.payee_id, payee_text, t.date;
+
+-- Every split of a period with what custom reports group by (RPT-03), transfers left out.
+customSplits:
+SELECT t.id AS txn_id, t.account_id, t.date, t.payee_id, t.payee_text, coalesce(s.member_id, t.member_id) AS member_id, s.category_id, s.amount_minor
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE t.date >= :from AND t.date <= :to AND t.transfer_id IS NULL;
+
+-- The same for long ranges, reading the table straight ("+t.date"), as categoryMonthlyWide (NFR-02).
+customSplitsWide:
+SELECT t.id AS txn_id, t.account_id, t.date, t.payee_id, t.payee_text, coalesce(s.member_id, t.member_id) AS member_id, s.category_id, s.amount_minor
+FROM txn_split s JOIN txn t ON t.id = s.txn_id
+WHERE +t.date >= :from AND +t.date <= :to AND t.transfer_id IS NULL;
+
+-- The tags of every transaction in a period, at once.
+tagsBetween:
+SELECT g.txn_id, g.tag_id FROM txn_tag g JOIN txn t ON t.id = g.txn_id WHERE t.date >= :from AND t.date <= :to;
 
 reportSplits:
 SELECT t.id AS txn_id, t.account_id, t.date, t.payee_id, t.payee_text, t.memo, s.category_id, s.amount_minor
@@ -712,6 +742,10 @@ SELECT d.* FROM document d JOIN document_link l ON l.document_id = d.id WHERE l.
 
 documentCounts:
 SELECT status, count(*) AS total FROM document GROUP BY status;
+
+-- How many documents each record of one kind has, for lists that show it (NFR-02: one query, not one per record).
+documentCountsFor:
+SELECT l.entity_id, count(*) AS total FROM document_link l JOIN document d ON d.id = l.document_id WHERE l.entity = ? GROUP BY l.entity_id;
 
 -- Matching a captured receipt or bill to a transaction already entered or imported.
 txnsNear:

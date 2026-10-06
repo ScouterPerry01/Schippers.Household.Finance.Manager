@@ -36,8 +36,16 @@ data class BackupEntry(val path: String, val size: Long, val sha256: String)
 
 data class BackupInfo(val file: Path, val householdId: String, val createdAt: Instant, val size: Long)
 
+/**
+ * A problem found by the test-restore check: [key] names it in the message files (backupProblem.*),
+ * with its [args]; [english] is the same in English, for logs and errors.
+ */
+data class BackupProblem(val key: String, val args: List<String>, val english: String)
+
 /** Result of the test-restore check (BAK-03). */
-data class VerifyResult(val ok: Boolean, val problems: List<String>, val checkedDatabases: Int)
+data class VerifyResult(val ok: Boolean, val issues: List<BackupProblem>, val checkedDatabases: Int) {
+    val problems: List<String> get() = issues.map { it.english }
+}
 
 class BackupException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
@@ -130,9 +138,10 @@ object Backups {
      * temporary folder, opened with their keys, and checked with SQLite's integrity check.
      */
     fun verify(file: Path, session: HouseholdSession? = null, drivers: EncryptedDriverFactory? = null): VerifyResult {
-        val problems = mutableListOf<String>()
-        val manifest = readManifest(file) ?: return VerifyResult(false, listOf("Not a backup file"), 0)
-        if (session != null && manifest.householdId != session.householdId) problems += "This backup belongs to another household"
+        val problems = mutableListOf<BackupProblem>()
+        fun problem(key: String, english: String, vararg args: String) { problems += BackupProblem("backupProblem.$key", args.toList(), english) }
+        val manifest = readManifest(file) ?: return VerifyResult(false, listOf(BackupProblem("backupProblem.notBackup", emptyList(), "Not a backup file")), 0)
+        if (session != null && manifest.householdId != session.householdId) problem("otherHousehold", "This backup belongs to another household")
         val expected = manifest.files.associateBy { it.path }
         val seen = HashSet<String>()
         val temp = Files.createTempDirectory("hfm-verify")
@@ -144,22 +153,22 @@ object Backups {
                     if (entry.name == MANIFEST) continue
                     val wanted = expected[entry.name]
                     if (wanted == null) {
-                        problems += "Unexpected file ${entry.name}"
+                        problem("unexpected", "Unexpected file ${entry.name}", entry.name)
                         continue
                     }
                     val out = safeResolve(temp, entry.name)
                     Files.createDirectories(out.parent)
                     val digest = MessageDigest.getInstance("SHA-256")
                     Files.newOutputStream(out).use { copy(zip, it, digest) }
-                    if (hex(digest.digest()) != wanted.sha256) problems += "${entry.name} is damaged"
+                    if (hex(digest.digest()) != wanted.sha256) problem("damaged", "${entry.name} is damaged", entry.name)
                     if (entry.name.endsWith(".db") && Files.newInputStream(out).use { it.readNBytes(16) }.decodeToString().startsWith("SQLite format 3")) {
-                        problems += "${entry.name} is not encrypted"
+                        problem("notEncrypted", "${entry.name} is not encrypted", entry.name)
                     }
                     seen += entry.name
                 }
             }
-            (expected.keys - seen).forEach { problems += "$it is missing" }
-            if (HouseholdHeader.FILE_NAME !in seen) problems += "The key ring is missing"
+            (expected.keys - seen).forEach { problem("missing", "$it is missing", it) }
+            if (HouseholdHeader.FILE_NAME !in seen) problem("noKeyRing", "The key ring is missing")
 
             if (session != null && drivers != null && problems.isEmpty()) {
                 for (partition in session.header.partitions) {
@@ -170,20 +179,20 @@ object Backups {
                         val driver = drivers.open(db, key)
                         try {
                             val result = driver.executeQuery(null, "PRAGMA quick_check", { c -> c.next(); QueryResult.Value(c.getString(0)) }, 0).value
-                            if (result != "ok") problems += "${partition.file}: $result"
+                            if (result != "ok") problem("integrity", "${partition.file}: $result", partition.file, result.toString())
                             checked++
                         } finally {
                             driver.close()
                         }
                     } catch (e: Exception) {
-                        problems += "${partition.file} cannot be opened: ${e.message}"
+                        problem("cannotOpen", "${partition.file} cannot be opened: ${e.message}", partition.file, e.message.orEmpty())
                     } finally {
                         key.fill(0)
                     }
                 }
             }
         } catch (e: Exception) {
-            problems += "The backup cannot be read: ${e.message}"
+            problem("unreadable", "The backup cannot be read: ${e.message}", e.message.orEmpty())
         } finally {
             temp.toFile().deleteRecursively()
         }

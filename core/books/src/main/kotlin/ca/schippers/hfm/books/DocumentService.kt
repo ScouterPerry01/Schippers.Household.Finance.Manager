@@ -314,6 +314,11 @@ class DocumentService internal constructor(private val books: Books) {
         toDocuments(g, books.ledger(g).ledgerQueries.documentsFor(entity, entityId).executeAsList())
     }
 
+    /** How many documents each record of [entity] has, in the groups the user can see: the counts [documentsFor] would give. */
+    internal fun countsFor(entity: String): Map<String, Int> = books.groups()
+        .flatMap { g -> books.ledger(g).ledgerQueries.documentCountsFor(entity).executeAsList() }
+        .groupingBy { it.entity_id }.fold(0) { a, r -> a + r.total.toInt() }
+
     /** OCR-10: the same file, or another document with the same date and amount and a similar merchant. */
     fun duplicates(documentId: String): List<PossibleDuplicate> {
         val doc = get(documentId)

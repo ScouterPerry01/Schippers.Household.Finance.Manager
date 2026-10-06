@@ -29,6 +29,9 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
 
     /** A text in the user's language, for lines the books create (NFR-06). */
     internal fun text(key: String, vararg args: Any): String = Messages.get(language, key, *args)
+
+    /** An importer's note in the user's language. */
+    internal fun note(n: ca.schippers.hfm.importers.ImportNote): String = text(n.key, *n.args.toTypedArray())
     val userId: String get() = session.userId
     val role: Role by lazy { session.role }
 

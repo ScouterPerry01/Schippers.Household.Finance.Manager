@@ -59,7 +59,7 @@ class YearReviewService internal constructor(private val books: Books) {
 
         // Visits and the largest single purchases come from the transactions themselves.
         val categories = books.categories.list(includeArchived = true).associateBy { it.id }
-        val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val accounts = books.accounts.all(includeClosed = true).associateBy { it.id }
         val purchases = ArrayList<LargePurchase>()
         val visits = HashMap<String, Int>()
         for (g in books.groups()) {

@@ -6,7 +6,7 @@ La liste de gauche présente d’abord les comptes non enregistrés, puis les r�
 
 ## Inscrire les opérations
 
-- Choisissez un compte, puis cliquez sur Ajouter une opération pour inscrire un achat, une vente, un revenu, un revenu réinvesti (RRD), un fractionnement, des frais, etc.
+- Choisissez un compte, puis cliquez sur Ajouter une opération pour inscrire un achat, une vente, un revenu, un revenu réinvesti (RRD), un remboursement de capital, un fractionnement, une fusion, des frais ou des unités transférées en entrée ou en sortie.
 - Cliquez sur Importer un relevé… pour lire un relevé de courtage (OFX, QFX ou CSV). Rien n’est ajouté en double.
 - Cliquez sur Mettre à jour les cours pour saisir le dernier cours de chaque titre. Sans cours, un titre compte à son coût comptable.
 

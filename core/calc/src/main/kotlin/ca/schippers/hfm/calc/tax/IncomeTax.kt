@@ -169,7 +169,7 @@ enum class TaxLineKind {
     GST_CREDIT, CHILD_BENEFIT,
     CREDIT_AMOUNTS, CREDITS, SUPPLEMENTAL_CREDIT, DONATIONS, DIVIDENDS, BASIC_TAX,
     ADJUSTED_TAXABLE_INCOME, MINIMUM_TAX, AMT_ADDITIONAL, AMT_CARRYOVER,
-    ABATEMENT, SURTAX, TAX_REDUCTION, HEALTH_PREMIUM, TAX, OAS_RECOVERY, HEALTH_FUND, DRUG_PREMIUM, OTHER_TOTAL,
+    ABATEMENT, SURTAX, TAX_REDUCTION, LOW_INCOME_CREDIT, HEALTH_PREMIUM, TAX, OAS_RECOVERY, HEALTH_FUND, DRUG_PREMIUM, OTHER_TOTAL,
 }
 
 /** A balance carried from year to year. */
@@ -229,15 +229,17 @@ data class TaxEstimate(
  * the basic personal, age, spouse, Canada employment, pension income, CPP or QPP, EI and medical
  * expense amounts, the disability amount, tuition and its transfer, the donation and dividend tax
  * credits, the security options and capital gains deductions, the balances carried forward
- * (tuition, donations, net capital losses, RRSP contributions, minimum tax), Ontario's surtax and
- * health premium, the alternative minimum tax (with donated securities, security options and the
- * capital gains deduction), the OAS recovery tax, the refundable credits (workers benefit and its
- * disability supplement, medical expense supplement), and for Quebec residents the federal
- * abatement, Quebec's own tax, minimum tax and its carryover, work premium and refundable medical credit,
+ * (tuition, donations, net capital losses, RRSP contributions, minimum tax), Ontario's surtax,
+ * health premium and low-income (LIFT) credit, the low-income tax reductions of British Columbia,
+ * New Brunswick, Nova Scotia, Newfoundland and Labrador and Prince Edward Island, the alternative
+ * minimum tax (with donated securities, security options and the capital gains deduction), the OAS
+ * recovery tax, the refundable credits (workers benefit and its disability supplement, medical
+ * expense supplement), and for Quebec residents the federal abatement, Quebec's own tax, minimum
+ * tax and its carryover, work premium and refundable medical credit,
  * health services fund contribution and drug insurance premium. The GST/HST credit and the Canada
  * child benefit are shown apart. It leaves out what the books cannot know or that is rarely needed
- * (other low-income reductions and refundable credits, political contributions, foreign tax
- * credits); it is an estimate, not a return.
+ * (other refundable credits, political contributions, foreign tax credits); it is an estimate,
+ * not a return.
  */
 object IncomeTax {
 
@@ -383,7 +385,7 @@ object IncomeTax {
         val provincial = if (quebec) {
             quebec(on, inputs, net, losses, lcge, gifts, spouse, age65, lines, provTuition, cppDeduction, carry)
         } else {
-            provincial(on, province, inputs, net, taxable, claimedGifts, cppCredit, spouse, age65, lines, provTuition, amtAdded, amtUsed)
+            provincial(on, province, inputs, net, taxable, claimedGifts, cppCredit, spouse, age65, lines, provTuition, amtAdded, amtUsed, familyOf(inputs, spouse))
         }
         provTuition.carry(CarryKind.TUITION_PROVINCIAL)?.let { carry += it }
         lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.TAX, provincial)
@@ -620,7 +622,7 @@ object IncomeTax {
 
     private fun provincial(
         on: LocalDate, p: Province, inputs: Map<TaxInput, BigDecimal>, net: BigDecimal, taxable: BigDecimal, gifts: BigDecimal, cppCredit: BigDecimal,
-        spouse: BigDecimal?, age65: Boolean, lines: MutableList<TaxLine>, tuition: Tuition, amtAdded: BigDecimal, amtUsed: BigDecimal,
+        spouse: BigDecimal?, age65: Boolean, lines: MutableList<TaxLine>, tuition: Tuition, amtAdded: BigDecimal, amtUsed: BigDecimal, family: Family,
     ): BigDecimal {
         fun v(i: TaxInput) = inputs[i] ?: BigDecimal.ZERO
         val brackets = Rules.brackets("tax.prov.brackets", on, p)
@@ -666,6 +668,20 @@ object IncomeTax {
                 tax -= reduction
             }
         }
+        // The low-income tax reduction of New Brunswick, Nova Scotia, Newfoundland and Labrador and Prince Edward Island: amounts for
+        // the person, a spouse or an eligible dependant (one child of a single parent), the other children and age 65, less a rate
+        // of adjusted family income above a base. One spouse claims it for the family.
+        Rules.valueOn("tax.prov.familyLowIncomeReduction", on, p)?.let { Rules.list("tax.prov.familyLowIncomeReduction", on, p) }?.let { r ->
+            val partner = family.couple || family.children > 0
+            val otherChildren = (if (family.couple) family.children else family.children - 1).coerceAtLeast(0)
+            val amounts = r[0] + (if (partner) r[1] else BigDecimal.ZERO) + r[2].multiply(BigDecimal(otherChildren)) + if (age65) r[3] else BigDecimal.ZERO
+            val base = if (partner) r[5] else r[4]
+            val reduction = money((amounts - (family.income(net) - base).max(BigDecimal.ZERO).multiply(r[6])).max(BigDecimal.ZERO)).min(tax)
+            if (reduction.signum() > 0) {
+                lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.TAX_REDUCTION, reduction.negate(), family.income(net))
+                tax -= reduction
+            }
+        }
         Rules.valueOn("tax.prov.surtax", on, p)?.let { Rules.list("tax.prov.surtax", on, p) }?.let { s ->
             val surtax = s.chunked(2).filter { it.size == 2 }.fold(BigDecimal.ZERO) { a, (threshold, rate) -> a + (basic - threshold).max(BigDecimal.ZERO).multiply(rate) }
             if (surtax.signum() > 0) {
@@ -679,6 +695,18 @@ object IncomeTax {
             if (reduction.signum() > 0) {
                 lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.TAX_REDUCTION, reduction.negate(), tax)
                 tax -= reduction
+            }
+        }
+        // Ontario's low-income individuals and families tax (LIFT) credit: a rate of employment income, up to a maximum, less a rate
+        // of adjusted net income above a threshold (or of family net income above another, when that is more); not with the
+        // additional tax for minimum tax purposes.
+        Rules.valueOn("tax.prov.lift", on, p)?.let { Rules.list("tax.prov.lift", on, p) }?.takeIf { provAmt.signum() == 0 }?.let { l ->
+            val gross = v(TaxInput.EMPLOYMENT).max(BigDecimal.ZERO).multiply(l[1]).min(l[0])
+            val over = (net - l[2]).max(if (family.couple) family.income(net) - l[3] else BigDecimal.ZERO).max(BigDecimal.ZERO)
+            val credit = money((gross - over.multiply(l[4])).max(BigDecimal.ZERO)).min(tax)
+            if (credit.signum() > 0) {
+                lines += TaxLine(TaxPart.PROVINCIAL, TaxLineKind.LOW_INCOME_CREDIT, credit.negate(), money(gross))
+                tax -= credit
             }
         }
         Rules.valueOn("tax.prov.healthPremium", on, p)?.let { Rules.list("tax.prov.healthPremium", on, p) }?.let { tiers ->

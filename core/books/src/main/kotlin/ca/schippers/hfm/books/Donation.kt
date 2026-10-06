@@ -61,18 +61,23 @@ class DonationService internal constructor(private val books: Books) {
     fun list(year: Int): List<Donation> {
         val flagged = books.categories.list(includeArchived = true).filter { it.taxFlag == TaxFlag.CHARITABLE || it.taxFlag == TaxFlag.POLITICAL }
             .associate { it.id to it.taxFlag!! }
+        val documents = books.documents.countsFor(DocumentEntity.TRANSACTION)
+        val currencies = books.accounts.all(includeClosed = true).associate { it.id to it.currency }
         return books.groups().flatMap { g ->
             val q = books.ledger(g).donationQueries
+            val ledger = books.ledger(g).ledgerQueries
             val rows = q.donationSplits(LocalDate(year, 1, 1).toString(), LocalDate(year, 12, 31).toString(), flagged.keys).executeAsList()
             val txnIds = rows.map { it.txn_id }.distinct().chunked(500)
             val shared = txnIds.flatMap { q.donationsFor(it).executeAsList() }.associateBy { it.txn_id }
             // M-43: a receipt for one gift (person and kind) within the transaction.
             val own = txnIds.flatMap { q.donationReceiptsFor(it).executeAsList() }.associateBy { Triple(it.txn_id, it.member_key, it.kind) }
+            val txns = txnIds.flatMap { ledger.txnsByIds(it).executeAsList() }.associateBy { it.id }
             rows.groupBy { Triple(it.txn_id, it.member_id, it.tax_flag?.let(TaxFlag::valueOf) ?: flagged.getValue(it.category_id!!)) }
                 .mapNotNull { (key, splits) ->
                     val (txnId, memberId, kind) = key
-                    val txn = books.transactions.get(txnId)
-                    val currency = txn.amount.currency
+                    // The transaction's own row, read with the others from this group's ledger (NFR-02).
+                    val txn = txns[txnId] ?: return@mapNotNull null
+                    val currency = currencies[txn.account_id] ?: return@mapNotNull null
                     val amount = Money.ofMinor(-splits.sumOf { it.amount_minor }, currency)
                     if (amount.isNegative || amount.isZero) return@mapNotNull null
                     val receipt = own[Triple(txnId, memberId.orEmpty(), kind.name)]?.let {
@@ -80,9 +85,11 @@ class DonationService internal constructor(private val books: Books) {
                     } ?: shared[txnId]?.let {
                         DonationReceipt(it.charity, it.registration, it.receipt_number, it.eligible_minor?.let { m -> Money.ofMinor(m, currency) }, it.received == 1L)
                     }
-                    val documents = books.documents.documentsFor(DocumentEntity.TRANSACTION, txnId).size
                     val memo = splits.mapNotNull { it.memo }.distinct().joinToString(", ").ifEmpty { null }
-                    Donation(txnId, g.id, txn.date, txn.payeeText, memberId, kind, amount, receipt, documents, memo, payroll = txn.amount.isPositive)
+                    Donation(
+                        txnId, g.id, LocalDate.parse(txn.date), txn.payee_text, memberId, kind, amount, receipt,
+                        documents[txnId] ?: 0, memo, payroll = txn.amount_minor > 0,
+                    )
                 }
                 .groupBy { it.transactionId }.values.flatMap { entries ->
                     // A receipt kept for the whole transaction is shared by the gifts without their own.
@@ -98,7 +105,10 @@ class DonationService internal constructor(private val books: Books) {
     }
 
     /** Totals per person (null for the household) in Canadian dollars; gifts in other currencies are left out. */
-    fun totals(year: Int): List<DonationTotals> = list(year).filter { it.amount.currency == Currency.CAD }.groupBy { it.memberId }.map { (member, gifts) ->
+    fun totals(year: Int): List<DonationTotals> = totals(list(year))
+
+    /** The totals of donations already listed. */
+    internal fun totals(donations: List<Donation>): List<DonationTotals> = donations.filter { it.amount.currency == Currency.CAD }.groupBy { it.memberId }.map { (member, gifts) ->
         fun sum(kind: TaxFlag) = gifts.filter { it.kind == kind }.fold(Money.zero(Currency.CAD)) { a, d -> a + d.eligible }
         DonationTotals(member, sum(TaxFlag.CHARITABLE), sum(TaxFlag.POLITICAL), gifts.count { !it.hasReceipt })
     }

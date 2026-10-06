@@ -7,7 +7,7 @@ L’écran compte trois onglets : À vérifier, Tous les documents et Anciens do
 ## Ajouter des documents
 
 - Déposez des fichiers sur l’écran ou choisissez Importer des fichiers…. Les fichiers PDF, JPEG, PNG et HEIC sont acceptés.
-- Choisissez Dossier surveillé… pour indiquer où arrivent vos numérisations ou vos factures électroniques. Ces fichiers sont importés automatiquement.
+- Choisissez Dossier surveillé… pour indiquer où arrivent vos numérisations ou vos factures électroniques. Ces fichiers sont importés automatiquement. Arrêter la surveillance y met fin.
 - Les reçus et factures envoyés par votre téléphone arrivent aussi dans À vérifier. Un fichier de transfert du téléphone, reçu par courriel ou copié par USB, peut aussi être déposé ici.
 
 ## Vérifier la boîte de réception

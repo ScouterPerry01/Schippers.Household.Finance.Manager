@@ -162,7 +162,7 @@ class TaxSlipService internal constructor(private val books: Books) {
             }
             val myGains = gains.filter { g -> if (m == null) g.ownerMemberIds.isEmpty() else m.id in g.ownerMemberIds }
                 .map { GainShare(it, it.ownerMemberIds.size.coerceAtLeast(1)) }
-            val wallets = books.accounts.list(includeClosed = true).map { it.account }
+            val wallets = books.accounts.all(includeClosed = true)
                 .filter { it.type == AccountType.CRYPTO_WALLET && (if (m == null) it.ownerMemberIds.isEmpty() else m.id in it.ownerMemberIds) }
             val crypto = cryptoCategory?.let { c ->
                 wallets.map { w ->

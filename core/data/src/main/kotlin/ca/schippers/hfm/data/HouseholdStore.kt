@@ -47,6 +47,8 @@ class HouseholdStore(
         locale: String = "fr-CA",
         /** PROV-01: the province or territory code, e.g. "ON". */
         province: String = "QC",
+        /** The name of the household's first shared group, in the household's language. */
+        sharedGroupName: String = "Shared",
     ): CreatedHousehold {
         require(householdName.isNotBlank()) { "Household name is required" }
         require(adminLogin.isNotBlank()) { "Login name is required" }
@@ -75,7 +77,7 @@ class HouseholdStore(
             session.core.coreQueries.insertUser(adminId, adminLogin.trim(), adminDisplayName.trim(), Role.ADMINISTRATOR.name, null, keys.publicKey, locale, now)
         }
         session.audit("CREATE", "household", householdId)
-        session.createGroup("Shared", private = false)
+        session.createGroup(sharedGroupName.trim().ifEmpty { "Shared" }, private = false)
         return CreatedHousehold(session, recovery)
     }
 

@@ -39,6 +39,19 @@ class AccountService internal constructor(private val books: Books) {
         }
     }
 
+    /**
+     * All visible accounts without their balances, for lookups that need only the accounts
+     * themselves: much quicker than [list] on a long history (NFR-02). Closed accounts are left out
+     * unless asked for.
+     */
+    fun all(includeClosed: Boolean = false): List<Account> = books.groups().flatMap { group ->
+        val ledger = books.ledger(group).ledgerQueries
+        val owners = ledger.accountOwners().executeAsList().groupBy({ it.account_id }, { it.member_id })
+        ledger.accounts().executeAsList()
+            .map { it.toAccount(group.id, owners[it.id].orEmpty().toSet()) }
+            .filter { includeClosed || it.status != AccountStatus.CLOSED }
+    }
+
     fun get(accountId: String): Account = locate(accountId).second
 
     fun create(draft: AccountDraft): Account {

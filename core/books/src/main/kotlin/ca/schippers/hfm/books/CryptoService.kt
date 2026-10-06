@@ -61,7 +61,7 @@ class CryptoService internal constructor(private val books: Books) {
     private val base get() = books.rates.baseCurrency
 
     fun wallets(includeClosed: Boolean = false): List<Account> =
-        books.accounts.list(includeClosed).map { it.account }.filter { it.type == AccountType.CRYPTO_WALLET }
+        books.accounts.all(includeClosed).filter { it.type == AccountType.CRYPTO_WALLET }
 
     fun details(accountId: String): WalletDetails {
         val (group, _) = books.accounts.locate(accountId)
@@ -210,7 +210,7 @@ class CryptoService internal constructor(private val books: Books) {
         val zero = Money.zero(base)
         val missing = HashSet<Currency>()
         val problems = ArrayList<String>()
-        val all = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val all = books.accounts.all(includeClosed = true).associateBy { it.id }
         val wallets = wallets(includeClosed = true)
         fun fmv(m: Money, date: LocalDate): Money =
             if (m.currency == base) m.abs() else books.rates.convert(m.abs(), base, date) ?: run { missing += m.currency; zero }
@@ -222,7 +222,7 @@ class CryptoService internal constructor(private val books: Books) {
             val key = Key(w.currency, w.ownerMemberIds)
             if (w.openingBalance.isPositive) {
                 val cost = details(w.id).openingCost
-                if (cost == null) problems += "${w.name}: opening cost not entered"
+                if (cost == null) problems += books.text("importNote.noOpeningCost", w.name)
                 events += Ev(key, CostEvent(w.openingDate, CostEventKind.ACQUIRE, w.openingBalance.toBigDecimal(), cost ?: zero, order = -1), w)
             }
             for (t in books.transactions.register(w.id).map { it.transaction }.filter { it.date <= through }) {
@@ -267,7 +267,7 @@ class CryptoService internal constructor(private val books: Books) {
     fun plan(file: CryptoExchangeFile): CryptoImportPlan {
         val codes = file.events.flatMap { listOfNotNull(it.sentCurrency, it.receivedCurrency, it.feeCurrency) }.distinct()
         val (fiat, coins) = codes.partition { isFiat(it) }
-        return CryptoImportPlan(file.exchange, fiat.sorted(), coins.sorted(), file.events.size, file.warnings)
+        return CryptoImportPlan(file.exchange, fiat.sorted(), coins.sorted(), file.events.size, file.warnings.map(books::note))
     }
 
     private fun isFiat(code: String) = runCatching { !Currency.of(code).isCrypto }.getOrDefault(false)
@@ -281,7 +281,7 @@ class CryptoService internal constructor(private val books: Books) {
     fun importExchange(file: CryptoExchangeFile, groupId: String, fiatAccounts: Map<String, String>, walletAccounts: Map<String, String?>, owners: Set<String> = emptySet()): CryptoImportResult {
         val group = books.group(groupId)
         books.require(group, PermissionLevel.EDIT)
-        val warnings = ArrayList(file.warnings)
+        val warnings = ArrayList(file.warnings.map(books::note))
         var created = 0
         val accounts = HashMap<String, String>()
         accounts += fiatAccounts
@@ -298,7 +298,7 @@ class CryptoService internal constructor(private val books: Books) {
         for (e in file.events) {
             val ext = "${file.exchange.lowercase()}:" + (e.externalId ?: fingerprint(e, seen))
             val ok = runCatching { post(e, ext, accounts) }
-                .onFailure { warnings += "${e.date} ${e.kind}: ${(it as? ValidationException)?.message ?: it.message}" }.getOrNull() ?: continue
+                .onFailure { warnings += "${e.date} ${e.kind}: ${(it as? ValidationException)?.message(books.language) ?: it.message}" }.getOrNull() ?: continue
             if (ok) added++ else already++
         }
         val linked = linkTransfers()

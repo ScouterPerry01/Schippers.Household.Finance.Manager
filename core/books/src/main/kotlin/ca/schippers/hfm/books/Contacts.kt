@@ -357,7 +357,7 @@ class ContactService internal constructor(private val books: Books) {
         when (target) {
             LinkTarget.INSTITUTION -> books.institutions.list().associate { it.id to it.name }
             LinkTarget.PAYEE -> books.payees.list(includeArchived = true).associate { it.id to it.name }
-            LinkTarget.ACCOUNT -> books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name }
+            LinkTarget.ACCOUNT -> books.accounts.all(includeClosed = true).associate { it.id to it.name }
             LinkTarget.POLICY -> books.insurance.policies(includeInactive = true).associate { p ->
                 p.id to listOfNotNull(books.text("policyKind.${p.kind}"), p.insurer, p.policyNumber).joinToString(" · ")
             }
@@ -466,7 +466,7 @@ class ContactService internal constructor(private val books: Books) {
         val privateGroups = books.groups().filter { it.isPrivate }
         val editablePrivate = privateGroups.filter { it.level == PermissionLevel.EDIT }.map { it.id }.toSet()
         fun private(groupId: String) = groupId.takeIf { id -> privateGroups.any { it.id == id } }
-        val accounts = runCatching { books.accounts.list(includeClosed = true).map { it.account } }.getOrDefault(emptyList())
+        val accounts = runCatching { books.accounts.all(includeClosed = true) }.getOrDefault(emptyList())
         for (i in books.institutions.list()) {
             val folded = SearchService.fold(i.name)
             val kind = if ("caisse" in folded || "credit union" in folded) ContactKind.CREDIT_UNION else ContactKind.BANK

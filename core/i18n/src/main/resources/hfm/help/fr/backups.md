@@ -10,7 +10,7 @@ Cliquez sur Choisir le dossier… et choisissez un dossier. Pour une vraie prote
 
 ## Régler l’horaire
 
-- Sauvegardes automatiques : Désactivées, Chaque jour ou Chaque semaine.
+- Sauvegardes automatiques : Désactivées, Chaque jour ou Chaque semaine. L’horaire s’applique tant que le ménage est ouvert.
 - Versions à conserver : le nombre de sauvegardes gardées dans le dossier. Les plus anciennes ne sont supprimées qu’après la vérification réussie d’une nouvelle.
 
 Cliquez sur Enregistrer après les avoir changés.

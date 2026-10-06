@@ -181,7 +181,7 @@ class PlanService internal constructor(private val books: Books) {
     // --- Plan details and beneficiaries (INV-11) -----------------------------------------------
 
     fun registeredAccounts(includeClosed: Boolean = false): List<Account> =
-        books.accounts.list(includeClosed).map { it.account }.filter { it.type.isRegistered }
+        books.accounts.all(includeClosed).filter { it.type.isRegistered }
 
     fun details(accountId: String): PlanDetails {
         val (group, _) = books.accounts.locate(accountId)
@@ -295,7 +295,7 @@ class PlanService internal constructor(private val books: Books) {
      * imported from a brokerage file, M-32) and counts too.
      */
     private fun flows(memberId: String, plan: RoomPlan, from: LocalDate, to: LocalDate): List<PlanFlow> {
-        val all = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val all = books.accounts.all(includeClosed = true).associateBy { it.id }
         val excluded: Set<AccountType> = when (plan) {
             RoomPlan.RRSP -> setOf(AccountType.RRSP, AccountType.SPOUSAL_RRSP, AccountType.RRIF, AccountType.SPOUSAL_RRIF, AccountType.FHSA, AccountType.LIRA, AccountType.LIF, AccountType.PENSION)
             RoomPlan.TFSA -> setOf(AccountType.TFSA)
@@ -463,7 +463,7 @@ class PlanService internal constructor(private val books: Books) {
 
     /** What left the plan in [year]: money moved anywhere but another retirement plan (a TFSA counts), and tax withheld. */
     private fun withdrawn(account: Account, year: Int): Money {
-        val all = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val all = books.accounts.all(includeClosed = true).associateBy { it.id }
         val taxes = books.categories.list(includeArchived = true).filter { it.systemKey?.startsWith("taxes") == true }.map { it.id }.toSet()
         return books.transactions.register(account.id).map { it.transaction }
             .filter { it.date.year == year && it.amount.isNegative }
@@ -523,7 +523,7 @@ class PlanService internal constructor(private val books: Books) {
         GrantKind.QESI -> "QESI / IQEE"
         GrantKind.BCTESG -> "BCTESG"
         GrantKind.CLB -> "CLB / BEC"
-        GrantKind.OTHER -> "RESP grant"
+        GrantKind.OTHER -> "RESP grant / Subvention REEE"
     }
 
     /**
@@ -532,7 +532,7 @@ class PlanService internal constructor(private val books: Books) {
      */
     fun respBeneficiaries(year: Int, today: LocalDate = books.today()): List<RespBeneficiaryStatus> {
         val resps = registeredAccounts(includeClosed = true).filter { it.type == AccountType.RESP }
-        val all = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val all = books.accounts.all(includeClosed = true).associateBy { it.id }
         val members = books.members.list(includeArchived = true).associateBy { it.id }
         val byMember = HashMap<String, MutableMap<Int, Long>>()
         val received = HashMap<Pair<String, GrantKind>, Long>()
