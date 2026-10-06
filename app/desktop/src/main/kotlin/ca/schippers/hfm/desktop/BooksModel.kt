@@ -166,8 +166,17 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         return "${r.subjectName.ifBlank { null }?.let { "$it: " }.orEmpty()}${t("renewalKind.${r.kind}")}${renewalDetail(r)?.let { " ($it)" }.orEmpty()} $whenText"
     }
 
-    /** A renewal's detail as shown; for a tax instalment, the authority named in the user's language. */
-    fun renewalDetail(r: Renewal): String? = if (r.kind == RenewalKind.TAX_INSTALMENT) r.detail?.let { t("taxAuthority.$it") } else r.detail
+    /**
+     * A renewal's detail as shown; for a tax instalment, the authority named in the user's language;
+     * for a vehicle warranty with no provider, its kind (sent as the kind's name) in the user's language.
+     */
+    fun renewalDetail(r: Renewal): String? = when (r.kind) {
+        RenewalKind.TAX_INSTALMENT -> r.detail?.let { t("taxAuthority.$it") }
+        RenewalKind.WARRANTY -> r.detail?.split(" · ")?.joinToString(" · ") { part ->
+            if (ca.schippers.hfm.books.WarrantyKind.entries.any { it.name == part }) t("warrantyKind.$part") else part
+        }
+        else -> r.detail
+    }
 
     fun renewalSection(kind: RenewalKind): Section = when (kind) {
         RenewalKind.PET_LICENCE, RenewalKind.PET_INSURANCE -> Section.PETS
