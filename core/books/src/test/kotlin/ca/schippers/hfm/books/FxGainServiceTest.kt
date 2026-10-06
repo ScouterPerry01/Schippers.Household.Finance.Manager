@@ -77,6 +77,41 @@ class FxGainServiceTest {
     }
 
     @Test
+    fun `exposure counts securities by trading currency, registered plans and debts`() {
+        fun account(name: String, type: AccountType, currency: Currency, opening: String) =
+            books.accounts.create(AccountDraft(group, name, type, currency, Money.parse(opening, currency), d("2026-01-01"), ownerMemberIds = setOf(alex.id)))
+        val inv = books.investments
+        val aapl = inv.saveSecurity(Security("", "AAPL", "NASDAQ", "Apple Inc.", SecurityKind.STOCK, Currency.USD))
+        val xyz = inv.saveSecurity(Security("", "XYZ", "NYSE", "XYZ Corp", SecurityKind.STOCK, Currency.USD))
+        // A US stock held in a Canadian-dollar TFSA is US-dollar exposure, in the registered column.
+        val tfsa = account("CELI", AccountType.TFSA, Currency.CAD, "5000")
+        inv.save(InvestmentTxn("", tfsa.id, d("2026-03-02"), InvestmentKind.BUY, aapl.id, BigDecimal("10"), BigDecimal("270"), cad("2700")))
+        // US$500 of the US brokerage cash buys a US stock.
+        inv.save(InvestmentTxn("", usdBroker.id, d("2026-03-02"), InvestmentKind.BUY, xyz.id, BigDecimal("5"), BigDecimal("100"), us("500")))
+        inv.setPrice(aapl.id, d("2026-12-31"), BigDecimal("210"))
+        inv.setPrice(xyz.id, d("2026-12-31"), BigDecimal("120"))
+        // A US-dollar card owing US$300, and a euro account with no rate.
+        account("Visa US", AccountType.CREDIT_CARD, Currency.USD, "-300")
+        account("Compte EUR", AccountType.SAVINGS, Currency.EUR, "1000")
+
+        val r = books.fxGains.report(2026, d("2026-12-31"))
+        val usd = r.exposure.single()
+        assertEquals(Currency.USD, usd.currency)
+        assertEquals(cad("6075"), usd.cash, "US$4,000 saved and US$500 left in the brokerage, at 1.35")
+        assertEquals(cad("810"), usd.securities, "5 XYZ at US$120")
+        assertEquals(cad("2835"), usd.registered, "10 AAPL at US$210 in the TFSA")
+        assertEquals(cad("405"), usd.debts)
+        assertEquals(cad("9315"), usd.net)
+        assertTrue(Currency.EUR in r.missingRates, "the euro account has no rate")
+        // With a euro rate, the euro account shows as its own line.
+        books.rates.setManual(Currency.EUR, d("2026-12-31"), BigDecimal("1.50"))
+        val eur = books.fxGains.exposure(d("2026-12-31")).first { it.currency == Currency.EUR }
+        assertEquals(cad("1500"), eur.cash)
+        // Before anything was bought, there was no exposure.
+        assertTrue(books.fxGains.exposure(d("2025-12-31")).isEmpty())
+    }
+
+    @Test
     fun `reports in the original currency`() {
         val year = ReportFilter(d("2026-01-01"), d("2026-12-31"))
         val inCad = books.reports.byCategory(year).value.single()

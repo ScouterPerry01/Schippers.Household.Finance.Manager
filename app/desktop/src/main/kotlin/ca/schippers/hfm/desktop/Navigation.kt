@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
@@ -119,7 +120,12 @@ fun TopMenu(model: BooksModel, app: AppState, counts: Map<Section, Int>) {
                 Box {
                     TextButton(
                         onClick = { open = group },
-                        modifier = Modifier.semantics { contentDescription = model.t("navGroup.$group") + ", " + model.t("nav.menu") },
+                        // NFR-08: the screen reader hears the name, what needs attention, that it is a menu, and whether it is open.
+                        modifier = Modifier.semantics {
+                            contentDescription = listOfNotNull(model.t("navGroup.$group"), model.t("nav.toLookAt", total).takeIf { total > 0 }, model.t("nav.menu")).joinToString(", ")
+                            stateDescription = model.t(if (open == group) "nav.expanded" else "nav.collapsed")
+                            role = Role.DropdownList
+                        },
                     ) {
                         Text(
                             model.t("navGroup.$group") + (if (total > 0) " ($total)" else "") + " ▾",

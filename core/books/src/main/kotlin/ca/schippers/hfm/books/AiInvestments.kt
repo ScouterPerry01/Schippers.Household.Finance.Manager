@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.importers.ImportNote
 import ca.schippers.hfm.importers.ImportedAction
 import ca.schippers.hfm.importers.ImportedInvestmentAction
 import ca.schippers.hfm.importers.ImportedInvestmentStatement
@@ -24,7 +25,7 @@ internal object AiInvestments {
         val currency = currencyOf(answer.text("currency")) ?: accountCurrency
         validate(currency == accountCurrency, "error.aiInvestmentCurrency", currency.code, accountCurrency.code)
         val securities = LinkedHashMap<String, ImportedSecurity>()
-        val warnings = ArrayList<String>()
+        val warnings = ArrayList<ImportNote>()
         /** The key of the security a line names: its symbol, else its name; null when it names neither. */
         fun security(o: JsonObject, price: BigDecimal? = null, on: LocalDate? = null): String? {
             val symbol = o.text("symbol")?.uppercase()
@@ -42,11 +43,11 @@ internal object AiInvestments {
                 val actions = answer.list("trades").mapNotNull { t ->
                     val date = t.date("trade_date")
                     if (date == null) {
-                        warnings += "A trade without a trade date was skipped."
+                        warnings += ImportNote.of("aiTradeNoDate", "A trade without a trade date was skipped.")
                         return@mapNotNull null
                     }
                     if (currencyOf(t.text("currency"))?.let { it != accountCurrency } == true) {
-                        warnings += "$date: a trade in ${t.text("currency")} was skipped; the account is in ${accountCurrency.code}."
+                        warnings += ImportNote.of("aiTradeCurrency", "$date: a trade in ${t.text("currency")} was skipped; the account is in ${accountCurrency.code}.", date, t.text("currency").orEmpty(), accountCurrency.code)
                         return@mapNotNull null
                     }
                     val sell = t.text("action") == "sell"
@@ -89,7 +90,7 @@ internal object AiInvestments {
      * One activity line of a statement. Its amount is the cash effect, money in positive: a
      * purchase's gross value is its units times price, else what it cost less the commission.
      */
-    private fun activity(a: JsonObject, security: (JsonObject, BigDecimal?, LocalDate?) -> String?, warnings: MutableList<String>): ImportedInvestmentAction? {
+    private fun activity(a: JsonObject, security: (JsonObject, BigDecimal?, LocalDate?) -> String?, warnings: MutableList<ImportNote>): ImportedInvestmentAction? {
         val date = a.date("date") ?: return null
         val type = a.text("type") ?: "other"
         val amount = a.number("amount")
@@ -110,7 +111,7 @@ internal object AiInvestments {
             "interest" -> act(ImportedAction.INTEREST, cash?.let { it + (withheld ?: BigDecimal.ZERO) }, tax = withheld)
             "distribution" -> act(ImportedAction.DISTRIBUTION, cash?.let { it + (withheld ?: BigDecimal.ZERO) }, tax = withheld)
             "reinvestment" -> if (quantity == null) {
-                warnings += "$date: a reinvestment without units was skipped."
+                warnings += ImportNote.of("aiReinvestNoUnits", "$date: a reinvestment without units was skipped.", date)
                 null
             } else {
                 act(ImportedAction.REINVEST, units ?: cash, quantity, price, income = ImportedAction.DISTRIBUTION.takeIf { memo?.contains("distrib", ignoreCase = true) == true } ?: ImportedAction.DIVIDEND)
@@ -122,11 +123,11 @@ internal object AiInvestments {
             "transfer" -> if (quantity == null && amount != null && amount.signum() != 0) {
                 act(if (amount.signum() > 0) ImportedAction.CASH_IN else ImportedAction.CASH_OUT, cash).copy(securityKey = null)
             } else {
-                warnings += "$date: a transfer of units (${memo.orEmpty()}) was skipped; enter it with its book cost."
+                warnings += ImportNote.of("aiTransferUnits", "$date: a transfer of units (${memo.orEmpty()}) was skipped; enter it with its book cost.", date, memo.orEmpty())
                 null
             }
             else -> {
-                warnings += "$date: \"${memo.orEmpty()}\" was not imported; enter it by hand if it belongs in the books."
+                warnings += ImportNote.of("aiNotImported", "$date: \"${memo.orEmpty()}\" was not imported; enter it by hand if it belongs in the books.", date, memo.orEmpty())
                 null
             }
         }?.takeIf { it.amount != null || it.quantity != null }

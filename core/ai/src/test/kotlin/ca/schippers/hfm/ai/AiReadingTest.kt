@@ -56,6 +56,10 @@ class AiReadingTest {
         assertTrue(bad.any { "$.total: expected number" in it }, bad.toString())
         assertTrue(bad.any { "\"colour\" is not allowed" in it }, bad.toString())
         assertTrue(bad.any { "$.taxes[0].name" in it }, bad.toString())
+        // The same problems as text keys for the screen, the JSON path first.
+        val coded = SchemaCheck.validateProblems(obj("""{"merchant":"X","date":"06/09/2026","total":"12,34","colour":"red","taxes":[{"name":"VAT","amount":1}]}"""), receipt.schema)
+        assertTrue(coded.any { it.code == "notDate" && it.args == listOf("$.date", "06/09/2026") }, coded.toString())
+        assertTrue(coded.any { it.code == "notAllowed" && it.args.last() == "colour" }, coded.toString())
     }
 
     @Test
@@ -153,6 +157,8 @@ class AiReadingTest {
         val failure = assertFailsWith<AiFailure> { AiReader(Scripted("not json", """{"merchant":"x"}""")).read(receipt, listOf(byteArrayOf(1)), AiModel.DEFAULT) { logged += it } }
         assertEquals(AiFailure.Reason.INVALID, failure.reason)
         assertEquals(2, logged.size, "both requests are billed and logged")
+        assertTrue(failure.problems.isNotEmpty(), "the problems come with their text keys")
+        assertFailsWith<AiFailure> { AiReader(Scripted("{}")).read(receipt, emptyList(), AiModel.DEFAULT) }.also { assertEquals(AiFailure.Reason.PAGES, it.reason) }
     }
 
     @Test

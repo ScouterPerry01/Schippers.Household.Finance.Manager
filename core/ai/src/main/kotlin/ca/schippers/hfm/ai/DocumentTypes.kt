@@ -42,8 +42,10 @@ data class DocumentType(
     }
 }
 
-/** A file in the user's folder that could not be used, and why. */
-data class RejectedType(val file: String, val reason: String)
+/** A file in the user's folder that could not be used, and why ([reason] in English, [problems] for the screen). */
+data class RejectedType(val file: String, val reason: String, val problems: List<AiProblem> = emptyList()) {
+    constructor(file: String, problem: AiProblem) : this(file, problem.english, listOf(problem))
+}
 
 data class LoadedTypes(val types: List<DocumentType>, val rejected: List<RejectedType>) {
     fun get(id: String): DocumentType? = types.firstOrNull { it.id == id }
@@ -79,8 +81,8 @@ object DocumentTypes {
             for (file in files) {
                 val id = file.nameWithoutExtension
                 val reason = when {
-                    !ID.matches(id) -> "the file name must be lowercase letters, digits and _"
-                    Files.size(file) > MAX_FILE -> "larger than 256 KB"
+                    !ID.matches(id) -> AiProblem("fileName", "the file name must be lowercase letters, digits and _")
+                    Files.size(file) > MAX_FILE -> AiProblem("fileSize", "larger than 256 KB", "256")
                     else -> null
                 }
                 if (reason != null) {
@@ -88,12 +90,12 @@ object DocumentTypes {
                     continue
                 }
                 val schema = runCatching { json.parseToJsonElement(file.readText()).jsonObject }.getOrElse {
-                    rejected += RejectedType(file.fileName.toString(), "not a JSON object: ${it.message}")
+                    rejected += RejectedType(file.fileName.toString(), AiProblem("fileNotJson", "not a JSON object: ${it.message}", it.message.orEmpty()))
                     continue
                 }
-                val problems = SchemaCheck.problems(schema)
+                val problems = SchemaCheck.schemaProblems(schema)
                 if (problems.isNotEmpty()) {
-                    rejected += RejectedType(file.fileName.toString(), problems.take(3).joinToString("; "))
+                    rejected += RejectedType(file.fileName.toString(), problems.take(3).joinToString("; ") { it.english }, problems.take(3))
                     continue
                 }
                 val text = file.resolveSibling("$id.txt").takeIf { Files.isRegularFile(it) }?.readText()?.trim()

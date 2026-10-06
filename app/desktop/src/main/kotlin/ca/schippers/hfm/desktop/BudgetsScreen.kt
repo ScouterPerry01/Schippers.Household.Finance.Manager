@@ -54,13 +54,13 @@ fun BudgetsScreen(model: BooksModel) {
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
-            TextButton(onClick = { month = month.minus(DatePeriod(months = if (yearView) 12 else 1)) }) { Text("◀") }
+            SymbolButton(model.t(if (yearView) "common.previousYear" else "common.previousMonth"), "◀") { month = month.minus(DatePeriod(months = if (yearView) 12 else 1)) }
             Text(
                 if (yearView) month.year.toString()
                 else java.time.YearMonth.of(month.year, month.month.ordinal + 1).format(DateTimeFormatter.ofPattern("MMMM yyyy", locale)).replaceFirstChar { it.titlecase(locale) },
                 style = MaterialTheme.typography.titleMedium, modifier = Modifier.width(200.dp),
             )
-            TextButton(onClick = { month = month.plus(DatePeriod(months = if (yearView) 12 else 1)) }) { Text("▶") }
+            SymbolButton(model.t(if (yearView) "common.nextYear" else "common.nextMonth"), "▶") { month = month.plus(DatePeriod(months = if (yearView) 12 else 1)) }
             LabeledCheckbox(model.t("budget.yearView"), yearView) { yearView = it }
         }
         val report = remember(model.revision, month, yearView) { if (yearView) model.books.budgets.year(month.year) else model.books.budgets.month(month) }

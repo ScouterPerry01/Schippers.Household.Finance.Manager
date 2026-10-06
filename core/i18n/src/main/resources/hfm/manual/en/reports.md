@@ -30,11 +30,12 @@ Click a report's name to show it. The reports, in the order listed:
 - **Investment portfolio**: returns, allocation and holdings. See [Investment portfolio](reports#portfolio).
 - **Investment income and capital gains**: the T5, T3, RL-3 and RL-16 slips and Schedule 3, per person. See [Investment income and capital gains](reports#investment-income).
 - **Registered plans**: contribution room, plan values, RRIF and LIF minimums, RESP grants and pensions. See [Registered plans](reports#registered-plans).
-- **Foreign exchange gains and currency exposure**: foreign currency held and exchange gains realized. See [Foreign exchange gains and currency exposure](reports#foreign-exchange).
+- **Foreign exchange gains and currency exposure**: what is held and owed in each foreign currency, and exchange gains realized. See [Foreign exchange gains and currency exposure](reports#foreign-exchange).
 - **Medical expenses**: costs, reimbursements and the medical expense tax credit. See [Medical expenses](reports#medical-expenses).
 - **Assets and warranties**: the home inventory, warranties ending soon and what no policy covers. See [Assets and warranties](reports#assets-warranties).
 - **Maintenance and cost of ownership**: what vehicles and other assets cost to keep, and what falls due. See [Maintenance and cost of ownership](reports#maintenance).
-- **Debt summary**: every loan, mortgage, line of credit and card. See [Debt summary](reports#debt-summary).
+- **Cash flow forecast**: the bank accounts day by day over the coming weeks, from the scheduled bills and income. See [Cash flow forecast](reports#cash-flow).
+- **Debt summary**: every loan, mortgage, line of credit and card, and how the loans will be paid off. See [Debt summary](reports#debt-summary).
 - **Budget vs actual**: budgets against what was really spent and received. See [Budget vs actual](reports#budget-vs-actual).
 - **Reconciliation status**: when each account was last reconciled. See [Reconciliation status](reports#reconciliation-status).
 
@@ -255,7 +256,9 @@ The year at a glance against the year before, to read, print or share. Choose th
 - Visited most: the five payees with the most purchases, with the number of visits and the amount spent.
 - Busiest month: the month with the most spending.
 
-The table holds the same lines with **Section**, **Item** and **Amount**, for export.
+Two charts come first. **Month by month** shows income and spending as a pair of bars for each month; click a bar to see the transactions behind it. **Where the money went** shows the five category groups with the most spending as bars, each with what it was the year before; click a bar to see its transactions.
+
+The table holds the same lines with **Section**, **Item** and **Amount**, and each month's income and spending, for export.
 
 ## Wealth and investment reports {#wealth-reports}
 
@@ -383,11 +386,12 @@ The figures are those of the Registered plans screen: see [Registered plans](pla
 
 @index: foreign exchange; currency gain; FX gain; US dollars; currency exposure; $200 exemption
 
-Foreign currency held in non-registered bank and investment accounts, and the exchange gains and losses realized in the **Tax year**, in the base currency.
+What the household holds and owes in each foreign currency, the foreign currency held in non-registered bank and investment accounts, and the exchange gains and losses realized in the **Tax year**, in the base currency.
 
 How it works: foreign currency is bought when it comes into an account (at what the other account paid for it, or at the day's rate) and sold when it goes out (at what the other account received, or at the day's rate). Each currency is pooled for the same owners, like shares. Moves between those accounts are neither. Debts in a foreign currency and crypto-assets are not included. Problems found in the history are listed in red.
 
-- Foreign currency held at the end of the year (or today, for the current year): a ranked bar per currency and owners, with its value and its balance, and a table with **Currency**, **Owners**, **Balance**, **ACB**, **Market value** and **Unrealized gain**.
+- Currency exposure at the end of the year (or today, for the current year): for each foreign currency, at the rate of the day, **Cash** (foreign cash in non-registered accounts), **Securities** (securities in non-registered accounts, by the currency they trade in: a US stock held in a Canadian-dollar account counts as US dollars), **Registered plans** (cash and securities in RRSPs, TFSAs and other plans) and **Debts** (cards, lines of credit and loans in that currency). A bar chart shows the four side by side for each currency; the table adds **Net exposure**, what is held less what is owed. A security with no price counts at its book cost; crypto-assets are not included.
+- Foreign currency held at the same date, for the exchange gains: a table with **Currency**, **Owners**, **Balance**, **ACB**, **Market value** and **Unrealized gain**.
 - Exchange gains and losses realized in the year: for each person, the net result and **Reportable after the exemption**; then each disposal with **Date**, **Currency**, **Owners**, **Amount**, **Proceeds**, **ACB** and **Gain**.
 
 An individual leaves out the first $200 of the year's net foreign exchange gain or loss on personal transactions; only the rest is a capital gain or loss for Schedule 3. Gains on currency used in a business, or for investments held for trading, may be treated differently.
@@ -448,11 +452,24 @@ Assets are kept on the Home and assets screen: see [Home and assets](assets).
 Vehicles and other assets together, for one **Year** (up to today for the current year), in the base currency. Items disposed of before the year are left out; an asset other than a vehicle appears only if it has maintenance tasks, services, costs or insurance of its own.
 
 - **Spent on maintenance**: the costs of the services logged in the year. **Services**: how many. **Overdue now**: the tasks due now.
-- Cost of ownership: per item, **Kind**, **Running costs**, **Insurance (share)**, **Use** (distance or hours in the year) and **Per km or hour**. Running costs are the payments linked to the item and the services logged without a payment; the insurance is its share of the premiums of the policies that name it.
+- Cost of ownership: per item, **Kind**, **Running costs**, **Insurance (share)**, **Use** (distance or hours in the year) and **Per km or hour**. Running costs are the payments linked to the item and the services logged without a payment; the insurance, for vehicles and other assets alike, is its share of the premiums of the policies that name it.
 - Service log: each service in the year with **Date**, **Item**, **Tasks**, **Done by** (the provider, or "Done myself"), **Parts** and **Cost**.
 - Due in the next 12 months: each task with **Item**, **Tasks**, **Due** (a date, a reading, or both, with the expected date for a reading) and **Status**.
 
 See [Vehicles](vehicles) and [Home and assets](assets) for the tasks and services.
+
+### Cash flow forecast {#cash-flow}
+
+@index: cash flow; forecast; low balance; overdraft; will we run short
+
+The bank accounts day by day over the coming weeks, from the scheduled bills, income and transfers still due (one that is overdue counts today). Choose how far to look with **Looking ahead**: 30, 60, 90 or 180 days, or the forecast period of Rates and rules.
+
+- **Today**, the balance on the last day, and **Lowest**: the bank accounts together, in the base currency at today's rate.
+- A red line says on which day the bank accounts together would go below zero, and which accounts a payment would overdraw.
+- The chart: a line for all the bank accounts together and one for each account in the base currency that has something scheduled, with a red line at zero. Point at a day to read the balances.
+- The table: each scheduled item with **Date**, **Accounts**, **Bill or income**, **Amount** and **Balance** after it.
+
+The same chart is at the top of the Forecast tab of [Bills](bills).
 
 ### Debt summary {#debt-summary}
 
@@ -465,6 +482,8 @@ Every open loan, mortgage, line of credit and card, as of today (transactions da
 - For a loan or mortgage, the rate, payment, payoff date and remaining interest come from its terms on the Loans and mortgages screen (see [Loans and mortgages](loans)). For a card or line of credit, the rate is the purchase rate, the cash advance rate is its own column, and the payment is the minimum due, all from the card's terms (see [Credit card details](accounts#card-details)).
 
 "No debts. Well done." appears when nothing is owed.
+
+Under the table, **Paying off the loans** shows each loan and mortgage with terms, from today's balance to its payoff, in the base currency at today's rate: a line per loan for what is still owed at the end of each year, and **Interest each year**, a bar per year for the interest the payments will carry. Click a year's bar to see the loan transactions already recorded that year. The table under them holds the same figures for export. Cards and lines of credit have no set payoff and are not shown.
 
 ### Budget vs actual {#budget-vs-actual}
 

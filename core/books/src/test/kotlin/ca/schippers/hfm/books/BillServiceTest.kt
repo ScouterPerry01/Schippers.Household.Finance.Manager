@@ -118,6 +118,17 @@ class BillServiceTest {
         assertEquals(listOf("Saving"), cheq.shortfalls.map { it.occurrence!!.bill.name })
         assertEquals(cad("3800.00"), cheq.points.last().balance)
         assertEquals(cad("300.00"), forecast.getValue("Savings").points.last().balance)
+
+        // The chart: every day, each bank account's balance and their total.
+        val flow = books.bills.cashFlow(today = d(10, 1), days = 30)
+        assertEquals(31, flow.dates.size)
+        assertEquals(d(10, 31), flow.dates.last())
+        val day = { date: LocalDate -> flow.total[flow.dates.indexOf(date)] }
+        assertEquals(cad("1000.00"), day(d(10, 4)))
+        assertEquals(cad("100.00"), day(d(10, 5)), "chequing -200 and savings 300: the transfer stays in the bank accounts")
+        assertEquals(cad("-200.00"), flow.accounts.first { it.account.name == "Chequing" }.balanceOn(d(10, 8)))
+        assertEquals(cad("4100.00"), flow.total.last())
+        assertEquals(null, flow.firstShortfall, "together the accounts never go below zero")
     }
 
     @Test

@@ -84,6 +84,30 @@ data class LifeCover(val policy: InsurancePolicy, val beneficiaries: List<Policy
  */
 class InsuranceService internal constructor(private val books: Books) {
 
+    /**
+     * MNT-13: an estimate of what the active policies that name [itemId] (an asset or a vehicle)
+     * cost from [from] to [to]: each policy's yearly premium, split evenly between the things it
+     * names, for the days in the period from the policy's start date, in the base currency. Null
+     * when no such policy has a premium.
+     */
+    fun premiumShare(itemId: String, from: LocalDate, to: LocalDate): Money? {
+        val base = books.rates.baseCurrency
+        return policies(includeInactive = false).filter { itemId in it.assetIds }.mapNotNull { p ->
+            val annual = p.annualPremium ?: return@mapNotNull null
+            // Only the days the policy was in force, from its start date.
+            val days = maxOf(from, p.startDate ?: from).daysUntil(to) + 1
+            if (days <= 0) return@mapNotNull null
+            val converted = (if (annual.currency == base) annual else books.rates.convert(annual, base, to)) ?: return@mapNotNull null
+            converted.times(BigDecimal(days).divide(BigDecimal(365 * p.assetIds.size), 10, java.math.RoundingMode.HALF_UP))
+        }.takeIf { it.isNotEmpty() }?.fold(Money.zero(base), Money::plus)
+    }
+
+    /** MNT-13: [premiumShare] for each calendar year from [from] to [to]; empty when there is none. */
+    fun premiumShareByYear(itemId: String, from: LocalDate, to: LocalDate): Map<Int, Money> =
+        (from.year..to.year).mapNotNull { y ->
+            premiumShare(itemId, maxOf(from, LocalDate(y, 1, 1)), minOf(to, LocalDate(y, 12, 31)))?.let { y to it }
+        }.toMap().toSortedMap()
+
     fun policies(includeInactive: Boolean = true): List<InsurancePolicy> = books.groups().flatMap { g ->
         val q = books.ledger(g).assetsQueries
         q.policies().executeAsList().map { it.toPolicy(g.id, q.policyAssets(it.id).executeAsList().toSet()) }

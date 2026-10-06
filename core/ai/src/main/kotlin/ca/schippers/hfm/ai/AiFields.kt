@@ -29,19 +29,33 @@ object AiFields {
     const val UNCHECKED = 0.88f
 
     /** Why the amounts in [answer] do not add up; empty when they do or cannot be checked. */
-    fun arithmetic(typeId: String, answer: JsonObject): List<String> = examine(typeId, answer).second
+    fun arithmetic(typeId: String, answer: JsonObject): List<String> = arithmeticProblems(typeId, answer).map { it.english }
+
+    /** [arithmetic] as problems the screen can show in the user's language (key `aiProblem.sum.<check>`). */
+    fun arithmeticProblems(typeId: String, answer: JsonObject): List<AiProblem> = examine(typeId, answer).second
+
+    /** The English name of each sum checked, for the provider and the log. */
+    private val SUMS = mapOf(
+        "linesSubtotal" to "line items vs. subtotal", "subtotalTotal" to "subtotal + taxes vs. total", "linesTotal" to "line items vs. total",
+        "amountDue" to "balance vs. amount due", "newBalance" to "transactions vs. new balance", "closingBalance" to "transactions vs. closing balance",
+        "netPay" to "gross less deductions vs. net pay", "grossPay" to "earnings vs. gross pay", "totalPaid" to "lines vs. total paid",
+        "totalValue" to "holdings vs. total value", "openingCash" to "opening cash and activity vs. cash balance",
+    )
+
+    private fun sumProblem(check: String, sum: BigDecimal, total: BigDecimal) =
+        AiProblem("sum.$check", "${SUMS.getValue(check)}: ${sum.toPlainString()} instead of ${total.toPlainString()}", sum.toPlainString(), total.toPlainString())
 
     /** Whether [answer] has any sum that could be checked. */
     fun hasSums(typeId: String, answer: JsonObject): Boolean = examine(typeId, answer).first
 
-    private fun examine(typeId: String, answer: JsonObject): Pair<Boolean, List<String>> {
-        val out = ArrayList<String>()
+    private fun examine(typeId: String, answer: JsonObject): Pair<Boolean, List<AiProblem>> {
+        val out = ArrayList<AiProblem>()
         var compared = false
-        fun expect(label: String, parts: List<BigDecimal>, total: BigDecimal?) {
+        fun expect(check: String, parts: List<BigDecimal>, total: BigDecimal?) {
             if (total == null || parts.isEmpty()) return
             compared = true
             val sum = parts.fold(BigDecimal.ZERO, BigDecimal::add)
-            if ((sum - total).abs() > tolerance(parts.size)) out += "$label: ${sum.toPlainString()} instead of ${total.toPlainString()}"
+            if ((sum - total).abs() > tolerance(parts.size)) out += sumProblem(check, sum, total)
         }
         val lines = answer.list("line_items").mapNotNull { it.num("amount") }
         val taxes = answer.list("taxes").mapNotNull { it.num("amount") }
@@ -49,30 +63,30 @@ object AiFields {
             "receipt", "invoice" -> {
                 val subtotal = answer.num("subtotal")
                 if (subtotal != null) {
-                    expect("line items vs. subtotal", lines, subtotal)
-                    expect("subtotal + taxes vs. total", listOf(subtotal) + taxes + listOfNotNull(answer.num("tip")), answer.num("total"))
+                    expect("linesSubtotal", lines, subtotal)
+                    expect("subtotalTotal", listOf(subtotal) + taxes + listOfNotNull(answer.num("tip")), answer.num("total"))
                 } else if (taxes.isEmpty()) {
-                    expect("line items vs. total", lines, answer.num("total"))
+                    expect("linesTotal", lines, answer.num("total"))
                 }
             }
             "bill" -> {
                 val previous = answer.num("previous_balance")
                 val paid = answer.num("payments_received")
                 val charges = answer.num("new_charges")
-                if (previous != null && paid != null && charges != null) expect("balance vs. amount due", listOf(previous, paid.negate(), charges), answer.num("amount_due"))
+                if (previous != null && paid != null && charges != null) expect("amountDue", listOf(previous, paid.negate(), charges), answer.num("amount_due"))
             }
             "card_statement" -> answer.num("previous_balance")?.let { previous ->
-                expect("transactions vs. new balance", listOf(previous) + answer.list("transactions").mapNotNull { it.num("amount") }, answer.num("new_balance"))
+                expect("newBalance", listOf(previous) + answer.list("transactions").mapNotNull { it.num("amount") }, answer.num("new_balance"))
             }
             "bank_statement" -> answer.num("opening_balance")?.let { opening ->
-                expect("transactions vs. closing balance", listOf(opening) + answer.list("transactions").mapNotNull { it.num("amount") }, answer.num("closing_balance"))
+                expect("closingBalance", listOf(opening) + answer.list("transactions").mapNotNull { it.num("amount") }, answer.num("closing_balance"))
             }
             "pay_stub" -> answer.num("gross_pay")?.let { gross ->
-                expect("gross less deductions vs. net pay", listOf(gross) + answer.list("deductions").mapNotNull { it.num("amount")?.negate() }, answer.num("net_pay"))
+                expect("netPay", listOf(gross) + answer.list("deductions").mapNotNull { it.num("amount")?.negate() }, answer.num("net_pay"))
                 val earnings = answer.list("earnings").mapNotNull { it.num("amount") }
-                expect("earnings vs. gross pay", earnings, gross)
+                expect("grossPay", earnings, gross)
             }
-            "eob" -> expect("lines vs. total paid", answer.list("lines").mapNotNull { it.num("amount_paid") }, answer.num("total_paid"))
+            "eob" -> expect("totalPaid", answer.list("lines").mapNotNull { it.num("amount_paid") }, answer.num("total_paid"))
             "trade_confirmation" -> for ((i, t) in answer.list("trades").withIndex()) {
                 val quantity = t.num("quantity")
                 val price = t.num("price")
@@ -81,24 +95,29 @@ object AiFields {
                 val fees = listOfNotNull(t.num("commission"), t.num("other_fees"))
                 val sell = t.str("action") == "sell"
                 val label = "trade ${i + 1}"
+                val number = (i + 1).toString()
                 // Prices are often rounded on the page: allow two cents, or 0.05 % of the trade.
                 fun near(a: BigDecimal, b: BigDecimal) = (a - b).abs() <= BigDecimal("0.02").max(b.abs().multiply(BigDecimal("0.0005")))
                 if (quantity != null && price != null && gross != null) {
                     compared = true
                     val product = quantity.multiply(price)
-                    if (!near(product, gross)) out += "$label units x price vs. gross amount: ${product.stripTrailingZeros().toPlainString()} instead of ${gross.toPlainString()}"
+                    if (!near(product, gross)) out += AiProblem("sum.tradeGross", "$label units x price vs. gross amount: ${product.stripTrailingZeros().toPlainString()} instead of ${gross.toPlainString()}", number, product.stripTrailingZeros().toPlainString(), gross.toPlainString())
                 }
                 val base = gross ?: if (quantity != null && price != null) quantity.multiply(price) else null
                 if (base != null && net != null) {
                     compared = true
                     val feeSum = fees.fold(BigDecimal.ZERO, BigDecimal::add)
                     val expected = if (sell) base - feeSum else base + feeSum
-                    if (!near(expected, net)) out += "$label gross ${if (sell) "less" else "plus"} fees vs. net amount: ${expected.stripTrailingZeros().toPlainString()} instead of ${net.toPlainString()}"
+                    if (!near(expected, net)) out += AiProblem(
+                        if (sell) "sum.tradeNetSell" else "sum.tradeNetBuy",
+                        "$label gross ${if (sell) "less" else "plus"} fees vs. net amount: ${expected.stripTrailingZeros().toPlainString()} instead of ${net.toPlainString()}",
+                        number, expected.stripTrailingZeros().toPlainString(), net.toPlainString(),
+                    )
                 }
             }
             "investment_statement" -> {
                 answer.num("opening_cash_balance")?.let { opening ->
-                    expect("opening cash and activity vs. cash balance", listOf(opening) + answer.list("activity").mapNotNull { it.num("amount") }, answer.num("cash_balance"))
+                    expect("openingCash", listOf(opening) + answer.list("activity").mapNotNull { it.num("amount") }, answer.num("cash_balance"))
                 }
                 val values = answer.list("holdings").mapNotNull { it.num("market_value") } + listOfNotNull(answer.num("cash_balance"))
                 val total = answer.num("total_value")
@@ -107,7 +126,7 @@ object AiFields {
                     compared = true
                     val sum = values.fold(BigDecimal.ZERO, BigDecimal::add)
                     val allowed = BigDecimal.ONE.max(total.abs().multiply(BigDecimal("0.001")))
-                    if ((sum - total).abs() > allowed) out += "holdings vs. total value: ${sum.toPlainString()} instead of ${total.toPlainString()}"
+                    if ((sum - total).abs() > allowed) out += sumProblem("totalValue", sum, total)
                 }
             }
         }

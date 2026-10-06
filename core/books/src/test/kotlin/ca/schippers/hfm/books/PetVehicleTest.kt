@@ -198,6 +198,34 @@ class PetVehicleTest {
         assertEquals(11_000, cost.distanceKm, "from the purchase reading to the service")
         assertEquals(Money.ofMinor(12, Currency.CAD), cost.costPerKm)
         assertEquals(cat("transport.insurance"), cost.costs.byCategory.first().first)
+        assertNull(cost.insurance, "no policy names the vehicle")
+    }
+
+    @Test
+    fun `costs by year and category, and the vehicle's share of the policies that name it`() {
+        val v = civic()
+        val other = books.vehicles.save(Vehicle("", group, "Van", "Toyota", "Sienna", 2019))
+        books.transactions.create(TransactionDraft(visa.id, LocalDate(2025, 12, 15), cad("-200"), "Garage", listOf(SplitDraft(cat("transport.maintenance"), cad("-200"))), assetId = v.id))
+        books.transactions.create(TransactionDraft(visa.id, d(4, 1), cad("-1150"), "Desjardins", listOf(SplitDraft(cat("transport.insurance"), cad("-1150"))), assetId = v.id))
+        books.vehicles.saveFuel(FuelEntry("", v.id, d(6, 1), 50_000, BigDecimal("40"), cad("64")), PaymentDraft(visa.id, cat("transport.fuel"), "Petro-Canada"))
+        books.vehicles.saveService(ServiceRecord("", v.id, d(7, 1), 51_000, "Garage", cost = cad("120")))
+        // One auto policy names both vehicles: $100 a month, half each.
+        books.insurance.save(InsurancePolicy("", group, PolicyKind.AUTO, "Desjardins", premium = cad("100"), frequency = PremiumFrequency.MONTHLY, assetIds = setOf(v.id, other.id)))
+
+        val cost = books.vehicles.costs(v.id, LocalDate(2025, 1, 1), d(12, 31))
+        // VEH-10: each year by category.
+        assertEquals(listOf(2025, 2026), cost.costs.byYearCategory.keys.toList())
+        assertEquals(listOf(cat("transport.maintenance") to cad("200")), cost.costs.byYearCategory.getValue(2025))
+        assertEquals(
+            listOf(cat("transport.insurance") to cad("1150"), cat("transport.maintenance") to cad("120"), cat("transport.fuel") to cad("64")),
+            cost.costs.byYearCategory.getValue(2026),
+        )
+        // MNT-13: $600 a year for this vehicle, from its purchase on January 10: 356 days of 365.
+        assertEquals(cad("585.21"), cost.insurance)
+        assertEquals(mapOf(2026 to cad("585.21")), cost.insuranceByYear, "nothing before the purchase")
+        assertEquals(cad("1534"), cost.costs.total, "the estimate is shown beside the running costs, not added to them")
+        // The other vehicle has no purchase date or readings: its share covers the period asked for.
+        assertEquals(cad("600.00"), books.vehicles.costs(other.id, d(1, 1), d(12, 31)).insurance)
     }
 
     @Test

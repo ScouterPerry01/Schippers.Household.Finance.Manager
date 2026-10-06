@@ -234,6 +234,8 @@ The yearly cost is the amount multiplied by the number of payments in a year: 12
 
 - **30 days**, **60 days**, **90 days**: how far ahead to look. Default: 30 days.
 
+At the top, a chart shows the bank accounts day by day: a line for all of them together (in the base currency at today's rate) and one for each account in the base currency that has something scheduled, with a red line at zero. Point at a day to read the balances. The same chart, with a table you can export, is the [Cash flow forecast](reports#cash-flow) report.
+
 For each account with something scheduled (or with a balance already below zero), a card shows:
 
 - "Today ... · in the end ... · lowest ...": today's balance, the balance at the end of the period, and the lowest point in between.

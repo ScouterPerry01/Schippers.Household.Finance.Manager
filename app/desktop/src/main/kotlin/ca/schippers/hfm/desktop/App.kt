@@ -79,9 +79,16 @@ fun AppTheme(state: AppState, content: @Composable () -> Unit) {
         LocalDarkTheme provides dark,
         androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(density.density, density.fontScale * state.textScale),
     ) {
-        MaterialTheme(colorScheme = if (dark) darkColorScheme() else lightColorScheme(), content = content)
+        MaterialTheme(colorScheme = appColorScheme(dark), content = content)
     }
 }
+
+/**
+ * NFR-08: Material's colours, with the outline (used for hint text) darkened in the light theme
+ * and lightened in the dark one so hints reach 4.5:1 on every surface (ContrastTest).
+ */
+fun appColorScheme(dark: Boolean): androidx.compose.material3.ColorScheme =
+    if (dark) darkColorScheme(outline = androidx.compose.ui.graphics.Color(0xFFBAB5C0)) else lightColorScheme(outline = androidx.compose.ui.graphics.Color(0xFF5F5B66))
 
 @Composable
 private fun AppContent(state: AppState) {

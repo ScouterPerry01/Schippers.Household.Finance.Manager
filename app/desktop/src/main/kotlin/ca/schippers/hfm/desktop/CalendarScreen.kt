@@ -285,14 +285,14 @@ private fun MonthGrid(model: BooksModel, onEdit: (CalendarEvent) -> Unit, onAdd:
 
     Column(Modifier.verticalScroll(rememberScrollState())) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { month = month.minus(DatePeriod(months = 1)) }) { Text("◀") }
+            SymbolButton(model.t("common.previousMonth"), "◀") { month = month.minus(DatePeriod(months = 1)) }
             Text(
                 java.time.YearMonth.of(month.year, month.month.ordinal + 1)
                     .format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy", locale)).replaceFirstChar { it.titlecase(locale) },
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.width(220.dp),
             )
-            TextButton(onClick = { month = month.plus(DatePeriod(months = 1)) }) { Text("▶") }
+            SymbolButton(model.t("common.nextMonth"), "▶") { month = month.plus(DatePeriod(months = 1)) }
             TextButton(onClick = { month = today().let { LocalDate(it.year, it.month, 1) } }) { Text(model.t("calendar.today")) }
             Text(model.t("calendar.clickDay"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = 16.dp))
         }
@@ -465,7 +465,7 @@ internal fun EventDialog(model: BooksModel, existing: CalendarEvent?, draft: Eve
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 DateInput(model.t("calendar.date"), date, Modifier.weight(1f)) { date = it }
                 if (!allDay) {
-                    TextInput(model.t("calendar.time"), timeText, Modifier.weight(0.7f), error = if (parseTime(timeText) == null) "HH:MM" else null) { timeText = it }
+                    TextInput(model.t("calendar.time"), timeText, Modifier.weight(0.7f), error = if (parseTime(timeText) == null) model.t("calendar.timeHint") else null) { timeText = it }
                     TextInput(model.t("calendar.duration"), duration, Modifier.weight(0.8f)) { duration = it }
                 }
             }

@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.books.CurrencyExposure
 import ca.schippers.hfm.calc.invest.ForeignExchange
 import ca.schippers.hfm.money.Money
 import kotlinx.datetime.LocalDate
@@ -32,15 +33,44 @@ internal fun FxReport(model: BooksModel, year: Int) {
     Text(model.t("fx.subtitle", year.toString(), base.code), style = MaterialTheme.typography.bodySmall)
     MissingRates(model, report.missingRates)
     report.problems.forEach { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+
+    // Section 12, currency exposure: cash, securities by their trading currency, registered plans and debts.
+    Text(model.t("fx.exposure", model.date(asOf)), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp))
+    Text(model.t("fx.exposureHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+    if (report.exposure.isEmpty()) {
+        Text(model.t("fx.noExposure"), Modifier.padding(vertical = 8.dp))
+    } else {
+        val parts = listOf("fx.cash", "fx.securities", "fx.registered", "fx.debts")
+        fun part(e: CurrencyExposure, i: Int) = when (i) {
+            0 -> e.cash
+            1 -> e.securities
+            2 -> e.registered
+            else -> e.debts
+        }
+        GroupedBarChart(
+            report.exposure.map { it.currency.code },
+            parts.mapIndexed { i, key -> Series(model.t(key), report.exposure.map { part(it, i).d() }, report.exposure.map { model.money(part(it, i)) }) },
+            model.axis(),
+            modifier = Modifier.padding(top = 8.dp),
+        )
+        TableView(
+            model,
+            ReportTable(
+                model.t("fx.exposure", model.date(asOf)), model.t("report.inCurrency", base.code),
+                listOf(model.t("report.currency")) + parts.map { model.t(it) } + model.t("fx.net"),
+                report.exposure.map { e -> listOf(e.currency.code, e.cash, e.securities, e.registered, e.debts, e.net) },
+            ),
+            startOpen = true,
+        )
+    }
+
+    // FX-05: foreign cash in non-registered accounts with its cost, for the exchange gains.
+    Text(model.t("fx.holdings", model.date(asOf)), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
     Text(model.t("fx.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(vertical = 4.dp))
     if (report.holdings.isEmpty()) {
         Text(model.t("fx.none"), Modifier.padding(vertical = 8.dp))
         return
     }
-
-    // Currency exposure: what each holding is worth in the base currency.
-    Text(model.t("fx.holdings", model.date(asOf)), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp))
-    RankedBars(report.holdings.filter { it.value != null }.map { h -> RankedBar("${h.currency.code} · ${owners(h.ownerMemberIds)}", h.value!!.d(), model.money(h.value!!), note = model.money(h.balance)) })
     TableView(
         model,
         ReportTable(

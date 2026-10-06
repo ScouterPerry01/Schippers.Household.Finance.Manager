@@ -32,6 +32,8 @@ data class YearInReview(
     val frequentPayees: List<Triple<String, Int, Money>>,
     /** "2026-03" and what was spent that month. */
     val busiestMonth: Pair<String, Money>?,
+    /** Income and spending month by month, for the chart. */
+    val months: List<PeriodTotals> = emptyList(),
 ) {
     val kept: Money get() = income - spending
 
@@ -96,6 +98,7 @@ class YearReviewService internal constructor(private val books: Books) {
                 .map { Triple(it.label, visits[it.id] ?: 0, payees.rowTotal(it)) }
                 .sortedWith(compareByDescending<Triple<String, Int, Money>> { it.second }.thenByDescending { it.third.minorUnits }).take(5),
             months.rows.maxByOrNull { months.rowTotal(it).minorUnits }?.let { it.label to months.rowTotal(it) },
+            books.reports.incomeExpense(thisYear.copy(to = minOf(thisYear.to, maxOf(thisYear.from, books.today()))), Granularity.MONTH).value,
         )
     }
 }

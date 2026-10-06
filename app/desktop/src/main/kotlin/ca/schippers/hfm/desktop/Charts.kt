@@ -64,7 +64,8 @@ class ChartColors(val dark: Boolean) {
     fun series(slot: Int): Color = Color((if (dark) darkSteps else light)[slot.coerceIn(0, 7)])
     val grid = Color(if (dark) 0xFF2C2C2A else 0xFFE1E0D9)
     val axis = Color(if (dark) 0xFF383835 else 0xFFC3C2B7)
-    val muted = Color(0xFF898781)
+    // Axis labels and notes are text: stepped per theme to reach 4.5:1 (NFR-08, ContrastTest).
+    val muted = Color(if (dark) 0xFFBAB8B1 else 0xFF64625C)
     val ink = Color(if (dark) 0xFFFFFFFF else 0xFF0B0B0B)
     val critical = Color(0xFFD03B3B)
     val surface = Color(if (dark) 0xFF1A1A19 else 0xFFFCFCFB)
