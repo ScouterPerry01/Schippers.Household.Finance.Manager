@@ -151,3 +151,60 @@ Owner's request (2026-10-05): one place for the people and organizations the hou
 | CON-05 | Contacts are filtered by kind, by the person served and by what they are linked to, and found by the global search. | Should |
 | CON-06 | Contacts can be gathered from the records that already hold contact details, and two contacts merged, likely duplicates proposed, nothing merged or moved without the user's confirmation. | Should |
 | CON-07 | The phone shows the contacts its user can see (never account or client numbers), with tap to call, email or map, and can send new contacts to the desktop, where they are reviewed before being added. | Should |
+
+## Calendar views, schedules and activities
+
+Owner's request (2026-10-06), before 1.0.
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| CAL-07 | The calendar has year, month, week and day views beside the agenda, with today, previous and next, and a date picker. | Should |
+| CAL-08 | Each user chooses what the calendar shows: each kind (appointments and events, bills, health, maintenance and seasonal tasks, renewals, schedules, imported calendars) and each person; the choice is remembered per user on that computer. | Should |
+| CAL-09 | Work and school schedules per person: days of the week with start and end times, repeating weekly or on a rotation of several weeks (shift work), with exceptions (holidays, sick days, professional development days) and the province's bank holidays off when chosen. | Should |
+| CAL-10 | Each day shows a thin bar per person with a schedule that day (name, work or school, start and end times); week and day views also shade the scheduled hours. | Should |
+| CAL-11 | Children's activities (practices, games, lessons) are events for the child, with who drives each way (carpool) and the cost, which can become a transaction. | Could |
+
+## Calendars from each person's own accounts
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| CSY-01 | On the phone, with the user's permission, the calendars Android already syncs (Google, Outlook or Exchange, Samsung and others) can be read; the user picks which calendars to bring in. The app never signs in to a calendar account itself. | Should |
+| CSY-02 | Upcoming items of the chosen calendars (a set number of days ahead) are sent to the desktop with the phone's other transfers, encrypted end to end, and updated or removed when they change on the phone. | Should |
+| CSY-03 | Each brought-in calendar, and any single item, is private (only its owner sees it), busy only (others see the person busy at those times, without details) or shared (details visible to those who can see the chosen account group). Private by default. | Should |
+| CSY-04 | Brought-in items show in the calendar as read-only, marked with their source; reminders are left to the calendar they come from. | Should |
+| CSY-05 | iCalendar (.ics) files can be imported on the desktop as a one-time copy. | Could |
+
+## Seasonal checklists
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| SEA-01 | Pool and yard (and garden) are kinds of asset, with starter tasks (pool opening and closing, chemicals, pump and filter; lawn, irrigation shut-off and start-up, outside taps, snow blower, lawn mower), beside fuller seasonal starter tasks for homes, cottages and vehicles (outside taps, eavestroughs, air conditioner cover, wiper blades, block heater, emergency kit). | Should |
+| SEA-02 | A seasonal checklist per change of season (spring, summer, fall, winter): every task of that season across vehicles, homes, cottages, pools, yards and other assets, with its due date, ticked off one by one; ticking records the service in the log. | Should |
+| SEA-03 | Seasons start on dates the household can change (Rates and rules), with Quebec's winter tire dates kept. | Should |
+| SEA-04 | The seasonal checklist is on the phone too; ticks made there reach the desktop. | Should |
+| SEA-05 | Renovations and energy upgrades (insulation, heat pump, windows, solar) recorded as home projects with their receipts, the rebates and grants applied for and received, and their effect on the home's cost base. | Could |
+
+## Trips and vehicles on the phone
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| TRP-01 | A trip is started and ended on the phone: vehicle, driver, date and time, odometer and place at each end; the phone takes one location fix at Start and at Arrive only (no background tracking), with the user's permission. | Should |
+| TRP-02 | Saved places: name, category (home, work, client, store, fuel, garage, medical, other), address and a matching radius; a location fix is matched to the nearest saved place, or the user names a new one. Places are kept on the user's devices only and never sent to a map service. | Should |
+| TRP-03 | Distance comes from the odometer readings (the CRA's basis); time travelled from the two times. The purpose (business, employment, medical, personal) is suggested from the place and confirmed. | Should |
+| TRP-04 | A trip records whether the vehicle tows a trailer (which one) or carries a heavy load, and the passengers. | Should |
+| TRP-05 | Fuel and charging are entered on the phone too (litres or kWh, cost, full or partial, station as a saved place); consumption (L/100 km or kWh/100 km) is shown separately for normal driving, towing and heavy loads. | Should |
+| TRP-06 | Trips reach the desktop's trip log and odometer readings, so distance-based maintenance is forecast from real driving; the CRA business-use log and medical travel use them. | Should |
+| TRP-07 | Vehicle details add engine, transmission, drive, fuel tank or battery capacity, tire sizes (summer and winter), oil type and capacity, towing capacity and gross vehicle weight, and personal or commercial use. | Should |
+| TRP-08 | Vehicle budget forecast: fuel or energy and maintenance for the coming months from the recent driving, consumption by kind of trip and prices. | Should |
+| TRP-09 | For commercial vehicles: a logbook export the CRA accepts, kilometres per province or state (for fuel tax reports such as IFTA) and inspection reminders (annual safety inspection, CVOR or NSC renewals). | Could |
+| TRP-10 | EV charging: home or public, kWh and cost, cost per km compared with fuel. | Should |
+
+## Other trackers
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| UTL-01 | Utility meters (electricity, natural gas, water) per property: readings entered on the phone or the desktop, use per month compared with the same month last year, unusual use flagged. | Should |
+| UTL-02 | Fuel tanks (propane, heating oil): level readings and deliveries, use per month, and a reminder to order before the tank is low. | Should |
+| HRS-01 | Hours worked for side income, per client and task, started and stopped on the phone or entered on the desktop; unbilled hours become invoice lines (SAL-04). | Should |
+| CHO-01 | Chores per child, ticked on the phone, earning amounts that feed the child's allowance and money (HH-03). | Could |
+| VOL-01 | Volunteer hours per person and organization (volunteer firefighter and search and rescue tax credits need 200 hours; students' community service hours), with a yearly total. | Could |
