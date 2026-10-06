@@ -273,6 +273,8 @@ Les lignes suivantes, quand elles s’appliquent :
 
 L’onglet **Prévisions** regarde les 3, 6 et 12 prochains mois :
 
+![L’onglet Prévisions d’un hybride rechargeable qui tire une remorque](images/vehicles-forecast.png)
+
 - « Environ distance par mois » : le rythme des 90 derniers jours, d’après chaque lecture de l’odomètre de ces jours (lectures inscrites, pleins, entretiens et déplacements). Avec moins de deux lectures à deux semaines d’intervalle dans les 90 jours, le rythme de la dernière année sert ; sans aucune, l’onglet indique « Les prévisions demandent des lectures de l’odomètre : au moins deux, à deux semaines d’intervalle. »
 - La part de la distance faite avec une remorque et avec une charge lourde, d’après les déplacements des 90 derniers jours.
 - La consommation utilisée pour chaque type de conduite : celle du véhicule selon le type, de la dernière année (voir [Consommation](vehicles#consumption)) ; un type sans intervalle de plein à plein à lui utilise celle de la conduite normale.

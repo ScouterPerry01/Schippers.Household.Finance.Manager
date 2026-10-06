@@ -273,6 +273,8 @@ The lines under it, when they apply:
 
 The **Forecast** tab looks at the next 3, 6 and 12 months:
 
+![The Forecast tab of a plug-in hybrid that tows a trailer](images/vehicles-forecast.png)
+
 - "About distance a month": the pace of the last 90 days, from every odometer reading of those days (entered readings, fill-ups, services and trips). With fewer than two readings two weeks apart in the 90 days, the pace of the last year is used; with none at all, the tab says "The forecast needs odometer readings: at least two, two weeks apart."
 - The share of the distance driven towing and with a heavy load, from the trips of the last 90 days.
 - The consumption used for each kind of driving: the vehicle's own by kind, from the last year (see [Consumption](vehicles#consumption)); a kind with no full-tank interval of its own uses normal driving's.
