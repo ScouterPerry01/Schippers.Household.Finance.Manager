@@ -119,6 +119,7 @@ Si vous changez le calendrier ou sa première date, les montants sont inscrits d
 - **Raison** :
   - **Dépensé pour ce qui était prévu** : l’objectif a payé ce pour quoi il était prévu (« L’objectif a payé ce pour quoi il était prévu. Inscrivez l’achat dans le compte comme d’habitude. »). Inscrit comme « Utilisé ».
   - **Repris pour autre chose** : l’argent retourne dans la partie non attribuée du solde du compte (« Remet l’argent dans la partie non attribuée du solde. »). Inscrit comme « Repris ». Utilisez-le pour corriger un montant mis de côté ou libérer de l’argent pour un autre besoin.
+- **Achat (facultatif)** : affiché pour **Dépensé pour ce qui était prévu** quand le compte a des paiements dans les 120 derniers jours. Choisissez l’achat que l’objectif a payé pour l’y lier ; la date, le montant et (s’il est vide) la note en sont tirés, et peuvent encore être changés. Laissez « (non lié à un achat) » si l’achat n’est pas encore inscrit ou a été payé d’un autre compte.
 - **Date** : par défaut, aujourd’hui.
 - **Montant** : combien quitte l’objectif. Obligatoire, supérieur à zéro.
 - **Note** : une note facultative.
