@@ -75,6 +75,18 @@ object Thresholds {
     fun backupEvery(on: LocalDate = ruleToday()): Int = number("threshold.backupEvery", on).toInt()
     fun backupKeep(on: LocalDate = ruleToday()): Int = number("threshold.backupKeep", on).toInt()
 
+    /** UTL-01: a month's use above this share of the same month last year is unusual: 1.3 for 130 %. */
+    fun unusualUtility(on: LocalDate = ruleToday()): BigDecimal = number("threshold.unusualUtility", on).movePointLeft(2)
+
+    /** UTL-02: order fuel when a tank is expected to fall to this percentage of its capacity... */
+    fun tankOrderLevel(on: LocalDate = ruleToday()): Int = number("threshold.tankOrderLevel", on).toInt()
+
+    /** ...within this many days. */
+    fun tankOrderDays(on: LocalDate = ruleToday()): Int = number("threshold.tankOrderDays", on).toInt()
+
+    /** VOL-01: the hours of volunteer firefighting and search and rescue the two tax amounts require in [year]. */
+    fun volunteerHours(year: Int): Int = number("threshold.volunteerHours", LocalDate(year, 12, 31)).toInt()
+
     /** When winter tires go on and come off in [province]: month to day. */
     fun winterTiresOn(on: LocalDate, province: Province?): Pair<Int, Int> = Rules.monthDay("vehicle.winterTiresOn", on, province)
     fun winterTiresOff(on: LocalDate, province: Province?): Pair<Int, Int> = Rules.monthDay("vehicle.winterTiresOff", on, province)

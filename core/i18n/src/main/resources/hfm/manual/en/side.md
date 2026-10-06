@@ -8,9 +8,10 @@ Side income is for money the household earns outside a regular job: tutoring, mu
 
 ## The Side income screen {#screen}
 
-The screen has a short explanation at the top and two tabs:
+The screen has a short explanation at the top and three tabs:
 
 - **Invoices**: invoices you send to customers, saved as PDF, and whether they are paid.
+- **Hours worked**: the hours worked for each client, and the unbilled hours turned into an invoice (see [Hours worked](#hours)).
 - **Rental properties**: each property you rent out, with its income, expenses and net for a year, worked out from your transactions.
 
 The screen opens on **Invoices**.
@@ -117,6 +118,48 @@ Saving sets the invoice to **Paid** with that date. With **Record the deposit**,
 - the sales taxes collected (GST, HST, QST or PST) are recorded on the deposit, so its **Sales tax…** details in the register show them.
 
 The deposit is an ordinary transaction: it changes the account's balance and appears in the register and in reports like any other. See [Accounts](accounts). If you already entered the payment yourself, turn **Record the deposit** off so it is not entered twice.
+
+## Hours worked {#hours}
+
+@index: timesheet; billable hours; hourly rate; time tracking; timer; clients
+
+![The Hours worked tab](images/side-hours.png)
+
+The **Hours worked** tab keeps the hours worked for each client, timed on the phone or entered here, and turns the hours not billed yet into the lines of an invoice in one step.
+
+### The list of clients {#hours-list}
+
+- **Add a client**: opens the [client dialog](#client-dialog).
+- **Add hours**: opens the [hours dialog](#hours-dialog); shown once there is a client.
+- **Show archived**: also lists the clients marked archived.
+
+Each client is a card: its name, its hourly rate, who does the work and its tasks. **Not billed** gives the hours not on an invoice yet and what they come to at their rates, or **Everything is billed.** Below, the client's last hours, newest first: the date, the task, the description, the start time, **from the phone**, the time worked, the amount and **Not billed** or **Billed** with the invoice's number. Click a line to change or delete it. **Make an invoice** opens the [invoice step](#hours-invoice); **Edit the client** opens the client dialog.
+
+Hours whose invoice was deleted count as not billed again.
+
+### Add a client dialog {#client-dialog}
+
+- **Client**: the name, as it should appear on the invoice. Required.
+- **Customer address and details**: the address and other details printed on the invoice.
+- **Hourly rate**: in the household's base currency; optional, but hours without any rate cannot be billed.
+- **Who does the work**: the household member, or **Household**. It becomes the person invoicing.
+- **Tasks**: kinds of work for this client, each with a **Task** name and, when it differs from the client's, its own **Rate**. **Add a task** adds a line; ✕ removes it. A task removed after hours were entered for it is kept, archived, so those hours keep their name.
+- **Notes**, **Store in** (for a new client, when you may change several account groups), **Archived** and **Delete**. Deleting a client deletes its tasks and hours; invoices already made stay.
+
+### Add hours dialog {#hours-dialog}
+
+- **Client**: for new hours.
+- **Task**: one of the client's tasks, or —.
+- **Date**, **Start (HH:MM)** (optional) and **Time (h:mm)**: the time as hours and minutes (1:30) or in hours (1.5), from 1 minute to 24 hours.
+- **Description**: what was done; it names the invoice line when there is no task.
+- **Rate for these hours**: only when these hours have a rate of their own. Empty: the task's rate, or else the client's.
+- **Delete**: asks first.
+
+Changing hours already on an invoice does not change the invoice.
+
+### Make an invoice {#hours-invoice}
+
+**Make an invoice** lists the client's hours not billed yet, all ticked; untick those to leave for later. Choose the **Issued** date and click **Make an invoice**. RANN's Roost makes a draft invoice to the client, numbered as the next of that year, with one line per task and rate: the task (or the description) with the dates, the hours as the quantity (to two decimals) and the rate as the price. Its sales taxes follow the person's last invoice. The hours are marked billed on it. Open the invoice on the [Invoices](#invoices) tab to check it, change its taxes and send it.
 
 ## Rental properties {#rentals}
 

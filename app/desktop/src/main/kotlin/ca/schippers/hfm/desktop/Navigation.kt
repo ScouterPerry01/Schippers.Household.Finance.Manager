@@ -38,7 +38,7 @@ enum class NavGroup(val sections: List<Section>) {
     MONEY(listOf(Section.ACCOUNTS, Section.DOCUMENTS, Section.BILLS, Section.BUDGETS, Section.GOALS, Section.FAMILY, Section.SIDE, Section.CALENDAR)),
     INVESTING(listOf(Section.INVESTMENTS, Section.PLANS, Section.LOANS)),
     REPORTS(listOf(Section.REPORTS, Section.TAXES)),
-    HOME(listOf(Section.HEALTH, Section.MEDICAL, Section.ESTATE, Section.PETS, Section.VEHICLES, Section.TRIPS, Section.ASSETS)),
+    HOME(listOf(Section.HEALTH, Section.MEDICAL, Section.ESTATE, Section.PETS, Section.VEHICLES, Section.TRIPS, Section.ASSETS, Section.UTILITIES, Section.VOLUNTEER)),
     SETTINGS(
         listOf(
             Section.MEMBERS, Section.USERS, Section.CATEGORIES, Section.PAYEES, Section.RULES, Section.INSTITUTIONS,

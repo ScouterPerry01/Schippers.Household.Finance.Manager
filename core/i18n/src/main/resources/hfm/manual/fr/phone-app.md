@@ -125,6 +125,8 @@ Les boutons :
 - **Autre document** : numériser tout autre document à garder, comme une garantie ou une lettre.
 - **Dépense rapide** : inscrire un achat sans photo.
 - **Odomètre ou heures** : inscrire l’odomètre d’un véhicule ou les heures d’utilisation d’un équipement.
+- **Liste saisonnière** : les tâches de la saison venues de l’ordinateur, à cocher là où elles sont faites. Voir [Liste saisonnière sur le téléphone](phone-app#seasonal-form).
+- **Relevé de compteur ou de réservoir**, **Heures travaillées**, **Tâches ménagères** et **Bénévolat** : les [formulaires d’inscription](#log-forms).
 
 Le genre choisi décide du classement de la capture sur l’ordinateur : une facture comme facture, un reçu ou une dépense rapide comme reçu, un autre document selon ce que l’ordinateur y lit.
 
@@ -217,6 +219,55 @@ Inscrit une lecture pour un véhicule, ou pour un équipement mesuré en heures 
 - **Enregistrer** : offert dès qu’un élément et une lecture sont saisis. La lecture rejoint la file d’attente et est envoyée aussitôt si possible.
 
 Sur l’ordinateur, la lecture est ajoutée directement au véhicule dans l’écran Véhicules, ou au compteur de l’équipement dans Maison et biens, sans vérification.
+
+## Liste saisonnière sur le téléphone {#seasonal-form}
+
+@index: liste saisonnière; cocher une tâche; entretien fait; piscine; terrain; pneus d’hiver
+
+La liste de la saison en cours, venue de l’ordinateur (voir [Onglet Liste saisonnière](assets#seasonal-tab)) : toutes les tâches de la saison sur les véhicules, la maison, le chalet, la piscine, le terrain et les autres biens que l’utilisateur du téléphone peut voir. Elle arrive avec les autres renseignements de l’ordinateur, donc elle se remplit après le premier transfert et se met à jour à chacun. D’ici là : « La liste vient de l’ordinateur : envoyez une fois pour la recevoir. »
+
+En haut, la saison et ses dates (« Automne 2026, du 2026-09-22 au 2026-12-20 »), « 7 sur 12 faites » avec une barre. Les tâches suivent, regroupées par véhicule ou par bien, chacune avec une case et une ligne : « Prévue le date », « En retard depuis le date » en rouge, « Faite le date », ou « Faite, en attente d’envoi » pour une coche que l’ordinateur n’a pas encore reçue.
+
+Touchez la case d’une tâche pour l’inscrire comme faite. Une fenêtre au nom de la tâche demande :
+
+- **Date (AAAA-MM-JJ)** : aujourd’hui par défaut ; pas un jour à venir.
+- **Coût (CAD, facultatif)** : dans la devise du véhicule ou du bien, avec un point ou une virgule pour les cents.
+- **Odomètre (km)** ou **Heures d’utilisation** : facultatif, pour un véhicule ou un bien qui a un compteur ; en nombres entiers.
+- **Note** : facultatif.
+- **Annuler** ferme sans rien inscrire ; **Inscrire comme faite** met la coche dans la file et l’envoie tout de suite si possible. Elle paraît comme **Tâche faite** dans l’[onglet Envois](phone-app#sent-tab) jusqu’à ce que l’ordinateur la confirme.
+
+Sur l’ordinateur, la coche devient un entretien dans le carnet du véhicule ou du bien, avec la tâche faite, la date, le coût, le relevé et la note, comme si elle avait été cochée là ; le calendrier de la tâche repart. Une coche pour une tâche supprimée entre-temps sur l’ordinateur est refusée, avec la raison dans l’onglet Envois. **Fermer** revient à l’onglet Capture.
+
+## Formulaires d’inscription {#log-forms}
+
+@index: relevé de compteur; niveau du réservoir; propane; chronomètre; heures travaillées; tâches ménagères; bénévolat
+
+Sous les boutons de capture, quatre boutons ouvrent des formulaires qui inscrivent des faits pour l’ordinateur. Ce qu’ils proposent (compteurs, réservoirs, clients, tâches, organismes) vient de l’ordinateur à chaque transfert ; les listes se remplissent donc après le premier. Chaque formulaire a **Annuler**, qui le ferme, et **Enregistrer**, qui met ce que vous avez entré dans la file d’attente et l’envoie aussitôt si possible ; l’[onglet Envois](#sent-tab) le liste comme **Inscrit**. Sur l’ordinateur, il est enregistré tout de suite, sans vérification, et marqué **du téléphone**.
+
+### Relevé de compteur ou de réservoir {#log-meter}
+
+- **Compteur ou réservoir** : les compteurs et réservoirs de l’écran [Services publics](utilities), chacun avec sa maison ou son chalet.
+- **Date (AAAA-MM-JJ)** : aujourd’hui par défaut.
+- Pour un compteur : **Relevé (kWh)** ou **Relevé (m³)**, avec le dernier relevé affiché au-dessus ; selon l’heure, aussi **Pointe**, **Intermédiaire** et **Creuse** (laissez le relevé vide pour envoyer le total des trois).
+- Pour un réservoir : **Niveau (%)**, ou **Ou litres** de sa capacité.
+
+### Heures travaillées {#log-hours}
+
+- **Client** et **Tâche** : les clients de **Heures travaillées** de l’écran [Revenus d’appoint](side#hours), et leurs tâches.
+- **Note** : ce sur quoi vous travaillez.
+- **Démarrer le chronomètre** : commence à chronométrer pour le client et la tâche choisis. Le chronomètre est gardé sur le téléphone ; il continue donc quand vous quittez l’application ou redémarrez le téléphone, et le formulaire montre depuis quand et la durée jusqu’ici. **Arrêter** remplit la date, le début et la durée plus bas, à vérifier et enregistrer ; **Abandonner le chronomètre** l’arrête sans rien garder.
+- **Heures à envoyer** : **Date**, **Début (HH:MM)** (facultatif) et **Durée (h:mm)**, comme 1:30 ou 1,5. **Enregistrer** exige un client et une durée.
+
+### Tâches ménagères {#log-chores}
+
+Liste les tâches de chaque enfant de l’écran [Argent en famille](family#chores), avec ce que chacune vaut et **déjà cochée ce jour-là** s’il y a lieu. Choisissez la **Date** (aujourd’hui par défaut), cochez les tâches faites et **Enregistrer** : chacune est envoyée comme faite ce jour-là. Un parent peut les cocher, ou l’enfant sur son propre téléphone s’il est un utilisateur du ménage.
+
+### Bénévolat {#log-volunteer}
+
+- **Pour** : le membre du ménage.
+- **Organisme déjà utilisé** : les organismes déjà utilisés, qui ramènent aussi leur genre ; ou tapez l’**Organisme**.
+- **Genre** : **Pompier volontaire**, **Recherche et sauvetage**, **Heures communautaires (école)** ou **Autre bénévolat**.
+- **Date**, **Durée (h:mm)** et **Activité**. Voyez [Bénévolat](volunteer).
 
 ## L’onglet Envois {#sent-tab}
 

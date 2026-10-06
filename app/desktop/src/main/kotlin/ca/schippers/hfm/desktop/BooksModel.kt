@@ -29,7 +29,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.plus
 
-enum class Section { DASHBOARD, CONTACTS, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, FAMILY, SIDE, INVESTMENTS, PLANS, LOANS, REPORTS, TAXES, CALENDAR, HEALTH, MEDICAL, ESTATE, PETS, VEHICLES, TRIPS, ASSETS, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, RATE_RULES, PHONES, AI, USERS, BACKUPS, SECURITY, DISPLAY, ABOUT }
+enum class Section { DASHBOARD, CONTACTS, ACCOUNTS, DOCUMENTS, BILLS, BUDGETS, GOALS, FAMILY, SIDE, INVESTMENTS, PLANS, LOANS, REPORTS, TAXES, CALENDAR, HEALTH, MEDICAL, ESTATE, PETS, VEHICLES, TRIPS, ASSETS, UTILITIES, VOLUNTEER, CATEGORIES, PAYEES, RULES, INSTITUTIONS, MEMBERS, RATES, RATE_RULES, PHONES, AI, USERS, BACKUPS, SECURITY, DISPLAY, ABOUT }
 
 /**
  * UI state for an unlocked household. [revision] increases after every successful change, and
@@ -223,6 +223,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         RenewalKind.ASSET_WARRANTY, RenewalKind.INSURANCE_RENEWAL -> Section.ASSETS
         RenewalKind.TAX_INSTALMENT -> Section.TAXES
         RenewalKind.SECURITY_MATURITY -> Section.INVESTMENTS
+        RenewalKind.FUEL_ORDER -> Section.UTILITIES
         else -> Section.VEHICLES
     }
 

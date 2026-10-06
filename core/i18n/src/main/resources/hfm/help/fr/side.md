@@ -1,12 +1,16 @@
 # Revenus d’appoint
 
-Revenus d’appoint sert à l’argent gagné en dehors d’un emploi : tutorat, artisanat, petits contrats ou immeuble locatif. L’écran se trouve dans le groupe Argent du menu et compte deux onglets.
+Revenus d’appoint sert à l’argent gagné en dehors d’un emploi : tutorat, artisanat, petits contrats ou immeuble locatif. L’écran se trouve dans le groupe Argent du menu et compte trois onglets.
 
 ## Factures
 
 Nouvelle facture prend le numéro suivant de l’année, par exemple 2026-001. Entrez le client, les dates et les lignes : une description, une quantité et un prix pour chacune. Si vous êtes inscrit pour percevoir les taxes de vente, entrez le taux de TPS ou de TVH et, au Québec, celui de la TVQ, ou ailleurs celui de la TVP ; sinon laissez-les vides.
 
 PDF enregistre la facture à envoyer. Quand le client paie, Marquer payée peut aussi inscrire le dépôt dans un compte bancaire, comme revenu de travail autonome, avec les taxes perçues notées. Une facture envoyée dont la date d’échéance est passée affiche En retard.
+
+## Heures travaillées
+
+Ajoutez un client avec un taux horaire et, si vous voulez, des tâches avec leur propre taux. Ajoutez des heures, ou chronométrez-les sur le téléphone (Heures travaillées à l’onglet Capturer, avec Démarrer et Arrêter). Chaque client montre les heures pas encore facturées et ce qu’elles donnent. Faire une facture transforme les heures choisies en une facture brouillon, une ligne par tâche et par taux, et les marque facturées ; ouvrez-la à l’onglet Factures pour ajouter les taxes de vente et l’envoyer.
 
 ## Immeubles locatifs
 

@@ -25,7 +25,9 @@ object MaintenanceSchedule {
      * The status of a task last done on [lastDate] at [lastUsage], repeating every
      * [intervalMonths] and/or every [intervalUsage]. [currentUsage] is the latest reading and
      * [usagePerDay] the usual rate, used to forecast when the usage will be reached. A task is
-     * SOON within [remindDays] days or [remindUsage] units of being due.
+     * SOON within [remindDays] days or [remindUsage] units of being due. SEA-01: [intervalWeeks]
+     * repeats by weeks (the earlier of it and [intervalMonths]); with [part] (from and to, as month
+     * and day), a due date outside that part of the year moves to its next start.
      */
     fun status(
         lastDate: LocalDate?,
@@ -37,8 +39,14 @@ object MaintenanceSchedule {
         remindDays: Int,
         remindUsage: Int,
         today: LocalDate,
+        intervalWeeks: Int? = null,
+        part: Pair<Pair<Int, Int>, Pair<Int, Int>>? = null,
     ): DueStatus {
-        val dueDate = intervalMonths?.let { m -> lastDate?.plus(DatePeriod(months = m)) }
+        val byTime = listOfNotNull(
+            intervalMonths?.let { m -> lastDate?.plus(DatePeriod(months = m)) },
+            intervalWeeks?.let { w -> lastDate?.plus(DatePeriod(days = 7 * w)) },
+        ).minOrNull()
+        val dueDate = if (part != null && byTime != null) Seasons.intoPart(byTime, part.first, part.second) else byTime
         val dueUsage = intervalUsage?.let { u -> lastUsage?.plus(u) }
         val forecast = if (dueUsage != null && currentUsage != null && usagePerDay != null && usagePerDay > 0) {
             today.plus(DatePeriod(days = ((dueUsage - currentUsage) / usagePerDay).toInt().coerceAtLeast(0)))

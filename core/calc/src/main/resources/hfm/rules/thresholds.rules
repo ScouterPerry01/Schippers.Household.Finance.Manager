@@ -48,6 +48,17 @@ vehicle.winterTiresOn | QC | 2019-01-01 | 12-01 | Gouvernement du Québec, Highw
 rule vehicle.winterTiresOff MONTH_DAY province
 vehicle.winterTiresOff | - | 2000-01-01 | 04-15 | RANN's Roost default
 
+# When each season of the seasonal checklist starts: the astronomical seasons (equinoxes and
+# solstices, as they usually fall in Canada's time zones); a household may move them.
+rule season.springStart MONTH_DAY
+season.springStart | - | 2000-01-01 | 03-20 | National Research Council Canada, equinoxes and solstices (spring equinox, March 19 to 21)
+rule season.summerStart MONTH_DAY
+season.summerStart | - | 2000-01-01 | 06-21 | National Research Council Canada, equinoxes and solstices (summer solstice, June 20 or 21)
+rule season.fallStart MONTH_DAY
+season.fallStart | - | 2000-01-01 | 09-22 | National Research Council Canada, equinoxes and solstices (fall equinox, September 22 or 23)
+rule season.winterStart MONTH_DAY
+season.winterStart | - | 2000-01-01 | 12-21 | National Research Council Canada, equinoxes and solstices (winter solstice, December 21 or 22)
+
 # The four tax instalment due dates in a year.
 rule instalment.due1 MONTH_DAY
 instalment.due1 | - | 2000-01-01 | 03-15 | CRA, Paying your income tax by instalments
@@ -57,3 +68,20 @@ rule instalment.due3 MONTH_DAY
 instalment.due3 | - | 2000-01-01 | 09-15 | CRA, Paying your income tax by instalments
 rule instalment.due4 MONTH_DAY
 instalment.due4 | - | 2000-01-01 | 12-15 | CRA, Paying your income tax by instalments
+
+# UTL-01: a month's utility use above this percentage of the same month a year before (or, without
+# it, of the average of the three months before) is flagged as unusual.
+rule threshold.unusualUtility NUMBER
+threshold.unusualUtility | - | 2000-01-01 | 130 | RANN's Roost default
+
+# UTL-02: a fuel tank is to be ordered when its level is expected to fall to this percentage of its
+# capacity within the number of days below.
+rule threshold.tankOrderLevel NUMBER
+threshold.tankOrderLevel | - | 2000-01-01 | 25 | RANN's Roost default
+rule threshold.tankOrderDays DAYS
+threshold.tankOrderDays | - | 2000-01-01 | 14 | RANN's Roost default
+
+# VOL-01: the hours of eligible volunteer firefighting and search and rescue service in a year that
+# the volunteer firefighters amount and the search and rescue volunteers amount require.
+rule threshold.volunteerHours NUMBER
+threshold.volunteerHours | - | 2011-01-01 | 200 | CRA, line 31220 Volunteer firefighters amount (VFA) and line 31240 Search and rescue volunteers amount (SRVA): at least 200 hours of eligible service in the year (the two services count together)

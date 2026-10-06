@@ -25,6 +25,10 @@ object RuleLimits {
         "threshold.depreciationYears" to 1..100,
         "threshold.backupEvery" to 0..365,
         "threshold.backupKeep" to 1..365,
+        "threshold.unusualUtility" to 100..1000,
+        "threshold.tankOrderLevel" to 1..90,
+        "threshold.tankOrderDays" to 0..365,
+        "threshold.volunteerHours" to 1..2000,
     ).mapValues { (_, r) -> BigDecimal(r.first)..BigDecimal(r.last) }
 
     /** The allowed range of [key], or null when its type is the only limit. */
@@ -38,7 +42,7 @@ object RuleLimits {
     }
 
     /** Ranged rules that may have decimals; the others are whole numbers. */
-    private val FRACTIONS = setOf("threshold.unusualBill", "threshold.budgetAlert")
+    private val FRACTIONS = setOf("threshold.unusualBill", "threshold.budgetAlert", "threshold.unusualUtility")
 
     fun clamp(key: String, value: BigDecimal): BigDecimal {
         val range = RANGES[key] ?: return value
