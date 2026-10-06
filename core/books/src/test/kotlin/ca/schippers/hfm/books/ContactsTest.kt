@@ -55,6 +55,11 @@ class ContactsTest {
         val again = books.contacts.save(saved.copy(purpose = "Pediatrician"))
         assertEquals("FILE-778899", books.contacts.revealNumber(again.id, number.id, "password1".toCharArray()))
         assertFailsWith<AccessDeniedException> { books.contacts.revealNumber(again.id, number.id, "wrong".toCharArray()) }
+        // Changing the dotted number in place is refused, rather than saving the dots as the number.
+        assertFailsWith<ValidationException> {
+            books.contacts.save(again.copy(details = again.details.map { if (it.id == number.id) it.copy(value = "•••• 88990") else it }))
+        }
+        assertEquals("FILE-778899", books.contacts.revealNumber(again.id, number.id, "password1".toCharArray()))
         // Removing a detail removes it.
         val fewer = books.contacts.save(again.copy(details = again.details.filter { it.type != DetailType.EMAIL }))
         assertEquals(2, fewer.details.size)

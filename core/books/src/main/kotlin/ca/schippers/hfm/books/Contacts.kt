@@ -264,6 +264,8 @@ class ContactService internal constructor(private val books: Books) {
                 if (d.type == DetailType.NUMBER) {
                     // A number shown masked and saved unchanged keeps its full value.
                     val full = if (old != null && old.kind == DetailType.NUMBER.name && value == old.masked) old.content else value
+                    // A masked number changed in place would save the dots as the number: retype it whole.
+                    validate('•' !in full, "error.numberStillMasked")
                     q.upsertDetail(detailId, id, d.type.name, t(d.label), full, AccountService.mask(full) ?: "••••", i.toLong())
                 } else {
                     q.upsertDetail(detailId, id, d.type.name, t(d.label), value, null, i.toLong())
