@@ -116,6 +116,25 @@ object Medical {
         netIncomes.map { (k, income) -> k to claimable(total, income, maxReduction, year) }.sortedByDescending { it.second }
 
     /**
+     * MED-14: the part of [total] that counts for Quebec's credit (line 381): the expenses above
+     * 3 % of [familyIncome], the claimer's and the spouse's net incomes added (rule
+     * medical.qc.threshold.rate for [year]). Quebec has no fixed amount, so the threshold is the
+     * same whichever spouse claims.
+     */
+    fun quebecClaimable(total: BigDecimal, familyIncome: BigDecimal, year: Int): BigDecimal {
+        val rate = decimalOrEarliest("medical.qc.threshold.rate", LocalDate(year, 12, 31))
+        val threshold = familyIncome.max(BigDecimal.ZERO).multiply(rate).setScale(2, RoundingMode.HALF_UP)
+        return (total - threshold).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP)
+    }
+
+    /**
+     * MED-14: whether a service checked by the Quebec rule [ruleKey] (medical.qc.massage,
+     * medical.qc.naturopathy...) counts for Quebec's credit when given on [on]. Quebec accepts care
+     * only from its own list of practitioners. Before the rule's first value, it counts.
+     */
+    fun quebecAccepts(ruleKey: String, on: LocalDate): Boolean = Rules.valueOn(ruleKey, on)?.value?.toBooleanStrictOrNull() ?: true
+
+    /**
      * The federal fixed amount for [year] (rule medical.threshold.max: the "3 % of net income
      * ceiling" of the CRA's indexed amounts), when a value is set for that year: it is indexed each
      * year, so an earlier year's amount is not carried forward. Later years are added in Rates and

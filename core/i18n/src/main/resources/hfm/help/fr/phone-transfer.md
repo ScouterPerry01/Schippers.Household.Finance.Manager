@@ -18,7 +18,7 @@ Tant que le ménage est ouvert, les téléphones jumelés envoient leurs saisies
 
 Sous Loin de la maison, à l’écran Téléphones, cliquez sur Choisir un dossier de transfert… et choisissez un dossier de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud que l’application du service garde sur cet ordinateur. Choisissez le même dossier sur le téléphone. Les nouvelles saisies en sont importées; le service ne peut pas les lire.
 
-Un fichier de transfert reçu par courriel ou copié par clé USB peut être importé avec Importer un fichier de transfert…, ou déposé sur l’écran Documents.
+Un fichier de transfert reçu par courriel ou copié par clé USB peut être importé avec Importer un fichier de transfert…, ou déposé sur l’écran Documents. L’objet de son courriel commence par [RANN's Roost] et un court identifiant, jamais des noms ni des montants. Quand un dossier de transfert est choisi, la réponse y est laissée pour que le téléphone récupère sa confirmation.
 
 ## Vérifier ce qui est arrivé
 

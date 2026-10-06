@@ -243,7 +243,9 @@ The Sent tab lists what you captured, newest first, and how far it got.
 
 **Share as a file…** makes one or more encrypted transfer files of every capture not yet confirmed, then opens Android's share menu so you can send them by email, save them to a USB key or your files, or pass them to another app. Each file holds up to about 15 MB of pictures, so large batches make several files. The button is available when something is still waiting.
 
-On the computer, import the files with **Import a transfer file…** on the Phones screen, or drop them on the Documents screen. The shared items show **Sent** until a later transfer, over Wi-Fi or through the transfer folder, confirms them.
+The email subject is filled in as "[RANN's Roost] transfer" followed by a short id made of the first characters of the household's and the phone's ids (the same characters as in the file names), such as "[RANN's Roost] transfer 5c1e0a-3f9a1c2e". It names no one and gives no amounts, so the mail provider learns nothing about the household, and a mailbox rule can still sort the files. You can change the subject before sending.
+
+On the computer, import the files with **Import a transfer file…** on the Phones screen, or drop them on the Documents screen. The shared items show **Sent** until they are confirmed: over Wi-Fi, the phone sends them again and the computer confirms them; with a transfer folder, the computer leaves its reply there when you import the file, and every reply the phone collects from the folder in the next 60 days confirms them too.
 
 ### The list of captures {#queue}
 

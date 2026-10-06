@@ -23,7 +23,7 @@ The records' own screens show their contacts too, with a Link a contact… butto
 
 ## Gather contacts from the app
 
-The first time you open Contacts, and whenever you choose Gather contacts from the app, the app offers to make contacts from the institutions, health providers, contractors, insurers, brokers and estate contacts it already holds, each linked to where it came from. Records that look like the same contact (same name or phone) are shown together; tick Make them one contact to merge them. Nothing is moved or deleted.
+The first time you open Contacts, and whenever you choose Gather contacts from the app, the app offers to make contacts from the institutions, health providers, contractors, insurers (of policies, pets, vehicles and medical plans), brokers and estate contacts it already holds, each linked to where it came from. Records that look like the same contact (same name or phone) are shown together; tick Make them one contact to merge them. Nothing is moved or deleted.
 
 ## Merge two contacts
 

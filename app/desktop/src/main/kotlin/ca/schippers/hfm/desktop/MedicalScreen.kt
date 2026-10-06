@@ -44,6 +44,8 @@ import ca.schippers.hfm.books.MedExpense
 import ca.schippers.hfm.books.MedPlan
 import ca.schippers.hfm.books.MedPlanKind
 import ca.schippers.hfm.books.MedService
+import ca.schippers.hfm.books.LinkRole
+import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.MedicalService
 import ca.schippers.hfm.books.PlanPerson
 import ca.schippers.hfm.books.ValidationException
@@ -470,6 +472,11 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
                 OutlinedButton(onClick = { coverage = MedCoverage("", saved!!.id, MedService.PRESCRIPTION, BigDecimal(80)) }) { Text(model.t("medical.addCoverage")) }
             }
             saved?.let { s -> DocumentsBlock(model, MedicalService.PLAN, s.id, s.groupId, "medical.booklets") }
+            // CON-04, CON-06: the insurer or the firm that runs the plan, as contacts.
+            LinkedContacts(
+                model, LinkTarget.MEDICAL_PLAN, saved?.id, listOf(LinkRole.INSURER, LinkRole.PLAN_ADMINISTRATOR, LinkRole.OTHER),
+                suggestedName = insurer, memberIds = members.indices.filter { order[it] > 0 }.map { members[it].id }.toSet(), groupId = saved?.groupId ?: groupId,
+            )
         }
     }
     coverage?.let { c -> CoverageDialog(model, c) { coverage = null } }

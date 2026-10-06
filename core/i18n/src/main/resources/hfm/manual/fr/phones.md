@@ -92,7 +92,7 @@ La carte **Loin de la maison** montre le dossier utilisé (« Dossier de transfe
 
 - **Choisir un dossier de transfert…** (ou **Changer de dossier…**) : choisissez le dossier tel qu’il apparaît sur cet ordinateur, le même que celui choisi sur le téléphone. RANN’s Roost le consulte aussitôt et indique combien de saisies il a importées.
 - **Ne plus l’utiliser** : affiché une fois un dossier choisi. RANN’s Roost cesse de surveiller le dossier. Rien n’y est supprimé.
-- **Importer un fichier de transfert…** : choisissez un fichier de transfert (un fichier de transfert RANN’s Roost, qui se termine par .roostsync) arrivé autrement, comme une pièce jointe de courriel enregistrée ou un fichier copié par USB. Vous pouvez aussi déposer un tel fichier dans l’écran [Documents](documents). Cela fonctionne même quand l’écoute est arrêtée.
+- **Importer un fichier de transfert…** : choisissez un fichier de transfert (un fichier de transfert RANN’s Roost, qui se termine par .roostsync) arrivé autrement, comme une pièce jointe de courriel enregistrée ou un fichier copié par USB. Vous pouvez aussi déposer un tel fichier dans l’écran [Documents](documents). Cela fonctionne même quand l’écoute est arrêtée. Quand un dossier de transfert est choisi, la réponse y est laissée, et le message ajoute « Sa réponse est dans le dossier de transfert : le téléphone récupère la confirmation la prochaine fois qu’il le consulte. » Sans dossier, le téléphone apprend que ces saisies sont arrivées à son prochain transfert par Wi-Fi.
 
 Le résultat de la dernière consultation ou importation est affiché au bas de la carte.
 

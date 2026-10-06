@@ -75,9 +75,24 @@ data class QifFile(
 /**
  * Reads Quicken Interchange Format files (OTH-05): Quicken's QIF export, and the QIF written by
  * GnuCash and Moneydance. Accounts, categories, classes, transactions with splits and transfers,
- * and investment actions. QIF has no fixed date order or encoding, so both are worked out.
+ * and investment actions. QIF has no fixed date order or encoding, so both are worked out. Listed
+ * in [ImporterRegistry] (ARC-04).
  */
-object QifParser {
+object QifParser : FileImporter<QifFile> {
+
+    override val id = "qif"
+    override val kind = ImportKind.QIF
+
+    /** A .qif file, or one that starts with a QIF header line (!Type:, !Account, !Option...). */
+    override fun canRead(fileName: String, head: ByteArray): Boolean =
+        fileName.lowercase().endsWith(".qif") || String(head, Charsets.UTF_8).trimStart('\uFEFF', ' ', '\r', '\n', '\t').let { h ->
+            QIF_HEADERS.any { h.startsWith(it, ignoreCase = true) }
+        }
+
+    /** The same as [parse]; [options] are not used (QIF has no currency). */
+    override fun read(bytes: ByteArray, options: ImportOptions): QifFile = parse(bytes)
+
+    private val QIF_HEADERS = listOf("!Type:", "!Account", "!Option:", "!Clear:")
 
     fun parse(bytes: ByteArray): QifFile = parse(decode(bytes))
 

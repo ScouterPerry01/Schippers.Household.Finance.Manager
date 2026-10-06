@@ -16,7 +16,8 @@ enum class PackageSection { EMPLOYMENT, OTHER_INCOME, INVESTMENTS, SELF_EMPLOYME
 
 /**
  * TAX-02: what a package line is, with the federal return line it goes on (or the schedule or form)
- * when there is one fixed place for it. Quebec's return has its own lines, left to the preparer.
+ * when there is one fixed place for it. Quebec's return has its own lines, left to the preparer,
+ * except the medical expenses, whose Quebec total differs (MED-14).
  */
 enum class PackageItem(val section: PackageSection, val line: String?) {
     EMPLOYMENT_INCOME(PackageSection.EMPLOYMENT, "10100"),
@@ -44,6 +45,7 @@ enum class PackageItem(val section: PackageSection, val line: String?) {
     EMPLOYMENT_EXPENSES(PackageSection.DEDUCTIONS, "22900"),
     MEDICAL(PackageSection.CREDITS, "33099"),
     MEDICAL_DEPENDANT(PackageSection.CREDITS, "33199"),
+    MEDICAL_QUEBEC(PackageSection.CREDITS, "TP-1 381"),
     TUITION(PackageSection.CREDITS, "Schedule 11"),
     DONATIONS(PackageSection.CREDITS, "Schedule 9"),
     POLITICAL(PackageSection.CREDITS, "40900"),
@@ -242,7 +244,9 @@ class TaxPackageService internal constructor(private val books: Books) {
      * MED-12, MED-14: the medical expenses as the medical expenses report claims them. The
      * household's own (spouses and children) are claimed together, by one spouse, over the best
      * 12-month period for all of them, so they are one line in the household's package; each adult
-     * dependant's best period is a line of its own (federal 33199) there too.
+     * dependant's best period is a line of its own (federal 33199) there too. When someone files
+     * in Quebec, Quebec's total (line 381 of the TP-1: everyone together, only what Quebec accepts,
+     * over its own best period) is a line as well.
      */
     private fun fromMedical(year: Int, add: (String?, PackageItem, String?, Money) -> Unit) {
         fun money(w: Window) = Money.of(w.total.setScale(2, RoundingMode.HALF_UP), cad)
@@ -252,6 +256,7 @@ class TaxPackageService internal constructor(private val books: Books) {
             val w = p.best ?: continue
             if (w.total.signum() > 0) add(null, PackageItem.MEDICAL_DEPENDANT, "${p.member.displayName}: ${w.start} – ${w.end}", money(w))
         }
+        report.quebec?.let { w -> if (w.total.signum() > 0) add(null, PackageItem.MEDICAL_QUEBEC, "${w.start} – ${w.end}", money(w)) }
     }
 
     /** The slips from the checklist, donation receipts and medical receipts behind one person's package. */
@@ -269,8 +274,9 @@ class TaxPackageService internal constructor(private val books: Books) {
             val report = books.medical.taxReport(year)
             val claimed = listOfNotNull(report.family?.let { it to report.people.filter { p -> !p.otherDependant }.map { p -> p.member.id }.toSet() }) +
                 report.people.filter { it.otherDependant && it.best != null }.map { it.best!! to setOf(it.member.id) }
-            for ((window, people) in claimed) {
-                for (e in books.medical.expensesIn(window, people)) {
+            val quebec = listOfNotNull(report.quebec?.let { Triple(it, report.people.map { p -> p.member.id }.toSet(), true) })
+            for ((window, people, inQuebec) in claimed.map { (w, p) -> Triple(w, p, false) } + quebec) {
+                for (e in books.medical.expensesIn(window, people, inQuebec)) {
                     for (doc in books.documents.documentsFor(MedicalService.EXPENSE, e.id)) put(doc.id, books.text("package.docMedical", e.description ?: books.text("medService.${e.service}"), e.taxDate.toString()))
                 }
             }

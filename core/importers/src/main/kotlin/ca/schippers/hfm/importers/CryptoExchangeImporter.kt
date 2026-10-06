@@ -28,15 +28,20 @@ data class CryptoExchangeFile(val exchange: String, val events: List<CryptoEvent
 /**
  * Transaction histories exported by Canadian exchanges (CR-03): Kraken's ledger export, Coinbase's
  * transaction report, Shakepay's transaction summary (both layouts) and Newton's history. The file
- * is recognised by its headings; rows that cannot be read are listed, not guessed.
+ * is recognised by its headings; rows that cannot be read are listed, not guessed. Listed in
+ * [ImporterRegistry] (ARC-04).
  */
-object CryptoExchangeImporter {
+object CryptoExchangeImporter : FileImporter<CryptoExchangeFile> {
+
+    override val id = "crypto-exchange"
+    override val kind = ImportKind.CRYPTO_EXCHANGE
 
     private val FIAT = setOf("CAD", "USD", "EUR", "GBP", "AUD", "CHF", "JPY")
 
-    fun canRead(fileName: String, head: ByteArray): Boolean = detect(String(head, Charsets.UTF_8)) != null
+    override fun canRead(fileName: String, head: ByteArray): Boolean = detect(String(head, Charsets.UTF_8)) != null
 
-    fun read(bytes: ByteArray): CryptoExchangeFile {
+    /** Reads the whole history; [options] are not used (an exchange's file says its currencies). */
+    override fun read(bytes: ByteArray, options: ImportOptions): CryptoExchangeFile {
         val text = String(bytes, Charsets.UTF_8).removePrefix("﻿")
         return when (detect(text)) {
             "Kraken" -> kraken(text)

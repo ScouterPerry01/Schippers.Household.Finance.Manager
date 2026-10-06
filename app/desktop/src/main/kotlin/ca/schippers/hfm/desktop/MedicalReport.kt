@@ -29,12 +29,13 @@ import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import ca.schippers.hfm.ocr.desktop.PdfPages
 import java.io.File
+import java.math.BigDecimal
 import javax.swing.JFileChooser
 
 /**
  * Section 12, medical expenses (MED-12, MED-14, MED-15): costs, reimbursements and out of pocket
  * per person for the expenses paid in the year, the 12-month period ending in the year with the most eligible expenses
- * for the credit, adult dependants apart, and the receipts as one PDF.
+ * for the credit, adult dependants apart, Quebec's own total for people filing there, and the receipts as one PDF.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -91,7 +92,7 @@ internal fun MedicalReport(model: BooksModel, year: Int, memberId: String?) {
         Text(model.t("medicalReport.family", model.date(w.start), model.date(w.end), model.money(Money.of(w.total, cad))), modifier = Modifier.padding(vertical = 6.dp))
         BundleButton(model, model.t("medicalReport.bundleFamily"), w, familyIds, year)
         val adults = members.filter { it.kind == MemberKind.ADULT && !it.archived }
-        if (memberId == null && adults.size >= 2) WhoClaims(model, year, w, adults)
+        if (memberId == null && adults.size >= 2) WhoClaims(model, year, w, adults, tax.quebec)
     }
     TableView(
         model,
@@ -111,20 +112,38 @@ internal fun MedicalReport(model: BooksModel, year: Int, memberId: String?) {
     for (p in tax.people.filter { it.otherDependant && it.best != null }) {
         BundleButton(model, model.t("medicalReport.bundleFor", p.member.displayName), p.best!!, setOf(p.member.id), year)
     }
+    // MED-14: Quebec's line 381, for a household where someone files in Quebec.
+    val inQuebec = tax.quebec != null || tax.quebecLeftOut.isNotEmpty()
+    if (inQuebec && memberId == null) {
+        Text(model.t("medicalReport.quebecHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp))
+        val q = tax.quebec
+        if (q == null) {
+            Text(model.t("medicalReport.quebecNone", year.toString()), modifier = Modifier.padding(vertical = 6.dp))
+        } else {
+            Text(model.t("medicalReport.quebec", model.date(q.start), model.date(q.end), model.money(Money.of(q.total, cad))), modifier = Modifier.padding(vertical = 6.dp))
+            BundleButton(model, model.t("medicalReport.bundleQuebec"), q, tax.people.map { it.member.id }.toSet(), year, quebec = true)
+        }
+        if (tax.quebecLeftOut.isNotEmpty()) {
+            Text(model.t("medicalReport.quebecLeftOut", model.money(sum(tax.quebecLeftOut) { it.outOfPocket })), style = MaterialTheme.typography.bodySmall)
+            for (e in tax.quebecLeftOut) {
+                Text("${model.date(e.serviceDate)} · ${name(e.memberId)} · ${model.t("medService.${e.service}")} · ${model.money(e.outOfPocket)}", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
     // TAX-04: an organizational aid, not tax advice.
     Text(model.t("medicalReport.taxNotice"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 12.dp))
 }
 
 /** MED-15: saves the receipts of the expenses in [window] as one PDF, after a cover page listing them. */
 @Composable
-private fun BundleButton(model: BooksModel, label: String, window: Window, memberIds: Set<String>, year: Int) {
+private fun BundleButton(model: BooksModel, label: String, window: Window, memberIds: Set<String>, year: Int, quebec: Boolean = false) {
     OutlinedButton(onClick = {
         val chooser = JFileChooser().apply { dialogTitle = label; selectedFile = File(model.t("medicalReport.bundleFile", year.toString()) + ".pdf") }
         if (chooser.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) return@OutlinedButton
         model.act {
             val books = model.books
             val names = books.members.list(includeArchived = true).associate { it.id to it.displayName }
-            val expenses = books.medical.expensesIn(window, memberIds)
+            val expenses = books.medical.expensesIn(window, memberIds, quebec)
             val docs = expenses.flatMap { e -> books.medical.documents(MedicalService.EXPENSE, e.id) }.distinctBy { it.id }
             val cover = expenses.map { e ->
                 listOf(model.date(e.taxDate), names[e.memberId].orEmpty(), model.t("medService.${e.service}"), e.description.orEmpty(), model.money(e.outOfPocket)).joinToString("   ")
@@ -141,7 +160,7 @@ private fun BundleButton(model: BooksModel, label: String, window: Window, membe
  * not hold them). Indicative only: the credit is not refundable, and the return decides.
  */
 @Composable
-private fun WhoClaims(model: BooksModel, year: Int, window: Window, adults: List<Member>) {
+private fun WhoClaims(model: BooksModel, year: Int, window: Window, adults: List<Member>, quebec: Window?) {
     val locale = model.language.locale
     val cad = Currency.CAD
     val incomes = remember(year) { mutableStateMapOf<String, String>() }
@@ -170,5 +189,13 @@ private fun WhoClaims(model: BooksModel, year: Int, window: Window, adults: List
         fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 4.dp),
     )
     Text(model.t("medicalReport.claimNote"), style = MaterialTheme.typography.bodySmall)
-    if (model.books.province.isQuebec) Text(model.t("medicalReport.claimQuebec"), style = MaterialTheme.typography.bodySmall)
+    // MED-14: Quebec's threshold is on the family income, so the same whoever claims.
+    if (quebec != null) {
+        val family = entered.values.fold(BigDecimal.ZERO, BigDecimal::add)
+        Text(
+            model.t("medicalReport.claimableQuebec", model.money(Money.of(Medical.quebecClaimable(quebec.total, family, year), cad)), model.money(Money.of(family.setScale(2), cad))),
+            fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 4.dp),
+        )
+        Text(model.t("medicalReport.claimQuebec"), style = MaterialTheme.typography.bodySmall)
+    }
 }

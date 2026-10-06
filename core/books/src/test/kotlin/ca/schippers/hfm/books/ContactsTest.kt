@@ -292,6 +292,60 @@ class ContactsTest {
     }
 
     @Test
+    fun `a medical plan's insurer is gathered and linked, and a plan administrator can be linked too`() = household().use { books ->
+        val group = books.groups().single().id
+        val sam = books.members.create("Sam", MemberKind.ADULT).id
+        val plan = books.medical.savePlan(MedPlan("", group, MedPlanKind.GROUP_HEALTH, "Employer plan", "Sun Life", people = listOf(PlanPerson(sam, 1))))
+        books.medical.savePlan(MedPlan("", group, MedPlanKind.RAMQ, "RAMQ"))
+
+        val source = books.contacts.proposals().flatMap { it.sources }.single()
+        assertEquals(LinkTarget.MEDICAL_PLAN to "Sun Life", source.target to source.name)
+        assertEquals(setOf(sam), source.memberIds, "the people the plan covers")
+        val sunLife = books.contacts.gather(group, listOf(GatherDecision(listOf(source)))).single()
+        assertEquals(setOf(ContactKind.INSURER), sunLife.kinds)
+        assertEquals(listOf(LinkRole.INSURER), books.contacts.linkedTo(LinkTarget.MEDICAL_PLAN, plan.id).map { it.link.role })
+        assertTrue(books.contacts.proposals().isEmpty())
+        assertEquals(listOf("Employer plan · Sun Life"), books.contacts.links(sunLife.id).map { it.name })
+
+        val admin = books.contacts.save(Contact("", group, "Green Shield Administration"))
+        books.contacts.link(admin.id, LinkRole.PLAN_ADMINISTRATOR, LinkTarget.MEDICAL_PLAN, plan.id)
+        assertFailsWith<ValidationException>("an administrator runs a plan, not a policy") {
+            books.contacts.link(admin.id, LinkRole.PLAN_ADMINISTRATOR, LinkTarget.POLICY, plan.id)
+        }
+        assertEquals(2, books.contacts.linkedTo(LinkTarget.MEDICAL_PLAN, plan.id).size)
+        // Deleting the plan removes its links; the contacts stay.
+        books.medical.deletePlan(plan.id)
+        assertTrue(books.contacts.allLinks().isEmpty())
+        assertEquals(2, books.contacts.list().size)
+    }
+
+    @Test
+    fun `a medical plan kept in a private group stays out of other users' sight, with its links`() {
+        household().use { books ->
+            val marie = books.users.add("marie", "Marie", Role.MEMBER, "password2-long".toCharArray()).userId
+            books.session.setPermission(books.groups().single().id, marie, PermissionLevel.EDIT)
+        }
+        val planId = Books(store.unlock(dir, "marie", "password2-long".toCharArray())).use { marie ->
+            val shared = marie.groups().first { !it.isPrivate }.id
+            val own = marie.session.createGroup("Marie - privé", private = true)
+            val plan = marie.medical.savePlan(MedPlan("", own, MedPlanKind.PRIVATE_HEALTH, "Mon régime", "Croix Bleue"))
+            val broker = marie.contacts.save(Contact("", shared, "Courtier Roy"))
+            marie.contacts.link(broker.id, LinkRole.PLAN_ADMINISTRATOR, LinkTarget.MEDICAL_PLAN, plan.id)
+            assertEquals(own, marie.contacts.proposals().single().sources.single().privateGroupId)
+            plan.id
+        }
+        Books(store.unlock(dir, "perry", "password1".toCharArray())).use { perry ->
+            val broker = perry.contacts.list().single()
+            assertTrue(perry.contacts.links(broker.id).isEmpty(), "the private plan is not shown on the shared contact")
+            assertTrue(perry.contacts.candidates(LinkTarget.MEDICAL_PLAN).isEmpty())
+            assertTrue(perry.contacts.list(ContactFilter(target = LinkTarget.MEDICAL_PLAN)).isEmpty(), "the Linked to filter")
+            assertTrue(perry.contacts.allLinks().isEmpty())
+            assertTrue(perry.contacts.linkedTo(LinkTarget.MEDICAL_PLAN, planId).isEmpty(), "asked with the private plan's id")
+            assertTrue(perry.contacts.proposals().isEmpty(), "its insurer is not offered")
+        }
+    }
+
+    @Test
     fun `a gathered record can be added to an existing contact`() = household().use { books ->
         val group = books.groups().single().id
         val existing = books.contacts.save(Contact("", group, "Plomberie Roy", kinds = setOf(ContactKind.CONTRACTOR)))

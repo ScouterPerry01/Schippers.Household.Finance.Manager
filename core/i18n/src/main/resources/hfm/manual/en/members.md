@@ -65,7 +65,7 @@ The new person appears in the list and stays selected.
 - **Relationship**: Adult, Child or Other dependant. The default for a new person is Adult.
   - Adult: someone who can own accounts, hold a pension and have their own RRSP and TFSA room.
   - Child: a child of the household. Children are left out of the lists that only make sense for adults, such as contribution room (TFSA, RRSP) and pensions, and they can be RESP beneficiaries.
-  - Other dependant: another person the household supports, such as a parent or an adult child with a disability. For the medical expense credit, the expenses of an other dependant are claimed on their own line (line 33199 of the federal return, for other dependants), not with those of the couple and their children. See [Medical claims](medical).
+  - Other dependant: another person the household supports, such as a parent or an adult child with a disability. For the medical expense credit, the expenses of an other dependant are claimed on their own line (line 33199 of the federal return, for other dependants), not with those of the couple and their children. Quebec's credit (line 381) claims them with the household. See [Medical claims](medical).
 - **Date of birth (YYYY-MM-DD)**: optional, but several calculations need it. Type it as year, month and day, for example 2015-06-12. The field turns red while the text is not a valid date. Once a date is there, typing + or - moves it one day forward or back. It is used for:
   - TFSA room when no CRA figure has been entered: the room is counted from the year the person turned 18 (or 2009).
   - The RRIF minimum withdrawal, which depends on the holder's age on January 1.

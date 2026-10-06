@@ -1,5 +1,5 @@
 # Rates and rules: medical. Format in core/calc/src/main/kotlin/ca/schippers/hfm/calc/rules/Rules.kt.
-# Read by Medical (core/calc), TripService and the medical expenses report.
+# Read by Medical (core/calc), TripService, the medical expenses report and the tax package.
 
 # The medical expense credit: expenses count above the lesser of this share of net income and
 # the fixed amount for the year (indexed each year: a year without its own amount has none).
@@ -10,6 +10,22 @@ medical.threshold.max | - | 2023-01-01 | 2635 | CRA, Adjustment of the personal 
 medical.threshold.max | - | 2024-01-01 | 2759 | CRA, Adjustment of the personal income tax and benefit amounts: medical expense tax credit (3% of net income ceiling), 2024
 medical.threshold.max | - | 2025-01-01 | 2834 | CRA, Adjustment of the personal income tax and benefit amounts: medical expense tax credit (3% of net income ceiling), 2025
 medical.threshold.max | - | 2026-01-01 | 2890 | CRA, Adjustment of the personal income tax and benefit amounts: medical expense tax credit (3% of net income ceiling), 2026
+
+# Quebec's credit (line 381): expenses count above this share of family income (the claimer's and
+# the spouse's net income, line 275, added together). Quebec has no fixed amount.
+rule medical.qc.threshold.rate RATE
+medical.qc.threshold.rate | - | 2000-01-01 | 0.03 | Revenu Québec, Line 381 - Medical expenses: the part of medical expenses that is more than 3% of your income (line 275), adding your spouse's line 275
+
+# Services Quebec's credit accepts (yes) or not (no), by the date of the service. Quebec only
+# accepts care from its own list of practitioners.
+rule medical.qc.massage YES_NO
+medical.qc.massage | - | 2000-01-01 | false | Revenu Québec, IN-130-V Medical Expenses, part 2: amounts paid to a person who is not a practitioner (for example, a massage therapist) cannot generally be included
+rule medical.qc.naturopathy YES_NO
+medical.qc.naturopathy | - | 2000-01-01 | true | Revenu Québec, IN-130-V Medical Expenses, part 15: naturopaths are practitioners
+medical.qc.naturopathy | - | 2026-01-01 | false | Revenu Québec, IN-130-V Medical Expenses, part 15: as of January 1, 2026, homeopaths, naturopaths, osteopaths and phytotherapists are no longer recognized as practitioners
+rule medical.qc.osteopathy YES_NO
+medical.qc.osteopathy | - | 2000-01-01 | true | Revenu Québec, IN-130-V Medical Expenses, part 15: osteopaths are practitioners
+medical.qc.osteopathy | - | 2026-01-01 | false | Revenu Québec, IN-130-V Medical Expenses, part 15: as of January 1, 2026, homeopaths, naturopaths, osteopaths and phytotherapists are no longer recognized as practitioners
 
 # Medical travel: the care must be at least this many kilometres away, one way, to claim the
 # cost of travel by car.

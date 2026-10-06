@@ -23,7 +23,7 @@ Les écrans des éléments affichent aussi leurs contacts, avec un bouton Lier u
 
 ## Rassembler les contacts de l’application
 
-La première fois que vous ouvrez Contacts, et chaque fois que vous choisissez Rassembler les contacts de l’application, l’application propose de créer des contacts à partir des institutions, professionnels de la santé, entrepreneurs, assureurs, courtiers et personnes à appeler qu’elle contient déjà, chacun lié à sa provenance. Ceux qui semblent être le même contact (même nom ou téléphone) sont présentés ensemble; cochez En faire un seul contact pour les fusionner. Rien n’est déplacé ni supprimé.
+La première fois que vous ouvrez Contacts, et chaque fois que vous choisissez Rassembler les contacts de l’application, l’application propose de créer des contacts à partir des institutions, professionnels de la santé, entrepreneurs, assureurs (des polices, des animaux, des véhicules et des régimes d’assurance maladie), courtiers et personnes à appeler qu’elle contient déjà, chacun lié à sa provenance. Ceux qui semblent être le même contact (même nom ou téléphone) sont présentés ensemble; cochez En faire un seul contact pour les fusionner. Rien n’est déplacé ni supprimé.
 
 ## Fusionner deux contacts
 

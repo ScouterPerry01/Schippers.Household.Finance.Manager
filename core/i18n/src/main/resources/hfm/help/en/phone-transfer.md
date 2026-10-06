@@ -18,7 +18,7 @@ While the household is open, paired phones send their captures to this computer 
 
 Under Away from home on the Phones screen, click Choose a transfer folder… and pick a folder of your own Google Drive, OneDrive, Dropbox or Nextcloud that the service's app keeps on this computer. Choose the same folder on the phone. New captures are imported from it, and the service only sees files it cannot read.
 
-A transfer file sent by email or copied by USB can be brought in with Import a transfer file…, or dropped on the Documents screen.
+A transfer file sent by email or copied by USB can be brought in with Import a transfer file…, or dropped on the Documents screen. Its email subject starts with [RANN's Roost] and a short id, never names or amounts. When a transfer folder is chosen, the reply is left there for the phone to collect its confirmation.
 
 ## Review what arrived
 

@@ -217,6 +217,13 @@ For a plan of the kind **Health Spending Account**:
 
 Once the plan is saved, **Benefit booklets** lets you attach the plan's booklet or card, with **Attach a file…** or **From the review inbox**, as for receipts. They are kept in the [Documents](documents) vault.
 
+### Contacts for the plan {#plan-contacts}
+@index: contact; insurer; plan administrator; linked contact
+
+Once the plan is saved, its dialog ends with Contacts, each shown with its role: the insurer (Insurer), the firm that runs the plan for the employer, where claims are sent (Plan administrator), and any other contact (Linked). On the contact's page, the plan is listed under Insurer for or Plan administrator for. The Insurer typed on the plan stays as it is; **Gather contacts from the app** on the Contacts screen can make it a contact linked to the plan.
+
+Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. A plan kept in a private group, and its links, are seen only by the users who can open that group. Deleting the plan removes its links; the contacts stay. See [Contacts on other screens](contacts#on-other-screens).
+
 ## Coverage left tab {#coverage-left}
 @index: remaining coverage; maximum left; eligible again
 
@@ -254,7 +261,7 @@ Sending the claim, closing the expense, or recording the last plan's payment end
 
 The **Medical expenses** report under [Reports](reports) gathers the year's figures for the non-refundable medical expense tax credit. It shows the costs, reimbursements and out-of-pocket amounts of the expenses paid in the year, per person, a table of every expense with its date paid and date of service, and then the credit. The year-end package on the Taxes screen uses the same figures (see [Year-end package](taxes#year-end-package)).
 
-In short, as the report explains: federally (line 33099) and in Quebec (line 381), expenses paid in any 12 consecutive months ending in the year can be claimed, once. The household's own expenses (spouses and children under 18) are claimed together, usually by one spouse; an adult dependant's are claimed separately (federal line 33199). Only the amount above a threshold counts: 3 % of net income federally (or a set amount if lower), 3 % of family income in Quebec.
+In short, as the report explains: federally (line 33099) and in Quebec (line 381), expenses paid in any 12 consecutive months ending in the year can be claimed, once. Federally, the household's own expenses (spouses and children under 18) are claimed together, usually by one spouse, and an adult dependant's are claimed separately (line 33199). Only the amount above a threshold counts: 3 % of net income federally (or a set amount if lower). Quebec's credit has rules of its own, so people filing in Quebec get a separate total: see [Quebec's total](medical#quebec-total).
 
 What the app counts:
 
@@ -262,7 +269,7 @@ What the app counts:
 - only what is out of pocket: the cost less what plans paid;
 - on the date paid, or the date of service when there is no date paid.
 
-People whose kind under **Household members** is **Other dependant** are treated as adult dependants and claimed on their own line; adults and children are part of the household's claim. See [Household members](members).
+People whose kind under **Household members** is **Other dependant** are treated as adult dependants and claimed on their own line federally; adults and children are part of the household's claim. In Quebec, adult dependants are part of the household's claim too. See [Household members](members).
 
 ### The best 12-month period {#best-period}
 @index: 12-month period; best period; any 12 months
@@ -287,12 +294,23 @@ With two incomes entered, the report shows for each spouse "Claimed by name: amo
 - "Either spouse: the same amount counts."
 - "Neither: the expenses are below both thresholds this time."
 
-"Indicative only, not tax advice. The credit is not refundable: the spouse who claims needs enough tax to pay to use it." In Quebec, the provincial threshold uses the family's income, so it is the same whoever claims.
+"Indicative only, not tax advice. The credit is not refundable: the spouse who claims needs enough tax to pay to use it." When someone files in Quebec, a further line gives what counts for Quebec's credit, above 3 % of the family income (the incomes entered, added together), the same whoever claims.
 
 ### Receipts as one PDF {#receipts-pdf}
 @index: receipts bundle; CRA review; proof
 
 Under the best period, **Receipts for the household as one PDF…** saves one PDF with a cover page listing every eligible expense of the period (date, person, kind of care, description, out-of-pocket amount and total), followed by every receipt attached to those expenses. Adult dependants have their own button, **Receipts for name as one PDF…**. Keep the file in case the CRA or Revenu Québec asks for the receipts.
+
+### Quebec's total {#quebec-total}
+@index: Quebec line 381; TP-1; family income; massage therapy; naturopath; osteopath
+
+When someone in the household files in Quebec, the report also gives Quebec's total for line 381 of the Quebec return, and the year-end package has a line **Medical expenses (Quebec)** (TP-1 381). Quebec's credit differs from the federal one in ways the app applies:
+
+- everyone's expenses are claimed together, adult dependants included;
+- the threshold is 3 % of the family income (both spouses' net incomes, line 275), with no fixed amount, so it is the same whoever claims;
+- Quebec accepts care only from its own list of practitioners: massage therapy never counts, and naturopaths and osteopaths no longer count for care received from January 1, 2026.
+
+Because some expenses do not count, Quebec's best 12 months can differ from the federal ones. The report lists the expenses left out, and **Receipts for Quebec as one PDF…** gathers the receipts of the expenses Quebec counts. Other limits in Revenu Québec's guide, such as $200 per person for eyeglass frames in the period, are not applied by the app. See [Quebec's total](reports#quebec-total) for what the report shows.
 
 ## Kinds of care {#kinds-of-care}
 @index: services; dental; vision; paramedical

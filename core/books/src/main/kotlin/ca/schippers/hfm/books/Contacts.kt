@@ -27,7 +27,7 @@ data class ContactDetail(val id: String = "", val type: DetailType, val label: S
  * CON-04: the kinds of records a contact can be linked to. A contractor can be linked as a whole
  * ([CONTRACTOR]) or through one of its jobs ([CONTRACTOR_JOB]: who did that job).
  */
-enum class LinkTarget { INSTITUTION, PAYEE, ACCOUNT, POLICY, HEALTH_PROVIDER, MEDICATION, EVENT, CONTRACTOR, CONTRACTOR_JOB, BILL, PET, VEHICLE, ASSET, ESTATE }
+enum class LinkTarget { INSTITUTION, PAYEE, ACCOUNT, POLICY, HEALTH_PROVIDER, MEDICATION, EVENT, CONTRACTOR, CONTRACTOR_JOB, BILL, PET, VEHICLE, ASSET, ESTATE, MEDICAL_PLAN }
 
 /**
  * CON-04: what a contact is to a linked record: "Bank for" an account, "Pharmacy for" a medication,
@@ -40,8 +40,10 @@ enum class LinkRole(val targets: Set<LinkTarget>, val kind: ContactKind? = null)
     LENDER(setOf(LinkTarget.ACCOUNT), ContactKind.BANK),
     INVESTMENT_FIRM(setOf(LinkTarget.ACCOUNT), ContactKind.INVESTMENT_FIRM),
     ADVISOR(setOf(LinkTarget.ACCOUNT, LinkTarget.POLICY), ContactKind.FINANCIAL_ADVISOR),
-    INSURER(setOf(LinkTarget.POLICY, LinkTarget.PET, LinkTarget.VEHICLE, LinkTarget.ASSET), ContactKind.INSURER),
+    INSURER(setOf(LinkTarget.POLICY, LinkTarget.PET, LinkTarget.VEHICLE, LinkTarget.ASSET, LinkTarget.MEDICAL_PLAN), ContactKind.INSURER),
     BROKER(setOf(LinkTarget.POLICY), ContactKind.INSURANCE_BROKER),
+    /** CON-06: the firm that runs a medical or dental plan for an employer or a group (claims go to it). */
+    PLAN_ADMINISTRATOR(setOf(LinkTarget.MEDICAL_PLAN), ContactKind.INSURER),
     PHARMACY(setOf(LinkTarget.MEDICATION), ContactKind.PHARMACY),
     PRESCRIBER(setOf(LinkTarget.MEDICATION), ContactKind.FAMILY_DOCTOR),
     APPOINTMENT(setOf(LinkTarget.EVENT)),
@@ -403,6 +405,8 @@ class ContactService internal constructor(private val books: Books) {
                 val who = whoNames()
                 books.estate.records().associate { it.memberId to books.text("contact.estateOf", who[it.memberId] ?: "?") }
             }
+            // Only plans in groups the user can open (HH-11).
+            LinkTarget.MEDICAL_PLAN -> books.medical.plans().associate { p -> p.id to listOfNotNull(p.name, p.insurer?.takeIf { it.isNotBlank() && it != p.name }).joinToString(" · ") }
         }
     }.getOrDefault(emptyMap())
 
@@ -574,6 +578,14 @@ class ContactService internal constructor(private val books: Books) {
             for (name in runCatching { books.vehicles.services(v.id) }.getOrDefault(emptyList()).filter { !it.diy }.mapNotNull { it.provider?.trim()?.ifEmpty { null } }.distinctBy { SearchService.fold(it) }) {
                 out += GatherSource(LinkTarget.VEHICLE, v.id, name, setOf(ContactKind.CONTRACTOR), listOf(LinkRole.GARAGE to (LinkTarget.VEHICLE to v.id)), privateGroupId = private(v.groupId))
             }
+        }
+        // Medical and dental plans: the insurer (CON-06).
+        for (p in runCatching { books.medical.plans() }.getOrDefault(emptyList())) {
+            val name = p.insurer?.takeIf { it.isNotBlank() } ?: continue
+            out += GatherSource(
+                LinkTarget.MEDICAL_PLAN, p.id, name, setOf(ContactKind.INSURER), listOf(LinkRole.INSURER to (LinkTarget.MEDICAL_PLAN to p.id)),
+                memberIds = p.people.map { it.memberId }.toSet(), privateGroupId = private(p.groupId),
+            )
         }
         // Other assets: the warranty providers, with their phone.
         for (w in runCatching { books.assets.warranties() }.getOrDefault(emptyList())) {
