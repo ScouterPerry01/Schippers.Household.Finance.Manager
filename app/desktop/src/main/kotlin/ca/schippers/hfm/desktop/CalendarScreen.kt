@@ -96,6 +96,7 @@ fun CalendarScreen(model: BooksModel) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(model.t("nav.calendar"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
             OutlinedButton(onClick = { schedules = true }) { Text(model.t("schedule.title")) }
+            BroughtInButtons(model)
             Button(onClick = { add(if (view == CalendarView.AGENDA) today() else anchor, null) }) { Text(model.t("calendar.add")) }
         }
         PrimaryTabRow(selectedTabIndex = view.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
@@ -291,6 +292,7 @@ internal fun itemKey(item: CalendarItem): String = when (item) {
     is CalendarItem.Renewal -> "r-${item.renewal.kind}-${item.renewal.subjectId}-${item.date}-${item.renewal.detail}"
     is CalendarItem.Maintenance -> "m-${item.due.taskId}-${item.date}"
     is CalendarItem.Schedule -> "s-${item.day.schedule.id}-${item.date}"
+    is CalendarItem.Imported -> importedKey(item)
 }
 
 /** Names of people, providers and accounts, for the agenda lines. */
@@ -405,6 +407,23 @@ internal fun AgendaRow(model: BooksModel, item: CalendarItem, names: Lookups, pe
                 }
             }
         }
+        is CalendarItem.Imported -> {
+            // CSY-04: an item brought in from a phone, read-only.
+            val i = item.item
+            lead = when {
+                i.allDay -> model.t("calendar.allDay")
+                item.date == i.startDate -> time(i.startTime)!!
+                else -> model.t("calendar.broughtIn.continues")
+            }
+            title = importedTitle(model, i)
+            detail = listOfNotNull(
+                i.startTime?.let { s -> i.endTime?.let { e -> model.t("calendar.broughtIn.range", time(s)!!, time(e)!!) } },
+                i.location,
+                model.t("calendar.broughtIn.from", importedSource(model, i), i.ownerName),
+                model.t("calendar.broughtIn.visibility.${i.visibility}"),
+            ).joinToString(" · ")
+            actions = { Text(model.t("calendar.broughtIn.readOnly"), style = MaterialTheme.typography.bodySmall) }
+        }
         else -> {
             lead = itemLabel(model, item)
             title = itemTitle(model, item)
@@ -462,6 +481,7 @@ internal fun itemTitle(model: BooksModel, item: CalendarItem): String = when (it
     is CalendarItem.Renewal -> renewalTitle(model, item.renewal)
     is CalendarItem.Maintenance -> item.due.taskName
     is CalendarItem.Schedule -> model.t("scheduleKind.${item.day.schedule.kind}")
+    is CalendarItem.Imported -> importedTitle(model, item.item)
 }
 
 private fun itemDetail(model: BooksModel, item: CalendarItem, names: Lookups): String? = when (item) {
@@ -574,6 +594,7 @@ internal fun lineText(model: BooksModel, item: CalendarItem): String = when (ite
     is CalendarItem.Event -> listOfNotNull(time(item.occurrence.event.startTime), item.occurrence.event.title).joinToString(" ")
     is CalendarItem.Renewal -> "${item.renewal.subjectName}: ${renewalTitle(model, item.renewal)}"
     is CalendarItem.Maintenance -> "${item.due.subjectName}: ${item.due.taskName}"
+    is CalendarItem.Imported -> importedMonthText(model, item)
     else -> itemTitle(model, item)
 }
 

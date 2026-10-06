@@ -7,7 +7,7 @@ Le Calendrier réunit vos rendez-vous, les activités de vos enfants, les heures
 ## Ce que montre le calendrier {#overview}
 @index: agenda; horaire; rendez-vous; échéances; ce qui s’en vient
 
-Le calendrier montre sept sortes d’éléments. Chacun a une marque de couleur à gauche de sa ligne, et les éléments qui viennent d’autres écrans ont un bouton qui ouvre l’écran où ils sont gérés.
+Le calendrier montre huit sortes d’éléments. Chacun a une marque de couleur à gauche de sa ligne, et les éléments qui viennent d’autres écrans ont un bouton qui ouvre l’écran où ils sont gérés.
 
 ### Les rendez-vous {#appointments}
 @index: rendez-vous; événement; réunion
@@ -25,6 +25,10 @@ Les entraînements, matchs et cours d’un enfant sont des rendez-vous du type *
 @index: horaire de travail; horaire d’école; quart de travail; heures
 
 Les heures de travail ou d’école de chaque personne, entrées dans **Horaires de travail et d’école**, s’affichent en mince barre de la couleur de la personne en haut de chaque jour où elle travaille ou va à l’école, comme « Alex · Travail 8:00–16:30 (Bureau) ». Les vues Semaine et Jour ombrent aussi ces heures. Voir [Horaires de travail et d’école](calendar#schedules).
+
+### Les calendriers importés {#brought-in-on-calendar}
+
+Les éléments des calendriers que chacun importe de son téléphone, ou copiés d’un fichier .ics, en lecture seule, avec leur provenance et à qui ils appartiennent. Ils sont placés à leurs heures dans les onglets Jour et Semaine. **Calendriers du téléphone** et **Importer un fichier .ics**, en haut de l’écran, servent à les gérer. Voir [Calendriers des téléphones et des fichiers](calendar-sync).
 
 ### Les factures {#bills-on-calendar}
 
@@ -74,7 +78,7 @@ Au-dessus de chaque vue :
 - **Aller à une date** : ouvre un petit calendrier. Cliquez sur un jour, ou tapez une date au format AAAA-MM-JJ et cliquez sur **Aller**. Les boutons **◀** et **▶** qu’il contient changent de mois. **Annuler** le ferme.
 - **Masquer le panneau Afficher** et **Afficher et masquer…** : masquent ou affichent le panneau de droite qui choisit ce que montre le calendrier.
 
-En haut de l’écran, **Horaires de travail et d’école** ouvre les horaires (voir [Horaires de travail et d’école](calendar#schedules)), et **Ajouter un rendez-vous** ouvre un nouveau rendez-vous pour aujourd’hui (dans l’Agenda) ou pour la date affichée.
+En haut de l’écran, **Horaires de travail et d’école** ouvre les horaires (voir [Horaires de travail et d’école](calendar#schedules)), **Calendriers du téléphone** et **Importer un fichier .ics** importent d’autres calendriers (voir [Calendriers des téléphones et des fichiers](calendar-sync)), et **Ajouter un rendez-vous** ouvre un nouveau rendez-vous pour aujourd’hui (dans l’Agenda) ou pour la date affichée.
 
 ## Afficher et masquer {#show-hide}
 @index: filtre; masquer les factures; masquer une personne; afficher seulement

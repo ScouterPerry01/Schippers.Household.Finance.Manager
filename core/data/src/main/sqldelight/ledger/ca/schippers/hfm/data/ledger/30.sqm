@@ -1,3 +1,47 @@
+-- Version 30 to 31. Only additions: new tables.
+
+-- CSY-01 to CSY-04 (version 31): calendars a person brought in from their phone, with their coming
+-- items, read-only. The phone sends each chosen calendar whole; the desktop replaces its items.
+-- The owner's private group keeps the calendar with every private and busy-only item in full;
+-- the group chosen for others (the shared group by default) keeps the shared items in full and
+-- the busy-only ones as a time range only, with no title or place (HH-11).
+
+-- One calendar of one phone, in one group. [id] is the same in every group that holds the
+-- calendar (the phone and its calendar). [source_name] and [account_name] are null in the group
+-- for others unless the whole calendar is shared. [visibility] is PRIVATE, BUSY or SHARED.
+-- [target_group_id] (kept in the owner's private group) is the group chosen for others.
+CREATE TABLE brought_in_calendar (
+    id TEXT NOT NULL PRIMARY KEY,
+    owner_user_id TEXT NOT NULL,
+    device_id TEXT NOT NULL,
+    source_name TEXT,
+    account_name TEXT,
+    colour INTEGER,
+    visibility TEXT NOT NULL DEFAULT 'PRIVATE' CHECK (visibility IN ('PRIVATE', 'BUSY', 'SHARED')),
+    target_group_id TEXT,
+    snapshot_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- One occurrence of a brought-in item. [id] is the same in every group that holds it; [title] and
+-- [location] are null for a busy-only entry kept for others. Dates are ISO dates, times HH:MM; the
+-- times are null for an all-day item, whose [end_date] is its last day.
+CREATE TABLE brought_in_item (
+    id TEXT NOT NULL PRIMARY KEY,
+    calendar_id TEXT NOT NULL REFERENCES brought_in_calendar(id) ON DELETE CASCADE,
+    event_id TEXT NOT NULL,
+    visibility TEXT NOT NULL CHECK (visibility IN ('PRIVATE', 'BUSY', 'SHARED')),
+    title TEXT,
+    location TEXT,
+    start_date TEXT NOT NULL,
+    start_time TEXT,
+    end_date TEXT NOT NULL,
+    end_time TEXT,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX brought_in_item_dates ON brought_in_item(start_date, end_date);
+CREATE INDEX brought_in_item_calendar ON brought_in_item(calendar_id);
 -- Version 30 to 31: calendar views, schedules and activities (CAL-09, CAL-11). Only additions.
 
 -- CAL-11: a child's activity, with who drives each way and its cost.

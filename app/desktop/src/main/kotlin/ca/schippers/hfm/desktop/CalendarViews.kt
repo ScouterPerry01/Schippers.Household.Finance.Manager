@@ -153,6 +153,7 @@ private fun TopRows(model: BooksModel, days: List<LocalDate>, items: List<Calend
 private fun untimed(item: CalendarItem): Boolean = when (item) {
     is CalendarItem.Schedule -> false
     is CalendarItem.Event -> item.occurrence.event.startTime == null
+    is CalendarItem.Imported -> item.item.allDay
     else -> true
 }
 
@@ -182,7 +183,7 @@ private fun HourGrid(
                 val previous = d.minus(DatePeriod(days = 1))
                 val schedules = byDay[d].orEmpty().filterIsInstance<CalendarItem.Schedule>().map { it.day } +
                     byDay[previous].orEmpty().filterIsInstance<CalendarItem.Schedule>().map { it.day }.filter { it.overnight }
-                val timed = byDay[d].orEmpty().filterIsInstance<CalendarItem.Event>().filter { it.occurrence.event.startTime != null }
+                val timed = byDay[d].orEmpty().mapNotNull { gridEntry(model, it, d, names, detailed, onEdit) }
                 BoxWithConstraints(
                     Modifier.weight(1f).height(hour * 24).border(0.5.dp, line)
                         .drawBehind {
@@ -203,37 +204,29 @@ private fun HourGrid(
                         Box(Modifier.offset(y = hour * span.from / 60f).height(hour * (span.to - span.from) / 60f).fillMaxWidth().background(color.copy(alpha = 0.10f)))
                         Box(Modifier.offset(x = stripe, y = hour * span.from / 60f).height(hour * (span.to - span.from) / 60f).width(4.dp).background(color.copy(alpha = 0.7f)))
                     }
-                    // Timed appointments, in lanes when they overlap.
-                    val spans = timed.map { e -> e to eventSpan(e.occurrence) }
-                    val lanes = lanes(spans.map { it.second })
+                    // Timed appointments (and timed items brought in from phones), in lanes when they overlap.
+                    val lanes = lanes(timed.map { it.span })
                     val count = (lanes.maxOrNull() ?: 0) + 1
                     val left = 24.dp
                     val laneWidth = (maxWidth - left) / count
-                    for ((i, pair) in spans.withIndex()) {
-                        val (item, span) = pair
-                        val o = item.occurrence
-                        val e = o.event
+                    for ((i, entry) in timed.withIndex()) {
+                        val span = entry.span
+                        val color = kindColor(entry.item, people)
                         val height = maxOf(hour * (span.to - span.from) / 60f, 20.dp)
                         Box(
                             Modifier.offset(x = left + laneWidth * lanes[i], y = hour * span.from / 60f).width(laneWidth).height(height).padding(1.dp)
-                                .background(kindColor(item, people).copy(alpha = 0.16f), MaterialTheme.shapes.extraSmall)
-                                .border(1.dp, kindColor(item, people), MaterialTheme.shapes.extraSmall)
-                                .clickable { onEdit(e) }.padding(horizontal = 4.dp, vertical = 1.dp),
+                                .background(color.copy(alpha = 0.16f), MaterialTheme.shapes.extraSmall)
+                                .border(1.dp, color, MaterialTheme.shapes.extraSmall)
+                                .then(entry.onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier).padding(horizontal = 4.dp, vertical = 1.dp),
                         ) {
                             Column {
                                 Text(
-                                    "${time(e.startTime)} ${e.title}", style = MaterialTheme.typography.labelMedium, maxLines = if (detailed) 1 else 2, overflow = TextOverflow.Ellipsis,
+                                    entry.title, style = MaterialTheme.typography.labelMedium, maxLines = if (detailed) 1 else 2, overflow = TextOverflow.Ellipsis,
                                     fontWeight = FontWeight.Medium,
-                                    color = if (o.mark != null) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface,
-                                    textDecoration = if (o.mark == OccurrenceMark.CANCELLED) TextDecoration.LineThrough else null,
+                                    color = if (entry.faded) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface,
+                                    textDecoration = if (entry.struck) TextDecoration.LineThrough else null,
                                 )
-                                if (detailed) {
-                                    val detail = listOfNotNull(
-                                        e.location, e.memberId?.let { names.people[it] },
-                                        if (e.category == EventCategory.ACTIVITY) driversText(model, names, o.driverThere, o.driverBack) else null,
-                                    ).joinToString(" · ")
-                                    if (detail.isNotEmpty()) Text(detail, style = MaterialTheme.typography.labelSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                                }
+                                if (detailed && entry.detail != null) Text(entry.detail, style = MaterialTheme.typography.labelSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     }
@@ -241,6 +234,50 @@ private fun HourGrid(
             }
         }
     }
+}
+
+/** A timed item placed on the hour grid on one day: where it sits and what it says. */
+private class GridEntry(
+    val item: CalendarItem,
+    val span: Span,
+    val title: String,
+    val detail: String?,
+    val faded: Boolean = false,
+    val struck: Boolean = false,
+    val onClick: (() -> Unit)? = null,
+)
+
+/** The grid entry of [item] on [day], or null when it has no time (it is then on the All day line). */
+private fun gridEntry(model: BooksModel, item: CalendarItem, day: LocalDate, names: Lookups, detailed: Boolean, onEdit: (CalendarEvent) -> Unit): GridEntry? = when (item) {
+    is CalendarItem.Event -> {
+        val o = item.occurrence
+        val e = o.event
+        if (e.startTime == null) {
+            null
+        } else {
+            val detail = if (detailed) {
+                listOfNotNull(
+                    e.location, e.memberId?.let { names.people[it] },
+                    if (e.category == EventCategory.ACTIVITY) driversText(model, names, o.driverThere, o.driverBack) else null,
+                ).joinToString(" · ").ifEmpty { null }
+            } else {
+                null
+            }
+            GridEntry(item, eventSpan(o), "${time(e.startTime)} ${e.title}", detail, o.mark != null, o.mark == OccurrenceMark.CANCELLED) { onEdit(e) }
+        }
+    }
+    is CalendarItem.Imported -> {
+        val i = item.item
+        if (i.allDay) {
+            null
+        } else {
+            // A brought-in item over several days fills each day it covers.
+            val from = if (day == i.startDate) minutes(i.startTime!!) else 0
+            val to = if (day == i.endDate) i.endTime?.let(::minutes) ?: (24 * 60) else 24 * 60
+            GridEntry(item, Span(from, maxOf(to, from + 15)), importedMonthText(model, item), if (detailed) i.location else null)
+        }
+    }
+    else -> null
 }
 
 private fun minutes(t: LocalTime) = t.hour * 60 + t.minute

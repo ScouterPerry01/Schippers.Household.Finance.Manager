@@ -58,6 +58,12 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val search = SearchService(this)
     val calendar = CalendarService(this)
     val schedules = ScheduleService(this)
+
+    /** CSY-01 to CSY-04: calendars brought in from each person's phone. */
+    val broughtIn = BroughtInCalendarService(this)
+
+    /** CSY-05: .ics files copied into the calendar. */
+    val icsImport = IcsImportService(this)
     val health = HealthService(this)
     val goals = GoalService(this)
     val pets = PetService(this)

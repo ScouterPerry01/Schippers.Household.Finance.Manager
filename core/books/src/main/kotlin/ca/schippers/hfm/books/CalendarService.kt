@@ -146,6 +146,11 @@ sealed interface CalendarItem {
         override val date get() = day.date
         override val kind get() = CalendarKind.SCHEDULES
     }
+
+    /** CSY-04: an item brought in from a person's phone, read-only, on one of the days it covers. */
+    data class Imported(val item: BroughtInItem, override val date: LocalDate) : CalendarItem {
+        override val kind get() = CalendarKind.IMPORTED
+    }
 }
 
 /**
@@ -273,8 +278,13 @@ class CalendarService internal constructor(private val books: Books) {
             books.health.due(from, to).map { CalendarItem.Health(it) } +
             renewals(from, to).map { CalendarItem.Renewal(it) } +
             books.upkeepBetween(from, to, books.today()).map { CalendarItem.Maintenance(it) } +
-            books.schedules.days(from, to).map { CalendarItem.Schedule(it) })
+            books.schedules.days(from, to).map { CalendarItem.Schedule(it) } +
+            broughtIn(from, to))
             .sortedBy { it.date }
+
+    /** CSY-04: brought-in items, one per day they cover. */
+    private fun broughtIn(from: LocalDate, to: LocalDate): List<CalendarItem> =
+        books.broughtIn.items(from, to).flatMap { item -> books.broughtIn.days(item, from, to).map { CalendarItem.Imported(item, it) } }
 
     /**
      * Renewal dates between [from] and [to], for the calendar. Card payments are announced only a

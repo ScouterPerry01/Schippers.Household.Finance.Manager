@@ -34,3 +34,7 @@ Choose Add an appointment. Enter what it is, the kind, the date and the time, or
 - Cancel this one cancels only this occurrence; the other repeats stay.
 - Undo puts it back as it was.
 - Edit opens the appointment to change or delete it. Deleting removes all its repeats.
+
+## Calendars from phones and .ics files
+
+Items brought in from a person's phone show read-only, with the calendar they come from and whose phone sent them; someone else's busy-only items show as "Alex: busy". The calendars are chosen on the phone, in Settings, Calendars on this phone. Phone calendars lists yours and lets you choose the group where others see them. Import .ics file copies a calendar file once, as ordinary appointments.

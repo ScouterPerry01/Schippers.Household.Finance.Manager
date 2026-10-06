@@ -132,6 +132,11 @@ data class SyncRequest(
     val items: List<CaptureItem>,
     val referenceVersion: String? = null,
     val contacts: List<PhoneContact> = emptyList(),
+    /**
+     * CSY-02: the phone's calendars brought in, each whole when it changed. A desktop that predates
+     * them ignores the field and does not acknowledge them, so the phone keeps sending them.
+     */
+    val calendars: List<CalendarSnapshot> = emptyList(),
 )
 
 /**

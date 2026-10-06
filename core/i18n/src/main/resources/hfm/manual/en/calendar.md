@@ -7,7 +7,7 @@ The Calendar brings together your appointments, your children's activities, each
 ## What the calendar shows {#overview}
 @index: agenda; schedule; appointments; due dates; what is coming up
 
-The calendar shows seven kinds of items. Each has a coloured mark on the left of its line, and the items that come from other screens have a button that opens the screen where they are managed.
+The calendar shows eight kinds of items. Each has a coloured mark on the left of its line, and the items that come from other screens have a button that opens the screen where they are managed.
 
 ### Appointments {#appointments}
 @index: appointment; event; meeting
@@ -25,6 +25,10 @@ A child's practices, games and lessons are appointments of the kind **Child's ac
 @index: work schedule; school schedule; shift; hours
 
 Each person's work or school hours, entered under **Work and school schedules**, show as a thin bar in the person's colour at the top of each day they work or go to school, such as "Alex · Work 8:00–16:30 (Office)". The Week and Day views also shade those hours. See [Work and school schedules](calendar#schedules).
+
+### Brought-in calendars {#brought-in-on-calendar}
+
+Items from the calendars people bring in from their phones, or copied from an .ics file, read-only, with where they come from and whose they are. They are placed at their hours in the Day and Week tabs. **Phone calendars** and **Import .ics file**, at the top of the screen, manage them. See [Calendars from phones and files](calendar-sync).
 
 ### Bills {#bills-on-calendar}
 
@@ -74,7 +78,7 @@ Above every view:
 - **Go to a date**: opens a small calendar. Click a day, or type a date as YYYY-MM-DD and click **Go**. **◀** and **▶** in it change the month. **Cancel** closes it.
 - **Hide the Show panel** and **Show and hide…**: hide or show the panel on the right that chooses what the calendar shows.
 
-At the top of the screen, **Work and school schedules** opens the schedules (see [Work and school schedules](calendar#schedules)), and **Add an appointment** opens a new appointment for today (on the Agenda) or for the date shown.
+At the top of the screen, **Work and school schedules** opens the schedules (see [Work and school schedules](calendar#schedules)), **Phone calendars** and **Import .ics file** bring in other calendars (see [Calendars from phones and files](calendar-sync)), and **Add an appointment** opens a new appointment for today (on the Agenda) or for the date shown.
 
 ## Show and hide {#show-hide}
 @index: filter; hide bills; hide a person; show only
