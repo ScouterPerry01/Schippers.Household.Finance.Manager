@@ -464,6 +464,8 @@ Voir [Véhicules](vehicles) et [Maison et biens](assets) pour les tâches et les
 
 Les comptes bancaires jour par jour pour les semaines à venir, selon les factures, revenus et virements prévus encore dus (celui qui est en retard compte aujourd’hui). Choisissez jusqu’où regarder avec **Horizon** : 30, 60, 90 ou 180 jours, ou la période de prévision des Taux et règles.
 
+![Le rapport Prévision de trésorerie](images/reports-cash-flow.png)
+
 - **Aujourd’hui**, le solde du dernier jour et **Le plus bas** : les comptes bancaires ensemble, dans la devise de base au taux du jour.
 - Une ligne en rouge indique le jour où les comptes bancaires ensemble passeraient sous zéro, et les comptes qu’un paiement mettrait à découvert.
 - Le graphique : une ligne pour tous les comptes bancaires ensemble et une pour chaque compte dans la devise de base qui a quelque chose de prévu, avec une ligne rouge à zéro. Pointez un jour pour lire les soldes.

@@ -171,6 +171,8 @@ object DemoHousehold {
         val created = store.create(
             dir, l("Famille Démo", "Demo Family"), LOGIN, "Alex Demo", PASSWORD.toCharArray(),
             locale = l("fr-CA", "en-CA"), province = l("QC", "ON"),
+            // As a household created in the app gets it: the shared group named in its language.
+            sharedGroupName = ca.schippers.hfm.i18n.Messages.get(language, "group.sharedName"),
         )
         val books = Books(created.session).also { it.language = language }
         fill(books)

@@ -432,6 +432,8 @@ Deux prestations sont montrées à part, parce qu’elles sont versées en dehor
 
 Certains montants passent d’une année à l’autre. L’estimation les applique comme la déclaration, et montre sous **Reports** ce qui reste pour l’an prochain.
 
+![L’onglet Estimation : les reports des années antérieures](images/taxes-estimate-carry-forward.png)
+
 - Frais de scolarité : l’étudiant demande d’abord les montants inutilisés reportés, puis les frais de l’année, mais seulement ce qu’il faut pour ramener son impôt fédéral à zéro après les montants personnel de base, en raison de l’âge, pour époux, du RPC, de l’AE, canadien pour emploi et pour revenu de pension (annexe 11). Des frais de l’année qui restent, jusqu’à 5 000 $, moins la partie des frais de l’année qu’il a utilisée, peuvent aller à un époux ou conjoint de fait, à un parent ou à un grand-parent ; le reste est reporté aussi longtemps qu’il le faut, et un montant reporté ne peut jamais être transféré. Les provinces et territoires suivent le même modèle à leur taux le plus bas ; l’Ontario, la Saskatchewan et l’Alberta ne donnent plus de crédit pour les nouveaux frais, mais permettent encore les montants reportés. Au Québec, le crédit est de 8 % des frais ; l’étudiant l’utilise d’abord, et ce qui reste des frais de l’année peut aller à un parent ou à un grand-parent.
 - Dons : les dons peuvent être demandés dans leur année ou dans l’une des cinq années suivantes, jusqu’à 75 % du revenu net dans une année. L’estimation demande ensemble les dons reportés et ceux de l’année, jusqu’à ce plafond.
 - Pertes en capital nettes : une perte en capital nette peut réduire les gains en capital imposables de toute année ultérieure. L’estimation applique ce qui est reporté jusqu’aux gains en capital imposables de l’année.

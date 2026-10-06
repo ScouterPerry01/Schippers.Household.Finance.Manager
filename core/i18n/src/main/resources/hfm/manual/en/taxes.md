@@ -432,6 +432,8 @@ Two benefits are shown apart, because they are paid outside the return, from the
 
 Some amounts move from one year to the next. The estimate applies them as the return does, and shows under **Carried forward** what is left for next year.
 
+![The Estimate tab: amounts carried forward from earlier years](images/taxes-estimate-carry-forward.png)
+
 - Tuition: a student first claims the unused amounts carried forward, then this year's fees, but only as much as needed to bring their federal tax to zero after the basic personal, age, spouse, CPP, EI, Canada employment and pension amounts (Schedule 11). Of this year's fees left, up to $5,000, less the part of this year's fees they used, can go to a spouse or common-law partner, a parent or a grandparent; the rest is carried forward for as long as needed, and an amount carried forward can never be transferred. The provinces and territories follow the same pattern at their lowest rate; Ontario, Saskatchewan and Alberta no longer give a credit for new fees but still allow the amounts carried forward. In Quebec, the credit is 8 % of the fees; the student uses it first, and what is left of this year's fees can go to a parent or grandparent.
 - Donations: gifts can be claimed in their year or in any of the five following years, up to 75 % of net income in a year. The estimate claims the gifts carried forward and this year's together, up to that limit.
 - Net capital losses: a net capital loss can reduce the taxable capital gains of any later year. The estimate applies what is carried forward up to this year's taxable capital gains.

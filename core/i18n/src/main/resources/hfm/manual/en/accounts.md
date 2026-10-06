@@ -285,6 +285,8 @@ Rules under [Category rules](rules) categorize imported statement lines; they do
 
 A template is a transaction you enter often, saved under a name: rent, the weekly Costco run with its split lines, a donation. It fills the entry form in one step; you check the date and amount and press Enter.
 
+![The Transaction templates window](images/accounts-templates.png)
+
 - **Use a template**: above the entry form, on a new transaction, when the account has templates. Type a few letters of the name to filter the list (or open it with the arrow), then choose one with the mouse or the arrow keys and Enter. The form takes the template's payee, category (or split lines), memo, For and tags, and its amount as a payment or deposit when it has one in the account's currency. Whatever you had typed in those fields is replaced. The date stays as it was. Nothing is saved until you press Enter or **Save**, so you can change anything first. The payee's own suggestion (see [Payee suggestions](accounts#payee-suggestions)) is not applied on top.
 - **Save as template**: click a transaction in the register, then this button. The window asks for the **Template name** (the payee is proposed) and offers **Keep the amount** (ticked: the template has the amount, as a payment or deposit; unticked: you type it each time) and **Only for this account** (unticked: the template is offered in every account of this account group). A split transaction keeps its split lines only with its amount, since each line needs one; the window says so when **Keep the amount** is unticked. Transfers and investment lines cannot be saved as templates.
 
@@ -504,6 +506,8 @@ The reconciliation then opens with a line such as Imported: 42 added, 6 matched,
 
 A category taken from the payee's habits is usually right, but not always (the same store for groceries one week and a gift the next). Such transactions show "(to review)" after their category in the register, and **Categories to review (number)** appears above it. The window lists each one, oldest first, with its date, payee, category and amount:
 
+![Categories to review, after a card statement was imported](images/accounts-categories-review.png)
+
 - **Keep**: the category is right; the mark goes.
 - **Change**: closes the window and opens the transaction in the entry form. Choose the right category and save: changing the category removes the mark. Saving with the same category, for example after changing only the memo, leaves it to review.
 - **Keep all n** (or **Keep it**): accepts every category listed.
@@ -551,6 +555,8 @@ Sometimes one statement line is several recorded transactions, or the reverse: t
 - **Not the same**: the lines go back to No match, for you to settle one by one.
 
 **Match several…**, next to Needs your attention, groups lines and transactions yourself. The window Match several lines and transactions lists the Statement lines that need a decision and the Recorded transactions not on the statement, each with a box to tick. Under them, a line gives Lines total · transactions total · difference, in red until the two totals are equal. **Match them** is offered once at least one line and one transaction are ticked, three or more in all, and the totals are equal to the cent; it links them at once. For one line and one transaction, use **Link to a recorded transaction** instead.
+
+![Match several lines and transactions](images/accounts-match-several.png)
 
 A group counts like any match: it is undone with **Undo match** on any of its lines (which undoes the whole group), it is part of the reconciliation's report, and undoing the reconciliation keeps it. Importing the same lines again later finds them as Already imported. Foreign currency purchases are not grouped: a group's amounts must be equal.
 
@@ -628,6 +634,8 @@ The statement stays in the list as Undone, with the reason, as a record of what 
 @index: alert; low balance; over limit; credit limit warning; unusual activity; large transaction; new payee; fraud
 
 An account can warn you when its balance runs low, when a card nears or passes its limit, or when something unusual happens in it. Every alert is off until you set it. Open the account, then **Alerts…** above the register (Banking and Credit accounts only). The window Alerts for name says "Each alert is off while left empty." Leave a field empty to turn that alert off; save with every field empty to turn them all off.
+
+![The alerts of a credit card](images/accounts-alerts.png)
 
 - **Warn when the balance is below**: Banking accounts. An amount in the account's currency, for example 500. The alert stands while the balance today (post-dated transactions do not count yet) is below it, and goes away by itself once the balance is back up: "Chequing: balance $412.00, below $500.00".
 - **Warn when over the credit limit**: Credit accounts. Ticked, the alert stands while more is owed than the limit: "Visa: $1,030.00 owed, over the $1,000.00 limit".

@@ -285,6 +285,8 @@ Les règles de [Règles de catégorie](rules) classent les lignes de relevé imp
 
 Un modèle est une opération que vous saisissez souvent, enregistrée sous un nom : le loyer, l’épicerie de la semaine chez Costco avec ses lignes de ventilation, un don. Il remplit le formulaire de saisie d’un coup ; vous vérifiez la date et le montant et appuyez sur Entrée.
 
+![La fenêtre Modèles d’opération](images/accounts-templates.png)
+
 - **Utiliser un modèle** : au-dessus du formulaire de saisie, pour une nouvelle opération, quand le compte a des modèles. Tapez quelques lettres du nom pour filtrer la liste (ou ouvrez-la avec la flèche), puis choisissez-en un à la souris ou avec les flèches et Entrée. Le formulaire prend le bénéficiaire du modèle, sa catégorie (ou ses lignes de ventilation), sa note, son Pour et ses étiquettes, et son montant en paiement ou en dépôt quand il en a un dans la devise du compte. Ce que vous aviez tapé dans ces champs est remplacé. La date ne change pas. Rien n’est enregistré avant Entrée ou **Enregistrer**, alors vous pouvez tout changer d’abord. La suggestion du bénéficiaire (voir [Suggestions selon le bénéficiaire](accounts#payee-suggestions)) ne s’ajoute pas par-dessus.
 - **Enregistrer comme modèle** : cliquez sur une opération du registre, puis sur ce bouton. La fenêtre demande le **Nom du modèle** (le bénéficiaire est proposé) et offre **Garder le montant** (coché : le modèle a le montant, en paiement ou en dépôt ; décoché : vous le tapez chaque fois) et **Seulement pour ce compte** (décoché : le modèle est offert dans tous les comptes de ce groupe de comptes). Une opération ventilée ne garde ses lignes de ventilation qu’avec son montant, puisque chaque ligne en a besoin ; la fenêtre le dit quand **Garder le montant** est décoché. Les virements et les lignes de placement ne peuvent pas devenir des modèles.
 
@@ -504,6 +506,8 @@ Le rapprochement s’ouvre ensuite avec une ligne comme Importé : 42 ajoutées,
 
 Une catégorie prise des habitudes du bénéficiaire est habituellement juste, mais pas toujours (le même magasin pour l’épicerie une semaine et un cadeau la suivante). Ces opérations affichent « (à vérifier) » après leur catégorie dans le registre, et **Catégories à vérifier (nombre)** paraît au-dessus. La fenêtre les liste, les plus anciennes d’abord, avec leur date, leur bénéficiaire, leur catégorie et leur montant :
 
+![Catégories à vérifier, après l’importation d’un relevé de carte](images/accounts-categories-review.png)
+
 - **Garder** : la catégorie est juste ; la marque disparaît.
 - **Changer** : ferme la fenêtre et ouvre l’opération dans le formulaire de saisie. Choisissez la bonne catégorie et enregistrez : changer la catégorie retire la marque. Enregistrer avec la même catégorie, par exemple après avoir changé seulement la note, la laisse à vérifier.
 - **Garder les n** (ou **La garder**) : accepte toutes les catégories listées.
@@ -551,6 +555,8 @@ Parfois, une ligne du relevé représente plusieurs opérations inscrites, ou l�
 - **Pas le même** : les lignes reviennent à Aucune correspondance, à régler une à une.
 
 **Jumeler plusieurs…**, à côté de À vérifier, groupe vous-même des lignes et des opérations. La fenêtre Jumeler plusieurs lignes et opérations liste les Lignes du relevé qui demandent une décision et les Opérations inscrites absentes du relevé, chacune avec une case à cocher. Dessous, une ligne donne Lignes total · opérations total · écart, en rouge tant que les deux totaux diffèrent. **Les jumeler** est offert dès qu’au moins une ligne et une opération sont cochées, trois ou plus en tout, et que les totaux sont égaux au cent près ; il les jumelle aussitôt. Pour une ligne et une opération, utilisez plutôt **Jumeler à une opération inscrite**.
+
+![Jumeler plusieurs lignes et opérations](images/accounts-match-several.png)
 
 Un groupe compte comme tout jumelage : il s’annule avec **Annuler le jumelage** sur n’importe laquelle de ses lignes (ce qui annule tout le groupe), il fait partie du rapport du rapprochement, et l’annulation du rapprochement le garde. Importer plus tard les mêmes lignes les trouve Déjà importées. Les achats en devise étrangère ne sont pas groupés : les montants d’un groupe doivent être égaux.
 
@@ -628,6 +634,8 @@ Le relevé reste dans la liste comme Annulé, avec la raison, comme trace de ce 
 @index: alerte; solde bas; limite dépassée; avertissement de limite de crédit; activité inhabituelle; grosse opération; nouveau bénéficiaire; fraude
 
 Un compte peut vous avertir quand son solde baisse trop, quand une carte approche ou dépasse sa limite, ou quand il s’y passe quelque chose d’inhabituel. Chaque alerte est désactivée tant que vous ne la réglez pas. Ouvrez le compte, puis **Alertes…** au-dessus du registre (comptes bancaires et de crédit seulement). La fenêtre Alertes pour nom indique « Chaque alerte est désactivée tant qu’elle est laissée vide. » Laissez un champ vide pour désactiver cette alerte ; enregistrez avec tous les champs vides pour toutes les désactiver.
+
+![Les alertes d’une carte de crédit](images/accounts-alerts.png)
 
 - **Avertir quand le solde est sous** : comptes bancaires. Un montant dans la devise du compte, par exemple 500. L’alerte reste tant que le solde d’aujourd’hui (les opérations postdatées ne comptent pas encore) est plus bas, et disparaît d’elle-même quand le solde remonte : « Compte chèques : solde de 412,00 $, sous 500,00 $ ».
 - **Avertir quand la limite de crédit est dépassée** : comptes de crédit. Coché, l’alerte reste tant que le montant dû dépasse la limite : « Visa : 1 030,00 $ dû, au-delà de la limite de 1 000,00 $ ».

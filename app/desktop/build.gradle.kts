@@ -206,6 +206,29 @@ tasks.register<JavaExec>("manualScreenshots") {
     if (hostOs == "Windows") environment("APPDATA", "C:\\Users\\Alex\\AppData\\Roaming")
 }
 
+// The Microsoft Store pictures (DIST-07), drawn the same way at 1440 x 900 in full colour:
+// ./gradlew :app:desktop:storeScreenshots -Plang=en|fr writes docs/store/screenshots/desktop-<lang>.
+tasks.register<JavaExec>("storeScreenshots") {
+    group = "documentation"
+    description = "Draws the Microsoft Store pictures of the sample household (-Plang=en or fr)"
+    mainClass.set("ca.schippers.hfm.desktop.shots.ManualScreenshotsKt")
+    classpath = screenshots.runtimeClasspath
+    val lang = providers.gradleProperty("lang").getOrElse("en")
+    systemProperty("hfm.shots.lang", lang)
+    // -Pweb: the rann.ca pictures instead, into build/web-images (scaled down for website/images by hand).
+    val web = providers.gradleProperty("web").isPresent
+    systemProperty("hfm.shots.set", if (web) "web" else "store")
+    systemProperty("hfm.shots.width", "1440")
+    systemProperty("hfm.shots.height", "900")
+    systemProperty(
+        "hfm.shots.out",
+        if (web) layout.buildDirectory.dir("web-images").get().asFile.absolutePath else rootProject.file("docs/store/screenshots/desktop-$lang").absolutePath,
+    )
+    providers.gradleProperty("shot").orNull?.let { systemProperty("hfm.shots.only", it) }
+    systemProperty("java.awt.headless", "true")
+    systemProperty("kotlinx.coroutines.test.default_timeout", "30m")
+}
+
 // The computer side for the manual's phone pictures: the sample household listening for a phone,
 // with no window. It writes the pairing text to build/phone-invitation.txt and stops when
 // build/phone-stop appears: ./gradlew :app:desktop:manualPhoneHost -Plang=en|fr (tools/dev/README.md).

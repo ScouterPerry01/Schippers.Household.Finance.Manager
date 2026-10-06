@@ -12,9 +12,19 @@ import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.hasScrollToNodeAction
+import kotlinx.datetime.minus
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.test.DesktopComposeUiTest
 import ca.schippers.hfm.books.StatementStatus
+import ca.schippers.hfm.books.TemplateLine
+import ca.schippers.hfm.books.TxnTemplate
+import ca.schippers.hfm.books.AlertSettings
+import ca.schippers.hfm.importers.ImportedLine
+import ca.schippers.hfm.importers.ImportedStatement
+import ca.schippers.hfm.money.Currency
+import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.ai.SecretStore
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -39,9 +49,12 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
-/** The pictures' size, in pixels at the normal text size: a window a little smaller than the app's default. */
-private const val WIDTH = 1280
-private const val HEIGHT = 860
+/**
+ * The pictures' size, in pixels at the normal text size: for the manual, a window a little smaller
+ * than the app's default; the store pictures ask for their own (1440 x 900) with `hfm.shots.width` and `.height`.
+ */
+private val WIDTH = Integer.getInteger("hfm.shots.width", 1280)
+private val HEIGHT = Integer.getInteger("hfm.shots.height", 860)
 
 /** One picture: its file name (without .png) and how to bring the screen to the state shown. */
 private class Shot(val name: String, val prepare: ShotScope.() -> Unit)
@@ -71,8 +84,63 @@ private class ShotScope(val app: AppState, val model: BooksModel, val test: Desk
         nodes[nodes.fetchSemanticsNodes().size - 1].performClick()
     }
 
+    /**
+     * Scrolls until a text showing [label] is at the top of its list: the first list (lazy or not)
+     * that can bring it into view, since a lazy list composes only the rows shown.
+     */
+    fun scrollTo(label: String) {
+        settle(test)
+        val lists = test.onAllNodes(hasScrollToNodeAction())
+        // Scrolling a lazy list waits for new frames, which the paused clock would never give.
+        test.mainClock.autoAdvance = true
+        val found = (0 until lists.fetchSemanticsNodes().size).any { i ->
+            runCatching { lists[i].performScrollToNode(hasText(label, substring = true)) }.isSuccess
+        }
+        test.mainClock.autoAdvance = false
+        if (!found) error("nothing to scroll to showing \"$label\"")
+    }
+
     /** The account the register pictures show: the household's credit card. */
     fun creditCard(): String? = model.books.accounts.list().firstOrNull { it.account.name in CARD_NAMES }?.account?.id
+
+    fun l(fr: String, en: String) = if (model.language == Language.FRENCH) fr else en
+
+    /** MAN-05: the templates the Templates window shows, added once to the credit card's account group. */
+    fun addTemplates(cardId: String) {
+        val books = model.books
+        if (books.templates.forAccount(cardId).isNotEmpty()) return
+        val group = books.accounts.list().first { it.account.id == cardId }.account.groupId
+        fun cat(key: String) = books.categories.list().first { it.systemKey == key }.id
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        books.templates.save(TxnTemplate("", group, l("Épicerie de la semaine", "Weekly groceries"), l("IGA", "Loblaws"), lines = listOf(TemplateLine(cat("food.groceries")))))
+        books.templates.save(TxnTemplate("", group, l("Essence", "Gas"), "Petro-Canada", lines = listOf(TemplateLine(cat("transport.fuel")))))
+        books.templates.save(
+            TxnTemplate(
+                "", group, "Costco", "Costco", accountId = cardId,
+                lines = listOf(TemplateLine(cat("food.groceries"), cad("-120.00")), TemplateLine(cat("housing.furnishings"), cad("-40.00"))),
+            ),
+        )
+        books.templates.save(TxnTemplate("", group, l("Nourriture de Rex", "Rex's food"), l("Mondou", "Pet Valu"), amount = cad("-74.99"), lines = listOf(TemplateLine(cat("pets.food")))))
+    }
+
+    /**
+     * CAT-03: a short card statement downloaded this week, whose new lines take their categories
+     * from the payees' habits and so wait in Categories to review. Imported once.
+     */
+    fun importCardStatement(cardId: String) {
+        val books = model.books
+        if (books.transactions.suggestedCategories(cardId).isNotEmpty()) return
+        val today = ca.schippers.hfm.desktop.today()
+        fun day(n: Int) = today.minus(kotlinx.datetime.DatePeriod(days = n))
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        val lines = listOf(
+            ImportedLine("S1", day(5), cad("-96.41"), l("IGA", "LOBLAWS"), null, null),
+            ImportedLine("S2", day(4), cad("-58.30"), "PETRO-CANADA", null, null),
+            ImportedLine("S3", day(3), cad("-42.75"), l("RESTAURANT CHEZ MIMI", "RIVERSIDE DINER"), null, null),
+            ImportedLine("S4", day(2), cad("-52.49"), l("MONDOU", "PET VALU"), null, null),
+        )
+        books.statements.import(cardId, ImportedStatement("OFX", null, Currency.CAD, day(6), day(1), null, null, lines), "visa.ofx")
+    }
 }
 
 private val CARD_NAMES = setOf("TD Visa", "Visa Desjardins")
@@ -130,12 +198,92 @@ private val SHOTS: List<Shot> = buildList {
     add(Shot("help") { section(Section.BILLS); app.openHelp() })
     add(Shot("menu-top") { app.setMenuOnTop(model.books.userId, true); section(Section.BUDGETS) })
     add(Shot("display-dark") { app.chooseTheme(ThemeChoice.DARK); section(Section.DASHBOARD) })
+    // Dialogs added before 1.0. These change the sample household (templates, a card statement,
+    // alerts), so they come after the pictures above, which show it as it starts.
+    add(
+        Shot("accounts-templates") {
+            val card = creditCard()!!
+            addTemplates(card)
+            model.selectedAccountId = card
+            section(Section.ACCOUNTS)
+            click(t("templates.button"))
+        },
+    )
+    add(
+        Shot("accounts-categories-review") {
+            val card = creditCard()!!
+            importCardStatement(card)
+            model.selectedAccountId = card
+            section(Section.ACCOUNTS)
+            click(t("suggested.button", model.books.transactions.suggestedCategories(card).size))
+        },
+    )
+    add(
+        Shot("accounts-alerts") {
+            val card = creditCard()!!
+            val alerts = model.books.accountAlerts
+            if (!alerts.settings(card).anyOn) {
+                alerts.save(AlertSettings(card, nearLimitPercent = 90, overLimit = true, largeMultiple = java.math.BigDecimal("3"), newPayeeAbove = Money.parse("250.00", Currency.CAD)))
+            }
+            model.selectedAccountId = card
+            section(Section.ACCOUNTS)
+            click(t("alert.button"))
+        },
+    )
+    add(
+        Shot("accounts-match-several") {
+            // The joint account's statement, as in accounts-reconcile.
+            val card = creditCard()
+            val open = model.books.accounts.list().filter { it.account.id != card }.firstNotNullOfOrNull { a ->
+                model.books.statements.statements(a.account.id).firstOrNull { it.status == StatementStatus.OPEN }?.let { a.account.id to it.id }
+            }
+            model.selectedAccountId = open?.first
+            model.reconcilingStatementId = open?.second
+            section(Section.ACCOUNTS)
+            click(t("reconcile.matchSeveral"))
+        },
+    )
+    add(Shot("reports-cash-flow") { model.reportState.kind = ReportKind.CASH_FLOW; section(Section.REPORTS) })
+    add(Shot("taxes-estimate-carry-forward") { section(Section.TAXES); click(t("taxes.tab.ESTIMATE")); scrollTo(t("taxEstimateGroup.CARRY_FORWARD")) })
     // Before a household is open: last, since leaving the household's screens stops its phone listener.
     // The manual's own window, on the Bills chapter with its first picture.
     add(Shot("manual-window") { section(Section.BILLS); app.openManual("bills"); manualShown = true })
     add(Shot("welcome-screen") { app.screen = Screen.Welcome })
     add(Shot("create-household") { app.screen = Screen.Create })
 }
+
+/** A store picture (DIST-07): its file name in English and in French, and the screen it shows. */
+private class StoreShot(val en: String, val fr: String, val prepare: ShotScope.() -> Unit)
+
+/**
+ * The Microsoft Store pictures, in the order the listing shows them: `./gradlew :app:desktop:storeScreenshots -Plang=en`
+ * (or fr) writes them at 1440 x 900 in full colour into docs/store/screenshots/desktop-<lang>.
+ */
+private val STORE_SHOTS: List<StoreShot> = listOf(
+    StoreShot("1-dashboard", "1-tableau-de-bord") { section(Section.DASHBOARD) },
+    StoreShot("2-accounts", "2-comptes") { model.selectedAccountId = creditCard(); section(Section.ACCOUNTS) },
+    StoreShot("3-reports", "3-rapports") { model.reportState.kind = ReportKind.SPENDING_BY_CATEGORY; section(Section.REPORTS) },
+    StoreShot("4-taxes", "4-impots") { section(Section.TAXES); click(t("taxes.tab.ESTIMATE")) },
+    StoreShot("5-investments", "5-placements") { section(Section.INVESTMENTS) },
+    StoreShot("6-contacts", "6-contacts") {
+        // The family doctor, with the people they serve and their links.
+        model.focusContactId = model.books.contacts.list().firstOrNull { it.name.startsWith(l("Dre Gagnon", "Dr. Patel")) }?.id
+        section(Section.CONTACTS)
+    },
+    StoreShot("7-medical", "7-reclamations-medicales") { section(Section.MEDICAL) },
+    StoreShot("8-budgets", "8-budgets") { section(Section.BUDGETS) },
+)
+
+/**
+ * The rann.ca home page's pictures, named as `website/rann-roost-en.md` and `-fr.md` show them:
+ * `storeScreenshots -Plang=en -Pweb` writes them at the store's size into build/web-images, to be
+ * scaled to 1080 x 675 JPEG for `website/images`.
+ */
+private val WEB_SHOTS: List<StoreShot> = listOf(
+    StoreShot("desktop-en-dashboard", "desktop-fr-tableau-de-bord") { section(Section.DASHBOARD) },
+    StoreShot("desktop-en-accounts", "desktop-fr-comptes") { model.selectedAccountId = creditCard(); section(Section.ACCOUNTS) },
+    StoreShot("desktop-en-reports", "desktop-fr-rapports") { model.reportState.kind = ReportKind.INCOME_EXPENSE; section(Section.REPORTS) },
+)
 
 /** Lets the screen read its data and draw: a few frames, with time for background reads. */
 private fun settle(test: DesktopComposeUiTest) {
@@ -164,6 +312,14 @@ fun main() {
     val language = Language.entries.first { it.tag == (System.getProperty("hfm.shots.lang") ?: "en") }
     val out = File(System.getProperty("hfm.shots.out") ?: "build/manual-images/${language.tag}").apply { mkdirs() }
     val only = System.getProperty("hfm.shots.only")?.split(',')?.map { it.trim() }?.toSet()
+    // The store's pictures instead of the manual's, kept in full colour: they are not shipped in the app.
+    val set = System.getProperty("hfm.shots.set")
+    val store = set == "store" || set == "web"
+    val shots = if (store) {
+        (if (set == "web") WEB_SHOTS else STORE_SHOTS).map { Shot(if (language == Language.FRENCH) it.fr else it.en, it.prepare) }
+    } else {
+        SHOTS
+    }
     val app = AppState(prefs = MemoryPreferences())
     app.switchLanguage(language, remember = false)
     val model = BooksModel(DemoHousehold.create(app.store, language), app)
@@ -175,7 +331,7 @@ fun main() {
             if (manualShown) AppTheme(app) { Surface(Modifier.fillMaxSize()) { ManualContent(app) } } else App(app)
         }
         val scope = ShotScope(app, model, this)
-        for (shot in SHOTS) {
+        for (shot in shots) {
             if (only != null && shot.name !in only) continue
             // A fresh start for each picture: light colours, menu on the left, nothing open, and
             // another screen first so the screen's tabs start from their first one.
@@ -194,7 +350,7 @@ fun main() {
             shot.prepare(scope)
             settle(this)
             val image = onAllNodes(isRoot())[0].captureToImage().toAwtImage()
-            write(image, File(out, shot.name + ".png"))
+            if (store) writeFullColour(image, File(out, shot.name + ".png")) else write(image, File(out, shot.name + ".png"))
             taken++
             println("${shot.name}.png")
         }
@@ -223,6 +379,14 @@ private fun write(image: BufferedImage, file: File) {
         writer.write(null, javax.imageio.IIOImage(Palette.reduce(image), null, null), param)
     }
     writer.dispose()
+}
+
+/** Saves [image] as a full-colour PNG, without transparency, as the stores ask. */
+private fun writeFullColour(image: BufferedImage, file: File) {
+    val rgb = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_RGB)
+    rgb.createGraphics().apply { drawImage(image, 0, 0, null); dispose() }
+    file.delete()
+    ImageIO.write(rgb, "png", file)
 }
 
 /** Median cut: the colours used are split into 256 boxes, each drawn in the average colour of its box. */

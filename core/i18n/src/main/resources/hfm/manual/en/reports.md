@@ -464,6 +464,8 @@ See [Vehicles](vehicles) and [Home and assets](assets) for the tasks and service
 
 The bank accounts day by day over the coming weeks, from the scheduled bills, income and transfers still due (one that is overdue counts today). Choose how far to look with **Looking ahead**: 30, 60, 90 or 180 days, or the forecast period of Rates and rules.
 
+![The Cash flow forecast report](images/reports-cash-flow.png)
+
 - **Today**, the balance on the last day, and **Lowest**: the bank accounts together, in the base currency at today's rate.
 - A red line says on which day the bank accounts together would go below zero, and which accounts a payment would overdraw.
 - The chart: a line for all the bank accounts together and one for each account in the base currency that has something scheduled, with a red line at zero. Point at a day to read the balances.
