@@ -90,8 +90,12 @@ private fun SummaryTab(model: BooksModel) {
 fun emergencySections(model: BooksModel, s: EmergencySummary): List<DocSection> {
     val members = model.books.members.list(includeArchived = true).associate { it.id to it.displayName }
     fun yes(b: Boolean) = model.t(if (b) "common.yes" else "common.no")
+    fun fold(name: String) = name.trim().lowercase()
     val people = s.records.sortedBy { members[it.memberId].orEmpty() }.map { r ->
         val p = r.plan
+        // A person typed on the papers who is also linked from Contacts is listed once, from Contacts (kept up to date).
+        val linked = runCatching { model.books.contacts.linkedTo(LinkTarget.ESTATE, r.memberId) }.getOrDefault(emptyList())
+        val linkedNames = linked.map { fold(it.contact.name) }.toSet()
         DocSection(
             model.t("estate.papersOf", members[r.memberId].orEmpty()),
             listOfNotNull(
@@ -106,9 +110,9 @@ fun emergencySections(model: BooksModel, s: EmergencySummary): List<DocSection> 
                 model.t("estate.organDonor") to (p.organDonor?.let(::yes) ?: model.t("estate.notStated")),
                 p.funeralWishes?.let { model.t("estate.funeral") to it },
                 p.notes?.let { model.t("estate.notes") to it },
-            ) + p.contacts.map { c ->
+            ) + p.contacts.filter { c -> fold(c.name) !in linkedNames }.map { c ->
                 model.t("contactRole.${c.role}") to listOfNotNull(c.name, c.organization, c.phone, c.email, c.notes).joinToString(" · ")
-            } + runCatching { model.books.contacts.linkedTo(LinkTarget.ESTATE, r.memberId) }.getOrDefault(emptyList()).map { l ->
+            } + linked.map { l ->
                 model.t("linkRoleShort.${l.link.role}") to listOfNotNull(l.contact.name, l.contact.purpose, l.contact.phones.firstOrNull()?.value, l.contact.emails.firstOrNull()?.value).joinToString(" · ")
             },
         )
