@@ -597,7 +597,7 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
             }
         }
     }
-    claim?.let { c -> ClaimDialog(model, c, items) { claim = null } }
+    claim?.let { c -> ClaimDialog(model, c, items, saved?.groupId ?: existing.groupId) { claim = null } }
     saved?.let { s ->
         if (asking) {
             AskBeforeDeleting(model, model.t("insurance.delete.policy", "${model.t("policyKind.${s.kind}")} · ${s.insurer}"), onDismiss = { asking = false }) {
@@ -613,7 +613,7 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
 }
 
 @Composable
-private fun ClaimDialog(model: BooksModel, existing: InsuranceClaim, items: List<Pair<String, String>>, onClose: () -> Unit) {
+private fun ClaimDialog(model: BooksModel, existing: InsuranceClaim, items: List<Pair<String, String>>, groupId: String, onClose: () -> Unit) {
     val books = model.books
     val locale = model.language.locale
     val cad = Currency.CAD
@@ -652,6 +652,12 @@ private fun ClaimDialog(model: BooksModel, existing: InsuranceClaim, items: List
             AmountInput(model.t("insurance.deductible"), deductible, cad, locale, Modifier.weight(1f), model::money) { deductible = it }
             AmountInput(model.t("medical.paid"), paid, cad, locale, Modifier.weight(1f), model::money) { paid = it }
             DateInput(model.t("medical.paidOnDate"), paidDate, Modifier.weight(1f)) { paidDate = it }
+        }
+        // INS-04: the claim's documents (photos of the damage, estimates, the insurer's letters), once it is saved.
+        if (existing.id.isNotBlank()) {
+            DocumentsBlock(model, InsuranceService.CLAIM, existing.id, groupId, "insurance.claimDocuments")
+        } else {
+            Text(model.t("insurance.claimDocumentsLater"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

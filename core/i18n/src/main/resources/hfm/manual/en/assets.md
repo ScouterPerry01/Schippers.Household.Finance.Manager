@@ -368,6 +368,7 @@ Beneficiaries are recorded for reference; the designation filed with the insurer
 - **Item**: the asset or vehicle concerned, or "(none)".
 - **Status**: **open**, **paid**, **refused** or **closed**.
 - **Amount claimed**, **Deductible**, **Amount paid** and **Date paid**.
+- **Claim documents**: photos of the damage, repair estimates, the insurer's letters and the settlement, attached with **Attach a file…** or **From the review inbox**. Shown once the claim is saved; a new claim says to save it first. The documents are kept in the policy's group, like the policy documents.
 
 **Save** keeps it. Amounts cannot be negative.
 

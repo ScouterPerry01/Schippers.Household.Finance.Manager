@@ -368,6 +368,7 @@ Les bénéficiaires sont inscrits pour mémoire ; c’est la désignation dépos
 - **Article** : le bien ou le véhicule touché, ou « (aucun) ».
 - **Statut** : **ouverte**, **payée**, **refusée** ou **fermée**.
 - **Montant réclamé**, **Franchise**, **Montant payé** et **Date du paiement**.
+- **Documents de la réclamation** : les photos des dommages, les soumissions de réparation, les lettres de l’assureur et le règlement, joints avec **Joindre un fichier…** ou **Depuis la boîte de révision**. Affichés une fois la réclamation enregistrée ; une nouvelle réclamation indique de l’enregistrer d’abord. Les documents sont gardés dans le groupe de la police, comme les documents de la police.
 
 **Enregistrer** la garde. Les montants ne peuvent pas être négatifs.
 
