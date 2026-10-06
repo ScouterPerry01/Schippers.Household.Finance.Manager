@@ -157,7 +157,15 @@ data class StatementCheck(val statement: InvestmentStatement, val booksCash: Mon
     val matches: Boolean get() = cashMatches && positions.all { it.matches }
 }
 
-data class InvestmentImportResult(val added: Int, val alreadyThere: Int, val securitiesCreated: Int, val statementSaved: Boolean, val warnings: List<String>)
+data class InvestmentImportResult(
+    val added: Int,
+    val alreadyThere: Int,
+    val securitiesCreated: Int,
+    val statementSaved: Boolean,
+    val warnings: List<String>,
+    /** The statement saved for reconciliation (REC-08), if any. */
+    val statementId: String? = null,
+)
 
 /** INV-01 to INV-05, REC-08: securities, prices, investment transactions, holdings, ACB and imports. */
 class InvestmentService internal constructor(private val books: Books) {

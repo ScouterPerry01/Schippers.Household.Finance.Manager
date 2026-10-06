@@ -13,8 +13,8 @@ Documents you add are first read on this computer, without the internet (see [Do
 1. You turn AI reading on and save your own Anthropic key on this screen.
 2. In the review of a document, you click **Read with AI**. The review shows "Some fields are uncertain: AI can read this document." when the computer's own reading is unsure.
 3. Unless you turned it off, the app first shows you every page that will be sent, so you can hide parts of it (an account number, for example) or keep only part of a page. Nothing is sent before you click **Send**.
-4. Claude reads the pages and answers with the fields of that type of document. The app checks the answer on this computer: the fields it expects and the sums (items against the subtotal, taxes against the total, a statement's transactions against its balances, gross pay less deductions against net pay). If the check fails, it asks once more saying what was wrong; if it fails again, you enter the fields by hand.
-5. Fields read by AI are marked "read by AI" in the review, and the document shows which model read it and when. A statement read by AI can go straight into an account for reconciliation, a receipt's items can become a split transaction, and a pay stub can become the pay transaction. See [Documents](documents).
+4. Claude reads the pages and answers with the fields of that type of document. The app checks the answer on this computer: the fields it expects and the sums (items against the subtotal, taxes against the total, a statement's transactions against its balances, gross pay less deductions against net pay, a trade's units times price and fees against its net amount, an investment statement's activity against its cash). If the check fails, it asks once more saying what was wrong; if it fails again, you enter the fields by hand.
+5. Fields read by AI are marked "read by AI" in the review, and the document shows which model read it and when. A statement read by AI can go straight into an account for reconciliation, a receipt's items can become a split transaction, a pay stub can become the pay transaction, and a trade confirmation or investment statement can go into an investment account. A document read with a type you added lists every field it read. See [Documents](documents).
 
 What leaves the computer: only the page images you approved, after your cropping and hiding, at most 2,000 pixels on the long side. Hidden areas are replaced by flat blocks before the picture leaves this computer. No text, account data or other household data is sent. Anthropic receives the pages to read them.
 
@@ -62,13 +62,14 @@ The line under **Your Anthropic key** says "A key is saved in" and where, or "No
 
 @index: schema; document type; custom document type
 
-The **Document types** part lists what the AI can read, each with its version: Receipt, Bill, Invoice, Credit card statement, Bank statement, Investment statement, Pay stub and Explanation of benefits (the names follow the document kinds of the [Documents](documents) screen). The version is recorded with each reading.
+The **Document types** part lists what the AI can read, each with its version: Receipt, Bill, Invoice, Credit card statement, Bank statement, Investment statement, Trade confirmation, Pay stub and Explanation of benefits (the names follow the document kinds of the [Documents](documents) screen). The version is recorded with each reading.
 
 For advanced users:
 
 - The line "Your own types go in" gives a folder on this computer: on Windows, the ai-types folder under RANN's Roost in your AppData\Roaming folder; on Linux, ~/.config/ranns-roost/ai-types.
 - **Open folder**: creates the folder if needed and opens it.
 - A type is two files with the same name: a JSON Schema (name.json) saying exactly which fields to return, and an optional instruction (name.txt). A file with the same name as a shipped type replaces it.
+- A document read with a type you added keeps its kind Other: the app guesses its sender, date and amount from field names such as issuer, date or total, and the document window lists every field read under "Fields read" with the type's name, labelled with each field's title in the schema, else its name. The fields are also kept with the document's text, so a search finds them. See [Fields read with your own type](documents#ai-custom-fields).
 - Types you added show "added" after their version. A file that cannot be used is listed in red as "Not used:" with its name and the reason, such as a schema that is not a closed JSON object.
 
 ## Usage {#usage}

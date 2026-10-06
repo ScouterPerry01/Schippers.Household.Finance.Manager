@@ -32,7 +32,7 @@ data class DocumentType(
         private val KINDS = mapOf(
             "receipt" to DocumentKind.RECEIPT, "bill" to DocumentKind.BILL, "invoice" to DocumentKind.INVOICE,
             "card_statement" to DocumentKind.CARD_STATEMENT, "bank_statement" to DocumentKind.BANK_STATEMENT,
-            "investment_statement" to DocumentKind.INVESTMENT_STATEMENT, "pay_stub" to DocumentKind.PAY_STUB, "eob" to DocumentKind.EOB,
+            "investment_statement" to DocumentKind.INVESTMENT_STATEMENT, "pay_stub" to DocumentKind.PAY_STUB, "eob" to DocumentKind.EOB, "trade_confirmation" to DocumentKind.TRADE_CONFIRMATION,
         )
 
         fun kindFor(id: String): DocumentKind? = KINDS[id]
@@ -57,7 +57,7 @@ data class LoadedTypes(val types: List<DocumentType>, val rejected: List<Rejecte
  */
 object DocumentTypes {
 
-    val BUILT_IN = listOf("receipt", "bill", "invoice", "card_statement", "bank_statement", "investment_statement", "pay_stub", "eob")
+    val BUILT_IN = listOf("receipt", "bill", "invoice", "card_statement", "bank_statement", "investment_statement", "trade_confirmation", "pay_stub", "eob")
 
     private val ID = Regex("[a-z][a-z0-9_]{0,39}")
     private const val MAX_FILE = 256 * 1024

@@ -13,8 +13,8 @@ Les documents que vous ajoutez sont d'abord lus sur cet ordinateur, sans Interne
 1. Vous activez la lecture par IA et vous enregistrez votre propre clé Anthropic dans cet écran.
 2. Dans la révision d'un document, vous cliquez sur **Lire avec l'IA**. La révision indique « Certains champs sont incertains : l'IA peut lire ce document. » quand la lecture faite par l'ordinateur est incertaine.
 3. À moins que vous l'ayez désactivé, l'application vous montre d'abord chaque page qui sera envoyée, pour que vous puissiez en masquer des parties (un numéro de compte, par exemple) ou ne garder qu'une partie d'une page. Rien n'est envoyé avant que vous cliquiez sur **Envoyer**.
-4. Claude lit les pages et répond avec les champs de ce type de document. L'application vérifie la réponse sur cet ordinateur : les champs attendus et les sommes (les articles par rapport au sous-total, les taxes par rapport au total, les opérations d'un relevé par rapport à ses soldes, la paie brute moins les retenues par rapport à la paie nette). Si la vérification échoue, elle demande une seconde fois en disant ce qui n'allait pas ; si elle échoue encore, vous entrez les champs à la main.
-5. Les champs lus par l'IA sont marqués « lu par l'IA » dans la révision, et le document indique quel modèle l'a lu et quand. Un relevé lu par l'IA peut aller directement dans un compte pour la conciliation, les articles d'un reçu peuvent devenir une opération ventilée, et un talon de paie peut devenir l'opération de paie. Voir [Documents](documents).
+4. Claude lit les pages et répond avec les champs de ce type de document. L'application vérifie la réponse sur cet ordinateur : les champs attendus et les sommes (les articles par rapport au sous-total, les taxes par rapport au total, les opérations d'un relevé par rapport à ses soldes, la paie brute moins les retenues par rapport à la paie nette, les unités d'une opération boursière fois le prix et les frais par rapport à son montant net, les mouvements d'un relevé de placements par rapport à son encaisse). Si la vérification échoue, elle demande une seconde fois en disant ce qui n'allait pas ; si elle échoue encore, vous entrez les champs à la main.
+5. Les champs lus par l'IA sont marqués « lu par l'IA » dans la révision, et le document indique quel modèle l'a lu et quand. Un relevé lu par l'IA peut aller directement dans un compte pour la conciliation, les articles d'un reçu peuvent devenir une opération ventilée, un talon de paie peut devenir l'opération de paie, et un avis d'exécution ou un relevé de placements peut entrer dans un compte de placement. Un document lu avec un type que vous avez ajouté énumère chaque champ lu. Voir [Documents](documents).
 
 Ce qui quitte l'ordinateur : seulement les images des pages que vous avez approuvées, après votre rognage et vos zones masquées, d'au plus 2 000 pixels sur le côté long. Les zones masquées sont remplacées par des blocs unis avant que l'image quitte cet ordinateur. Aucun texte, aucune donnée de compte ni aucune autre donnée du ménage n'est envoyé. Anthropic reçoit les pages pour les lire.
 
@@ -62,13 +62,14 @@ La ligne sous **Votre clé Anthropic** indique « Une clé est enregistrée dans
 
 @index: schéma; type de document; type de document personnalisé
 
-La partie **Types de documents** liste ce que l'IA peut lire, chacun avec sa version : Reçu, Facture, Facture détaillée, Relevé de carte de crédit, Relevé bancaire, Relevé de placements, Talon de paie et Relevé de prestations (les noms suivent les sortes de documents de l'écran [Documents](documents)). La version est inscrite avec chaque lecture.
+La partie **Types de documents** liste ce que l'IA peut lire, chacun avec sa version : Reçu, Facture, Facture détaillée, Relevé de carte de crédit, Relevé bancaire, Relevé de placements, Avis d'exécution, Talon de paie et Relevé de prestations (les noms suivent les sortes de documents de l'écran [Documents](documents)). La version est inscrite avec chaque lecture.
 
 Pour les utilisateurs avancés :
 
 - La ligne « Vos propres types vont dans » donne un dossier sur cet ordinateur : sous Windows, le dossier ai-types sous RANN's Roost dans votre dossier AppData\Roaming ; sous Linux, ~/.config/ranns-roost/ai-types.
 - **Ouvrir le dossier** : crée le dossier au besoin et l'ouvre.
 - Un type, ce sont deux fichiers de même nom : un schéma JSON (nom.json) qui dit exactement quels champs retourner, et une instruction facultative (nom.txt). Un fichier qui porte le même nom qu'un type fourni le remplace.
+- Un document lu avec un type que vous avez ajouté garde la sorte Autre : l'application devine son expéditeur, sa date et son montant d'après des noms de champs comme issuer, date ou total, et la fenêtre du document énumère chaque champ lu sous « Champs lus » avec le nom du type, nommé par le titre du champ dans le schéma, sinon par son nom. Les champs sont aussi gardés avec le texte du document, pour qu'une recherche les trouve. Voir [Champs lus avec votre propre type](documents#ai-custom-fields).
 - Les types que vous avez ajoutés affichent « ajouté » après leur version. Un fichier qui ne peut pas être utilisé est listé en rouge comme « Non utilisé : » avec son nom et la raison, comme un schéma qui n'est pas un objet JSON fermé.
 
 ## Utilisation {#usage}

@@ -2,6 +2,7 @@ package ca.schippers.hfm.books
 
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
+import ca.schippers.hfm.importers.ImportedInvestmentStatement
 import ca.schippers.hfm.importers.ImportedLine
 import ca.schippers.hfm.importers.ImportedStatement
 import ca.schippers.hfm.money.Currency
@@ -96,13 +97,13 @@ class AiService internal constructor(private val books: Books) {
      * Keeps a checked reading with its document and puts its fields in the review inbox, marked
      * as read by AI. The document's recognised text and file are unchanged.
      */
-    fun saveReading(documentId: String, typeId: String, schemaVersion: String, answer: String, checked: Boolean, model: String, draft: DocumentDraft): VaultDocument {
+    fun saveReading(documentId: String, typeId: String, schemaVersion: String, answer: String, checked: Boolean, model: String, draft: DocumentDraft, readText: String? = null): VaultDocument {
         val (group, _) = books.documents.locate(documentId)
         books.require(group, PermissionLevel.CAPTURE_ONLY)
         books.ledger(group).aiQueries.saveDocumentAi(documentId, typeId, schemaVersion, answer, if (checked) 1 else 0, model, books.now(), books.userId)
         // The audit log is readable by every user: it records that a document was sent, never what it holds (PRV-01).
         books.session.audit("AI_READ", "document", documentId, model)
-        return books.documents.recordDraft(documentId, draft, "ai:$model")
+        return books.documents.recordDraft(documentId, draft, "ai:$model", readText)
     }
 
     fun reading(documentId: String): StoredAiReading? {
@@ -146,6 +147,43 @@ class AiService internal constructor(private val books: Books) {
      */
     fun importStatement(documentId: String, accountId: String): ImportResult =
         books.statements.import(accountId, statement(documentId, accountId), books.documents.get(documentId).label, books.documents.content(documentId))
+
+    /**
+     * INV-05: a trade confirmation or investment statement read by AI, as a brokerage statement for
+     * [accountId]. A confirmation gives its trades, each on its trade date with its fees and the
+     * settlement date in the memo; a statement gives its activity, and its holdings and cash at the
+     * period's end for reconciliation (REC-08). Units and amounts come out positive, as brokerage
+     * files give them. Amounts in another currency than the account's are refused.
+     */
+    fun investmentStatement(documentId: String, accountId: String): ImportedInvestmentStatement {
+        val reading = reading(documentId) ?: throw ValidationException("error.aiNoStatement")
+        validate(reading.typeId in INVESTMENT_TYPES, "error.aiNoStatement")
+        val account = books.accounts.get(accountId)
+        validate(account.type.kind == ca.schippers.hfm.domain.AccountKind.INVESTMENT, "error.notInvestmentAccount")
+        return AiInvestments.statement(reading.typeId, Json.parseToJsonElement(reading.answer).jsonObject, account.currency)
+    }
+
+    /**
+     * The investment account a trade confirmation or statement read by AI is likely for: the open
+     * one in its currency whose number ends like the document's, else the only one in its currency.
+     */
+    fun suggestInvestmentAccount(documentId: String): String? {
+        val reading = reading(documentId)?.takeIf { it.typeId in INVESTMENT_TYPES } ?: return null
+        val answer = Json.parseToJsonElement(reading.answer).jsonObject
+        val currency = answer.text("currency")?.let { runCatching { Currency.of(it.uppercase()) }.getOrNull() }
+        val candidates = books.investments.accounts().filter { currency == null || it.currency == currency }
+        val digits = answer.text("account_number_last_digits")?.filter(Char::isLetterOrDigit)?.takeLast(4)?.takeIf { it.length >= 3 }
+        return (digits?.let { d -> candidates.filter { it.numberMasked?.filter(Char::isLetterOrDigit)?.endsWith(d) == true }.singleOrNull() } ?: candidates.singleOrNull())?.id
+    }
+
+    /**
+     * INV-05: imports what [documentId] says into [accountId], as a brokerage file is imported:
+     * actions already there (by the same document, or entered by hand or read from another
+     * document, matched by kind, security, date and units) are left alone, and a statement's
+     * holdings and cash wait for reconciliation.
+     */
+    fun importInvestments(documentId: String, accountId: String): InvestmentImportResult =
+        books.brokerage.import(accountId, investmentStatement(documentId, accountId))
 
     /**
      * OCR-03: a receipt or invoice read by AI, split by its items, each with its share of [total]
@@ -226,5 +264,8 @@ class AiService internal constructor(private val books: Books) {
     companion object {
         /** Document types whose readings can become a statement (OCR-09). */
         val STATEMENT_TYPES = setOf("bank_statement", "card_statement")
+
+        /** Document types whose readings go into an investment account (INV-05). */
+        val INVESTMENT_TYPES = setOf("trade_confirmation", "investment_statement")
     }
 }

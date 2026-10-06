@@ -69,6 +69,8 @@ object DesktopAi {
             books.ai.record(documentId, u.provider, u.model, u.documentType, u.inputTokens, u.outputTokens, u.costUsd, u.succeeded)
         }
         val answer = Json.encodeToString(JsonObject.serializer(), reading.answer)
-        return books.ai.saveReading(documentId, type.id, type.version, answer, reading.checked, reading.usage.last().model, reading.draft)
+        // AI-03: a type the app has no screen for keeps every field as searchable text with the document.
+        val text = if (type.kind == null) ca.schippers.hfm.ai.AiFields.text(reading.fields).ifBlank { null } else null
+        return books.ai.saveReading(documentId, type.id, type.version, answer, reading.checked, reading.usage.last().model, reading.draft, text)
     }
 }

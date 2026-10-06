@@ -26,7 +26,10 @@ class AiReading(
     /** Whether the amounts were checked and add up (some documents have nothing to check). */
     val checked: Boolean,
     val usage: List<AiUsage>,
-)
+) {
+    /** AI-03: every value read, labelled; what a type the app has no screen for shows and keeps. */
+    val fields: List<AiField> get() = AiFields.fields(answer, type.schema)
+}
 
 /**
  * Runs one reading (section 4.5, steps 2 to 4): sends the pages with the type's instructions and
@@ -56,7 +59,7 @@ class AiReader(private val provider: AiProvider) {
                 .also { usage += it; onUsage(it) }
             if (ok) {
                 val checkable = AiFields.hasSums(type.id, answer!!)
-                return AiReading(type, answer, AiFields.draft(type.id, answer, checkable), checkable, usage)
+                return AiReading(type, answer, AiFields.draft(type.id, answer, checkable, type.schema), checkable, usage)
             }
             problems = problems + sums
             if (attempt == 0) task = TASK.format(pages.size) + "\n\n" + RETRY.format(problems.take(5).joinToString("\n- ", "- "))

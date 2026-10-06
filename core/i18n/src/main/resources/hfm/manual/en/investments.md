@@ -231,6 +231,12 @@ The comparison window, "Statement of" and the date, has two columns: **Statement
 
 Statements imported from a file open in the same comparison window from the Statements tab.
 
+### PDF statements and trade confirmations {#pdf-statements}
+
+@index: PDF statement; trade confirmation; AI reading
+
+A PDF or paper statement, or a trade confirmation, can be read by AI and brought into the account from the Documents screen: its trades and activity are added, those already in the books are matched rather than added twice, and a statement's holdings and cash are saved here for the check. See [Bring a trade confirmation or investment statement into the books](documents#ai-investments). Without AI reading, enter the trades by hand and use **Check a statement**.
+
 ## Securities {#securities}
 
 @index: ticker; symbol; fund; bond; GIC; option
