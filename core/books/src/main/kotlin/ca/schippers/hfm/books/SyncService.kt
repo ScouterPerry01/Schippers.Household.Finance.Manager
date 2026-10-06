@@ -26,6 +26,8 @@ import ca.schippers.hfm.sync.RefBill
 import ca.schippers.hfm.sync.RefBudget
 import ca.schippers.hfm.sync.RefCategory
 import ca.schippers.hfm.sync.RefDue
+import ca.schippers.hfm.sync.RefEvent
+import ca.schippers.hfm.sync.RefRefill
 import ca.schippers.hfm.sync.RefPayee
 import ca.schippers.hfm.sync.RefPerson
 import ca.schippers.hfm.sync.RefVehicle
@@ -249,12 +251,14 @@ class SyncService internal constructor(private val books: Books) {
             pdf != null -> SyncCrypto.unb64(pdf) to "application/pdf"
             pages.size > 1 -> converter.pagesToPdf(pages) to "application/pdf"
             pages.size == 1 -> pages.single() to "image/jpeg"
+            // CAP-05: an email or other text shared to the phone, kept as a text document.
+            !item.text.isNullOrBlank() -> item.text!!.take(MAX_SHARED_TEXT).encodeToByteArray() to "text/plain"
             // CAP-07: a quick expense with no photo is kept as a short note to review.
             else -> listOfNotNull(f.merchant, f.date, f.amount, f.note).joinToString("\n").ifBlank { item.kind.name }.encodeToByteArray() to "text/plain"
         }
         val doc = books.documents.import(group, content, item.fileName ?: "${item.kind.name.lowercase()}-${item.id.take(8)}", mime, deviceId).document
         val ocr = when {
-            item.ocrLines.isNotEmpty() -> OcrResult(item.ocrLines.map { OcrLine(it.text, it.confidence) }, 0) to "mlkit"
+            item.ocrLines.isNotEmpty() -> OcrResult(item.ocrLines.map { OcrLine(it.text, it.confidence) }, 0) to (if (item.text != null) "text" else "mlkit")
             mime != "text/plain" -> converter.recognize(content)?.let { it to "desktop" }
             else -> null
         }
@@ -306,7 +310,38 @@ class SyncService internal constructor(private val books: Books) {
             maintenance = maintenance(today),
             generatedAtMillis = now,
             contacts = runCatching { books.phoneContacts.forPhone() }.getOrDefault(emptyList()),
+            events = runCatching { events(today) }.getOrDefault(emptyList()),
+            refills = runCatching { refills(today) }.getOrDefault(emptyList()),
         )
+    }
+
+    private fun names(): Map<String, String> =
+        runCatching { books.members.list(includeArchived = true).associate { it.id to it.displayName } }.getOrDefault(emptyMap()) +
+            runCatching { books.pets.list(includeArchived = true).associate { it.id to it.name } }.getOrDefault(emptyMap())
+
+    /**
+     * CAL-03: the coming events (not done or cancelled) with their reminder lead times, from the
+     * groups the signed-in user can see (HH-11): another user's private events never reach this phone.
+     */
+    private fun events(today: LocalDate): List<RefEvent> {
+        val who = names()
+        return books.calendar.occurrences(today, today.plus(DatePeriod(days = EVENT_DAYS))).filter { it.mark == null }.take(MAX_EVENTS).map { o ->
+            val e = o.event
+            RefEvent(
+                "${e.id}|${o.date}", e.title, o.date.toString(), e.startTime?.let { "%02d:%02d".format(it.hour, it.minute) }, e.category.name,
+                e.location, e.memberId?.let(who::get), e.reminderMinutes,
+            )
+        }
+    }
+
+    /** HLT-03: active medications running out within [EVENT_DAYS] days, or already out. */
+    private fun refills(today: LocalDate): List<RefRefill> {
+        val who = names()
+        val until = today.plus(DatePeriod(days = EVENT_DAYS))
+        return books.health.medications().filter { it.active }.mapNotNull { m ->
+            val due = m.nextRefill?.takeIf { it <= until } ?: return@mapNotNull null
+            RefRefill(m.id, m.name, due.toString(), m.refillReminderDays, who[m.memberId], m.needsRenewal)
+        }.sortedBy { it.dueDate }.take(MAX_EVENTS)
     }
 
     /** MNT-05: overdue and soon due, and anything else next due by the end of the month. */
@@ -337,6 +372,13 @@ class SyncService internal constructor(private val books: Books) {
         private const val MAX_ITEMS = 50
         private const val MAX_PAYEES = 400
         private const val MAX_DUE = 50
+
+        /** Events and refills up to two months ahead: the longest reminder lead time the computer allows. */
+        private const val EVENT_DAYS = 61
+        private const val MAX_EVENTS = 150
+
+        /** CAP-05: a shared text longer than this (a very long email thread) is cut. */
+        private const val MAX_SHARED_TEXT = 200_000
     }
 }
 

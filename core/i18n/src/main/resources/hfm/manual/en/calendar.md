@@ -152,6 +152,12 @@ Reminders from the calendar, bills, medication refills, renewals and maintenance
 
 An appointment marked done or cancelled gives no reminder. For bill reminders, see [Reminders and notifications](bills#reminder-banner).
 
+### On the phone {#phone-reminders}
+
+@index: phone reminder; appointment on the phone
+
+A paired phone receives the appointments of the coming two months with each transfer, with the reminder times you ticked, and the medication refills coming up. It reminds you at those times even when the computer is off, and lists them under **Coming up** on its Summary tab. Only appointments and medications from accounts the phone's user can see are sent: another user's private ones stay off that phone. A change made on the computer reaches the phone at its next transfer. On the phone, a medical appointment's notification says only "Health appointment" and when, and a refill names no medication. See [Notifications](phone-app#notifications).
+
 ## Who can do what {#permissions}
 
 - Adding an appointment needs at least **Capture only** permission on the group chosen under **Store in**.

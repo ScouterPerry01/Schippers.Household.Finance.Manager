@@ -1,6 +1,10 @@
 package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Books
+import ca.schippers.hfm.books.EventCategory
+import ca.schippers.hfm.books.EventDraft
+import ca.schippers.hfm.domain.PermissionLevel
+import ca.schippers.hfm.domain.Role
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.security.KdfParams
@@ -13,6 +17,7 @@ import ca.schippers.hfm.sync.SyncCrypto
 import ca.schippers.hfm.sync.SyncException
 import ca.schippers.hfm.sync.SyncRequest
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import org.junit.jupiter.api.io.TempDir
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -22,6 +27,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 /** Section 3 end to end: a phone client pairs with the desktop listener over HTTP and sends captures. */
 class SyncServerTest {
@@ -87,6 +93,36 @@ class SyncServerTest {
         assertEquals(TransferOutcome.OTHER_HOUSEHOLD, server.receiveFile(BundleFile.request(desktop.copy(desktopId = "x"), SyncRequest(0, emptyList()), 0).second).outcome)
         books.sync.revoke("phone-1", System.currentTimeMillis())
         assertEquals(TransferOutcome.NOT_PAIRED, server.receiveFile(file).outcome)
+        books.session.close()
+    }
+
+    @Test
+    fun `the phone receives the events it may see, with their reminders`() {
+        val store = HouseholdStore(SqlCipherJdbcDriverFactory(), KdfParams.TESTING)
+        val file = temp.resolve("C.hfm")
+        val today = LocalDate(2026, 10, 5)
+        store.create(file, "Famille C", "perry", "Perry", "password1".toCharArray()).session.let { Books(it) }.let { admin ->
+            val shared = admin.groups().single().id
+            admin.calendar.create(EventDraft(shared, "Dentist", EventCategory.MEDICAL, LocalDate(2026, 10, 6), LocalTime(14, 30), reminderMinutes = listOf(1440, 60)))
+            val marie = admin.users.add("marie", "Marie", Role.MEMBER, "password2-long".toCharArray()).userId
+            admin.session.setPermission(shared, marie, PermissionLevel.VIEW)
+            admin.session.close()
+        }
+        Books(store.unlock(file, "marie", "password2-long".toCharArray())).let { marie ->
+            marie.calendar.create(EventDraft(marie.session.createGroup("Marie - privé", private = true), "Therapist", EventCategory.MEDICAL, LocalDate(2026, 10, 7), LocalTime(9, 0)))
+            marie.session.close()
+        }
+        val books = Books(store.unlock(file, "perry", "password1".toCharArray()))
+        SyncServer(books, { today }) {}.use { server ->
+            server.start()
+            val client = SyncClient()
+            val desktop = client.pair(books.sync.invitation("Bureau", "127.0.0.1", server.port, System.currentTimeMillis()), "phone-1", "Pixel")
+            val reference = assertNotNull(client.sync(desktop, SyncRequest(System.currentTimeMillis(), emptyList())).reference)
+            val dentist = reference.events.single()
+            assertEquals(listOf("Dentist", "2026-10-06", "14:30", "MEDICAL"), listOf(dentist.title, dentist.date, dentist.time, dentist.category))
+            assertEquals(listOf(1440, 60), dentist.reminderMinutes)
+            assertTrue(reference.events.none { it.title == "Therapist" }, "Marie's private event stays off Perry's phone")
+        }
         books.session.close()
     }
 }

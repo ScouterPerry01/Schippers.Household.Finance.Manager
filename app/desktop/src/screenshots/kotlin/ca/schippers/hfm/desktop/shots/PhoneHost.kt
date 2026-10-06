@@ -24,6 +24,25 @@ fun main() {
     app.switchLanguage(language, remember = false)
     val model = BooksModel(DemoHousehold.create(app.store, language), app)
     model.books.language = language
+    // CAL-03 check on the emulator: an event starting in N minutes, reminded 2 minutes before (-PeventIn=N).
+    System.getProperty("hfm.phone.eventIn")?.toLongOrNull()?.let { minutes ->
+        val start = java.time.LocalDateTime.now().plusMinutes(minutes)
+        model.books.calendar.create(
+            ca.schippers.hfm.books.EventDraft(
+                model.books.groups().first { !it.isPrivate }.id, if (language == Language.FRENCH) "Rencontre de parents" else "Parent-teacher meeting",
+                ca.schippers.hfm.books.EventCategory.PERSONAL, kotlinx.datetime.LocalDate(start.year, start.monthValue, start.dayOfMonth),
+                kotlinx.datetime.LocalTime(start.hour, start.minute), 30, if (language == Language.FRENCH) "École Sainte-Anne" else "Riverside School", reminderMinutes = listOf(2),
+            ),
+        )
+        // A medical one too: its notification names no appointment and no place.
+        model.books.calendar.create(
+            ca.schippers.hfm.books.EventDraft(
+                model.books.groups().first { !it.isPrivate }.id, if (language == Language.FRENCH) "Physiothérapie" else "Physiotherapy",
+                ca.schippers.hfm.books.EventCategory.MEDICAL, kotlinx.datetime.LocalDate(start.year, start.monthValue, start.dayOfMonth),
+                kotlinx.datetime.LocalTime(start.hour, start.minute), 45, if (language == Language.FRENCH) "Clinique du Parc" else "Park Clinic", reminderMinutes = listOf(2),
+            ),
+        )
+    }
     model.syncServer.start()
     val address = checkNotNull(SyncServer.localAddress()) { "no network address for the phone to reach" }
     val name = if (language == Language.FRENCH) "Ordinateur familial" else "Family computer"

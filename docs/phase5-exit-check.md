@@ -96,7 +96,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - FX-07, FX-08: Met.
 - CAL-01: Met.
 - CAL-02 (same patterns as bills): Fixed: events lacked twice a month, the month's last day or last business day, and moving off weekends and holidays; the stored recurrence already held them, only the form lacked them.
-- CAL-03 (reminders, desktop and phone): Met on the desktop. Gap: the phone receives no events or refills, so it cannot remind of them. Medium to large (sync data, notifications, texts, manual).
+- CAL-03 (reminders, desktop and phone): Met. Fixed: the reference data now carries the coming two months of events (with their reminder lead times) and the refills coming up, only from groups the phone's user can see; the phone sets an alarm at each reminder time (also after a restart), lists them on its Summary, and keeps health details out of notifications (a medical event says only Health appointment, a refill names no medication; other reminders show only Reminder on a lock screen set to hide sensitive content). Optional fields, so older phones and desktops are unaffected.
 - CAL-04, CAL-05, CAL-06: Met.
 - HLT-01: Met.
 - HLT-02 (refills): Fixed: a capture-only user could not record a refill (it saved the whole medication, which needs edit rights), although the manual says they can.
@@ -125,7 +125,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - SYNC-06, SYNC-07: Met.
 - SYNC-09 (status on both devices): Met. Fixed: the reason under a refused item was the desktop's English exception text; it now comes in the phone's language. The desktop lists counts per phone but not the failed items.
 - CAP-04: Met.
-- CAP-05 (share to the phone app): Met for one picture or PDF and several pictures. Gap: several PDFs, mixed shares and shared email text are not accepted. Small.
+- CAP-05 (share to the phone app): Met. Fixed: several files at once are accepted (pictures become one document's pages; each PDF or text file its own capture, the forms one after another), as is shared email text, kept on the computer as a text document with its words read for store, date and amount; other files are left out with a message.
 - MAN-03, MAN-04: Met.
 - MAN-05 (templates): Gap: no named templates; payee suggestions (the last transaction's amount, category and splits) and recurring bills cover the need in part. Owner's decision whether to accept this or build templates (medium).
 - ACC-06 (low-balance, over-limit and unusual-activity alerts per account): Gap: not built. The register shows a card over its limit in red and the bills forecast warns of a shortfall below zero, but there is no threshold per account and no unusual-activity check. Medium (schema, check, reminders, texts, manual).

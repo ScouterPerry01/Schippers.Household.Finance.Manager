@@ -152,6 +152,12 @@ Les rappels du calendrier, des factures, des renouvellements de médicaments, de
 
 Un rendez-vous marqué fait ou annulé ne donne aucun rappel. Pour les rappels de factures, voir [Rappels et notifications](bills#reminder-banner).
 
+### Sur le téléphone {#phone-reminders}
+
+@index: rappel sur le téléphone; rendez-vous sur le téléphone
+
+Un téléphone jumelé reçoit à chaque transfert les rendez-vous des deux prochains mois, avec les moments de rappel que vous avez cochés, et les renouvellements de médicaments à venir. Il vous les rappelle à ces moments même quand l’ordinateur est éteint, et les liste sous **À venir** dans son onglet Résumé. Seuls les rendez-vous et les médicaments des comptes que l’utilisateur du téléphone peut voir sont envoyés : les rendez-vous privés d’un autre utilisateur restent hors de ce téléphone. Une modification faite sur l’ordinateur arrive sur le téléphone à son prochain transfert. Sur le téléphone, la notification d’un rendez-vous médical ne dit que « Rendez-vous santé » et le moment, et un renouvellement ne nomme aucun médicament. Voir [Notifications](phone-app#notifications).
+
 ## Qui peut faire quoi {#permissions}
 
 - Ajouter un rendez-vous demande au moins la permission **Saisie seulement** sur le groupe choisi dans **Enregistrer dans**.

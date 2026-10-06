@@ -1,6 +1,6 @@
 # RANN’s Roost Mobile
 
-RANN’s Roost Mobile est l’application compagnon pour téléphones Android. Elle photographie les reçus, les factures et d’autres documents, inscrit des dépenses rapides et des lectures d’odomètre, et les envoie à RANN’s Roost sur votre ordinateur. En retour, elle affiche un résumé de vos soldes, des factures à payer, des budgets et de l’entretien ainsi que les contacts du ménage, et vous rappelle les factures et les budgets. Les contacts rencontrés en chemin peuvent être ajoutés sur le téléphone et envoyés à l’ordinateur pour vérification.
+RANN’s Roost Mobile est l’application compagnon pour téléphones Android. Elle photographie les reçus, les factures et d’autres documents, inscrit des dépenses rapides et des lectures d’odomètre, et les envoie à RANN’s Roost sur votre ordinateur. En retour, elle affiche un résumé de vos soldes, des factures à payer, des rendez-vous à venir, des renouvellements de médicaments, des budgets et de l’entretien ainsi que les contacts du ménage, et vous rappelle les factures, les rendez-vous, les renouvellements et les budgets. Les contacts rencontrés en chemin peuvent être ajoutés sur le téléphone et envoyés à l’ordinateur pour vérification.
 
 Le téléphone n’est pas une deuxième copie de vos livres : l’ordinateur garde l’exemplaire de référence. Le téléphone ne garde que ce qui attend d’être envoyé et le dernier résumé et les contacts venus de l’ordinateur. Sous son icône, l’application s’appelle RANN’s Roost.
 
@@ -68,7 +68,7 @@ Ce qui reste : tout ce que l’ordinateur a déjà reçu, et le ménage sur l’
 
 ## Le premier démarrage {#first-start}
 
-- Sur Android 13 et plus, l’application demande si elle peut afficher des notifications. Autorisez-la pour recevoir les rappels de factures, de budgets et d’entretien.
+- Sur Android 13 et plus, l’application demande si elle peut afficher des notifications. Autorisez-la pour recevoir les rappels de factures, de rendez-vous, de renouvellements, de budgets et d’entretien.
 - L’édition GitHub demande une seule fois **Vérifier les mises à jour?** : **Vérifier une fois par jour** ou **Ne pas vérifier**. Vous pourrez changer ce choix plus tard dans [Réglages](#updates).
 - Tant que le téléphone n’est pas jumelé, les onglets Capturer et Réglages affichent **Pas encore jumelé** et un bouton **Jumeler à un ordinateur**.
 
@@ -148,9 +148,18 @@ Les pages sont envoyées en images d’au plus 2 400 pixels sur leur plus grand 
 Dans une autre application (courriel, l’application d’un magasin, vos fichiers, la galerie de photos), utilisez **Partager** et choisissez RANN’s Roost Mobile pour l’envoyer :
 
 - un PDF, comme un reçu ou une facture électronique, est gardé tel quel ;
-- une ou plusieurs images deviennent les pages d’un même document.
+- une ou plusieurs images deviennent les pages d’un même document, comme une numérisation de plusieurs pages ;
+- du texte, comme un courriel partagé depuis votre application de courriel, est gardé comme document texte nommé d’après l’objet du courriel. Un fichier texte est gardé de la même façon.
 
-Après que vous avez déverrouillé l’application, le formulaire de capture s’ouvre comme une capture **Document**, avec le nom du fichier conservé. Les images partagées sont lues comme des pages numérisées ; un PDF n’est pas lu sur le téléphone, c’est l’ordinateur qui le lit. Enregistrez-le comme d’habitude.
+Après que vous avez déverrouillé l’application, le formulaire de capture s’ouvre comme une capture **Document**, avec le nom du fichier conservé. Les images partagées sont lues comme des pages numérisées ; un PDF n’est pas lu sur le téléphone, c’est l’ordinateur qui le lit. Le texte partagé est affiché en haut du formulaire sous **Texte partagé**, et le téléphone remplit le commerce, la date et le montant qu’il y trouve. Enregistrez-le comme d’habitude. Sur l’ordinateur, le texte est le document, et ce que vous avez tapé dans **Note** reste une note.
+
+### Plusieurs fichiers à la fois {#share-several}
+
+@index: partager plusieurs fichiers; plusieurs PDF
+
+Vous pouvez choisir plusieurs fichiers dans une autre application et les partager ensemble. Les images sont réunies en un seul document, car ce sont d’habitude les pages d’un même reçu ou d’une même lettre. Chaque PDF et chaque fichier texte est déjà un document complet ; chacun devient donc sa propre capture. Les formulaires s’ouvrent alors l’un après l’autre, chacun indiquant sa place, comme **1 sur 3** : enregistrez ou annulez chacun, et le suivant s’ouvre. Après le dernier, l’onglet Envois s’ouvre.
+
+Les fichiers d’autres genres (une vidéo, un tableur) sont laissés de côté, et un message dit combien n’ont pas pu être utilisés.
 
 ## Le formulaire de capture {#capture-form}
 
@@ -259,7 +268,7 @@ Les éléments sont envoyés par petits lots, les plus anciens d’abord. Une ca
 
 ## L’onglet Résumé {#summary-tab}
 
-@index: soldes; factures à payer; budgets; entretien à faire
+@index: soldes; factures à payer; budgets; entretien à faire; rendez-vous à venir; renouvellements
 
 Le Résumé affiche les chiffres de votre ordinateur au dernier transfert : le nom du ménage, puis **De votre ordinateur** et la date et l’heure de ce transfert. Avant le premier transfert, il vous invite à jumeler.
 
@@ -267,6 +276,8 @@ Le Résumé affiche les chiffres de votre ordinateur au dernier transfert : le n
 
 - **Comptes** : chaque compte et son solde.
 - **Factures à payer** : les factures dues dans les 60 prochains jours et pas encore payées, jusqu’à 15, avec la date d’échéance et le montant, ou **environ** un montant quand il est estimé.
+- **À venir** : les rendez-vous et événements du calendrier de l’ordinateur dans les prochaines semaines, jusqu’à 12, chacun avec la personne concernée, sa date et son heure, ou **Toute la journée**. Seuls les événements des comptes que votre utilisateur peut voir sur l’ordinateur sont envoyés : les rendez-vous privés d’un autre utilisateur n’arrivent jamais sur votre téléphone. Les événements marqués faits ou annulés sont laissés de côté.
+- **Renouvellements de médicaments** : les médicaments actifs dont la provision se termine dans les deux prochains mois, ou est déjà terminée, avec la date, et **à renouveler** quand il ne reste plus de renouvellements. Comme pour le calendrier, seuls les médicaments que votre utilisateur peut voir sont envoyés.
 - **Entretien du mois** : affiché quand quelque chose est prévu : chaque tâche, comme « Civic : Vidange d’huile », avec **à faire**, **bientôt** ou sa date.
 - **Budgets du mois** : chaque catégorie de dépenses qui a un budget : ce qui a été dépensé sur le budget, par exemple « 412,30 $ sur 600,00 $ ».
 
@@ -329,15 +340,24 @@ Un nouveau contact prend les mêmes chemins que les captures : par votre Wi-Fi, 
 
 ## Notifications {#notifications}
 
-@index: rappels; rappel de facture; alerte de budget; rappel d’entretien; notifications
+@index: rappels; rappel de facture; alerte de budget; rappel d’entretien; notifications; rappel de rendez-vous; rappel de renouvellement; écran de verrouillage
 
-À partir du dernier résumé, le téléphone affiche des notifications, chacune une seule fois, vérifiées après chaque transfert et environ toutes les 12 heures :
+À partir du dernier résumé, le téléphone affiche des notifications, chacune une seule fois. Les rappels de rendez-vous arrivent à leur heure ; les autres sont vérifiés après chaque transfert et environ toutes les 12 heures :
+
+- **Rappels du calendrier** : à chaque moment de rappel choisi pour un rendez-vous sur l’ordinateur, par exemple un jour et une heure avant, comme « Pose des pneus d’hiver : Demain à 09 h 30 · Garage Tremblay » ou « Dans 2 minutes ». Un événement d’une journée entière est rappelé en comptant à partir de 8 h ce matin-là. Si le téléphone était éteint ou n’avait pas encore reçu le rendez-vous, le dernier rappel arrivé est affiché en retard, jusqu’au début du rendez-vous. Les rappels arrivent même quand l’application est fermée et après un redémarrage du téléphone. Voir [Rappels à la minute près](#exact-reminders).
+- **Renouvellements de médicaments** : à partir des jours de rappel d’un médicament avant la fin de sa provision, et quand elle est terminée (« Renouvellement dans 3 jours. · Alex »), avec un rappel de demander une nouvelle ordonnance quand il ne reste plus de renouvellements.
 
 - **Rappels de factures** : quand une facture est due dans ses jours de rappel, tels que réglés sur l’ordinateur (« Hydro est à payer dans 3 jours », « à payer demain », « à payer aujourd’hui »).
 - **Alertes de budget** : quand les dépenses du mois d’une catégorie atteignent 80 % de son budget, et de nouveau quand le budget est épuisé. Elles n’utilisent que les chiffres d’un transfert fait ce mois-ci.
 - **Rappels d’entretien** : quand une tâche sera bientôt à faire, et quand elle est à faire.
 
 Elles n’apparaissent que si vous avez autorisé les notifications. Chaque genre a son propre canal dans les réglages de notification d’Android, où vous pouvez le désactiver.
+
+### La santé et l’écran de verrouillage {#lock-screen}
+
+Les détails de santé n’apparaissent jamais dans une notification, verrouillé ou non : un rendez-vous médical n’affiche que **Rendez-vous santé** et le moment, et un rappel de renouvellement ne nomme aucun médicament. Ouvrez l’onglet Résumé, derrière le NIP de l’application, pour savoir lequel.
+
+Les autres notifications affichent leur titre et leur texte. Quand le téléphone a un verrouillage d’écran et est réglé pour masquer le contenu sensible des notifications sur l’écran de verrouillage (dans les réglages d’Android, sous les notifications sur l’écran de verrouillage), un téléphone verrouillé n’affiche que **Rappel** pour les rendez-vous et les renouvellements, et seulement le titre pour les alertes de budget.
 
 ## L’onglet Réglages {#settings-tab}
 
@@ -356,6 +376,12 @@ Affiché quand le téléphone est jumelé. Quand l’ordinateur n’est pas à p
 - La ligne affiche **Dossier de transfert :** et le dossier, ou **Aucun dossier de transfert choisi.**
 - **Choisir un dossier…** (ou **Changer de dossier…**) : ouvre le sélecteur de dossiers d’Android. Choisissez votre service infonuagique dans son menu, puis le dossier, et autorisez l’accès. L’application du service doit être installée sur le téléphone.
 - **Ne plus l’utiliser** : le téléphone cesse d’utiliser le dossier et rend son accès. Rien n’est supprimé dans le dossier.
+
+### Rappels à la minute près {#exact-reminders}
+
+@index: alarmes exactes; alarmes et rappels; rappel en retard
+
+Android ne laisse une application sonner à la minute exacte qu’une fois que vous l’avez autorisé. D’ici là, les rappels du calendrier arrivent dans les dix minutes après leur heure. Tant que ce n’est pas autorisé, et que le téléphone est jumelé, Réglages affiche **Rappels à la minute près** et le bouton **Autoriser les rappels à l’heure**, qui ouvre la page **Alarmes et rappels** d’Android pour l’application : activez-la et revenez. La section disparaît alors et les rappels arrivent à l’heure.
 
 ### Changer le NIP {#change-pin}
 
