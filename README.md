@@ -7,10 +7,33 @@
 
 A personal, family and household finance application for Canada, in every province and territory, in English and French. Published by RANN; called Household Finance Manager until October 2026.
 
-- **Desktop app, RANN's Roost** (Windows and Linux) holds the household's books: accounts, transactions, reconciliation, bills, investments, registered plans, medical claims, assets, taxes (slips to expect, donations and their receipts, instalments, pay stubs, sales taxes for every province and territory, an income tax estimate per person, federal and provincial, and a year-end package for the accountant), an emergency and estate summary, family money (shared expenses, family loans, allowances), a trip log, home projects and contractors, side income (invoices and rental properties), card rewards, contacts linked to the records they serve, and reports. Every rate, limit and threshold it applies can be changed with an effective date (Rates and rules), and a full user manual opens in its own window. All data stays on your own computer, encrypted.
-- **Android companion app, RANN's Roost Mobile** captures receipts, bills and expenses on the spot and sends them to the desktop over your home Wi-Fi (or through a cloud folder, email or USB), and carries the household's contacts, with new ones sent back for review.
+- **Desktop app, RANN's Roost** (Windows and Linux) holds the household's books:
+  - **Bookkeeping:** accounts in any currency, statement import (OFX, QFX, QBO, CSV) and Quicken, GnuCash or Moneydance history (QIF), reconciliation to the cent, categories and rules, templates, bills and subscriptions, budgets, savings goals, account alerts and a cash flow forecast.
+  - **Documents and AI reading:** receipts, bills and statements read on the computer, from the phone or from saved emails, kept in an encrypted vault; optional AI reading with the user's own Anthropic key (receipts by item, statements into the books), nothing sent before the user chooses.
+  - **Investing and borrowing:** holdings, adjusted cost base, returns, allocation, investment income for tax slips, registered plans and pensions, mortgages and loans with Canadian compounding, optional market prices, crypto-assets and precious metals.
+  - **Taxes:** the slips to expect, donations, instalments, pay stubs, sales taxes for every province and territory, an income tax estimate per person (federal, provincial and territorial, Quebec), medical expenses, and a year-end package for the accountant. Every rate, limit and threshold can be changed with an effective date (Rates and rules).
+  - **Home and family:** medical plans and claims, health records, the home, vehicles and other assets with warranties, insurance and maintenance (seasonal checklists included), utilities, trips, pets, family money (shared expenses, family loans, allowances and chores), side income (invoices, hours worked, rental properties), card rewards, volunteer hours, contacts linked to the records they serve, and an emergency and estate summary.
+  - **Calendar:** appointments with reminders, agenda to year views, work and school schedules, children's activities, and the calendars brought in from phones.
+  - **Reports:** charts with drill-down, a custom report builder, reports by person or chosen accounts, saved and scheduled reports, the year in review.
+  - Several users with private account groups, encrypted backups, and a full user manual in its own window.
+- **Android companion app, RANN's Roost Mobile** captures receipts, bills, expenses, voice notes, readings, trips and fuel on the spot and sends them to the desktop over your home Wi-Fi (or through a cloud folder, email or USB), shows balances, budgets, what is due and the day's schedules with reminders, and carries the household's contacts, with new ones sent back for review.
 
-Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: with Phase 1, this is the first usable release. **Phase 3 (wealth) complete**: loans and mortgages, investments with returns, asset allocation and tax slips, registered plans and pensions, market prices, crypto-assets, precious metals, foreign exchange gains, and card benefits. Phase 4 (home and health): medical plans and claims, the home and other assets, warranties, insurance, maintenance, and release hardening (signed releases and update checks, privacy policy, store texts) done. Phase 5 (extras, part of the public 1.0) is built: AI reading, the tax package, transfer away from home, budgets on the phone, reports, the estate summary, usability (grouped menu, help and the user manual) and every Could item, followed in October 2026 by Rates and rules, taxes for every province and territory with an income tax estimate, password rules and Contacts; the exit check, the security review and 1.0.0 come next. Builds until then are 0.9.x previews. See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md) and the [development plan](docs/development-plan.md).
+All data stays on your own computer, encrypted. See the [release notes](docs/releases/1.0.0.en.md) ([français](docs/releases/1.0.0.fr.md)) for the full list and the known limits.
+
+Status: **1.0.0 is being prepared.** Every phase of the [development plan](docs/development-plan.md) is built, including Phase 5 (AI reading, the tax package, transfer away from home, reports, the estate summary, usability and every Could item), Rates and rules, taxes for every province and territory, Contacts, and calendars, seasonal checklists, trips and trackers. The Phase 5 exit check and security review are done. Builds until the release are 0.9.x previews; the release steps are in [docs/release-checklist.md](docs/release-checklist.md). See the [requirements](docs/Household%20Finance%20Manager%20%E2%80%94%20Software%20Requirements%20Specification.md).
+
+## Get the apps
+
+- **Windows:** from the Microsoft Store (Windows 10 version 1809 or later, 64-bit), which installs, signs and updates it.
+- **Linux:** .deb, .rpm and AppImage packages (64-bit x86) on [GitHub Releases](https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager/releases), each with a minisign signature and listed in `SHA256SUMS`. Check a download with `minisign -Vm <file> -p core/update/src/main/resources/hfm/update/release-key.pub`. These copies can check GitHub for updates once a day, if you agree when first asked.
+- **Android:** RANN's Roost Mobile on Google Play, or the signed APK on GitHub Releases (Android 10 or later). The two are signed differently: uninstall one before installing the other.
+- HEIC photos need the system's decoder: Microsoft's HEIF and HEVC Video Extensions on Windows, libheif with its HEVC plugin (such as `libheif-plugin-libde265`) on Linux.
+
+The [user manual](core/i18n/src/main/resources/hfm/manual/en) ([français](core/i18n/src/main/resources/hfm/manual/fr)) is built into the app (Shift+F1), with help for each screen (F1).
+
+## Privacy
+
+RANN's Roost has no RANN account, no RANN server, no advertising and no analytics. The household is one folder encrypted with AES-256 under keys protected by the users' passwords; the phone talks only to the household's own computer, encrypted end to end. The apps contact the internet only for the Bank of Canada exchange rates (when a currency other than the Canadian dollar is used) and for features the user turns on: price downloads, AI reading with the user's own key, the cloud folder or email transfer, and update checks (Linux packages and the GitHub APK only). The phone uses Google's ML Kit, whose diagnostics are disclosed. The full [privacy policy](https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en) ([français](https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr)) is kept in [`website/`](website).
 
 ## Project layout
 
@@ -22,7 +45,7 @@ Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: wit
 | `core/security` | Argon2id, AES-256-GCM, X25519 key sealing and pair keys, recovery keys; watch-only Bitcoin addresses from an extended public key |
 | `core/data` | Household folder format, key ring, encrypted document vault, SQLDelight schemas and upgrades |
 | `core/data-jdbc` | Encrypted SQLite (SQLCipher v4) driver for the desktop |
-| `core/books` | Bookkeeping services: accounts, transactions, credit cards with supplementary cards and benefits, reconciliation, bills, budgets, goals, loans and mortgages, investments and brokerage import, portfolio returns, market prices, crypto-assets, precious metals, registered plans and pensions, reports, calendar, health, medical plans and claims, home and other assets, warranties and insurance, pets, vehicles, documents, phone sync, Quicken import, users, contacts and their links, rates and rules, the income tax estimate |
+| `core/books` | Bookkeeping services: accounts, transactions, credit cards with supplementary cards and benefits, reconciliation, bills, budgets, goals, loans and mortgages, investments and brokerage import, portfolio returns, market prices, crypto-assets, precious metals, registered plans and pensions, reports, calendar (with schedules, activities and calendars brought in from phones), health, medical plans and claims, home and other assets, warranties and insurance, pets, vehicles and trips, seasonal maintenance, utilities and trackers (hours, chores, volunteering), documents, phone sync, Quicken import, users, contacts and their links, rates and rules, the income tax estimate |
 | `core/i18n` | English and French text |
 | `core/importers` | Statement import (OFX/QFX/QBO, CSV), brokerage statements (OFX, broker CSV), crypto exchange histories (Kraken, Coinbase, Shakepay, Newton) and Quicken QIF |
 | `core/ocr` | Text recognition interface and the field extractor shared with the phone |
@@ -31,7 +54,7 @@ Status: **Phase 2 (phone capture, Quicken import, user accounts) complete**: wit
 | `core/sync` | Pairing invitation, sealed transfer bundles, the phone's client and its contact book |
 | `core/update` | Signed release list, version comparison and download checks, shared by the desktop and the phone (ADR 0008) |
 | `app/desktop` | Compose Desktop application, including the listener for phones |
-| `app/android` | Android companion: capture, encrypted queue, transfer, summaries, contacts; `play` and `github` flavours |
+| `app/android` | Android companion: capture, encrypted queue, transfer, summaries and reminders, contacts, trips and log forms, the phone's calendars; `play` and `github` flavours |
 | `tools/release` | Makes the release key pair and signs releases (run by the release workflow) |
 | `tools/natives` | Builds the small Windows helper that reads HEIC through Windows Imaging Component |
 | `website/` | Text and images for the home page and privacy policy on rann.ca (Google Sites), in English and French |
@@ -53,7 +76,15 @@ Requirements: JDK 21. For the Android app, the Android SDK (API 37).
 ./gradlew :app:desktop:packageMsi   # Windows installer for testing (on Windows)
 ./gradlew :app:desktop:packageDeb   # Linux package (on Linux)
 ./gradlew :app:android:assembleGithubDebug   # phone app (the play flavour has no update check)
+./gradlew build                     # everything, with Android lint (run before every commit)
+./gradlew :app:desktop:manualScreenshots -Plang=en   # retake the manual's pictures offscreen (and fr)
+./gradlew :app:desktop:storeScreenshots -Plang=en    # retake the Microsoft Store pictures offscreen (and fr)
+./gradlew :app:desktop:suggestRuntimeModules         # JDK modules the packaged runtime needs
 ```
+
+An installed or packaged copy checks itself when started with `JAVA_TOOL_OPTIONS=-Dhfm.selfcheck=<report file>`: it loads the JDK modules it was packaged with, reads a receipt line with OCR (and from a HEIC photo when a decoder is installed), prepares the AI client and creates an encrypted household, writes the report and exits. The release workflow runs it inside every package. After adding a library or a JDK API, compare `suggestRuntimeModules` with `modules(...)` in `app/desktop/build.gradle.kts`.
+
+Releases are built by `.github/workflows/release.yml` from a tag `v<version>` (see [docs/release-checklist.md](docs/release-checklist.md) and [ADR 0008](docs/adr/0008-signed-releases-and-updates.md)); run by hand, it is a dry run with a throwaway key that publishes nothing. Release notes live in `docs/releases/<version>.en.md` and `.fr.md`.
 
 The demo opens on any section with `-Psection=` (for example `DOCUMENTS`, `CONTACTS`, `PHONES`, `USERS`, `VEHICLES`, `GOALS`, `LOANS`, `INVESTMENTS`, `PLANS`, `TAXES`, `RATES`, `RATE_RULES`, `MEMBERS`), and on one account with `-Paccount=` (with `-Psection=ACCOUNTS`). `-Pmanual=bills` (or `bills#bill-form`, or `screen` for the screen shown) also opens the manual in its window. In English the sample household is a family in Ottawa, Ontario; in French (`-Plang=fr`) a family in Quebec City. Its users are `demo` / `demo-password` (administrator) and `sam` / `member-demo-password` (member).
 
