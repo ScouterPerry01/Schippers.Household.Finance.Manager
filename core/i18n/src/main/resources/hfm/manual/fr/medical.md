@@ -217,6 +217,13 @@ Pour un régime du type **Compte gestion-santé** :
 
 Une fois le régime enregistré, **Brochures du régime** permet de joindre la brochure ou la carte du régime, avec **Joindre un fichier…** ou **Depuis la boîte de révision**, comme pour les reçus. Elles sont gardées dans le coffre [Documents](documents).
 
+### Les contacts du régime {#plan-contacts}
+@index: contact; assureur; administrateur du régime; contact lié
+
+Une fois le régime enregistré, sa boîte se termine par Contacts, chacun montré avec son rôle : l’assureur (Assureur), la firme qui administre le régime pour l’employeur, à qui les réclamations sont envoyées (Administrateur du régime), et tout autre contact (Lié). Sur la page du contact, le régime figure sous Assureur pour ou Administrateur du régime pour. L’Assureur tapé sur le régime reste tel quel ; **Rassembler les contacts de l’application** dans l’écran Contacts peut en faire un contact lié au régime.
+
+Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Un régime gardé dans un groupe privé, et ses liens, ne sont vus que par les utilisateurs qui peuvent ouvrir ce groupe. Supprimer le régime retire ses liens ; les contacts restent. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).
+
 ## Onglet Couverture restante {#coverage-left}
 @index: couverture restante; maximum restant; de nouveau admissible
 
@@ -254,7 +261,7 @@ Envoyer la réclamation, fermer la dépense ou inscrire le paiement du dernier r
 
 Le rapport **Frais médicaux** sous [Rapports](reports) rassemble les montants de l’année pour le crédit d’impôt non remboursable pour frais médicaux. Il montre les coûts, les remboursements et les montants à votre charge des frais payés dans l’année, par personne, un tableau de chaque dépense avec sa date de paiement et sa date de service, puis le crédit. La trousse de fin d’année de l’écran Impôts utilise les mêmes montants (voir [Trousse de fin d’année](taxes#year-end-package)).
 
-En bref, comme l’explique le rapport : au fédéral (ligne 33099) et au Québec (ligne 381), les frais payés pendant n’importe quelle période de 12 mois consécutifs se terminant dans l’année peuvent être demandés, une seule fois. Les frais du ménage (conjoints et enfants de moins de 18 ans) sont demandés ensemble, habituellement par un conjoint ; ceux d’une personne à charge adulte sont demandés à part (ligne fédérale 33199). Seule la partie au-delà d’un seuil compte : 3 % du revenu net au fédéral (ou un montant fixe s’il est moindre), 3 % du revenu familial au Québec.
+En bref, comme l’explique le rapport : au fédéral (ligne 33099) et au Québec (ligne 381), les frais payés pendant n’importe quelle période de 12 mois consécutifs se terminant dans l’année peuvent être demandés, une seule fois. Au fédéral, les frais du ménage (conjoints et enfants de moins de 18 ans) sont demandés ensemble, habituellement par un conjoint, et ceux d’une personne à charge adulte sont demandés à part (ligne 33199). Seule la partie au-delà d’un seuil compte : 3 % du revenu net au fédéral (ou un montant fixe s’il est moindre). Le crédit du Québec a ses propres règles : les personnes qui produisent leur déclaration au Québec ont donc un total à part. Voir [Le total du Québec](medical#quebec-total).
 
 Ce que l’application compte :
 
@@ -262,7 +269,7 @@ Ce que l’application compte :
 - seulement ce qui est à votre charge : le coût moins ce que les régimes ont payé ;
 - à la date du paiement, ou à la date du service quand il n’y a pas de date du paiement.
 
-Les personnes dont le type sous **Membres du ménage** est **Autre personne à charge** sont traitées comme des personnes à charge adultes et demandées sur leur propre ligne ; les adultes et les enfants font partie de la demande du ménage. Voir [Membres du ménage](members).
+Les personnes dont le type sous **Membres du ménage** est **Autre personne à charge** sont traitées comme des personnes à charge adultes et demandées sur leur propre ligne au fédéral ; les adultes et les enfants font partie de la demande du ménage. Au Québec, les personnes à charge adultes font aussi partie de la demande du ménage. Voir [Membres du ménage](members).
 
 ### La meilleure période de 12 mois {#best-period}
 @index: période de 12 mois; meilleure période; n’importe quels 12 mois
@@ -287,12 +294,23 @@ Avec deux revenus entrés, le rapport affiche pour chaque conjoint « Demandé p
 - « L’un ou l’autre conjoint : le même montant compte. »
 - « Ni l’un ni l’autre : les frais sont sous les deux seuils cette fois-ci. »
 
-« À titre indicatif seulement, pas un conseil fiscal. Le crédit n’est pas remboursable : le conjoint qui le demande doit avoir assez d’impôt à payer pour l’utiliser. » Au Québec, le seuil provincial se calcule sur le revenu familial ; il est donc le même, peu importe qui le demande.
+« À titre indicatif seulement, pas un conseil fiscal. Le crédit n’est pas remboursable : le conjoint qui le demande doit avoir assez d’impôt à payer pour l’utiliser. » Quand quelqu’un produit sa déclaration au Québec, une ligne de plus donne ce qui compte pour le crédit du Québec, au-delà de 3 % du revenu familial (la somme des revenus entrés), le même peu importe qui le demande.
 
 ### Les reçus en un seul PDF {#receipts-pdf}
 @index: liasse de reçus; vérification de l’ARC; pièces justificatives
 
 Sous la meilleure période, **Reçus du ménage en un seul PDF…** enregistre un seul PDF avec une page couverture qui énumère chaque dépense admissible de la période (date, personne, type de soins, description, montant à votre charge et total), suivie de chaque reçu joint à ces dépenses. Les personnes à charge adultes ont leur propre bouton, **Reçus de nom en un seul PDF…**. Gardez le fichier au cas où l’ARC ou Revenu Québec demanderait les reçus.
+
+### Le total du Québec {#quebec-total}
+@index: ligne 381 du Québec; TP-1; revenu familial; massothérapie; naturopathe; ostéopathe
+
+Quand quelqu’un du ménage produit sa déclaration au Québec, le rapport donne aussi le total du Québec pour la ligne 381 de la déclaration du Québec, et la trousse de fin d’année a une ligne **Frais médicaux (Québec)** (TP-1 381). Le crédit du Québec diffère du crédit fédéral sur des points que l’application applique :
+
+- les frais de tous sont demandés ensemble, personnes à charge adultes comprises ;
+- le seuil est de 3 % du revenu familial (le revenu net des deux conjoints, ligne 275), sans montant fixe : il est donc le même, peu importe qui le demande ;
+- le Québec n’accepte que les soins de sa propre liste de praticiens : la massothérapie ne compte jamais, et les naturopathes et les ostéopathes ne comptent plus pour les soins reçus à partir du 1er janvier 2026.
+
+Comme certains frais ne comptent pas, la meilleure période de 12 mois du Québec peut différer de celle du fédéral. Le rapport énumère les frais écartés, et **Reçus pour le Québec en un seul PDF…** réunit les reçus des frais que le Québec compte. D’autres limites du guide de Revenu Québec, comme 200 $ par personne pour les montures de lunettes dans la période, ne sont pas appliquées par l’application. Voir [Le total du Québec](reports#quebec-total) pour ce que le rapport montre.
 
 ## Types de soins {#kinds-of-care}
 @index: services; dentaire; vue; paramédical

@@ -92,7 +92,7 @@ The **Away from home** card shows the folder in use ("Transfer folder: …") or 
 
 - **Choose a transfer folder…** (or **Change the folder…**): pick the folder as it appears on this computer, the same one you chose on the phone. RANN's Roost checks it right away and says how many captures it imported.
 - **Stop using it**: shown once a folder is chosen. RANN's Roost stops watching the folder. Nothing in it is deleted.
-- **Import a transfer file…**: pick a transfer file (a RANN's Roost transfer file, ending in .roostsync) that came another way, such as an email attachment you saved or a file copied by USB. You can also drop such a file on the [Documents](documents) screen. This works even when the listener is not running.
+- **Import a transfer file…**: pick a transfer file (a RANN's Roost transfer file, ending in .roostsync) that came another way, such as an email attachment you saved or a file copied by USB. You can also drop such a file on the [Documents](documents) screen. This works even when the listener is not running. When a transfer folder is chosen, the reply is left in it, and the message adds "Its reply is in the transfer folder: the phone collects the confirmation the next time it looks." Without a folder, the phone hears about these captures at its next Wi-Fi transfer.
 
 The result of the last check or import is shown at the bottom of the card.
 

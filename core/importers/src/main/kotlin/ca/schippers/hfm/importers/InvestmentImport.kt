@@ -64,8 +64,9 @@ interface InvestmentImporter {
     fun readInvestments(input: InputStream, options: ImportOptions = ImportOptions()): List<ImportedInvestmentStatement>
 }
 
+/** The brokerage importers of [ImporterRegistry], as brokerage readers. */
 object InvestmentImporters {
-    val all: List<InvestmentImporter> = listOf(OfxImporter(), InvestmentCsvImporter())
+    val all: List<InvestmentImporter> get() = ImporterRegistry.of(ImportKind.INVESTMENTS).filterIsInstance<InvestmentFormat>().map { it.importer }
 
-    fun forFile(fileName: String, head: ByteArray): InvestmentImporter? = all.firstOrNull { it.canReadInvestments(fileName, head) }
+    fun forFile(fileName: String, head: ByteArray): InvestmentImporter? = (ImporterRegistry.forFile(ImportKind.INVESTMENTS, fileName, head) as? InvestmentFormat)?.importer
 }

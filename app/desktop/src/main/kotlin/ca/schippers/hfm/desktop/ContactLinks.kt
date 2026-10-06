@@ -211,5 +211,6 @@ fun openLinked(model: BooksModel, target: LinkTarget, targetId: String) {
         LinkTarget.PET -> Section.PETS
         LinkTarget.VEHICLE -> Section.VEHICLES
         LinkTarget.ESTATE -> Section.ESTATE
+        LinkTarget.MEDICAL_PLAN -> Section.MEDICAL
     }
 }

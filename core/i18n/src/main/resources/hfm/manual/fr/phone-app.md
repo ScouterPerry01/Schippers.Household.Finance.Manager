@@ -243,7 +243,9 @@ L’onglet Envois liste ce que vous avez capturé, du plus récent au plus ancie
 
 **Partager en fichier…** crée un ou plusieurs fichiers de transfert chiffrés avec toutes les captures pas encore confirmées, puis ouvre le menu de partage d’Android pour les envoyer par courriel, les enregistrer sur une clé USB ou dans vos fichiers, ou les passer à une autre application. Chaque fichier contient au plus environ 15 Mo d’images ; un gros envoi donne donc plusieurs fichiers. Le bouton est offert quand quelque chose attend encore.
 
-Sur l’ordinateur, importez les fichiers avec **Importer un fichier de transfert…** dans l’écran Téléphones, ou déposez-les dans l’écran Documents. Les éléments partagés affichent **Envoyé** jusqu’à ce qu’un transfert suivant, par Wi-Fi ou par le dossier de transfert, les confirme.
+L’objet du courriel est rempli avec « [RANN's Roost] transfert » suivi d’un court identifiant fait des premiers caractères de l’identifiant du ménage et de celui du téléphone (les mêmes caractères que dans les noms de fichiers), comme « [RANN's Roost] transfert 5c1e0a-3f9a1c2e ». Il ne nomme personne et ne donne aucun montant : le fournisseur de courriel n’apprend rien sur le ménage, et une règle de la boîte de courriel peut quand même trier les fichiers. Vous pouvez changer l’objet avant d’envoyer.
+
+Sur l’ordinateur, importez les fichiers avec **Importer un fichier de transfert…** dans l’écran Téléphones, ou déposez-les dans l’écran Documents. Les éléments partagés affichent **Envoyé** jusqu’à leur confirmation : par Wi-Fi, le téléphone les renvoie et l’ordinateur les confirme ; avec un dossier de transfert, l’ordinateur y laisse sa réponse quand vous importez le fichier, et chaque réponse que le téléphone récupère dans le dossier au cours des 60 jours suivants les confirme aussi.
 
 ### La liste des captures {#queue}
 

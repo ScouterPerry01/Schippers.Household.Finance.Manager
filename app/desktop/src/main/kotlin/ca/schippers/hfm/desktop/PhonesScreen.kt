@@ -213,7 +213,7 @@ private fun AwayFromHome(model: BooksModel) {
                     if (chooser.showOpenDialog(null) == javax.swing.JFileChooser.APPROVE_OPTION) {
                         val file = chooser.selectedFile
                         scope.launch {
-                            message = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { model.transferMessage(file.name, model.syncServer.receiveFile(file.readBytes())) }
+                            message = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { model.receiveByHand(file.name, file.readBytes()) }
                         }
                     }
                 }) { Text(model.t("transfer.importFile")) }

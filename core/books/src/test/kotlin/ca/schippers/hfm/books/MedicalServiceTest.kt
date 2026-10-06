@@ -164,6 +164,32 @@ class MedicalServiceTest {
     }
 
     @Test
+    fun `Quebec's total takes everyone's expenses that Quebec accepts, over its own best period`() {
+        books.setProvince(ca.schippers.hfm.calc.Province.QC)
+        expense(lea, MedService.EYE_EXAM, "2025-11-01", "90")
+        expense(alex, MedService.EYEWEAR, "2026-05-01", "300")
+        expense(gilles, MedService.PHYSIOTHERAPY, "2026-04-01", "200")
+        expense(sam, MedService.MASSAGE, "2026-02-10", "100")
+        expense(alex, MedService.NATUROPATHY, "2025-12-15", "80")
+        expense(alex, MedService.OSTEOPATHY, "2026-01-15", "120")
+
+        val r = med.taxReport(2026)
+        // Federally: Léa, Alex and Sam together; Gilles apart.
+        assertEquals(n("690.00"), r.family!!.total)
+        // Quebec: Gilles with the household; no massage; the naturopath of 2025 counts, the osteopath of 2026 does not.
+        assertEquals(Window(d("2025-05-02"), d("2026-05-01"), n("670.00")), r.quebec)
+        assertEquals(listOf(MedService.OSTEOPATHY, MedService.MASSAGE), r.quebecLeftOut.map { it.service })
+        assertEquals(5 - 1, med.expensesIn(r.quebec!!, quebec = true).size)
+
+        // No one files in Quebec: no Quebec total.
+        books.setProvince(ca.schippers.hfm.calc.Province.ON)
+        assertNull(med.taxReport(2026).quebec)
+        // One spouse files in Quebec.
+        books.members.update(alex.copy(province = ca.schippers.hfm.calc.Province.QC))
+        assertEquals(n("670.00"), med.taxReport(2026).quebec!!.total)
+    }
+
+    @Test
     fun `payments in the books become expenses in one click, and explanations of benefits find their claim`() {
         val chequing = books.accounts.create(AccountDraft(group, "Chèques", AccountType.CHEQUING, Currency.CAD, cad("1000"), d("2026-01-01")))
         val pharmacy = books.categories.list().first { it.systemKey == "health.pharmacy" }.id

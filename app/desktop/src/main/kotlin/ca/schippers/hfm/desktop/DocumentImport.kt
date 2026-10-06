@@ -92,7 +92,7 @@ suspend fun importFiles(model: BooksModel, files: List<Path>, groupId: String): 
         val bytes = runCatching { readTransferFile(file) }.getOrNull()
         // A phone's transfer file, saved from an email or copied by USB: its items go to the inbox.
         if (bytes != null && file.extension.lowercase() == ca.schippers.hfm.sync.BundleFile.EXTENSION) {
-            transfers += model.transferMessage(file.name, model.syncServer.receiveFile(bytes))
+            transfers += model.receiveByHand(file.name, bytes)
             continue
         }
         // CAP-06: an e-receipt saved from the email program: its PDF or picture attachments, or else the email itself.

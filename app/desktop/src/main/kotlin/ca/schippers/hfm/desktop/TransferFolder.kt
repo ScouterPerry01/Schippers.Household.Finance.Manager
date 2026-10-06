@@ -56,11 +56,7 @@ suspend fun checkTransferFolder(model: BooksModel, folder: Path): Int = withCont
         }
         when (receipt.outcome) {
             TransferOutcome.RECEIVED -> {
-                val reply = receipt.reply!!
-                // Written under another name first, so the phone never reads half a reply.
-                val part = folder.resolve(reply.name + ".part")
-                Files.write(part, reply.bytes)
-                Files.move(part, folder.resolve(reply.name), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+                leaveReply(folder, receipt.reply!!)
                 Files.deleteIfExists(file)
                 received += receipt.received
             }
@@ -81,6 +77,26 @@ suspend fun checkTransferFolder(model: BooksModel, folder: Path): Int = withCont
     received
 }
 
+/** Leaves a reply in the transfer folder for the phone to collect, written under another name first so the phone never reads half of it. */
+fun leaveReply(folder: Path, reply: FileReply) {
+    val part = folder.resolve(reply.name + ".part")
+    Files.write(part, reply.bytes)
+    Files.move(part, folder.resolve(reply.name), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+}
+
+/**
+ * Section 3.1: a transfer file brought in by hand (chosen, or dropped on the Documents screen).
+ * When a transfer folder is set, the reply is left there, so the phone collects its confirmation
+ * the next time it looks; otherwise the next reply it collects, or its next Wi-Fi transfer,
+ * confirms the items. Returns the message to show.
+ */
+fun BooksModel.receiveByHand(name: String, bytes: ByteArray): String {
+    val receipt = syncServer.receiveFile(bytes)
+    val folder = books.setting(TRANSFER_FOLDER)?.takeIf { it.isNotBlank() }?.let { Path.of(it) }?.takeIf { Files.isDirectory(it) }
+    val left = receipt.outcome == TransferOutcome.RECEIVED && folder != null && runCatching { leaveReply(folder, receipt.reply!!) }.isSuccess
+    return transferMessage(name, receipt) + if (left) " " + t("transfer.replyLeft") else ""
+}
+
 /** A transfer file's bytes, or null when it is larger than any the phone writes ([MAX_TRANSFER_BYTES]). */
 fun readTransferFile(file: Path): ByteArray? = if (Files.size(file) > MAX_TRANSFER_BYTES) null else Files.readAllBytes(file)
 
@@ -92,7 +108,7 @@ fun staleReplies(folder: Path, now: Long): List<Path> = Files.list(folder).use {
     s.filter { it.isRegularFile() && it.name.startsWith(BundleFile.TO_PHONE + "-") && it.name.endsWith("." + BundleFile.EXTENSION) && now - Files.getLastModifiedTime(it).toMillis() > REPLY_KEPT_MS }.toList()
 }
 
-/** The message for a transfer file brought in by hand (chosen or dropped), with no reply left for the phone. */
+/** The message for a transfer file brought in by hand (chosen or dropped). */
 fun BooksModel.transferMessage(name: String, r: TransferReceipt): String = when (r.outcome) {
     TransferOutcome.RECEIVED -> t("transfer.fileReceived", name, r.received)
     TransferOutcome.OWNER_AWAY -> t("transfer.fileOwnerAway", name, r.owner.orEmpty())

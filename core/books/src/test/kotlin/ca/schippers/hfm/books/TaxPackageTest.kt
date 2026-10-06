@@ -120,4 +120,29 @@ class TaxPackageTest {
         assertEquals("33199", PackageItem.MEDICAL_DEPENDANT.line)
         assertTrue(pkg.people.filter { it.memberId != null }.none { p -> p.lines.any { it.item == PackageItem.MEDICAL } }, "not each person's own best period")
     }
+
+    @Test
+    fun `in Quebec the medical expenses also get Quebec's own total, dependants included and massage left out`() {
+        books.setProvince(Province.QC)
+        val sam = books.members.create("Sam", MemberKind.ADULT)
+        val gilles = books.members.create("Gilles", MemberKind.DEPENDANT)
+        fun expense(who: Member, service: MedService, date: String, amount: String) =
+            books.medical.saveExpense(MedExpense("", group, who.id, service, LocalDate.parse(date), cad(amount)))
+        expense(sam, MedService.PHYSIOTHERAPY, "2026-03-01", "300.00")
+        expense(sam, MedService.MASSAGE, "2026-05-01", "90.00")
+        expense(gilles, MedService.DENTAL_BASIC, "2026-04-01", "400.00")
+        val receipt = books.documents.import(group, "massage".encodeToByteArray(), "massage.pdf", "application/pdf").document
+        val physio = books.medical.expenses().first { it.service == MedService.PHYSIOTHERAPY }
+        books.documents.link(receipt.id, MedicalService.EXPENSE, physio.id)
+
+        val household = books.taxPackage.build(2026).people.single { it.memberId == null }
+        assertEquals(cad("390.00"), household.total(PackageItem.MEDICAL), "federally, massage counts")
+        assertEquals(cad("400.00"), household.total(PackageItem.MEDICAL_DEPENDANT))
+        assertEquals(cad("700.00"), household.total(PackageItem.MEDICAL_QUEBEC), "one Quebec line for everyone, without the massage")
+        assertEquals("TP-1 381", PackageItem.MEDICAL_QUEBEC.line)
+        assertEquals(1, household.documents.size)
+
+        books.setProvince(Province.ON)
+        assertEquals(cad("0.00"), books.taxPackage.build(2026).people.single { it.memberId == null }.total(PackageItem.MEDICAL_QUEBEC), "no one files in Quebec")
+    }
 }

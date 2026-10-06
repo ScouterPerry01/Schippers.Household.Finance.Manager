@@ -49,6 +49,17 @@ object BundleFile {
 
     fun devicePart(deviceId: String): String = deviceId.filter { it.isLetterOrDigit() }.take(8).lowercase()
 
+    /** Section 3.1: the tag that starts the email subject of a shared transfer file, the same in every language. */
+    const val SUBJECT_TAG = "[RANN's Roost]"
+
+    /**
+     * Section 3.1: the short id in a shared transfer file's email subject: the first characters of
+     * the household's (desktop's) id and of the phone's, as in the file names, such as
+     * `5c1e0a-3f9a1c2e`. No names or amounts, so a subject seen by the mail provider says nothing
+     * about the household; a mailbox rule can still pick the files out.
+     */
+    fun subjectId(desktopId: String, deviceId: String): String = devicePart(desktopId).take(6) + "-" + devicePart(deviceId)
+
     /** The phone's request as a file. */
     fun request(desktop: PairedDesktop, request: SyncRequest, nowMillis: Long): Pair<String, ByteArray> {
         val sealed = SyncCrypto.seal(SyncRequest.serializer(), request, SyncCrypto.unb64(desktop.pairKey), desktop.desktopId, desktop.deviceId, Direction.TO_DESKTOP)

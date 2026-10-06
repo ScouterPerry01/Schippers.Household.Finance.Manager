@@ -150,8 +150,24 @@ data class MedicalTaxPerson(
     val otherDependant: Boolean,
 )
 
-/** MED-12, MED-14: the year's medical expense credit figures; [family] covers everyone but other dependants, claimed together. */
-data class MedicalTaxReport(val year: Int, val people: List<MedicalTaxPerson>, val family: Window?)
+/**
+ * MED-12, MED-14: the year's medical expense credit figures; [family] covers everyone but other
+ * dependants, claimed together (federal line 33099).
+ */
+data class MedicalTaxReport(
+    val year: Int,
+    val people: List<MedicalTaxPerson>,
+    val family: Window?,
+    /**
+     * MED-14: Quebec's line 381, when someone in the household files in Quebec: everyone's
+     * expenses together, adult dependants included (Quebec has no separate line for them), only
+     * those Quebec accepts, over their own best 12 months. Null when no one files in Quebec or
+     * nothing counts.
+     */
+    val quebec: Window? = null,
+    /** MED-14: expenses in reach that Quebec does not accept (massage therapy; naturopathy and osteopathy from 2026). */
+    val quebecLeftOut: List<MedExpense> = emptyList(),
+)
 
 /**
  * MED-01 to MED-15: medical and dental plans, expenses and claims, and the medical expense tax
@@ -200,6 +216,7 @@ class MedicalService internal constructor(private val books: Books) {
         val group = editable(p.groupId)
         validate(books.groups().none { g -> books.ledger(g).medicalQueries.claims().executeAsList().any { it.plan_id == id } }, "error.planHasClaims")
         books.ledger(group).medicalQueries.deletePlan(id)
+        books.contacts.forgetLinks(LinkTarget.MEDICAL_PLAN, listOf(id))
     }
 
     fun coverages(planId: String): List<MedCoverage> {
@@ -442,7 +459,8 @@ class MedicalService internal constructor(private val books: Books) {
      * The year's eligible expenses per person, out of pocket, with the 12-month period ending in
      * the year that holds the most (federal line 33099 and Quebec line 381 both allow it). The
      * household's own figures (everyone but adult dependants) are claimed together, usually by
-     * one spouse; adult dependants are claimed on their own line.
+     * one spouse; adult dependants are claimed on their own line federally. When someone files in
+     * Quebec, Quebec's total puts everyone together and keeps only what Quebec accepts (MED-14).
      */
     fun taxReport(year: Int): MedicalTaxReport {
         val reachStart = LocalDate(year - 1, 1, 2)
@@ -456,12 +474,26 @@ class MedicalService internal constructor(private val books: Books) {
             else MedicalTaxPerson(m, books.provinceOf(m.id), mine.sortedBy { it.taxDate }, Medical.bestWindow(pairs(mine), year), Medical.calendarYear(pairs(mine), year), m.kind == MemberKind.DEPENDANT)
         }
         val family = people.filter { !it.otherDependant }.flatMap { it.expenses }
-        return MedicalTaxReport(year, people, Medical.bestWindow(pairs(family), year))
+        // MED-14: Quebec claims the expenses of the whole household, dependants included, on one line.
+        val inQuebec = people.isNotEmpty() && members.any { !it.archived && books.provinceOf(it.id).isQuebec }
+        val everyone = people.flatMap { it.expenses }
+        val (quebecCounted, quebecLeftOut) = if (inQuebec) everyone.partition(::countsInQuebec) else emptyList<MedExpense>() to emptyList()
+        val quebec = if (inQuebec) Medical.bestWindow(pairs(quebecCounted), year) else null
+        // Those left out are listed for the year, and for the months before it that Quebec's period reaches.
+        val leftOut = quebecLeftOut.filter { e -> e.taxDate.year == year || (quebec != null && e.taxDate in quebec.start..quebec.end) }.sortedBy { it.taxDate }
+        return MedicalTaxReport(year, people, Medical.bestWindow(pairs(family), year), quebec, leftOut)
     }
 
-    /** The expenses in a 12-month period, for the receipts bundle (MED-15). */
-    fun expensesIn(window: Window, memberIds: Set<String>? = null): List<MedExpense> =
-        expenses().filter { it.taxEligible && it.outOfPocket.isPositive && it.taxDate in window.start..window.end && (memberIds == null || it.memberId in memberIds) }
+    /**
+     * MED-14: whether an eligible expense also counts for Quebec's credit (line 381), by the date of
+     * the service: Quebec accepts care only from its own list of practitioners (Rates and rules,
+     * medical.qc.*).
+     */
+    fun countsInQuebec(e: MedExpense): Boolean = QUEBEC_RULES[e.service]?.let { Medical.quebecAccepts(it, e.serviceDate) } ?: true
+
+    /** The expenses in a 12-month period, for the receipts bundle (MED-15); [quebec] keeps only those Quebec accepts. */
+    fun expensesIn(window: Window, memberIds: Set<String>? = null, quebec: Boolean = false): List<MedExpense> =
+        expenses().filter { it.taxEligible && it.outOfPocket.isPositive && it.taxDate in window.start..window.end && (memberIds == null || it.memberId in memberIds) && (!quebec || countsInQuebec(it)) }
             .sortedBy { it.taxDate }
 
     // --- Documents (MED-05, MED-08) -------------------------------------------------------------
@@ -499,5 +531,12 @@ class MedicalService internal constructor(private val books: Books) {
         const val EXPENSE = "med_expense"
         const val CLAIM = "med_claim"
         const val PLAN = "med_plan"
+
+        /** MED-14: the services Quebec's credit may refuse, with the rule that says whether it accepts them. */
+        private val QUEBEC_RULES = mapOf(
+            MedService.MASSAGE to "medical.qc.massage",
+            MedService.NATUROPATHY to "medical.qc.naturopathy",
+            MedService.OSTEOPATHY to "medical.qc.osteopathy",
+        )
     }
 }

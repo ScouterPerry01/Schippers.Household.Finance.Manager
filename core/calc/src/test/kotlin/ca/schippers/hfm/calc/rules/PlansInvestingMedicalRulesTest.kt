@@ -61,6 +61,27 @@ class PlansInvestingMedicalRulesTest {
     }
 
     @Test
+    fun `Quebec's medical credit uses 3 percent of family income with no fixed amount`() {
+        // 3 % of 150,000 is 4,500: no CRA ceiling applies in Quebec.
+        assertEquals(n("1500.00"), Medical.quebecClaimable(n("6000"), n("150000"), 2026))
+        assertEquals(n("0.00"), Medical.quebecClaimable(n("4000"), n("150000"), 2026))
+        assertEquals(n("3110.00"), Medical.claimable(n("6000"), n("150000"), n("2890"), 2026), "the federal credit caps the threshold")
+        Rules.userValues = listOf(own("medical.qc.threshold.rate", "2027-01-01", "0.02"))
+        assertEquals(n("3000.00"), Medical.quebecClaimable(n("6000"), n("150000"), 2027))
+        assertEquals(n("1500.00"), Medical.quebecClaimable(n("6000"), n("150000"), 2026))
+    }
+
+    @Test
+    fun `Quebec stops accepting naturopaths and osteopaths in 2026 and never accepts massage`() {
+        assertFalse(Medical.quebecAccepts("medical.qc.massage", LocalDate(2024, 5, 1)))
+        assertTrue(Medical.quebecAccepts("medical.qc.naturopathy", LocalDate(2025, 12, 31)))
+        assertFalse(Medical.quebecAccepts("medical.qc.naturopathy", LocalDate(2026, 1, 1)))
+        assertFalse(Medical.quebecAccepts("medical.qc.osteopathy", LocalDate(2026, 3, 1)))
+        Rules.userValues = listOf(own("medical.qc.massage", "2026-01-01", "true"))
+        assertTrue(Medical.quebecAccepts("medical.qc.massage", LocalDate(2026, 5, 1)), "the household's own value")
+    }
+
+    @Test
     fun `medical travel rates by province and year, and the 40 km`() {
         assertEquals("0.62", Medical.travelRate(LocalDate(2025, 7, 1), Province.ON)?.value)
         assertEquals("0.605", Medical.travelRate(LocalDate(2025, 7, 1), Province.QC)?.value)

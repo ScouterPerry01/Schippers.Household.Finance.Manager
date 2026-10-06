@@ -410,13 +410,32 @@ Les frais médicaux de l’**Année d’imposition**, ce que l’assurance a rem
 
 Le crédit d’impôt pour frais médicaux :
 
-- Au fédéral (ligne 33099) et au Québec (ligne 381), les frais payés pendant n’importe quelle période de 12 mois consécutifs se terminant dans l’année d’imposition peuvent être demandés, une seule fois. Les frais du ménage (conjoints et enfants) sont demandés ensemble, habituellement par un conjoint ; ceux d’une personne à charge adulte sont demandés à part (ligne fédérale 33199). Seule la partie au-delà d’un seuil compte : 3 % du revenu net au fédéral (ou un montant fixe s’il est moindre), 3 % du revenu familial au Québec.
+- Au fédéral (ligne 33099) et au Québec (ligne 381), les frais payés pendant n’importe quelle période de 12 mois consécutifs se terminant dans l’année d’imposition peuvent être demandés, une seule fois. Au fédéral, les frais du ménage (conjoints et enfants) sont demandés ensemble, habituellement par un conjoint, et ceux d’une personne à charge adulte sont demandés à part (ligne 33199). Seule la partie au-delà d’un seuil compte : 3 % du revenu net au fédéral (ou un montant fixe s’il est moindre). Les règles du Québec diffèrent : les personnes qui produisent leur déclaration au Québec ont donc leur propre total (voir [Le total du Québec](reports#quebec-total)).
 - Seuls les frais marqués admissibles au crédit d’impôt, avec un montant à votre charge, comptent. Leur date est la date du paiement, ou la date du service si aucune date de paiement n’a été saisie.
 - Le rapport trouve la meilleure période de 12 mois se terminant dans l’année : « Meilleure période de 12 mois pour le ménage : du … au …, … à votre charge. » En cas d’égalité, la période la plus ancienne est retenue, ce qui laisse les frais plus récents pour la demande de l’année suivante.
-- Le tableau donne, par personne, **Province**, **Meilleurs 12 mois**, **Meilleur total**, **Année civile** (le total de janvier à décembre, pour comparer) et **Demandé à** (fédéral 33099, ou fédéral 33199 pour une personne à charge adulte, plus Québec 381 pour les personnes au Québec).
+- Le tableau donne, par personne, **Province**, **Meilleurs 12 mois**, **Meilleur total**, **Année civile** (le total de janvier à décembre, pour comparer) et **Demandé à** (fédéral 33099, ou fédéral 33199 pour une personne à charge adulte, plus « Québec 381, avec le ménage » pour les personnes au Québec).
 - **Reçus du ménage en un seul PDF…** : demande où enregistrer, puis produit un seul PDF avec une page couverture qui énumère les frais de la meilleure période du ménage (date, personne, type de soins, description, montant à votre charge) et leur total, suivie des reçus classés avec ces frais. Une personne à charge adulte a son propre bouton **Reçus de … en un seul PDF…**. Les photos HEIC qui ne peuvent pas entrer dans un PDF sont signalées dans le PDF.
 
 Des frais déjà demandés une année précédente ne peuvent pas l’être de nouveau. Les frais sont saisis dans l’écran Réclamations médicales : voir [Réclamations médicales](medical).
+
+### Le total du Québec (ligne 381) {#quebec-total}
+
+@index: frais médicaux au Québec; ligne 381; TP-1; revenu familial; Revenu Québec; massothérapie; naturopathe; ostéopathe
+
+Quand quelqu’un du ménage produit sa déclaration au Québec (sa province sous **Membres du ménage**, ou celle du ménage) et que **Personne** est à **Tout le monde**, le rapport ajoute les montants propres au Québec sous ceux du fédéral. Le crédit du Québec n’est pas celui du fédéral :
+
+- Les frais de tous sont demandés sur une seule ligne, personnes à charge adultes comprises : le Québec n’a pas de ligne à part pour elles.
+- Seule la partie au-delà de 3 % du revenu familial compte : le revenu net (ligne 275) de la personne qui demande le crédit et celui de son conjoint, additionnés. Il n’y a pas de montant fixe : le seuil est donc le même, peu importe le conjoint qui le demande.
+- Le Québec n’accepte que les soins de sa propre liste de praticiens. La massothérapie ne compte pas et, à partir du 1er janvier 2026, les naturopathes et les ostéopathes non plus (selon la date du service). Les autres limites de Revenu Québec, comme 200 $ par personne pour les montures de lunettes, ne sont pas appliquées : vérifiez-les d’après vos reçus.
+
+Le rapport montre ensuite :
+
+- Une note qui résume ce qui précède.
+- « Québec (ligne 381) : meilleure période de 12 mois pour le ménage, personnes à charge adultes comprises : du … au …, … à votre charge. » Comme certains frais ne comptent pas au Québec, la période peut différer de celle du fédéral. Quand rien ne compte, il indique « Québec (ligne 381) : aucun frais accepté par le Québec pour … ».
+- **Reçus pour le Québec en un seul PDF…** : comme pour le ménage, avec les reçus des frais que le Québec compte dans sa période.
+- « Non comptés pour le Québec (…) », avec le total, puis une ligne par frais écarté (date du service, personne, type de soins, montant à votre charge).
+
+Le 3 % et les types de soins que le Québec accepte sont des chiffres de [Taux et règles](rates-rules) (Frais médicaux : part du revenu familial au Québec ; le Québec accepte la massothérapie, la naturopathie, l’ostéopathie), chacun avec sa source de Revenu Québec.
 
 ### Quel conjoint devrait demander le crédit {#who-claims}
 
@@ -427,7 +446,7 @@ Sous la meilleure période du ménage, quand **Personne** est à **Tout le monde
 - **Revenu net, …** : un champ par adulte : le revenu net prévu (ligne 23600 de la déclaration). Entrez celui des deux conjoints et laissez les autres vides. Rien n’est enregistré ; ces champs ne servent qu’à cette comparaison.
 - **Montant fixe de l’ARC, …** : le montant fixe de l’année qui plafonne le seuil de 3 %. Il est rempli pour les années que l’application connaît (2023 à 2026 ; 2 890 $ pour 2026) ; sinon, entrez-le d’après l’ARC.
 
-Une fois deux revenus entrés, une ligne par conjoint indique combien compterait pour le crédit fédéral s’il le demandait (les frais moins le plus petit de 3 % de son revenu net et du montant fixe), suivie d’une conclusion : qui devrait le demander et combien de plus compte, que l’un ou l’autre donne le même résultat, ou que les frais sont sous les deux seuils. Au Québec, une note précise que le seuil provincial se calcule sur le revenu familial : il est le même, peu importe qui le demande.
+Une fois deux revenus entrés, une ligne par conjoint indique combien compterait pour le crédit fédéral s’il le demandait (les frais moins le plus petit de 3 % de son revenu net et du montant fixe), suivie d’une conclusion : qui devrait le demander et combien de plus compte, que l’un ou l’autre donne le même résultat, ou que les frais sont sous les deux seuils. Quand quelqu’un produit sa déclaration au Québec, une ligne de plus donne ce qui compte pour le crédit du Québec : « Pour le crédit du Québec (ligne 381) : … compte, peu importe qui le demande, au-delà de 3 % du revenu familial de …. » Le revenu familial est la somme des revenus entrés ; une note précise qu’il est le même, peu importe qui le demande.
 
 > Important : C’est à titre indicatif seulement, pas un conseil fiscal. Le crédit n’est pas remboursable : le conjoint qui le demande doit avoir assez d’impôt à payer pour l’utiliser.
 

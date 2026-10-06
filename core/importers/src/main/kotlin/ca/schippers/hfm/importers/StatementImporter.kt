@@ -7,8 +7,8 @@ import java.io.InputStream
 
 /**
  * Plug-in contract for statement and history importers (ARC-04, NFR-13): OFX/QFX/QBO, CSV,
- * later QIF (Quicken, GnuCash, Moneydance), exchange and brokerage files. New formats are added by
- * writing another implementation and listing it in [Importers]; the core does not change.
+ * and brokerage files. New formats are added by writing another implementation and listing it in
+ * [ImporterRegistry], the one list of importers; the core does not change.
  */
 interface StatementImporter {
     /** Stable identifier stored with saved settings, e.g. "ofx" or "csv". */
@@ -52,8 +52,9 @@ data class ImportedLine(
     val checkNumber: String?,
 )
 
+/** The statement importers of [ImporterRegistry], as statement readers. */
 object Importers {
-    val all: List<StatementImporter> = listOf(OfxImporter(), CsvImporter())
+    val all: List<StatementImporter> get() = ImporterRegistry.of(ImportKind.STATEMENTS).filterIsInstance<StatementFormat>().map { it.importer }
 
-    fun forFile(fileName: String, head: ByteArray): StatementImporter? = all.firstOrNull { it.canRead(fileName, head) }
+    fun forFile(fileName: String, head: ByteArray): StatementImporter? = (ImporterRegistry.forFile(ImportKind.STATEMENTS, fileName, head) as? StatementFormat)?.importer
 }

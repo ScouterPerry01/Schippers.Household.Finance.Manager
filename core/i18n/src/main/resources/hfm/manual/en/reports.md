@@ -410,13 +410,32 @@ Medical costs for the **Tax year**, what insurance paid back, and the medical ex
 
 The medical expense tax credit:
 
-- Federally (line 33099) and in Quebec (line 381), expenses paid in any 12 consecutive months ending in the tax year can be claimed, once. The household's own expenses (spouses and children) are claimed together, usually by one spouse; an adult dependant's are claimed apart (federal line 33199). Only the part above a threshold counts: 3 % of net income federally (or a fixed amount if lower), 3 % of family income in Quebec.
+- Federally (line 33099) and in Quebec (line 381), expenses paid in any 12 consecutive months ending in the tax year can be claimed, once. Federally, the household's own expenses (spouses and children) are claimed together, usually by one spouse, and an adult dependant's are claimed apart (line 33199). Only the part above a threshold counts: 3 % of net income federally (or a fixed amount if lower). Quebec's rules differ, so people filing in Quebec get a total of their own (see [Quebec's total](reports#quebec-total)).
 - Only expenses marked as eligible for the tax credit, with an amount out of pocket, count. Their date is the date paid, or the date of service when no payment date was entered.
 - The report finds the best 12-month period ending in the year: "Best 12 months for the household: … to …, … out of pocket." On a tie, the earlier period is chosen, leaving later expenses for next year's claim.
-- The table gives, per person, **Province**, **Best 12 months**, **Best total**, **Calendar year** (the January to December total, for comparison) and **Claimed on** (federal 33099, or federal 33199 for an adult dependant, plus Quebec 381 for people in Quebec).
+- The table gives, per person, **Province**, **Best 12 months**, **Best total**, **Calendar year** (the January to December total, for comparison) and **Claimed on** (federal 33099, or federal 33199 for an adult dependant, plus "Quebec 381, with the household" for people in Quebec).
 - **Receipts for the household as one PDF…**: asks where to save, then makes one PDF with a cover page listing the expenses of the household's best period (date, person, kind of care, description, out of pocket) and their total, followed by the receipts filed with those expenses. An adult dependant has a **Receipts for … as one PDF…** button of their own. HEIC photos that cannot go into a PDF are mentioned in the PDF.
 
 Expenses already claimed in an earlier year cannot be claimed again. Expenses are entered on the Medical claims screen: see [Medical claims](medical).
+
+### Quebec's total (line 381) {#quebec-total}
+
+@index: Quebec medical expenses; line 381; TP-1; family income; Revenu Québec; massage therapy; naturopath; osteopath
+
+When someone in the household files in Quebec (their province under **Household members**, or the household's), and **Person** is **Everyone**, the report adds Quebec's own figures under the federal ones. Quebec's credit is not the federal one:
+
+- Everyone's expenses are claimed on one line, adult dependants included: Quebec has no separate line for them.
+- Only the part above 3 % of the family income counts: the claimer's and the spouse's net incomes (line 275) added together. There is no fixed amount, so the threshold is the same whichever spouse claims.
+- Quebec accepts care only from its own list of practitioners. Massage therapy does not count, and from January 1, 2026, neither do naturopaths and osteopaths (by the date of service). Revenu Québec's other limits, such as $200 per person for eyeglass frames, are not applied: check them against your receipts.
+
+The report then shows:
+
+- A note that says the above in short.
+- "Quebec (line 381): best 12 months for the household, adult dependants included: … to …, … out of pocket." Since some expenses do not count for Quebec, the period can differ from the federal one. When nothing counts, it says "Quebec (line 381): no expenses Quebec accepts for …".
+- **Receipts for Quebec as one PDF…**: as for the household, with the receipts of the expenses Quebec counts in its period.
+- "Not counted for Quebec (…)", with the total, then one line per expense left out (date of service, person, kind of care, out of pocket).
+
+The 3 % and which kinds of care Quebec accepts are figures of [Rates and rules](rates-rules) (Medical expenses: Quebec share of family income; Quebec accepts massage therapy, naturopathy, osteopathy), each with its Revenu Québec source.
 
 ### Which spouse should claim {#who-claims}
 
@@ -427,7 +446,7 @@ Under the household's best period, when **Person** is **Everyone** and the house
 - **Net income, …**: one field per adult: the expected net income (line 23600 of the return). Enter the two spouses' incomes and leave anyone else empty. Nothing is saved; the fields are for this comparison only.
 - **CRA fixed amount, …**: the fixed amount for the year that caps the 3 % threshold. It is filled in for the years the app knows (2023 to 2026; $2,890 for 2026); otherwise enter it from the CRA.
 
-Once two incomes are entered, a line per spouse says how much would count for the federal credit if they claimed (the expenses less the lower of 3 % of their net income and the fixed amount), followed by a conclusion: who should claim and how much more counts, that either spouse gives the same, or that the expenses are below both thresholds. In Quebec, a note says the provincial threshold uses family income, so it is the same whoever claims.
+Once two incomes are entered, a line per spouse says how much would count for the federal credit if they claimed (the expenses less the lower of 3 % of their net income and the fixed amount), followed by a conclusion: who should claim and how much more counts, that either spouse gives the same, or that the expenses are below both thresholds. When someone files in Quebec, a further line gives what counts for Quebec's credit: "For Quebec's credit (line 381): … counts whoever claims, above 3 % of the family income of …." The family income is the incomes entered, added together; a note says it is the same whoever claims.
 
 > Important: This is indicative only, not tax advice. The credit is not refundable: the spouse who claims needs enough tax to pay to use it.
 

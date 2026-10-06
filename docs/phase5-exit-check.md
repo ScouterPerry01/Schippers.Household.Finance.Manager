@@ -40,7 +40,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 ## Phase 5c: transfer away from home
 
 - Section 3.2, personal cloud folder: Met (the desktop watches the folder; each provider through its own sync app, as decided).
-- Section 3.1, email or USB with an encrypted file: Met (Share as a file…, Import a transfer file…). Gap: the email subject has no tag or id and is not addressed to the user; items imported by hand get no confirmation back to the phone until the next Wi-Fi or folder transfer. Small; the tag only matters if a mailbox reader is ever added.
+- Section 3.1, email or USB with an encrypted file: Met (Share as a file…, Import a transfer file…). Fixed afterwards: the email subject reads "[RANN's Roost] transfer <id>" (French: transfert), the id being the first characters of the household's and the phone's ids as in the file names, with no names or amounts. Items imported by hand were confirmed over Wi-Fi (the phone resends them) but never through the folder, since the phone does not put shared items in it again: a file imported by hand now leaves its reply in the transfer folder when one is chosen, and every reply file confirms the items received from that phone in the last 60 days (SyncServiceTest, BundleFileTest). The subject is still not addressed to the user (the phone does not know their address); they choose the recipient in their mail app.
 
 ## Phase 5d: budgets
 
@@ -88,7 +88,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 
 - CON-01, CON-02, CON-03, CON-04: Met. Fixed (CON-02): editing the dotted form of a number saved the dots as the new number; it is now refused with a request to retype the number.
 - CON-05 (filters and global search): Met in code. Fixed: the manual's search section did not mention contacts.
-- CON-06 (gather, merge, duplicates): Met. Fixed: vehicles (insurer, warranty providers with their phone, garages from the service log) and other assets' warranty providers were not gathered. Gap: a medical plan's insurer cannot be gathered, since a contact cannot be linked to a medical plan.
+- CON-06 (gather, merge, duplicates): Met. Fixed: vehicles (insurer, warranty providers with their phone, garages from the service log) and other assets' warranty providers were not gathered. Fixed afterwards: a contact can be linked to a medical or dental plan as Insurer for or Plan administrator for (or Also linked to), from the plan's dialog; gathering offers each plan's insurer, linked to the plan with the people it covers; links to a plan in a private group stay hidden from other users as for other links (HH-11), and deleting a plan removes its links (ContactsTest; no schema change, links are stored by name).
 - CON-07 (phone contacts): Met; account and client numbers are never sent.
 
 ## Requirements added after the SRS
@@ -120,7 +120,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 
 ## SRS Should items re-checked
 
-- ARC-04 (importers as plug-ins): Gap in part: the importer interfaces exist but the lists of importers are fixed in code, and the crypto exchange and QIF readers are outside the interface. Small.
+- ARC-04 (importers as plug-ins): Fixed afterwards: every importer is listed once in `ImporterRegistry` behind one interface, `FileImporter<T>` (id, kind, canRead, read), with a typed kind per result (statements, brokerage statements, crypto exchange history, QIF); the statement and brokerage importers are wrapped, and the crypto exchange and QIF readers implement it directly. `Importers` and `InvestmentImporters` are now views of the registry, so the screens behave as before (ImporterRegistryTest). An explicit list, not ServiceLoader: there are no outside plug-ins to discover.
 - NFR-13 (modular design): Gap in part: account types and report kinds are closed lists. Accepted as is for 1.0.
 - SYNC-06, SYNC-07: Met.
 - SYNC-09 (status on both devices): Met. Fixed: the reason under a refused item was the desktop's English exception text; it now comes in the phone's language. The desktop lists counts per phone but not the failed items.
@@ -151,7 +151,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - MED-02, MED-04, MED-05: Met.
 - MED-08 (EOB capture and matching): Fixed: the matching existed in the books but no screen used it; a document of the kind Explanation of benefits now lists the waiting claims it may answer and attaches to one in a click.
 - MED-09 (claim deadline reminders, including by plan year end): Fixed: a plan's deadline can now be counted from the end of the plan year (Deadline counted from: The end of the plan year, with 0 or more days after it), and reminders and the calendar use it (ledger schema version 30).
-- MED-14 (federal and Quebec totals, dependants): Met for federal and dependants. Gap: no separate Quebec total; adult dependants are labelled as claimed apart in Quebec too. Needs checking against Revenu Québec's rules before changing (another agent owns the tax rules).
+- MED-14 (federal and Quebec totals, dependants): Met for federal and dependants. Fixed afterwards: for a household where someone files in Quebec, the medical expenses report and the year-end package (Medical expenses (Quebec), TP-1 381) give Quebec's own total, checked against Revenu Québec's line 381 page and guide IN-130-V (2024-10): any 12 consecutive months ending in the year, everyone's expenses on one line with adult dependants included (no separate line as federally), above 3 % of family income (both spouses' line 275) with no fixed amount, and only care Quebec accepts: massage therapy never (not a practitioner in Quebec), naturopathy and osteopathy not from January 1, 2026 (by date of service). The 3 % and the three yes/no rules are in Rates and rules with their sources; Which spouse should claim adds what counts for Quebec; the report lists the expenses left out and bundles Quebec's receipts (MedicalServiceTest, TaxPackageTest, PlansInvestingMedicalRulesTest). Not applied: the $200 limit per person for eyeglass frames (the books do not separate frames from lenses), the 24-month period for a deceased person, and the RAMQ drug plan premium's December 31 condition; the manual names the frames limit and says other limits are not applied.
 - MED-15: Met.
 - WAR-03 (claim log): Met for assets. Fixed: vehicle warranties now have a claim log too (date, problem, outcome, cost covered, cost paid), and saving a vehicle warranty again keeps its claims (ledger schema version 30).
 - INS-02, INS-05: Met.

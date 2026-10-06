@@ -142,6 +142,26 @@ class SyncServiceTest {
     }
 
     @Test
+    fun `items from a file imported by hand are confirmed by the next reply the phone collects`() {
+        val key = pairAsPhone(books.sync.invitation("Bureau", "127.0.0.1", 47311, now))
+        val desktop = PairedDesktop(books.sync.desktopId, "Famille S", "127.0.0.1", 47311, "pixel-8", SyncCrypto.b64(key))
+        // Shared by email and imported by hand: its reply is never seen by the phone.
+        books.sync.handleFile(BundleFile.request(desktop, SyncRequest(now, listOf(receipt)), now).second, converter, now, today)
+        // Later, the phone leaves a new capture in the transfer folder.
+        val later = now + 3_600_000
+        val second = receipt.copy(id = "item-2", pages = listOf(SyncCrypto.b64("other-jpeg".encodeToByteArray())))
+        val reply = books.sync.handleFile(BundleFile.request(desktop, SyncRequest(later, listOf(second)), later).second, converter, later, today)
+        assertEquals(setOf("item-1", "item-2"), BundleFile.reply(desktop, reply.bytes).imported.toSet(), "the earlier item is confirmed too")
+        assertEquals(1, reply.received)
+        // Over Wi-Fi, the phone sends again what it has not heard about, so only its own items are answered.
+        assertEquals(listOf("item-2"), send(key, SyncRequest(later, listOf(second))).imported)
+        // After 60 days, an old item is no longer confirmed (the phone has long been told, or was reset).
+        val much = now + SyncService.RECENT_CONFIRM_MS + 7_200_000
+        val empty = books.sync.handleFile(BundleFile.request(desktop, SyncRequest(much, emptyList()), much).second, converter, much, today)
+        assertTrue(BundleFile.reply(desktop, empty.bytes).imported.isEmpty())
+    }
+
+    @Test
     fun `pairing needs the code from the QR code`() {
         val invitation = books.sync.invitation("Bureau", "192.168.1.20", 47311, now)
         assertEquals(invitation, PairingInvitation.fromQrText(invitation.toQrText()), "the QR text round-trips")
