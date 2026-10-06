@@ -653,6 +653,12 @@ class MigrationTest {
             templates.insertTemplateLine("t", 0, "housing.rent", null, null)
             templates.upsertTemplate("t", "Loyer", "Gestion Tremblay", null, -145000, "CAD", null, null, "Home", 0, 1)
             assertEquals(1, templates.templateLines("t").executeAsList().size, "saving a template again keeps its lines")
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('a', 'Chequing', 'CHEQUING', 'CAD', '2026-01-01', 0, 0)", 0)
+            val alerts = LedgerDatabase(driver).accountAlertsQueries
+            alerts.upsertAlert("a", 50000, null, 0, "3", null, 0)
+            alerts.upsertAlert("a", 40000, null, 0, "3", 20000, 1)
+            assertEquals(40000L, alerts.alertFor("a").executeAsOne().low_balance_minor)
+            assertEquals(0L, count(driver, "SELECT count(*) FROM txn_suggested_category"))
         }
     }
 }

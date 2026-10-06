@@ -105,6 +105,7 @@ The lines that can appear, in this order:
 - Missing categories, such as 5 transactions have no category: transactions with at least one line that has no category. Transfers between your accounts are not counted, since they never need a category. Opens Accounts; the registers show (uncategorized) in the Category column. Uncategorized amounts count in no budget and show as (uncategorized) in reports, so it pays to fix them.
 - Accounts behind, such as Joint chequing has not been reconciled in more than 45 days: one line per account whose last reconciled statement is more than 45 days old (the default, set in [Rates and rules](rates-rules)). An account that was never reconciled is not listed here; the Accounts screen marks it Never reconciled instead. Opens Accounts.
 - No successful backup in the last 7 days: no backup has worked in the last week, or none was ever made. Opens Backups. See [Backups](backups).
+- Account alerts, in red, such as Chequing: balance $412.00, below $500.00: the alerts you set on accounts (low balance, card limit, unusual activity). Clicking one opens that account. An unusual transaction has a **Dismiss** button once you have looked at it. See [Account alerts](accounts#account-alerts).
 - Missing rates, such as No exchange rate for USD: those amounts are left out: some balances, bills or spending are in a currency the app has no rate for, so they are not in the totals above. Opens Rates and prices, where you add the rate. See [Rates and prices](rates).
 
 ## Net worth chart {#net-worth-chart}

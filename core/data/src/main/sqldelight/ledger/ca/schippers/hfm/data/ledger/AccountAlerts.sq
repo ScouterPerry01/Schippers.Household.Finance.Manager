@@ -1,0 +1,58 @@
+-- ACC-06 (version 30): an account's alerts, kept with the account in its group's ledger (HH-11).
+-- Each is off while empty: a low balance below [low_balance_minor]; on a card, [near_limit_percent]
+-- of the limit used, or over the limit; unusual activity: a transaction more than [large_multiple]
+-- times the account's usual amount, or a first transaction with a payee for [new_payee_minor] or more.
+CREATE TABLE account_alert (
+    account_id TEXT NOT NULL PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
+    low_balance_minor INTEGER,
+    near_limit_percent INTEGER,
+    over_limit INTEGER NOT NULL DEFAULT 0,
+    large_multiple TEXT,
+    new_payee_minor INTEGER,
+    updated_at INTEGER NOT NULL
+);
+
+-- ACC-06: unusual-activity alerts the user has dismissed, one per transaction.
+CREATE TABLE txn_alert_dismissed (
+    txn_id TEXT NOT NULL PRIMARY KEY REFERENCES txn(id) ON DELETE CASCADE,
+    dismissed_at INTEGER NOT NULL
+);
+
+upsertAlert:
+INSERT INTO account_alert(account_id, low_balance_minor, near_limit_percent, over_limit, large_multiple, new_payee_minor, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(account_id) DO UPDATE SET
+    low_balance_minor = excluded.low_balance_minor,
+    near_limit_percent = excluded.near_limit_percent,
+    over_limit = excluded.over_limit,
+    large_multiple = excluded.large_multiple,
+    new_payee_minor = excluded.new_payee_minor,
+    updated_at = excluded.updated_at;
+
+alerts:
+SELECT * FROM account_alert;
+
+alertFor:
+SELECT * FROM account_alert WHERE account_id = ?;
+
+deleteAlert:
+DELETE FROM account_alert WHERE account_id = ?;
+
+-- Ordinary transactions only: transfers move the household's own money and trade lines belong to
+-- investments, so neither is unusual activity.
+amountsBetween:
+SELECT amount_minor FROM txn WHERE account_id = ? AND date >= ? AND date < ? AND transfer_id IS NULL AND trade = 0;
+
+recentTransactions:
+SELECT id, date, payee_id, payee_text, amount_minor FROM txn
+WHERE account_id = ? AND date >= ? AND date <= ? AND transfer_id IS NULL AND trade = 0
+ORDER BY date, created_at, id;
+
+payeesBefore:
+SELECT DISTINCT payee_id, lower(payee_text) AS payee_key FROM txn WHERE account_id = ? AND date < ? AND transfer_id IS NULL;
+
+dismiss:
+INSERT OR IGNORE INTO txn_alert_dismissed(txn_id, dismissed_at) VALUES (?, ?);
+
+dismissedIn:
+SELECT d.txn_id FROM txn_alert_dismissed d JOIN txn t ON t.id = d.txn_id WHERE t.account_id = ? AND t.date >= ?;

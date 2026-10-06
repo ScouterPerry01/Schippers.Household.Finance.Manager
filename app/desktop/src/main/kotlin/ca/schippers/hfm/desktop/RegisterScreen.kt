@@ -162,6 +162,9 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     // CAT-03: categories a statement import filled in from the payee's habits, to review.
     val suggested = remember(model.revision, account.id) { books.transactions.suggestedCategoryIds(account.id) }
     var reviewing by remember { mutableStateOf(false) }
+    // ACC-06: this account's alerts and their settings.
+    val accountAlerts = remember(model.revision, account.id) { runCatching { books.accountAlerts.alertsFor(account.id, today()) }.getOrDefault(emptyList()) }
+    var editingAlerts by remember { mutableStateOf(false) }
     var savingTemplate by remember { mutableStateOf<Transaction?>(null) }
     // TX-07, EXP-02: transactions chosen for a bulk change or an export.
     var choosing by remember(account.id) { mutableStateOf(false) }
@@ -244,6 +247,12 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                     style = MaterialTheme.typography.bodySmall,
                 )
                 LinkedContacts(model, LinkTarget.ACCOUNT, account.id, accountRoles(account.type), compact = true, canLink = false)
+                for (a in accountAlerts) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(model.describe(a), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                        if (a.dismissible) TextButton(onClick = { model.act { books.accountAlerts.dismiss(a.transactionId!!) } }) { Text(model.t("alert.dismiss")) }
+                    }
+                }
             }
             Column(horizontalAlignment = Alignment.End) {
                 // ACC-01: the balance today; post-dated transactions are shown apart.
@@ -273,6 +282,9 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
             if (suggested.isNotEmpty()) Button(onClick = { reviewing = true }) { Text(model.t("suggested.button", suggested.size)) }
             if (!choosing && rows.isNotEmpty()) OutlinedButton(onClick = { choosing = true; entry.clear() }) { Text(model.t("bulk.choose")) }
             OutlinedButton(onClick = { editingAccount = true }) { Text(model.t("account.edit")) }
+            if (account.type.kind == AccountKind.BANK || account.type.kind == AccountKind.CREDIT) {
+                OutlinedButton(onClick = { editingAlerts = true }) { Text(model.t("alert.button")) }
+            }
             if (account.numberMasked != null) OutlinedButton(onClick = { revealing = true }) { Text(model.t("account.show")) }
             if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCard = true }) { Text(model.t("account.cardDetails")) }
             if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCards = true }) { Text(model.t("cards.button")) }
@@ -494,6 +506,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     pendingImport?.let { PendingImportDialog(model, it) { pendingImport = null } }
     if (showStatements) StatementsDialog(model, account) { showStatements = false }
     if (managingTemplates) TemplatesDialog(model, account, categoryTree) { managingTemplates = false }
+    if (editingAlerts) AccountAlertsDialog(model, account) { editingAlerts = false }
     if (reviewing) SuggestedCategoriesDialog(model, account, categories, onOpen = { load(it); reviewing = false }) { reviewing = false }
     savingTemplate?.let { t -> SaveAsTemplateDialog(model, t, t.payeeId?.let(payeeNames::get) ?: t.payeeText.orEmpty()) { savingTemplate = null } }
     if (splitting) {

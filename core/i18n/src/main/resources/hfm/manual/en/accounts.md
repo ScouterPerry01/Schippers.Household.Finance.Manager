@@ -190,6 +190,7 @@ Which buttons appear depends on the account:
 - **Templates…**: the transaction templates of the account's group. See [Transaction templates](accounts#templates).
 - **Choose transactions…**: tick several transactions to categorize, tag, move or export them together. See [Change or export several transactions](accounts#bulk-edit).
 - **Edit account**: the account form (see [Add or edit an account](accounts#account-dialog)).
+- **Alerts…**: Banking and Credit accounts; low balance, card limit and unusual activity alerts (see [Account alerts](accounts#account-alerts)).
 - **Show number**: only when an account number is stored (see [Show the full account number](accounts#show-number)).
 - **Card details**, **Cards and benefits** and **Rewards**: Credit accounts only.
 - **Loan details**: loans and mortgages only; opens Loans and mortgages.
@@ -606,6 +607,31 @@ When a reconciled period turns out to be wrong, choose **Undo reconciliation** o
 - **Reason**: why you are undoing it. Required; the **Undo reconciliation** button stays greyed out until it is filled in.
 
 The statement stays in the list as Undone, with the reason, as a record of what had been reconciled. Beside it, the same statement appears again as In progress, with the same date, closing balance and lines, still matched to their transactions. Fix what was wrong, then choose **Continue** (or **Reconcile…** in the register) and finish the reconciliation again. There is no need to import the file again, and it would be refused: This statement file has already been imported into this account.
+
+## Account alerts {#account-alerts}
+
+@index: alert; low balance; over limit; credit limit warning; unusual activity; large transaction; new payee; fraud
+
+An account can warn you when its balance runs low, when a card nears or passes its limit, or when something unusual happens in it. Every alert is off until you set it. Open the account, then **Alerts…** above the register (Banking and Credit accounts only). The window Alerts for name says "Each alert is off while left empty." Leave a field empty to turn that alert off; save with every field empty to turn them all off.
+
+- **Warn when the balance is below**: Banking accounts. An amount in the account's currency, for example 500. The alert stands while the balance today (post-dated transactions do not count yet) is below it, and goes away by itself once the balance is back up: "Chequing: balance $412.00, below $500.00".
+- **Warn when over the credit limit**: Credit accounts. Ticked, the alert stands while more is owed than the limit: "Visa: $1,030.00 owed, over the $1,000.00 limit".
+- **Warn when this share of the limit is used (%)**: Credit accounts, from 1 to 100, for example 90. The alert stands while that share of the limit or more is used, without being over it: "Visa: 95% of the $1,000.00 limit used". Both limit alerts need the card's **Credit limit**, entered under [Credit card details](accounts#card-details); without it the window says so and they stay silent.
+
+Under **Unusual activity**, both look at the transactions of the last 7 days, leaving out transfers between your accounts and the cash lines of investment trades:
+
+- **A transaction larger than (times the usual)**: for example 3. The usual amount is the middle amount (the median) of the account's transactions in the year before those 7 days, money in and money out alike, once there are at least 10 of them; until then this alert says nothing. A transaction larger than that many times the usual is raised: "Chequing: $450.00 with Garage Tremblay on 2026-10-03, much more than the usual $65.00". Enter a number greater than 1; a comma or a point both work for decimals.
+- **A first transaction with a payee from**: an amount in the account's currency, for example 200. A transaction of at least that much with a payee this account never had before is raised: "Chequing: $250.00 with a new payee, Electro Plus, on 2026-10-04". A transaction raised as larger than usual is not raised a second time as a new payee.
+
+Where alerts appear:
+
+- In the reminders at the top of the window, on every screen but Accounts, and in the system notification (each one once a day, as for other reminders). Clicking the reminder opens Accounts.
+- On the Dashboard, under [Needs your attention](dashboard#needs-attention), in red; clicking a line opens that account.
+- Above the account's register, under its name.
+
+An unusual transaction you have looked at can be put aside with **Dismiss**, on the Dashboard or above the register; it is not raised again. It also stops being raised once it is more than 7 days old. Balance and limit alerts cannot be dismissed: they last as long as the balance stays so.
+
+The settings are kept with the account, in its account group's file, so the alerts of a private account are seen only by those who can open it. Changing them needs the right to change that group; anyone who can see the account sees its alerts.
 
 ## Credit card details {#card-details}
 

@@ -128,7 +128,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - CAP-05 (share to the phone app): Met for one picture or PDF and several pictures. Gap: several PDFs, mixed shares and shared email text are not accepted. Small.
 - MAN-03, MAN-04: Met.
 - MAN-05 (templates): Fixed (owner's decision to build them): named transaction templates per account group (payee, category or split lines, memo, person, tags, optional amount, optional account), picked above a register's entry form by typing their name, made from a transaction with Save as template, and edited or deleted (asks first) under Templates…; kept in the group's ledger, so private groups stay private (ledger schema version 30).
-- ACC-06 (low-balance, over-limit and unusual-activity alerts per account): Gap: not built. The register shows a card over its limit in red and the bills forecast warns of a shortfall below zero, but there is no threshold per account and no unusual-activity check. Medium (schema, check, reminders, texts, manual).
+- ACC-06 (low-balance, over-limit and unusual-activity alerts per account): Fixed: Alerts… on a bank or card register sets, per account and off by default, a low-balance threshold, over the credit limit and a share of the limit used, and unusual activity (a transaction more than so many times the account's median of the year before, or a first transaction with a payee above an amount, over the last 7 days, transfers left out). Alerts show in the reminders and the system notification, on the Dashboard under Needs your attention and above the register; unusual ones can be dismissed. Settings are kept in the account's group ledger (HH-11; ledger schema version 30).
 - CC-04, CC-05: Met.
 - LN-03, LN-05, LN-06: Met.
 - FX-05, FX-06: Met.

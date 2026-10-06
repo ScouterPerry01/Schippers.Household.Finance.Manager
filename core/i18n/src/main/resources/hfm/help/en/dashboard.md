@@ -17,7 +17,7 @@ A row of tiles gives the main numbers. Click a tile to open the screen behind it
 
 ## Needs your attention
 
-This list gathers what is waiting for you: overdue bills, statement lines that need a decision, transactions with no category, accounts not reconciled in more than 45 days (the figure is set in Rates and rules), no successful backup in the last 7 days, and missing exchange rates. Click a line to go to the screen where you can deal with it. When the list is empty, it says Nothing to review.
+This list gathers what is waiting for you: overdue bills, statement lines that need a decision, transactions with no category, accounts not reconciled in more than 45 days (the figure is set in Rates and rules), no successful backup in the last 7 days, missing exchange rates, and the alerts set on accounts (low balance, card limit, unusual activity). Click a line to go to the screen where you can deal with it. When the list is empty, it says Nothing to review.
 
 ## Charts
 

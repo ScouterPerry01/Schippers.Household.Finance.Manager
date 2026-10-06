@@ -17,7 +17,7 @@ Une rangée de tuiles donne les chiffres principaux. Cliquez sur une tuile pour 
 
 ## À vérifier
 
-Cette liste regroupe ce qui vous attend : factures en retard, lignes de relevé qui demandent une décision, opérations sans catégorie, comptes non rapprochés depuis plus de 45 jours (nombre fixé dans Taux et règles), aucune sauvegarde réussie dans les 7 derniers jours et taux de change manquants. Cliquez sur une ligne pour aller à l’écran où régler la question. Quand tout est réglé, la liste indique Rien à vérifier.
+Cette liste regroupe ce qui vous attend : factures en retard, lignes de relevé qui demandent une décision, opérations sans catégorie, comptes non rapprochés depuis plus de 45 jours (nombre fixé dans Taux et règles), aucune sauvegarde réussie dans les 7 derniers jours, taux de change manquants et alertes réglées sur les comptes (solde bas, limite de carte, activité inhabituelle). Cliquez sur une ligne pour aller à l’écran où régler la question. Quand tout est réglé, la liste indique Rien à vérifier.
 
 ## Les graphiques
 

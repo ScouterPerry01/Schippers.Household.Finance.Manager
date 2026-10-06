@@ -15,11 +15,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.books.AccountAlert
 import ca.schippers.hfm.books.BillKind
 import ca.schippers.hfm.books.BudgetLine
 import ca.schippers.hfm.books.CategoryAmount
@@ -83,6 +86,7 @@ fun DashboardScreen(model: BooksModel) {
             behind = summaries.filter { s -> last[s.account.id]?.let { it.daysUntil(today) > Thresholds.reconcileBehind(today) } ?: false }.map { it.account.name },
             missingRates = missing.map { it.code }.sorted(),
             backupReminder = books.backups.needsReminder(java.time.Instant.now()),
+            alerts = runCatching { books.accountAlerts.alerts(today) }.getOrDefault(emptyList()),
         )
     }
 
@@ -124,7 +128,18 @@ fun DashboardScreen(model: BooksModel) {
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp)) {
                 Text(model.t("dashboard.review"), style = MaterialTheme.typography.titleMedium)
-                if (review.isEmpty()) Text(model.t("dashboard.review.none"), Modifier.padding(top = 6.dp))
+                if (review.isEmpty() && data.alerts.isEmpty()) Text(model.t("dashboard.review.none"), Modifier.padding(top = 6.dp))
+                // ACC-06: each alert opens its account; unusual activity can be dismissed once looked at.
+                for (a in data.alerts) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "• " + model.describe(a),
+                            Modifier.clickable { model.selectedAccountId = a.account.id; model.section = Section.ACCOUNTS }.padding(vertical = 4.dp),
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        if (a.dismissible) TextButton(onClick = { model.act { books.accountAlerts.dismiss(a.transactionId!!) } }) { Text(model.t("alert.dismiss")) }
+                    }
+                }
                 for ((text, section) in review) {
                     Text("• $text", Modifier.clickable { model.section = section }.padding(vertical = 4.dp))
                 }
@@ -175,6 +190,8 @@ private class DashboardData(
     val behind: List<String>,
     val missingRates: List<String>,
     val backupReminder: Boolean,
+    /** ACC-06: the alerts standing on the accounts that ask for them. */
+    val alerts: List<AccountAlert>,
 )
 
 private fun signed(model: BooksModel, m: Money) = (if (m.isPositive) "+" else "") + model.money(m)

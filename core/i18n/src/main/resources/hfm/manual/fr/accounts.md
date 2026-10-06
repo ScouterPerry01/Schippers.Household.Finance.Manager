@@ -190,6 +190,7 @@ Les boutons affichés dépendent du compte :
 - **Modèles…** : les modèles d’opération du groupe du compte. Voir [Modèles d’opération](accounts#templates).
 - **Choisir des opérations…** : cochez plusieurs opérations pour les catégoriser, les étiqueter, les déplacer ou les exporter ensemble. Voir [Modifier ou exporter plusieurs opérations](accounts#bulk-edit).
 - **Modifier le compte** : le formulaire de compte (voir [Ajouter ou modifier un compte](accounts#account-dialog)).
+- **Alertes…** : comptes bancaires et de crédit ; alertes de solde bas, de limite de carte et d’activité inhabituelle (voir [Alertes de compte](accounts#account-alerts)).
 - **Afficher le numéro** : seulement quand un numéro de compte est enregistré (voir [Afficher le numéro de compte complet](accounts#show-number)).
 - **Détails de la carte**, **Cartes et avantages** et **Récompenses** : comptes de crédit seulement.
 - **Détails du prêt** : prêts et prêts hypothécaires seulement ; ouvre Prêts et hypothèques.
@@ -606,6 +607,31 @@ Quand une période rapprochée se révèle fausse, choisissez **Annuler le rappr
 - **Raison** : pourquoi vous l’annulez. Obligatoire ; le bouton **Annuler le rapprochement** reste grisé tant qu’elle n’est pas remplie.
 
 Le relevé reste dans la liste comme Annulé, avec la raison, comme trace de ce qui avait été rapproché. À côté, le même relevé reparaît En cours, avec la même date, le même solde de clôture et les mêmes lignes, toujours jumelées à leurs opérations. Corrigez ce qui était faux, puis choisissez **Continuer** (ou **Rapprocher…** dans le registre) et terminez de nouveau le rapprochement. Inutile d’importer de nouveau le fichier, ce qui serait refusé : Ce fichier de relevé a déjà été importé dans ce compte.
+
+## Alertes de compte {#account-alerts}
+
+@index: alerte; solde bas; limite dépassée; avertissement de limite de crédit; activité inhabituelle; grosse opération; nouveau bénéficiaire; fraude
+
+Un compte peut vous avertir quand son solde baisse trop, quand une carte approche ou dépasse sa limite, ou quand il s’y passe quelque chose d’inhabituel. Chaque alerte est désactivée tant que vous ne la réglez pas. Ouvrez le compte, puis **Alertes…** au-dessus du registre (comptes bancaires et de crédit seulement). La fenêtre Alertes pour nom indique « Chaque alerte est désactivée tant qu’elle est laissée vide. » Laissez un champ vide pour désactiver cette alerte ; enregistrez avec tous les champs vides pour toutes les désactiver.
+
+- **Avertir quand le solde est sous** : comptes bancaires. Un montant dans la devise du compte, par exemple 500. L’alerte reste tant que le solde d’aujourd’hui (les opérations postdatées ne comptent pas encore) est plus bas, et disparaît d’elle-même quand le solde remonte : « Compte chèques : solde de 412,00 $, sous 500,00 $ ».
+- **Avertir quand la limite de crédit est dépassée** : comptes de crédit. Coché, l’alerte reste tant que le montant dû dépasse la limite : « Visa : 1 030,00 $ dû, au-delà de la limite de 1 000,00 $ ».
+- **Avertir quand cette part de la limite est utilisée (%)** : comptes de crédit, de 1 à 100, par exemple 90. L’alerte reste tant que cette part de la limite ou plus est utilisée, sans la dépasser : « Visa : 95 % de la limite de 1 000,00 $ utilisée ». Les deux alertes de limite ont besoin de la **Limite de crédit** de la carte, entrée dans [Détails de la carte de crédit](accounts#card-details) ; sans elle, la fenêtre le dit et elles restent muettes.
+
+Sous **Activité inhabituelle**, les deux regardent les opérations des 7 derniers jours, sans les virements entre vos comptes ni les lignes d’argent des opérations de placement :
+
+- **Une opération plus grande que (fois l’habituel)** : par exemple 3. Le montant habituel est le montant du milieu (la médiane) des opérations du compte dans l’année qui précède ces 7 jours, entrées et sorties d’argent confondues, dès qu’il y en a au moins 10 ; avant, cette alerte ne dit rien. Une opération plus grande que ce nombre de fois l’habituel est signalée : « Compte chèques : 450,00 $ avec Garage Tremblay le 2026-10-03, bien plus que l’habituel 65,00 $ ». Entrez un nombre plus grand que 1 ; la virgule ou le point conviennent pour les décimales.
+- **Une première opération avec un bénéficiaire dès** : un montant dans la devise du compte, par exemple 200. Une opération d’au moins ce montant avec un bénéficiaire que ce compte n’a jamais eu est signalée : « Compte chèques : 250,00 $ avec un nouveau bénéficiaire, Électro Plus, le 2026-10-04 ». Une opération déjà signalée comme plus grande que l’habituel ne l’est pas une deuxième fois comme nouveau bénéficiaire.
+
+Où paraissent les alertes :
+
+- Dans les rappels en haut de la fenêtre, sur tous les écrans sauf Comptes, et dans la notification du système (chacune une fois par jour, comme les autres rappels). Un clic sur le rappel ouvre Comptes.
+- Au Tableau de bord, sous [À vérifier](dashboard#needs-attention), en rouge ; un clic sur une ligne ouvre ce compte.
+- Au-dessus du registre du compte, sous son nom.
+
+Une opération inhabituelle que vous avez vérifiée peut être mise de côté avec **Écarter**, au Tableau de bord ou au-dessus du registre ; elle n’est plus signalée. Elle cesse aussi de l’être quand elle date de plus de 7 jours. Les alertes de solde et de limite ne peuvent pas être écartées : elles durent tant que le solde reste ainsi.
+
+Les réglages sont conservés avec le compte, dans le fichier de son groupe de comptes, alors les alertes d’un compte privé ne sont vues que par ceux qui peuvent l’ouvrir. Les changer demande le droit de modifier ce groupe ; quiconque voit le compte voit ses alertes.
 
 ## Détails de la carte de crédit {#card-details}
 

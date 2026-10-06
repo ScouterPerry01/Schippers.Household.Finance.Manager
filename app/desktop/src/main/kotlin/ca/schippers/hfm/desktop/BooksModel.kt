@@ -146,7 +146,19 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         // INV-09, INV-10: over-contributions, RRIF and LIF minimums, RRSPs to convert.
         val plans = runCatching { books.plans.warnings(today()) }.getOrDefault(emptyList())
             .map { w -> ReminderLine("plan:${w.key}:${w.subjectId}", t(w.key, *w.args.map { a -> if (a is Money) money(a) else a }.toTypedArray()), Section.PLANS) }
-        return events + bills + refills + renewals + maintenance + plans
+        // ACC-06: low balances, card limits and unusual activity, on the accounts that ask for them.
+        val alerts = runCatching { books.accountAlerts.alerts(today()) }.getOrDefault(emptyList()).map { ReminderLine(it.key, describe(it), Section.ACCOUNTS) }
+        return events + bills + refills + renewals + maintenance + plans + alerts
+    }
+
+    /** ACC-06: "Chequing: balance $412.00, below $500.00". */
+    fun describe(a: ca.schippers.hfm.books.AccountAlert): String = when (a.kind) {
+        ca.schippers.hfm.books.AccountAlertKind.LOW_BALANCE -> t("alert.LOW_BALANCE", a.account.name, money(a.amount), a.threshold?.let(::money) ?: "")
+        ca.schippers.hfm.books.AccountAlertKind.OVER_LIMIT -> t("alert.OVER_LIMIT", a.account.name, money(a.amount), a.threshold?.let(::money) ?: "")
+        ca.schippers.hfm.books.AccountAlertKind.NEAR_LIMIT -> t("alert.NEAR_LIMIT", a.account.name, a.percent ?: 0, a.threshold?.let(::money) ?: "")
+        ca.schippers.hfm.books.AccountAlertKind.LARGE_TRANSACTION ->
+            t("alert.LARGE_TRANSACTION", a.account.name, money(a.amount.abs()), a.payee ?: "—", a.date?.let(::date) ?: "", a.usual?.let(::money) ?: "")
+        ca.schippers.hfm.books.AccountAlertKind.NEW_PAYEE -> t("alert.NEW_PAYEE", a.account.name, money(a.amount.abs()), a.payee ?: "—", a.date?.let(::date) ?: "")
     }
 
     /** "Civic: oil change due 2026-11-03 or at 55,700 km". */
