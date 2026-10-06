@@ -8,9 +8,10 @@ Les revenus d’appoint sont l’argent que le ménage gagne en dehors d’un em
 
 ## L’écran Revenus d’appoint {#screen}
 
-L’écran présente une courte explication en haut et deux onglets :
+L’écran présente une courte explication en haut et trois onglets :
 
 - **Factures** : les factures que vous envoyez à vos clients, enregistrées en PDF, et si elles sont payées.
+- **Heures travaillées** : les heures travaillées pour chaque client, et les heures non facturées transformées en facture (voyez [Heures travaillées](#hours)).
 - **Immeubles locatifs** : chaque immeuble que vous louez, avec ses revenus, ses dépenses et son net pour une année, tirés de vos opérations.
 
 L’écran s’ouvre sur **Factures**.
@@ -117,6 +118,48 @@ L’enregistrement met la facture à **Payée** avec cette date. Avec **Inscrire
 - les taxes de vente perçues (TPS, TVH, TVQ ou TVP) sont inscrites sur le dépôt, et ses détails **Taxes de vente…** dans le registre les montrent.
 
 Le dépôt est une opération ordinaire : il change le solde du compte et paraît dans le registre et dans les rapports comme toute autre. Voir [Comptes](accounts). Si vous avez déjà inscrit le paiement vous-même, décochez **Inscrire le dépôt** pour ne pas l’inscrire deux fois.
+
+## Heures travaillées {#hours}
+
+@index: feuille de temps; heures facturables; taux horaire; chronomètre; clients
+
+![L’onglet Heures travaillées](images/side-hours.png)
+
+L’onglet **Heures travaillées** garde les heures travaillées pour chaque client, chronométrées sur le téléphone ou entrées ici, et transforme en une étape les heures pas encore facturées en lignes de facture.
+
+### La liste des clients {#hours-list}
+
+- **Ajouter un client** : ouvre la [boîte du client](#client-dialog).
+- **Ajouter des heures** : ouvre la [boîte des heures](#hours-dialog) ; offert dès qu’il y a un client.
+- **Montrer les archivés** : montre aussi les clients marqués archivés.
+
+Chaque client est une carte : son nom, son taux horaire, qui fait le travail et ses tâches. **Non facturé** donne les heures pas encore sur une facture et ce qu’elles donnent à leurs taux, ou **Tout est facturé.** Dessous, les dernières heures du client, des plus récentes aux plus anciennes : la date, la tâche, la description, l’heure de début, **du téléphone**, la durée, le montant et **Non facturé** ou **Facturé** avec le numéro de la facture. Cliquez sur une ligne pour la modifier ou la supprimer. **Faire une facture** ouvre [l’étape de facturation](#hours-invoice) ; **Modifier le client** ouvre la boîte du client.
+
+Les heures dont la facture a été supprimée comptent de nouveau comme non facturées.
+
+### Boîte Ajouter un client {#client-dialog}
+
+- **Client** : le nom, tel qu’il doit paraître sur la facture. Obligatoire.
+- **Adresse et coordonnées du client** : l’adresse et les autres renseignements imprimés sur la facture.
+- **Taux horaire** : dans la devise de base du ménage ; facultatif, mais des heures sans aucun taux ne peuvent être facturées.
+- **Qui fait le travail** : le membre du ménage, ou **Ménage**. Il devient la personne qui facture.
+- **Tâches** : les genres de travail pour ce client, chacun avec un nom de **Tâche** et, s’il diffère de celui du client, son propre **Taux**. **Ajouter une tâche** ajoute une ligne ; ✕ la retire. Une tâche retirée après que des heures y ont été inscrites est gardée, archivée, pour que ces heures gardent son nom.
+- **Notes**, **Enregistrer dans** (pour un nouveau client, si vous pouvez modifier plusieurs groupes de comptes), **Archivé** et **Supprimer**. Supprimer un client supprime ses tâches et ses heures ; les factures déjà faites restent.
+
+### Boîte Ajouter des heures {#hours-dialog}
+
+- **Client** : pour de nouvelles heures.
+- **Tâche** : une des tâches du client, ou —.
+- **Date**, **Début (HH:MM)** (facultatif) et **Durée (h:mm)** : la durée en heures et minutes (1:30) ou en heures (1,5), de 1 minute à 24 heures.
+- **Description** : ce qui a été fait ; elle nomme la ligne de facture quand il n’y a pas de tâche.
+- **Taux pour ces heures** : seulement si ces heures ont leur propre taux. Vide : le taux de la tâche, sinon celui du client.
+- **Supprimer** : demande d’abord.
+
+Modifier des heures déjà sur une facture ne change pas la facture.
+
+### Faire une facture {#hours-invoice}
+
+**Faire une facture** liste les heures du client pas encore facturées, toutes cochées ; décochez celles à garder pour plus tard. Choisissez la date **Émise le** et cliquez sur **Faire une facture**. RANN's Roost fait une facture brouillon au client, numérotée comme la suivante de l’année, avec une ligne par tâche et par taux : la tâche (ou la description) avec les dates, les heures comme quantité (à deux décimales) et le taux comme prix. Ses taxes de vente suivent la dernière facture de la personne. Les heures y sont marquées facturées. Ouvrez la facture à l’onglet [Factures](#invoices) pour la vérifier, changer ses taxes et l’envoyer.
 
 ## Immeubles locatifs {#rentals}
 

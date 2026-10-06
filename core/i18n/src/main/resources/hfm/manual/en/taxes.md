@@ -211,6 +211,7 @@ Under the lines, and at the end of every export, notes say what is still missing
 - Slips still expected: the slips of that person still marked **Expected** on the **Slips** tab, to chase before filing.
 - For RRSP contributions: the deduction for a year uses contributions from March 2 of that year to March 1 of the next; contributions in the first 60 days of the year may have been claimed the year before.
 - For a person in Quebec: Quebec's return has its own lines; the Relevés give the amounts for it.
+- Volunteer hours: the person's volunteer hours of the year from the [Volunteer hours](volunteer) screen, as information and, with volunteer firefighting or search and rescue hours, whether they reach the 200 hours the amounts on lines 31220 and 31240 need.
 - The notice that these figures are not tax advice.
 
 ### Folder for the accountant {#accountant-folder}

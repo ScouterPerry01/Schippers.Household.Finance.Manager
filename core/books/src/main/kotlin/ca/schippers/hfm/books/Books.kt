@@ -103,6 +103,13 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val quicken = QifImportService(this)
     val users = UserService(this)
 
+    /** UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: meters and tanks, hours worked, chores and volunteer hours. */
+    val utilities = UtilityService(this)
+    val workHours = WorkHoursService(this)
+    val chores = ChoreService(this)
+    val volunteer = VolunteerService(this)
+    internal val trackerSync = TrackerSync(this)
+
     /** Rates and rules: the household's own values of every rate, limit and threshold. */
     val rateRules = RateRuleService(this)
 
@@ -186,7 +193,8 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
         return (pets.renewals(today, w) + vehicles.renewals(today, w) + loans.renewals(today, w) + creditCards.renewals(today, w) +
             medical.deadlines(today, withinDays ?: LeadTimes.medicalClaim(today)) + assets.renewals(today, maxOf(w, LeadTimes.warranty(today))) +
             insurance.renewals(today, withinDays ?: LeadTimes.insurance(today)) + instalments.renewals(today, withinDays ?: LeadTimes.instalment(today)) +
-            investments.maturities(today, withinDays ?: LeadTimes.maturity(today))).sortedBy { it.date }
+            investments.maturities(today, withinDays ?: LeadTimes.maturity(today)) +
+            runCatching { utilities.orders(today, withinDays ?: ca.schippers.hfm.calc.rules.Thresholds.tankOrderDays(today)) }.getOrDefault(emptyList())).sortedBy { it.date }
     }
 
     /** Tags for projects and events (CAT-04). */

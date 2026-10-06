@@ -124,6 +124,7 @@ The buttons:
 - **Other document**: scan anything else to keep, such as a warranty or a letter.
 - **Quick expense**: record a purchase without a photo.
 - **Odometer or hours**: record a vehicle's odometer or an equipment's hours of use.
+- **Meter or tank reading**, **Hours worked**, **Chores** and **Volunteer hours**: the [log forms](#log-forms).
 
 The kind you choose decides how the capture is filed on the computer: a bill as a bill, a receipt or quick expense as a receipt, another document as whatever the computer reads it to be.
 
@@ -216,6 +217,37 @@ Records a reading for a vehicle, or for equipment measured in hours of use (a ge
 - **Save**: available once an item and a reading are entered. The reading joins the queue and is sent at once if possible.
 
 On the computer, the reading is added straight to the vehicle on the Vehicles screen, or to the equipment's meter on Home and assets, without review.
+
+## Log forms {#log-forms}
+
+@index: meter reading; tank level; propane; timer; hours worked; chores; volunteer hours
+
+Under the capture buttons, four buttons open forms that log facts for the computer. What they pick from (meters, tanks, clients, chores, organizations) comes from the computer with each transfer, so the lists fill in after the first one. Each form has **Cancel**, which closes it, and **Save**, which puts what you entered in the queue and sends it at once if possible; the [Sent tab](#sent-tab) lists it as **Logged**. On the computer it is stored straight away, without review, and marked **from the phone**.
+
+### Meter or tank reading {#log-meter}
+
+- **Meter or tank**: the utility meters and fuel tanks of the [Utilities](utilities) screen, each with its home or cottage.
+- **Date (YYYY-MM-DD)**: today by default.
+- For a meter: **Reading (kWh)** or **Reading (m³)**, with the last reading shown above it; with time of use, also **On-peak**, **Mid-peak** and **Off-peak** (leave the reading empty to send the total of the three).
+- For a tank: **Level (%)**, or **Or litres** of its capacity.
+
+### Hours worked {#log-hours}
+
+- **Client** and **Task**: the clients of **Hours worked** on the [Side income](side#hours) screen, and their tasks.
+- **Note**: what you are working on.
+- **Start the timer**: starts timing for the client and task chosen. The timer is kept on the phone, so it keeps running when you leave the app or restart the phone; the form shows since when and the time so far. **Stop** fills in the date, the start and the time below, to check and save; **Discard the timer** stops it without keeping anything.
+- **Hours to send**: **Date**, **Start (HH:MM)** (optional) and **Time (h:mm)**, as 1:30 or 1.5. **Save** needs a client and a time.
+
+### Chores {#log-chores}
+
+Lists each child's chores from the [Family money](family#chores) screen, with what each is worth and **already ticked that day** when it was. Choose the **Date** (today by default), tick the chores done and **Save**: each one is sent as done that day. A parent can tick them, or the child on their own phone when they are a user of the household.
+
+### Volunteer hours {#log-volunteer}
+
+- **For**: the household member.
+- **Organization from before**: organizations used before, which also bring back their kind; or type the **Organization**.
+- **Kind**: **Volunteer firefighter**, **Search and rescue**, **Community hours (school)** or **Other volunteering**.
+- **Date**, **Time (h:mm)** and **Activity**. See [Volunteer hours](volunteer).
 
 ## The Sent tab {#sent-tab}
 

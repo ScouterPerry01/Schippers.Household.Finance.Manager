@@ -50,6 +50,16 @@ import ca.schippers.hfm.books.AssetWarrantyKind
 import ca.schippers.hfm.books.AssetWarranty
 import ca.schippers.hfm.books.AssetKind
 import ca.schippers.hfm.books.Asset
+import ca.schippers.hfm.books.Chore
+import ca.schippers.hfm.books.FuelKind
+import ca.schippers.hfm.books.FuelTank
+import ca.schippers.hfm.books.MeterKind
+import ca.schippers.hfm.books.UtilityMeter
+import ca.schippers.hfm.books.VolunteerEntry
+import ca.schippers.hfm.books.VolunteerKind
+import ca.schippers.hfm.books.WorkClient
+import ca.schippers.hfm.books.WorkEntry
+import ca.schippers.hfm.books.WorkTask
 import ca.schippers.hfm.books.AccountDraft
 import ca.schippers.hfm.books.AllocationBy
 import ca.schippers.hfm.books.AllocationTarget
@@ -362,6 +372,7 @@ object DemoHousehold {
         addPetAndCarRecords(books, group, visa, rex, civic, today)
         addAssets(books, group, visa, alex, sam, lea, civic, today)
         addExtras(books, group, chequing, visa, alex, sam, civic, today)
+        addTrackers(books, group, chequing, alex, sam, lea, allowance, today)
         addInvestments(books, group, alex, sam, desjardins, today)
         addPlans(books, group, chequing, savings, alex, sam, lea, desjardins, today)
         addCrypto(books, group, chequing, alex, today)
@@ -744,6 +755,96 @@ object DemoHousehold {
         books.rewards.addEntry(visa.id, day(-65), BigDecimal("4120"), RewardKind.EARNED)
         books.rewards.addEntry(visa.id, day(-35), BigDecimal("3985"), RewardKind.EARNED)
         books.rewards.addEntry(visa.id, day(-20), BigDecimal("5000"), RewardKind.REDEEMED, cad("25.00"), l("Carte-cadeau", "Gift card"))
+    }
+
+    /**
+     * UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: the house's and the cottage's meters (one month unusual),
+     * the cottage's propane tank, Sam's hours for the invoice clients, the child's chores and the
+     * household's volunteer hours.
+     */
+    private fun addTrackers(books: Books, group: String, chequing: Account, alex: Member, sam: Member, lea: Member, allowance: Allowance, today: LocalDate) {
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        fun day(n: Int) = today.plus(DatePeriod(days = n))
+        val house = books.assets.list().first { it.kind == AssetKind.HOME }
+        val cottage = books.assets.save(Asset("", group, AssetKind.COTTAGE, l("Chalet (lac Sergent)", "Cottage (Big Rideau Lake)"), location = l("Lac-Sergent", "Portland")))
+        // UTL-01: a reading early each month for 26 months; electricity follows the seasons, and last month ran high.
+        val hydro = books.bills.list().firstOrNull { it.name == l("Hydro-Québec", "Hydro Ottawa") }
+        val houseMeter = books.utilities.saveMeter(
+            UtilityMeter("", group, l("Électricité de la maison", "House electricity"), MeterKind.ELECTRICITY, house.id, timeOfUse = english, billId = hydro?.id),
+        )
+        val water = books.utilities.saveMeter(UtilityMeter("", group, l("Eau de la maison", "House water"), MeterKind.WATER, house.id))
+        val cottageMeter = books.utilities.saveMeter(UtilityMeter("", group, l("Électricité du chalet", "Cottage electricity"), MeterKind.ELECTRICITY, cottage.id))
+        val seasonal = listOf(950, 880, 800, 650, 560, 600, 720, 700, 580, 640, 780, 920)
+        val cottageUse = listOf(220, 210, 190, 170, 240, 420, 610, 590, 300, 180, 200, 230)
+        val first = LocalDate(today.year, today.month, 3).minus(DatePeriod(months = 26))
+        val lastMonth = LocalDate(today.year, today.month, 3).minus(DatePeriod(months = 1))
+        var total = BigDecimal(9_200)
+        var waterTotal = BigDecimal(2_210)
+        var cottageTotal = BigDecimal(2_210)
+        var d = first
+        while (d <= today) {
+            val tou = if (english) Triple(total * BigDecimal("0.18"), total * BigDecimal("0.18"), total * BigDecimal("0.64")) else null
+            books.utilities.addReading(houseMeter.id, d, total, tou?.first, tou?.second, tou?.third)
+            books.utilities.addReading(water.id, d, waterTotal)
+            books.utilities.addReading(cottageMeter.id, d, cottageTotal)
+            val month = d.month.ordinal
+            total += BigDecimal(seasonal[month]).let { if (d == lastMonth) it * BigDecimal("1.45") else it }
+            waterTotal += BigDecimal(if (month in 5..7) 24 else 17)
+            cottageTotal += BigDecimal(cottageUse[month])
+            d = d.plus(DatePeriod(months = 1))
+        }
+        // UTL-02: the cottage's propane tank, read every few weeks, with a delivery paid from the joint account.
+        val tank = books.utilities.saveTank(FuelTank("", group, l("Propane du chalet", "Cottage propane"), FuelKind.PROPANE, BigDecimal(1000), cottage.id, supplier = l("Propane Sélect", "Rideau Propane")))
+        for ((n, percent) in listOf(-150 to 78, -120 to 72, -90 to 66, -62 to 58)) books.utilities.addTankReading(tank.id, day(n), BigDecimal(percent))
+        books.utilities.addDelivery(tank.id, day(-50), BigDecimal(350), cad("329.00"), chequing.id)
+        for ((n, percent) in listOf(-40 to 86, -25 to 80, -8 to 71)) books.utilities.addTankReading(tank.id, day(n), BigDecimal(percent))
+
+        // HRS-01: Sam's clients (those of the invoices), the hours billed on the last invoice, and hours not billed yet.
+        val lavoie = books.workHours.saveClient(
+            WorkClient(
+                "", group, l("Atelier Lavoie inc.", "Lavoie Studio Inc."), Currency.CAD, cad("65.00"), l("200, rue Saint-Joseph Est, Québec", "200 Elgin Street, Ottawa"), sam.id,
+                tasks = listOf(WorkTask("", l("Conception graphique", "Graphic design")), WorkTask("", l("Site Web", "Website"), cad("75.00"))),
+            ),
+        )
+        val cafe = books.workHours.saveClient(WorkClient("", group, l("Café du Quai", "Harbour Café"), Currency.CAD, cad("65.00"), memberId = sam.id, tasks = listOf(WorkTask("", l("Menus et affiches", "Menus and posters")))))
+        val (design, website) = lavoie.tasks.sortedBy { it.rate != null }
+        val lastInvoice = books.invoices.list().filter { it.customer == lavoie.name }.maxByOrNull { it.issueDate }
+        for ((n, minutes) in listOf(-16 to 300, -14 to 360, -12 to 240)) {
+            books.workHours.save(WorkEntry("", lavoie.id, day(n), minutes, website.id, l("Maquettes", "Mock-ups"), rate = cad("65.00"), invoiceId = lastInvoice?.id, billedDate = lastInvoice?.issueDate))
+        }
+        for ((n, minutes, start) in listOf(Triple(-6, 150, "09:00"), Triple(-5, 210, "13:00"), Triple(-2, 90, "19:30"))) {
+            books.workHours.save(WorkEntry("", lavoie.id, day(n), minutes, website.id, l("Pages du site", "Site pages"), startTime = start))
+        }
+        books.workHours.save(WorkEntry("", lavoie.id, day(-3), 120, design.id, l("Logo, retouches", "Logo touch-ups")))
+        books.workHours.save(WorkEntry("", cafe.id, day(-4), 180, cafe.tasks.single().id, l("Menu d'automne", "Fall menu"), startTime = "10:00"))
+
+        // CHO-01: the child's chores; those done before the last allowance day were paid with it.
+        fun chore(name: String, amount: String?, points: Int?) = books.chores.save(Chore("", group, lea.id, name, Currency.CAD, amount?.let(::cad), points))
+        val dishes = chore(l("Vider le lave-vaisselle", "Empty the dishwasher"), "1.00", null)
+        val recycling = chore(l("Sortir le recyclage", "Take out the recycling"), "2.00", null)
+        val bed = chore(l("Faire son lit", "Make the bed"), null, 2)
+        val table = chore(l("Mettre la table", "Set the table"), "0.50", 1)
+        for (n in listOf(-19, -17, -15, -10, -8, -5, -3, -1)) books.chores.tick(dishes.id, day(n))
+        for (n in listOf(-18, -11, -4)) books.chores.tick(recycling.id, day(n))
+        for (n in -14..0) books.chores.tick(bed.id, day(n))
+        for (n in listOf(-9, -6, -2, 0)) books.chores.tick(table.id, day(n))
+        books.chores.pay(allowance, day(-13))
+
+        // VOL-01: Sam with the volunteer fire department, the child's community hours, Alex at the food bank.
+        val fire = l("Service incendie de Lac-Sergent", "Rideau Lakes Fire Department")
+        var m = LocalDate(today.year, 1, 1)
+        while (m <= today) {
+            for ((dayOfMonth, minutes, activity) in listOf(Triple(4, 240, l("Pratique", "Training")), Triple(17, 840, l("Appels et garde", "Calls and standby")))) {
+                val date = LocalDate(m.year, m.month, dayOfMonth)
+                if (date <= today) books.volunteer.save(VolunteerEntry("", group, sam.id, fire, VolunteerKind.FIREFIGHTER, date, minutes, activity = activity))
+            }
+            m = m.plus(DatePeriod(months = 1))
+        }
+        val foodBank = l("Moisson Québec", "Ottawa Food Bank")
+        for ((n, minutes) in listOf(-60 to 180, -32 to 180, -11 to 120)) {
+            books.volunteer.save(VolunteerEntry("", group, lea.id, foodBank, VolunteerKind.SCHOOL, day(n), minutes, activity = l("Tri des denrées", "Sorting food")))
+        }
+        for (n in listOf(-45, -17)) books.volunteer.save(VolunteerEntry("", group, alex.id, foodBank, VolunteerKind.OTHER, day(n), 240, activity = l("Distribution", "Distribution")))
     }
 
     /** AST, WAR, INS: the house and what is in it, warranties, and the household's policies. */

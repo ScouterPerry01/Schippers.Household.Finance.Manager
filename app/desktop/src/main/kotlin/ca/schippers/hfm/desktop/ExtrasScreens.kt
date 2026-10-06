@@ -490,7 +490,7 @@ private fun ProjectCostsDialog(model: BooksModel, p: HomeProject, onClose: () ->
 
 // --- Side income: invoices (SAL-04) and rental properties (SAL-05) -----------------------------------
 
-private enum class SideTab { INVOICES, RENTALS }
+private enum class SideTab { INVOICES, HOURS, RENTALS }
 
 /** SAL-04, SAL-05: invoices for side income, and rental properties' income and expenses. */
 @Composable
@@ -504,6 +504,7 @@ fun SideIncomeScreen(model: BooksModel) {
         }
         when (tab) {
             SideTab.INVOICES -> InvoicesTab(model)
+            SideTab.HOURS -> HoursTab(model)
             SideTab.RENTALS -> RentalsTab(model)
         }
     }

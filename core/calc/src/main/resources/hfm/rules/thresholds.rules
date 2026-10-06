@@ -57,3 +57,20 @@ rule instalment.due3 MONTH_DAY
 instalment.due3 | - | 2000-01-01 | 09-15 | CRA, Paying your income tax by instalments
 rule instalment.due4 MONTH_DAY
 instalment.due4 | - | 2000-01-01 | 12-15 | CRA, Paying your income tax by instalments
+
+# UTL-01: a month's utility use above this percentage of the same month a year before (or, without
+# it, of the average of the three months before) is flagged as unusual.
+rule threshold.unusualUtility NUMBER
+threshold.unusualUtility | - | 2000-01-01 | 130 | RANN's Roost default
+
+# UTL-02: a fuel tank is to be ordered when its level is expected to fall to this percentage of its
+# capacity within the number of days below.
+rule threshold.tankOrderLevel NUMBER
+threshold.tankOrderLevel | - | 2000-01-01 | 25 | RANN's Roost default
+rule threshold.tankOrderDays DAYS
+threshold.tankOrderDays | - | 2000-01-01 | 14 | RANN's Roost default
+
+# VOL-01: the hours of eligible volunteer firefighting and search and rescue service in a year that
+# the volunteer firefighters amount and the search and rescue volunteers amount require.
+rule threshold.volunteerHours NUMBER
+threshold.volunteerHours | - | 2011-01-01 | 200 | CRA, line 31220 Volunteer firefighters amount (VFA) and line 31240 Search and rescue volunteers amount (SRVA): at least 200 hours of eligible service in the year (the two services count together)

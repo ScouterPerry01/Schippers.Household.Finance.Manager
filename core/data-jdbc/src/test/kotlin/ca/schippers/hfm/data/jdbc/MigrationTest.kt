@@ -632,7 +632,6 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(30L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).medicalQueries
             assertEquals("AFTER_SERVICE", q.planById("m").executeAsOne().claim_rule, "existing plans keep counting from the service")
@@ -665,6 +664,41 @@ class MigrationTest {
             matching.insertMatch("g", "s", "t1")
             matching.setLineGroup("g", "PROPOSED", null, "l")
             assertEquals("g", matching.linesInGroup("g").executeAsOne().match_group, "statement lines gain their group")
+        }
+    }
+
+    @Test
+    fun `version 30 ledgers gain meters, tanks, hours, chores and volunteer hours`() {
+        val file = temp.resolve("ledger30.db")
+        older("../data/src/main/sqldelight/ledger/schemas/30.db", file, 30).use { driver ->
+            driver.execute(null, "INSERT INTO allowance(id, member_id, amount_minor, currency, frequency, start_date) VALUES ('a', 'kid', 500, 'CAD', 'WEEKLY', '2026-01-02')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val db = LedgerDatabase(driver)
+            assertEquals(1, db.familyMoneyQueries.allowances().executeAsList().size, "allowances stay")
+            val q = db.trackersQueries
+            q.upsertUtilityMeter("m", "Hydro", "ELECTRICITY", null, 1, null, 0, null, 0)
+            q.insertUtilityReading("r", "m", "2026-09-01", "1200.5", "300", "400", "500.5", null, null, 0)
+            q.upsertUtilityMeter("m", "Hydro One", "ELECTRICITY", null, 1, null, 0, null, 0)
+            assertEquals(1, q.utilityReadings("m").executeAsList().size, "saving a meter again keeps its readings")
+            q.upsertFuelTank("t", "Propane", "PROPANE", null, "500", null, null, 0, null, 0)
+            q.insertTankReading("tr", "t", "2026-09-01", "60", null, null, 0)
+            q.insertTankDelivery("td", "t", "2026-09-02", "200", 22000, "CAD", null, null, 0)
+            q.upsertFuelTank("t", "Propane tank", "PROPANE", null, "500", 25, null, 0, null, 0)
+            assertEquals(1, q.tankDeliveries("t").executeAsList().size, "saving a tank again keeps its deliveries")
+            q.upsertWorkClient("c", "Lee", null, 4500, "CAD", null, 0, null, 0)
+            q.upsertWorkTask("k", "c", "Tutoring", null, 0)
+            q.upsertWorkHours("h", "c", "k", null, null, "2026-09-03", "16:00", 90, null, null, null, null, 0)
+            q.upsertWorkClient("c", "Lee family", null, 5000, "CAD", null, 0, null, 0)
+            assertEquals(1, q.workHours("c").executeAsList().size, "saving a client again keeps its hours")
+            q.upsertChore("ch", "kid", "Dishes", 100, "CAD", null, 0, 0)
+            q.insertChoreTick("x", "ch", "2026-09-04", 100, null, null, null, null, 0)
+            q.upsertChore("ch", "kid", "Dishes", 150, "CAD", null, 0, 0)
+            assertEquals(1, q.choreTicks("ch").executeAsList().size, "saving a chore again keeps its ticks")
+            q.upsertVolunteerHours("v", "kid", "Food bank", null, "SCHOOL", "2026-09-05", 180, null, null, null, 0)
+            assertEquals(180L, q.volunteerHours().executeAsOne().minutes)
         }
     }
 }

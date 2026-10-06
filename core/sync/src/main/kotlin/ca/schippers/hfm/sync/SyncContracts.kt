@@ -54,9 +54,10 @@ enum class TransferStatus { PENDING, SENT, IMPORTED, FAILED }
 /**
  * Kinds of item a phone can capture (CAP-01..08, MNT-03). [CONTACT] only marks a new contact in the
  * phone's own queue: contacts travel in [SyncRequest.contacts], never as a [CaptureItem], so a
- * desktop that does not know them still reads the request.
+ * desktop that does not know them still reads the request. [TRACKER] likewise marks a meter
+ * reading, tank level, hours, chore or volunteer hours ([SyncRequest.trackers]).
  */
-enum class CaptureKind { RECEIPT, BILL, DOCUMENT, QUICK_EXPENSE, METER_READING, CONTACT }
+enum class CaptureKind { RECEIPT, BILL, DOCUMENT, QUICK_EXPENSE, METER_READING, CONTACT, TRACKER }
 
 /**
  * One captured item. [id] is created on the phone, so the desktop imports it at most once however
@@ -132,6 +133,8 @@ data class SyncRequest(
     val items: List<CaptureItem>,
     val referenceVersion: String? = null,
     val contacts: List<PhoneContact> = emptyList(),
+    /** UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: what the phone's log forms recorded; ignored (and kept on the phone) by older desktops. */
+    val trackers: List<PhoneTracker> = emptyList(),
 )
 
 /**
@@ -176,14 +179,16 @@ data class ReferenceData(
     val events: List<RefEvent> = emptyList(),
     /** CAL-03, HLT-03 on the phone: medication refills coming up or overdue. */
     val refills: List<RefRefill> = emptyList(),
+    /** UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: the meters, tanks, clients, chores and organizations the log forms pick from. */
+    val trackers: RefTrackers = RefTrackers(),
 ) {
     companion object {
         /**
          * What a phone app understands of the reference data: 1 up to maintenance and budgets, 2
-         * with contacts, 3 with events and refills. A phone that kept its copy with an older app asks for all of it again
+         * with contacts, 3 with events and refills, 4 with what the log forms pick from. A phone that kept its copy with an older app asks for all of it again
          * ([knownVersion]), since that app dropped what it did not know.
          */
-        const val FORMAT = 3
+        const val FORMAT = 4
 
         /** The version a phone sends: none when its copy was kept by an app reading an older [FORMAT]. */
         fun knownVersion(version: String?, storedFormat: Int): String? = version?.takeIf { storedFormat >= FORMAT }

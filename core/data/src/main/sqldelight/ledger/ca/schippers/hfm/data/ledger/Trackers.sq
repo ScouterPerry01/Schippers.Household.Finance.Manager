@@ -1,0 +1,286 @@
+-- Other trackers (ledger version 31): utility meters and fuel tanks (UTL-01, UTL-02), hours worked
+-- for side income (HRS-01), children's chores (CHO-01) and volunteer hours (VOL-01). Each lives in
+-- the ledger of the account group the user chooses (HH-11). Quantities are exact decimal text.
+
+-- UTL-01: a utility meter of a home or cottage ([asset_id]), or of the household (null).
+-- [kind] is ELECTRICITY (kWh), GAS or WATER (cubic metres). With [time_of_use], readings may give
+-- the on-, mid- and off-peak registers. [bill_id] is the bill whose amounts give the cost per unit.
+CREATE TABLE utility_meter (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    asset_id TEXT,
+    time_of_use INTEGER NOT NULL DEFAULT 0,
+    bill_id TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+-- A meter's reading on a date: [value] is the meter's total; with time of use, also each register.
+-- [device_id]: the phone it came from, if any.
+CREATE TABLE utility_reading (
+    id TEXT NOT NULL PRIMARY KEY,
+    meter_id TEXT NOT NULL REFERENCES utility_meter(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    value TEXT NOT NULL,
+    on_peak TEXT,
+    mid_peak TEXT,
+    off_peak TEXT,
+    notes TEXT,
+    device_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX utility_reading_meter ON utility_reading(meter_id, date);
+
+-- UTL-02: a fuel tank (PROPANE or HEATING_OIL) of a home or cottage, or of the household. Its
+-- capacity in litres; [order_percent]: order when the level is expected to fall to it (null: the
+-- level of Rates and rules).
+CREATE TABLE fuel_tank (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    fuel TEXT NOT NULL,
+    asset_id TEXT,
+    capacity_litres TEXT NOT NULL,
+    order_percent INTEGER,
+    supplier TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+-- The tank's gauge on a date, in percent of its capacity (a reading in litres is kept as its percent).
+CREATE TABLE fuel_tank_reading (
+    id TEXT NOT NULL PRIMARY KEY,
+    tank_id TEXT NOT NULL REFERENCES fuel_tank(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    percent TEXT NOT NULL,
+    notes TEXT,
+    device_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX fuel_tank_reading_tank ON fuel_tank_reading(tank_id, date);
+
+-- A delivery: litres and, optionally, what it cost and the transaction that paid it.
+CREATE TABLE fuel_tank_delivery (
+    id TEXT NOT NULL PRIMARY KEY,
+    tank_id TEXT NOT NULL REFERENCES fuel_tank(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    litres TEXT NOT NULL,
+    cost_minor INTEGER,
+    currency TEXT,
+    txn_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX fuel_tank_delivery_tank ON fuel_tank_delivery(tank_id, date);
+
+-- HRS-01: a client of side work, with an hourly rate (in [currency]) and who does the work.
+CREATE TABLE work_client (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    details TEXT,
+    rate_minor INTEGER,
+    currency TEXT NOT NULL,
+    member_id TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+-- A kind of work for a client, with its own rate when it differs from the client's.
+CREATE TABLE work_task (
+    id TEXT NOT NULL PRIMARY KEY,
+    client_id TEXT NOT NULL REFERENCES work_client(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    rate_minor INTEGER,
+    archived INTEGER NOT NULL DEFAULT 0
+);
+
+-- Time worked: [minutes] on [date], from [start_time] (HH:mm) when timed. [rate_minor] overrides the
+-- task's and client's rate. Billed once on an invoice ([invoice_id], [billed_date]).
+CREATE TABLE work_hours (
+    id TEXT NOT NULL PRIMARY KEY,
+    client_id TEXT NOT NULL REFERENCES work_client(id) ON DELETE CASCADE,
+    task_id TEXT,
+    description TEXT,
+    member_id TEXT,
+    date TEXT NOT NULL,
+    start_time TEXT,
+    minutes INTEGER NOT NULL,
+    rate_minor INTEGER,
+    invoice_id TEXT,
+    billed_date TEXT,
+    device_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX work_hours_client ON work_hours(client_id, date);
+
+-- CHO-01: a child's chore, worth an amount (in [currency]) or points, or both.
+CREATE TABLE chore (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    amount_minor INTEGER,
+    currency TEXT NOT NULL,
+    points INTEGER,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL
+);
+
+-- A chore done on a date, with what it earned then. Paid with the allowance: [allowance_entry_id] is
+-- the allowance entry (EARNED) that paid it, [paid_date] when.
+CREATE TABLE chore_tick (
+    id TEXT NOT NULL PRIMARY KEY,
+    chore_id TEXT NOT NULL REFERENCES chore(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    amount_minor INTEGER,
+    points INTEGER,
+    allowance_entry_id TEXT,
+    paid_date TEXT,
+    device_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX chore_tick_chore ON chore_tick(chore_id, date);
+
+-- VOL-01: volunteer time of a person for an organization (a contact when linked). [kind] is
+-- FIREFIGHTER, SEARCH_RESCUE, SCHOOL (a student's community hours) or OTHER.
+CREATE TABLE volunteer_hours (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    organization TEXT NOT NULL,
+    contact_id TEXT,
+    kind TEXT NOT NULL,
+    date TEXT NOT NULL,
+    minutes INTEGER NOT NULL,
+    activity TEXT,
+    notes TEXT,
+    device_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX volunteer_hours_member ON volunteer_hours(member_id, date);
+
+utilityMeters:
+SELECT * FROM utility_meter ORDER BY archived, name COLLATE NOCASE;
+
+upsertUtilityMeter:
+INSERT INTO utility_meter(id, name, kind, asset_id, time_of_use, bill_id, archived, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET name = excluded.name, kind = excluded.kind, asset_id = excluded.asset_id, time_of_use = excluded.time_of_use,
+    bill_id = excluded.bill_id, archived = excluded.archived, notes = excluded.notes;
+
+deleteUtilityMeter:
+DELETE FROM utility_meter WHERE id = ?;
+
+utilityReadings:
+SELECT * FROM utility_reading WHERE meter_id = ? ORDER BY date, created_at;
+
+insertUtilityReading:
+INSERT INTO utility_reading(id, meter_id, date, value, on_peak, mid_peak, off_peak, notes, device_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteUtilityReading:
+DELETE FROM utility_reading WHERE id = ?;
+
+fuelTanks:
+SELECT * FROM fuel_tank ORDER BY archived, name COLLATE NOCASE;
+
+upsertFuelTank:
+INSERT INTO fuel_tank(id, name, fuel, asset_id, capacity_litres, order_percent, supplier, archived, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET name = excluded.name, fuel = excluded.fuel, asset_id = excluded.asset_id, capacity_litres = excluded.capacity_litres,
+    order_percent = excluded.order_percent, supplier = excluded.supplier, archived = excluded.archived, notes = excluded.notes;
+
+deleteFuelTank:
+DELETE FROM fuel_tank WHERE id = ?;
+
+tankReadings:
+SELECT * FROM fuel_tank_reading WHERE tank_id = ? ORDER BY date, created_at;
+
+insertTankReading:
+INSERT INTO fuel_tank_reading(id, tank_id, date, percent, notes, device_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteTankReading:
+DELETE FROM fuel_tank_reading WHERE id = ?;
+
+tankDeliveries:
+SELECT * FROM fuel_tank_delivery WHERE tank_id = ? ORDER BY date, created_at;
+
+insertTankDelivery:
+INSERT INTO fuel_tank_delivery(id, tank_id, date, litres, cost_minor, currency, txn_id, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteTankDelivery:
+DELETE FROM fuel_tank_delivery WHERE id = ?;
+
+workClients:
+SELECT * FROM work_client ORDER BY archived, name COLLATE NOCASE;
+
+upsertWorkClient:
+INSERT INTO work_client(id, name, details, rate_minor, currency, member_id, archived, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET name = excluded.name, details = excluded.details, rate_minor = excluded.rate_minor, currency = excluded.currency,
+    member_id = excluded.member_id, archived = excluded.archived, notes = excluded.notes;
+
+deleteWorkClient:
+DELETE FROM work_client WHERE id = ?;
+
+workTasks:
+SELECT * FROM work_task WHERE client_id = ? ORDER BY archived, name COLLATE NOCASE;
+
+upsertWorkTask:
+INSERT INTO work_task(id, client_id, name, rate_minor, archived) VALUES (?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET name = excluded.name, rate_minor = excluded.rate_minor, archived = excluded.archived;
+
+deleteWorkTask:
+DELETE FROM work_task WHERE id = ?;
+
+workHours:
+SELECT * FROM work_hours WHERE client_id = ? ORDER BY date, start_time, created_at;
+
+upsertWorkHours:
+INSERT INTO work_hours(id, client_id, task_id, description, member_id, date, start_time, minutes, rate_minor, invoice_id, billed_date, device_id, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET task_id = excluded.task_id, description = excluded.description, member_id = excluded.member_id, date = excluded.date,
+    start_time = excluded.start_time, minutes = excluded.minutes, rate_minor = excluded.rate_minor, invoice_id = excluded.invoice_id, billed_date = excluded.billed_date;
+
+billWorkHours:
+UPDATE work_hours SET invoice_id = ?, billed_date = ? WHERE id = ?;
+
+deleteWorkHours:
+DELETE FROM work_hours WHERE id = ?;
+
+chores:
+SELECT * FROM chore ORDER BY archived, member_id, name COLLATE NOCASE;
+
+upsertChore:
+INSERT INTO chore(id, member_id, name, amount_minor, currency, points, archived, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET member_id = excluded.member_id, name = excluded.name, amount_minor = excluded.amount_minor, currency = excluded.currency,
+    points = excluded.points, archived = excluded.archived;
+
+deleteChore:
+DELETE FROM chore WHERE id = ?;
+
+choreTicks:
+SELECT * FROM chore_tick WHERE chore_id = ? ORDER BY date, created_at;
+
+insertChoreTick:
+INSERT INTO chore_tick(id, chore_id, date, amount_minor, points, allowance_entry_id, paid_date, device_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+payChoreTick:
+UPDATE chore_tick SET allowance_entry_id = ?, paid_date = ? WHERE id = ?;
+
+deleteChoreTick:
+DELETE FROM chore_tick WHERE id = ?;
+
+volunteerHours:
+SELECT * FROM volunteer_hours ORDER BY date DESC, created_at DESC;
+
+upsertVolunteerHours:
+INSERT INTO volunteer_hours(id, member_id, organization, contact_id, kind, date, minutes, activity, notes, device_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET member_id = excluded.member_id, organization = excluded.organization, contact_id = excluded.contact_id, kind = excluded.kind,
+    date = excluded.date, minutes = excluded.minutes, activity = excluded.activity, notes = excluded.notes;
+
+deleteVolunteerHours:
+DELETE FROM volunteer_hours WHERE id = ?;

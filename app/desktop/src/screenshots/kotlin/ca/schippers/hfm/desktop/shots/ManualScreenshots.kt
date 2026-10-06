@@ -245,6 +245,10 @@ private val SHOTS: List<Shot> = buildList {
     )
     add(Shot("reports-cash-flow") { model.reportState.kind = ReportKind.CASH_FLOW; section(Section.REPORTS) })
     add(Shot("taxes-estimate-carry-forward") { section(Section.TAXES); click(t("taxes.tab.ESTIMATE")); scrollTo(t("taxEstimateGroup.CARRY_FORWARD")) })
+    // UTL-02, HRS-01, CHO-01: the fuel tanks, hours worked and chores tabs.
+    add(Shot("utilities-tanks") { section(Section.UTILITIES); click(t("utilities.tab.TANKS")) })
+    add(Shot("side-hours") { section(Section.SIDE); click(t("side.tab.HOURS")) })
+    add(Shot("family-chores") { section(Section.FAMILY); click(t("family.tab.CHORES")) })
     // Before a household is open: last, since leaving the household's screens stops its phone listener.
     // The manual's own window, on the Bills chapter with its first picture.
     add(Shot("manual-window") { section(Section.BILLS); app.openManual("bills"); manualShown = true })

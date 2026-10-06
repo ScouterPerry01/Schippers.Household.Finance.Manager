@@ -311,10 +311,13 @@ class AllowanceService internal constructor(private val books: Books) {
 
     fun delete(a: Allowance) = books.ledger(books.group(a.groupId).also { books.require(it, PermissionLevel.EDIT) }).familyMoneyQueries.deleteAllowance(a.id)
 
-    fun addEntry(a: Allowance, date: LocalDate, amount: Money, kind: AllowanceKind, notes: String? = null) {
+    /** Adds an entry to the child's money; returns its id. */
+    fun addEntry(a: Allowance, date: LocalDate, amount: Money, kind: AllowanceKind, notes: String? = null): String {
         validate(amount.currency == a.amount.currency && amount.isPositive, "error.allowanceAmount")
+        val id = Ids.newId()
         books.ledger(books.group(a.groupId).also { books.require(it, PermissionLevel.EDIT) }).familyMoneyQueries
-            .insertAllowanceEntry(Ids.newId(), a.id, date.toString(), amount.minorUnits, kind.name, notes?.trim()?.ifEmpty { null })
+            .insertAllowanceEntry(id, a.id, date.toString(), amount.minorUnits, kind.name, notes?.trim()?.ifEmpty { null })
+        return id
     }
 
     fun deleteEntry(a: Allowance, entryId: String) =

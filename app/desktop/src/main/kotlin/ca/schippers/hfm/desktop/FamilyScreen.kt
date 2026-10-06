@@ -50,9 +50,9 @@ import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 
-private enum class FamilyTab { SHARED, LOANS, ALLOWANCES }
+private enum class FamilyTab { SHARED, LOANS, ALLOWANCES, CHORES }
 
-/** HH-03, HH-04, LN-07: money between people: shared expenses, family loans and allowances. */
+/** HH-03, HH-04, LN-07, CHO-01: money between people: shared expenses, family loans, allowances and chores. */
 @Composable
 fun FamilyScreen(model: BooksModel) {
     var tab by remember { mutableStateOf(FamilyTab.SHARED) }
@@ -66,6 +66,7 @@ fun FamilyScreen(model: BooksModel) {
             FamilyTab.SHARED -> SharedTab(model)
             FamilyTab.LOANS -> LoansTab(model)
             FamilyTab.ALLOWANCES -> AllowancesTab(model)
+            FamilyTab.CHORES -> ChoresTab(model)
         }
     }
 }
@@ -368,6 +369,8 @@ private fun AllowancesTab(model: BooksModel) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
         for (a in list) {
             val s = books.allowances.status(a, today())
+            // CHO-01: the chores done and not paid yet are paid with the allowance.
+            val chores = books.chores.earnings(a.memberId, a.amount.currency, today()).unpaid
             val who = members.firstOrNull { it.id == a.memberId }?.displayName.orEmpty()
             Row(Modifier.fillMaxWidth().clickable { open = a.id }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -380,9 +383,15 @@ private fun AllowancesTab(model: BooksModel) {
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
-                if (s.owed.isPositive) {
-                    Text(model.t("allowance.owed", model.money(s.owed)), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(end = 8.dp))
-                    OutlinedButton(onClick = { model.act { books.allowances.addEntry(a, today(), s.owed, AllowanceKind.PAID) } }) { Text(model.t("allowance.payOwed")) }
+                if (s.owed.isPositive) Text(model.t("allowance.owed", model.money(s.owed)), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(end = 8.dp))
+                if (chores.isPositive) Text(model.t("allowance.choresOwed", model.money(chores)), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(end = 8.dp))
+                if (s.owed.isPositive || chores.isPositive) {
+                    OutlinedButton(onClick = {
+                        model.act {
+                            if (s.owed.isPositive) books.allowances.addEntry(a, today(), s.owed, AllowanceKind.PAID)
+                            books.chores.pay(a, today())
+                        }
+                    }) { Text(model.t("allowance.payOwed")) }
                 }
             }
             HorizontalDivider()

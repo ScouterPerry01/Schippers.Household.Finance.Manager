@@ -41,6 +41,8 @@ pets
 vehicles
 trips
 assets
+utilities
+volunteer
 = settings Réglages
 members
 users

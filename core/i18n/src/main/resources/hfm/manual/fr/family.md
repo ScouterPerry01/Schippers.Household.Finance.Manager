@@ -10,11 +10,12 @@ Rien sur cet écran ne crée d’opérations dans vos comptes ni ne change vos s
 
 ## L’écran Argent en famille {#screen}
 
-L’écran présente une courte explication en haut et trois onglets :
+L’écran présente une courte explication en haut et quatre onglets :
 
 - **Dépenses partagées** : des groupes de personnes qui partagent des frais, avec le solde de chacun et les paiements qui mettent tout le monde quitte.
 - **Prêts en famille** : l’argent prêté entre membres de la famille ou amis, avec un intérêt simple facultatif et le registre des remboursements.
 - **Allocations** : l’allocation régulière d’un enfant, ce qui lui est encore dû et l’argent qu’il a.
+- **Tâches ménagères** : les tâches de chaque enfant, cochées ici ou sur le téléphone, et l’argent et les points qu’elles rapportent (voyez [Tâches ménagères](#chores)).
 
 L’écran s’ouvre sur **Dépenses partagées**. L’onglet choisi est gardé seulement tant que vous restez sur l’écran.
 
@@ -161,6 +162,7 @@ Une allocation est un montant fixe qu’un enfant reçoit à intervalles réguli
 - **Prévoir une allocation…** : ouvre la [boîte de l’allocation](#allowance-dialog). Le bouton apparaît dès que le ménage compte au moins un membre (voir [Membres du ménage](members)) ; il propose le premier membre de type enfant, sinon le premier membre.
 - Chaque allocation affiche la personne, le montant et la fréquence (par exemple « Léa · 10,00 $ par semaine »), et dessous **A** (l’argent de l’enfant aujourd’hui) et, tant que l’allocation court, **prochaine le** (le prochain jour d’allocation).
 - Quand des jours d’allocation sont passés sans être payés, la ligne affiche **… dus** en rouge et un bouton **Marquer payé**. **Marquer payé** inscrit un seul paiement, daté d’aujourd’hui, pour tout le montant dû.
+- Quand l’enfant a des [tâches](#chores) faites et pas encore payées, la ligne affiche aussi **Tâches :** avec leur montant, et **Marquer payé** les paie aussi, en une inscription **Gagné ou reçu**.
 - Cliquez sur une allocation pour ouvrir [l’argent de l’enfant](#allowance-entries).
 
 ### Boîte Prévoir une allocation {#allowance-dialog}
@@ -194,3 +196,32 @@ Cliquer sur une allocation ouvre cette fenêtre.
 - **Fermer** : ferme la fenêtre.
 
 > Conseil : Servez-vous de l’argent de l’enfant comme d’une tirelire que vous gardez pour lui : inscrivez ce qu’il gagne et dépense, et **A** vous dit toujours combien lui appartient.
+
+## Tâches ménagères {#chores}
+
+@index: tâches; corvées; points; argent gagné; tableau des tâches
+
+![L’onglet Tâches ménagères](images/family-chores.png)
+
+L’onglet **Tâches ménagères** garde les tâches de chaque enfant, qui valent un montant, des points, ou les deux. Une tâche est cochée chaque fois qu’elle est faite, ici ou sur le téléphone (par un parent, ou par l’enfant sur son propre téléphone). L’argent gagné est payé avec l’allocation : il va dans l’argent de l’enfant comme **Gagné ou reçu**.
+
+### La liste des tâches {#chore-list}
+
+- **Ajouter une tâche** : ouvre la [boîte de la tâche](#chore-dialog). Le bouton paraît dès que le ménage compte un membre ; il propose le premier enfant.
+- Une carte par enfant : **À payer** (l’argent gagné par les tâches faites jusqu’à aujourd’hui et pas encore payées, et combien) et les points, au total et ce mois-ci.
+- **Payer avec l’allocation** : si l’enfant a une allocation dans la même devise, ajoute une inscription **Gagné ou reçu** pour ce qui est à payer, notée **Tâches**, et marque ces tâches payées. **Marquer payé** dans la [liste des allocations](#allowance-list) fait de même en payant l’allocation. Sans allocation, **Marquer comme payé** les marque payées sans rien ajouter.
+- Chaque tâche : son nom (cliquez dessus pour la modifier), ce qu’elle vaut, combien de fois elle a été faite dans les sept derniers jours, **Historique**, et **Faite aujourd’hui** (ou **Faite encore** une fois faite aujourd’hui), qui la coche pour aujourd’hui.
+
+### Boîte Ajouter une tâche {#chore-dialog}
+
+- **Enfant** : le membre du ménage qui la fait ; les enfants sont en tête de liste.
+- **Tâche** : le nom, comme « Vider le lave-vaisselle ». Obligatoire.
+- **Montant** : ce qu’elle rapporte chaque fois, dans la devise de base du ménage ; facultatif.
+- **Points** : des points entiers chaque fois ; facultatif.
+- **Enregistrer dans**, **Archivé** (elle quitte la liste et le téléphone ; son historique reste) et **Supprimer** (demande d’abord ; ce qui a été payé reste dans l’argent de l’enfant).
+
+Chaque coche rapporte ce que vaut la tâche au moment où elle est cochée ; changer le montant plus tard ne change pas les coches passées.
+
+### Fenêtre Historique {#chore-history}
+
+**Historique** liste les fois où la tâche a été faite, de la plus récente à la plus ancienne : la date, ce qu’elle a rapporté, **payée le** avec la date de paiement, et **du téléphone**. ✕ retire une coche pas encore payée, après avoir demandé. Pour la cocher un autre jour, choisissez la **Date** et cliquez sur **Cocher à cette date**.

@@ -208,6 +208,20 @@ class SyncService internal constructor(private val books: Books) {
                 }
                 .onFailure { failed += failure(contact.id, it) }
         }
+        // UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: readings, hours, chores and volunteer hours are stored as they come.
+        for (tracker in request.trackers.take(MAX_ITEMS)) {
+            if (books.core.syncItemById(tracker.id).executeAsOneOrNull() != null) {
+                imported += tracker.id
+                continue
+            }
+            runCatching { books.trackerSync.receive(tracker, device.group_id ?: defaultGroup(), deviceId) }
+                .onSuccess {
+                    books.core.insertSyncItem(tracker.id, deviceId, CaptureKind.TRACKER.name, now, null, "IMPORTED")
+                    imported += tracker.id
+                    added++
+                }
+                .onFailure { failed += failure(tracker.id, it) }
+        }
         books.core.deviceSeen(now, added.toLong(), deviceId)
         if (confirmRecent) {
             imported += books.core.syncItemsForDevice(deviceId, MAX_RECENT_CONFIRM).executeAsList()
@@ -322,6 +336,7 @@ class SyncService internal constructor(private val books: Books) {
             contacts = runCatching { books.phoneContacts.forPhone() }.getOrDefault(emptyList()),
             events = runCatching { events(today) }.getOrDefault(emptyList()),
             refills = runCatching { refills(today) }.getOrDefault(emptyList()),
+            trackers = books.trackerSync.reference(today),
         )
     }
 
