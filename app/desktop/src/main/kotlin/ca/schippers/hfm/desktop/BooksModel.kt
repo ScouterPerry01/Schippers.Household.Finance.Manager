@@ -127,7 +127,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
             reminder.daysBefore == 0 -> t("reminder.today")
             else -> t("reminder.inDays", reminder.daysBefore)
         }
-        return "${o.bill.name}: $whenText (${if (o.amountKnown) "" else "≈ "}${money(o.amount)})"
+        return t("common.labelValue", o.bill.name, "$whenText (${if (o.amountKnown) "" else "≈ "}${money(o.amount)})")
     }
 
     /** One line per reminder of any kind (bills, appointments, refills) and where it leads. */
@@ -168,7 +168,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     fun describe(m: UpkeepDue): String {
         val s = m.status
         val due = listOfNotNull(s.dueDate?.let(::date), s.dueUsage?.let { usage(it, m.unit) }).joinToString(" ${t("vehicles.or")} ")
-        return "${m.subjectName}: ${m.taskName} ${t("maintenance.${s.state}", due)}"
+        return t("common.labelValue", m.subjectName, "${m.taskName} ${t("maintenance.${s.state}", due)}")
     }
 
     /** "55,700 km" or "120 h". */
@@ -214,7 +214,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
             o.date == today().plus(DatePeriod(days = 1)) -> if (time != null) t("reminder.event.tomorrowAt", time) else t("reminder.event.tomorrow")
             else -> if (time != null) t("reminder.event.onAt", date(o.date), time) else t("reminder.event.on", date(o.date))
         }
-        return "${o.event.title}: $whenText"
+        return t("common.labelValue", o.event.title, whenText)
     }
 
     /** "Atorvastatin (Marie): refill due in 4 days". */
@@ -226,7 +226,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
             else -> t("reminder.refillIn", r.daysLeft)
         }
         val renew = if (r.medication.needsRenewal) " · " + t("reminder.renew") else ""
-        return "${r.medication.name}${person?.let { " ($it)" }.orEmpty()}: $base$renew"
+        return t("common.labelValue", "${r.medication.name}${person?.let { " ($it)" }.orEmpty()}", "$base$renew")
     }
 
     /** Someone a record can be about: a household member or a pet (PET-03). */
