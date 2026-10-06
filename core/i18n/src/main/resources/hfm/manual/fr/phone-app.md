@@ -24,6 +24,7 @@ RANN’s Roost Mobile existe en deux éditions qui fonctionnent de la même faç
 - Tout ce que l’application garde (ses réglages, les captures et nouveaux contacts en attente, le résumé et les contacts) est chiffré avec une clé conservée dans le magasin de clés sécurisé du téléphone. La clé ne quitte jamais le téléphone.
 - L’application est exclue des sauvegardes infonuagiques d’Android : rien n’en est copié chez Google.
 - Les captures ne vont qu’à votre ordinateur, chiffrées avec la clé créée au jumelage. Loin de la maison, elles peuvent passer par un dossier de votre propre stockage infonuagique, toujours chiffrées.
+- Les calendriers ne sont lus que si vous activez [Calendriers de ce téléphone](phone-app#phone-calendars), seulement ceux que vous cochez, et ne vont qu’à votre ordinateur, chiffrés de la même façon.
 - La seule autre connexion est la vérification quotidienne des mises à jour de l’édition GitHub, si vous l’autorisez. Elle n’envoie rien sur vous ni sur votre ménage.
 - Dès que votre ordinateur confirme avoir reçu une capture, le téléphone supprime sa copie des images et des détails.
 
@@ -403,6 +404,20 @@ Affiché quand le téléphone est jumelé. Quand l’ordinateur n’est pas à p
 @index: alarmes exactes; alarmes et rappels; rappel en retard
 
 Android ne laisse une application sonner à la minute exacte qu’une fois que vous l’avez autorisé. D’ici là, les rappels du calendrier arrivent dans les dix minutes après leur heure. Tant que ce n’est pas autorisé, et que le téléphone est jumelé, Réglages affiche **Rappels à la minute près** et le bouton **Autoriser les rappels à l’heure**, qui ouvre la page **Alarmes et rappels** d’Android pour l’application : activez-la et revenez. La section disparaît alors et les rappels arrivent à l’heure.
+
+### Calendriers de ce téléphone {#phone-calendars}
+
+@index: permission du calendrier; READ_CALENDAR; Google Agenda; calendrier Outlook; importer des calendriers
+
+Affiché une fois jumelé. Envoie au Calendrier de l’ordinateur les calendriers que ce téléphone affiche déjà (Google, Outlook ou Exchange, Samsung et autres), avec vos autres transferts. L’application ne se connecte jamais à un compte de calendrier. La ligne sous le titre indique **Désactivé**, ou combien de calendriers sont importés et combien de jours à l’avance. **Configurer** (ou **Modifier**) ouvre la page où cela se choisit :
+
+- **Envoyer les calendriers à l’ordinateur** : l’active ou le désactive. La première fois, l’application explique pourquoi elle a besoin d’accéder au calendrier, puis Android le demande. Si vous refusez, rien n’est lu ; autorisez Agenda pour l’application dans les paramètres d’Android pour changer d’idée. Tant que c’est désactivé, rien n’est lu, et les calendriers importés auparavant sont retirés de l’ordinateur au prochain transfert.
+- **Jours à l’avance** : 14, 30, 60 (par défaut), 90 ou 180 jours de chaque calendrier sont envoyés, à partir d’aujourd’hui.
+- **Calendriers à importer, et qui les voit sur l’ordinateur** : chaque calendrier qu’Android affiche, avec son compte. Cochez ceux à importer, et choisissez pour chacun **Privé** (par défaut : vous seul le voyez), **Occupé seulement** (les autres vous voient occupé à ces heures, sans détails) ou **Partagé** (les autres voient les éléments).
+- **Marquer des éléments** : les éléments à venir des calendriers cochés. Chacun peut être **Comme son calendrier**, **Privé**, **Occupé seulement** ou **Partagé** ; le choix vaut pour toutes les dates d’un élément qui se répète.
+- **Terminé** revient aux Réglages.
+
+Seuls les calendriers cochés sont lus, pour les jours choisis : le titre, le lieu, le début et la fin de chaque élément, jamais sa description, ses invités ou ses rappels. Ils ne vont qu’à votre ordinateur jumelé, chiffrés comme vos captures, par Wi-Fi, par le dossier de transfert ou dans un fichier partagé. Un calendrier est envoyé en entier quand il a changé depuis le dernier transfert ; rien n’est écrit dans vos calendriers. Si l’ordinateur n’a pas pu en enregistrer un, la raison paraît sous le titre et le téléphone réessaie au prochain transfert. Voir [Calendriers des téléphones et des fichiers](calendar-sync).
 
 ### Changer le NIP {#change-pin}
 

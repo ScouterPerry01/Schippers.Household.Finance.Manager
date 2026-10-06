@@ -623,16 +623,27 @@ class MigrationTest {
     }
 
     @Test
-    fun `version 30 ledgers keep their tasks and projects, and gain weekly tasks, energy upgrades and rebates`() {
+    fun `version 30 ledgers keep their data, and gain calendars brought in, weekly tasks, energy upgrades and rebates`() {
         val file = temp.resolve("ledger30.db")
         older("../data/src/main/sqldelight/ledger/schemas/30.db", file, 30).use { driver ->
             driver.execute(null, "INSERT INTO asset(id, kind, name, created_at, updated_at) VALUES ('p', 'POOL', 'Piscine', 0, 0)", 0)
             driver.execute(null, "INSERT INTO asset_task(id, asset_id, name, interval_months) VALUES ('t', 'p', 'Ouvrir', 12)", 0)
             driver.execute(null, "INSERT INTO home_project(id, name, status, currency) VALUES ('h', 'Isolation', 'DONE', 'CAD')", 0)
+            driver.execute(null, "INSERT INTO event(id, title, category, start_date, created_at, updated_at) VALUES ('e', 'Garage', 'VEHICLE', '2026-10-05', 0, 0)", 0)
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(31L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val db = LedgerDatabase(driver)
+            assertEquals("Garage", db.calendarQueries.eventById("e").executeAsOne().title, "events stay")
+            val q = db.broughtInCalendarQueries
+            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "BUSY", null, 1, 1)
+            q.insertBroughtInItem("i", "c", "10", "BUSY", null, null, "2026-10-07", "10:00", "2026-10-07", "11:00", 1)
+            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "SHARED", "g", 2, 2)
+            assertEquals(1, q.broughtInItemsOf("c").executeAsList().size, "saving the calendar again keeps its items")
+            q.deleteBroughtInCalendar("c")
+            assertEquals(0L, count(driver, "SELECT count(*) FROM brought_in_item"), "and deleting it removes them")
             val task = db.assetMaintenanceQueries.tasks("p").executeAsOne()
             assertEquals(12L, task.interval_months)
             assertEquals(null, task.interval_weeks)
@@ -652,7 +663,6 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(31L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).medicalQueries
             assertEquals("AFTER_SERVICE", q.planById("m").executeAsOne().claim_rule, "existing plans keep counting from the service")

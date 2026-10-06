@@ -1,5 +1,3 @@
--- Version 30 to 31. Only additions: new columns with defaults and new tables.
-
 -- CSY-01 to CSY-04 (version 31): calendars a person brought in from their phone, with their coming
 -- items, read-only. The phone sends each chosen calendar whole; the desktop replaces its items.
 -- The owner's private group keeps the calendar with every private and busy-only item in full;
@@ -43,33 +41,38 @@ CREATE TABLE brought_in_item (
 CREATE INDEX brought_in_item_dates ON brought_in_item(start_date, end_date);
 CREATE INDEX brought_in_item_calendar ON brought_in_item(calendar_id);
 
--- SEA-01: a task on an asset may repeat every interval_weeks (a pool's weekly water test), and may
--- be limited to part of the year, from season_from to season_to (month-day, "06-01" to "09-15"):
--- a due date outside that part moves to its next start.
-ALTER TABLE asset_task ADD COLUMN interval_weeks INTEGER;
-ALTER TABLE asset_task ADD COLUMN season_from TEXT;
-ALTER TABLE asset_task ADD COLUMN season_to TEXT;
+broughtInCalendars:
+SELECT * FROM brought_in_calendar ORDER BY source_name;
 
--- SEA-05: an energy upgrade (insulation, heat pump, windows, solar...): the kind of upgrade, or
--- null for any other project.
-ALTER TABLE home_project ADD COLUMN energy_kind TEXT;
+broughtInCalendarById:
+SELECT * FROM brought_in_calendar WHERE id = ?;
 
--- SEA-05: rebates and grants applied for on a home project, in the project's currency.
--- status: PLANNED, APPLIED, APPROVED, RECEIVED, REFUSED. A received amount lowers the project's
--- net cost, and so what a capital project adds to the home's cost base.
-CREATE TABLE home_project_rebate (
-    id TEXT NOT NULL PRIMARY KEY,
-    project_id TEXT NOT NULL REFERENCES home_project(id) ON DELETE CASCADE,
-    program TEXT NOT NULL,
-    status TEXT NOT NULL,
-    reference TEXT,
-    amount_minor INTEGER,
-    applied_date TEXT,
-    decision_date TEXT,
-    received_date TEXT,
-    received_minor INTEGER,
-    notes TEXT,
-    created_at INTEGER NOT NULL
-);
+upsertBroughtInCalendar:
+INSERT INTO brought_in_calendar(id, owner_user_id, device_id, source_name, account_name, colour, visibility, target_group_id, snapshot_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET source_name = excluded.source_name, account_name = excluded.account_name, colour = excluded.colour,
+    visibility = excluded.visibility, target_group_id = excluded.target_group_id, snapshot_at = excluded.snapshot_at, updated_at = excluded.updated_at;
 
-CREATE INDEX home_project_rebate_project ON home_project_rebate(project_id);
+deleteBroughtInCalendar:
+DELETE FROM brought_in_calendar WHERE id = ?;
+
+deleteBroughtInItems:
+DELETE FROM brought_in_item WHERE calendar_id = ?;
+
+-- The items a new snapshot replaces: those not over before the day it starts.
+deleteBroughtInItemsFrom:
+DELETE FROM brought_in_item WHERE calendar_id = ? AND end_date >= ?;
+
+-- Past items are kept for a year, then forgotten.
+pruneBroughtInItems:
+DELETE FROM brought_in_item WHERE calendar_id = ? AND end_date < ?;
+
+insertBroughtInItem:
+INSERT OR REPLACE INTO brought_in_item(id, calendar_id, event_id, visibility, title, location, start_date, start_time, end_date, end_time, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+broughtInItemsBetween:
+SELECT * FROM brought_in_item WHERE start_date <= :to AND end_date >= :from ORDER BY start_date, start_time;
+
+broughtInItemsOf:
+SELECT * FROM brought_in_item WHERE calendar_id = ? ORDER BY start_date, start_time;
