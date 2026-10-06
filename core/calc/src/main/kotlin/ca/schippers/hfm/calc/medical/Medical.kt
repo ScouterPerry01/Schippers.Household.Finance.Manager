@@ -67,6 +67,15 @@ object Medical {
     fun claimDeadline(serviceDate: LocalDate, days: Int): LocalDate = serviceDate.plus(DatePeriod(days = days))
 
     /**
+     * MED-09: the last day a claim can be sent when the plan counts from the end of the plan year:
+     * the last day of the plan year holding [serviceDate], plus [days] (0 = by the end of the plan year).
+     */
+    fun planYearClaimDeadline(serviceDate: LocalDate, startMonth: Int, startDay: Int, days: Int): LocalDate {
+        val lastDay = planYearStart(serviceDate, startMonth, startDay).plus(DatePeriod(years = 1)).minus(DatePeriod(days = 1))
+        return lastDay.plus(DatePeriod(days = days))
+    }
+
+    /**
      * MED-12: the 12-month period ending in [year] with the most eligible expenses (the federal
      * credit allows any such period). The best period always ends on the date of an expense, so
      * only those are tried. Expenses are (date paid, amount). Null when there are none in reach.

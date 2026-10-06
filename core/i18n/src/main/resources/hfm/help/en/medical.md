@@ -15,7 +15,7 @@ On the Plans tab, choose Add a plan. Add your employer's health and dental plans
 
 ## Follow the claims
 
-The app shows which plan to send each expense to next, and about how much should come back. Choose Send to (the plan's name) when you send the claim. When the plan answers, choose Record the payment, or Refused if the claim was turned down. Choose Close: nothing more to claim when you are done.
+The app shows which plan to send each expense to next, and about how much should come back. Choose Send to (the plan's name) when you send the claim. When the plan answers, choose Record the payment, or Refused if the claim was turned down. Choose Close: nothing more to claim when you are done. A reminder appears before each claim's deadline: so many days after the service, or after the plan year ends, as set in the plan (Deadline counted from).
 
 ## Coverage left
 

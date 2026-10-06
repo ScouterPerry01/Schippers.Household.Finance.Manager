@@ -312,7 +312,7 @@ class MigrationTest {
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
             val q = LedgerDatabase(driver).medicalQueries
-            q.upsertPlan("p", "DENTAL", "Dental", null, null, null, null, 1, 1, 365, null, 1, null, 0, 0)
+            q.upsertPlan("p", "DENTAL", "Dental", null, null, null, null, 1, 1, 365, null, 1, null, 0, 0, "AFTER_SERVICE")
             q.upsertExpense("e", "m", null, "DENTAL_BASIC", "2026-01-10", null, null, 12000, null, null, 1, 0, null, 0, 0)
             q.upsertClaim("c", "e", "p", "SUBMITTED", "2026-01-11", 12000, null, null, null, null, null, 0, 0)
             assertEquals(1, q.claimsForExpense("e").executeAsList().size)
@@ -611,7 +611,6 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(29L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val db = LedgerDatabase(driver)
             assertEquals("418 555-0199", db.contactsQueries.detailsFor("k").executeAsOne().content, "contacts stay")
@@ -620,6 +619,25 @@ class MigrationTest {
             q.insertPhoneContact("p", "pixel-8", 6, "{}")
             assertEquals(1L, q.countPhoneContacts().executeAsOne(), "received once")
             assertEquals(5L, q.phoneContactById("p").executeAsOne().received_at)
+        }
+    }
+
+    @Test
+    fun `version 29 ledgers keep their medical plans and gain the plan year deadline`() {
+        val file = temp.resolve("ledger29.db")
+        older("../data/src/main/sqldelight/ledger/schemas/29.db", file, 29).use { driver ->
+            driver.execute(null, "INSERT INTO med_plan(id, kind, name, claim_days, created_at, updated_at) VALUES ('m', 'GROUP_HEALTH', 'Sun Life', 365, 0, 0)", 0)
+            driver.execute(null, "INSERT INTO med_plan_person(plan_id, member_id) VALUES ('m', 'alex')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(30L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).medicalQueries
+            assertEquals("AFTER_SERVICE", q.planById("m").executeAsOne().claim_rule, "existing plans keep counting from the service")
+            q.upsertPlan("m", "GROUP_HEALTH", "Sun Life", null, null, null, null, 1, 1, 90, null, 1, null, 0, 1, "AFTER_PLAN_YEAR")
+            assertEquals("AFTER_PLAN_YEAR", q.planById("m").executeAsOne().claim_rule)
+            assertEquals(1L, count(driver, "SELECT count(*) FROM med_plan_person"), "saving the plan again keeps its people")
         }
     }
 }

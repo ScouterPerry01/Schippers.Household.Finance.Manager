@@ -54,7 +54,7 @@ The dialog is titled **Add an expense** or **Medical expense**.
 
 - **Person treated**: the household member who received the care. Required. Only household members are offered; pets are not.
 - **Kind of care**: the kind of service, such as **Prescriptions**, **Dental: cleaning and check-up**, **Physiotherapy** or **Eye exam**. It decides which coverage of each plan applies, so it is worth choosing well. The full list is in [Kinds of care](medical#kinds-of-care).
-- **Date of service**: the day the care was received. Required. It decides the plan year the expense falls in, and the deadline to claim (the date of service plus the plan's **Days to send a claim**).
+- **Date of service**: the day the care was received. Required. It decides the plan year the expense falls in, and the deadline to claim (see [Claim deadlines and reminders](medical#deadlines)).
 - **Date paid**: "If not the date of service". The date the bill was paid, which is the date that counts for the tax credit. Leave it empty when it is the same day. It cannot be more than a year before the date of service.
 - **Cost**: what the care cost, in dollars. Required and above zero.
 - **Description**: for example "Cleaning and X-rays" or the clinic's name. Shown in the list and in the medical expenses report.
@@ -156,7 +156,8 @@ The dialog is titled **Add a plan** or **Plan**.
 - **Plan member**: the household member who holds the plan, usually the employee, or "(none)". For your reference.
 - Who is covered and in what order: see [Who is covered and in what order](medical#coverage-order).
 - **Plan year starts (month)** and **Plan year starts (day)**: when the plan's year begins, for example 1 and 1 for a calendar year, or 7 and 1 for a plan that renews on July 1. The month is 1 to 12 and the day 1 to 28. Yearly maximums and deductibles start over on this date.
-- **Days to send a claim**: "After the date of service; often 365, or until a set date after the plan year ends." From 1 to 3650; 365 by default for a new plan (set in [Rates and rules](rates-rules)). The deadline of each expense is its date of service plus this number of days.
+- **Deadline counted from**: how your insurer sets the time limit to claim, from your benefit booklet. **The date of service** (the default): each expense has its own deadline, so many days after the care, often 365. **The end of the plan year**: every expense of a plan year has the same deadline, so many days after that plan year ends; many group plans accept claims until 90 days after the end of the plan year. Choosing it changes **Days to send a claim** from 365 to 0 when it still holds the default.
+- **Days to send a claim**: with **The date of service**, "After the date of service; often 365.", from 1 to 3650, 365 by default for a new plan (set in [Rates and rules](rates-rules)). With **The end of the plan year**, "After the plan year ends; 0 means by its last day.", from 0 to 3650. Changing either field moves the deadline of every expense still to send to this plan, and its reminder.
 - **Yearly credit**: only for a Health Spending Account. See [Health Spending Account](medical#hsa).
 - **Active**: ticked while the plan is in force. Untick it when the plan ends: it is no longer proposed for new claims, no longer counted in **Coverage left**, and shows "inactive" in the list. Its past claims are kept.
 - **Notes**.
@@ -244,7 +245,7 @@ Expenses earlier in the same plan year use up the deductible and the maximum fir
 ## Claim deadlines and reminders {#deadlines}
 @index: claim deadline; reminder; time limit
 
-The deadline to send an expense to the next plan is its date of service plus that plan's **Days to send a claim**. From 30 days before the deadline, until 30 days after it (the default, set in [Rates and rules](rates-rules)), an expense still to send appears in the reminders at the top of the window and in the system notification, as "claim to send" with the person, the description and the plan. Clicking the reminder opens the Medical claims screen. The deadline also appears on the [Calendar](calendar).
+The deadline to send an expense to the next plan depends on that plan's **Deadline counted from**: its date of service plus the plan's **Days to send a claim**, or the last day of the plan year the care falls in plus those days. For example, with a plan year starting on January 1 and 90 days, care received on March 3, 2026 or on December 20, 2026 must be claimed by March 31, 2027 (the plan year ends on December 31, 2026, plus 90 days). From 30 days before the deadline, until 30 days after it (the default, set in [Rates and rules](rates-rules)), an expense still to send appears in the reminders at the top of the window and in the system notification, as "claim to send" with the person, the description and the plan. Clicking the reminder opens the Medical claims screen. The deadline also appears on the [Calendar](calendar).
 
 Sending the claim, closing the expense, or recording the last plan's payment ends the reminder.
 

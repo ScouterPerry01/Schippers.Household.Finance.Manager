@@ -42,6 +42,11 @@ class MedicalTest {
         assertEquals(d("2026-07-01"), Medical.planYearStart(d("2026-08-01"), 7, 1))
         assertEquals(d("2026-01-01"), Medical.planYearStart(d("2026-08-01")))
         assertEquals(d("2027-01-12"), Medical.claimDeadline(d("2026-01-12"), 365))
+        // By the end of the plan year, or so many days after it (MED-09).
+        assertEquals(d("2026-12-31"), Medical.planYearClaimDeadline(d("2026-03-03"), 1, 1, 0))
+        assertEquals(d("2027-03-31"), Medical.planYearClaimDeadline(d("2026-12-20"), 1, 1, 90))
+        assertEquals(d("2026-06-30"), Medical.planYearClaimDeadline(d("2026-03-01"), 7, 1, 0), "plan year from July 1, 2025")
+        assertEquals(d("2027-07-30"), Medical.planYearClaimDeadline(d("2026-07-01"), 7, 1, 30))
     }
 
     /**

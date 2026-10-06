@@ -3,7 +3,8 @@
 
 -- MED-01, MED-03: a health, dental, vision, travel or public plan. [member_id] is the plan member;
 -- the plan year starts on [year_start_month]/[year_start_day]; claims are due [claim_days] after the
--- service (MED-09). A Health Spending Account has a yearly credit, [hsa_amount_minor].
+-- service, or after the plan year ends when [claim_rule] is AFTER_PLAN_YEAR (MED-09, version 30).
+-- A Health Spending Account has a yearly credit, [hsa_amount_minor].
 CREATE TABLE med_plan (
     id TEXT NOT NULL PRIMARY KEY,
     kind TEXT NOT NULL CHECK (kind IN ('GROUP_HEALTH', 'DENTAL', 'VISION', 'PRIVATE_HEALTH', 'TRAVEL', 'HSA', 'RAMQ', 'CDCP', 'OTHER')),
@@ -19,7 +20,8 @@ CREATE TABLE med_plan (
     active INTEGER NOT NULL DEFAULT 1,
     notes TEXT,
     created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+    updated_at INTEGER NOT NULL,
+    claim_rule TEXT NOT NULL DEFAULT 'AFTER_SERVICE'
 );
 
 -- MED-01: the people a plan covers, and in what order it pays for each (1 = first: coordination
@@ -91,8 +93,8 @@ CREATE INDEX med_claim_expense ON med_claim(expense_id);
 upsertPlan:
 -- Updates in place: INSERT OR REPLACE would delete the row first and, through ON DELETE
 -- CASCADE, everything that belongs to it.
-INSERT INTO med_plan(id, kind, name, insurer, policy_number, certificate_number, member_id, year_start_month, year_start_day, claim_days, hsa_amount_minor, active, notes, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO med_plan(id, kind, name, insurer, policy_number, certificate_number, member_id, year_start_month, year_start_day, claim_days, hsa_amount_minor, active, notes, created_at, updated_at, claim_rule)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
     kind = excluded.kind,
     name = excluded.name,
@@ -103,6 +105,7 @@ ON CONFLICT(id) DO UPDATE SET
     year_start_month = excluded.year_start_month,
     year_start_day = excluded.year_start_day,
     claim_days = excluded.claim_days,
+    claim_rule = excluded.claim_rule,
     hsa_amount_minor = excluded.hsa_amount_minor,
     active = excluded.active,
     notes = excluded.notes,

@@ -37,6 +37,9 @@ enum class ClaimStatus { SUBMITTED, PAID, DENIED }
 /** MED-07: where an expense stands: a plan still to claim, a claim waiting for payment, or done. */
 enum class ExpenseStage { TO_SUBMIT, WAITING, CLOSED }
 
+/** MED-09: how a plan counts its claim deadline: days after the service, or after the plan year ends. */
+enum class ClaimDeadlineRule { AFTER_SERVICE, AFTER_PLAN_YEAR }
+
 /** A person covered by a plan, and the order in which the plan pays for them (1 = first). */
 data class PlanPerson(val memberId: String, val priority: Int = 1)
 
@@ -58,7 +61,18 @@ data class MedPlan(
     val active: Boolean = true,
     val notes: String? = null,
     val people: List<PlanPerson> = emptyList(),
-)
+    /** MED-09: [claimDays] counts from the date of service, or from the end of the plan year (0 = by its last day). */
+    val claimRule: ClaimDeadlineRule = ClaimDeadlineRule.AFTER_SERVICE,
+) {
+    /** MED-09: the last day to claim an expense from [serviceDate] with this plan. */
+    fun claimDeadline(serviceDate: LocalDate): LocalDate = when (claimRule) {
+        ClaimDeadlineRule.AFTER_SERVICE -> Medical.claimDeadline(serviceDate, claimDays)
+        ClaimDeadlineRule.AFTER_PLAN_YEAR -> Medical.planYearClaimDeadline(serviceDate, yearStartMonth, yearStartDay, claimDays)
+    }
+
+    /** The longest a deadline can be after the service, to know which expenses may still have one. */
+    val longestClaimDays: Int get() = if (claimRule == ClaimDeadlineRule.AFTER_PLAN_YEAR) 366 + claimDays else claimDays
+}
 
 /** MED-02: what a plan pays for one kind of service. [percent] is out of 100. */
 data class MedCoverage(
@@ -160,7 +174,7 @@ class MedicalService internal constructor(private val books: Books) {
     fun savePlan(p: MedPlan): MedPlan {
         validate(p.name.isNotBlank(), "error.nameRequired")
         validate(p.yearStartMonth in 1..12 && p.yearStartDay in 1..28, "error.invalidDate")
-        validate(p.claimDays in 1..3650, "error.invalidNumber")
+        validate(p.claimDays in (if (p.claimRule == ClaimDeadlineRule.AFTER_PLAN_YEAR) 0 else 1)..3650, "error.invalidNumber")
         validate(p.hsaAmount == null || (p.hsaAmount.currency == cad && !p.hsaAmount.isNegative), "error.currencyMismatch", cad.code)
         validate(p.people.all { it.priority in 1..9 }, "error.invalidNumber")
         val group = editable(p.groupId)
@@ -172,7 +186,7 @@ class MedicalService internal constructor(private val books: Books) {
         ledger.transaction {
             q.upsertPlan(
                 id, p.kind.name, p.name.trim(), p.insurer.blankToNull(), p.policyNumber.blankToNull(), p.certificateNumber.blankToNull(), p.memberId,
-                p.yearStartMonth.toLong(), p.yearStartDay.toLong(), p.claimDays.toLong(), p.hsaAmount?.minorUnits, if (p.active) 1 else 0, p.notes.blankToNull(), created, now,
+                p.yearStartMonth.toLong(), p.yearStartDay.toLong(), p.claimDays.toLong(), p.hsaAmount?.minorUnits, if (p.active) 1 else 0, p.notes.blankToNull(), created, now, p.claimRule.name,
             )
             q.clearPlanPeople(id)
             p.people.distinctBy { it.memberId }.forEach { q.addPlanPerson(id, it.memberId, it.priority.toLong()) }
@@ -324,7 +338,7 @@ class MedicalService internal constructor(private val books: Books) {
         val claimed = expense.claims.map { it.planId }.toSet()
         val next = plansFor(expense.memberId, expense.service).firstOrNull { it.id !in claimed }
         if (next == null || !expense.outOfPocket.isPositive) return ExpenseStatus(ExpenseStage.CLOSED)
-        return ExpenseStatus(ExpenseStage.TO_SUBMIT, next, expected(expense, next), Medical.claimDeadline(expense.serviceDate, next.claimDays))
+        return ExpenseStatus(ExpenseStage.TO_SUBMIT, next, expected(expense, next), next.claimDeadline(expense.serviceDate))
     }
 
     /** Sends [expenseId] to [planId]; the amount claimed is what is left to be paid unless given. */
@@ -410,7 +424,7 @@ class MedicalService internal constructor(private val books: Books) {
         val overdue = LeadTimes.medicalClaim(today)
         val names = books.members.list(includeArchived = true).associate { it.id to it.displayName }
         // Only expenses recent enough to have a deadline ahead (or just passed) are looked at (NFR-02).
-        val longest = plans(includeInactive = false).maxOfOrNull { it.claimDays } ?: return emptyList()
+        val longest = plans(includeInactive = false).maxOfOrNull { it.longestClaimDays } ?: return emptyList()
         val since = today.minus(DatePeriod(days = longest + overdue))
         return expenses().filter { !it.closed && it.serviceDate >= since }.mapNotNull { e ->
             val s = status(e)
@@ -463,6 +477,7 @@ class MedicalService internal constructor(private val books: Books) {
     private fun PlanRow.toPlan(groupId: String, people: List<PlanPerson>) = MedPlan(
         id, groupId, MedPlanKind.valueOf(kind), name, insurer, policy_number, certificate_number, member_id, year_start_month.toInt(), year_start_day.toInt(),
         claim_days.toInt(), hsa_amount_minor?.let { Money.ofMinor(it, cad) }, active == 1L, notes, people,
+        runCatching { ClaimDeadlineRule.valueOf(claim_rule) }.getOrDefault(ClaimDeadlineRule.AFTER_SERVICE),
     )
 
     private fun CoverageRow.toCoverage() = MedCoverage(

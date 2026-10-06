@@ -15,7 +15,7 @@ Dans l’onglet Régimes, choisissez Ajouter un régime. Ajoutez les régimes d�
 
 ## Suivre les réclamations
 
-L’application indique à quel régime envoyer chaque dépense et environ combien devrait vous revenir. Choisissez Envoyer à (nom du régime) quand vous faites la réclamation. À la réponse, choisissez Inscrire le paiement, ou Refusée si la réclamation a été refusée. Choisissez Fermer : plus rien à réclamer.
+L’application indique à quel régime envoyer chaque dépense et environ combien devrait vous revenir. Choisissez Envoyer à (nom du régime) quand vous faites la réclamation. À la réponse, choisissez Inscrire le paiement, ou Refusée si la réclamation a été refusée. Choisissez Fermer : plus rien à réclamer. Un rappel paraît avant l’échéance de chaque réclamation : tant de jours après le service, ou après la fin de l’année du régime, selon le régime (Échéance comptée à partir de).
 
 ## Couverture restante
 

@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.books.ClaimDeadlineRule
 import ca.schippers.hfm.books.ClaimStatus
 import ca.schippers.hfm.books.DocumentStatus
 import ca.schippers.hfm.books.ExpenseStage
@@ -391,6 +392,7 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
     var startMonth by remember { mutableStateOf(existing.yearStartMonth.toString()) }
     var startDay by remember { mutableStateOf(existing.yearStartDay.toString()) }
     var claimDays by remember { mutableStateOf(existing.claimDays.toString()) }
+    var claimRule by remember { mutableStateOf(existing.claimRule) }
     var hsa by remember { mutableStateOf(existing.hsaAmount?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
     var active by remember { mutableStateOf(existing.active) }
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
@@ -424,7 +426,16 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextInput(model.t("medical.yearStartMonth"), startMonth, Modifier.weight(1f)) { startMonth = it }
                 TextInput(model.t("medical.yearStartDay"), startDay, Modifier.weight(1f)) { startDay = it }
-                TextInput(model.t("medical.claimDays"), claimDays, Modifier.weight(1f), supporting = model.t("medical.claimDaysHint")) { claimDays = it }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Picker(model.t("medical.claimRule"), ClaimDeadlineRule.entries, claimRule, { model.t("medClaimRule.$it") }, Modifier.weight(1f)) {
+                    claimRule = it
+                    if (it == ClaimDeadlineRule.AFTER_PLAN_YEAR && claimDays.trim() == LeadTimes.medicalPlanDeadline().toString()) claimDays = "0"
+                }
+                TextInput(
+                    model.t("medical.claimDays"), claimDays, Modifier.weight(1f),
+                    supporting = model.t(if (claimRule == ClaimDeadlineRule.AFTER_PLAN_YEAR) "medical.claimDaysPlanYearHint" else "medical.claimDaysHint"),
+                ) { claimDays = it }
             }
             if (kind == MedPlanKind.HSA) AmountInput(model.t("medical.hsaAmount"), hsa, Currency.CAD, locale, Modifier.fillMaxWidth(), model::money) { hsa = it }
             LabeledCheckbox(model.t("medical.active"), active) { active = it }
@@ -437,7 +448,7 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
                         books.medical.savePlan(
                             existing.copy(
                                 id = saved?.id.orEmpty(), groupId = saved?.groupId ?: groupId, kind = kind, name = name, insurer = insurer, policyNumber = policy, certificateNumber = certificate, memberId = memberId,
-                                yearStartMonth = startMonth.trim().toIntOrNull() ?: 1, yearStartDay = startDay.trim().toIntOrNull() ?: 1, claimDays = claimDays.trim().toIntOrNull() ?: LeadTimes.medicalPlanDeadline(),
+                                yearStartMonth = startMonth.trim().toIntOrNull() ?: 1, yearStartDay = startDay.trim().toIntOrNull() ?: 1, claimDays = claimDays.trim().toIntOrNull() ?: LeadTimes.medicalPlanDeadline(), claimRule = claimRule,
                                 hsaAmount = if (kind == MedPlanKind.HSA) parseAmount(hsa, Currency.CAD, locale) else null, active = active, notes = notes,
                                 people = members.indices.filter { order[it] > 0 }.map { PlanPerson(members[it].id, order[it]) },
                             ),

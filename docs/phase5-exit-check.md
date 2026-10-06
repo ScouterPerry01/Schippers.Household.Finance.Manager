@@ -150,7 +150,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - BILL-10 (subscriptions): Met; the renewal date cannot be entered, the next due date stands in for it.
 - MED-02, MED-04, MED-05: Met.
 - MED-08 (EOB capture and matching): Fixed: the matching existed in the books but no screen used it; a document of the kind Explanation of benefits now lists the waiting claims it may answer and attaches to one in a click.
-- MED-09 (claim deadline reminders, including by plan year end): Met for "days after the service". Gap: "by the end of the plan year" cannot be set, although the hint and the manual mention it. Small to medium; needs a schema addition, best made with the other schema work before 1.0.
+- MED-09 (claim deadline reminders, including by plan year end): Fixed: a plan's deadline can now be counted from the end of the plan year (Deadline counted from: The end of the plan year, with 0 or more days after it), and reminders and the calendar use it (ledger schema version 30).
 - MED-14 (federal and Quebec totals, dependants): Met for federal and dependants. Gap: no separate Quebec total; adult dependants are labelled as claimed apart in Quebec too. Needs checking against Revenu Québec's rules before changing (another agent owns the tax rules).
 - MED-15: Met.
 - WAR-03 (claim log): Met for assets. Gap: vehicle warranties have no claim log. Small to medium.

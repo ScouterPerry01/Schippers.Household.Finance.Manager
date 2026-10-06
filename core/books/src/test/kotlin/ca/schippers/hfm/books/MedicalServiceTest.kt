@@ -128,6 +128,24 @@ class MedicalServiceTest {
     }
 
     @Test
+    fun `a plan can set its deadline by the end of the plan year`() {
+        val plan = med.savePlan(alexPlan.copy(claimRule = ClaimDeadlineRule.AFTER_PLAN_YEAR, claimDays = 90))
+        assertEquals(ClaimDeadlineRule.AFTER_PLAN_YEAR, med.plan(plan.id).claimRule, "kept")
+        val march = expense(lea, MedService.EYE_EXAM, "2026-03-03", "90", "Eye exam")
+        val december = expense(lea, MedService.MASSAGE, "2026-12-20", "60", "Massage")
+        assertEquals(d("2027-03-31"), med.status(march).deadline, "the plan year ends on December 31, plus 90 days")
+        assertEquals(d("2027-03-31"), med.status(december).deadline)
+        val reminders = books.renewals(d("2027-03-10")).filter { it.kind == RenewalKind.MEDICAL_CLAIM }
+        assertEquals(setOf(march.id, december.id), reminders.map { it.subjectId }.toSet(), "both are reminded before the shared deadline")
+        assertTrue(reminders.all { it.daysLeft == 21 })
+        // 0 days: by the last day of the plan year; a negative number is refused.
+        med.savePlan(plan.copy(claimDays = 0))
+        assertEquals(d("2026-12-31"), med.status(med.expense(march.id)).deadline)
+        assertFailsWith<ValidationException> { med.savePlan(plan.copy(claimDays = -1)) }
+        assertFailsWith<ValidationException> { med.savePlan(plan.copy(claimRule = ClaimDeadlineRule.AFTER_SERVICE, claimDays = 0)) }
+    }
+
+    @Test
     fun `the tax credit uses the best 12-month period, adult dependants apart`() {
         expense(lea, MedService.EYE_EXAM, "2025-11-01", "90")
         expense(alex, MedService.EYEWEAR, "2026-05-01", "300")
