@@ -43,4 +43,10 @@ class SectionsPdfTest {
         val raw = String(locked.readBytes(), Charsets.ISO_8859_1)
         assertTrue(Regex("""/R\s*6\b""").containsMatchIn(raw) && Regex("""/V\s*5\b""").containsMatchIn(raw), "security handler V5 R6")
     }
+
+    fun `an empty section says so, as on screen`() {
+        val file = temp.resolve("empty.pdf").toFile()
+        SectionsPdf.write("In case of emergency", "Prepared 2026-10-05", sections + DocSection("Pensions", emptyList()), file, emptyText = "Nothing recorded.")
+        PdfReader(file.readBytes()).use { assertTrue(PdfTextExtractor(it).getTextFromPage(1).contains("Nothing recorded.")) }
+    }
 }

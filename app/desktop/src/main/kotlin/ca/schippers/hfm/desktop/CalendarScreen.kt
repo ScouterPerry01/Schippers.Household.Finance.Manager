@@ -48,7 +48,9 @@ import ca.schippers.hfm.books.OccurrenceMark
 import ca.schippers.hfm.books.OccurrenceStatus
 import ca.schippers.hfm.books.Renewal
 import ca.schippers.hfm.books.ValidationException
+import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
 import ca.schippers.hfm.calc.schedule.Frequency
+import ca.schippers.hfm.calc.schedule.MonthDay
 import ca.schippers.hfm.calc.schedule.Recurrence
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -356,7 +358,8 @@ private fun MonthCellLine(model: BooksModel, item: CalendarItem, onEdit: (Calend
 /** Reminder choices offered in the event editor (CAL-03), in minutes before the start. */
 private val REMINDER_CHOICES = listOf(0, 15, 60, 120, 1440, 2 * 1440, 7 * 1440)
 
-private val EVENT_REPEATS = Repeat.entries.filter { it != Repeat.SEMI_MONTHLY }
+/** Repeats counted in months, where the month's last day or last business day can be chosen. */
+private val MONTHLY_REPEATS = setOf(Repeat.MONTHLY, Repeat.QUARTERLY, Repeat.SEMI_ANNUAL, Repeat.ANNUAL, Repeat.EVERY_N_MONTHS)
 
 /** "Store in": the account groups the user may edit; private groups are marked (CAL-06). */
 @Composable
@@ -404,18 +407,25 @@ internal fun EventDialog(model: BooksModel, existing: CalendarEvent?, draft: Eve
     var accountId by remember { mutableStateOf(start.accountId) }
     var repeat by remember { mutableStateOf(start.recurrence?.let { Repeat.of(it) } ?: Repeat.ONCE) }
     var interval by remember { mutableStateOf(start.recurrence?.interval?.toString() ?: "1") }
+    // CAL-02: the same patterns as bills (BILL-02): a second day for twice a month, the month's last
+    // day or last business day, and moving off weekends and holidays.
+    var monthDay by remember { mutableStateOf(start.recurrence?.monthDay ?: MonthDay.SAME_DAY) }
+    var secondDay by remember { mutableStateOf(start.recurrence?.secondDay?.toString() ?: "0") }
+    var adjust by remember { mutableStateOf(start.recurrence?.adjust ?: BusinessDayAdjust.NONE) }
     var end by remember { mutableStateOf(start.endDate?.toString().orEmpty()) }
     var reminders by remember { mutableStateOf(start.reminderMinutes.toSet()) }
     var confirmDelete by remember { mutableStateOf(false) }
 
     fun recurrence(): Recurrence? {
         val n = interval.trim().toIntOrNull()?.takeIf { it >= 1 } ?: throw ValidationException("error.invalidNumber")
+        val monthly = repeat in MONTHLY_REPEATS
         return when (repeat) {
             Repeat.ONCE -> null
-            Repeat.EVERY_N_DAYS -> Recurrence(Frequency.DAILY, n)
-            Repeat.EVERY_N_WEEKS -> Recurrence(Frequency.WEEKLY, n)
-            Repeat.EVERY_N_MONTHS -> Recurrence(Frequency.MONTHLY, n)
-            else -> repeat.recurrence
+            Repeat.SEMI_MONTHLY -> Recurrence(Frequency.SEMI_MONTHLY, secondDay = secondDay.trim().toIntOrNull()?.takeIf { it in 0..31 } ?: throw ValidationException("error.dayOfMonth"), adjust = adjust)
+            Repeat.EVERY_N_DAYS -> Recurrence(Frequency.DAILY, n, adjust = adjust)
+            Repeat.EVERY_N_WEEKS -> Recurrence(Frequency.WEEKLY, n, adjust = adjust)
+            Repeat.EVERY_N_MONTHS -> Recurrence(Frequency.MONTHLY, n, monthDay, adjust = adjust)
+            else -> repeat.recurrence!!.copy(monthDay = if (monthly) monthDay else MonthDay.SAME_DAY, adjust = adjust)
         }
     }
 
@@ -467,11 +477,21 @@ internal fun EventDialog(model: BooksModel, existing: CalendarEvent?, draft: Eve
             }
             Picker(model.t("calendar.account"), listOf(null) + accounts, accounts.firstOrNull { it.id == accountId }, { it?.name ?: model.t("common.none") }) { accountId = it?.id }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Picker(model.t("bills.repeat"), EVENT_REPEATS, repeat, { model.t("repeat.$it") }, Modifier.weight(1f)) { repeat = it }
-                if (repeat in setOf(Repeat.EVERY_N_DAYS, Repeat.EVERY_N_WEEKS, Repeat.EVERY_N_MONTHS)) {
-                    TextInput(model.t("bills.interval"), interval, Modifier.weight(0.6f)) { interval = it }
+                Picker(model.t("bills.repeat"), Repeat.entries, repeat, { model.t("repeat.$it") }, Modifier.weight(1f)) { repeat = it }
+                when (repeat) {
+                    Repeat.EVERY_N_DAYS, Repeat.EVERY_N_WEEKS, Repeat.EVERY_N_MONTHS -> TextInput(model.t("bills.interval"), interval, Modifier.weight(0.6f)) { interval = it }
+                    Repeat.SEMI_MONTHLY -> TextInput(model.t("bills.secondDay"), secondDay, Modifier.weight(0.6f), supporting = model.t("bills.secondDay.hint")) { secondDay = it }
+                    else -> Unit
                 }
                 if (repeat != Repeat.ONCE) DateInput(model.t("bills.end"), end, Modifier.weight(1f)) { end = it }
+            }
+            if (repeat != Repeat.ONCE) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (repeat in MONTHLY_REPEATS) {
+                        Picker(model.t("bills.monthDay"), MonthDay.entries, monthDay, { model.t("monthDay.$it") }, Modifier.weight(1f)) { monthDay = it }
+                    }
+                    Picker(model.t("bills.adjust"), BusinessDayAdjust.entries, adjust, { model.t("adjust.$it") }, Modifier.weight(1f)) { adjust = it }
+                }
             }
             Text(model.t("calendar.reminders"), style = MaterialTheme.typography.labelLarge)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {

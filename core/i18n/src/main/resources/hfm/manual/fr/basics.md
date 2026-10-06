@@ -185,6 +185,7 @@ La recherche parcourt tout ce que vous avez le droit de voir, y compris les comp
 - Les opérations dont le bénéficiaire, la note ou un autre texte contient ce que vous avez tapé. Si vous tapez un montant, comme 45,99, les opérations de ce montant sont aussi trouvées, que l'argent soit sorti ou entré.
 - Les comptes par leur nom ou leurs notes ; les bénéficiaires par leur nom ; les catégories par leur nom français ou anglais ; les factures par leur nom ou leur bénéficiaire ; les institutions par leur nom.
 - Les documents par le texte lu, leur titre, le commerce ou le fournisseur, leurs notes et le nom du fichier.
+- Les contacts, archivés compris, par leur nom, « Pour quoi », leur titre de poste, leur organisation, leur adresse, leur site Web, leurs heures, leurs notes, leurs numéros de téléphone et leurs courriels ; trois chiffres ou plus trouvent aussi un numéro de téléphone, peu importe comment il est écrit. Les numéros de compte et de client ne sont jamais cherchés.
 
 ### La fenêtre des résultats {#search-results}
 
@@ -196,6 +197,7 @@ Les résultats s'ouvrent dans une fenêtre intitulée Recherche : suivi de ce qu
 - Comptes : cliquez sur un compte pour l'ouvrir.
 - Bénéficiaires, Catégories, Factures et Institutions : cliquez sur un résultat pour ouvrir cet écran.
 - Documents : cliquez sur un document pour ouvrir l'écran Documents sur lui.
+- Contacts : cliquez sur un contact pour ouvrir l'écran Contacts sur lui.
 
 ![La fenêtre des résultats de recherche](images/search.png)
 

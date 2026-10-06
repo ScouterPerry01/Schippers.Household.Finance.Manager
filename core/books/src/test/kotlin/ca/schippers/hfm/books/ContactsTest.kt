@@ -55,6 +55,11 @@ class ContactsTest {
         val again = books.contacts.save(saved.copy(purpose = "Pediatrician"))
         assertEquals("FILE-778899", books.contacts.revealNumber(again.id, number.id, "password1".toCharArray()))
         assertFailsWith<AccessDeniedException> { books.contacts.revealNumber(again.id, number.id, "wrong".toCharArray()) }
+        // Changing the dotted number in place is refused, rather than saving the dots as the number.
+        assertFailsWith<ValidationException> {
+            books.contacts.save(again.copy(details = again.details.map { if (it.id == number.id) it.copy(value = "•••• 88990") else it }))
+        }
+        assertEquals("FILE-778899", books.contacts.revealNumber(again.id, number.id, "password1".toCharArray()))
         // Removing a detail removes it.
         val fewer = books.contacts.save(again.copy(details = again.details.filter { it.type != DetailType.EMAIL }))
         assertEquals(2, fewer.details.size)
@@ -238,6 +243,24 @@ class ContactsTest {
         assertTrue(books.contacts.proposals().isEmpty())
         assertEquals("Desjardins Assurances", books.insurance.policies().first { it.id == home.id }.insurer)
         assertEquals(2, books.health.providers().size)
+    }
+
+    @Test
+    fun `vehicles and assets bring their insurer, warranty providers and garages`() = household().use { books ->
+        val group = books.groups().single().id
+        val car = books.vehicles.save(Vehicle("", group, "RAV4", insurer = "Intact Assurance"))
+        books.vehicles.saveWarranty(Warranty("", car.id, WarrantyKind.POWERTRAIN, provider = "Toyota Canada", endKm = 100_000, phone = "1 888 869-6828"))
+        books.vehicles.saveService(ServiceRecord("", car.id, LocalDate(2026, 5, 2), provider = "garage lessard"))
+        books.vehicles.saveService(ServiceRecord("", car.id, LocalDate(2026, 9, 2), provider = "Garage Lessard"))
+        books.vehicles.saveService(ServiceRecord("", car.id, LocalDate(2026, 9, 9), provider = "Me", diy = true))
+
+        val sources = books.contacts.proposals().flatMap { it.sources }
+        assertEquals(setOf("Intact Assurance", "Toyota Canada", "Garage Lessard"), sources.map { it.name }.toSet(), "one garage, and nothing for a do-it-yourself entry")
+        books.contacts.gather(group, sources.map { GatherDecision(listOf(it)) })
+        val roles = books.contacts.linkedTo(LinkTarget.VEHICLE, car.id).associate { it.contact.name to it.link.role }
+        assertEquals(mapOf("Intact Assurance" to LinkRole.INSURER, "Toyota Canada" to LinkRole.SERVICE, "Garage Lessard" to LinkRole.GARAGE), roles)
+        assertEquals(listOf("1 888 869-6828"), books.contacts.list().single { it.name == "Toyota Canada" }.phones.map { it.value })
+        assertTrue(books.contacts.proposals().isEmpty())
     }
 
     @Test

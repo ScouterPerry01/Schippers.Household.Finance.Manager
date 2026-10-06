@@ -88,6 +88,7 @@ The slips attached here are copied into the folder for the accountant (see [Fold
 - **Person**: who receives the slip, or **Household** when it is no one in particular.
 - **Slip**: the kind of slip, such as **T4A, pension or other income** (the default), **RL-24, child care**, **T2202, tuition** or **Other slip**. Every federal and Quebec slip the checklist knows is offered.
 - **From (employer, institution or payer)**: who sends the slip. Required.
+- **Store in**: the account group the slip, and the scan you attach to it later, are kept in. It starts on your own private group when you have one, so other household users do not see it; choose a shared group for a slip the household handles together. When you have no private group, a line offers to create one.
 - **Save**: adds it to the checklist as expected; it is marked "Added by hand". **Cancel**: closes.
 
 Use it for a slip the books cannot predict: a T4A for contract work, an RL-24 from a day camp, a slip from a payer you do not record.

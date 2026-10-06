@@ -75,6 +75,7 @@ The premiums themselves are payments in the register; choose the pet under "For"
 - **Notes**: food, vet's instructions, the name of the pet sitter, anything useful.
 - **No longer in the household** (when editing): tick it when the pet has died or been rehomed. See [Former pets](pets#former-pets).
 - **Delete** (when editing): see [Delete a pet](pets#delete).
+- **Photo and papers** (when editing): the pet's photo and papers such as the adoption contract, the microchip registration or a vaccination record, attached with **Attach a file…** or **From the review inbox**. They are kept in the vault, in the household's shared account group.
 
 **Save** keeps the changes; **Cancel** closes the form without them.
 
@@ -106,8 +107,9 @@ The card shows this year's total (since January 1) and the last 12 months, with 
 
 ### The costs dialog {#costs-dialog}
 
-**Costs** opens "What name costs", covering January 1 four years ago to today:
+**Costs** opens "What name costs":
 
+- **Period**: **The last five years** (January 1 four years ago to today, the default) or one year, this year or one of the four before. Choosing a year shows that year's costs by category, for example what the vet, food and boarding cost in 2025.
 - **By year**: the total of each year.
 - **By category**: the total of each category, largest first; lines with no category appear as "(uncategorized)".
 - **Total**.

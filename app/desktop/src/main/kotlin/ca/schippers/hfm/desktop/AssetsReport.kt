@@ -84,7 +84,7 @@ internal fun AssetsReport(model: BooksModel) {
 
     Text(model.t("assetsReport.expiring"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
     if (expiring.isEmpty()) Text(model.t("assetsReport.noneExpiring"), style = MaterialTheme.typography.bodySmall)
-    for (r in expiring) Text("${r.subjectName}${r.detail?.let { " · $it" }.orEmpty()} · ${model.t("assets.until", model.date(r.date))}", style = MaterialTheme.typography.bodySmall)
+    for (r in expiring) Text("${r.subjectName}${model.renewalDetail(r)?.let { " · $it" }.orEmpty()} · ${model.t("assets.until", model.date(r.date))}", style = MaterialTheme.typography.bodySmall)
 
     if (uninsured.isNotEmpty()) {
         Text(model.t("insurance.uninsured"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))

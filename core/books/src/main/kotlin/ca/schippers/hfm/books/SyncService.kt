@@ -1,6 +1,8 @@
 package ca.schippers.hfm.books
 
 import ca.schippers.hfm.calc.rules.LeadTimes
+import ca.schippers.hfm.i18n.Messages
+import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
@@ -183,7 +185,7 @@ class SyncService internal constructor(private val books: Books) {
                     imported += item.id
                     added++
                 }
-                .onFailure { failed += SyncFailure(item.id, it.message ?: it.javaClass.simpleName) }
+                .onFailure { failed += failure(item.id, it) }
         }
         // CON-07: contacts made on the phone wait for review; a contact already received is acknowledged again.
         for (contact in request.contacts.take(MAX_ITEMS)) {
@@ -197,7 +199,7 @@ class SyncService internal constructor(private val books: Books) {
                     imported += contact.id
                     added++
                 }
-                .onFailure { failed += SyncFailure(contact.id, it.message ?: it.javaClass.simpleName) }
+                .onFailure { failed += failure(contact.id, it) }
         }
         books.core.deviceSeen(now, added.toLong(), deviceId)
         val reference = reference(today, now)
@@ -336,4 +338,11 @@ class SyncService internal constructor(private val books: Books) {
         private const val MAX_PAYEES = 400
         private const val MAX_DUE = 50
     }
+}
+
+/** SYNC-09: why an item was refused, in English and French: the rule it broke, else a general reason. */
+internal fun failure(id: String, error: Throwable): SyncFailure = when (error) {
+    is ValidationException -> SyncFailure(id, error.message(Language.ENGLISH), error.message(Language.FRENCH))
+    is ca.schippers.hfm.data.AccessDeniedException -> SyncFailure(id, Messages.get(Language.ENGLISH, "sync.failed.access"), Messages.get(Language.FRENCH, "sync.failed.access"))
+    else -> SyncFailure(id, Messages.get(Language.ENGLISH, "sync.failed.other"), Messages.get(Language.FRENCH, "sync.failed.other"))
 }

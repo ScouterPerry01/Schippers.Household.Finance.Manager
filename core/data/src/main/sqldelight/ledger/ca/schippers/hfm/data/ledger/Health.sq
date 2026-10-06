@@ -105,6 +105,11 @@ UPDATE medication SET member_id = ?, name = ?, dose = ?, instructions = ?, presc
     active = ?, notes = ?, updated_at = ?
 WHERE id = ?;
 
+-- HLT-02: a refill changes only the fill fields, so recording one needs capture rights, not edit rights.
+updateMedicationFill:
+UPDATE medication SET days_supply = ?, refills_remaining = ?, last_fill_date = ?, updated_at = ?
+WHERE id = ?;
+
 deleteMedication:
 DELETE FROM medication WHERE id = ?;
 

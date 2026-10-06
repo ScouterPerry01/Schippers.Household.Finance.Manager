@@ -64,7 +64,7 @@ Fonctionnement du dossier surveillé :
 
 RANN's Roost ne se connecte jamais à votre boîte de courriel. Pour garder un reçu ou une facture reçus par courriel, enregistrez le courriel comme fichier (un fichier .eml) à partir de votre logiciel de courriel, puis importez-le, déposez-le sur l’écran ou enregistrez-le dans le dossier surveillé.
 
-- Si le courriel contient des pièces jointes PDF ou images, chaque pièce jointe devient un document et est lue.
+- Si le courriel contient des pièces jointes PDF ou images, chaque pièce jointe devient un document et est lue. Les petites images affichées dans le courriel lui-même, comme le logo du commerce, ne sont pas des pièces jointes et sont laissées de côté.
 - S’il n’en contient pas, le courriel lui-même est conservé sous forme de PDF de son objet, de son expéditeur, de sa date et de son texte, et le commerce, la date et le total sont lus dans ce texte.
 
 ### Captures du téléphone {#phone-captures}
@@ -213,6 +213,8 @@ L’application apprend de ce que vous changez, commerce par commerce :
 
 Cet apprentissage est conservé dans le groupe de comptes du document.
 
+**Commerces appris…** (en haut de l’écran Documents) ouvre Ce qui a été appris de vos corrections : chaque commerce tel qu’il a été lu (« Lu comme … », simplifié : en minuscules, sans chiffres ni ponctuation), puis le nom, le type et la catégorie appris et le nombre de corrections qui les ont appris. **Oublier** demande d’abord, puis oublie ce commerce : ses prochains documents sont lus tels quels, et les documents déjà classés ne changent pas. Oublier demande la permission Modifier sur le groupe.
+
 ### Doublons possibles {#duplicates}
 @index: reçu en double; même reçu deux fois
 
@@ -302,7 +304,15 @@ Pour un relevé de carte de crédit, un relevé bancaire, un relevé de placemen
 
 - rapprochez un relevé lu par l’IA, voir [Rapprocher un relevé lu par l’IA](documents#ai-statement) ;
 - inscrivez un talon de paie comme votre paie, voir [Inscrire la paie à partir d’un talon de paie](documents#pay-stub) ;
-- joignez un relevé de prestations à une réclamation dans l’écran [Réclamations médicales](medical).
+- joignez un relevé de prestations à la réclamation à laquelle il répond, ici même (voir [Associer un relevé de prestations](documents#eob-match)), ou dans l’écran [Réclamations médicales](medical).
+
+### Associer un relevé de prestations {#eob-match}
+@index: relevé de prestations; EOB; associer une réclamation; remboursement
+
+Pour un document de la sorte **Relevé de prestations**, la fenêtre énumère sous « Réclamations auxquelles ce relevé de prestations peut répondre » les réclamations encore en attente de paiement faites pour le **Total** du document ou plus, et soumises à sa **Date** ou avant, le montant le plus proche d’abord (au plus cinq). Chaque ligne donne la personne, le service et sa date, le montant réclamé et le régime.
+
+- **Joindre à cette réclamation** : joint le document à cette réclamation, le classe et ferme la fenêtre. Inscrivez ensuite ce que le régime a payé avec **Inscrire le paiement** sur la réclamation, sous [Réclamations médicales](medical).
+- Sans total, la fenêtre demande d’abord le montant payé par l’assureur. Quand rien ne correspond, elle l’indique ; joignez-le alors à partir de la réclamation.
 
 ### Joint à {#attached-to}
 
@@ -325,7 +335,7 @@ Quand la lecture par IA est activée, la fenêtre du document affiche, sous les 
 - **Lire avec l’IA** : fait lire le document. Si vous n’avez pas encore ajouté votre clé, la fenêtre affiche plutôt « Pour lire avec l’IA, ajoutez votre clé sous Lecture par IA. »
 - Une note à côté : « Certains champs sont incertains : l’IA peut lire ce document. » quand le commerce, la date ou le total étaient difficiles à lire ou qu’aucun total n’a été trouvé ; « Lu par (modèle) le (date). » une fois le document lu ; « Lecture par Claude… » pendant la lecture.
 
-La section IA n’apparaît pas pour une dépense rapide saisie sur le téléphone, qui n’a pas d’image.
+La section IA n’apparaît pas pour une dépense rapide saisie sur le téléphone, qui n’a pas d’image, ni pour un utilisateur qui peut seulement consulter le groupe de comptes du document, puisque la lecture ne pourrait pas être enregistrée.
 
 Ce que fait **Lire avec l’IA** dépend d’un réglage de l’écran Lecture par IA, « Me montrer chaque document et me laisser en masquer des parties avant l’envoi » :
 
@@ -345,6 +355,8 @@ La fenêtre montre chaque page exactement comme elle sera envoyée. Rien ne quit
 - **Annuler la dernière zone masquée** : retire le dernier bloc gris de la page affichée.
 - **Effacer cette page** : retire toutes les zones masquées et la zone gardée de la page affichée.
 - **<** et **>** : passent d’une page à l’autre, avec « Page n de m ». Chaque page a ses propres zones masquées.
+- **Ne pas envoyer cette page** : affiché quand le document a plusieurs pages. Cochez-le pour une page inutile, comme un verso blanc ou les conditions générales ; elle n’est pas envoyée. Au moins une page doit être envoyée.
+- Au plus 20 pages peuvent être envoyées. Pour un document plus long, une ligne rouge indique « Ce document a plus de 20 pages : seules les 20 premières sont affichées et peuvent être envoyées. »
 - La ligne « n pages seront envoyées à Anthropic et lues par (modèle). Coût estimé : environ (montant). » donne le coût estimé en dollars américains, qui diminue quand vous ne gardez qu’une partie d’une page.
 - **Envoyer** : envoie les pages et les fait lire. Pendant ce temps, il affiche « Lecture par Claude… ». En cas de réussite, la fenêtre se ferme et la fenêtre du document montre les nouvelles valeurs.
 - **Annuler** : ferme la fenêtre sans rien envoyer.

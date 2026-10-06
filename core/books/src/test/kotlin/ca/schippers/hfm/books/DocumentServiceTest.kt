@@ -151,6 +151,7 @@ class DocumentServiceTest {
         assertEquals(listOf(old.id), books.documents.discardable(today).map { it.id }, "older than six years")
         books.documents.update(old.id, DocumentDetails("Épicerie", DocumentKind.RECEIPT, LocalDate(2019, 5, 4), "IGA", cad("42.16"), true, "Garantie"))
         assertTrue(books.documents.discardable(today).isEmpty(), "kept on purpose")
+        assertEquals(listOf(old.id), books.documents.kept().map { it.id }, "listed for the emergency summary (EST-01)")
         assertEquals("Épicerie", books.documents.get(old.id).label)
 
         books.documents.delete(old.id)
@@ -182,6 +183,15 @@ class DocumentServiceTest {
         books.documents.update(second.id, DocumentDetails("IGA Jodoin", DocumentKind.RECEIPT, second.date, "IGA Jodoin", second.amount, false, null))
         val third = importReceipt("photo-c".encodeToByteArray(), receipt.replace("IGA Extra Famille Jodoin", "IGA EXTRA FAMILLE"))
         assertEquals("IGA Jodoin", third.merchant)
+
+        // What was learned can be looked over and forgotten.
+        val learned = books.documents.learned().single()
+        assertEquals("iga extra famille" to "IGA Jodoin", learned.readKey to learned.merchant)
+        assertEquals(groceries, learned.categoryId)
+        books.documents.forgetLearned(learned.groupId, learned.readKey)
+        assertTrue(books.documents.learned().isEmpty())
+        assertEquals("IGA EXTRA FAMILLE #7", importReceipt("photo-f".encodeToByteArray(), receipt.replace("IGA Extra Famille Jodoin", "IGA EXTRA FAMILLE #7")).merchant)
+        books.documents.update(second.id, DocumentDetails("IGA Jodoin", DocumentKind.RECEIPT, second.date, "IGA Jodoin", second.amount, false, null))
 
         // Another store is not affected, and a private group keeps its own memory.
         assertEquals(null, books.documents.learnedCategory(importReceipt("photo-d".encodeToByteArray(), receipt.replace("IGA Extra Famille Jodoin", "Metro Plus Lebourgneuf")).id))

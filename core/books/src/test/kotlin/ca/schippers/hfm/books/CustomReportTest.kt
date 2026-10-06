@@ -94,6 +94,19 @@ class CustomReportTest {
     }
 
     @Test
+    fun `a category filter keeps the category and its subcategories`() {
+        spend(chequing, LocalDate(2026, 3, 2), "100", "food.groceries")
+        spend(chequing, LocalDate(2026, 3, 9), "40", "food.restaurants")
+        spend(chequing, LocalDate(2026, 3, 12), "900", "housing.moving")
+        val food = books.categories.list().first { it.systemKey == "food.groceries" }.parentId!!
+        val period = ReportFilter(LocalDate(2026, 1, 1), LocalDate(2026, 12, 31))
+        assertEquals(2, books.customReports.run(period, CustomLayout(columns = null), labels).rows.size)
+        val onlyFood = books.customReports.run(period, CustomLayout(rows = ReportDimension.CATEGORY, columns = null, categoryId = food), labels)
+        assertEquals(setOf(cat("food.groceries"), cat("food.restaurants")), onlyFood.rows.map { it.id }.toSet(), "the category's subcategories, nothing else")
+        assertEquals(cad("140"), onlyFood.rows.map { onlyFood.rowTotal(it) }.reduce { a, b -> a + b })
+    }
+
+    @Test
     fun `the smallest rows are added together as other`() {
         val keys = listOf("food.groceries", "food.restaurants", "housing.maintenance", "utilities.electricity", "utilities.internet")
         keys.forEachIndexed { i, k -> spend(chequing, LocalDate(2026, 3, 1), "${(i + 1) * 10}.00", k) }

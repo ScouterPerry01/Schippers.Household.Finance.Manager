@@ -186,6 +186,7 @@ Which buttons appear depends on the account:
 - **Import statement…**: reads a statement file from the bank. See [Import a statement](accounts#import-statement).
 - **Reconcile…**: continues the statement being reconciled, if there is one; otherwise it opens Statements, where you can enter a paper statement. See [Reconcile a statement](accounts#reconcile).
 - **Statements**: the statements of the account, past and in progress. See [Statements](accounts#statements).
+- **Choose transactions…**: tick several transactions to categorize, tag, move or export them together. See [Change or export several transactions](accounts#bulk-edit).
 - **Edit account**: the account form (see [Add or edit an account](accounts#account-dialog)).
 - **Show number**: only when an account number is stored (see [Show the full account number](accounts#show-number)).
 - **Card details**, **Cards and benefits** and **Rewards**: Credit accounts only.
@@ -293,6 +294,31 @@ Every transaction keeps a record of each change: when it was created, each time 
 @index: locked transaction; reconciled change
 
 A transaction marked R is part of a finished reconciliation. Saving a change to it, deleting it, or clicking its mark first asks Change a reconciled transaction?, explaining that the account will no longer agree with that statement and that the change is recorded in the history. **Change it** goes ahead; **Cancel** leaves everything as it was. To redo a reconciliation properly, undo it first (see [Undo the last reconciliation](accounts#undo-reconciliation)).
+
+## Change or export several transactions {#bulk-edit}
+
+@index: bulk edit; several transactions; re-categorize; recategorize; tag several; move transactions; export transactions; QIF export; OFX export; CSV export; accountant
+
+**Choose transactions…** (above the register) adds a box in front of each transaction and a bar above the columns. Tick the transactions to change or export, or click their lines; **Choose all shown** ticks every transaction loaded in the register (click **Show earlier transactions** first to include older ones) and **Choose none** clears the boxes. The bar shows how many are chosen. **Done** hides the boxes. While choosing, clicking a line ticks it instead of opening it in the entry form.
+
+The bar's buttons act on the chosen transactions:
+
+- **Categorize…**: one **Category** for all of them, or "(uncategorized)". A split transaction keeps its lines and amounts, and each line takes the category. **Save** changes them.
+- **Add a tag…**: a **Tag**, new or existing (existing tags are suggested as you type), added to each one; tags they already have stay. **Save** adds it.
+- **Move to…**: moves them to another account, chosen under **To the account**. Only open accounts in the same account group and the same currency are offered, since a transaction cannot leave its group's encrypted file. **Move** moves them; their categories, documents and history go with them, and a card chosen on a card purchase is cleared.
+- **Export…**: saves them in a file, for another program or an accountant. Choose the **Format**, then **Save as…** asks where:
+  - **CSV (spreadsheet)**: one line per transaction with the date, payee, category (Parent:Child; the categories of a split transaction joined by " | "; a transfer as [Account]), memo, amount, currency, cleared mark (c or R) and tags. In English, columns are separated by commas and decimals use a point; in French, by semicolons with a decimal comma, as French spreadsheets expect. Excel reads the accents.
+  - **QIF (Quicken and others)**: for Quicken, GnuCash, Moneydance and most other money programs, with categories, splits, transfers and cleared marks. Dates are written month/day/year.
+  - **OFX (bank statement format)**: as a bank download, with the date, amount, payee and memo but no categories. Each transaction carries its own identifier, so importing the same file twice finds the duplicates.
+
+Categories are written in the language the app is in. The exported file is not encrypted: keep it somewhere safe. Each export is listed in the activity log as "Exported data" (see [Users](users)).
+
+What is left as it was, and counted as such in the message after the change:
+
+- transfers, which change from the register like any transfer, and investment cash lines, which change under Investments;
+- for a move, transactions matched to a bank statement (undo the reconciliation first, see [Undo the last reconciliation](accounts#undo-reconciliation)) and those in an account of another currency.
+
+When a chosen transaction is reconciled (marked R), the app first asks Change a reconciled transaction?, as for a single change; nothing changes until you confirm. Each changed transaction gets an entry in its change history (see [Change history](accounts#transaction-history)); a move shows as "Moved from (account) to (account)". Changing or moving needs the Edit permission on the account group; exporting only needs to see it.
 
 ## Transfers between accounts {#transfers}
 

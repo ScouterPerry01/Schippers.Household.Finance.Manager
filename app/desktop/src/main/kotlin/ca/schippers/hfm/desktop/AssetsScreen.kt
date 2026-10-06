@@ -166,12 +166,17 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
     var status by remember { mutableStateOf(existing.status) }
     var disposalDate by remember { mutableStateOf(existing.disposalDate?.toString().orEmpty()) }
     var disposalPrice by remember { mutableStateOf(amt(existing.disposalPrice)) }
+    // SAL-03, AST-05: the sale in the books (its payee is the buyer).
+    var saleId by remember { mutableStateOf(existing.disposalTransactionId) }
+    var findSale by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
     var meter by remember { mutableStateOf(existing.meter) }
     var saved by remember { mutableStateOf(existing.takeIf { it.id.isNotBlank() }) }
     var warranty by remember { mutableStateOf<AssetWarranty?>(null) }
     var asking by remember { mutableStateOf(false) }
     val linked = transactionId?.let { id -> remember(id) { runCatching { books.transactions.get(id) }.getOrNull() } }
+    val sale = saleId?.let { id -> remember(id) { runCatching { books.transactions.get(id) }.getOrNull() } }
+    val saleHits = remember(findSale) { if (findSale.trim().length < 2) emptyList() else books.search.search(findSale, locale, 30).transactions.filter { it.transaction.amount.isPositive } }
     val hits = remember(find) { if (find.trim().length < 2) emptyList() else books.search.search(find, locale, 30).transactions.filter { it.transaction.amount.isNegative } }
 
     WideDialog(model.t(if (existing.id.isBlank()) "assets.add" else "assets.asset"), model.t("common.close"), onClose) {
@@ -236,6 +241,26 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
                     if (status == AssetStatus.SOLD) AmountInput(model.t("assets.salePrice"), disposalPrice, cur, locale, Modifier.weight(1f), model::money) { disposalPrice = it }
                 }
             }
+            if (status == AssetStatus.SOLD) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        sale?.let { t -> model.t("assets.sale", model.date(t.date), t.payeeText ?: "", model.money(t.amount)) } ?: model.t("assets.noSale"),
+                        Modifier.weight(1f), style = MaterialTheme.typography.bodySmall,
+                    )
+                    if (sale != null) TextButton(onClick = { saleId = null }) { Text(model.t("assets.unlink")) }
+                    TextInput(model.t("assets.findSale"), findSale, Modifier.width(220.dp)) { findSale = it }
+                    if (saleHits.isNotEmpty()) {
+                        Picker(model.t("assets.pickSale"), saleHits, null, { h -> "${model.date(h.transaction.date)} · ${h.payeeName.orEmpty()} · ${model.money(h.transaction.amount)}" }, Modifier.width(260.dp)) { h ->
+                            saleId = h.transaction.id
+                            if (disposalDate.isBlank()) disposalDate = h.transaction.date.toString()
+                            if (disposalPrice.isBlank()) disposalPrice = MoneyFormat.formatAmount(h.transaction.amount, locale)
+                            findSale = ""
+                        }
+                    }
+                }
+                saleResult(model, runCatching { parseAmount(price, cur, locale) }.getOrNull(), runCatching { parseAmount(disposalPrice, cur, locale) }.getOrNull())
+                    ?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            }
             TextInput(model.t("account.notes"), notes, singleLine = false) { notes = it }
             // CON-04: who services or insures it, as contacts.
             LinkedContacts(model, LinkTarget.ASSET, saved?.id, listOf(LinkRole.SERVICE, LinkRole.INSURER, LinkRole.OTHER), memberIds = setOfNotNull(ownerId), groupId = existing.groupId)
@@ -249,7 +274,8 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
                                 location = location, ownerMemberId = ownerId, valueMethod = method, value = parseAmount(value, cur, locale), valueDate = today().takeIf { method == ValueMethod.MANUAL },
                                 depreciationYears = intOrNull(years), residualPercent = residual.trim().ifEmpty { null }?.let { runCatching { MoneyFormat.parseDecimal(it, locale) }.getOrElse { throw ValidationException("error.invalidNumber") } },
                                 inNetWorth = inNetWorth && method != ValueMethod.NONE, status = status, disposalDate = dateOrNull(disposalDate).takeIf { status != AssetStatus.ACTIVE },
-                                disposalPrice = parseAmount(disposalPrice, cur, locale).takeIf { status == AssetStatus.SOLD }, notes = notes, meter = meter,
+                                disposalPrice = parseAmount(disposalPrice, cur, locale).takeIf { status == AssetStatus.SOLD },
+                                disposalTransactionId = saleId.takeIf { status == AssetStatus.SOLD }, notes = notes, meter = meter,
                             ),
                         )
                     }?.let { saved = it }
@@ -597,7 +623,7 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
             }
         }
     }
-    claim?.let { c -> ClaimDialog(model, c, items) { claim = null } }
+    claim?.let { c -> ClaimDialog(model, c, items, saved?.groupId ?: existing.groupId) { claim = null } }
     saved?.let { s ->
         if (asking) {
             AskBeforeDeleting(model, model.t("insurance.delete.policy", "${model.t("policyKind.${s.kind}")} · ${s.insurer}"), onDismiss = { asking = false }) {
@@ -613,7 +639,7 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
 }
 
 @Composable
-private fun ClaimDialog(model: BooksModel, existing: InsuranceClaim, items: List<Pair<String, String>>, onClose: () -> Unit) {
+private fun ClaimDialog(model: BooksModel, existing: InsuranceClaim, items: List<Pair<String, String>>, groupId: String, onClose: () -> Unit) {
     val books = model.books
     val locale = model.language.locale
     val cad = Currency.CAD
@@ -653,5 +679,25 @@ private fun ClaimDialog(model: BooksModel, existing: InsuranceClaim, items: List
             AmountInput(model.t("medical.paid"), paid, cad, locale, Modifier.weight(1f), model::money) { paid = it }
             DateInput(model.t("medical.paidOnDate"), paidDate, Modifier.weight(1f)) { paidDate = it }
         }
+        // INS-04: the claim's documents (photos of the damage, estimates, the insurer's letters), once it is saved.
+        if (existing.id.isNotBlank()) {
+            DocumentsBlock(model, InsuranceService.CLAIM, existing.id, groupId, "insurance.claimDocuments")
+        } else {
+            Text(model.t("insurance.claimDocumentsLater"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/**
+ * SAL-03: what a sale gained or lost against the purchase price (both in the same currency), as
+ * a line to show; null when either price is missing.
+ */
+internal fun saleResult(model: BooksModel, purchase: Money?, sale: Money?): String? {
+    if (purchase == null || sale == null || purchase.currency != sale.currency) return null
+    val result = sale - purchase
+    return when {
+        result.isPositive -> model.t("assets.saleGain", model.money(result))
+        result.isNegative -> model.t("assets.saleLoss", model.money(-result))
+        else -> model.t("assets.saleEven")
     }
 }

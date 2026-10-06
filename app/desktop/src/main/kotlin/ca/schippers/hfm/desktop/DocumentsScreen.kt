@@ -91,6 +91,7 @@ fun DocumentsScreen(model: BooksModel) {
     var busy by remember { mutableStateOf(false) }
     var dragOver by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showLearned by remember { mutableStateOf(false) }
 
     fun import(files: List<Path>) {
         val group = model.defaultDocumentGroup() ?: run { model.error = model.t("error.noEditableGroup"); return }
@@ -128,6 +129,7 @@ fun DocumentsScreen(model: BooksModel) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(model.t("nav.documents"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+            TextButton(onClick = { showLearned = true }) { Text(model.t("learned.button")) }
             TextButton(onClick = { showSettings = true }) { Text(model.t("documents.watchFolder")) }
             Button(enabled = !busy, onClick = { import(chooseFiles(model)) }) { Text(model.t(if (busy) "documents.reading" else "documents.import")) }
         }
@@ -150,6 +152,44 @@ fun DocumentsScreen(model: BooksModel) {
 
     reviewing?.let { doc -> ReviewDialog(model, doc.id) { reviewing = null } }
     if (showSettings) WatchFolderDialog(model) { showSettings = false }
+    if (showLearned) LearnedDialog(model) { showLearned = false }
+}
+
+/** OCR-07: what was learned from corrections, store by store, each of which can be forgotten. */
+@Composable
+private fun LearnedDialog(model: BooksModel, onClose: () -> Unit) {
+    val books = model.books
+    val learned = remember(model.revision) { books.documents.learned() }
+    val categories = remember(model.revision) { books.categories.list(includeArchived = true).associateBy { it.id } }
+    var forgetting by remember { mutableStateOf<ca.schippers.hfm.books.LearnedMerchant?>(null) }
+    WideDialog(model.t("learned.title"), model.t("common.close"), onClose) {
+        Column(Modifier.width(720.dp).heightIn(max = 480.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(model.t("learned.hint"), style = MaterialTheme.typography.bodySmall)
+            if (learned.isEmpty()) Text(model.t("learned.none"), Modifier.padding(vertical = 8.dp))
+            for (l in learned) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text(model.t("learned.read", l.readKey), style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            listOfNotNull(
+                                l.merchant,
+                                l.kind?.let { model.t("documentKind.$it") },
+                                l.categoryId?.let { categories[it]?.name(model.language) },
+                                model.t("learned.uses", l.uses),
+                            ).joinToString(" · "),
+                        )
+                    }
+                    TextButton(onClick = { forgetting = l }) { Text(model.t("learned.forget")) }
+                }
+                HorizontalDivider()
+            }
+        }
+    }
+    forgetting?.let { l ->
+        AskBeforeDeleting(model, model.t("learned.forgetQuestion", l.merchant ?: l.readKey), onDismiss = { forgetting = null }) {
+            model.act { books.documents.forgetLearned(l.groupId, l.readKey) } != null
+        }
+    }
 }
 
 private fun chooseFiles(model: BooksModel): List<Path> {
@@ -295,6 +335,15 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                 AiPart(model, doc, kind, onClose)
                 // SAL-02: a pay stub is recorded with or without AI; what AI read fills the form, else it is typed.
                 if (kind == DocumentKind.PAY_STUB) PayStubPart(model, doc, onClose)
+                // MED-08: an explanation of benefits proposes the claims it may answer.
+                if (kind == DocumentKind.EOB) {
+                    EobPart(
+                        model, doc,
+                        runCatching { parseAmount(amount, currency, locale) }.getOrNull() ?: doc.amount,
+                        runCatching { LocalDate.parse(date.trim()) }.getOrNull() ?: doc.date,
+                        onClose,
+                    )
+                }
                 VoicePart(model, doc)
                 Duplicates(model, doc)
                 LabeledCheckbox(model.t("documents.keepForever"), keep) { keep = it }
@@ -351,6 +400,11 @@ private fun <T> androidx.compose.foundation.layout.RowScope.ReviewedField(model:
 private fun AiPart(model: BooksModel, doc: VaultDocument, kind: DocumentKind, onClose: () -> Unit) {
     val settings = remember(model.revision) { model.books.ai.settings() }
     if (!settings.enabled || doc.mimeType == "text/plain") return
+    // AI-01: a paid request only for someone who may save its answer (capture rights on the document's group).
+    val canSave = remember(model.revision, doc.groupId) {
+        model.books.groups().firstOrNull { it.id == doc.groupId }?.level?.allows(ca.schippers.hfm.domain.PermissionLevel.CAPTURE_ONLY) == true
+    }
+    if (!canSave) return
     val hasKey = remember(model.revision) { DesktopAi.key(model) != null }
     val reading = remember(model.revision, doc.id) { runCatching { model.books.ai.reading(doc.id) }.getOrNull() }
     val draft = doc.draft
@@ -435,6 +489,39 @@ private fun PayStubPart(model: BooksModel, doc: VaultDocument, onClose: () -> Un
     if (open) {
         val read = remember(doc.id) { model.books.ai.payStub(doc.id, ca.schippers.hfm.money.Currency.CAD) }
         PayStubDialog(model, null, read, doc.id) { done -> open = false; if (done) onClose() }
+    }
+}
+
+/**
+ * MED-08: claims waiting for payment that this explanation of benefits may answer (claimed at least
+ * its amount, submitted on or before its date), likeliest first; one click attaches it to the claim.
+ */
+@Composable
+private fun EobPart(model: BooksModel, doc: VaultDocument, amount: ca.schippers.hfm.money.Money?, date: LocalDate?, onClose: () -> Unit) {
+    val books = model.books
+    if (amount == null || !amount.isPositive) {
+        Text(model.t("documents.eobNeedsAmount"), style = MaterialTheme.typography.bodySmall)
+        return
+    }
+    val candidates = remember(model.revision, amount, date) { books.medical.eobCandidates(amount, date ?: today()).take(5) }
+    val plans = remember(model.revision) { books.medical.plans().associate { it.id to it.name } }
+    val people = remember { books.members.list().associate { it.id to it.displayName } }
+    Text(model.t("documents.eobMatches"), style = MaterialTheme.typography.titleSmall)
+    if (candidates.isEmpty()) Text(model.t("documents.eobNone"), style = MaterialTheme.typography.bodySmall)
+    for ((e, c) in candidates) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                model.t("documents.eobLine", people[e.memberId].orEmpty(), model.t("medService.${e.service}"), model.date(e.serviceDate), model.money(c.claimed), plans[c.planId].orEmpty()),
+                Modifier.weight(1f), style = MaterialTheme.typography.bodySmall,
+            )
+            OutlinedButton(onClick = {
+                val done = model.act {
+                    books.medical.attach(ca.schippers.hfm.books.MedicalService.CLAIM, c.id, doc.id)
+                    books.documents.setStatus(doc.id, DocumentStatus.FILED)
+                }
+                if (done != null) { model.lastImportMessage = model.t("documents.eobAttached"); onClose() }
+            }) { Text(model.t("documents.eobAttach")) }
+        }
     }
 }
 

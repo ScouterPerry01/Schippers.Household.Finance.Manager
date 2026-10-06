@@ -109,8 +109,11 @@ The buttons on an appointment's line act on that one date only. For a repeating 
 ### Repeats {#repeats}
 @index: recurring appointment; repeating event
 
-- **Repeats**: Once, Weekly, Every two weeks, Monthly, Quarterly, Twice a year, Yearly, Every … days, Every … weeks, or Every … months. Default: Once. A monthly appointment comes back on the same day of the month (in a shorter month, its last day).
+- **Repeats**: Once, Weekly, Every two weeks, Twice a month, Monthly, Quarterly, Twice a year, Yearly, Every … days, Every … weeks, or Every … months, the same choices as for bills. Default: Once. A monthly appointment comes back on the same day of the month (in a shorter month, its last day).
 - **Every**: shown for the "Every …" choices. The number of days, weeks or months between dates, 1 or more.
+- **Second day**: shown for Twice a month. The appointment falls on the day of **Date** and on this day of each month; 0 means the last day of the month.
+- **Day of the month**: shown for the choices counted in months. **Same day each time**, **Last day of the month** or **Last business day** (weekends and the province's bank holidays skipped).
+- **On weekends and holidays**: shown when the appointment repeats. **Keep the date**, **Move to the business day before** or **Move to the next business day**, when a date falls on a weekend or a bank holiday of the household's province.
 - **Last due date (optional)**: shown when the appointment repeats. The last date it can occur, as YYYY-MM-DD. Leave empty for no end. It cannot be before **Date**.
 
 ### Remind me {#remind-me}

@@ -93,4 +93,4 @@ Details: [Payees](payees) and [Category rules](rules).
 - [AI reading](ai): let Claude read hard documents with your own Anthropic key.
 - [About](about): your version, and update checks on Linux packages.
 
-> Tip: The **Getting started** card on the [Dashboard](dashboard) walks through the people, accounts, bills, a first statement and the phone, and ticks each step off as you do it.
+> Tip: The **Getting started** card on the [Dashboard](dashboard) walks through the people, accounts, bills, a first receipt, a first statement reconciled and the phone, and ticks each step off as you do it.

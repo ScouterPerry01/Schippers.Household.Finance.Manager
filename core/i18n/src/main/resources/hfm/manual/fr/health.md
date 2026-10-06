@@ -223,7 +223,9 @@ Les professionnels ne peuvent pas être supprimés ; marquez-les plutôt **N’e
 - **Vaccins** : chaque vaccin une fois, avec la date de la dernière dose ;
 - **Professionnels** : les prescripteurs et pharmacies des médicaments encore pris, avec leur téléphone et leur adresse.
 
-Le PDF indique aussi quand et avec quoi il a été préparé.
+Le PDF indique aussi quand et avec quoi il a été préparé, et qu’il doit rester confidentiel puisqu’il contient des renseignements de santé.
+
+**Imprimer le sommaire de santé** envoie le même sommaire directement à l’imprimante (ou l’ouvre dans votre lecteur PDF quand l’ordinateur n’offre pas l’impression). La copie faite pour l’impression est un fichier temporaire, supprimé à la fermeture de RANN's Roost.
 
 ### La boîte Enregistrer en PDF {#save-pdf}
 @index: mot de passe; PDF protégé; chiffrement

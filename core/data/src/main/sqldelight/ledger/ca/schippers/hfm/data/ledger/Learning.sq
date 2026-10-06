@@ -20,5 +20,9 @@ ON CONFLICT(read_key) DO UPDATE SET merchant = coalesce(excluded.merchant, merch
 merchantMemory:
 SELECT * FROM merchant_memory WHERE read_key = ?;
 
+-- OCR-07: everything learned, for the user to look over and forget what is wrong.
+allMerchantMemory:
+SELECT * FROM merchant_memory ORDER BY coalesce(merchant, read_key), read_key;
+
 forgetMerchant:
 DELETE FROM merchant_memory WHERE read_key = ?;

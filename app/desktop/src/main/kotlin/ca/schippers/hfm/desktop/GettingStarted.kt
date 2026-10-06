@@ -26,7 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 /** OTH-04: the steps of setting up a household, each done when the books show it. */
-enum class SetupStep { PEOPLE, ACCOUNTS, BILLS, STATEMENT, PHONE }
+/** NFR-09: a first receipt captured, and a first statement reconciled, without the manual. */
+enum class SetupStep { PEOPLE, ACCOUNTS, BILLS, RECEIPT, STATEMENT, PHONE }
 
 /** Which setup steps the books show as done. */
 fun BooksModel.setupDone(): Set<SetupStep> {
@@ -35,13 +36,17 @@ fun BooksModel.setupDone(): Set<SetupStep> {
         if (books.members.list().isNotEmpty()) add(SetupStep.PEOPLE)
         if (accounts.isNotEmpty()) add(SetupStep.ACCOUNTS)
         if (books.bills.list().isNotEmpty()) add(SetupStep.BILLS)
-        if (accounts.any { books.statements.statements(it.account.id).isNotEmpty() }) add(SetupStep.STATEMENT)
+        if (books.documents.search(ca.schippers.hfm.books.DocumentQuery(limit = 1)).isNotEmpty()) add(SetupStep.RECEIPT)
+        if (accounts.any { a -> books.statements.statements(a.account.id).any { it.status == ca.schippers.hfm.books.StatementStatus.RECONCILED } }) add(SetupStep.STATEMENT)
         if (books.sync.devices().any { !it.revoked }) add(SetupStep.PHONE)
     }
 }
 
 /** OTH-04: the guide is hidden per user, in the household's settings. */
-private fun BooksModel.gettingStartedKey() = "onboarding.hidden.${books.userId}"
+private fun BooksModel.gettingStartedKey() = gettingStartedSetting(books.userId)
+
+/** The household setting that hides the guide for [userId]. */
+internal fun gettingStartedSetting(userId: String) = "onboarding.hidden.$userId"
 
 /** Whether this user hid the Getting started guide. */
 fun BooksModel.gettingStartedHidden(): Boolean = books.setting(gettingStartedKey()) == "1"
@@ -51,7 +56,7 @@ fun BooksModel.showGettingStarted() = books.putSetting(gettingStartedKey(), "0")
 
 /**
  * OTH-04: a guide on the dashboard through the first steps (the people, the accounts, the bills, a
- * first statement, the phone), each opening the screen that does it, until all are done or the
+ * first receipt, a first statement reconciled, the phone), each opening the screen that does it, until all are done or the
  * user hides it (Display and accessibility shows it again). The next step to do stands out.
  */
 @Composable
@@ -87,6 +92,7 @@ fun GettingStarted(model: BooksModel) {
                                 SetupStep.PEOPLE -> model.section = Section.MEMBERS
                                 SetupStep.ACCOUNTS -> adding = true
                                 SetupStep.BILLS -> model.section = Section.BILLS
+                                SetupStep.RECEIPT -> model.section = Section.DOCUMENTS
                                 SetupStep.STATEMENT -> model.section = Section.ACCOUNTS
                                 SetupStep.PHONE -> model.section = Section.PHONES
                             }

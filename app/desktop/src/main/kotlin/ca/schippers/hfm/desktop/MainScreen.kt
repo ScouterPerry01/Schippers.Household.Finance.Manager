@@ -147,7 +147,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
             onDismissRequest = { model.error = null },
             title = { Text(model.t("error.title")) },
             text = { Text(message) },
-            confirmButton = { TextButton(onClick = { model.error = null }) { Text("OK") } },
+            confirmButton = { TextButton(onClick = { model.error = null }) { Text(model.t("common.ok")) } },
         )
     }
     model.pendingReconciledChange?.let { retry ->

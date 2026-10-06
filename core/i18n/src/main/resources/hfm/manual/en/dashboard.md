@@ -25,19 +25,20 @@ The page scrolls when the window is too small to show everything.
 
 @index: onboarding; setup; first steps; Getting started
 
-In a new household, a coloured card at the top of the Dashboard walks you through the first steps of setting up. Its title counts the steps done, for example Getting started: 2 of 5 done. Under the title, a short sentence explains that each step opens the screen that does it.
+In a new household, a coloured card at the top of the Dashboard walks you through the first steps of setting up. Its title counts the steps done, for example Getting started: 2 of 6 done. Under the title, a short sentence explains that each step opens the screen that does it.
 
 Each step shows a ring (to do) or a tick (done). A step that is not done shows a one-line hint and a button. The next step to do is in bold and its button is filled in, so it stands out; the other buttons are outlined. A step is ticked by itself as soon as the books show it is done: you never tick it by hand.
 
-### The five steps {#setup-steps}
+### The six steps {#setup-steps}
 
 - **The people in the household**: done once at least one household member exists. The button **Add people** opens Household members. People let accounts, expenses, health records and taxes belong to someone. See [Household members](members).
 - **Your accounts**: done once the household has at least one account. The button **Add an account** opens the Add account form right on the Dashboard, the same form as on the Accounts screen. See [Add or edit an account](accounts#account-dialog).
 - **Your bills and pay**: done once at least one bill or pay day is set up. The button **Add bills** opens Bills. See [Bills](bills).
-- **A first statement**: done once any account has a statement, imported from a file or entered from paper. The button **Open an account** opens Accounts, where you choose the account and use **Import statement…**. See [Import a statement](accounts#import-statement).
+- **A first receipt**: done once the vault holds any document, imported on the Documents screen, dropped there, sent from the phone or saved from an email. The button **Open Documents** opens Documents. See [Getting documents in](documents#adding-documents).
+- **A first statement, reconciled**: done once a statement of any account has been reconciled to the end. The button **Open an account** opens Accounts, where you choose the account, use **Import statement…**, then **Reconcile…**. See [Import a statement](accounts#import-statement) and [Reconcile a statement](accounts#reconcile).
 - **The phone (optional)**: done once a phone is paired and not revoked. The button **Pair a phone** opens Phones. See [Phones](phones).
 
-The guide disappears by itself once the first four steps are done. The phone is optional, so the guide does not wait for it.
+The guide disappears by itself once the first five steps are done. The phone is optional, so the guide does not wait for it.
 
 ### Hide this guide {#hide-guide}
 

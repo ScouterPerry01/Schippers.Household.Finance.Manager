@@ -41,6 +41,8 @@ import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
+import kotlinx.datetime.DatePeriod
 
 /** What the Goals screen is doing with a goal. */
 private sealed interface GoalAction {
@@ -108,7 +110,11 @@ private fun GoalRow(model: BooksModel, p: GoalProgress, onAction: (GoalAction) -
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(g.name + if (g.status == GoalStatus.REACHED) " (${model.t("goalStatus.REACHED")})" else "", fontWeight = FontWeight.Medium)
-                Text(model.t("goals.savedOf", model.money(p.saved), model.money(g.target), p.percent), style = MaterialTheme.typography.bodySmall)
+                Text(
+                    model.t("goals.savedOf", model.money(p.saved), model.money(g.target), p.percent) +
+                        (if (!p.reached) " · " + model.t("goals.stillNeeded", model.money(p.remaining)) else ""),
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedButton(onClick = { onAction(GoalAction.Amount(g, AmountKind.SET_ASIDE)) }) { Text(model.t("goals.setAside")) }
@@ -241,13 +247,24 @@ private fun AmountDialog(model: BooksModel, goal: SavingsGoal, kind: AmountKind,
     var amount by remember { mutableStateOf(goal.contribution?.takeIf { kind == AmountKind.SET_ASIDE }?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
     var memo by remember { mutableStateOf("") }
     var mode by remember { mutableStateOf(kind) }
+    // GOAL-05: spending can be linked to the purchase, chosen among the account's recent payments.
+    var purchase by remember { mutableStateOf<ca.schippers.hfm.books.Transaction?>(null) }
+    val payments = remember(model.revision) {
+        if (kind == AmountKind.SET_ASIDE) emptyList()
+        else runCatching { model.books.transactions.register(goal.accountId, limit = 200) }.getOrDefault(emptyList())
+            .map { it.transaction }.filter { it.amount.isNegative && it.date >= today().minus(DatePeriod(days = 120)) }.take(40)
+    }
+    val payees = remember(model.revision) { model.books.payees.list(true).associate { it.id to it.name } }
+    fun purchaseLabel(t: ca.schippers.hfm.books.Transaction?) = t?.let {
+        listOfNotNull(model.date(it.date), it.payeeId?.let(payees::get) ?: it.payeeText, it.memo, model.money(-it.amount)).joinToString(" · ")
+    } ?: model.t("goals.noPurchase")
     FormDialog(model.t("goals.amount.${mode.name}") + " · " + goal.name, model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
             val d = runCatching { LocalDate.parse(date.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
             val value = parseAmount(amount, goal.target.currency, locale) ?: throw ValidationException("error.amountPositive")
             when (mode) {
                 AmountKind.SET_ASIDE -> model.books.goals.setAside(goal.id, d, value, memo)
-                AmountKind.SPEND -> model.books.goals.spend(goal.id, d, value, memo = memo)
+                AmountKind.SPEND -> model.books.goals.spend(goal.id, d, value, purchase?.id, memo)
                 AmountKind.RELEASE -> model.books.goals.release(goal.id, d, value, memo)
             }
         }
@@ -257,6 +274,16 @@ private fun AmountDialog(model: BooksModel, goal: SavingsGoal, kind: AmountKind,
             Picker(model.t("goals.why"), listOf(AmountKind.SPEND, AmountKind.RELEASE), mode, { model.t("goals.amount.${it.name}.why") }) { mode = it }
         }
         Text(model.t("goals.amount.${mode.name}.explain"), style = MaterialTheme.typography.bodySmall)
+        if (mode == AmountKind.SPEND && payments.isNotEmpty()) {
+            Picker(model.t("goals.purchase"), listOf(null) + payments, purchase, ::purchaseLabel, Modifier.fillMaxWidth()) { t ->
+                purchase = t
+                if (t != null) {
+                    date = t.date.toString()
+                    amount = MoneyFormat.formatAmount(-t.amount, locale)
+                    if (memo.isBlank()) memo = (t.payeeId?.let(payees::get) ?: t.payeeText).orEmpty()
+                }
+            }
+        }
         DateInput(model.t("report.date"), date, Modifier.fillMaxWidth()) { date = it }
         AmountInput(model.t("register.amount"), amount, goal.target.currency, locale, Modifier.fillMaxWidth(), model::money) { amount = it }
         TextInput(model.t("register.memo"), memo) { memo = it }

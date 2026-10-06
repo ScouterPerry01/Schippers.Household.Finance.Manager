@@ -42,7 +42,7 @@ import java.io.File
 
 /** RPT-03: the screen's choices as a definition to save. */
 fun ReportState.definition(): ReportDefinition = ReportDefinition(
-    kind.name, preset.name, customFrom, customTo, groupId, memberId, tagId, accountSet, currency?.code, compare.name, layout.takeIf { kind == ReportKind.CUSTOM },
+    kind.name, preset.name, customFrom, customTo, groupId, memberId, tagId, accountSet, currency?.code?.takeIf { kind in BY_CURRENCY }, compare.name, layout.takeIf { kind == ReportKind.CUSTOM },
     taxYear.takeIf { kind in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.MEDICAL) },
     planYear.takeIf { kind in setOf(ReportKind.PLANS, ReportKind.MAINTENANCE) },
     reviewYear.takeIf { kind == ReportKind.YEAR_IN_REVIEW },
@@ -102,6 +102,13 @@ fun CustomReportView(model: BooksModel, state: ReportState, filter: ReportFilter
             layout.columns, { it?.let { d -> model.t("custom.dimension.$d") } ?: model.t("custom.noColumns") }, Modifier.width(190.dp)) { state.layout = layout.copy(columns = it) }
         Picker(model.t("custom.measure"), ReportMeasure.entries, layout.measure, { model.t("custom.measure.$it") }, Modifier.width(200.dp)) { state.layout = layout.copy(measure = it) }
         Picker(model.t("custom.chart"), ReportChart.entries, layout.chart, { model.t("custom.chart.$it") }, Modifier.width(180.dp)) { state.layout = layout.copy(chart = it) }
+        // Section 12: a category filter, the category with its subcategories.
+        val tree = remember(model.revision) { books.categories.tree() }
+        val options = listOf<Pair<ca.schippers.hfm.books.Category, Int>?>(null) + tree
+        Picker(
+            model.t("custom.category"), options, options.firstOrNull { it?.first?.id == layout.categoryId },
+            { it?.first?.name(model.language) ?: model.t("custom.allCategories") }, Modifier.width(240.dp), indent = { it?.second ?: 0 },
+        ) { state.layout = layout.copy(categoryId = it?.first?.id) }
     }
     val pivot = remember(model.revision, filter, layout) { books.customReports.run(filter, layout, model.pivotLabels(), model.language == Language.FRENCH) }
     val title = model.t("report.CUSTOM") + " · " + model.t("custom.measure.${layout.measure}")
@@ -201,7 +208,7 @@ fun makeDueReports(model: BooksModel, today: LocalDate = today()): List<String> 
         val d = ReportDefinition.fromJson(report.definition) ?: continue
         val layout = d.layout ?: continue
         val folder = report.folder?.let(::File)?.takeIf { it.isDirectory } ?: continue
-        val filter = ReportFilter(period.from, period.to, model.reportAccounts(d.groupId, d.accountIds), d.memberId, d.tagId, d.currency?.let { runCatching { Currency.of(it) }.getOrNull() })
+        val filter = ReportFilter(period.from, period.to, model.reportAccounts(d.groupId, d.accountIds), d.memberId, d.tagId, null) // always in the base currency, as on screen
         val pivot = books.customReports.run(filter, layout, model.pivotLabels(), model.language == Language.FRENCH)
         val title = "${report.name} · ${period.id}"
         val file = File(folder, "${report.name.replace(Regex("""[\\/:*?"<>|]"""), "-")} ${period.id}.pdf")

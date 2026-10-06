@@ -182,7 +182,7 @@ The values you type win over what the phone or the computer read.
 Under **Note**:
 
 - **Dictate the note**: speak and Android types your words into the note, in Canadian English or French following the phone's language. Each dictation is added to the end of the note.
-- **Record a voice note**: records your voice, up to a minute; the first time, Android asks to allow the microphone. **Recording… (up to a minute)** shows while it records. Tap **Stop recording** to finish. It then shows **Voice note kept** and its length, with **Delete** to discard it and record again.
+- **Record a voice note**: records your voice, up to a minute; the first time, Android asks to allow the microphone. **Recording… (up to a minute)** shows while it records. Tap **Stop recording** to finish; at one minute the recording stops by itself and the minute is kept. It then shows **Voice note kept** and its length, with **Delete** to discard it and record again.
 
 A recorded voice note is sent with the capture and kept with its document on the computer, where you can play it while reviewing. The microphone is used only while you record.
 

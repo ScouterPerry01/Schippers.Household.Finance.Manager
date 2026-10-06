@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.ai.AiReader
 import ca.schippers.hfm.ai.DocumentType
 import ca.schippers.hfm.ai.PageEdit
 import ca.schippers.hfm.books.VaultDocument
@@ -58,6 +59,9 @@ fun AiReadDialog(model: BooksModel, doc: VaultDocument, kind: ca.schippers.hfm.o
     var type by remember { mutableStateOf(types.firstOrNull { it.id == DocumentType.idFor(kind ?: ca.schippers.hfm.ocr.DocumentKind.RECEIPT) } ?: types.first()) }
     var pages by remember { mutableStateOf<List<BufferedImage>?>(null) }
     val edits = remember { mutableStateListOf<PageEdit>() }
+    // Pages the user chose not to send, by index; and whether the file has more pages than can be sent.
+    val leftOut = remember { mutableStateListOf<Int>() }
+    var truncated by remember { mutableStateOf(false) }
     var index by remember { mutableStateOf(0) }
     var tool by remember { mutableStateOf(Tool.HIDE) }
     var sending by remember { mutableStateOf(false) }
@@ -66,8 +70,14 @@ fun AiReadDialog(model: BooksModel, doc: VaultDocument, kind: ca.schippers.hfm.o
     val aiModel = remember { DesktopAi.chosenModel(model) }
 
     LaunchedEffect(doc.id) {
-        val loaded = withContext(Dispatchers.IO) { runCatching { DesktopOcr.reader.pageImages(model.books.documents.content(doc.id)) }.getOrDefault(emptyList()) }
+        // One page more than can be sent tells whether the document is longer than the limit.
+        val read = withContext(Dispatchers.IO) {
+            runCatching { DesktopOcr.reader.pageImages(model.books.documents.content(doc.id), maxPages = AiReader.MAX_PAGES + 1) }.getOrDefault(emptyList())
+        }
+        truncated = read.size > AiReader.MAX_PAGES
+        val loaded = read.take(AiReader.MAX_PAGES)
         edits.clear()
+        leftOut.clear()
         repeat(loaded.size) { edits += PageEdit() }
         pages = loaded
     }
@@ -94,16 +104,21 @@ fun AiReadDialog(model: BooksModel, doc: VaultDocument, kind: ca.schippers.hfm.o
                             Text(model.t("ai.read.page", index + 1, all.size))
                             TextButton(enabled = index < all.size - 1, onClick = { index++ }) { Text(">") }
                         }
+                        // AI-04: a page that is not needed (a blank back, the terms) can be left out.
+                        LabeledCheckbox(model.t("ai.read.leaveOut"), index in leftOut) { if (it) leftOut += index else leftOut -= index }
                     }
-                    val sizes = remember(all, edits.toList()) { DesktopAi.prepare(all, edits).map { it.width to it.height } }
-                    Text(model.t("ai.read.what", all.size, aiModel.label, model.usd(aiModel.estimate(sizes, type.id))), style = MaterialTheme.typography.bodySmall)
+                    if (truncated) Text(model.t("ai.read.firstPagesOnly", AiReader.MAX_PAGES), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                    val sentPages = all.filterIndexed { i, _ -> i !in leftOut }
+                    val sentEdits = edits.filterIndexed { i, _ -> i !in leftOut }
+                    val sizes = remember(all, edits.toList(), leftOut.toList()) { DesktopAi.prepare(sentPages, sentEdits).map { it.width to it.height } }
+                    Text(model.t("ai.read.what", sentPages.size, aiModel.label, model.usd(aiModel.estimate(sizes, type.id))), style = MaterialTheme.typography.bodySmall)
                     Text(model.t("ai.read.privacy"), style = MaterialTheme.typography.bodySmall)
                     failure?.let { ErrorText(it) }
-                    Button(enabled = !sending, onClick = {
+                    Button(enabled = !sending && sentPages.isNotEmpty(), onClick = {
                         sending = true
                         failure = null
                         scope.launch {
-                            val result = withContext(Dispatchers.IO) { runCatching { DesktopAi.read(model, doc.id, type, DesktopAi.prepare(all, edits)) } }
+                            val result = withContext(Dispatchers.IO) { runCatching { DesktopAi.read(model, doc.id, type, DesktopAi.prepare(sentPages, sentEdits)) } }
                             sending = false
                             model.changed()
                             result.fold({ onClose(true) }, { failure = model.aiFailure(it) })

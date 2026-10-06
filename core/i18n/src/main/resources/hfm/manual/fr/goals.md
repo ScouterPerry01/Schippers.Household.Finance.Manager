@@ -38,7 +38,7 @@ Cet avertissement signifie que de l’argent a été dépensé dans le compte sa
 Chaque objectif du compte a une ligne avec :
 
 - son nom, suivi de « (Atteint) » quand son état est Atteint ;
-- « … sur … (n %) » : ce qui est mis de côté, le montant visé et le pourcentage ;
+- « … sur … (n %) · il manque … » : ce qui est mis de côté, le montant visé, le pourcentage et ce qu’il reste à mettre de côté (absent une fois l’objectif atteint) ;
 - une barre de progression ;
 - le plan, voir [Progression et respect des délais](goals#progress) ;
 - les boutons :
@@ -121,6 +121,7 @@ Si vous changez le calendrier ou sa première date, les montants sont inscrits d
 - **Raison** :
   - **Dépensé pour ce qui était prévu** : l’objectif a payé ce pour quoi il était prévu (« L’objectif a payé ce pour quoi il était prévu. Inscrivez l’achat dans le compte comme d’habitude. »). Inscrit comme « Utilisé ».
   - **Repris pour autre chose** : l’argent retourne dans la partie non attribuée du solde du compte (« Remet l’argent dans la partie non attribuée du solde. »). Inscrit comme « Repris ». Utilisez-le pour corriger un montant mis de côté ou libérer de l’argent pour un autre besoin.
+- **Achat (facultatif)** : affiché pour **Dépensé pour ce qui était prévu** quand le compte a des paiements dans les 120 derniers jours. Choisissez l’achat que l’objectif a payé pour l’y lier ; la date, le montant et (s’il est vide) la note en sont tirés, et peuvent encore être changés. Laissez « (non lié à un achat) » si l’achat n’est pas encore inscrit ou a été payé d’un autre compte.
 - **Date** : par défaut, aujourd’hui.
 - **Montant** : combien quitte l’objectif. Obligatoire, supérieur à zéro.
 - **Note** : une note facultative.

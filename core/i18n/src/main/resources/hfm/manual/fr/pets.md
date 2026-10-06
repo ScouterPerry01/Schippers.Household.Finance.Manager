@@ -75,6 +75,7 @@ Les primes elles-mêmes sont des paiements du registre ; choisissez l’animal d
 - **Notes** : nourriture, consignes du vétérinaire, nom du gardien, tout ce qui est utile.
 - **N’est plus dans le ménage** (en modification) : cochez-le quand l’animal est mort ou a été donné. Voir [Anciens animaux](pets#former-pets).
 - **Supprimer** (en modification) : voir [Supprimer un animal](pets#delete).
+- **Photo et papiers** (en modification) : la photo de l’animal et des papiers comme le contrat d’adoption, l’enregistrement de la micropuce ou un carnet de vaccination, joints avec **Joindre un fichier…** ou **Depuis la boîte de révision**. Ils sont gardés dans le coffre, dans le groupe de comptes partagé du ménage.
 
 **Enregistrer** garde les changements ; **Annuler** ferme le formulaire sans eux.
 
@@ -106,8 +107,9 @@ La fiche montre le total de l’année (depuis le 1er janvier) et des 12 dernier
 
 ### La boîte des coûts {#costs-dialog}
 
-**Coûts** ouvre « Ce que coûte nom », du 1er janvier d’il y a quatre ans jusqu’à aujourd’hui :
+**Coûts** ouvre « Ce que coûte nom » :
 
+- **Période** : **Les cinq dernières années** (du 1er janvier d’il y a quatre ans jusqu’à aujourd’hui, par défaut) ou une année, l’année en cours ou l’une des quatre précédentes. Choisir une année affiche les coûts de cette année par catégorie, par exemple ce qu’ont coûté le vétérinaire, la nourriture et la pension en 2025.
 - **Par année** : le total de chaque année.
 - **Par catégorie** : le total de chaque catégorie, du plus grand au plus petit ; les lignes sans catégorie paraissent comme « (non catégorisé) ».
 - **Total**.

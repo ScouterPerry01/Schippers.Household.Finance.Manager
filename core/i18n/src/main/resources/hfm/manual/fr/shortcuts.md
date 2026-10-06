@@ -103,7 +103,8 @@ Les lecteurs d'écran, comme Narrateur ou NVDA sous Windows et Orca sous Linux, 
 
 - si chaque groupe du menu de gauche est ouvert ou fermé ;
 - que chaque groupe du menu du haut ouvre un menu ;
-- si chaque étape du guide des premiers pas, au tableau de bord, est faite ou à faire.
+- si chaque étape du guide des premiers pas, au tableau de bord, est faite ou à faire ;
+- ce que fait chaque petit bouton **✕** : Retirer (une ligne d'un formulaire) ou Supprimer (un élément). Le même mot s'affiche quand la souris s'y arrête.
 
 ### Moins de choses à retenir {#memory-aids}
 

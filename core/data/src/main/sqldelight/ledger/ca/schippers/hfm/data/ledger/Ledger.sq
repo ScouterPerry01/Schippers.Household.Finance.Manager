@@ -621,6 +621,15 @@ SELECT * FROM change_log WHERE (:user IS NULL OR user_id = :user) ORDER BY at DE
 setTxnAsset:
 UPDATE txn SET asset_id = ? WHERE id = ?;
 
+-- TX-07: a transaction moved to another account of the same group; the card it was made with
+-- belongs to the old account, so it is cleared.
+moveTxn:
+UPDATE txn SET account_id = ?, card_holder_id = NULL, updated_at = ? WHERE id = ?;
+
+-- TX-07: statement lines matched to a transaction, which keep it in its account.
+statementLinesForTxn:
+SELECT count(*) FROM statement_line WHERE txn_id = ?;
+
 -- VEH-10: the lines of transactions linked to an asset.
 assetLines:
 SELECT t.id, t.date, t.account_id, s.category_id, s.amount_minor
@@ -675,6 +684,11 @@ WHERE (:text IS NULL OR recognized_text LIKE :text ESCAPE '!' OR title LIKE :tex
   AND (:maxAmount IS NULL OR abs(amount_minor) <= :maxAmount)
 ORDER BY coalesce(doc_date, date(captured_at / 1000, 'unixepoch')) DESC, captured_at DESC
 LIMIT :limit;
+
+-- EST-01: every document marked to keep, however many there are.
+keptDocuments:
+SELECT * FROM document WHERE keep_forever = 1
+ORDER BY coalesce(doc_date, date(captured_at / 1000, 'unixepoch')) DESC, captured_at DESC;
 
 -- OCR-10: earlier documents with the same merchant, date and amount.
 similarDocuments:

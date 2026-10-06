@@ -24,6 +24,8 @@ data class CustomLayout(
     val chart: ReportChart = ReportChart.BARS,
     /** Rows beyond this many, by size, are added together as "Other". */
     val maxRows: Int = 12,
+    /** Section 12 filter: only this category and its subcategories; null for every category. */
+    val categoryId: String? = null,
 )
 
 /** A row or column of a pivot: [id] identifies it (a category id, "2026-03"...), [label] is shown. */
@@ -79,6 +81,13 @@ class CustomReportService internal constructor(private val books: Books) {
             while (c.parentId != null) c = categories[c.parentId] ?: break
             return c.id
         }
+        fun within(id: String?, ancestor: String): Boolean {
+            var c = id?.let(categories::get) ?: return false
+            while (true) {
+                if (c.id == ancestor) return true
+                c = c.parentId?.let(categories::get) ?: return false
+            }
+        }
         fun categoryName(id: String?) = id?.let(categories::get)?.let { if (french) it.nameFr else it.nameEn } ?: labels("uncategorized")
 
         val cells = HashMap<Pair<String?, String?>, Money>()
@@ -102,6 +111,7 @@ class CustomReportService internal constructor(private val books: Books) {
                 if (filter.currency != null && account.currency != filter.currency) continue
                 if (filter.memberId != null && r.member_id != filter.memberId) continue
                 if (filter.tagId != null && filter.tagId !in tagsOf[r.txn_id].orEmpty()) continue
+                if (layout.categoryId != null && !within(r.category_id, layout.categoryId)) continue
                 val kind = r.category_id?.let(categories::get)?.kind
                 val raw = Money.ofMinor(r.amount_minor, account.currency)
                 val value = when (layout.measure) {

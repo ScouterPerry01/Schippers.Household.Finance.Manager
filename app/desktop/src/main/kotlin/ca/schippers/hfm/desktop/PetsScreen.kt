@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.CostSummary
+import ca.schippers.hfm.books.DocumentEntity
 import ca.schippers.hfm.books.EventCategory
 import ca.schippers.hfm.books.LinkRole
 import ca.schippers.hfm.books.LinkTarget
@@ -76,7 +77,18 @@ fun PetsScreen(model: BooksModel) {
     }
 
     editing?.let { PetDialog(model, it) { editing = null } }
-    costsOf?.let { CostsDialog(model, it.name, remember(it.id, model.revision) { books.pets.costs(it.id, LocalDate(today().year - 4, 1, 1), today()) }) { costsOf = null } }
+    costsOf?.let { pet ->
+        // PET-05: cost per pet per year by category: the last five years together, or one year.
+        var year by remember(pet.id) { mutableStateOf<Int?>(null) }
+        val thisYear = today().year
+        val costs = remember(pet.id, model.revision, year) {
+            year?.let { y -> books.pets.costs(pet.id, LocalDate(y, 1, 1), minOf(LocalDate(y, 12, 31), today())) }
+                ?: books.pets.costs(pet.id, LocalDate(thisYear - 4, 1, 1), today())
+        }
+        CostsDialog(model, pet.name, costs, extra = {
+            Picker(model.t("costs.period"), listOf<Int?>(null) + (thisYear downTo thisYear - 4).toList(), year, { it?.toString() ?: model.t("costs.fiveYears") }, Modifier.width(240.dp)) { year = it }
+        }) { costsOf = null }
+    }
     appointmentFor?.let { pet ->
         val draft = remember(pet.id) { model.newEventDraft(today(), EventCategory.PET, pet.id) }
         if (draft == null) appointmentFor = null else EventDialog(model, null, draft) { appointmentFor = null }
@@ -252,6 +264,9 @@ private fun PetDialog(model: BooksModel, existing: Pet, onClose: () -> Unit) {
                 LabeledCheckbox(model.t("pets.archivedField"), archived) { archived = it }
                 // CON-04: the vet, the insurer, the groomer or kennel, as contacts.
                 LinkedContacts(model, LinkTarget.PET, existing.id, listOf(LinkRole.VETERINARIAN, LinkRole.SERVICE, LinkRole.INSURER, LinkRole.OTHER), suggestedName = existing.insurer.orEmpty(), memberIds = setOf(existing.id))
+                // PET-01: the pet's photo, and papers such as the adoption or microchip certificate, in the vault.
+                val photoGroup = remember(model.revision) { model.defaultDocumentGroup() }
+                if (photoGroup != null) DocumentsBlock(model, DocumentEntity.PET, existing.id, photoGroup, "pets.photos")
                 if (books.pets.canChange) TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
         }

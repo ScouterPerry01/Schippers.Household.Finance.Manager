@@ -119,7 +119,7 @@ Le Portefeuille de placements avertit aussi quand un titre n’a pas de cours à
 
 Un rapport enregistré garde vos choix sous un nom, pour retrouver la même vue en un clic. Les rapports enregistrés vous appartiennent : les autres utilisateurs du ménage ne les voient pas.
 
-Ce qui est conservé : le rapport, la période (ou les dates au choix), le groupe de comptes, les comptes choisis, la personne, l’étiquette, la devise, la comparaison, l’**Année** ou l’**Année d’imposition** des rapports qui en ont une et, pour un rapport personnalisé, ses lignes, colonnes, mesure et graphique. Un rapport enregistré avant que l’année soit conservée s’ouvre avec l’année affichée à ce moment. Aucun montant n’est conservé : le rapport est recalculé à partir des livres chaque fois.
+Ce qui est conservé : le rapport, la période (ou les dates au choix), le groupe de comptes, les comptes choisis, la personne, l’étiquette, la devise (pour les rapports qui en ont une), la comparaison, l’**Année** ou l’**Année d’imposition** des rapports qui en ont une et, pour un rapport personnalisé, ses lignes, colonnes, mesure, graphique et catégorie. Un rapport enregistré avant que l’année soit conservée s’ouvre avec l’année affichée à ce moment. Aucun montant n’est conservé : le rapport est recalculé à partir des livres chaque fois.
 
 ### Enregistrer le rapport {#save-dialog}
 
@@ -136,7 +136,7 @@ Cliquez sur **Enregistrer ce rapport…** au-dessus du rapport.
 Les rapports enregistrés sont énumérés sous **Rapports enregistrés**, sous la liste des rapports. Une horloge (⏱) après un nom indique un rapport planifié.
 
 - Cliquez sur un rapport enregistré pour remettre ses choix à l’écran.
-- Cliquez sur **✕** à côté d’un rapport enregistré pour le retirer. Il est retiré tout de suite, sans question, et ne peut pas être récupéré ; seuls les choix enregistrés sont perdus, jamais une opération.
+- Cliquez sur **✕** à côté d’un rapport enregistré pour le retirer. L’application vous le demande d’abord ; une fois supprimé, il ne peut pas être récupéré. Seuls les choix enregistrés sont perdus, jamais une opération, et les PDF déjà produits restent où ils sont.
 
 ### Rapports planifiés {#scheduled-reports}
 
@@ -216,6 +216,7 @@ Un rapport personnalisé additionne les opérations de la période de la façon 
 - **Lignes** : ce qu’est chaque ligne du rapport : **Catégorie**, **Groupe de catégories** (la catégorie principale, sous-catégories comprises), **Bénéficiaire**, **Compte**, **Personne**, **Étiquette**, **Mois**, **Trimestre** ou **Année**. Par défaut : **Groupe de catégories**.
 - **Colonnes** : ce qu’est chaque colonne : **Totaux seulement** (une seule colonne), **Mois**, **Trimestre**, **Année**, **Personne**, **Compte** ou **Groupe de catégories**. Par défaut : **Mois**.
 - **Additionne** : **Dépenses** (en montants positifs), **Revenus** ou **Revenus moins dépenses**. Par défaut : **Dépenses**.
+- **Catégorie** : **Toutes les catégories** (par défaut), ou une catégorie avec ses sous-catégories, par exemple Alimentation pour voir l’épicerie et les restaurants par mois. Elle est gardée avec un rapport enregistré.
 - **Graphique** : **Barres**, **Lignes**, **Barres classées** ou **Tableau seulement**. Par défaut : **Barres**.
 
 Comment les montants sont calculés :
@@ -226,7 +227,7 @@ Comment les montants sont calculés :
 - Quand les lignes sont des **Étiquette**, une opération qui porte plusieurs étiquettes compte sous chacune : les lignes d’étiquettes peuvent donc dépasser ce qui a été dépensé. Les lignes sans étiquette sont sous « Sans étiquette ».
 - Les lignes qui ne sont pas des périodes sont triées de la plus grande à la plus petite. Au-delà de 12, les onze plus grandes sont gardées et les autres sont additionnées dans une ligne « Autres ».
 - Les colonnes de temps sont dans l’ordre des dates ; les autres colonnes sont triées de la plus grande à la plus petite.
-- Les filtres du dessus s’appliquent aussi : période, groupe de comptes, comptes choisis, personne, étiquette et devise.
+- Les filtres du dessus s’appliquent aussi : période, groupe de comptes, comptes choisis, personne et étiquette. Un rapport personnalisé est toujours dans la devise de base, chaque compte converti au taux de change de la date de chaque opération.
 
 Le graphique :
 

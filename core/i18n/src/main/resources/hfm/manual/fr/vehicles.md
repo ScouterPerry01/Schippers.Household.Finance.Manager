@@ -57,7 +57,7 @@ Chaque date donne une ligne dans l’aperçu, en gras dans les 30 jours qui pré
 En modifiant un véhicule enregistré :
 
 - **État** : **En service** (par défaut), **Vendu** ou **Retiré**. Un véhicule vendu ou retiré est caché de la liste **Véhicule** (à moins que **Afficher les véhicules vendus ou retirés** soit coché), des rappels, des listes d’entretien et de la recherche **Est-ce couvert ?**. Ses données sont conservées.
-- **Date** et **Prix de vente** : affichés quand l’état n’est pas **En service** : quand il a été vendu ou retiré, et pour combien. L’aperçu affiche alors une ligne comme « Vendu le date pour prix ».
+- **Date** et **Prix de vente** : affichés quand l’état n’est pas **En service** : quand il a été vendu ou retiré, et pour combien. L’aperçu affiche alors une ligne comme « Vendu le date pour prix » et, pour une vente avec un prix d’achat, le gain ou la perte sur la vente (le prix de vente moins le prix d’achat), à titre indicatif.
 
 ### Enregistrer dans et supprimer {#store-delete}
 

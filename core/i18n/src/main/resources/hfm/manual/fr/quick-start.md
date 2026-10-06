@@ -59,7 +59,7 @@ L'écran suivant, **Votre clé de récupération**, présente une longue clé fa
 
 @index: guide des premiers pas; étapes de mise en route
 
-Le tableau de bord présente une carte **Premiers pas** de cinq étapes : les personnes, les comptes, les factures et la paie, un premier relevé et le téléphone. Chaque étape a un bouton qui ouvre le bon écran, et la prochaine étape à faire est en gras. La carte compte ce qui est fait et disparaît une fois les quatre premières étapes faites. **Masquer ce guide** la retire pour vous ; **Afficher de nouveau le guide Premiers pas**, dans Affichage et accessibilité, la fait revenir.
+Le tableau de bord présente une carte **Premiers pas** de six étapes : les personnes, les comptes, les factures et la paie, un premier reçu, un premier relevé rapproché et le téléphone. Chaque étape a un bouton qui ouvre le bon écran, et la prochaine étape à faire est en gras. La carte compte ce qui est fait et disparaît une fois les cinq premières étapes faites. **Masquer ce guide** la retire pour vous ; **Afficher de nouveau le guide Premiers pas**, dans Affichage et accessibilité, la fait revenir.
 
 Les étapes ci-dessous suivent le même ordre.
 

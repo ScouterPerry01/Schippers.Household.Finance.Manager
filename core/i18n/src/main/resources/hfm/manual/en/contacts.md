@@ -157,7 +157,7 @@ After the merge, the contact you came from stays, with its own links and all of 
 - **Works at**: for a person only. The organization contact they belong to, chosen from the household's organizations, or (none). The person is then listed under that organization.
 - **Kinds**: tick every kind that fits. The common kinds are shown first; **More kinds…** shows the full list: Bank, Credit union, Investment firm, Financial advisor, Insurer, Insurance broker, Pharmacy, Family doctor, Specialist, Dentist, Optometrist, Clinic, Hospital, Laboratory, Veterinarian, Lawyer, Notary, Accountant, Contractor, Employer, School, Utility, Government and Other. Kinds are used by the **Kind** filter and to put the likely contacts first when you pick one for a record.
 - **For whom (none chosen: the whole household)**: tick the people and pets the contact serves. Used by the **For whom** filter.
-- **Phones, emails and numbers**: each line has its kind (Phone, Email or Account or client number), a **Label (office, cell…)** and a **Number or address**. **Add a phone**, **Add an email** and **Add an account or client number** add a line; **Remove** takes one away. A saved number is shown masked; leave it as it is to keep it, or type a new number to replace it. A line left empty is not saved.
+- **Phones, emails and numbers**: each line has its kind (Phone, Email or Account or client number), a **Label (office, cell…)** and a **Number or address**. **Add a phone**, **Add an email** and **Add an account or client number** add a line; **Remove** takes one away. A saved number is shown masked; leave it as it is to keep it, or erase it and type the whole new number to replace it; a number changed while its dots are still there is refused, so the dots are never saved as the number. A line left empty is not saved.
 - **Address**: several lines.
 - **Website** and **Hours**: such as Mon-Fri 8-5.
 - **Notes**: anything useful. Do not write passwords here.
@@ -198,9 +198,9 @@ The fields those screens had before (an institution's phone, a policy's insurer 
 
 @index: import contacts; duplicates while gathering; gather
 
-Before this screen existed, contact details were spread over several screens: institutions, health providers, contractors, the insurer and broker of each policy, pets' insurers and the people to call in the estate papers. **Gather contacts from the app** turns them into contacts without moving or deleting anything. The first time you open Contacts with no contacts yet, the app offers it by itself; **Not now** closes the offer, and the button stays available.
+Before this screen existed, contact details were spread over several screens: institutions, health providers, contractors, the insurer and broker of each policy, pets' insurers, each vehicle's insurer, warranty providers and garages, the warranty providers of other assets, and the people to call in the estate papers. **Gather contacts from the app** turns them into contacts without moving or deleting anything. The first time you open Contacts with no contacts yet, the app offers it by itself; **Not now** closes the offer, and the button stays available.
 
-The window lists what can become a contact, each line with its name, where it comes from (Institution, Health provider, Contractor, Insurance policy, Pet, Estate papers), its phone and, for a contractor, its trade.
+The window lists what can become a contact, each line with its name, where it comes from (Institution, Health provider, Contractor, Insurance policy, Pet, Vehicle, Asset, Estate papers), its phone and, for a contractor, its trade.
 
 - Each line is ticked; untick the ones you do not want.
 - Lines that look like the same contact, because they have the same name (accents and capitals ignored) or the same phone number, are shown together under "These look like the same contact (same name or phone):". **Make them one contact** merges the ticked lines into one contact; left unticked, each becomes its own contact.
@@ -208,7 +208,7 @@ The window lists what can become a contact, each line with its name, where it co
 - **Store in**: the group for the new contacts. Contacts made from records kept in a private group stay in that group.
 - **Create the contacts**: makes the contacts.
 
-Each new contact is linked to where it came from, and to more: a bank to the accounts it holds (Bank for, Lender for a loan or mortgage, Investment firm for an investment or registered plan account), a pharmacy and a doctor to the medications they fill or prescribe, an insurer and a broker to their policy, a pet's insurer to the pet, an estate contact to the person's papers in their role. A record already linked is not offered again; when everything has its contact, the window says "Everything in the app already has its contact."
+Each new contact is linked to where it came from, and to more: a bank to the accounts it holds (Bank for, Lender for a loan or mortgage, Investment firm for an investment or registered plan account), a pharmacy and a doctor to the medications they fill or prescribe, an insurer and a broker to their policy, a pet's insurer to the pet, a vehicle's insurer to the vehicle (Insurer for), the garages of its service log (Garage for) and its warranty providers (Service for), an asset's warranty providers to the asset (Service for), an estate contact to the person's papers in their role. A garage named in several service entries is offered once, under its most recent spelling; a do-it-yourself entry is not offered. A record already linked is not offered again; when everything has its contact, the window says "Everything in the app already has its contact."
 
 > Tip: Look over the likely duplicates before merging: two people can share a clinic's phone number without being the same contact. Duplicates you leave apart now, or that appear later, can still be made one with **Merge with…** on a contact's page (see [Merge two contacts](contacts#merge)).
 

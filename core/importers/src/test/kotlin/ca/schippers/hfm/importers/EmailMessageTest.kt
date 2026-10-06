@@ -109,4 +109,68 @@ class EmailMessageTest {
         assertEquals("a b", EmailMessage.htmlToText("a &#99999999; b"))
         assertEquals("before", EmailMessage.htmlToText("before<script>never closed"))
     }
+
+    @Test
+    fun `logos shown inside an HTML receipt are not attachments`() {
+        val png = Base64.getEncoder().encodeToString(byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 1, 2, 3))
+        val eml = """
+            From: orders@example.ca
+            Subject: Your order
+            Content-Type: multipart/related; boundary=r1
+
+            --r1
+            Content-Type: text/html; charset=UTF-8
+
+            <html><body><img src="cid:logo"><p>TOTAL 12.00</p><img src="cid:pixel"></body></html>
+            --r1
+            Content-Type: image/png; name="logo.png"
+            Content-ID: <logo>
+            Content-Disposition: inline; filename="logo.png"
+            Content-Transfer-Encoding: base64
+
+            $png
+            --r1
+            Content-Type: image/gif
+            Content-ID: <pixel>
+            Content-Transfer-Encoding: base64
+
+            $png
+            --r1
+            Content-Type: image/jpeg; name="receipt.jpg"
+            Content-Disposition: attachment; filename="receipt.jpg"
+            Content-ID: <scan>
+            Content-Transfer-Encoding: base64
+
+            $png
+            --r1--
+        """.trimIndent()
+        val m = EmailMessage.parse(eml.toByteArray())
+        assertEquals("TOTAL 12.00", m.text)
+        assertEquals(listOf("receipt.jpg"), m.attachments.map { it.fileName })
+    }
+
+    @Test
+    fun `a large picture placed inline, like a photo mailed from a phone, is kept`() {
+        val photo = Base64.getEncoder().encodeToString(ByteArray(100_000) { (it % 251).toByte() })
+        val eml = """
+            From: me@example.ca
+            Content-Type: multipart/related; boundary=p
+
+            --p
+            Content-Type: text/html
+
+            <img src="cid:photo">
+            --p
+            Content-Type: image/jpeg; name="IMG_1234.jpg"
+            Content-ID: <photo>
+            Content-Disposition: inline; filename="IMG_1234.jpg"
+            Content-Transfer-Encoding: base64
+
+            $photo
+            --p--
+        """.trimIndent()
+        val m = EmailMessage.parse(eml.toByteArray())
+        assertEquals(listOf("IMG_1234.jpg"), m.attachments.map { it.fileName })
+        assertEquals(100_000, m.attachments.single().content.size)
+    }
 }

@@ -51,6 +51,7 @@ data class EmailMessage(
                 when {
                     type.startsWith("multipart/") -> p.children().forEach { walk(it, depth + 1) }
                     type == "message/rfc822" -> walk(Part.parse(p.body()), depth + 1)
+                    p.isInlinePicture -> Unit // a logo or tracking pixel shown in the HTML body, not a receipt
                     p.fileName != null || p.disposition == "attachment" || !type.startsWith("text/") ->
                         files += Attachment(attachmentName(p.fileName), type, p.body())
                     type == "text/html" -> html += p.text()
@@ -155,6 +156,14 @@ data class EmailMessage(
 
         val disposition: String? get() = headers["content-disposition"]?.substringBefore(';')?.trim()?.lowercase()
 
+        /**
+         * A small picture the HTML body shows in place (a logo, a tracking pixel): referenced by its
+         * Content-ID or marked inline, not offered as an attachment, and under [INLINE_PICTURE_LIMIT].
+         * A larger inline picture (a photo of a receipt mailed from a phone) is kept.
+         */
+        val isInlinePicture: Boolean get() = contentType.startsWith("image/") && disposition != "attachment" &&
+            (headers["content-id"] != null || disposition == "inline") && body().size < INLINE_PICTURE_LIMIT
+
         val fileName: String? get() = (param(headers["content-disposition"], "filename") ?: param(headers["content-type"], "name"))?.let(::decodeWords)
 
         private val charset: Charset get() = param(headers["content-type"], "charset")?.let { runCatching { Charset.forName(it) }.getOrNull() } ?: Charsets.UTF_8
@@ -177,6 +186,9 @@ data class EmailMessage(
         }
 
         companion object {
+            /** Logos and pixels are a few kilobytes; a photo of a receipt is far larger. */
+            const val INLINE_PICTURE_LIMIT = 64 * 1024
+
             fun parse(bytes: ByteArray): Part {
                 val text = String(bytes, Charsets.ISO_8859_1)
                 val split = Regex("\\r?\\n\\r?\\n").find(text)

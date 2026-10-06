@@ -164,6 +164,8 @@ private fun OverviewTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> 
         }
         if (v.status != VehicleStatus.ACTIVE) {
             Text(model.t("vehicles.disposalLine", model.t("vehicleStatus.${v.status}"), v.disposalDate?.let(model::date) ?: "—", v.disposalPrice?.let(model::money) ?: "—"))
+            // SAL-03: the gain or loss against the purchase price.
+            if (v.status == VehicleStatus.SOLD) saleResult(model, v.purchasePrice, v.disposalPrice)?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         }
         v.notes?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         HorizontalDivider(Modifier.padding(vertical = 6.dp))

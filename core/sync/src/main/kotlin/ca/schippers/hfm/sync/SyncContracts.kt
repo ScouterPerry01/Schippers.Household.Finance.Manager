@@ -129,8 +129,14 @@ data class SyncRequest(
     val contacts: List<PhoneContact> = emptyList(),
 )
 
+/**
+ * SYNC-09: an item the desktop could not store, with why: [reason] in English and [reasonFr] in
+ * French (absent from desktops before 1.0), so the phone shows it in its own language.
+ */
 @Serializable
-data class SyncFailure(val id: String, val reason: String)
+data class SyncFailure(val id: String, val reason: String, val reasonFr: String? = null) {
+    fun reason(french: Boolean): String = if (french) reasonFr ?: reason else reason
+}
 
 /** SYNC-04: the items (and phone contacts) the desktop has stored; the phone may then delete its copies. */
 @Serializable

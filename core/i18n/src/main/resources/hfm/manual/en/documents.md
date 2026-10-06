@@ -64,7 +64,7 @@ How the watched folder works:
 
 RANN's Roost never signs in to your mailbox. To keep an emailed receipt or bill, save the email from your email program as a file (an .eml file), then import it, drop it on the screen, or save it in the watched folder.
 
-- If the email has PDF or picture attachments, each attachment becomes a document and is read.
+- If the email has PDF or picture attachments, each attachment becomes a document and is read. Small pictures shown inside the email itself, such as the store's logo, are not attachments and are left out.
 - If it has none, the email itself is kept as a PDF of its subject, sender, date and text, and the store, date and total are read from that text.
 
 ### Captures from the phone {#phone-captures}
@@ -213,6 +213,8 @@ The app learns from what you change, store by store:
 
 The learning is kept in the account group of the document.
 
+**Learned stores…** (at the top of the Documents screen) opens What was learned from your corrections: each store as it was read ("Read as …", simplified: lower case, without digits or punctuation), then the name, kind and category it learned and how many corrections taught it. **Forget** asks first, then forgets that store: its next documents are read as they come, and documents already filed do not change. Forgetting needs the Edit permission on the group.
+
 ### Possible duplicates {#duplicates}
 @index: duplicate receipt; same receipt twice
 
@@ -302,7 +304,15 @@ For a credit card statement, bank statement, investment statement, pay stub or e
 
 - reconcile a statement read by AI, see [Reconcile a statement read by AI](documents#ai-statement);
 - record a pay stub as your pay, see [Record the pay from a pay stub](documents#pay-stub);
-- attach an explanation of benefits to a claim on the [Medical claims](medical) screen.
+- attach an explanation of benefits to the claim it answers, right here (see [Match an explanation of benefits](documents#eob-match)), or on the [Medical claims](medical) screen.
+
+### Match an explanation of benefits {#eob-match}
+@index: explanation of benefits; EOB; match claim; reimbursement
+
+For a document of the kind **Explanation of benefits**, the window lists under "Claims this explanation of benefits may answer" the claims still waiting for payment that were claimed at the document's **Total** or more, and submitted on or before its **Date**, closest amount first (at most five). Each line gives the person, the service and its date, the amount claimed and the plan.
+
+- **Attach to this claim**: attaches the document to that claim, files it, and closes the window. Then record what the plan paid with **Record the payment** on the claim, under [Medical claims](medical).
+- Without a total, the window asks for the amount paid by the insurer first. When nothing matches, it says so; attach it from the claim instead.
 
 ### Attached to {#attached-to}
 
@@ -325,7 +335,7 @@ When AI reading is turned on, the document window shows, under the details:
 - **Read with AI**: reads the document. If you have not added your key yet, the window shows "To read with AI, add your key under AI reading." instead.
 - A note beside it: "Some fields are uncertain: AI can read this document." when the store, date or total were hard to read or no total was found; "Read by (model) on (date)." once it has been read; "Reading with Claude…" while it is being read.
 
-The AI section does not appear for a quick expense typed on the phone, which has no picture.
+The AI section does not appear for a quick expense typed on the phone, which has no picture, nor for a user who can only view the document's account group, since the reading could not be saved.
 
 What **Read with AI** does depends on a setting on the AI reading screen, "Show me each document and let me hide parts before it is sent":
 
@@ -345,6 +355,8 @@ The window shows each page exactly as it will be sent. Nothing leaves the comput
 - **Undo last hidden area**: removes the last grey block on the page shown.
 - **Clear this page**: removes all hidden areas and the kept area on the page shown.
 - **<** and **>**: move between pages, with "Page n of m". Each page has its own hidden areas.
+- **Leave out this page**: shown when the document has several pages. Tick it for a page that is not needed, such as a blank back or the terms and conditions; it is not sent. At least one page must be sent.
+- At most 20 pages can be sent. For a longer document, a red line says "This document has more than 20 pages: only the first 20 are shown and can be sent."
 - The line "n pages will be sent to Anthropic, read by (model). Estimated cost: about (amount)." gives the estimated cost in US dollars, which shrinks when you keep only part of a page.
 - **Send**: sends the pages and reads them. While it works it shows "Reading with Claude…". On success the window closes and the document window shows the new values.
 - **Cancel**: closes the window without sending anything.

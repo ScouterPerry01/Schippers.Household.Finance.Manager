@@ -335,7 +335,7 @@ private fun ContractorJobsDialog(model: BooksModel, c: Contractor, onClose: () -
                 Text(model.date(j.date), Modifier.width(100.dp))
                 Text(j.description + (j.rating?.let { " · " + "★".repeat(it) } ?: ""), Modifier.weight(1f))
                 j.cost?.let { MoneyText(model, it) }
-                TextButton(onClick = { deleting = j }) { Text("✕") }
+                RemoveButton(model.t("common.delete")) { deleting = j }
             }
             Column(Modifier.padding(start = 100.dp, bottom = 6.dp)) {
                 LinkedContacts(
@@ -469,7 +469,7 @@ private fun ProjectCostsDialog(model: BooksModel, p: HomeProject, onClose: () ->
                 Text(model.date(c.date), Modifier.width(100.dp))
                 Text(c.description + (contractors.firstOrNull { it.id == c.contractorId }?.let { " · ${it.name}" } ?: ""), Modifier.weight(1f))
                 MoneyText(model, c.amount)
-                TextButton(onClick = { deleting = c }) { Text("✕") }
+                RemoveButton(model.t("common.delete")) { deleting = c }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -634,7 +634,7 @@ private fun InvoiceDialog(model: BooksModel, i: Invoice, onClose: () -> Unit) {
                     TextInput(model.t("share.description"), l.description, Modifier.weight(1f)) { lines[n] = l.copy(description = it) }
                     TextInput(model.t("invoice.quantity"), l.quantity, Modifier.width(90.dp)) { lines[n] = l.copy(quantity = it) }
                     TextInput(model.t("invoice.price"), l.price, Modifier.width(110.dp)) { lines[n] = l.copy(price = it) }
-                    TextButton(onClick = { lines.removeAt(n) }, enabled = lines.size > 1) { Text("✕") }
+                    RemoveButton(model.t("common.remove"), enabled = lines.size > 1) { lines.removeAt(n) }
                 }
             }
             TextButton(onClick = { lines.add(LineRow("", "1", "")) }) { Text(model.t("invoice.addLine")) }
@@ -734,7 +734,7 @@ private fun RentalsTab(model: BooksModel) {
                         TextButton(onClick = { editing = p }) { Text(model.t("rental.edit")) }
                     }
                     Text(model.t("rental.income", model.money(y.income.total)))
-                    for (r in y.expenses.rows) Text("   ${r.label}: ${model.money(y.expenses.rowTotal(r))}", style = MaterialTheme.typography.bodySmall)
+                    for (r in y.expenses.rows) Text("   " + model.t("rental.expenseLine", r.label, model.money(y.expenses.rowTotal(r))), style = MaterialTheme.typography.bodySmall)
                     Text(model.t("rental.expenses", model.money(y.expenses.total)))
                     Text(model.t("rental.net", model.money(y.net)), fontWeight = FontWeight.Medium)
                     if (p.shareBp < 10_000) Text(model.t("rental.share", BigDecimal(p.shareBp).movePointLeft(2).stripTrailingZeros().toPlainString().replace(".", if (model.language == Language.FRENCH) "," else "."), model.money(y.share)))
@@ -823,7 +823,7 @@ fun RewardsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
                     Text(model.date(e.date), Modifier.width(100.dp))
                     Text(model.t("rewardKind.${e.kind}") + (e.value?.let { " · ${model.money(it)}" } ?: "") + (e.notes?.let { " · $it" } ?: ""), Modifier.weight(1f))
                     Text(n(if (e.kind == RewardKind.REDEEMED) -e.units else e.units))
-                    TextButton(onClick = { deleting = e }) { Text("✕") }
+                    RemoveButton(model.t("common.delete")) { deleting = e }
                 }
             }
         }

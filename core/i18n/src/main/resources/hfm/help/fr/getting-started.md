@@ -17,10 +17,11 @@ L’application affiche ensuite votre clé de récupération. Aucun serveur ne p
 - Les personnes du ménage : cliquez sur Ajouter des personnes.
 - Vos comptes : cliquez sur Ajouter un compte : chèques, épargne, cartes de crédit, prêts et placements, avec leurs soldes d’aujourd’hui.
 - Vos factures et votre paie : cliquez sur Ajouter des factures pour le loyer ou l’hypothèque, les services, les abonnements et les jours de paie.
-- Un premier relevé : cliquez sur Ouvrir un compte, puis importez un relevé téléchargé de votre banque (OFX, QFX ou CSV). Les opérations arrivent classées, prêtes à rapprocher.
+- Un premier reçu : cliquez sur Ouvrir Documents, puis importez ou déposez une photo, un PDF ou un reçu électronique enregistré. Le commerce, la date et le total sont lus pour vous.
+- Un premier relevé, rapproché : cliquez sur Ouvrir un compte, importez un relevé téléchargé de votre banque (OFX, QFX ou CSV), puis cliquez sur Rapprocher… jusqu’à ce que le compte concorde avec la banque.
 - Le téléphone (facultatif) : cliquez sur Jumeler un téléphone pour envoyer reçus et factures depuis RANN’s Roost Mobile.
 
-Le guide disparaît une fois les quatre premières étapes faites.
+Le guide disparaît une fois les cinq premières étapes faites.
 
 ## Ensuite
 

@@ -6,6 +6,7 @@ import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.domain.MemberKind
+import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.domain.Role
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
@@ -126,6 +127,24 @@ class CalendarHealthTest {
         assertTrue(refilled.needsRenewal)
         assertEquals(1, books.health.fills(med.id).size)
         assertEquals(listOf("Atorvastatin"), books.health.medications(marie.id).map { it.name })
+    }
+
+    @Test
+    fun `a capture-only user can record a refill but not change the medication`() {
+        val med = books.health.saveMedication(Medication("", shared, marie.id, "Metformin", "500 mg", null, null, null, null, null, null, 30, 3, d(9, 1), 5, true, null))
+        val teen = books.session.addUser("teen", "Teen", Role.MEMBER, "teen-pass".toCharArray())
+        books.session.setPermission(shared, teen.userId, PermissionLevel.CAPTURE_ONLY)
+        books.session.close()
+        store.unlock(dir, "teen", "teen-pass".toCharArray()).use { session ->
+            val teenBooks = Books(session)
+            val refilled = teenBooks.health.recordFill(med.id, d(10, 1))
+            assertEquals(d(10, 31), refilled.nextRefill)
+            assertEquals(2, refilled.refillsRemaining)
+            assertEquals("500 mg", refilled.dose)
+            assertFailsWith<AccessDeniedException> { teenBooks.health.saveMedication(refilled.copy(dose = "1000 mg")) }
+        }
+        books = Books(store.unlock(dir, "perry", "pw".toCharArray()))
+        assertEquals(1, books.health.fills(med.id).size)
     }
 
     @Test

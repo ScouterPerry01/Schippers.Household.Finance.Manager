@@ -4,7 +4,7 @@ The Dashboard is the first screen you see after opening the household. It shows 
 
 ## Getting started guide
 
-In a new household, a Getting started guide appears at the top. It lists a few steps: the people in the household, your accounts, your bills and pay, a first statement, and the phone (optional). Each step has a button that opens the screen that does it. The guide goes away once the steps are done, or you can choose Hide this guide.
+In a new household, a Getting started guide appears at the top. It lists a few steps: the people in the household, your accounts, your bills and pay, a first receipt, a first statement reconciled, and the phone (optional). Each step has a button that opens the screen that does it. The guide goes away once the steps are done, or you can choose Hide this guide.
 
 ## The tiles
 

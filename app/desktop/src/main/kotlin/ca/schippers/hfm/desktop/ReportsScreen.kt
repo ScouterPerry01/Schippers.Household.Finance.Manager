@@ -52,7 +52,7 @@ import java.time.format.DateTimeFormatter
 
 enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, CUSTOM, YEAR_IN_REVIEW, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, PLANS, FX, MEDICAL, ASSETS, MAINTENANCE, DEBT, BUDGET, RECONCILIATION }
 /** FX-06: reports that can show one currency's accounts in their own amounts. */
-private val BY_CURRENCY = setOf(ReportKind.INCOME_EXPENSE, ReportKind.SPENDING_BY_CATEGORY, ReportKind.INCOME_BY_CATEGORY, ReportKind.SPENDING_BY_PAYEE, ReportKind.NET_WORTH)
+internal val BY_CURRENCY = setOf(ReportKind.INCOME_EXPENSE, ReportKind.SPENDING_BY_CATEGORY, ReportKind.INCOME_BY_CATEGORY, ReportKind.SPENDING_BY_PAYEE, ReportKind.NET_WORTH)
 /** RPT-07: reports that do not use the account group and the chosen accounts, so those choices are not shown. */
 private val NO_ACCOUNT_CHOICE = setOf(
     ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE,
@@ -123,6 +123,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
             .let { mine -> chosen?.let { mine intersect it } ?: mine }
     }
     val saved = remember(model.revision) { books.savedReports.list() }
+    var deletingSaved by remember { mutableStateOf<ca.schippers.hfm.books.SavedReport?>(null) }
     var saving by remember { mutableStateOf(false) }
     var choosingAccounts by remember { mutableStateOf(false) }
     val currencies = remember(model.revision) { books.accounts.list(includeClosed = true).map { it.account.currency }.filter { !it.isCrypto && it != books.reports.base }.distinct().sortedBy { it.code } }
@@ -139,6 +140,11 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                 )
             }
             // RPT-03: the reports this user saved.
+            deletingSaved?.let { r ->
+                AskBeforeDeleting(model, model.t("report.deleteSaved", r.name), onDismiss = { deletingSaved = null }) {
+                    (model.act { books.savedReports.delete(r.id); true } == true).also { if (it && state.savedId == r.id) state.savedId = null }
+                }
+            }
             if (saved.isNotEmpty()) {
                 Text(model.t("report.saved"), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp))
                 for (r in saved) {
@@ -149,7 +155,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                             onClick = { ca.schippers.hfm.books.ReportDefinition.fromJson(r.definition)?.let { state.load(it, r) } },
                             modifier = Modifier.weight(1f),
                         )
-                        TextButton(onClick = { model.act { books.savedReports.delete(r.id) }; if (state.savedId == r.id) state.savedId = null }) { Text("✕") }
+                        RemoveButton(model.t("common.delete")) { deletingSaved = r }
                     }
                 }
             }

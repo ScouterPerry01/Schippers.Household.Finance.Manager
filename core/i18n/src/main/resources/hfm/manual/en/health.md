@@ -223,7 +223,9 @@ Providers cannot be deleted; mark them **No longer used** instead.
 - **Vaccines**: each vaccine once, with the date of the latest dose;
 - **Providers**: the prescribers and pharmacies of the medications still taken, with their phone and address.
 
-The PDF also says when and with what it was prepared.
+The PDF also says when and with what it was prepared, and that it should be kept private since it holds health information.
+
+**Print health summary** sends the same summary straight to the printer (or opens it in your PDF reader when the computer has no print action). The copy made for printing is a temporary file, deleted when RANN's Roost closes.
 
 ### Save as PDF dialog {#save-pdf}
 @index: password; protected PDF; encryption

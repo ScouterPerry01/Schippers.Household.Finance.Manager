@@ -38,7 +38,7 @@ That warning means money was spent from the account without being taken from a g
 Each goal in the account has a line with:
 
 - its name, followed by "(Reached)" when its status is Reached;
-- "... of ... (n%)": what is set aside, the target, and the percentage;
+- "... of ... (n%) · ... still needed": what is set aside, the target, the percentage and what is left to set aside (not shown once the goal is reached);
 - a progress bar;
 - the plan, see [Progress and on track](goals#progress);
 - the buttons:
@@ -121,6 +121,7 @@ If you change the schedule or its first date, set-asides are entered again from 
 - **Reason**:
   - **Spent on what it was for**: the goal paid for its purpose ("The goal paid for what it was saved for. Enter the purchase itself in the account as usual."). Recorded as "Used".
   - **Taken back for something else**: the money returns to the account's unassigned balance ("Returns money to the account's unassigned balance."). Recorded as "Taken back". Use it to correct a set-aside or to free money for another need.
+- **Purchase (optional)**: shown for **Spent on what it was for** when the account has payments in the last 120 days. Pick the purchase the goal paid for to link it; the date, amount and (when empty) memo are filled from it, and can still be changed. Leave "(not linked to a purchase)" if the purchase is not entered yet or was paid from another account.
 - **Date**: default today.
 - **Amount**: how much leaves the goal. Required, more than zero.
 - **Memo**: an optional note.

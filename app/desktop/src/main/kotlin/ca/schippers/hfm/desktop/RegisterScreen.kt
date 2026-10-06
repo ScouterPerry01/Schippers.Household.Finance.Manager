@@ -3,6 +3,7 @@ package ca.schippers.hfm.desktop
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -20,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -151,6 +153,9 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     var payStub by remember { mutableStateOf(false) }
     var pendingImport by remember { mutableStateOf<PendingImport?>(null) }
     var showStatements by remember { mutableStateOf(false) }
+    // TX-07, EXP-02: transactions chosen for a bulk change or an export.
+    var choosing by remember(account.id) { mutableStateOf(false) }
+    val chosen = remember(account.id) { mutableStateListOf<String>() }
     val listState = rememberLazyListState()
     // Jump to the newest entry when the account opens or a transaction is added, not after "show earlier".
     LaunchedEffect(account.id, total) {
@@ -253,6 +258,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                 if (open != null) model.reconcilingStatementId = open.id else showStatements = true
             }) { Text(model.t("reconcile.button")) }
             OutlinedButton(onClick = { showStatements = true }) { Text(model.t("statements.button")) }
+            if (!choosing && rows.isNotEmpty()) OutlinedButton(onClick = { choosing = true; entry.clear() }) { Text(model.t("bulk.choose")) }
             OutlinedButton(onClick = { editingAccount = true }) { Text(model.t("account.edit")) }
             if (account.numberMasked != null) OutlinedButton(onClick = { revealing = true }) { Text(model.t("account.show")) }
             if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCard = true }) { Text(model.t("account.cardDetails")) }
@@ -268,9 +274,18 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
             }
         }
         HorizontalDivider()
+        if (choosing) {
+            BulkBar(
+                model, account, chosen.toList(), rows.map { it.transaction.id }, categoryTree,
+                onChoose = { ids -> chosen.clear(); chosen.addAll(ids) },
+                onDone = { choosing = false; chosen.clear() },
+            )
+            HorizontalDivider()
+        }
 
         // Column headings.
         Row(Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 4.dp)) {
+            if (choosing) Box(Modifier.width(40.dp))
             Heading(model.t("register.date"), Modifier.width(100.dp))
             Heading(model.t("register.payee"), Modifier.weight(2f))
             Heading(model.t("register.category"), Modifier.weight(2f))
@@ -302,10 +317,20 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                 Row(
                     Modifier.fillMaxWidth()
                         .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)
-                        .clickable { load(txn) }
+                        .clickable { if (choosing) { if (txn.id in chosen) chosen.remove(txn.id) else chosen.add(txn.id) } else load(txn) }
                         .padding(vertical = 4.dp, horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    if (choosing) {
+                        // Compact, so the register keeps its line height while choosing.
+                        androidx.compose.runtime.CompositionLocalProvider(androidx.compose.material3.LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified) {
+                            Checkbox(
+                                checked = txn.id in chosen,
+                                onCheckedChange = { on -> if (on) chosen.add(txn.id) else chosen.remove(txn.id) },
+                                modifier = Modifier.width(40.dp),
+                            )
+                        }
+                    }
                     Cell(model.date(txn.date), Modifier.width(100.dp))
                     Cell(txn.payeeId?.let(payeeNames::get) ?: txn.payeeText.orEmpty(), Modifier.weight(2f))
                     Cell(category, Modifier.weight(2f))
@@ -770,7 +795,7 @@ private fun RevealNumberDialog(model: BooksModel, account: Account, onClose: () 
                     password = ""
                 }) { Text(model.t("account.show")) }
             } else {
-                TextButton(onClick = onClose) { Text("OK") }
+                TextButton(onClick = onClose) { Text(model.t("common.ok")) }
             }
         },
         dismissButton = { if (revealed == null) TextButton(onClick = onClose) { Text(model.t("common.cancel")) } },
@@ -786,6 +811,8 @@ private fun HistoryDialog(model: BooksModel, txn: Transaction, categories: Map<S
     val changes = remember(model.revision, txn.id) { model.books.transactions.versions(txn.id) }
     val users = remember { model.books.users.list().associate { it.id to it.displayName } }
     val format = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm") }
+    val accountNames = remember(model.revision) { model.books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name } }
+    fun accountName(id: String) = accountNames[id] ?: "?"
     fun describe(v: TransactionVersion): String = listOfNotNull(
         model.date(v.date),
         v.payee,
@@ -813,7 +840,12 @@ private fun HistoryDialog(model: BooksModel, txn: Transaction, categories: Map<S
                         fontWeight = FontWeight.Medium,
                     )
                     (c.after ?: c.before)?.let { Text(describe(it), style = MaterialTheme.typography.bodySmall) }
-                    if (c.after != null && c.before != null && c.before != c.after) {
+                    val from = c.before?.accountId
+                    val to = c.after?.accountId
+                    if (from != null && to != null && from != to) {
+                        Text(model.t("register.historyMoved", accountName(from), accountName(to)), style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (c.after != null && c.before != null && c.before?.copy(accountId = null) != c.after?.copy(accountId = null)) {
                         Text(model.t("register.historyBefore", describe(c.before!!)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                     }
                 }

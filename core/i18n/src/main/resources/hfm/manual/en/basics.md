@@ -185,6 +185,7 @@ The search looks through everything you are allowed to see, including closed acc
 - Transactions whose payee, memo or other text contains what you typed. If you type an amount, such as 45.99, transactions of that amount are found too, whether money went out or came in.
 - Accounts by name or notes; payees by name; categories by their English or French name; bills by name or payee; institutions by name.
 - Documents by the text read from them, their title, store or biller, notes and file name.
+- Contacts, archived ones included, by name, What for, job title, organization, address, website, hours, notes, phone numbers and emails; three or more digits also find a phone number however it is written. Account and client numbers are never searched.
 
 ### The results window {#search-results}
 
@@ -196,6 +197,7 @@ The results open in a window titled Search: followed by what you typed. They are
 - Accounts: click one to open that account.
 - Payees, Categories, Bills and Institutions: click one to open that screen.
 - Documents: click one to open the Documents screen on that document.
+- Contacts: click one to open the Contacts screen on that contact.
 
 ![The search results window](images/search.png)
 

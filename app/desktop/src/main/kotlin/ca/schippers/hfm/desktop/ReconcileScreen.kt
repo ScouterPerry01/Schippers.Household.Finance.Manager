@@ -151,7 +151,7 @@ fun ReconcileScreen(model: BooksModel, account: Account, statementId: String) {
             onDismissRequest = { report = null; model.reconcilingStatementId = null },
             title = { Text(model.t("reconcile.done.title")) },
             text = { Text(model.t("reconcile.done.body", r.cleared.size, r.outstanding.size, model.date(LocalDate.parse(r.periodEnd)))) },
-            confirmButton = { TextButton(onClick = { report = null; model.reconcilingStatementId = null; model.lastImport = null }) { Text("OK") } },
+            confirmButton = { TextButton(onClick = { report = null; model.reconcilingStatementId = null; model.lastImport = null }) { Text(model.t("common.ok")) } },
         )
     }
 }
