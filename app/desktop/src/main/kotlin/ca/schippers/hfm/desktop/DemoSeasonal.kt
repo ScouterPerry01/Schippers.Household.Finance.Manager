@@ -38,8 +38,8 @@ internal fun addSeasonalDemo(books: Books, group: String, house: Asset, skip: Se
     val yard = assets.save(Asset("", group, AssetKind.YARD, l("Terrain et potager", "Yard and vegetable garden"), house.id, location = l("Rue des Érables", "Maple Street")))
     val cottage = assets.save(
         Asset(
-            "", group, AssetKind.COTTAGE, l("Chalet (lac Beauport)", "Cottage (Lake Clear)"), purchaseDate = LocalDate(2019, 8, 15), purchasePrice = cad("265000"),
-            valueMethod = ValueMethod.MANUAL, value = cad("340000"), valueDate = day(-200), location = l("Lac-Beauport", "Eganville"),
+            "", group, AssetKind.COTTAGE, l("Chalet (Lac-Édouard)", "Cottage (Bon Echo)"), purchaseDate = LocalDate(2019, 8, 15), purchasePrice = cad("265000"),
+            valueMethod = ValueMethod.MANUAL, value = cad("340000"), valueDate = day(-200), location = l("Lac-Édouard", "Cloyne"),
         ),
     )
     for (a in listOf(pool, yard, cottage)) upkeep.addStarterTasks(a.id, today, ::task)

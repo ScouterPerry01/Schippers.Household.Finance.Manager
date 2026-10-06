@@ -869,7 +869,9 @@ object DemoHousehold {
         fun cad(s: String) = Money.parse(s, Currency.CAD)
         fun day(n: Int) = today.plus(DatePeriod(days = n))
         val house = books.assets.list().first { it.kind == AssetKind.HOME }
-        val cottage = books.assets.save(Asset("", group, AssetKind.COTTAGE, l("Chalet (lac Sergent)", "Cottage (Big Rideau Lake)"), location = l("Lac-Sergent", "Portland")))
+        // The cottage the seasonal checklist already added (one cottage in the demo).
+        val cottage = books.assets.list().firstOrNull { it.kind == AssetKind.COTTAGE }
+            ?: books.assets.save(Asset("", group, AssetKind.COTTAGE, l("Chalet (Lac-Édouard)", "Cottage (Bon Echo)"), location = l("Lac-Édouard", "Cloyne")))
         // UTL-01: a reading early each month for 26 months; electricity follows the seasons, and last month ran high.
         val hydro = books.bills.list().firstOrNull { it.name == l("Hydro-Québec", "Hydro Ottawa") }
         val houseMeter = books.utilities.saveMeter(
@@ -891,9 +893,12 @@ object DemoHousehold {
             books.utilities.addReading(water.id, d, waterTotal)
             books.utilities.addReading(cottageMeter.id, d, cottageTotal)
             val month = d.month.ordinal
-            total += BigDecimal(seasonal[month]).let { if (d == lastMonth) it * BigDecimal("1.45") else it }
-            waterTotal += BigDecimal(if (month in 5..7) 24 else 17)
-            cottageTotal += BigDecimal(cottageUse[month])
+            // Each year differs by a few percent month to month, so the comparison with last year shows something.
+            val percent = 95 + (d.year * 7 + month * 13) % 11
+            fun vary(n: Int) = (BigDecimal(n * percent).divide(BigDecimal(100))).setScale(0, java.math.RoundingMode.HALF_UP)
+            total += vary(seasonal[month]).let { if (d == lastMonth) (it * BigDecimal("1.45")).setScale(0, java.math.RoundingMode.HALF_UP) else it }
+            waterTotal += vary(if (month in 5..7) 24 else 17)
+            cottageTotal += vary(cottageUse[month])
             d = d.plus(DatePeriod(months = 1))
         }
         // UTL-02: the cottage's propane tank, read every few weeks, with a delivery paid from the joint account.
@@ -934,7 +939,7 @@ object DemoHousehold {
         books.chores.pay(allowance, day(-13))
 
         // VOL-01: Sam with the volunteer fire department, the child's community hours, Alex at the food bank.
-        val fire = l("Service incendie de Lac-Sergent", "Rideau Lakes Fire Department")
+        val fire = l("Service incendie de La Tuque", "Addington Highlands Fire Department")
         var m = LocalDate(today.year, 1, 1)
         while (m <= today) {
             for ((dayOfMonth, minutes, activity) in listOf(Triple(4, 240, l("Pratique", "Training")), Triple(17, 840, l("Appels et garde", "Calls and standby")))) {
