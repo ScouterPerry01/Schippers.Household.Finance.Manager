@@ -20,37 +20,103 @@ data class EmailMessage(
     data class Attachment(val fileName: String, val mimeType: String, val content: ByteArray)
 
     companion object {
-        /** Reads an .eml file; malformed parts are skipped rather than failing the whole message. */
+        /** The largest message read, as the largest document the vault keeps. */
+        const val MAX_BYTES = 50 * 1024 * 1024
+
+        /** Parts nested deeper than this (a message in a message in a message...) are skipped. */
+        const val MAX_DEPTH = 8
+
+        /** Parts after this many are skipped. */
+        const val MAX_PARTS = 200
+
+        /** HTML longer than this is cut before its text is taken; a receipt is much shorter. */
+        const val MAX_HTML_CHARS = 2_000_000
+
+        /**
+         * Reads an .eml file; malformed parts are skipped rather than failing the whole message.
+         * Messages over [MAX_BYTES], parts nested over [MAX_DEPTH] and parts past [MAX_PARTS] are not
+         * read, so a crafted message cannot use up memory or time (Phase 5 security review).
+         * @throws IllegalArgumentException when the file is larger than [MAX_BYTES].
+         */
         fun parse(bytes: ByteArray): EmailMessage {
+            require(bytes.size <= MAX_BYTES) { "Email larger than ${MAX_BYTES / 1024 / 1024} MB" }
             val part = Part.parse(bytes)
             val plain = ArrayList<String>()
             val html = ArrayList<String>()
             val files = ArrayList<Attachment>()
-            fun walk(p: Part) {
+            var parts = 0
+            fun walk(p: Part, depth: Int) {
+                if (depth > MAX_DEPTH || ++parts > MAX_PARTS) return
                 val type = p.contentType
                 when {
-                    type.startsWith("multipart/") -> p.children().forEach(::walk)
-                    type == "message/rfc822" -> walk(Part.parse(p.body()))
+                    type.startsWith("multipart/") -> p.children().forEach { walk(it, depth + 1) }
+                    type == "message/rfc822" -> walk(Part.parse(p.body()), depth + 1)
                     p.fileName != null || p.disposition == "attachment" || !type.startsWith("text/") ->
-                        files += Attachment(p.fileName ?: "attachment", type, p.body())
+                        files += Attachment(attachmentName(p.fileName), type, p.body())
                     type == "text/html" -> html += p.text()
                     else -> plain += p.text()
                 }
             }
-            walk(part)
+            walk(part, 0)
             val text = plain.joinToString("\n").ifBlank { html.joinToString("\n") { htmlToText(it) } }
             return EmailMessage(part.header("from")?.let(::decodeWords), part.header("subject")?.let(::decodeWords), part.header("date"), text.trim(), files)
         }
 
-        /** Visible text of an HTML body: block ends become line breaks, tags and scripts go, entities are decoded. */
-        fun htmlToText(html: String): String = html
-            .replace(Regex("(?is)<(script|style|head)[^>]*>.*?</\\1>"), " ")
-            .replace(Regex("(?i)<br\\s*/?>|</(p|div|tr|li|h[1-6]|table)>"), "\n")
-            .replace(Regex("(?i)</t[dh]>"), "\t")
-            .replace(Regex("<[^>]+>"), "")
+        /**
+         * An attachment's name as a plain file name: an email can name its file "../../x.pdf" or
+         * "C:\Users\...\x.pdf"; only the last part is kept, without control characters.
+         */
+        internal fun attachmentName(name: String?): String =
+            name?.substringAfterLast('/')?.substringAfterLast('\\')?.filter { !it.isISOControl() }?.trim()?.take(255)?.ifEmpty { null } ?: "attachment"
+
+        /**
+         * Visible text of an HTML body: block ends become line breaks, tags and scripts go, entities
+         * are decoded. Read in one pass, so no HTML, however malformed, takes more than linear time.
+         */
+        fun htmlToText(html: String): String = stripTags(html.take(MAX_HTML_CHARS))
             .replace("&nbsp;", " ").replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&#39;", "'")
-            .replace(Regex("&#(\\d+);")) { m -> m.groupValues[1].toIntOrNull()?.let { String(Character.toChars(it)) } ?: "" }
+            .replace(Regex("&#(\\d+);")) { m -> m.groupValues[1].toIntOrNull()?.takeIf(Character::isValidCodePoint)?.let { String(Character.toChars(it)) } ?: "" }
             .lines().map { it.replace(Regex("[ \\t]+"), " ").trim() }.filter { it.isNotEmpty() }.joinToString("\n")
+
+        private val HIDDEN = setOf("script", "style", "head")
+        private val BLOCKS = setOf("p", "div", "tr", "li", "h1", "h2", "h3", "h4", "h5", "h6", "table")
+
+        /** The HTML without its tags: [HIDDEN] elements go with their content, block ends become line breaks, cell ends tabs. */
+        private fun stripTags(s: String): String {
+            val out = StringBuilder()
+            var i = 0
+            while (i < s.length) {
+                val c = s[i]
+                if (c != '<') {
+                    out.append(c)
+                    i++
+                    continue
+                }
+                val end = s.indexOf('>', i + 1)
+                if (end < 0) {
+                    out.append(s, i, s.length)
+                    break
+                }
+                var n = i + 1
+                val closing = n < end && s[n] == '/'
+                if (closing) n++
+                val name = StringBuilder()
+                while (n < end && s[n].isLetterOrDigit()) name.append(s[n++].lowercaseChar())
+                val tag = name.toString()
+                i = end + 1
+                when {
+                    !closing && tag in HIDDEN -> {
+                        val close = s.indexOf("</$tag", i, ignoreCase = true)
+                        i = if (close < 0) s.length else s.indexOf('>', close).let { if (it < 0) s.length else it + 1 }
+                        out.append(' ')
+                    }
+                    tag == "br" -> out.append('\n')
+                    closing && tag in BLOCKS -> out.append('\n')
+                    closing && (tag == "td" || tag == "th") -> out.append('\t')
+                }
+            }
+            return out.toString()
+        }
 
         /** RFC 2047: "=?UTF-8?B?...?=" and "=?ISO-8859-1?Q?...?=" in headers. */
         fun decodeWords(value: String): String = Regex("=\\?([^?]+)\\?([BbQq])\\?([^?]*)\\?=(\\s+(?==\\?))?").replace(value) { m ->

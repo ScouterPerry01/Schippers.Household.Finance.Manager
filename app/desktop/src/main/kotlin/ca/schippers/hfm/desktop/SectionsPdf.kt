@@ -18,7 +18,9 @@ data class DocSection(val title: String, val lines: List<Pair<String, String>>, 
 
 /**
  * EST-03, HLT-09: a summary of several sections as a PDF to print or hand over. With a [password],
- * the file is encrypted (AES) and opens only with it, so it can be sent to a spouse or an executor.
+ * the file is encrypted (AES-256, the PDF 2.0 handler with its SHA-2 password hashing; AES-128
+ * PDFs derive the key with MD5, quick to guess) and opens only with it, so it can be sent to a
+ * spouse or an executor.
  */
 object SectionsPdf {
 
@@ -29,7 +31,7 @@ object SectionsPdf {
             if (password != null) {
                 // The owner password is random and thrown away: no one can lift the restrictions.
                 val owner = ByteArray(24).also(SecureRandom()::nextBytes)
-                writer.setEncryption(String(password).toByteArray(Charsets.UTF_8), owner, PdfWriter.ALLOW_PRINTING or PdfWriter.ALLOW_COPY, PdfWriter.ENCRYPTION_AES_128)
+                writer.setEncryption(String(password).toByteArray(Charsets.UTF_8), owner, PdfWriter.ALLOW_PRINTING or PdfWriter.ALLOW_COPY, PdfWriter.ENCRYPTION_AES_256_V3)
             }
             document.open()
             document.add(Paragraph(text(title), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18f)))

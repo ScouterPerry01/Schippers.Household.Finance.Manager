@@ -1,9 +1,11 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.domain.MemberKind
+import ca.schippers.hfm.domain.Role
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.security.KdfParams
@@ -116,6 +118,22 @@ class CustomReportTest {
         assertEquals("2025", SavedReportService.lastFinished(ReportSchedule.YEARLY, oct5).id)
         books.savedReports.delete(report.id)
         assertTrue(books.savedReports.list().isEmpty())
+    }
+
+    @Test
+    fun `another user cannot change a saved report, nor where it is written`() {
+        val mine = books.savedReports.save(SavedReport("", "Cottage", """{"kind":"CUSTOM"}""", ReportSchedule.MONTHLY, temp.toString()))
+        books.session.addUser("marie", "Marie", Role.MEMBER, "second-secret-77".toCharArray())
+        val dir = temp.resolve("T.hfm")
+        books.session.close()
+        val store = HouseholdStore(SqlCipherJdbcDriverFactory(), KdfParams.TESTING)
+        store.unlock(dir, "marie", "second-secret-77".toCharArray()).use { session ->
+            val marie = Books(session)
+            assertTrue(marie.savedReports.list().isEmpty())
+            assertFailsWith<AccessDeniedException> { marie.savedReports.save(mine.copy(folder = temp.resolve("shared").toString())) }
+        }
+        books = Books(store.unlock(dir, "perry", "password1".toCharArray()))
+        assertEquals(temp.toString(), books.savedReports.list().single().folder)
     }
 
     @Test

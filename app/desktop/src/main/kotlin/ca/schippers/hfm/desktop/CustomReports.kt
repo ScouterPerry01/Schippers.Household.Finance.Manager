@@ -173,6 +173,7 @@ fun SaveReportDialog(model: BooksModel, state: ReportState, onClose: () -> Unit)
                     OutlinedButton(onClick = { chooseDirectory(model.t("report.chooseFolder"))?.let { folder = it.toString() } }) { Text(model.t("report.chooseFolder")) }
                 }
                 Text(model.t("report.scheduleHint"), style = MaterialTheme.typography.bodySmall)
+                Text(model.t("report.scheduleUnencrypted"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
         } else {
             Text(model.t("report.scheduleCustomOnly"), style = MaterialTheme.typography.bodySmall)

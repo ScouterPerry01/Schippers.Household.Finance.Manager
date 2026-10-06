@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.ChecklistSlip
 import ca.schippers.hfm.books.DocumentEntity
 import ca.schippers.hfm.books.Donation
+import ca.schippers.hfm.books.plainFileName
 import ca.schippers.hfm.books.DonationReceipt
 import ca.schippers.hfm.books.Instalment
 import ca.schippers.hfm.books.InstalmentService
@@ -388,6 +389,7 @@ private fun PackageTab(model: BooksModel) {
             OutlinedButton(onClick = { model.act { ReportExport.save(table, format, locale, model.t("report.export")) } }) { Text(model.t("report.export.$format")) }
         }
     }
+    Text(model.t("package.unencrypted"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
     message?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
     LazyColumn(Modifier.padding(top = 8.dp)) {
         person.lines.groupBy { it.item.section }.forEach { (section, lines) ->
@@ -446,7 +448,7 @@ private fun exportPackageFolder(model: BooksModel, pkg: TaxPackage): java.io.Fil
         fileSelectionMode = javax.swing.JFileChooser.DIRECTORIES_ONLY
     }
     if (chooser.showSaveDialog(null) != javax.swing.JFileChooser.APPROVE_OPTION) return null
-    fun safe(name: String) = name.replace(Regex("""[\\/:*?"<>|]"""), "-").trim().take(120)
+    fun safe(name: String) = plainFileName(name).take(120)
     val dir = java.io.File(chooser.selectedFile, safe(model.t("package.folder", pkg.year.toString()))).apply { mkdirs() }
     val locale = model.language.locale
     for (p in pkg.people) {
@@ -459,7 +461,9 @@ private fun exportPackageFolder(model: BooksModel, pkg: TaxPackage): java.io.Fil
         val used = HashSet<String>()
         for (d in p.documents) {
             val doc = model.books.documents.get(d.documentId)
-            val ext = doc.fileName?.substringAfterLast('.', "")?.takeIf { it.isNotEmpty() } ?: doc.mimeType.substringAfter('/').replace("jpeg", "jpg")
+            // The extension comes from a file name an email or a phone gave: letters and digits only.
+            val ext = doc.fileName?.substringAfterLast('.', "")?.takeIf { e -> e.isNotEmpty() && e.length <= 5 && e.all { it.isLetterOrDigit() } }
+                ?: doc.mimeType.substringAfter('/').replace("jpeg", "jpg").filter { it.isLetterOrDigit() }
             var file = safe(d.name)
             var n = 2
             while (!used.add(file.lowercase())) file = safe(d.name) + " ($n)".also { n++ }

@@ -23,6 +23,7 @@ import ca.schippers.hfm.sync.PairingInvitation
 import ca.schippers.hfm.sync.SyncCrypto
 import ca.schippers.hfm.sync.SyncRequest
 import ca.schippers.hfm.sync.SyncResponse
+import ca.schippers.hfm.sync.VoiceWav
 import kotlinx.datetime.LocalDate
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -31,6 +32,7 @@ import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -89,7 +91,7 @@ class SyncServiceTest {
     @Test
     fun `a spoken note comes with its capture and is kept beside it`() {
         val key = pairAsPhone(books.sync.invitation("Bureau", "127.0.0.1", 47311, now))
-        val wav = "RIFF....WAVEfmt fake".encodeToByteArray()
+        val wav = VoiceWav.wrap(ByteArray(VoiceWav.RATE * 2))
         val withVoice = receipt.copy(voice = SyncCrypto.b64(wav), fields = CaptureFields(note = "Lunch with a client, split with Paul"))
         assertEquals(listOf("item-1"), send(key, SyncRequest(now, listOf(withVoice))).imported)
         val doc = books.documents.inbox().single()
@@ -97,6 +99,16 @@ class SyncServiceTest {
         assertEquals("audio/wav", voice.mimeType)
         assertTrue(books.documents.content(voice.id).contentEquals(wav))
         assertEquals("Lunch with a client, split with Paul", doc.notes, "the dictated words are the note")
+    }
+
+    @Test
+    fun `only a short WAV note is kept, not any file sent as one`() {
+        val key = pairAsPhone(books.sync.invitation("Bureau", "127.0.0.1", 47311, now))
+        val notWav = receipt.copy(id = "item-2", voice = SyncCrypto.b64("%PDF-1.4 not a sound".encodeToByteArray()))
+        val tooLong = receipt.copy(id = "item-3", pages = listOf(SyncCrypto.b64("other-jpeg".encodeToByteArray())), voice = SyncCrypto.b64(VoiceWav.wrap(ByteArray(VoiceWav.RATE * 2 * 120))))
+        assertEquals(listOf("item-2", "item-3"), send(key, SyncRequest(now, listOf(notWav, tooLong))).imported, "the captures still arrive")
+        assertTrue(books.documents.inbox().all { books.documents.voiceNotes(it.id).isEmpty() })
+        assertFalse(VoiceWav.isVoiceNote(ByteArray(10)))
     }
 
     @Test

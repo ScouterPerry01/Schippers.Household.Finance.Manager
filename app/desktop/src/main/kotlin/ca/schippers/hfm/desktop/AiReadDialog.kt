@@ -48,7 +48,7 @@ private enum class Tool { HIDE, CROP }
 
 /**
  * AI-04 and section 4.5: the pages exactly as they will be sent, where the user hides areas such
- * as a full account number (they are blurred into flat blocks before the picture leaves the
+ * as a full account number (they are covered in flat grey before the picture leaves the
  * computer) and crops away what is not needed, then sends. Nothing is sent before Send.
  */
 @OptIn(ExperimentalLayoutApi::class)

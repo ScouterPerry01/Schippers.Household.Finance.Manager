@@ -45,30 +45,21 @@ object AiImages {
     }
 
     /**
-     * Covers [area] with blocks of their average colour, each at least half the area's shorter
-     * side, so no character can be recovered by sharpening.
+     * Covers [area] with one flat grey, the colour the preview shows. Nothing of what was under it
+     * is kept, not even an average: blocks of average colour can give back text whose font is known
+     * (Phase 5 security review).
      */
     private fun hide(img: BufferedImage, area: Rectangle) {
         if (area.width <= 0 || area.height <= 0) return
-        val block = maxOf(12, minOf(area.width, area.height) / 2)
-        var y = area.y
-        while (y < area.y + area.height) {
-            var x = area.x
-            val h = minOf(block, area.y + area.height - y)
-            while (x < area.x + area.width) {
-                val w = minOf(block, area.x + area.width - x)
-                var r = 0L; var g = 0L; var b = 0L
-                for (yy in y until y + h) for (xx in x until x + w) {
-                    val p = img.getRGB(xx, yy); r += p shr 16 and 0xFF; g += p shr 8 and 0xFF; b += p and 0xFF
-                }
-                val n = (w * h).toLong()
-                val avg = (0xFF shl 24) or ((r / n).toInt() shl 16) or ((g / n).toInt() shl 8) or (b / n).toInt()
-                for (yy in y until y + h) for (xx in x until x + w) img.setRGB(xx, yy, avg)
-                x += block
-            }
-            y += block
+        img.createGraphics().apply {
+            color = java.awt.Color(HIDDEN)
+            fillRect(area.x, area.y, area.width, area.height)
+            dispose()
         }
     }
+
+    /** The grey of a hidden area, in the preview and in the picture sent. */
+    const val HIDDEN = 0x6B6B6B
 
     private fun reduce(img: BufferedImage): BufferedImage {
         val long = maxOf(img.width, img.height)

@@ -10,6 +10,7 @@ dependencies {
     api(project(":core:ocr"))
     api(libs.kotlinx.serialization.json)
     implementation(libs.anthropic.java)
+    implementation(platform(libs.jackson.bom))
     implementation(libs.jna)
     testImplementation(kotlin("test"))
     testImplementation(platform(libs.junit.bom))

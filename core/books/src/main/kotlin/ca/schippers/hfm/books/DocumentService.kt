@@ -138,7 +138,7 @@ class DocumentService internal constructor(private val books: Books) {
         books.session.vault(group.partitionId).put(id, content)
         val now = books.now()
         books.ledger(group).ledgerQueries.insertDocument(
-            id, id, mimeType, sha, 1, null, now, books.userId, sourceDevice, fileName?.take(255), null, DocumentStatus.INBOX.name,
+            id, id, mimeType, sha, 1, null, now, books.userId, sourceDevice, fileName?.let(::importedFileName)?.take(255), null, DocumentStatus.INBOX.name,
             null, null, null, null, null, null, null, content.size.toLong(), 0, null, now,
         )
         return DocumentImport(get(id), alreadyInVault = false)
@@ -150,6 +150,7 @@ class DocumentService internal constructor(private val books: Books) {
      */
     fun attachVoice(documentId: String, wav: ByteArray, sourceDevice: String = DESKTOP): VaultDocument {
         val (group, _) = locate(documentId)
+        validate(ca.schippers.hfm.sync.VoiceWav.isVoiceNote(wav), "error.voiceNote")
         val voice = import(group.id, wav, "voice-note.wav", "audio/wav", sourceDevice).document
         link(voice.id, DocumentEntity.VOICE, documentId)
         setStatus(voice.id, DocumentStatus.FILED)
@@ -556,3 +557,18 @@ internal data class StoredChoices(val account: String? = null, val category: Str
 /** Reads the phone's choices alone, also when nothing was read from the document (no [StoredDraft]). */
 @Serializable
 internal data class StoredChosen(val chosen: StoredChoices? = null)
+
+/**
+ * A name for a file saved to disk, made from a name the user or an outside file gave (a record's
+ * name, an email attachment's): no folder separators, characters Windows refuses or control
+ * characters, and no dots at either end, so it can never be "." or ".." or reach outside the
+ * folder it is saved in (Phase 5 security review).
+ */
+fun plainFileName(name: String): String =
+    name.map { if (it.isISOControl() || it in "\\/:*?\"<>|") '-' else it }.joinToString("").trim().trim('.').trim().ifEmpty { "-" }
+
+/**
+ * The name kept with an imported document: an email attachment's or a phone's file name may hold a
+ * folder ("../../x.pdf", "C:\Users\..."); only its last part is kept, as a [plainFileName].
+ */
+internal fun importedFileName(name: String): String = plainFileName(name.substringAfterLast('/').substringAfterLast('\\'))

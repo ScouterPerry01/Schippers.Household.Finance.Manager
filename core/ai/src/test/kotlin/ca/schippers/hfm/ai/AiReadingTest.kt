@@ -157,16 +157,20 @@ class AiReadingTest {
 
     @Test
     fun `blurred areas are flattened before the page is encoded`() {
-        val page = BufferedImage(400, 200, BufferedImage.TYPE_INT_RGB).also { img ->
+        fun page(number: String) = BufferedImage(400, 200, BufferedImage.TYPE_INT_RGB).also { img ->
             img.createGraphics().apply {
                 color = Color.WHITE; fillRect(0, 0, 400, 200)
-                color = Color.BLACK; font = java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.BOLD, 28); drawString("4540 1234 5678 9012", 20, 60)
+                color = Color.BLACK; font = java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.BOLD, 28); drawString(number, 20, 60)
                 dispose()
             }
         }
-        val sent = AiImages.apply(page, PageEdit(blur = listOf(Rectangle(10, 30, 380, 40))))
-        val inside = (10 until 390).flatMap { x -> (30 until 70).map { y -> sent.getRGB(x, y) } }.toSet()
-        assertTrue(inside.size <= 40, "only a few flat blocks remain: ${inside.size} colours")
+        val page = page("4540 1234 5678 9012")
+        fun hidden(img: BufferedImage) = AiImages.apply(img, PageEdit(blur = listOf(Rectangle(10, 30, 380, 40)))).let { sent ->
+            (10 until 390).flatMap { x -> (30 until 70).map { y -> sent.getRGB(x, y) and 0xFFFFFF } }.toSet()
+        }
+        // One flat grey, whatever was under it: nothing of the number is left to recover.
+        assertEquals(setOf(AiImages.HIDDEN), hidden(page))
+        assertEquals(hidden(page), hidden(page("1111 1111 1111 1111")))
         val cropped = AiImages.apply(page, PageEdit(crop = Rectangle(0, 0, 200, 100)))
         assertEquals(200 to 100, cropped.width to cropped.height)
         val jpeg = AiImages.jpeg(AiImages.apply(BufferedImage(5000, 2500, BufferedImage.TYPE_INT_RGB), PageEdit()))

@@ -88,7 +88,8 @@ suspend fun importFiles(model: BooksModel, files: List<Path>, groupId: String): 
         }
     }
     for (file in files) {
-        val bytes = runCatching { Files.readAllBytes(file) }.getOrNull()
+        // Nothing larger than a vault document or a transfer file is read into memory.
+        val bytes = runCatching { readTransferFile(file) }.getOrNull()
         // A phone's transfer file, saved from an email or copied by USB: its items go to the inbox.
         if (bytes != null && file.extension.lowercase() == ca.schippers.hfm.sync.BundleFile.EXTENSION) {
             transfers += model.transferMessage(file.name, model.syncServer.receiveFile(bytes))
