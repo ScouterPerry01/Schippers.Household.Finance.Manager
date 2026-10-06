@@ -125,6 +125,7 @@ Les boutons :
 - **Autre document** : numériser tout autre document à garder, comme une garantie ou une lettre.
 - **Dépense rapide** : inscrire un achat sans photo.
 - **Odomètre ou heures** : inscrire l’odomètre d’un véhicule ou les heures d’utilisation d’un équipement.
+- **Liste saisonnière** : les tâches de la saison venues de l’ordinateur, à cocher là où elles sont faites. Voir [Liste saisonnière sur le téléphone](phone-app#seasonal-form).
 - **Relevé de compteur ou de réservoir**, **Heures travaillées**, **Tâches ménagères** et **Bénévolat** : les [formulaires d’inscription](#log-forms).
 
 Le genre choisi décide du classement de la capture sur l’ordinateur : une facture comme facture, un reçu ou une dépense rapide comme reçu, un autre document selon ce que l’ordinateur y lit.
@@ -218,6 +219,24 @@ Inscrit une lecture pour un véhicule, ou pour un équipement mesuré en heures 
 - **Enregistrer** : offert dès qu’un élément et une lecture sont saisis. La lecture rejoint la file d’attente et est envoyée aussitôt si possible.
 
 Sur l’ordinateur, la lecture est ajoutée directement au véhicule dans l’écran Véhicules, ou au compteur de l’équipement dans Maison et biens, sans vérification.
+
+## Liste saisonnière sur le téléphone {#seasonal-form}
+
+@index: liste saisonnière; cocher une tâche; entretien fait; piscine; terrain; pneus d’hiver
+
+La liste de la saison en cours, venue de l’ordinateur (voir [Onglet Liste saisonnière](assets#seasonal-tab)) : toutes les tâches de la saison sur les véhicules, la maison, le chalet, la piscine, le terrain et les autres biens que l’utilisateur du téléphone peut voir. Elle arrive avec les autres renseignements de l’ordinateur, donc elle se remplit après le premier transfert et se met à jour à chacun. D’ici là : « La liste vient de l’ordinateur : envoyez une fois pour la recevoir. »
+
+En haut, la saison et ses dates (« Automne 2026, du 2026-09-22 au 2026-12-20 »), « 7 sur 12 faites » avec une barre. Les tâches suivent, regroupées par véhicule ou par bien, chacune avec une case et une ligne : « Prévue le date », « En retard depuis le date » en rouge, « Faite le date », ou « Faite, en attente d’envoi » pour une coche que l’ordinateur n’a pas encore reçue.
+
+Touchez la case d’une tâche pour l’inscrire comme faite. Une fenêtre au nom de la tâche demande :
+
+- **Date (AAAA-MM-JJ)** : aujourd’hui par défaut ; pas un jour à venir.
+- **Coût (CAD, facultatif)** : dans la devise du véhicule ou du bien, avec un point ou une virgule pour les cents.
+- **Odomètre (km)** ou **Heures d’utilisation** : facultatif, pour un véhicule ou un bien qui a un compteur ; en nombres entiers.
+- **Note** : facultatif.
+- **Annuler** ferme sans rien inscrire ; **Inscrire comme faite** met la coche dans la file et l’envoie tout de suite si possible. Elle paraît comme **Tâche faite** dans l’[onglet Envois](phone-app#sent-tab) jusqu’à ce que l’ordinateur la confirme.
+
+Sur l’ordinateur, la coche devient un entretien dans le carnet du véhicule ou du bien, avec la tâche faite, la date, le coût, le relevé et la note, comme si elle avait été cochée là ; le calendrier de la tâche repart. Une coche pour une tâche supprimée entre-temps sur l’ordinateur est refusée, avec la raison dans l’onglet Envois. **Fermer** revient à l’onglet Capture.
 
 ## Formulaires d’inscription {#log-forms}
 

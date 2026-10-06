@@ -113,12 +113,17 @@ data class HomeProject(
     val capital: Boolean = true,
     val notes: String? = null,
     val costs: List<ProjectCost> = emptyList(),
+    /** SEA-05: the kind of energy upgrade, or null for any other project. */
+    val energyKind: EnergyUpgrade? = null,
 ) {
     val spent: Money get() = costs.fold(Money.zero(currency)) { a, c -> a + c.amount }
 }
 
-/** The home's cost base: what it cost, plus its capital improvements. */
-data class CostBase(val purchase: Money?, val improvements: Money, val projects: List<HomeProject>) {
+/**
+ * The home's cost base: what it cost, plus its capital improvements ([improvements], net of the
+ * [rebates] and grants received on them, SEA-05: assistance received lowers what an improvement cost).
+ */
+data class CostBase(val purchase: Money?, val improvements: Money, val projects: List<HomeProject>, val rebates: Money = improvements.let { Money.zero(it.currency) }) {
     val total: Money? get() = purchase?.let { it + improvements }
 }
 
@@ -133,6 +138,7 @@ class HomeProjectService internal constructor(private val books: Books) {
                 r.id, g.id, r.name, ProjectStatus.valueOf(r.status), cur, r.asset_id, r.start_date?.let(LocalDate::parse), r.end_date?.let(LocalDate::parse),
                 r.budget_minor?.let { Money.ofMinor(it, cur) }, r.capital == 1L, r.notes,
                 q.projectCosts(r.id).executeAsList().map { c -> ProjectCost(c.id, LocalDate.parse(c.date), c.description, Money.ofMinor(c.amount_minor, cur), c.contractor_id) },
+                r.energy_kind?.let { runCatching { EnergyUpgrade.valueOf(it) }.getOrDefault(EnergyUpgrade.OTHER) },
             )
         }
     }
@@ -144,6 +150,7 @@ class HomeProjectService internal constructor(private val books: Books) {
         val id = p.id.ifBlank { Ids.newId() }
         books.ledger(group).extrasQueries.upsertHomeProject(
             id, p.assetId, p.name.trim(), p.status.name, p.start?.toString(), p.end?.toString(), p.budget?.minorUnits, p.currency.code, if (p.capital) 1 else 0, p.notes?.trim()?.ifEmpty { null },
+            p.energyKind?.name,
         )
         return list().first { it.id == id }
     }
@@ -157,13 +164,18 @@ class HomeProjectService internal constructor(private val books: Books) {
 
     fun deleteCost(p: HomeProject, costId: String) = books.ledger(books.editable(p.groupId)).extrasQueries.deleteProjectCost(costId)
 
-    /** The cost base of the home [assetId]: its purchase price and the capital projects done or under way on it. */
+    /**
+     * The cost base of the home [assetId]: its purchase price and the capital projects done or under
+     * way on it, less the rebates and grants received on them (SEA-05).
+     */
     fun costBase(assetId: String): CostBase {
         val asset = books.assets.get(assetId)
         val projects = list().filter { it.assetId == assetId && it.capital && it.status != ProjectStatus.PLANNED }
         val cur = asset.purchasePrice?.currency ?: books.reports.base
-        val improvements = projects.filter { it.currency == cur }.fold(Money.zero(cur)) { a, p -> a + p.spent }
-        return CostBase(asset.purchasePrice, improvements, projects)
+        val same = projects.filter { it.currency == cur }
+        val rebates = same.fold(Money.zero(cur)) { a, p -> a + books.projectRebates.received(p) }
+        val improvements = same.fold(Money.zero(cur)) { a, p -> a + p.spent } - rebates
+        return CostBase(asset.purchasePrice, improvements, projects, rebates)
     }
 }
 

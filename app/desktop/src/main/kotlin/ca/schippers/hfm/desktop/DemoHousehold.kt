@@ -935,6 +935,7 @@ object DemoHousehold {
             AssetServiceRecord("", boat.id, day(-140), 214, l("Marina du Lac-Beauport", "Lakeside Marina"), parts = l("Huile 10W-30, filtre", "10W-30 oil, filter"), cost = cad("189.50"), taskIds = setOfNotNull(boatTasks["engine_oil"]?.id, boatTasks["boat_launch"]?.id)),
             PaymentDraft(visa.id, books.categories.list().first { it.systemKey == "leisure.cottage_rv" }.id, l("Marina du Lac-Beauport", "Lakeside Marina")),
         )
+        addSeasonalDemo(books, group, house, setOfNotNull(homeTasks["furnace_filter"]?.id), today, ::l)
 
         val insurance = books.insurance
         insurance.save(

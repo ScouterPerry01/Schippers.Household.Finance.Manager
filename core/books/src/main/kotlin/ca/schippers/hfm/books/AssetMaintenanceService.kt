@@ -4,6 +4,7 @@ import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.calc.schedule.DueState
 import ca.schippers.hfm.calc.schedule.DueStatus
 import ca.schippers.hfm.calc.schedule.MaintenanceSchedule
+import ca.schippers.hfm.calc.schedule.Seasons
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.money.Currency
@@ -18,7 +19,11 @@ import ca.schippers.hfm.data.ledger.Asset_task as TaskRow
 /** MNT-03: what an asset's meter counts. */
 enum class MeterUnit { HOURS, KM }
 
-/** MNT-01: repeats every [intervalMonths], every [intervalUsage] on the asset's meter, or whichever comes first. */
+/**
+ * MNT-01: repeats every [intervalMonths], every [intervalUsage] on the asset's meter, or whichever
+ * comes first. SEA-01: or every [intervalWeeks]; with [seasonFrom] and [seasonTo] (month and day) it
+ * is only done in that part of the year, as a pool's weekly water test from opening to closing.
+ */
 data class AssetTask(
     val id: String,
     val assetId: String,
@@ -32,7 +37,13 @@ data class AssetTask(
     val remindUsage: Int = 10,
     val active: Boolean = true,
     val notes: String? = null,
-)
+    val intervalWeeks: Int? = null,
+    val seasonFrom: Pair<Int, Int>? = null,
+    val seasonTo: Pair<Int, Int>? = null,
+) {
+    /** SEA-01: the part of the year the task is done in, when it has one. */
+    val part: Pair<Pair<Int, Int>, Pair<Int, Int>>? get() = if (seasonFrom != null && seasonTo != null) seasonFrom to seasonTo else null
+}
 
 /** MNT-03: a meter reading; [id] is set for readings entered directly. */
 data class MeterReading(val id: String?, val date: LocalDate, val usage: Int)
@@ -96,8 +107,9 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
 
     fun saveTask(t: AssetTask): AssetTask {
         validate(t.name.isNotBlank(), "error.nameRequired")
-        validate(t.intervalMonths != null || t.intervalUsage != null, "error.taskInterval")
-        validate((t.intervalMonths ?: 1) in 1..240 && (t.intervalUsage ?: 1) in 1..1_000_000, "error.invalidNumber")
+        validate(t.intervalMonths != null || t.intervalUsage != null || t.intervalWeeks != null, "error.taskInterval")
+        validate((t.intervalMonths ?: 1) in 1..240 && (t.intervalUsage ?: 1) in 1..1_000_000 && (t.intervalWeeks ?: 1) in 1..104, "error.invalidNumber")
+        validate((t.seasonFrom == null) == (t.seasonTo == null), "error.taskSeason")
         val (group, a) = locate(t.assetId)
         validate(t.intervalUsage == null || a.meter != null, "error.noMeter")
         books.require(group, PermissionLevel.EDIT)
@@ -105,7 +117,8 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
         with(t) {
             books.ledger(group).assetMaintenanceQueries.upsertTask(
                 id, assetId, name.trim(), templateKey, intervalMonths?.toLong(), intervalUsage?.toLong(), startDate?.toString(), startUsage?.toLong(),
-                remindDays.toLong(), remindUsage.toLong(), if (active) 1 else 0, notes.blankToNull(),
+                remindDays.toLong(), remindUsage.toLong(), if (active) 1 else 0, notes.blankToNull(), intervalWeeks?.toLong(),
+                seasonFrom?.let(Seasons::formatMonthDay), seasonTo?.let(Seasons::formatMonthDay),
             )
         }
         return t.copy(id = id)
@@ -120,15 +133,21 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
     /** MNT-02: the keys of the starter tasks for this kind of asset. */
     fun templates(kind: AssetKind): List<String> = TEMPLATES.filter { kind in it.kinds }.map { it.key }
 
-    /** MNT-02: adds the starter tasks the asset does not have yet; [names] gives each task's name in the user's language. */
+    /**
+     * MNT-02: adds the starter tasks the asset does not have yet; [names] gives each task's name in
+     * the user's language. SEA-01: a task a home and its yard share (the outside taps) is added to
+     * one of them only: not when the asset it is in, or one inside it, has it already.
+     */
     fun addStarterTasks(assetId: String, today: LocalDate, names: (String) -> String): List<AssetTask> {
         val (_, a) = locate(assetId)
         val existing = tasks(assetId).mapNotNull { it.templateKey }.toSet()
+        val related = books.assets.list().filter { it.id == a.parentId || it.parentId == a.id }
+        val shared = related.flatMap { r -> tasks(r.id).mapNotNull { it.templateKey } }.toSet()
         val usage = latestUsage(assetId)
-        return TEMPLATES.filter { a.kind in it.kinds && it.key !in existing }.map { tpl ->
+        return TEMPLATES.filter { a.kind in it.kinds && it.key !in existing && !(it.shared && it.key in shared) }.map { tpl ->
             // A use-based interval only applies when the asset's meter counts the same thing.
             val byUsage = tpl.usage?.takeIf { a.meter == tpl.unit }
-            val months = tpl.months ?: if (byUsage == null) 12 else null
+            val months = tpl.months ?: if (byUsage == null && tpl.weeks == null) 12 else null
             val start = tpl.season?.let { (m, d) -> MaintenanceSchedule.nextSeason(m, d, today) }
             saveTask(
                 AssetTask(
@@ -136,7 +155,9 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
                     // Seasonal tasks fall due on their date; others count from today.
                     startDate = start?.minus(DatePeriod(months = months ?: 12)) ?: today,
                     startUsage = usage.takeIf { byUsage != null },
+                    remindDays = tpl.remind ?: LeadTimes.maintenance(),
                     remindUsage = if (a.meter == MeterUnit.KM) 500 else 10,
+                    intervalWeeks = tpl.weeks, seasonFrom = tpl.part?.first, seasonTo = tpl.part?.second,
                 ),
             )
         }
@@ -186,7 +207,9 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
             val lastUsage = (last?.usage?.toInt() ?: task.startUsage).takeIf { task.intervalUsage != null }
             AssetTaskStatus(
                 task, lastDate, lastUsage,
-                MaintenanceSchedule.status(lastDate, lastUsage, task.intervalMonths, task.intervalUsage, current, rate, task.remindDays, task.remindUsage, today),
+                MaintenanceSchedule.status(
+                    lastDate, lastUsage, task.intervalMonths, task.intervalUsage, current, rate, task.remindDays, task.remindUsage, today, task.intervalWeeks, task.part,
+                ),
             )
         }.sortedWith(compareBy(nullsLast()) { it.due.nextDate })
     }
@@ -278,14 +301,19 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
 
     private fun TaskRow.toTask() = AssetTask(
         id, asset_id, name, template_key, interval_months?.toInt(), interval_usage?.toInt(), start_date?.let(LocalDate::parse), start_usage?.toInt(),
-        remind_days.toInt(), remind_usage.toInt(), active == 1L, notes,
+        remind_days.toInt(), remind_usage.toInt(), active == 1L, notes, interval_weeks?.toInt(), Seasons.parseMonthDay(season_from), Seasons.parseMonthDay(season_to),
     )
 
     private fun ServiceRow.toService(currency: Currency, tasks: Set<String>) = AssetServiceRecord(
         id, asset_id, LocalDate.parse(date), usage?.toInt(), provider, diy == 1L, parts, cost_minor?.let { Money.ofMinor(it, currency) }, txn_id, notes, tasks,
     )
 
-    /** MNT-02: a starter task for some kinds of asset. [usage] counts in [unit] and only applies to an asset whose meter counts the same. */
+    /**
+     * MNT-02: a starter task for some kinds of asset. [usage] counts in [unit] and only applies to an
+     * asset whose meter counts the same. A seasonal task falls due each year on [season] (month and
+     * day). SEA-01: [weeks] repeats by weeks, [part] limits the task to part of the year, [remind] is
+     * its own reminder lead time in days, and a [shared] task goes on a home or its yard, not both.
+     */
     private class Template(
         val key: String,
         val kinds: Set<AssetKind>,
@@ -293,12 +321,24 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
         val usage: Int? = null,
         val unit: MeterUnit? = null,
         val season: Pair<Int, Int>? = null,
+        val weeks: Int? = null,
+        val part: Pair<Pair<Int, Int>, Pair<Int, Int>>? = null,
+        val remind: Int? = null,
+        val shared: Boolean = false,
     )
 
     companion object {
         private val HOME = setOf(AssetKind.HOME, AssetKind.COTTAGE)
         private val HVAC = setOf(AssetKind.HOME, AssetKind.COTTAGE, AssetKind.HEATING_COOLING)
         private val LEISURE = setOf(AssetKind.COTTAGE, AssetKind.RV, AssetKind.BOAT, AssetKind.TRAILER)
+        private val POOL = setOf(AssetKind.POOL)
+        private val YARD = setOf(AssetKind.YARD)
+
+        /** A pool's season in most of Canada: opened around Victoria Day, closed after Labour Day. */
+        private val POOL_SEASON = (5 to 20) to (9 to 15)
+
+        /** When a winter pool cover holds water, leaves and snow. */
+        private val COVER_SEASON = (11 to 1) to (4 to 30)
 
         private val TEMPLATES = listOf(
             // Home and cottage
@@ -312,6 +352,32 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
             Template("septic", setOf(AssetKind.COTTAGE), 36),
             Template("cottage_open", setOf(AssetKind.COTTAGE), 12, season = 5 to 1),
             Template("cottage_close", setOf(AssetKind.COTTAGE), 12, season = 10 to 15),
+            // SEA-01: the rest of a Canadian year on a home or cottage. Outside taps are shut off
+            // before the first hard frost (mid-October) and opened once frost is past (mid-April).
+            Template("outside_taps_on", HOME + YARD, 12, season = 4 to 15, shared = true),
+            Template("outside_taps_off", HOME + YARD, 12, season = 10 to 15, shared = true),
+            Template("gutters_spring", HOME, 12, season = 4 to 30),
+            Template("ac_cover_off", HOME, 12, season = 5 to 1),
+            Template("ac_cover_on", HOME, 12, season = 10 to 20),
+            Template("window_screens", HOME, 12, season = 5 to 1),
+            Template("storm_windows", HOME, 12, season = 10 to 25),
+            Template("dryer_vent", HOME, 12, season = 9 to 30),
+            Template("humidifier_pad", HVAC, 12, season = 10 to 1),
+            Template("dock_in", setOf(AssetKind.COTTAGE), 12, season = 5 to 15),
+            Template("dock_out", setOf(AssetKind.COTTAGE), 12, season = 10 to 1),
+            // Pool
+            Template("pool_open", POOL, 12, season = 5 to 20),
+            Template("pool_chemistry", POOL, null, weeks = 1, part = POOL_SEASON, remind = 2),
+            Template("pool_filter", POOL, 1, part = POOL_SEASON, remind = 5),
+            Template("pool_close", POOL, 12, season = 9 to 15),
+            Template("pool_cover", POOL, 1, part = COVER_SEASON, remind = 5),
+            // Yard and garden
+            Template("yard_spring_cleanup", YARD, 12, season = 4 to 20),
+            Template("mower_service", YARD, 12, season = 4 to 1),
+            Template("irrigation_start", YARD, 12, season = 5 to 10),
+            Template("irrigation_blowout", YARD, 12, season = 10 to 10),
+            Template("fall_leaves", YARD, 12, season = 11 to 1),
+            Template("snow_blower", YARD, 12, season = 11 to 1),
             // RV
             Template("rv_dewinterize", setOf(AssetKind.RV), 12, season = 4 to 15),
             Template("rv_winterize", setOf(AssetKind.RV), 12, season = 10 to 15),

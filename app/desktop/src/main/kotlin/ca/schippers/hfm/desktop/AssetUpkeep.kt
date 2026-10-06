@@ -38,6 +38,7 @@ import ca.schippers.hfm.books.UpkeepDue
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.calc.schedule.DueState
+import ca.schippers.hfm.calc.schedule.Seasons
 import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -52,6 +53,9 @@ private sealed interface UpkeepEdit {
 private fun dateOf(text: String): LocalDate? = text.trim().ifEmpty { null }?.let { runCatching { LocalDate.parse(it) }.getOrElse { throw ValidationException("error.invalidDate") } }
 
 private fun intOf(text: String): Int? = text.trim().ifEmpty { null }?.let { it.toIntOrNull() ?: throw ValidationException("error.invalidNumber") }
+
+/** A month and day typed as 06-01; empty is none. */
+private fun monthDayOf(text: String): Pair<Int, Int>? = text.trim().ifEmpty { null }?.let { Seasons.parseMonthDay(it) ?: throw ValidationException("error.monthDay") }
 
 @Composable
 private fun stateColor(state: DueState) = when (state) {
@@ -197,8 +201,11 @@ private fun TaskLine(model: BooksModel, a: Asset, s: AssetTaskStatus, usage: Int
             Text(t.name, fontWeight = FontWeight.Medium)
             Text(
                 listOfNotNull(
-                    listOfNotNull(t.intervalMonths?.let { model.t("vehicles.everyMonths", it) }, t.intervalUsage?.let { model.t("vehicles.everyKm", model.usage(it, a.meter)) })
-                        .joinToString(" ${model.t("vehicles.or")} "),
+                    listOfNotNull(
+                        t.intervalMonths?.let { model.t("vehicles.everyMonths", it) }, t.intervalWeeks?.let { model.t("upkeep.everyWeeks", it) },
+                        t.intervalUsage?.let { model.t("vehicles.everyKm", model.usage(it, a.meter)) },
+                    ).joinToString(" ${model.t("vehicles.or")} "),
+                    t.part?.let { (from, to) -> model.t("upkeep.inSeason", Seasons.formatMonthDay(from), Seasons.formatMonthDay(to)) },
                     // Until it is first done, the schedule counts from its start.
                     s.lastDate?.let { model.t(if (serviced) "vehicles.lastDone" else "upkeep.since", model.date(it)) + (s.lastUsage?.let { u -> " · ${model.usage(u, a.meter)}" }.orEmpty()) },
                 ).joinToString(" · "),
@@ -231,6 +238,9 @@ private fun ReadingDialog(model: BooksModel, a: Asset, onClose: () -> Unit) {
 private fun TaskDialog(model: BooksModel, a: Asset, existing: AssetTask, onClose: () -> Unit) {
     var name by remember { mutableStateOf(existing.name) }
     var months by remember { mutableStateOf(existing.intervalMonths?.toString().orEmpty()) }
+    var weeks by remember { mutableStateOf(existing.intervalWeeks?.toString().orEmpty()) }
+    var from by remember { mutableStateOf(existing.seasonFrom?.let(Seasons::formatMonthDay).orEmpty()) }
+    var to by remember { mutableStateOf(existing.seasonTo?.let(Seasons::formatMonthDay).orEmpty()) }
     var every by remember { mutableStateOf(existing.intervalUsage?.toString().orEmpty()) }
     var start by remember { mutableStateOf(existing.startDate?.toString().orEmpty()) }
     var startUsage by remember { mutableStateOf(existing.startUsage?.toString().orEmpty()) }
@@ -249,7 +259,7 @@ private fun TaskDialog(model: BooksModel, a: Asset, existing: AssetTask, onClose
                     existing.copy(
                         name = name, intervalMonths = intOf(months), intervalUsage = intOf(every).takeIf { meter != null }, startDate = dateOf(start),
                         startUsage = intOf(startUsage).takeIf { meter != null }, remindDays = intOf(remindDays) ?: LeadTimes.maintenance(), remindUsage = intOf(remindUsage) ?: existing.remindUsage,
-                        active = active, notes = notes,
+                        active = active, notes = notes, intervalWeeks = intOf(weeks), seasonFrom = monthDayOf(from), seasonTo = monthDayOf(to),
                     ),
                 )
             }
@@ -261,7 +271,14 @@ private fun TaskDialog(model: BooksModel, a: Asset, existing: AssetTask, onClose
             Text(model.t(if (meter == null) "upkeep.intervalExplainTime" else "vehicles.intervalExplain"), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextInput(model.t("vehicles.intervalMonths"), months, Modifier.weight(1f)) { months = it }
+                TextInput(model.t("upkeep.intervalWeeks"), weeks, Modifier.weight(1f)) { weeks = it }
                 if (meter != null) TextInput(model.t("upkeep.every.$meter"), every, Modifier.weight(1f)) { every = it }
+            }
+            // SEA-01: only part of the year (a pool from opening to closing), as month-day.
+            Text(model.t("upkeep.seasonExplain"), style = MaterialTheme.typography.bodySmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextInput(model.t("upkeep.seasonFrom"), from, Modifier.weight(1f)) { from = it }
+                TextInput(model.t("upkeep.seasonTo"), to, Modifier.weight(1f)) { to = it }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DateInput(model.t("vehicles.lastDoneDate"), start, Modifier.weight(1f)) { start = it }

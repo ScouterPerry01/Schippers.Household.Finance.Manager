@@ -190,6 +190,15 @@ private val SHOTS: List<Shot> = buildList {
     add(Shot("medical-coverage") { section(Section.MEDICAL); click(t("medical.tab.COVERAGE")) })
     add(Shot("vehicles-costs") { section(Section.VEHICLES); click(t("vehicles.tab.COSTS")) })
     add(Shot("assets-insurance") { section(Section.ASSETS); click(t("assets.tab.INSURANCE")) })
+    // SEA-02, SEA-05: the seasonal checklist, and an energy upgrade's costs with its rebates.
+    add(Shot("assets-seasonal") { section(Section.ASSETS); click(t("assets.tab.SEASONAL")) })
+    add(
+        Shot("assets-rebates") {
+            section(Section.ASSETS)
+            click(t("assets.tab.PROJECTS"))
+            click(l("Isolation de l’entretoit", "Attic insulation and air sealing"))
+        },
+    )
     add(Shot("users-access") { section(Section.USERS); click(t("users.tab.ACCESS")) })
     // The basics: search, help, the menu at the top, dark colours.
     add(

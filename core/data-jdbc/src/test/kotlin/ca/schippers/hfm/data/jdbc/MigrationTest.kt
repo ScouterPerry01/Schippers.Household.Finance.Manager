@@ -343,7 +343,7 @@ class MigrationTest {
             fun saveBoat() = db.assetsQueries.upsertAsset("b", null, "BOAT", "Bateau", null, null, null, null, null, null, "CAD", null, null, null, "NONE", null, null, null, null, 0, "ACTIVE", null, null, null, null, 0, 0, "HOURS")
             saveBoat()
             val q = db.assetMaintenanceQueries
-            q.upsertTask("t", "b", "Vidange", null, 12, 100, "2026-05-01", 0, 14, 10, 1, null)
+            q.upsertTask("t", "b", "Vidange", null, 12, 100, "2026-05-01", 0, 14, 10, 1, null, null, null, null)
             q.insertReading("r", "b", "2026-08-01", 42, null)
             saveBoat()
             assertEquals(1, q.tasks("b").executeAsList().size)
@@ -623,6 +623,60 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 30 ledgers keep their data, and gain calendars brought in, weekly tasks, energy upgrades, rebates, meters, tanks, hours, chores and volunteer hours`() {
+        val file = temp.resolve("ledger30.db")
+        older("../data/src/main/sqldelight/ledger/schemas/30.db", file, 30).use { driver ->
+            driver.execute(null, "INSERT INTO asset(id, kind, name, created_at, updated_at) VALUES ('p', 'POOL', 'Piscine', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO asset_task(id, asset_id, name, interval_months) VALUES ('t', 'p', 'Ouvrir', 12)", 0)
+            driver.execute(null, "INSERT INTO home_project(id, name, status, currency) VALUES ('h', 'Isolation', 'DONE', 'CAD')", 0)
+            driver.execute(null, "INSERT INTO event(id, title, category, start_date, created_at, updated_at) VALUES ('e', 'Garage', 'VEHICLE', '2026-10-05', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO allowance(id, member_id, amount_minor, currency, frequency, start_date) VALUES ('a', 'kid', 500, 'CAD', 'WEEKLY', '2026-01-02')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(31L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val db = LedgerDatabase(driver)
+            assertEquals("Garage", db.calendarQueries.eventById("e").executeAsOne().title, "events stay")
+            val q = db.broughtInCalendarQueries
+            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "BUSY", null, 1, 1)
+            q.insertBroughtInItem("i", "c", "10", "BUSY", null, null, "2026-10-07", "10:00", "2026-10-07", "11:00", 1)
+            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "SHARED", "g", 2, 2)
+            assertEquals(1, q.broughtInItemsOf("c").executeAsList().size, "saving the calendar again keeps its items")
+            q.deleteBroughtInCalendar("c")
+            assertEquals(0L, count(driver, "SELECT count(*) FROM brought_in_item"), "and deleting it removes them")
+            val task = db.assetMaintenanceQueries.tasks("p").executeAsOne()
+            assertEquals(12L, task.interval_months)
+            assertEquals(null, task.interval_weeks)
+            assertEquals(null, db.extrasQueries.homeProjects().executeAsOne().energy_kind)
+            db.projectRebatesQueries.upsertRebate("r", "h", "Renoclimat", "RECEIVED", null, 100000, null, null, "2026-08-01", 100000, null, 0)
+            assertEquals(1, db.projectRebatesQueries.rebates("h").executeAsList().size)
+            assertEquals(1, db.familyMoneyQueries.allowances().executeAsList().size, "allowances stay")
+            val tq = db.trackersQueries
+            tq.upsertUtilityMeter("m", "Hydro", "ELECTRICITY", null, 1, null, 0, null, 0)
+            tq.insertUtilityReading("r", "m", "2026-09-01", "1200.5", "300", "400", "500.5", null, null, 0)
+            tq.upsertUtilityMeter("m", "Hydro One", "ELECTRICITY", null, 1, null, 0, null, 0)
+            assertEquals(1, tq.utilityReadings("m").executeAsList().size, "saving a meter again keeps its readings")
+            tq.upsertFuelTank("t", "Propane", "PROPANE", null, "500", null, null, 0, null, 0)
+            tq.insertTankReading("tr", "t", "2026-09-01", "60", null, null, 0)
+            tq.insertTankDelivery("td", "t", "2026-09-02", "200", 22000, "CAD", null, null, 0)
+            tq.upsertFuelTank("t", "Propane tank", "PROPANE", null, "500", 25, null, 0, null, 0)
+            assertEquals(1, tq.tankDeliveries("t").executeAsList().size, "saving a tank again keeps its deliveries")
+            tq.upsertWorkClient("c", "Lee", null, 4500, "CAD", null, 0, null, 0)
+            tq.upsertWorkTask("k", "c", "Tutoring", null, 0)
+            tq.upsertWorkHours("h", "c", "k", null, null, "2026-09-03", "16:00", 90, null, null, null, null, 0)
+            tq.upsertWorkClient("c", "Lee family", null, 5000, "CAD", null, 0, null, 0)
+            assertEquals(1, tq.workHours("c").executeAsList().size, "saving a client again keeps its hours")
+            tq.upsertChore("ch", "kid", "Dishes", 100, "CAD", null, 0, 0)
+            tq.insertChoreTick("x", "ch", "2026-09-04", 100, null, null, null, null, 0)
+            tq.upsertChore("ch", "kid", "Dishes", 150, "CAD", null, 0, 0)
+            assertEquals(1, tq.choreTicks("ch").executeAsList().size, "saving a chore again keeps its ticks")
+            tq.upsertVolunteerHours("v", "kid", "Food bank", null, "SCHOOL", "2026-09-05", 180, null, null, null, 0)
+            assertEquals(180L, tq.volunteerHours().executeAsOne().minutes)
+        }
+    }
+
+    @Test
     fun `version 29 ledgers keep their medical plans and gain the plan year deadline`() {
         val file = temp.resolve("ledger29.db")
         older("../data/src/main/sqldelight/ledger/schemas/29.db", file, 29).use { driver ->
@@ -664,51 +718,6 @@ class MigrationTest {
             matching.insertMatch("g", "s", "t1")
             matching.setLineGroup("g", "PROPOSED", null, "l")
             assertEquals("g", matching.linesInGroup("g").executeAsOne().match_group, "statement lines gain their group")
-        }
-    }
-
-    @Test
-    fun `version 30 ledgers gain brought-in calendars, meters, tanks, hours, chores and volunteer hours`() {
-        val file = temp.resolve("ledger30.db")
-        older("../data/src/main/sqldelight/ledger/schemas/30.db", file, 30).use { driver ->
-            driver.execute(null, "INSERT INTO event(id, title, category, start_date, created_at, updated_at) VALUES ('e', 'Garage', 'VEHICLE', '2026-10-05', 0, 0)", 0)
-            driver.execute(null, "INSERT INTO allowance(id, member_id, amount_minor, currency, frequency, start_date) VALUES ('a', 'kid', 500, 'CAD', 'WEEKLY', '2026-01-02')", 0)
-        }
-        factory.open(file, key).use { driver ->
-            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(31L, LedgerDatabase.Schema.version)
-            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
-            val db = LedgerDatabase(driver)
-            assertEquals("Garage", db.calendarQueries.eventById("e").executeAsOne().title, "events stay")
-            val q = db.broughtInCalendarQueries
-            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "BUSY", null, 1, 1)
-            q.insertBroughtInItem("i", "c", "10", "BUSY", null, null, "2026-10-07", "10:00", "2026-10-07", "11:00", 1)
-            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "SHARED", "g", 2, 2)
-            assertEquals(1, q.broughtInItemsOf("c").executeAsList().size, "saving the calendar again keeps its items")
-            q.deleteBroughtInCalendar("c")
-            assertEquals(0L, count(driver, "SELECT count(*) FROM brought_in_item"), "and deleting it removes them")
-            assertEquals(1, db.familyMoneyQueries.allowances().executeAsList().size, "allowances stay")
-            val tq = db.trackersQueries
-            tq.upsertUtilityMeter("m", "Hydro", "ELECTRICITY", null, 1, null, 0, null, 0)
-            tq.insertUtilityReading("r", "m", "2026-09-01", "1200.5", "300", "400", "500.5", null, null, 0)
-            tq.upsertUtilityMeter("m", "Hydro One", "ELECTRICITY", null, 1, null, 0, null, 0)
-            assertEquals(1, tq.utilityReadings("m").executeAsList().size, "saving a meter again keeps its readings")
-            tq.upsertFuelTank("t", "Propane", "PROPANE", null, "500", null, null, 0, null, 0)
-            tq.insertTankReading("tr", "t", "2026-09-01", "60", null, null, 0)
-            tq.insertTankDelivery("td", "t", "2026-09-02", "200", 22000, "CAD", null, null, 0)
-            tq.upsertFuelTank("t", "Propane tank", "PROPANE", null, "500", 25, null, 0, null, 0)
-            assertEquals(1, tq.tankDeliveries("t").executeAsList().size, "saving a tank again keeps its deliveries")
-            tq.upsertWorkClient("c", "Lee", null, 4500, "CAD", null, 0, null, 0)
-            tq.upsertWorkTask("k", "c", "Tutoring", null, 0)
-            tq.upsertWorkHours("h", "c", "k", null, null, "2026-09-03", "16:00", 90, null, null, null, null, 0)
-            tq.upsertWorkClient("c", "Lee family", null, 5000, "CAD", null, 0, null, 0)
-            assertEquals(1, tq.workHours("c").executeAsList().size, "saving a client again keeps its hours")
-            tq.upsertChore("ch", "kid", "Dishes", 100, "CAD", null, 0, 0)
-            tq.insertChoreTick("x", "ch", "2026-09-04", 100, null, null, null, null, 0)
-            tq.upsertChore("ch", "kid", "Dishes", 150, "CAD", null, 0, 0)
-            assertEquals(1, tq.choreTicks("ch").executeAsList().size, "saving a chore again keeps its ticks")
-            tq.upsertVolunteerHours("v", "kid", "Food bank", null, "SCHOOL", "2026-09-05", 180, null, null, null, 0)
-            assertEquals(180L, tq.volunteerHours().executeAsOne().minutes)
         }
     }
 }

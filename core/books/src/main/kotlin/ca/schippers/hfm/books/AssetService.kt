@@ -15,7 +15,7 @@ import ca.schippers.hfm.data.ledger.Asset as AssetRow
 import ca.schippers.hfm.data.ledger.Warranty as WarrantyRow
 
 /** AST-01: kinds of asset; vehicles have their own section. */
-enum class AssetKind { HOME, COTTAGE, RV, BOAT, TRAILER, APPLIANCE, HEATING_COOLING, ELECTRONICS, COMPUTER, FURNITURE, JEWELLERY, ART, TOOLS, SPORTS, MUSICAL, OTHER }
+enum class AssetKind { HOME, COTTAGE, POOL, YARD, RV, BOAT, TRAILER, APPLIANCE, HEATING_COOLING, ELECTRONICS, COMPUTER, FURNITURE, JEWELLERY, ART, TOOLS, SPORTS, MUSICAL, OTHER }
 
 enum class ValueMethod { NONE, MANUAL, DEPRECIATION }
 

@@ -16,7 +16,11 @@ CREATE TABLE asset_task (
     remind_days INTEGER NOT NULL DEFAULT 14,
     remind_usage INTEGER NOT NULL DEFAULT 10,
     active INTEGER NOT NULL DEFAULT 1,
-    notes TEXT
+    notes TEXT,
+    -- SEA-01 (version 31): every so many weeks, and only from season_from to season_to (month-day).
+    interval_weeks INTEGER,
+    season_from TEXT,
+    season_to TEXT
 );
 
 -- MNT-03: meter readings (engine hours, or km for an RV), typed or from the phone.
@@ -57,8 +61,8 @@ upsertTask:
 -- Updates in place: INSERT OR REPLACE would delete the row first and, through ON DELETE
 -- CASCADE, everything that belongs to it.
 INSERT INTO asset_task(id, asset_id, name, template_key, interval_months, interval_usage, start_date, start_usage,
-    remind_days, remind_usage, active, notes)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    remind_days, remind_usage, active, notes, interval_weeks, season_from, season_to)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
     asset_id = excluded.asset_id,
     name = excluded.name,
@@ -70,7 +74,10 @@ ON CONFLICT(id) DO UPDATE SET
     remind_days = excluded.remind_days,
     remind_usage = excluded.remind_usage,
     active = excluded.active,
-    notes = excluded.notes;
+    notes = excluded.notes,
+    interval_weeks = excluded.interval_weeks,
+    season_from = excluded.season_from,
+    season_to = excluded.season_to;
 
 deleteTask:
 DELETE FROM asset_task WHERE id = ?;

@@ -125,6 +125,7 @@ The buttons:
 - **Other document**: scan anything else to keep, such as a warranty or a letter.
 - **Quick expense**: record a purchase without a photo.
 - **Odometer or hours**: record a vehicle's odometer or an equipment's hours of use.
+- **Seasonal checklist**: the season's tasks from the computer, to tick off where they are done. See [Seasonal checklist on the phone](phone-app#seasonal-form).
 - **Meter or tank reading**, **Hours worked**, **Chores** and **Volunteer hours**: the [log forms](#log-forms).
 
 The kind you choose decides how the capture is filed on the computer: a bill as a bill, a receipt or quick expense as a receipt, another document as whatever the computer reads it to be.
@@ -218,6 +219,24 @@ Records a reading for a vehicle, or for equipment measured in hours of use (a ge
 - **Save**: available once an item and a reading are entered. The reading joins the queue and is sent at once if possible.
 
 On the computer, the reading is added straight to the vehicle on the Vehicles screen, or to the equipment's meter on Home and assets, without review.
+
+## Seasonal checklist on the phone {#seasonal-form}
+
+@index: seasonal checklist; tick a task; maintenance done; pool; yard; winter tires
+
+The current season's checklist from the computer (see [Seasonal checklist tab](assets#seasonal-tab)): every task of the season on the vehicles, home, cottage, pool, yard and other assets your phone's user can see. It comes with the other information from the computer, so it is filled after the first transfer and brought up to date at each one. "The checklist comes from the computer: send once to get it." until then.
+
+At the top, the season and its dates ("Fall 2026, 2026-09-22 to 2026-12-20"), "7 of 12 done" with a bar. The tasks follow, grouped by vehicle or asset, each with a box and a line: "Due date", "Overdue since date" in red, "Done date", or "Done, waiting to be sent" for a tick not yet received by the computer.
+
+Tap a task's box to record it as done. A dialog with the task's name asks for:
+
+- **Date (YYYY-MM-DD)**: today by default; not a day in the future.
+- **Cost (CAD, optional)**: in the vehicle's or asset's currency, with a point or a comma for the cents.
+- **Odometer (km)** or **Hours of use**: optional, for a vehicle or an asset with a meter; whole numbers.
+- **Note**: optional.
+- **Cancel** closes without recording; **Record as done** puts the tick in the queue and sends it at once if possible. It shows as **Task done** on the [Sent tab](phone-app#sent-tab) until the computer confirms it.
+
+On the computer, the tick becomes a service in the vehicle's or asset's service log, with the task done, the date, cost, reading and note, as if it had been ticked there; the task's schedule starts over. A tick for a task deleted on the computer in the meantime is refused, with the reason on the Sent tab. **Close** returns to the Capture tab.
 
 ## Log forms {#log-forms}
 

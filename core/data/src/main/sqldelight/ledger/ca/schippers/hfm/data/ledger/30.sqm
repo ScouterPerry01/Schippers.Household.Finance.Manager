@@ -1,4 +1,4 @@
--- Version 30 to 31. Only additions: new tables.
+-- Version 30 to 31. Only additions: new columns with defaults and new tables.
 
 -- CSY-01 to CSY-04 (version 31): calendars a person brought in from their phone, with their coming
 -- items, read-only. The phone sends each chosen calendar whole; the desktop replaces its items.
@@ -42,6 +42,37 @@ CREATE TABLE brought_in_item (
 
 CREATE INDEX brought_in_item_dates ON brought_in_item(start_date, end_date);
 CREATE INDEX brought_in_item_calendar ON brought_in_item(calendar_id);
+
+-- SEA-01: a task on an asset may repeat every interval_weeks (a pool's weekly water test), and may
+-- be limited to part of the year, from season_from to season_to (month-day, "06-01" to "09-15"):
+-- a due date outside that part moves to its next start.
+ALTER TABLE asset_task ADD COLUMN interval_weeks INTEGER;
+ALTER TABLE asset_task ADD COLUMN season_from TEXT;
+ALTER TABLE asset_task ADD COLUMN season_to TEXT;
+
+-- SEA-05: an energy upgrade (insulation, heat pump, windows, solar...): the kind of upgrade, or
+-- null for any other project.
+ALTER TABLE home_project ADD COLUMN energy_kind TEXT;
+
+-- SEA-05: rebates and grants applied for on a home project, in the project's currency.
+-- status: PLANNED, APPLIED, APPROVED, RECEIVED, REFUSED. A received amount lowers the project's
+-- net cost, and so what a capital project adds to the home's cost base.
+CREATE TABLE home_project_rebate (
+    id TEXT NOT NULL PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES home_project(id) ON DELETE CASCADE,
+    program TEXT NOT NULL,
+    status TEXT NOT NULL,
+    reference TEXT,
+    amount_minor INTEGER,
+    applied_date TEXT,
+    decision_date TEXT,
+    received_date TEXT,
+    received_minor INTEGER,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX home_project_rebate_project ON home_project_rebate(project_id);
 
 -- Other trackers (ledger version 31): utility meters and fuel tanks (UTL-01, UTL-02), hours worked
 -- for side income (HRS-01), children's chores (CHO-01) and volunteer hours (VOL-01). Each lives in
