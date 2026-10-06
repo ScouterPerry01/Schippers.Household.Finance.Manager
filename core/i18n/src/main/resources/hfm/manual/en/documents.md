@@ -321,7 +321,7 @@ When AI reading is turned on, the document window shows, under the details:
 - **Read with AI**: reads the document. If you have not added your key yet, the window shows "To read with AI, add your key under AI reading." instead.
 - A note beside it: "Some fields are uncertain: AI can read this document." when the store, date or total were hard to read or no total was found; "Read by (model) on (date)." once it has been read; "Reading with Claude…" while it is being read.
 
-The AI section does not appear for a quick expense typed on the phone, which has no picture.
+The AI section does not appear for a quick expense typed on the phone, which has no picture, nor for a user who can only view the document's account group, since the reading could not be saved.
 
 What **Read with AI** does depends on a setting on the AI reading screen, "Show me each document and let me hide parts before it is sent":
 
@@ -341,6 +341,8 @@ The window shows each page exactly as it will be sent. Nothing leaves the comput
 - **Undo last hidden area**: removes the last grey block on the page shown.
 - **Clear this page**: removes all hidden areas and the kept area on the page shown.
 - **<** and **>**: move between pages, with "Page n of m". Each page has its own hidden areas.
+- **Leave out this page**: shown when the document has several pages. Tick it for a page that is not needed, such as a blank back or the terms and conditions; it is not sent. At least one page must be sent.
+- At most 20 pages can be sent. For a longer document, a red line says "This document has more than 20 pages: only the first 20 are shown and can be sent."
 - The line "n pages will be sent to Anthropic, read by (model). Estimated cost: about (amount)." gives the estimated cost in US dollars, which shrinks when you keep only part of a page.
 - **Send**: sends the pages and reads them. While it works it shows "Reading with Claude…". On success the window closes and the document window shows the new values.
 - **Cancel**: closes the window without sending anything.

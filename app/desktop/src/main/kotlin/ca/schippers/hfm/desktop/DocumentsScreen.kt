@@ -351,6 +351,11 @@ private fun <T> androidx.compose.foundation.layout.RowScope.ReviewedField(model:
 private fun AiPart(model: BooksModel, doc: VaultDocument, kind: DocumentKind, onClose: () -> Unit) {
     val settings = remember(model.revision) { model.books.ai.settings() }
     if (!settings.enabled || doc.mimeType == "text/plain") return
+    // AI-01: a paid request only for someone who may save its answer (capture rights on the document's group).
+    val canSave = remember(model.revision, doc.groupId) {
+        model.books.groups().firstOrNull { it.id == doc.groupId }?.level?.allows(ca.schippers.hfm.domain.PermissionLevel.CAPTURE_ONLY) == true
+    }
+    if (!canSave) return
     val hasKey = remember(model.revision) { DesktopAi.key(model) != null }
     val reading = remember(model.revision, doc.id) { runCatching { model.books.ai.reading(doc.id) }.getOrNull() }
     val draft = doc.draft
