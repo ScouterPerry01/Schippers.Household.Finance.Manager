@@ -327,6 +327,22 @@ class IncomeTaxTest {
     }
 
     @Test
+    fun `2026 figures read in the provincial and territorial acts and from the RAMQ`() {
+        val day = LocalDate(2026, 6, 30)
+        fun list(key: String, p: Province? = null) = Rules.list(key, day, p).map { it.stripTrailingZeros().toPlainString() }
+        assertEquals(listOf("0.03", "2942"), list("tax.prov.medical", Province.AB))
+        assertEquals(listOf("0.03", "2854"), list("tax.prov.medical", Province.NB))
+        for (p in listOf(Province.YT, Province.NT)) assertEquals(listOf("0.03", "2890"), list("tax.prov.medical", p))
+        assertEquals(listOf("0.4", "0.4"), list("tax.prov.amt", Province.BC))
+        assertEquals(listOf("0.621", "0.621"), list("tax.prov.amt", Province.NL))
+        assertEquals(listOf("0.4571", "0.4571"), list("tax.prov.amt", Province.YT))
+        assertEquals(listOf("0.2463", "0.2463"), list("tax.prov.amt", Province.ON))
+        assertEquals("777.5", list("tax.qc.drugPremium").first())
+        // The year before keeps its own figures.
+        assertEquals(d("755"), Rules.list("tax.qc.drugPremium", LocalDate(2025, 12, 31)).first().stripTrailingZeros())
+    }
+
+    @Test
     fun `a year before the first rates has no estimate`() {
         assertFailsWith<RuleException> { IncomeTax.estimate(2023, Province.ON, pay("50000"), age65 = false) }
     }
