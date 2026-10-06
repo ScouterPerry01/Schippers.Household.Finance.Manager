@@ -180,6 +180,7 @@ Les boutons affichés dépendent du compte :
 - **Importer un relevé…** : lit un fichier de relevé de la banque. Voir [Importer un relevé](accounts#import-statement).
 - **Rapprocher…** : continue le relevé en cours de rapprochement, s’il y en a un ; sinon, ouvre Relevés, où vous pouvez entrer un relevé papier. Voir [Rapprocher un relevé](accounts#reconcile).
 - **Relevés** : les relevés du compte, passés et en cours. Voir [Relevés](accounts#statements).
+- **Choisir des opérations…** : cochez plusieurs opérations pour les catégoriser, les étiqueter, les déplacer ou les exporter ensemble. Voir [Modifier ou exporter plusieurs opérations](accounts#bulk-edit).
 - **Modifier le compte** : le formulaire de compte (voir [Ajouter ou modifier un compte](accounts#account-dialog)).
 - **Afficher le numéro** : seulement quand un numéro de compte est enregistré (voir [Afficher le numéro de compte complet](accounts#show-number)).
 - **Détails de la carte**, **Cartes et avantages** et **Récompenses** : comptes de crédit seulement.
@@ -287,6 +288,31 @@ Chaque opération garde la trace de chaque modification : sa création, chaque c
 @index: opération verrouillée; modification d’une opération rapprochée
 
 Une opération marquée R fait partie d’un rapprochement terminé. Enregistrer une modification, la supprimer ou cliquer sur sa marque demande d’abord Modifier une opération rapprochée?, en expliquant que le compte ne concordera plus avec ce relevé et que la modification sera inscrite dans l’historique. **Modifier** poursuit ; **Annuler** laisse tout tel quel. Pour refaire correctement un rapprochement, annulez-le d’abord (voir [Annuler le dernier rapprochement](accounts#undo-reconciliation)).
+
+## Modifier ou exporter plusieurs opérations {#bulk-edit}
+
+@index: modification en lot; plusieurs opérations; recatégoriser; étiqueter plusieurs; déplacer des opérations; exporter des opérations; export QIF; export OFX; export CSV; comptable
+
+**Choisir des opérations…** (au-dessus du registre) ajoute une case devant chaque opération et une barre au-dessus des colonnes. Cochez les opérations à modifier ou à exporter, ou cliquez sur leurs lignes ; **Choisir toutes celles affichées** coche toutes les opérations chargées dans le registre (cliquez d’abord sur **Afficher les opérations plus anciennes** pour inclure les plus anciennes) et **N’en choisir aucune** décoche tout. La barre indique combien sont choisies. **Terminé** retire les cases. Pendant le choix, un clic sur une ligne la coche au lieu de l’ouvrir dans le formulaire de saisie.
+
+Les boutons de la barre agissent sur les opérations choisies :
+
+- **Catégoriser…** : une **Catégorie** pour toutes, ou « (non catégorisé) ». Une opération ventilée garde ses lignes et ses montants, et chaque ligne prend la catégorie. **Enregistrer** les modifie.
+- **Ajouter une étiquette…** : une **Étiquette**, nouvelle ou existante (les étiquettes existantes sont proposées pendant la frappe), ajoutée à chacune ; les étiquettes qu’elles ont déjà restent. **Enregistrer** l’ajoute.
+- **Déplacer vers…** : les déplace vers un autre compte, choisi sous **Vers le compte**. Seuls les comptes ouverts du même groupe de comptes et de la même devise sont offerts, puisqu’une opération ne peut pas quitter le fichier chiffré de son groupe. **Déplacer** les déplace ; leurs catégories, documents et historique les suivent, et la carte choisie sur un achat par carte est effacée.
+- **Exporter…** : les enregistre dans un fichier, pour un autre logiciel ou un comptable. Choisissez le **Format**, puis **Enregistrer sous…** demande où :
+  - **CSV (tableur)** : une ligne par opération avec la date, le bénéficiaire, la catégorie (Parent:Enfant ; les catégories d’une opération ventilée jointes par « | » ; un virement comme [Compte]), la note, le montant, la devise, la marque de compensation (c ou R) et les étiquettes. En anglais, les colonnes sont séparées par des virgules et les décimales par un point ; en français, par des points-virgules avec une virgule décimale, comme l’attendent les tableurs français. Excel lit les accents.
+  - **QIF (Quicken et autres)** : pour Quicken, GnuCash, Moneydance et la plupart des autres logiciels de finances, avec les catégories, les ventilations, les virements et les marques de compensation. Les dates sont écrites mois/jour/année.
+  - **OFX (format des relevés bancaires)** : comme un téléchargement bancaire, avec la date, le montant, le bénéficiaire et la note, mais sans catégories. Chaque opération porte son propre identifiant, si bien qu’importer deux fois le même fichier trouve les doublons.
+
+Les catégories sont écrites dans la langue de l’application. Le fichier exporté n’est pas chiffré : gardez-le en lieu sûr. Chaque exportation est inscrite au journal d’activité comme « Données exportées » (voir [Utilisateurs](users)).
+
+Ce qui reste tel quel, et est compté comme tel dans le message après la modification :
+
+- les virements, qui se modifient dans le registre comme tout virement, et les lignes d’encaisse de placement, qui se modifient sous Placements ;
+- pour un déplacement, les opérations associées à un relevé bancaire (annulez d’abord le rapprochement, voir [Annuler le dernier rapprochement](accounts#undo-reconciliation)) et celles d’un compte dans une autre devise.
+
+Quand une opération choisie est rapprochée (marquée R), l’application demande d’abord Modifier une opération rapprochée?, comme pour une seule modification ; rien ne change avant votre confirmation. Chaque opération modifiée reçoit une entrée dans son historique (voir [Historique des modifications](accounts#transaction-history)) ; un déplacement s’affiche comme « Déplacée de (compte) à (compte) ». Modifier ou déplacer demande la permission Modifier sur le groupe de comptes ; exporter demande seulement de le voir.
 
 ## Virements entre comptes {#transfers}
 

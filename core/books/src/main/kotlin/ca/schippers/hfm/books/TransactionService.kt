@@ -18,6 +18,13 @@ import java.math.MathContext
 import ca.schippers.hfm.data.ledger.Txn as TxnRow
 import ca.schippers.hfm.data.ledger.Txn_split as SplitRow
 
+/**
+ * TX-07: what a bulk change did: how many transactions changed, and how many were left as they were
+ * (transfers and investment cash lines, which change from their own screens, and, for a move,
+ * those on a bank statement or not in the target account's currency).
+ */
+data class BulkResult(val changed: Int, val skipped: Int)
+
 /** One entry in a record's change history (TX-08). */
 data class Change(val at: Long, val userId: String?, val action: String, val before: String?, val after: String?)
 
@@ -30,6 +37,8 @@ data class TransactionVersion(
     val cleared: ClearedStatus,
     val categoryIds: List<String?>,
     val transfer: Boolean,
+    /** The account it was in; null in history written before moves were possible (TX-07). */
+    val accountId: String? = null,
 )
 
 /** TX-08: one change to a transaction: when, by whom ([userId]), CREATE, UPDATE or DELETE, and the transaction before and after. */
@@ -103,7 +112,7 @@ class TransactionService internal constructor(private val books: Books) {
             runCatching { json.decodeFromString(Snapshot.serializer(), it) }.getOrNull()?.let { s ->
                 TransactionVersion(
                     LocalDate.parse(s.date), s.payee, Money.ofMinor(s.amountMinor, currency), s.memo, ClearedStatus.valueOf(s.cleared),
-                    s.splits.map { it.categoryId }, s.transferId != null,
+                    s.splits.map { it.categoryId }, s.transferId != null, s.accountId,
                 )
             }
         }
@@ -173,6 +182,107 @@ class TransactionService internal constructor(private val books: Books) {
             logChange(ledger, transactionId, "UPDATE", before, snapshot(ledger, transactionId))
         }
         return get(transactionId)
+    }
+
+    // --- Bulk changes (TX-07) and export of chosen transactions (EXP-02) ------------------------
+
+    /**
+     * TX-07: puts every chosen transaction in [categoryId] (null: uncategorized); a split one keeps
+     * its lines and amounts, each line taking the category. Transfers and investment cash lines are
+     * skipped. Reconciled ones need [confirmReconciled]; without it nothing changes.
+     */
+    fun bulkCategorize(ids: Collection<String>, categoryId: String?, confirmReconciled: Boolean = false): BulkResult =
+        bulk(ids, confirmReconciled) { txn, draft ->
+            val splits = txn.splits.ifEmpty { null }?.map { SplitDraft(categoryId, it.amount, it.memo, it.memberId, it.taxFlag) }
+                ?: listOf(SplitDraft(categoryId, txn.amount))
+            draft.copy(splits = splits)
+        }
+
+    /** TX-07: adds the tag [tagName] (created if new) to every chosen transaction that lacks it. */
+    fun bulkAddTag(ids: Collection<String>, tagName: String, confirmReconciled: Boolean = false): BulkResult {
+        val name = tagName.trim()
+        validate(name.isNotEmpty(), "error.nameRequired")
+        return bulk(ids, confirmReconciled) { _, draft -> draft.copy(tags = draft.tags + name) }
+    }
+
+    /**
+     * TX-07: moves the chosen transactions to [toAccountId], an account of the same group and
+     * currency (a transaction cannot leave its group's encrypted file). Transfers, investment cash
+     * lines and transactions matched to a bank statement stay where they are; reconciled ones need
+     * [confirmReconciled]. Each move is in the transaction's history.
+     */
+    fun bulkMove(ids: Collection<String>, toAccountId: String, confirmReconciled: Boolean = false): BulkResult {
+        val (targetGroup, target) = books.accounts.locate(toAccountId)
+        books.require(targetGroup, PermissionLevel.EDIT)
+        val rows = ids.distinct().map { locate(it) }
+        validate(rows.all { (group, _) -> group.id == targetGroup.id }, "error.moveOtherGroup")
+        rows.forEach { (group, _) -> books.require(group, PermissionLevel.EDIT) }
+        val ledger = books.ledger(targetGroup)
+        val movable = rows.map { it.second }.filter { row ->
+            row.account_id != toAccountId && row.transfer_id == null && row.investment_id == null &&
+                books.accounts.get(row.account_id).currency == target.currency &&
+                ledger.ledgerQueries.statementLinesForTxn(row.id).executeAsOne() == 0L
+        }
+        if (!confirmReconciled && movable.any { it.cleared == ClearedStatus.RECONCILED.name }) throw ReconciledChangeException()
+        ledger.transaction {
+            for (row in movable) {
+                val before = snapshot(ledger, row.id)
+                ledger.ledgerQueries.moveTxn(toAccountId, books.now(), row.id)
+                logChange(ledger, row.id, "UPDATE", before, snapshot(ledger, row.id))
+            }
+        }
+        return BulkResult(movable.size, ids.distinct().size - movable.size)
+    }
+
+    private fun bulk(ids: Collection<String>, confirmReconciled: Boolean, change: (Transaction, TransactionDraft) -> TransactionDraft): BulkResult {
+        val txns = ids.distinct().map { get(it) }
+        val editable = txns.filter { it.transfer == null && it.investmentId == null }
+        if (!confirmReconciled && editable.any { it.cleared == ClearedStatus.RECONCILED }) throw ReconciledChangeException()
+        val payees = books.payees.list(true).associate { it.id to it.name }
+        val tags = books.tags().associate { it.id to it.name }
+        for (txn in editable) {
+            val draft = TransactionDraft(
+                txn.accountId, txn.date, txn.amount, txn.payeeId?.let(payees::get) ?: txn.payeeText,
+                txn.splits.map { SplitDraft(it.categoryId, it.amount, it.memo, it.memberId, it.taxFlag) }, txn.memo, txn.memberId,
+                txn.cleared, txn.originalAmount, txn.fxRate, txn.tagIds.mapNotNull(tags::get).toSet(), txn.assetId, txn.cardHolderId,
+            )
+            update(txn.id, change(txn, draft), confirmReconciled = true)
+        }
+        return BulkResult(editable.size, txns.size - editable.size)
+    }
+
+    /**
+     * EXP-02: the chosen transactions as the exporters take them, oldest first, with category paths
+     * and names in French when [french], transfers naming the other account.
+     */
+    fun exportLines(ids: Collection<String>, french: Boolean): List<ca.schippers.hfm.importers.ExportTransaction> {
+        val categories = books.categories.list(includeArchived = true).associateBy { it.id }
+        fun path(id: String?): List<String>? {
+            var c = id?.let(categories::get) ?: return null
+            val names = ArrayList<String>()
+            while (true) {
+                names += if (french) c.nameFr else c.nameEn
+                c = c.parentId?.let(categories::get) ?: break
+            }
+            return names.reversed()
+        }
+        val payees = books.payees.list(true).associate { it.id to it.name }
+        val tags = books.tags().associate { it.id to it.name }
+        val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name }
+        return ids.distinct().map { get(it) }.sortedWith(compareBy({ it.date }, { it.id })).map { t ->
+            val cleared = when (t.cleared) {
+                ClearedStatus.UNCLEARED -> ca.schippers.hfm.importers.ExportCleared.UNCLEARED
+                ClearedStatus.CLEARED -> ca.schippers.hfm.importers.ExportCleared.CLEARED
+                ClearedStatus.RECONCILED -> ca.schippers.hfm.importers.ExportCleared.RECONCILED
+            }
+            ca.schippers.hfm.importers.ExportTransaction(
+                t.id, t.date, t.payeeId?.let(payees::get) ?: t.payeeText, t.memo, t.amount.toBigDecimal(), cleared,
+                if (t.isSplit) null else path(t.splits.firstOrNull()?.categoryId),
+                t.transfer?.let { accounts[it.otherAccountId] },
+                if (t.isSplit) t.splits.map { ca.schippers.hfm.importers.ExportSplit(path(it.categoryId), null, it.amount.toBigDecimal(), it.memo) } else emptyList(),
+                t.tagIds.mapNotNull(tags::get).sorted(),
+            )
+        }
     }
 
     // --- Sales tax and refunds (TX-04, TX-05) ----------------------------------------------------
@@ -569,6 +679,7 @@ class TransactionService internal constructor(private val books: Books) {
             transferId = row.transfer_id,
             splits = q.splitsForTxn(txnId).executeAsList().map { SnapshotSplit(it.category_id, it.amount_minor, it.memo) },
             tags = q.tagsForTxn(txnId).executeAsList(),
+            accountId = row.account_id,
         )
         return json.encodeToString(Snapshot.serializer(), snapshot)
     }
@@ -583,6 +694,7 @@ class TransactionService internal constructor(private val books: Books) {
         val transferId: String? = null,
         val splits: List<SnapshotSplit> = emptyList(),
         val tags: List<String> = emptyList(),
+        val accountId: String? = null,
     )
 
     @Serializable
