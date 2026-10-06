@@ -54,9 +54,10 @@ enum class TransferStatus { PENDING, SENT, IMPORTED, FAILED }
 /**
  * Kinds of item a phone can capture (CAP-01..08, MNT-03). [CONTACT] only marks a new contact in the
  * phone's own queue: contacts travel in [SyncRequest.contacts], never as a [CaptureItem], so a
- * desktop that does not know them still reads the request.
+ * desktop that does not know them still reads the request. [TASK_DONE] marks a task ticked in the
+ * seasonal checklist the same way (SEA-04, [SyncRequest.tasksDone]).
  */
-enum class CaptureKind { RECEIPT, BILL, DOCUMENT, QUICK_EXPENSE, METER_READING, CONTACT }
+enum class CaptureKind { RECEIPT, BILL, DOCUMENT, QUICK_EXPENSE, METER_READING, CONTACT, TASK_DONE }
 
 /**
  * One captured item. [id] is created on the phone, so the desktop imports it at most once however
@@ -123,8 +124,28 @@ data class PhoneContact(
 )
 
 /**
- * [contacts] (CON-07) were added after the first phones: a desktop that predates them ignores the
- * field and does not acknowledge them, so they stay queued on the phone until it is updated.
+ * SEA-04: a task ticked in the seasonal checklist on the phone, for the desktop to record in the
+ * service log of the vehicle or asset ([vehicle] tells which). [id] is made on the phone, so the
+ * desktop records it at most once. [date] is ISO (yyyy-MM-dd); [cost] a decimal string in the
+ * vehicle's or asset's currency; [reading] the odometer or meter reading, all optional.
+ */
+@Serializable
+data class PhoneTaskDone(
+    val id: String,
+    val createdAtMillis: Long,
+    val taskId: String,
+    val subjectId: String,
+    val vehicle: Boolean,
+    val date: String,
+    val note: String? = null,
+    val cost: String? = null,
+    val reading: Int? = null,
+)
+
+/**
+ * [contacts] (CON-07) and [tasksDone] (SEA-04) were added after the first phones: a desktop that
+ * predates them ignores the field and does not acknowledge them, so they stay queued on the phone
+ * until it is updated.
  */
 @Serializable
 data class SyncRequest(
@@ -132,6 +153,7 @@ data class SyncRequest(
     val items: List<CaptureItem>,
     val referenceVersion: String? = null,
     val contacts: List<PhoneContact> = emptyList(),
+    val tasksDone: List<PhoneTaskDone> = emptyList(),
 )
 
 /**
@@ -176,14 +198,16 @@ data class ReferenceData(
     val events: List<RefEvent> = emptyList(),
     /** CAL-03, HLT-03 on the phone: medication refills coming up or overdue. */
     val refills: List<RefRefill> = emptyList(),
+    /** SEA-04 on the phone: the current season's checklist. */
+    val seasonal: RefSeasonal? = null,
 ) {
     companion object {
         /**
          * What a phone app understands of the reference data: 1 up to maintenance and budgets, 2
-         * with contacts, 3 with events and refills. A phone that kept its copy with an older app asks for all of it again
+         * with contacts, 3 with events and refills, 4 with the seasonal checklist. A phone that kept its copy with an older app asks for all of it again
          * ([knownVersion]), since that app dropped what it did not know.
          */
-        const val FORMAT = 3
+        const val FORMAT = 4
 
         /** The version a phone sends: none when its copy was kept by an app reading an older [FORMAT]. */
         fun knownVersion(version: String?, storedFormat: Int): String? = version?.takeIf { storedFormat >= FORMAT }
@@ -278,6 +302,31 @@ data class RefRefill(
     val reminderDays: Int = 7,
     val forWhom: String? = null,
     val renewal: Boolean = false,
+)
+
+/**
+ * SEA-04: the current season's checklist. [season] is SPRING, SUMMER, FALL or WINTER; it runs from
+ * [start] up to the day before [end] (ISO dates).
+ */
+@Serializable
+data class RefSeasonal(val season: String, val start: String, val end: String, val tasks: List<RefSeasonalTask> = emptyList())
+
+/**
+ * SEA-04: one task of the checklist. [state] is DONE, DUE, SOON or TO_DO; [unit] (KM or HOURS) is
+ * set when a reading may be given with the tick; [currency] is that of a cost.
+ */
+@Serializable
+data class RefSeasonalTask(
+    val taskId: String,
+    val subjectId: String,
+    val subject: String,
+    val task: String,
+    val vehicle: Boolean,
+    val state: String,
+    val dueDate: String? = null,
+    val doneOn: String? = null,
+    val unit: String? = null,
+    val currency: String = "CAD",
 )
 
 /** A phone number or email with its label ("Office", "Cell"). */

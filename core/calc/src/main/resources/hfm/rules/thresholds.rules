@@ -48,6 +48,17 @@ vehicle.winterTiresOn | QC | 2019-01-01 | 12-01 | Gouvernement du Québec, Highw
 rule vehicle.winterTiresOff MONTH_DAY province
 vehicle.winterTiresOff | - | 2000-01-01 | 04-15 | RANN's Roost default
 
+# When each season of the seasonal checklist starts: the astronomical seasons (equinoxes and
+# solstices, as they usually fall in Canada's time zones); a household may move them.
+rule season.springStart MONTH_DAY
+season.springStart | - | 2000-01-01 | 03-20 | National Research Council Canada, equinoxes and solstices (spring equinox, March 19 to 21)
+rule season.summerStart MONTH_DAY
+season.summerStart | - | 2000-01-01 | 06-21 | National Research Council Canada, equinoxes and solstices (summer solstice, June 20 or 21)
+rule season.fallStart MONTH_DAY
+season.fallStart | - | 2000-01-01 | 09-22 | National Research Council Canada, equinoxes and solstices (fall equinox, September 22 or 23)
+rule season.winterStart MONTH_DAY
+season.winterStart | - | 2000-01-01 | 12-21 | National Research Council Canada, equinoxes and solstices (winter solstice, December 21 or 22)
+
 # The four tax instalment due dates in a year.
 rule instalment.due1 MONTH_DAY
 instalment.due1 | - | 2000-01-01 | 03-15 | CRA, Paying your income tax by instalments

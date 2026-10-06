@@ -96,6 +96,12 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val contacts = ContactService(this)
     val phoneContacts = PhoneContactService(this)
     val homeProjects = HomeProjectService(this)
+
+    /** SEA-05: rebates and grants on home projects. */
+    val projectRebates = ProjectRebateService(this)
+
+    /** SEA-02: the seasonal checklist across vehicles and assets. */
+    val seasonal = SeasonalChecklistService(this)
     val invoices = InvoiceService(this)
     val rentals = RentalService(this)
     val rewards = RewardService(this)
