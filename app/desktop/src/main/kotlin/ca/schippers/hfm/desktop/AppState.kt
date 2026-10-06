@@ -68,6 +68,18 @@ class AppState(
         prefs.putFloat(PREF_TEXT_SCALE, scale)
     }
 
+    /**
+     * Whether computer notifications name the reminders (a bill, a medication, an appointment) or
+     * only say how many of each kind there are, for a screen others can see; a per-computer setting.
+     */
+    var notificationDetails: Boolean by mutableStateOf(prefs.getBoolean(PREF_NOTIFICATION_DETAILS, true))
+        private set
+
+    fun chooseNotificationDetails(on: Boolean) {
+        notificationDetails = on
+        prefs.putBoolean(PREF_NOTIFICATION_DETAILS, on)
+    }
+
     /** NFR-12: the help topic shown, or null when the help is closed. */
     var helpTopic by mutableStateOf<String?>(null)
 
@@ -175,6 +187,7 @@ class AppState(
         private const val PREF_MENU_CLOSED = "nav.menuClosed"
         private const val PREF_THEME = "theme"
         private const val PREF_TEXT_SCALE = "textScale"
+        private const val PREF_NOTIFICATION_DETAILS = "notificationDetails"
         private const val PREF_LANGUAGE = "language"
 
         /** The manual's first chapter, shown when no chapter covers the screen. */

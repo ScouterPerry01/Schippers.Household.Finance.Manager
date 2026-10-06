@@ -137,4 +137,33 @@ class MultiUserTest {
             assertFailsWith<AccessDeniedException> { vic.pets.delete(vic.pets.list().single().id) }
         }
     }
+
+    @Test
+    fun `budget suggestions leave out private spending, and a viewer cannot change budgets`() {
+        val marieId = household()
+        perry().use { it.session.setPermission(it.groups().single { g -> !g.isPrivate }.id, marieId, PermissionLevel.VIEW) }
+        fun Books.spend(account: String, amount: String) {
+            val a = accounts.list().first { it.account.name == account }.account
+            val food = categories.list().first { it.systemKey == "food.groceries" }.id
+            transactions.create(TransactionDraft(a.id, LocalDate(2026, 3, 5), cad(amount), "IGA", listOf(SplitDraft(food, cad(amount)))))
+        }
+        perry().use { it.spend("Compte conjoint", "-1200.00") }
+        marie().use { m ->
+            m.spend("Mastercard de Marie", "-2400.00")
+            val food = m.categories.list().first { it.systemKey == "food" }.id
+            // Only the shared account's groceries count: a budget is seen by everyone in the household.
+            assertEquals(cad("100.00"), m.budgets.suggestions(today)[food])
+        }
+        perry().use { it.users.add("vic", "Vic", Role.VIEWER, "viewer-password3".toCharArray()) }
+        Books(store.unlock(dir, "vic", "viewer-password3".toCharArray())).use { vic ->
+            val food = vic.categories.list().first { it.systemKey == "food" }.id
+            assertFailsWith<AccessDeniedException> { vic.budgets.set(food, BudgetPeriod.MONTHLY, cad("100.00"), startMonth = LocalDate(2026, 10, 1)) }
+        }
+        perry().use { it.budgets.set(it.categories.list().first { c -> c.systemKey == "food" }.id, BudgetPeriod.MONTHLY, cad("100.00"), startMonth = LocalDate(2026, 10, 1)) }
+        Books(store.unlock(dir, "vic", "viewer-password3".toCharArray())).use { vic ->
+            assertEquals(1, vic.budgets.list().size, "a viewer sees the budgets")
+            assertFailsWith<AccessDeniedException> { vic.budgets.remove(vic.budgets.list().single().categoryId) }
+            assertEquals(1, vic.budgets.list().size)
+        }
+    }
 }

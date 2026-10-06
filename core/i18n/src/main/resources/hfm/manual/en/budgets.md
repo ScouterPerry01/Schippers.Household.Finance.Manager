@@ -11,6 +11,8 @@ A budget is an amount for one category, such as Groceries 800 $ a month or Home 
 
 Budgets use the categories of your transactions, so they are only as good as your categorizing. See [Categories](categories).
 
+Budgets belong to the whole household: every user sees the same budgets, and each sees the actual amounts of the groups they can open. A viewer can look at budgets but not add, change or remove them.
+
 ## The Budgets screen {#budgets-screen}
 
 At the top:
@@ -100,7 +102,7 @@ The carry-over counts every month from the budget's starting month up to the mon
 ## Suggest from last 12 months {#suggest}
 @index: automatic budget; budget from history; average spending
 
-**Suggest from last 12 months** looks at your spending in the last 12 full months (not counting the current month) and proposes a monthly budget for each top-level expense category that had spending: the monthly average, rounded up to a whole amount.
+**Suggest from last 12 months** looks at your spending in the last 12 full months (not counting the current month) and proposes a monthly budget for each top-level expense category that had spending: the monthly average, rounded up to a whole amount. Only the accounts of shared groups count: since every user sees the budgets, a suggestion made from a private group's spending would show that spending to the others.
 
 - Each category is listed with its suggested amount "per month", largest first.
 - Categories without a budget are ticked. Those that already have one are marked "(already has a budget)" and left unticked; ticking one replaces its budget with the suggestion.

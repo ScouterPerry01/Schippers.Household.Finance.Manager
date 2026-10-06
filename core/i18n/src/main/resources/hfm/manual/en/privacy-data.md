@@ -15,8 +15,8 @@ In short: your financial information stays on your computer and your phone, encr
 A household is a folder on your computer, made when you created it, with a name that ends in .hfm, such as Tremblay Family.hfm. Everything about the household is inside:
 
 - a key ring file, which holds the login names and the locked keys of each user, but no names of people, amounts or institutions;
-- an encrypted core database: the users, people, categories, payees, settings and the activity log;
-- one encrypted database for each account group: its accounts, transactions, documents' details, budgets, investments and every other record kept in that group;
+- an encrypted core database: the users, people, categories, payees, budgets, settings and the activity log, which every user of the household can read;
+- one encrypted database for each account group: its accounts, transactions, documents' details, investments and every other record kept in that group;
 - the document vault: one encrypted file for each receipt, bill or other document;
 - copies taken automatically before the app upgrades a database to a newer version, in case something goes wrong.
 
@@ -141,7 +141,7 @@ Each sends the symbols of what you hold, such as XIC or BTC, and nothing else ab
 
 @index: Bitcoin; watch-only wallet; mempool.space; xpub
 
-When you ask the app to update a watch-only Bitcoin wallet, it asks mempool.space, a public block explorer, about the wallet's addresses. That service learns those addresses, nothing else about you. Never enter a private key or seed phrase: the app refuses them. See [Investments](investments).
+When you ask the app to update a watch-only Bitcoin wallet, it asks mempool.space, a public block explorer, about the wallet's addresses. That service learns those addresses and, like any website, your computer's internet (IP) address, which can tell roughly where you are; nothing else about you. Never enter a private key or seed phrase: the app refuses them. See [Investments](investments).
 
 ### AI reading {#ai-reading}
 

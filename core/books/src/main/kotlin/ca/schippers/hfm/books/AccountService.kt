@@ -95,7 +95,7 @@ class AccountService internal constructor(private val books: Books) {
     /** The full account number, only after the user re-enters their password (SEC-04). */
     fun revealNumber(accountId: String, password: CharArray): String? {
         val (group, _) = locate(accountId)
-        if (!books.session.verifyPassword(password)) throw AccessDeniedException("Wrong password")
+        books.revealGuard.check(password, "account", accountId)
         books.session.audit("REVEAL", "account", accountId)
         return books.ledger(group).ledgerQueries.accountById(accountId).executeAsOne().number_full
     }

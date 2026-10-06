@@ -6,7 +6,7 @@ Each line shows a category with the amount spent (or received, for income), the 
 
 ## Let the app suggest budgets
 
-If you already have some history, choose Suggest from last 12 months. The app shows the monthly average of each category over the last 12 full months. Tick the categories you want to budget, then choose Create budgets. Categories that already have a budget are marked.
+If you already have some history, choose Suggest from last 12 months. The app shows the monthly average of each category over the last 12 full months. Tick the categories you want to budget, then choose Create budgets. Categories that already have a budget are marked. Only shared accounts count, since every user of the household sees the budgets.
 
 ## Add a budget by hand
 

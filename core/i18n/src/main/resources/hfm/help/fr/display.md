@@ -10,6 +10,10 @@ Choisissez Comme le système (clair ou sombre) pour suivre Windows ou Linux, ou 
 
 Choisissez une taille de 90 % à 150 %. Tous les écrans grandissent avec elle, et le menu de gauche s’élargit pour que ses noms tiennent sur une ligne. La ligne d’exemple montre le texte à la taille choisie.
 
+## Notifications
+
+Afficher les détails dans les notifications, coché par défaut, permet à une notification de l’ordinateur de nommer jusqu’à quatre rappels, comme une facture, un médicament ou un rendez-vous. Décochez-le si d’autres peuvent voir cet écran : les notifications indiquent alors seulement combien il y a de rappels de chaque sorte, comme Factures (2).
+
 ## Le menu
 
 Le menu peut être une liste à gauche, aux groupes repliables, ou une barre en haut aux menus déroulants. Utilisez Menu en haut au bas de la liste, ou Menu à gauche au bout de la barre. Le choix de chaque utilisateur est retenu sur cet ordinateur.

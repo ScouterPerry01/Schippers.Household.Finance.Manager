@@ -172,10 +172,10 @@ fun healthSections(model: BooksModel, memberId: String): List<DocSection> {
 
 /** Prints the sections (or opens them when the system has no print action); [subtitleKey] is the line under the title. */
 internal fun printSections(model: BooksModel, title: String, sections: List<DocSection>, subtitleKey: String = "estate.prepared") {
-    val file = File.createTempFile("hfm-summary-", ".pdf").apply { deleteOnExit() }
+    // Not encrypted: removed shortly after the printer or viewer has it (PrintFiles).
+    val file = PrintFiles.create("hfm-summary-")
     SectionsPdf.write(title, model.t(subtitleKey, model.date(today())), sections, file, emptyText = model.t("estate.nothing"))
-    val desktop = java.awt.Desktop.getDesktop()
-    if (desktop.isSupported(java.awt.Desktop.Action.PRINT)) desktop.print(file) else desktop.open(file)
+    PrintFiles.printOrOpen(file)
 }
 
 /** EST-03: saves the summary as a PDF, protected by a password when one is given, for a spouse or an executor. */

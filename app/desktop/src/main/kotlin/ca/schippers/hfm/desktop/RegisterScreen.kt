@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.books.TooManyAttemptsException
 import ca.schippers.hfm.books.Account
 import ca.schippers.hfm.books.AccountSummary
 import ca.schippers.hfm.books.Category
@@ -771,6 +772,7 @@ private fun RevealNumberDialog(model: BooksModel, account: Account, onClose: () 
     var password by remember { mutableStateOf("") }
     var revealed by remember { mutableStateOf<String?>(null) }
     var wrong by remember { mutableStateOf(false) }
+    var waitSeconds by remember { mutableStateOf<Long?>(null) }
     AlertDialog(
         onDismissRequest = onClose,
         title = { Text(model.t("account.reveal.title")) },
@@ -780,7 +782,7 @@ private fun RevealNumberDialog(model: BooksModel, account: Account, onClose: () 
                     Text(revealed!!, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 } else {
                     Text(model.t("account.reveal.prompt"))
-                    TextInput(model.t("unlock.password"), password, secret = true, error = if (wrong) model.t("unlock.wrong") else null) { password = it }
+                    TextInput(model.t("unlock.password"), password, secret = true, error = waitSeconds?.let { model.t("account.reveal.wait", it) } ?: if (wrong) model.t("unlock.wrong") else null) { password = it }
                 }
             }
         },
@@ -789,8 +791,12 @@ private fun RevealNumberDialog(model: BooksModel, account: Account, onClose: () 
                 TextButton(onClick = {
                     try {
                         revealed = model.books.accounts.revealNumber(account.id, password.toCharArray()).orEmpty()
+                        waitSeconds = null
                     } catch (_: AccessDeniedException) {
                         wrong = true
+                        waitSeconds = null
+                    } catch (e: TooManyAttemptsException) {
+                        waitSeconds = e.waitSeconds
                     }
                     password = ""
                 }) { Text(model.t("account.show")) }

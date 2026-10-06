@@ -48,6 +48,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val rates = RateService(this)
     val reports = ReportService(this)
     val budgets = BudgetService(this)
+    internal val revealGuard = RevealGuard(this)
     val backups = BackupService(this)
     val search = SearchService(this)
     val calendar = CalendarService(this)
