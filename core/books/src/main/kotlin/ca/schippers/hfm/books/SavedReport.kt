@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.Ids
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -76,6 +77,8 @@ class SavedReportService internal constructor(private val books: Books) {
         validate(report.schedule == null || !report.folder.isNullOrBlank(), "error.reportFolder")
         val id = report.id.ifBlank { Ids.newId() }
         val existing = list().firstOrNull { it.id == id }
+        // Another user's report could otherwise be pointed at a folder of this user's choosing.
+        if (report.id.isNotBlank() && existing == null) throw AccessDeniedException("Not one of your saved reports")
         // A new or changed schedule starts with the period that just ended, not with every past one.
         val last = if (existing?.schedule == report.schedule) report.lastPeriod else null
         q.upsertSavedReport(id, books.userId, report.name.trim(), report.definition, report.schedule?.name, report.folder?.trim()?.ifEmpty { null }, last, books.now())

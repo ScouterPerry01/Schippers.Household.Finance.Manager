@@ -3,6 +3,7 @@ package ca.schippers.hfm.importers
 import java.util.Base64
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /** CAP-06: e-receipts saved as .eml files. */
@@ -58,5 +59,54 @@ class EmailMessageTest {
         val m = EmailMessage.parse(eml.toByteArray())
         assertEquals("Coffee 4.50\nTOTAL 4.50\nPaid by Visa & thanks", m.text)
         assertTrue(m.attachments.isEmpty())
+    }
+
+    // --- Phase 5 security review: a saved email is outside input ---------------------------------
+
+    @Test
+    fun `attachment names keep only their last part, without control characters`() {
+        fun named(name: String) = EmailMessage.parse(
+            """
+            Content-Type: multipart/mixed; boundary=b
+
+            --b
+            Content-Type: application/pdf
+            Content-Disposition: attachment; filename="$name"
+
+            %PDF-1.4
+            --b--
+            """.trimIndent().toByteArray(),
+        ).attachments.single().fileName
+        assertEquals("evil.pdf", named("../../AppData/Roaming/evil.pdf"))
+        assertEquals("evil.pdf", named("""C:\Users\Public\evil.pdf"""))
+        assertEquals("recu.pdf", named("re\u0007cu.pdf"))
+        assertEquals("attachment", named(".."+"/"))
+    }
+
+    @Test
+    fun `parts nested too deep or too many are skipped, and a huge file is refused`() {
+        var eml = "Content-Type: application/pdf; name=\"deep.pdf\"\r\n\r\n%PDF-1.4"
+        repeat(EmailMessage.MAX_DEPTH + 5) { eml = "Content-Type: message/rfc822\r\n\r\n$eml" }
+        assertTrue(EmailMessage.parse(eml.toByteArray()).attachments.isEmpty(), "the attachment under too many levels is not read")
+
+        val many = buildString {
+            append("Content-Type: multipart/mixed; boundary=b\r\n\r\n")
+            repeat(EmailMessage.MAX_PARTS + 50) { append("--b\r\nContent-Type: application/pdf; name=\"$it.pdf\"\r\n\r\n%PDF\r\n") }
+            append("--b--")
+        }
+        assertTrue(EmailMessage.parse(many.toByteArray()).attachments.size < EmailMessage.MAX_PARTS)
+
+        assertFailsWith<IllegalArgumentException> { EmailMessage.parse(ByteArray(EmailMessage.MAX_BYTES + 1)) }
+    }
+
+    @Test
+    fun `malformed HTML is read in linear time and a bad character reference does not fail`() {
+        val started = System.nanoTime()
+        EmailMessage.htmlToText("<script".repeat(200_000))
+        EmailMessage.htmlToText("<".repeat(1_000_000))
+        EmailMessage.htmlToText("<p".repeat(300_000) + ">")
+        assertTrue(System.nanoTime() - started < 5_000_000_000L, "a crafted body cannot hold the import")
+        assertEquals("a b", EmailMessage.htmlToText("a &#99999999; b"))
+        assertEquals("before", EmailMessage.htmlToText("before<script>never closed"))
     }
 }

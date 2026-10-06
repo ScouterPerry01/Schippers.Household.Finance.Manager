@@ -40,6 +40,8 @@ class ContactBookTest {
         assertEquals("geo:0,0?q=12%20rue%20Saint-Jean%20Qu%C3%A9bec", ContactBook.geoUri("12 rue Saint-Jean\nQuébec"))
         assertEquals("https://rbc.com", ContactBook.webUri("rbc.com"))
         assertEquals("http://example.ca", ContactBook.webUri("http://example.ca"))
+        assertEquals("https://ca.ranns.roost.mobile/queue", ContactBook.webUri("content://ca.ranns.roost.mobile/queue"))
+        assertEquals("https://intent:#Intent;end", ContactBook.webUri("intent:#Intent;end"))
     }
 
     @Test

@@ -189,6 +189,8 @@ fun ExportPdfDialog(model: BooksModel, title: String, sections: List<DocSection>
         if (protect) {
             TextInput(model.t("estate.password"), password, secret = true, supporting = model.t("estate.passwordHint")) { password = it }
             TextInput(model.t("estate.passwordAgain"), again, secret = true, error = model.t("estate.passwordsDiffer").takeIf { again.isNotEmpty() && again != password }) { again = it }
+        } else {
+            Text(model.t("estate.unprotected"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

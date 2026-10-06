@@ -18,7 +18,9 @@ SELECT * FROM saved_report WHERE user_id = ? ORDER BY name COLLATE NOCASE;
 upsertSavedReport:
 INSERT INTO saved_report(id, user_id, name, definition, schedule, folder, last_period, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET name = excluded.name, definition = excluded.definition, schedule = excluded.schedule,
-    folder = excluded.folder, last_period = excluded.last_period;
+    folder = excluded.folder, last_period = excluded.last_period
+-- Never another user's report, even by its id: its folder is where their report is written.
+WHERE saved_report.user_id = excluded.user_id;
 
 setReportRun:
 UPDATE saved_report SET last_period = ? WHERE id = ?;

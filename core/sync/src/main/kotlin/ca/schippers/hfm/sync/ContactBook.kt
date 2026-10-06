@@ -54,8 +54,14 @@ object ContactBook {
     /** The address for a map app: a search, so any address the user wrote is found. */
     fun geoUri(address: String): String = "geo:0,0?q=" + URLEncoder.encode(address.replace('\n', ' ').trim(), "UTF-8").replace("+", "%20")
 
-    /** A website with its https:// when the user wrote only the name. */
-    fun webUri(website: String): String = website.trim().let { if ("://" in it) it else "https://$it" }
+    /**
+     * A website with its https:// when the user wrote only the name. Only web addresses are opened:
+     * another scheme (content://, file://, intent:) is read as a site's name, so a contact cannot
+     * make the phone open something else (Phase 5 security review).
+     */
+    fun webUri(website: String): String = website.trim().let { w ->
+        if (w.startsWith("https://", ignoreCase = true) || w.startsWith("http://", ignoreCase = true)) w else "https://" + w.substringAfter("://")
+    }
 
     private val MARKS = Regex("\\p{M}+")
 }
