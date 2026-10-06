@@ -191,6 +191,8 @@ class SyncServiceTest {
         )
         assertEquals(listOf("typed", "bill", "quick", "odo", "hours"), response.imported)
         assertEquals(listOf("bad"), response.failed.map { it.id })
+        val why = response.failed.single()
+        assertTrue(why.reason(french = false) != why.reason(french = true), "the reason comes in English and in French (SYNC-09)")
         val typed = books.documents.inbox().first { it.notes == "Souper" }
         assertEquals("Metro", typed.merchant)
         assertEquals(Money.parse("24.00", Currency.CAD), typed.amount, "what the person typed wins over what was read")
