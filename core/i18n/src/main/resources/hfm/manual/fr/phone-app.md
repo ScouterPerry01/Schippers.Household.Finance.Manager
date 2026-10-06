@@ -348,7 +348,7 @@ Un nouveau contact prend les mêmes chemins que les captures : par votre Wi-Fi, 
 - **Renouvellements de médicaments** : à partir des jours de rappel d’un médicament avant la fin de sa provision, et quand elle est terminée (« Renouvellement dans 3 jours. · Alex »), avec un rappel de demander une nouvelle ordonnance quand il ne reste plus de renouvellements.
 
 - **Rappels de factures** : quand une facture est due dans ses jours de rappel, tels que réglés sur l’ordinateur (« Hydro est à payer dans 3 jours », « à payer demain », « à payer aujourd’hui »).
-- **Alertes de budget** : quand les dépenses du mois d’une catégorie atteignent 80 % de son budget, et de nouveau quand le budget est épuisé. Elles n’utilisent que les chiffres d’un transfert fait ce mois-ci.
+- **Alertes de budget** : quand les dépenses du mois d’une catégorie atteignent 80 % de son budget, et de nouveau quand le budget est épuisé. Elles n’utilisent que les chiffres d’un transfert fait ce mois-ci. La notification nomme la catégorie, mais pas les montants, qui sont dans le Résumé, derrière le NIP.
 - **Rappels d’entretien** : quand une tâche sera bientôt à faire, et quand elle est à faire.
 
 Elles n’apparaissent que si vous avez autorisé les notifications. Chaque genre a son propre canal dans les réglages de notification d’Android, où vous pouvez le désactiver.

@@ -348,7 +348,7 @@ From the latest summary, the phone shows notifications, each once. Appointment r
 - **Medication refills**: from a medication's reminder days before its supply runs out, and when it has run out ("Refill due in 3 days · Alex"), with a reminder to ask for a new prescription when no refills are left.
 
 - **Bill reminders**: when a bill is due within its reminder days, as set on the computer ("Hydro is due in 3 days", "due tomorrow", "due today").
-- **Budget alerts**: when a category's spending this month reaches 80 % of its budget, and again when the budget is used up. They use only figures from a transfer made this month.
+- **Budget alerts**: when a category's spending this month reaches 80 % of its budget, and again when the budget is used up. They use only figures from a transfer made this month. The notification names the category but not the amounts, which are in the Summary, behind the PIN.
 - **Maintenance reminders**: when a task becomes due soon, and when it is due.
 
 They appear only if you allowed notifications. Each kind has its own channel in Android's notification settings, where you can turn it off.
