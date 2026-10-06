@@ -208,6 +208,12 @@ class SyncService internal constructor(private val books: Books) {
                 }
                 .onFailure { failed += failure(contact.id, it) }
         }
+        // CSY-02: each calendar brought in replaces the copy kept; a snapshot already stored is acknowledged again.
+        for (snapshot in request.calendars.take(MAX_CALENDARS)) {
+            runCatching { books.broughtIn.receive(deviceId, snapshot, now) }
+                .onSuccess { imported += snapshot.id }
+                .onFailure { failed += failure(snapshot.id, it) }
+        }
         // UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: readings, hours, chores and volunteer hours are stored as they come.
         for (tracker in request.trackers.take(MAX_ITEMS)) {
             if (books.core.syncItemById(tracker.id).executeAsOneOrNull() != null) {
@@ -395,6 +401,7 @@ class SyncService internal constructor(private val books: Books) {
         private const val DESKTOP_ID = "sync.desktopId"
         private const val PRIVATE_KEY = "sync.privateKey"
         private const val MAX_ITEMS = 50
+        private const val MAX_CALENDARS = 40
 
         /** Section 3.1: how far back a reply file confirms items received from the phone, as long as replies are kept in the folder. */
         const val RECENT_CONFIRM_MS = 60L * 24 * 3600 * 1000

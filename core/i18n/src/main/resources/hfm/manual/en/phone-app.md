@@ -24,6 +24,7 @@ RANN's Roost Mobile comes in two editions that work the same way:
 - Everything the app keeps (its settings, the captures and new contacts waiting to be sent, the summary and the contacts) is encrypted with a key kept in the phone's secure key store. The key never leaves the phone.
 - The app is excluded from Android's cloud backups, so none of it is copied to Google.
 - Captures go only to your computer, encrypted with the key made when you paired. Away from home, they may go through a folder of your own cloud storage, still encrypted.
+- Calendars are read only if you turn on [Calendars on this phone](phone-app#phone-calendars), only those you tick, and they go only to your computer, encrypted the same way.
 - The only other connection is the daily update check of the GitHub edition, if you allow it. It sends nothing about you or your household.
 - Once your computer confirms it received a capture, the phone deletes its copy of the pictures and details.
 
@@ -416,6 +417,20 @@ Shown when paired. When the computer is not in reach, captures can be left, encr
 @index: exact alarms; alarms and reminders; late reminder
 
 Android lets an app ring at an exact minute only once you allow it. Until then, calendar reminders come within ten minutes after their time. While it is not allowed, and the phone is paired, Settings shows **Reminders on the minute** and the button **Allow on-time reminders**, which opens Android's **Alarms & reminders** page for the app: turn it on and come back. The section then disappears and reminders come on time.
+
+### Calendars on this phone {#phone-calendars}
+
+@index: calendar permission; READ_CALENDAR; Google Calendar; Outlook calendar; bring in calendars
+
+Shown when paired. Brings the calendars this phone already shows (Google, Outlook or Exchange, Samsung and others) to the computer's Calendar, with your other transfers. The app never signs in to a calendar account. The line under the title says **Off**, or how many calendars are brought in and how many days ahead. **Set up** (or **Change**) opens the page where it is chosen:
+
+- **Bring calendars to the computer**: turns it on or off. The first time, the app says why it needs calendar access, then Android asks for it. If you refuse, nothing is read; allow Calendar for the app in Android's settings to change your mind. While it is off, nothing is read, and the calendars brought in before are removed from the computer at the next transfer.
+- **Days ahead**: 14, 30, 60 (the default), 90 or 180 days of each calendar are sent, from today.
+- **Calendars to bring in, and who sees them on the computer**: every calendar Android shows, with its account. Tick the ones to bring in, and choose for each **Private** (the default: only you see it), **Busy only** (the others see you busy at those times, without details) or **Shared** (the others see the items).
+- **Mark single items**: the coming items of the ticked calendars. Each can be **As its calendar**, **Private**, **Busy only** or **Shared**; the choice applies to every date of a repeating item.
+- **Done** goes back to Settings.
+
+Only the ticked calendars are read, for the days chosen: each item's title, place, start and end, never its description, guests or reminders. They go only to your paired computer, encrypted like your captures, over Wi-Fi, through the transfer folder or in a shared file. A calendar is sent whole when it changed since the last transfer; nothing is written to your calendars. If the computer could not store one, the reason shows under the title and the phone tries again at the next transfer. See [Calendars from phones and files](calendar-sync).
 
 ### Change PIN {#change-pin}
 

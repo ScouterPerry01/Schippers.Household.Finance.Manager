@@ -26,6 +26,7 @@ goals
 family
 side
 calendar
+calendar-sync
 = investing Placements et emprunts
 investments
 plans

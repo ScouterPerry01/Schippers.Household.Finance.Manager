@@ -71,6 +71,7 @@ fun CalendarScreen(model: BooksModel) {
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(model.t("nav.calendar"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+            BroughtInButtons(model)
             Button(onClick = { creating = model.newEventDraft(today()) }) { Text(model.t("calendar.add")) }
         }
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
@@ -135,6 +136,7 @@ private fun itemKey(item: CalendarItem): String = when (item) {
     is CalendarItem.Health -> "h-${item.due.javaClass.simpleName}-${item.due.memberId}-${item.date}-${healthTitle(item.due)}"
     is CalendarItem.Renewal -> "r-${item.renewal.kind}-${item.renewal.subjectId}-${item.date}-${item.renewal.detail}"
     is CalendarItem.Maintenance -> "m-${item.due.taskId}-${item.date}"
+    is CalendarItem.Imported -> importedKey(item)
 }
 
 /** Names of people, providers and accounts, for the agenda lines. */
@@ -257,6 +259,7 @@ private fun AgendaRow(model: BooksModel, item: CalendarItem, names: Lookups, onE
                     val section = if (due.vehicle) Section.VEHICLES else Section.ASSETS
                     TextButton(onClick = { model.section = section }) { Text(model.t("calendar.open.${section.name}")) }
                 }
+                is CalendarItem.Imported -> ImportedAgendaRow(model, item)
             }
         }
     }
@@ -269,6 +272,7 @@ private fun kindColor(item: CalendarItem): Color = when (item) {
     is CalendarItem.Health -> MaterialTheme.colorScheme.secondary
     is CalendarItem.Renewal -> MaterialTheme.colorScheme.secondary
     is CalendarItem.Maintenance -> MaterialTheme.colorScheme.secondary
+    is CalendarItem.Imported -> MaterialTheme.colorScheme.secondary
 }
 
 private fun durationText(model: BooksModel, minutes: Int): String =
@@ -344,6 +348,7 @@ private fun MonthCellLine(model: BooksModel, item: CalendarItem, onEdit: (Calend
         is CalendarItem.Health -> model.t("healthDue.${item.due.javaClass.simpleName}", healthTitle(item.due)) to Modifier.clickable { model.section = Section.HEALTH }
         is CalendarItem.Renewal -> "${item.renewal.subjectName}: ${renewalTitle(model, item.renewal)}" to Modifier.clickable { model.section = model.renewalSection(item.renewal.kind) }
         is CalendarItem.Maintenance -> "${item.due.subjectName}: ${item.due.taskName}" to Modifier.clickable { model.section = if (item.due.vehicle) Section.VEHICLES else Section.ASSETS }
+        is CalendarItem.Imported -> importedMonthText(model, item) to Modifier
     }
     val faded = (item is CalendarItem.Event && item.occurrence.mark != null) || (item is CalendarItem.Bill && item.occurrence.status != OccurrenceStatus.DUE)
     Text(
