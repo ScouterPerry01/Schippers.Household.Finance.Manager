@@ -130,13 +130,20 @@ fun emergencySections(model: BooksModel, s: EmergencySummary): List<DocSection> 
             p.beneficiaries.takeIf { it.isNotEmpty() }?.let { b -> model.t("estate.beneficiaries", b.joinToString(", ") { it.name }) },
         ).joinToString(" · ")
     })
+    // EST-01: medical, dental and other health plans, with the people they cover.
+    val medical = DocSection(model.t("estate.medicalPlans"), runCatching { model.books.medical.plans(includeInactive = false) }.getOrDefault(emptyList()).map { p ->
+        "${model.t("medPlanKind.${p.kind}")} · ${p.name}" to listOfNotNull(
+            p.insurer, p.policyNumber, p.certificateNumber, p.memberId?.let(members::get),
+            p.people.mapNotNull { members[it.memberId] }.takeIf { it.isNotEmpty() }?.let { model.t("estate.covers", it.joinToString(", ")) },
+        ).joinToString(" · ")
+    })
     val pensions = DocSection(model.t("estate.pensions"), s.pensions.map { p ->
         p.name to listOfNotNull(model.t("pensionKind.${p.kind}"), members[p.memberId], p.administrator, p.memberNumber).joinToString(" · ")
     })
     val kept = DocSection(model.t("estate.keptDocuments"), s.keptDocuments.map { d ->
         (d.title ?: d.merchant ?: d.fileName ?: "?") to listOfNotNull(d.date?.let(model::date), d.notes).joinToString(" · ")
     }, note = model.t("estate.keptNote"))
-    return people + listOf(institutions, accounts, policies, pensions, kept)
+    return people + listOf(institutions, accounts, policies, medical, pensions, kept)
 }
 
 /** HLT-09: one person's health summary for appointments and emergencies. */
@@ -166,7 +173,7 @@ fun healthSections(model: BooksModel, memberId: String): List<DocSection> {
 /** Prints the sections (or opens them when the system has no print action); [subtitleKey] is the line under the title. */
 internal fun printSections(model: BooksModel, title: String, sections: List<DocSection>, subtitleKey: String = "estate.prepared") {
     val file = File.createTempFile("hfm-summary-", ".pdf").apply { deleteOnExit() }
-    SectionsPdf.write(title, model.t(subtitleKey, model.date(today())), sections, file)
+    SectionsPdf.write(title, model.t(subtitleKey, model.date(today())), sections, file, emptyText = model.t("estate.nothing"))
     val desktop = java.awt.Desktop.getDesktop()
     if (desktop.isSupported(java.awt.Desktop.Action.PRINT)) desktop.print(file) else desktop.open(file)
 }
@@ -182,7 +189,7 @@ fun ExportPdfDialog(model: BooksModel, title: String, sections: List<DocSection>
         val chooser = JFileChooser().apply { selectedFile = File(title.replace(Regex("""[\\/:*?"<>|]"""), "-") + ".pdf") }
         if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             val file = chooser.selectedFile.let { if (it.extension.equals("pdf", true)) it else File(it.path + ".pdf") }
-            if (model.act { SectionsPdf.write(title, model.t(subtitleKey, model.date(today())), sections, file, password.toCharArray().takeIf { protect }) } != null) onClose()
+            if (model.act { SectionsPdf.write(title, model.t(subtitleKey, model.date(today())), sections, file, password.toCharArray().takeIf { protect }, model.t("estate.nothing")) } != null) onClose()
         }
     }) {
         Text(model.t("estate.exportHint"), style = MaterialTheme.typography.bodySmall)

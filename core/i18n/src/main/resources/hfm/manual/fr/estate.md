@@ -12,7 +12,7 @@ L’écran a deux onglets :
 - **Sommaire d’urgence** : tout rassemblé dans un seul document, prêt à enregistrer ou à imprimer. Voir [Onglet Sommaire d’urgence](estate#summary-tab).
 - **Papiers et volontés** : pour chaque personne, où sont ses papiers, ses volontés et les personnes à appeler. Voir [Onglet Papiers et volontés](estate#papers-tab).
 
-La plus grande partie du sommaire se remplit d’elle-même à partir du reste de l’application : institutions, comptes et soldes, bénéficiaires des régimes enregistrés, polices d’assurance, régimes de retraite et documents conservés. Seuls les papiers et volontés se tapent ici.
+La plus grande partie du sommaire se remplit d’elle-même à partir du reste de l’application : institutions, comptes et soldes, bénéficiaires des régimes enregistrés, polices d’assurance, régimes de santé et dentaires, régimes de retraite et documents conservés. Seuls les papiers et volontés se tapent ici.
 
 ## Onglet Sommaire d’urgence {#summary-tab}
 
@@ -26,6 +26,7 @@ Dans cet ordre :
 - **Institutions** : chaque institution inscrite sous **Institutions financières** dans les réglages, avec sa succursale, son téléphone et son site Web.
 - **Comptes** : chaque compte ouvert, trié par institution, avec son type, son institution, son numéro masqué, ses titulaires, son solde et, pour un régime enregistré, ses bénéficiaires et leurs parts. La section se termine par « Soldes au » et la date du jour.
 - **Polices d’assurance** : chaque police active de l’onglet **Assurances** de [Maison et biens](assets#insurance-tab) : son type et son assureur, le numéro de police, la personne assurée, le montant de garantie, le courtier et les bénéficiaires.
+- **Régimes de santé et dentaires** : chaque régime actif des [Réclamations médicales](medical) : son type et son nom, l’assureur, les numéros de police et de certificat, le participant et les personnes couvertes.
 - **Régimes de retraite** : les régimes de retraite inscrits sous [Régimes enregistrés](plans), avec leur type, le participant, l’administrateur et le numéro de participant.
 - **Documents conservés** : « Documents marqués à conserver dans le coffre de RANN’s Roost », avec leur date et leurs notes. Voir [Documents](documents).
 

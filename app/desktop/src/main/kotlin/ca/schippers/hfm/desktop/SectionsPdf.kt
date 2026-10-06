@@ -22,7 +22,8 @@ data class DocSection(val title: String, val lines: List<Pair<String, String>>, 
  */
 object SectionsPdf {
 
-    fun write(title: String, subtitle: String, sections: List<DocSection>, file: File, password: CharArray? = null) {
+    /** [emptyText] is printed under a section with nothing in it, as the screen shows it. */
+    fun write(title: String, subtitle: String, sections: List<DocSection>, file: File, password: CharArray? = null, emptyText: String? = null) {
         val document = Document(PageSize.LETTER, 42f, 42f, 42f, 42f)
         FileOutputStream(file).use { out ->
             val writer = PdfWriter.getInstance(document, out)
@@ -47,6 +48,8 @@ object SectionsPdf {
                         table.addCell(PdfPCell(Phrase(text(v), body)).apply { border = 0; paddingBottom = 3f })
                     }
                     document.add(table)
+                } else if (emptyText != null) {
+                    document.add(Paragraph(text(emptyText), body))
                 }
                 s.note?.let { document.add(Paragraph(text(it), FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8f))) }
             }

@@ -12,7 +12,7 @@ The screen has two tabs:
 - **Emergency summary**: everything gathered in one document, ready to save or print. See [Emergency summary tab](estate#summary-tab).
 - **Papers and wishes**: for each person, where their papers are, their wishes and the people to call. See [Papers and wishes tab](estate#papers-tab).
 
-Most of the summary fills itself from the rest of the app: institutions, accounts and balances, beneficiaries of registered plans, insurance policies, pensions and documents kept for good. Only the papers and wishes are typed here.
+Most of the summary fills itself from the rest of the app: institutions, accounts and balances, beneficiaries of registered plans, insurance policies, health and dental plans, pensions and documents kept for good. Only the papers and wishes are typed here.
 
 ## Emergency summary tab {#summary-tab}
 
@@ -26,6 +26,7 @@ In this order:
 - **Institutions**: every institution under **Institutions** in the settings, with its branch, phone and website.
 - **Accounts**: every open account, sorted by institution, with its type, institution, masked number, owners, balance, and for a registered plan its beneficiaries and their shares. The section ends with "Balances as of" today's date.
 - **Insurance policies**: every active policy from the **Insurance** tab of [Home and assets](assets#insurance-tab): its kind and insurer, policy number, person insured, coverage amount, broker and beneficiaries.
+- **Health and dental plans**: every active plan from [Medical claims](medical): its kind and name, insurer, policy and certificate numbers, the plan member, and the people it covers.
 - **Pensions**: the pension plans recorded under [Registered plans](plans), with their kind, member, administrator and member number.
 - **Documents kept for good**: "Documents marked to keep in the vault of RANN's Roost", with their date and notes. See [Documents](documents).
 
