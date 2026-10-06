@@ -7,7 +7,7 @@ build is the `play` flavour: no update check and no permission to install packag
 - Contact email: info-rann-apps@NorthMail.ca
 - Category: Finance. Price: free (decided in the SRS, 16.2).
 - App icon: `branding/store/play-icon-512.png`. Feature graphic: `branding/store/play-feature-1024x500.png`.
-- Phone screenshots: `docs/store/screenshots/phone-en/` and `phone-fr/` (1080 × 2160, within Play's 2:1 limit; capture, summary with Coming up, contacts, sent), taken on the emulator from the sample household (`tools/dev/README.md`).
+- Phone screenshots: `docs/store/screenshots/phone-en/` and `phone-fr/` (1080 × 2160, within Play's 2:1 limit; five per language: capture, summary, Coming up with refills, contacts, sent), taken on the emulator from the sample household (`tools/dev/README.md`).
 
 ## English (en-CA)
 
