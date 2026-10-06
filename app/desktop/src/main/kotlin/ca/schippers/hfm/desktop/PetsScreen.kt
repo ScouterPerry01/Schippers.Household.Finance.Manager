@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.CostSummary
+import ca.schippers.hfm.books.DocumentEntity
 import ca.schippers.hfm.books.EventCategory
 import ca.schippers.hfm.books.LinkRole
 import ca.schippers.hfm.books.LinkTarget
@@ -252,6 +253,9 @@ private fun PetDialog(model: BooksModel, existing: Pet, onClose: () -> Unit) {
                 LabeledCheckbox(model.t("pets.archivedField"), archived) { archived = it }
                 // CON-04: the vet, the insurer, the groomer or kennel, as contacts.
                 LinkedContacts(model, LinkTarget.PET, existing.id, listOf(LinkRole.VETERINARIAN, LinkRole.SERVICE, LinkRole.INSURER, LinkRole.OTHER), suggestedName = existing.insurer.orEmpty(), memberIds = setOf(existing.id))
+                // PET-01: the pet's photo, and papers such as the adoption or microchip certificate, in the vault.
+                val photoGroup = remember(model.revision) { model.defaultDocumentGroup() }
+                if (photoGroup != null) DocumentsBlock(model, DocumentEntity.PET, existing.id, photoGroup, "pets.photos")
                 if (books.pets.canChange) TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
             }
         }
