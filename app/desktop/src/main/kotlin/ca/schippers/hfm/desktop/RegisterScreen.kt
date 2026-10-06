@@ -100,6 +100,8 @@ class EntryState {
     var assetId by mutableStateOf<String?>(null)
     /** CC-05: the card (main or supplementary) a card purchase was made with. */
     var cardHolderId by mutableStateOf<String?>(null)
+    /** Tag names: those of the transaction being edited, or from a template (MAN-05). */
+    var tags by mutableStateOf<Set<String>>(emptySet())
 
     fun clear(keepDate: Boolean = true) {
         editing = null
@@ -114,6 +116,7 @@ class EntryState {
         forId = null
         assetId = null
         cardHolderId = null
+        tags = emptySet()
     }
 }
 
@@ -153,6 +156,10 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     var payStub by remember { mutableStateOf(false) }
     var pendingImport by remember { mutableStateOf<PendingImport?>(null) }
     var showStatements by remember { mutableStateOf(false) }
+    // MAN-05: named templates for this account, and the dialogs to manage them.
+    val templates = remember(model.revision, account.id) { books.templates.forAccount(account.id) }
+    var managingTemplates by remember { mutableStateOf(false) }
+    var savingTemplate by remember { mutableStateOf<Transaction?>(null) }
     // TX-07, EXP-02: transactions chosen for a bulk change or an export.
     var choosing by remember(account.id) { mutableStateOf(false) }
     val chosen = remember(account.id) { mutableStateListOf<String>() }
@@ -182,6 +189,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
         entry.forId = txn.memberId
         entry.assetId = txn.assetId
         entry.cardHolderId = txn.cardHolderId
+        entry.tags = books.tags().filter { it.id in txn.tagIds }.map { it.name }.toSet()
         val magnitude = MoneyFormat.formatAmount(txn.amount.abs(), locale)
         entry.payment = if (txn.amount.isNegative) magnitude else ""
         entry.deposit = if (txn.amount.isNegative) "" else magnitude
@@ -258,6 +266,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                 if (open != null) model.reconcilingStatementId = open.id else showStatements = true
             }) { Text(model.t("reconcile.button")) }
             OutlinedButton(onClick = { showStatements = true }) { Text(model.t("statements.button")) }
+            OutlinedButton(onClick = { managingTemplates = true }) { Text(model.t("templates.button")) }
             if (!choosing && rows.isNotEmpty()) OutlinedButton(onClick = { choosing = true; entry.clear() }) { Text(model.t("bulk.choose")) }
             OutlinedButton(onClick = { editingAccount = true }) { Text(model.t("account.edit")) }
             if (account.numberMasked != null) OutlinedButton(onClick = { revealing = true }) { Text(model.t("account.show")) }
@@ -352,6 +361,15 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
         }
         HorizontalDivider()
 
+        // MAN-05: a template fills the form; type a few letters of its name to find it. Kept outside
+        // the form, whose Enter key saves.
+        if (entry.editing == null && templates.isNotEmpty()) {
+            Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.End) {
+                Picker(model.t("templates.use"), templates, null, { it.name }, Modifier.width(280.dp)) { t ->
+                    applyTemplate(model, account, entry, t, categoryTree)
+                }
+            }
+        }
         // Entry form: Enter saves, Escape clears (MAN-04).
         Card(
             Modifier.fillMaxWidth().padding(top = 8.dp).onPreviewKeyEvent { e ->
@@ -390,6 +408,12 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                                 entry.assetId = it?.first
                             }
                         }
+                    }
+                }
+                if (entry.tags.isNotEmpty()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(model.t("register.tags", entry.tags.sorted().joinToString(", ")), style = MaterialTheme.typography.bodySmall)
+                        RemoveButton(model.t("register.removeTags")) { entry.tags = emptySet() }
                     }
                 }
                 // CC-04: what the card's benefits still cover for this purchase.
@@ -444,6 +468,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                             // TX-04, TX-05: the sales taxes it included, and money back for a purchase.
                             OutlinedButton(onClick = { salesTaxFor = editing }) { Text(model.t("register.salesTaxButton")) }
                             if (editing.amount.isNegative) OutlinedButton(onClick = { refunding = editing }) { Text(model.t("register.refundButton")) }
+                            OutlinedButton(onClick = { savingTemplate = editing }) { Text(model.t("templates.saveAs")) }
                         }
                         entry.editing?.let { editing ->
                             // TX-08: every change to the transaction, with who made it.
@@ -464,6 +489,8 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
 
     pendingImport?.let { PendingImportDialog(model, it) { pendingImport = null } }
     if (showStatements) StatementsDialog(model, account) { showStatements = false }
+    if (managingTemplates) TemplatesDialog(model, account, categoryTree) { managingTemplates = false }
+    savingTemplate?.let { t -> SaveAsTemplateDialog(model, t, t.payeeId?.let(payeeNames::get) ?: t.payeeText.orEmpty()) { savingTemplate = null } }
     if (splitting) {
         SplitDialog(model, account, entry, categoryTree) { splitting = false }
     }
@@ -586,8 +613,8 @@ private fun buildSave(model: BooksModel, account: Account, entry: EntryState): (
         account.id, date, amount, entry.payee.ifBlank { null }, splitDrafts, memo,
         memberId = entry.forId,
         cleared = editing?.cleared ?: ClearedStatus.UNCLEARED,
-        // The draft takes tag names; keep the tags the transaction already has.
-        tags = editing?.tagIds?.let { ids -> model.books.tags().filter { it.id in ids }.map { it.name }.toSet() }.orEmpty(),
+        // The draft takes tag names: those the transaction already has, or a template's (MAN-05).
+        tags = entry.tags,
         assetId = entry.assetId,
         // FX-03: an edit keeps the foreign amount; the rate is worked out again if the amount changed.
         originalAmount = original,

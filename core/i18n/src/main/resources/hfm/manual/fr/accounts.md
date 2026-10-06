@@ -186,6 +186,7 @@ Les boutons affichés dépendent du compte :
 - **Importer un relevé…** : lit un fichier de relevé de la banque. Voir [Importer un relevé](accounts#import-statement).
 - **Rapprocher…** : continue le relevé en cours de rapprochement, s’il y en a un ; sinon, ouvre Relevés, où vous pouvez entrer un relevé papier. Voir [Rapprocher un relevé](accounts#reconcile).
 - **Relevés** : les relevés du compte, passés et en cours. Voir [Relevés](accounts#statements).
+- **Modèles…** : les modèles d’opération du groupe du compte. Voir [Modèles d’opération](accounts#templates).
 - **Choisir des opérations…** : cochez plusieurs opérations pour les catégoriser, les étiqueter, les déplacer ou les exporter ensemble. Voir [Modifier ou exporter plusieurs opérations](accounts#bulk-edit).
 - **Modifier le compte** : le formulaire de compte (voir [Ajouter ou modifier un compte](accounts#account-dialog)).
 - **Afficher le numéro** : seulement quand un numéro de compte est enregistré (voir [Afficher le numéro de compte complet](accounts#show-number)).
@@ -244,6 +245,8 @@ Le formulaire sous le registre s’intitule Nouvelle opération (Entrée enregis
 - **Dépôt** : le montant qui entre, tapé en nombre positif. Taper un dépôt efface le paiement. Un paiement ou un dépôt est obligatoire, sauf si l’opération est ventilée (la ventilation donne alors le montant) ; sinon l’enregistrement affiche Entrez un paiement ou un dépôt.
 - **Montant en {devise}** : paraît seulement pour un virement vers un compte dans une autre devise, par exemple Montant en USD. Entrez ce qui est arrivé dans l’autre compte, ou ce qui en est sorti. Obligatoire dans ce cas ; le taux de change du virement est calculé à partir des deux montants.
 
+Au-dessus du formulaire, **Utiliser un modèle** le remplit à partir d’un modèle, pour une nouvelle opération, quand le compte a des modèles (voir [Modèles d’opération](accounts#templates)). Quand l’opération a des étiquettes, ou qu’un modèle en a donné, une ligne Étiquettes : noms les affiche sous le bénéficiaire ; son ✕ (Retirer les étiquettes) les enlève avant l’enregistrement.
+
 Quand vous modifiez un achat par carte de crédit et que la carte a des avantages, une ligne en couleur sous le bénéficiaire indique ce qui le couvre encore, par exemple Protection des achats jusqu’au 2026-06-03 · Garantie prolongée : 12 mois de plus que celle du fabricant.
 
 Les boutons à droite du formulaire :
@@ -251,6 +254,7 @@ Les boutons à droite du formulaire :
 - **Ventiler…** : répartit l’opération entre plusieurs catégories (pas offert pour un virement).
 - **Talon de paie…** : dans un compte bancaire, à l’entrée d’une nouvelle opération, entre une paie d’après son talon (voir [Paie selon le talon de paie](accounts#pay-stub)).
 - **Taxes de vente…** et **Remboursement…** : pendant la modification d’une opération existante (voir [Taxes de vente sur un achat](accounts#sales-tax) et [Inscrire un remboursement](accounts#refund)).
+- **Enregistrer comme modèle** : pendant la modification d’une opération ordinaire, la garde comme modèle pour la prochaine fois (voir [Modèles d’opération](accounts#templates)).
 - **Historique…** : pendant une modification, l’historique des modifications de l’opération (voir [Historique des modifications](accounts#transaction-history)).
 - **Supprimer** : pendant une modification (voir [Modifier ou supprimer une opération](accounts#edit-transaction)).
 - **Annuler** : vide le formulaire, comme Échap.
@@ -272,6 +276,27 @@ Les boutons à droite du formulaire :
 Quand vous choisissez un bénéficiaire connu parmi les suggestions, pour une nouvelle opération sans montant ni catégorie, l’application remplit le reste d’après la dernière opération de ce bénéficiaire dans la même devise : le montant (en paiement ou en dépôt, comme la dernière fois) et la catégorie, ou toutes les lignes de ventilation si elle était ventilée. Quand le bénéficiaire n’a jamais servi dans cette devise, seule sa catégorie par défaut est remplie. Changez ce qui diffère cette fois avant d’enregistrer.
 
 Les règles de [Règles de catégorie](rules) classent les lignes de relevé importées ; elles ne changent pas ce que vous tapez dans le formulaire.
+
+### Modèles d’opération {#templates}
+
+@index: modèle; opération mémorisée; saisie répétée; saisie rapide
+
+Un modèle est une opération que vous saisissez souvent, enregistrée sous un nom : le loyer, l’épicerie de la semaine chez Costco avec ses lignes de ventilation, un don. Il remplit le formulaire de saisie d’un coup ; vous vérifiez la date et le montant et appuyez sur Entrée.
+
+- **Utiliser un modèle** : au-dessus du formulaire de saisie, pour une nouvelle opération, quand le compte a des modèles. Tapez quelques lettres du nom pour filtrer la liste (ou ouvrez-la avec la flèche), puis choisissez-en un à la souris ou avec les flèches et Entrée. Le formulaire prend le bénéficiaire du modèle, sa catégorie (ou ses lignes de ventilation), sa note, son Pour et ses étiquettes, et son montant en paiement ou en dépôt quand il en a un dans la devise du compte. Ce que vous aviez tapé dans ces champs est remplacé. La date ne change pas. Rien n’est enregistré avant Entrée ou **Enregistrer**, alors vous pouvez tout changer d’abord. La suggestion du bénéficiaire (voir [Suggestions selon le bénéficiaire](accounts#payee-suggestions)) ne s’ajoute pas par-dessus.
+- **Enregistrer comme modèle** : cliquez sur une opération du registre, puis sur ce bouton. La fenêtre demande le **Nom du modèle** (le bénéficiaire est proposé) et offre **Garder le montant** (coché : le modèle a le montant, en paiement ou en dépôt ; décoché : vous le tapez chaque fois) et **Seulement pour ce compte** (décoché : le modèle est offert dans tous les comptes de ce groupe de comptes). Une opération ventilée ne garde ses lignes de ventilation qu’avec son montant, puisque chaque ligne en a besoin ; la fenêtre le dit quand **Garder le montant** est décoché. Les virements et les lignes de placement ne peuvent pas devenir des modèles.
+
+**Modèles…** au-dessus du registre liste les modèles du groupe du compte, chacun avec son bénéficiaire, sa catégorie (ou son nombre de lignes de ventilation), son montant, le compte auquel il est limité et ses étiquettes, avec **Modifier** et **Supprimer**. Supprimer demande d’abord « Supprimer le modèle « nom »? Les opérations saisies avec lui restent telles quelles. » **Ajouter un modèle** ouvre un formulaire vide. Le formulaire :
+
+- **Nom du modèle** : obligatoire et unique dans le groupe de comptes (sinon : Un modèle de ce nom existe déjà dans ce groupe de comptes.).
+- **Bénéficiaire** : offert parmi vos bénéficiaires pendant la frappe. Facultatif.
+- **Catégorie** ou, pour un modèle enregistré d’une opération ventilée, une ligne comme 2 lignes de ventilation, 120,00 $ en tout, avec **Utiliser plutôt une catégorie** pour les remplacer par une seule catégorie.
+- **Paiement** et **Dépôt** : le montant, facultatif : « Laissez les deux vides pour taper le montant chaque fois. »
+- **Note** et **Pour**.
+- **Compte** : **Tout compte de ce groupe** (par défaut), ou un seul compte ; le modèle n’est alors offert que dans le registre de ce compte et son montant doit être dans la devise de ce compte.
+- **Étiquettes** : séparées par des virgules. Les étiquettes qui n’existent pas encore sont créées quand une opération est enregistrée avec elles.
+
+Les modèles sont conservés dans le fichier du groupe de comptes, comme ses opérations, alors un modèle d’un groupe privé n’est vu que par les utilisateurs qui peuvent ouvrir ce groupe. Ajouter, modifier et supprimer des modèles demande le droit de modifier ce groupe ; quiconque peut saisir des opérations dans le compte peut s’en servir. Un modèle n’est pas un calendrier : pour ce qui revient à dates fixes, utilisez les [Factures](bills).
 
 ### Modifier ou supprimer une opération {#edit-transaction}
 

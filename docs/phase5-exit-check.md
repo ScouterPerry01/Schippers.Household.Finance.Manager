@@ -127,7 +127,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - CAP-04: Met.
 - CAP-05 (share to the phone app): Met for one picture or PDF and several pictures. Gap: several PDFs, mixed shares and shared email text are not accepted. Small.
 - MAN-03, MAN-04: Met.
-- MAN-05 (templates): Gap: no named templates; payee suggestions (the last transaction's amount, category and splits) and recurring bills cover the need in part. Owner's decision whether to accept this or build templates (medium).
+- MAN-05 (templates): Fixed (owner's decision to build them): named transaction templates per account group (payee, category or split lines, memo, person, tags, optional amount, optional account), picked above a register's entry form by typing their name, made from a transaction with Save as template, and edited or deleted (asks first) under Templates…; kept in the group's ledger, so private groups stay private (ledger schema version 30).
 - ACC-06 (low-balance, over-limit and unusual-activity alerts per account): Gap: not built. The register shows a card over its limit in red and the bills forecast warns of a shortfall below zero, but there is no threshold per account and no unusual-activity check. Medium (schema, check, reminders, texts, manual).
 - CC-04, CC-05: Met.
 - LN-03, LN-05, LN-06: Met.

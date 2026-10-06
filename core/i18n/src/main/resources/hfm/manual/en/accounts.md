@@ -186,6 +186,7 @@ Which buttons appear depends on the account:
 - **Import statement…**: reads a statement file from the bank. See [Import a statement](accounts#import-statement).
 - **Reconcile…**: continues the statement being reconciled, if there is one; otherwise it opens Statements, where you can enter a paper statement. See [Reconcile a statement](accounts#reconcile).
 - **Statements**: the statements of the account, past and in progress. See [Statements](accounts#statements).
+- **Templates…**: the transaction templates of the account's group. See [Transaction templates](accounts#templates).
 - **Choose transactions…**: tick several transactions to categorize, tag, move or export them together. See [Change or export several transactions](accounts#bulk-edit).
 - **Edit account**: the account form (see [Add or edit an account](accounts#account-dialog)).
 - **Show number**: only when an account number is stored (see [Show the full account number](accounts#show-number)).
@@ -244,6 +245,8 @@ The form under the register is titled New transaction (Enter saves, Esc clears; 
 - **Deposit**: the amount of money coming in, typed as a positive number. Typing a deposit clears the payment. One of Payment or Deposit is required, unless the transaction is split (the split then gives the amount); otherwise saving shows Enter a payment or a deposit.
 - **Amount in {currency}**: appears only for a transfer to an account in another currency, for example Amount in USD. Enter what arrived in, or left, the other account. Required in that case; the exchange rate of the transfer is worked out from the two amounts.
 
+Above the form, **Use a template** fills it from a template, on a new transaction, when the account has templates (see [Transaction templates](accounts#templates)). When the transaction has tags, or a template gave some, a line Tags: names shows them under the payee; its ✕ (Remove the tags) takes them off before you save.
+
 When you edit a credit card purchase and the card has benefits, a line in colour under the payee says what still covers it, for example Purchase protection until 2026-06-03 · Extended warranty: 12 months added to the manufacturer's.
 
 The buttons at the right of the form:
@@ -251,6 +254,7 @@ The buttons at the right of the form:
 - **Split…**: shares the transaction across several categories (not offered for a transfer).
 - **Pay stub…**: on a Banking account, when entering a new transaction, enters a pay from its stub (see [Pay from a pay stub](accounts#pay-stub)).
 - **Sales tax…** and **Refund…**: when editing an existing transaction (see [Sales tax on a purchase](accounts#sales-tax) and [Record a refund](accounts#refund)).
+- **Save as template**: when editing an ordinary transaction, keeps it as a template for next time (see [Transaction templates](accounts#templates)).
 - **History…**: when editing, the change history of the transaction (see [Change history](accounts#transaction-history)).
 - **Delete**: when editing (see [Edit or delete a transaction](accounts#edit-transaction)).
 - **Cancel**: clears the form, like Escape.
@@ -272,6 +276,27 @@ The buttons at the right of the form:
 When you pick a known payee from the suggestions on a new transaction, with no amount and no category entered yet, the app fills in the rest from that payee's most recent transaction in the same currency: the amount (as a payment or deposit, as last time) and the category, or all the split lines if it was split. When the payee has never been used in that currency, only the payee's default category is filled in. Change anything that is different this time before saving.
 
 Rules under [Category rules](rules) categorize imported statement lines; they do not change what you type in the form.
+
+### Transaction templates {#templates}
+
+@index: template; memorized transaction; recurring entry; quick entry
+
+A template is a transaction you enter often, saved under a name: rent, the weekly Costco run with its split lines, a donation. It fills the entry form in one step; you check the date and amount and press Enter.
+
+- **Use a template**: above the entry form, on a new transaction, when the account has templates. Type a few letters of the name to filter the list (or open it with the arrow), then choose one with the mouse or the arrow keys and Enter. The form takes the template's payee, category (or split lines), memo, For and tags, and its amount as a payment or deposit when it has one in the account's currency. Whatever you had typed in those fields is replaced. The date stays as it was. Nothing is saved until you press Enter or **Save**, so you can change anything first. The payee's own suggestion (see [Payee suggestions](accounts#payee-suggestions)) is not applied on top.
+- **Save as template**: click a transaction in the register, then this button. The window asks for the **Template name** (the payee is proposed) and offers **Keep the amount** (ticked: the template has the amount, as a payment or deposit; unticked: you type it each time) and **Only for this account** (unticked: the template is offered in every account of this account group). A split transaction keeps its split lines only with its amount, since each line needs one; the window says so when **Keep the amount** is unticked. Transfers and investment lines cannot be saved as templates.
+
+**Templates…** above the register lists the templates of the account's group, each with its payee, category (or number of split lines), amount, the account it is limited to and its tags, with **Edit** and **Delete**. Delete asks first, "Delete the template "name"? Transactions entered with it stay as they are." **Add a template** opens an empty form. The form:
+
+- **Template name**: required, and unique in the account group (otherwise: A template with this name already exists in this account group.).
+- **Payee**: offered from your payees as you type. Optional.
+- **Category**, or for a template saved from a split transaction, a line such as 2 split lines, $120.00 in all, with **Use one category instead** to replace them by a single category.
+- **Payment** and **Deposit**: the amount, optional: "Leave both empty to type the amount each time."
+- **Memo** and **For**.
+- **Account**: **Any account in this group** (the default), or one account, in which case the template is offered only in that account's register and its amount must be in that account's currency.
+- **Tags**: separated by commas. Tags that do not exist yet are created when a transaction is saved with them.
+
+Templates are kept in the account group's own file, like its transactions, so a template in a private group is seen only by the users who can open that group. Adding, changing and deleting templates needs the right to change that group; anyone who can enter transactions in the account can use them. A template is not a schedule: for something that comes back on fixed dates, use [Bills](bills).
 
 ### Edit or delete a transaction {#edit-transaction}
 

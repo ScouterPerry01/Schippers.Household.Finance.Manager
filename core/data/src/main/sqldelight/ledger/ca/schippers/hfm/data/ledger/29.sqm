@@ -21,3 +21,30 @@ CREATE TABLE vehicle_warranty_claim (
 );
 
 CREATE INDEX vehicle_warranty_claim_warranty ON vehicle_warranty_claim(warranty_id, date);
+
+-- MAN-05 (version 30): named transaction templates, picked in a register's entry form, kept in
+-- the ledger of the group they belong to. [account_id] limits a template to one account; the amount
+-- (signed, in [currency]) is optional; [tags] holds tag names, one per line.
+CREATE TABLE txn_template (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    payee TEXT,
+    memo TEXT,
+    amount_minor INTEGER,
+    currency TEXT,
+    account_id TEXT,
+    member_id TEXT,
+    tags TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- A template's category, or its split lines in order (each with its amount when there are several).
+CREATE TABLE txn_template_line (
+    template_id TEXT NOT NULL REFERENCES txn_template(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL,
+    category_id TEXT,
+    amount_minor INTEGER,
+    memo TEXT,
+    PRIMARY KEY (template_id, position)
+);

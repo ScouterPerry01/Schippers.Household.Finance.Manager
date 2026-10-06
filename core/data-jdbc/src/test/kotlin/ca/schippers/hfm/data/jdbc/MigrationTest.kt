@@ -648,6 +648,11 @@ class MigrationTest {
             assertEquals(1, vehicles.warrantyClaims("w").executeAsList().size, "saving the warranty again keeps its claims")
             vehicles.deleteWarranty("w")
             assertEquals(0L, count(driver, "SELECT count(*) FROM vehicle_warranty_claim"), "and deleting it removes them")
+            val templates = LedgerDatabase(driver).templatesQueries
+            templates.upsertTemplate("t", "Rent", "Gestion Tremblay", null, -145000, "CAD", null, null, "Home", 0, 0)
+            templates.insertTemplateLine("t", 0, "housing.rent", null, null)
+            templates.upsertTemplate("t", "Loyer", "Gestion Tremblay", null, -145000, "CAD", null, null, "Home", 0, 1)
+            assertEquals(1, templates.templateLines("t").executeAsList().size, "saving a template again keeps its lines")
         }
     }
 }

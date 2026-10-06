@@ -10,7 +10,7 @@ Choose Add account. Enter the account name, type, currency (for example CAD or U
 
 ## Enter transactions
 
-The form at the bottom of the register adds a transaction: date, payee, category, memo, and a payment or deposit. Enter saves and Esc clears; the + and - keys change the date. Use Split… to share one transaction over several categories, Sales tax… to note the GST, HST, QST or PST on a receipt, and Refund… to record money coming back on a purchase.
+The form at the bottom of the register adds a transaction: date, payee, category, memo, and a payment or deposit. Enter saves and Esc clears; the + and - keys change the date. Use Split… to share one transaction over several categories, Sales tax… to note the GST, HST, QST or PST on a receipt, and Refund… to record money coming back on a purchase. Use a template, above the form, fills it from a saved template; open a transaction and choose Save as template to make one, and Templates… to edit or delete them.
 
 ## Import and reconcile a statement
 

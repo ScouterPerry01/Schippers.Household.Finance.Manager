@@ -43,6 +43,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val transactions = TransactionService(this)
     val creditCards = CreditCardService(this)
     val rules = RuleService(this)
+    val templates = TemplateService(this)
     val statements = StatementService(this)
     val bills = BillService(this)
     val rates = RateService(this)

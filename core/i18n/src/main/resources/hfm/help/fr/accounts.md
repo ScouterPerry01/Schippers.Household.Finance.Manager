@@ -10,7 +10,7 @@ Choisissez Ajouter un compte. Inscrivez le nom, le type, la devise (par exemple 
 
 ## Inscrire des opérations
 
-Le formulaire au bas du registre ajoute une opération : date, bénéficiaire, catégorie, note, et un paiement ou un dépôt. Entrée enregistre et Échap efface; les touches + et - changent la date. Ventiler… répartit une opération sur plusieurs catégories, Taxes de vente… note la TPS, la TVH, la TVQ ou la TVP d’un reçu, et Remboursement… inscrit l’argent qui revient sur un achat.
+Le formulaire au bas du registre ajoute une opération : date, bénéficiaire, catégorie, note, et un paiement ou un dépôt. Entrée enregistre et Échap efface; les touches + et - changent la date. Ventiler… répartit une opération sur plusieurs catégories, Taxes de vente… note la TPS, la TVH, la TVQ ou la TVP d’un reçu, et Remboursement… inscrit l’argent qui revient sur un achat. Utiliser un modèle, au-dessus du formulaire, le remplit à partir d’un modèle enregistré; ouvrez une opération et choisissez Enregistrer comme modèle pour en créer un, et Modèles… pour les modifier ou les supprimer.
 
 ## Importer et rapprocher un relevé
 
