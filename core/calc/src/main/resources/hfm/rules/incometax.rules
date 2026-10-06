@@ -187,6 +187,7 @@ tax.prov.pension | AB | 2025-01-01 | 1719 | CRA, Form AB428 2025
 tax.prov.pension | AB | 2026-01-01 | 1753 | CRA, TD1AB 2026
 tax.prov.medical | AB | 2024-01-01 | 0.03; 2828 | CRA, Form AB428 2024
 tax.prov.medical | AB | 2025-01-01 | 0.03; 2884 | CRA, Form AB428 2025
+tax.prov.medical | AB | 2026-01-01 | 0.03; 2942 | Alberta Personal Income Tax Act s. 12(1) ($2,884) and s. 44.2 (indexed by the Alberta escalator, at most 2 %; rounded to the dollar): $2,941.68, $2,942; Government of Alberta, personal income tax (2026 thresholds and credit amounts rise by 2 %)
 tax.prov.donation | AB | 2024-01-01 | 200; 0.60; 0.21 | CRA, Form AB428 2024; Alberta Personal Income Tax Act s. 11
 tax.prov.dividends | AB | 2024-01-01 | 0.0812; 0.0218 | CRA, Worksheet AB428 2024; Alberta Personal Income Tax Act s. 21
 tax.prov.brackets | NB | 2024-01-01 | 0:0.094; 49958:0.14; 99916:0.16; 185064:0.195 | CRA, tax rates and income brackets (all years)
@@ -205,6 +206,7 @@ tax.prov.age | NB | 2026-01-01 | 6158; 45844; 0.15 | CRA, TD1NB 2026
 tax.prov.pension | NB | 2024-01-01 | 1000 | CRA, Form NB428 2024
 tax.prov.medical | NB | 2024-01-01 | 0.03; 2724 | CRA, Form NB428 2024
 tax.prov.medical | NB | 2025-01-01 | 0.03; 2798 | CRA, Form NB428 2025
+tax.prov.medical | NB | 2026-01-01 | 0.03; 2854 | New Brunswick Income Tax Act s. 26(1) ($1,947) and s. 16.1 (indexed each year by the federal factor on the unrounded amount, rounded to the dollar only for use): $2,797.58 for 2025 (Form NB428 2025: $2,798) x 1.020 = $2,853.53, $2,854; CRA, TD1NB 2026 (2.0 % for 2026)
 tax.prov.donation | NB | 2024-01-01 | 200; 0.094; 0.1795 | CRA, Form NB428 2024
 tax.prov.dividends | NB | 2024-01-01 | 0.14; 0.0275 | CRA, Worksheet NB428 2024
 tax.prov.brackets | NS | 2024-01-01 | 0:0.0879; 29590:0.1495; 59180:0.1667; 93000:0.175; 150000:0.21 | CRA, tax rates and income brackets (all years)
@@ -238,6 +240,7 @@ tax.prov.spouse | PE | 2025-01-01 | 12443; 1244 | CRA, Form PE428 2025
 tax.prov.spouse | PE | 2026-01-01 | 12740; 1274 | CRA, TD1PE 2026
 tax.prov.age | PE | 2024-01-01 | 5595; 33740; 0.15 | CRA, Worksheet PE428 2024
 tax.prov.age | PE | 2025-01-01 | 6510; 36600; 0.15 | CRA, Worksheet PE428 2025
+tax.prov.age | PE | 2026-01-01 | 6510; 36600; 0.15 | Prince Edward Island, Income Tax Act s. 10(2), consolidated to May 29, 2026 ($6,510, reduced by 15 % of income above $36,600; not indexed)
 tax.prov.pension | PE | 2024-01-01 | 1000 | CRA, Form PE428 2024
 tax.prov.medical | PE | 2024-01-01 | 0.03; 1678 | CRA, Form PE428 2024; Prince Edward Island, Income Tax Act, s. 11 (the lesser of $1,678 and 3 %; not indexed)
 tax.prov.donation | PE | 2024-01-01 | 200; 0.0965; 0.1875 | CRA, Form PE428 2024
@@ -301,8 +304,11 @@ tax.prov.employmentAmount | YT | 2026-01-01 | 1501 | CRA, T4127 January 2026
 tax.prov.pension | YT | 2024-01-01 | 2000 | CRA, Form YT428 2024
 tax.prov.medical | YT | 2024-01-01 | 0.03; 2759 | CRA, Form YT428 2024
 tax.prov.medical | YT | 2025-01-01 | 0.03; 2834 | CRA, Form YT428 2025
+tax.prov.medical | YT | 2026-01-01 | 0.03; 2890 | Yukon Income Tax Act, RSY 2002 c. 118, s. 6 (the credit is the Yukon/federal conversion rate times the federal medical expense amounts, so the threshold is the federal one); CRA, indexation adjustment for personal income tax and benefit amounts 2026 ($2,890)
 tax.prov.donation | YT | 2024-01-01 | 200; 0.064; 0.128 | CRA, Form YT428 2024
 tax.prov.dividends | YT | 2024-01-01 | 0.1202; 0.0067 | CRA, Worksheet YT428 2024
+tax.prov.dividends | YT | 2025-01-01 | 0.1202; 0.0067 | CRA, Worksheet YT428 2025 (5011-D), line 61520 (12.02 % of eligible, 0.67 % of other dividends)
+tax.prov.dividends | YT | 2026-01-01 | 0.1202; 0.0067 | Government of Yukon, Yukon-specific income tax measures (page with July 2026 amounts: 12.02 % of the taxable amount of eligible dividends and 0.67 % of other dividends); Yukon 2026-27 budget, no income tax changes
 tax.prov.brackets | NT | 2024-01-01 | 0:0.059; 50597:0.086; 101198:0.122; 164525:0.1405 | CRA, Form NT428 2024
 tax.prov.brackets | NT | 2025-01-01 | 0:0.059; 51964:0.086; 103930:0.122; 168967:0.1405 | CRA, Form NT428 2025
 tax.prov.brackets | NT | 2026-01-01 | 0:0.059; 53003:0.086; 106009:0.122; 172346:0.1405 | CRA, tax rates and income brackets 2026
@@ -319,6 +325,7 @@ tax.prov.age | NT | 2026-01-01 | 8902; 46432; 0.15 | CRA, TD1NT 2026
 tax.prov.pension | NT | 2024-01-01 | 1000 | CRA, Form NT428 2024
 tax.prov.medical | NT | 2024-01-01 | 0.03; 2759 | CRA, Form NT428 2024
 tax.prov.medical | NT | 2025-01-01 | 0.03; 2834 | CRA, Form NT428 2025
+tax.prov.medical | NT | 2026-01-01 | 0.03; 2890 | Northwest Territories Income Tax Act s. 2.23 and 2.13 (indexed by the federal factor on the unrounded amount, as the federal amount, which it has matched: $2,759 in 2024, $2,834 in 2025); CRA, indexation adjustment for personal income tax and benefit amounts 2026 ($2,890, factor 2.0 %)
 tax.prov.donation | NT | 2024-01-01 | 200; 0.059; 0.1405 | CRA, Form NT428 2024
 tax.prov.dividends | NT | 2024-01-01 | 0.115; 0.06 | CRA, Worksheet NT428 2024
 tax.prov.brackets | NU | 2024-01-01 | 0:0.04; 53268:0.07; 106537:0.09; 173205:0.115 | CRA, Form NU428 2024
@@ -463,7 +470,8 @@ tax.ccb | - | 2025-01-01 | 8157; 6883; 38237; 82847; 0.07; 0.135; 0.19; 0.23; 0.
 # OAS recovery tax and alternative minimum tax. Read in October 2026 on the CRA's Federal Worksheet
 # (5000-D1), Form T691 and the provincial and territorial 428 forms for 2024 and 2025, ESDC's OAS
 # recovery tax page, the Income Tax Act (s. 127.51 and 127.531) and Revenu Quebec's TP-776.42-V.
-# The 2026 T691 and 428 forms are not published: provinces and territories keep their 2025 values.
+# The 2026 T691 and 428 forms are not published: the 2026 provincial and territorial values were read in
+# each province's or territory's Income Tax Act (Nunavut's could not be read and keeps its 2025 value).
 #   oasRecovery: net income threshold; rate (at most the OAS received)
 #   amt: rate; basic exemption; share of the non-refundable credits allowed (other than donations); share of
 #     the donation credit; share of the partly allowed deductions added back; the gross-up share removed from
@@ -499,13 +507,25 @@ tax.prov.amt | YT | 2024-01-01 | 0.4267; 0.4267 | CRA, Form YT428 2024 (5011-C)
 tax.prov.amt | YT | 2025-01-01 | 0.439; 0.4414 | CRA, Form YT428 2025 (5011-C), as printed (43.9 % and 44.14 %)
 tax.prov.amt | NT | 2024-01-01 | 0.45; 0.45 | CRA, Form NT428 2024 and 2025 (5012-C)
 tax.prov.amt | NU | 2024-01-01 | 0.45; 0.45 | CRA, Form NU428 2024 and 2025 (5014-C)
+tax.prov.amt | NL | 2026-01-01 | 0.621; 0.621 | Newfoundland and Labrador, Income Tax Act, 2000 s. 5(f), 19 and 30 (provincial percentage: the appropriate percentage over the federal one, rounded to one tenth: 8.7 % / 14 % = 62.1 %; amended to 2026 c. 15)
+tax.prov.amt | PE | 2026-01-01 | 0.575; 0.575 | Prince Edward Island, Income Tax Act s. 19 and 30 (provincial percentage 57.5 %), consolidated to May 29, 2026
+tax.prov.amt | NS | 2026-01-01 | 0.575; 0.575 | Nova Scotia, Income Tax Act, R.S. c. 217, s. 7(f), 20 and 31 (provincial percentage 57.5 %), consolidated to September 3, 2026
+tax.prov.amt | NB | 2026-01-01 | 0.57; 0.57 | New Brunswick Income Tax Act s. 15, 34 and 46 (specific percentage 57 % for 2002 and later years)
+tax.prov.amt | ON | 2026-01-01 | 0.2463; 0.2463 | Ontario, Taxation Act, 2007 s. 15(4) and 19.2(3.1) (lowest rate over the federal minimum tax rate of s. 127.51: 5.05 % / 20.5 %)
+tax.prov.amt | MB | 2026-01-01 | 0.50; 0.50 | Manitoba, The Income Tax Act, C.C.S.M. c. I10, s. 4.5 and 4.9 (50 %), current from July 1, 2026
+tax.prov.amt | SK | 2026-01-01 | 0.50; 0.50 | Saskatchewan, The Income Tax Act, 2000 s. 37 and 47 (50 %); not changed by The Income Tax Amendment Act, 2026 (assented May 14, 2026); CRA, Form SK428 2025 (5008-C)
+tax.prov.amt | AB | 2026-01-01 | 0.35; 0.35 | Alberta Personal Income Tax Act s. 27 and 48 (35 %); the 2026 amendments (2026 c. 3) change only s. 8 and 44.2
+tax.prov.amt | BC | 2026-01-01 | 0.40; 0.40 | British Columbia, Income Tax Act s. 4.68 and 4.8 (the B.C. appropriate percentage over the federal one, rounded to one thousandth: 5.6 % / 14 % = 0.400), current to September 22, 2026
+tax.prov.amt | YT | 2026-01-01 | 0.4571; 0.4571 | Yukon Income Tax Act, RSY 2002 c. 118, s. 6 (additional tax and carryover at the Yukon/federal conversion rate, the Yukon appropriate percentage over the federal one: 6.4 % / 14 % = 45.71 %)
+tax.prov.amt | NT | 2026-01-01 | 0.45; 0.45 | Northwest Territories Income Tax Act s. 1 (specific percentage 45 %), 2.31 and 2.43, consolidated to SNWT 2023 c. 30
 tax.qc.amt | - | 2024-01-01 | 0.19; 175000; 0.5; 0.8; 0.5 | Revenu Québec, TP-776.42-V 2024; Finances Québec, Information Bulletin 2023-4
 tax.qc.amt | - | 2025-01-01 | 0.19; 179990; 0.5; 0.8; 0.5 | Revenu Québec, TP-776.42-V 2025
 tax.qc.amt | - | 2026-01-01 | 0.19; 183680; 0.5; 0.8; 0.5 | Revenu Québec, TP-776.42-V 2026
 
 # Quebec's contributions on the return. Read in October 2026 on Revenu Quebec's Schedules F and K
 # (TP-1.D.F-V and TP-1.D.K-V) for 2024 and 2025, the line 447 help, and Finances Quebec's 2026
-# parameters. Schedule K for 2026 is not published: the premium keeps its 2025 values.
+# parameters. Schedule K for 2026 is not published: its maximum comes from the RAMQ premiums (as in 2025:
+# half of each plan year's maximum), its exemptions and rates stay those of 2025 until it is.
 #   qc.fss: exclusion threshold; second threshold; rate; the most below the second threshold; maximum
 #   qc.drugPremium: the year's maximum premium; family income exempt for a person alone; a single parent with
 #     one child; with two or more; a couple; a couple with one child; with two or more; where the higher rate
@@ -518,6 +538,7 @@ tax.qc.fss | - | 2025-01-01 | 18130; 63060; 0.01; 150; 1000 | Revenu Québec, Sc
 tax.qc.fss | - | 2026-01-01 | 18500; 64355; 0.01; 150; 1000 | Finances Québec, Paramètres du régime d’imposition des particuliers 2026, tableau 3 (thresholds); rate, cap and maximum of Schedule F 2025
 tax.qc.drugPremium | - | 2024-01-01 | 737.50; 19500; 31610; 35715; 31610; 35715; 39505; 5000; 0.0765; 0.1148; 0.0384; 0.0575 | Revenu Québec, Schedule K 2024 (TP-1.D.K-V), lines 41 to 90 (exemption $19,500 or $31,610, plus $12,110 or $16,215 for a single parent, $4,105 or $7,895 for a couple with children)
 tax.qc.drugPremium | - | 2025-01-01 | 755; 19890; 32240; 36460; 32240; 36460; 40360; 5000; 0.0784; 0.1176; 0.0393; 0.0589 | Revenu Québec, Schedule K 2025 (TP-1.D.K-V), lines 41 to 90 (exemption $19,890 or $32,240, plus $12,350 or $16,570 for a single parent, $4,220 or $8,120 for a couple with children); line 447 help ($755 per spouse)
+tax.qc.drugPremium | - | 2026-01-01 | 777.50; 19890; 32240; 36460; 32240; 36460; 40360; 5000; 0.0784; 0.1176; 0.0393; 0.0589 | RAMQ and Gouvernement du Québec, news releases June 27, 2025 and June 30, 2026 (maximum annual premium $766 from July 1, 2025 and $789 from July 1, 2026: $383 + $394.50 = $777.50 for 2026, as Schedule K 2025's $755 = half of $744 + half of $766); exemptions and rates of Schedule K 2025 (the 2026 schedule is not published)
 
 # Disability amount and the Canada workers benefit disability supplement. Read in October 2026 on the
 # CRA's TD1 forms for 2024, 2025 and 2026 (federal line 6, provincial and territorial lines 4 or 5),
