@@ -100,9 +100,11 @@ shared by email. Play does not count end-to-end encrypted data as collected, and
 never see it. That covers:
 
 - From the phone: photos, PDFs and shared files, the text read from them, shared email text, quick
-  expenses, odometer and hours readings, typed or dictated notes, voice notes (WAV audio), and new
-  contacts the user types.
-- To the phone: account balances, bills due, this month's budgets, maintenance due, calendar
+  expenses, odometer and hours readings, typed or dictated notes, voice notes (WAV audio), new
+  contacts the user types, and maintenance tasks ticked as done in the seasonal checklist (date,
+  optional cost, reading and note).
+- To the phone: account balances, bills due, this month's budgets, maintenance due, the season's
+  maintenance checklist (task and vehicle or asset names, due and done dates), calendar
   events (appointments), medication refills and the contacts the user may see (names, kinds,
   phone numbers, emails, addresses, hours; never account or client numbers).
 - On the phone only: event, refill, bill, maintenance and budget reminders are scheduled and shown

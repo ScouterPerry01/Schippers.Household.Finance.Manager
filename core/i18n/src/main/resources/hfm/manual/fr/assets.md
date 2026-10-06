@@ -9,11 +9,12 @@ L’écran **Maison et biens** suit la maison et tout ce qui vaut la peine d’�
 
 « La maison et tout ce qui vaut la peine d’être suivi (les véhicules ont leur propre section) : où c’est, ce que ça a coûté et vaut, ses garanties et ce qui l’assure. »
 
-L’écran a six onglets :
+L’écran a sept onglets :
 
 - **Biens** : la liste des biens, chacun ouvrant une fiche complète avec valeur, garanties, documents et entretien. Voir [Onglet Biens](assets#assets-tab).
 - **Entretien** : ce qui est à faire sur les véhicules et tout le reste, dans une seule liste. Voir [Onglet Entretien](assets#maintenance-tab).
-- **Projets** : rénovations et réparations sur une maison, avec budget, coûts et prix de base de la maison. Voir [Onglet Projets](assets#projects-tab).
+- **Liste saisonnière** : toutes les tâches d’une saison sur les véhicules, la maison, le chalet, la piscine, le terrain et le reste, à cocher une à une, et à imprimer. Voir [Onglet Liste saisonnière](assets#seasonal-tab).
+- **Projets** : rénovations, réparations et rénovations écoénergétiques sur une maison, avec budget, coûts, remises et subventions, et prix de base de la maison. Voir [Onglet Projets](assets#projects-tab).
 - **Entrepreneurs** : les personnes qui travaillent sur la maison et les véhicules, avec leurs travaux et leurs notes. Voir [Onglet Entrepreneurs](assets#contractors-tab).
 - **Est-ce couvert ?** : trouvez un article et voyez tout de suite si une garantie ou une protection le couvre encore. Voir [Onglet Est-ce couvert ?](assets#covered-tab).
 - **Assurances** : polices habitation, auto, vie et autres, leurs primes, bénéficiaires et réclamations, et ce qu’aucune police ne couvre. Voir [Onglet Assurances](assets#insurance-tab).
@@ -35,7 +36,7 @@ Quand la liste est vide : « Aucun bien pour l’instant : commencez par la mais
 
 La boîte s’intitule **Ajouter un bien** ou **Bien**.
 
-- **Type** : **Maison**, **Chalet**, **VR**, **Bateau**, **Remorque**, **Électroménager** (par défaut), **Chauffage et climatisation**, **Électronique**, **Ordinateur**, **Mobilier**, **Bijoux**, **Œuvre d’art**, **Outils**, **Équipement sportif**, **Instrument de musique** ou **Autre**. Le type décide quelles tâches d’entretien habituelles sont offertes, quelle catégorie reçoit un paiement d’entretien, et si une maison peut avoir des projets (Maison et Chalet seulement).
+- **Type** : **Maison**, **Chalet**, **Piscine**, **Terrain et jardin**, **VR**, **Bateau**, **Remorque**, **Électroménager** (par défaut), **Chauffage et climatisation**, **Électronique**, **Ordinateur**, **Mobilier**, **Bijoux**, **Œuvre d’art**, **Outils**, **Équipement sportif**, **Instrument de musique** ou **Autre**. Le type décide quelles tâches d’entretien habituelles sont offertes, quelle catégorie reçoit un paiement d’entretien, et si une maison peut avoir des projets (Maison et Chalet seulement).
 - **Nom** : par exemple « Maison (rue des Érables) » ou « Réfrigérateur de la cuisine ». Obligatoire.
 - **Fait partie de** : un autre bien auquel celui-ci appartient, ou « (aucun) ». La liste le montre en dessous, et une police qui couvre le parent le couvre aussi (une police habitation couvre son contenu). Un bien ne peut pas faire partie de lui-même ni d’une de ses propres parties. Un bien qui a des parties ne peut pas être supprimé tant qu’elles ne sont pas déplacées ou supprimées.
 - **Marque**, **Modèle** et **Numéro de série** : d’après l’étiquette ou la facture. On peut les chercher à l’onglet **Est-ce couvert ?**, et ils sont utiles pour une réclamation de garantie ou d’assurance.
@@ -151,7 +152,7 @@ Une fois un bien enregistré, le bas de sa boîte affiche **Entretien** : « Cha
 - **Ajouter une tâche** : voir [Ajouter ou modifier une tâche](assets#task-form).
 - **Saisir le compteur** et « Compteur : lecture » : affichés quand le bien a un compteur. Voir [Lectures du compteur](assets#meter).
 
-Chaque tâche active affiche son intervalle, « faite le date » (ou « à compter du date » tant qu’elle n’a jamais été faite), son état (**Prochaine**, **Bientôt** en gras, **À faire** en rouge) avec la date ou l’utilisation d’échéance, une prévision « à votre rythme habituel, vers le date » pour une tâche selon l’utilisation, et les boutons **Inscrire comme faite** et **Modifier**. Les tâches en pause suivent, marquées « (en pause) ». « Aucune tâche d’entretien pour l’instant. » quand il n’y en a pas.
+Chaque tâche active affiche son intervalle (avec « du 05-20 au 09-15 » pour une tâche limitée à une partie de l’année), « faite le date » (ou « à compter du date » tant qu’elle n’a jamais été faite), son état (**Prochaine**, **Bientôt** en gras, **À faire** en rouge) avec la date ou l’utilisation d’échéance, une prévision « à votre rythme habituel, vers le date » pour une tâche selon l’utilisation, et les boutons **Inscrire comme faite** et **Modifier**. Les tâches en pause suivent, marquées « (en pause) ». « Aucune tâche d’entretien pour l’instant. » quand il n’y en a pas.
 
 Les règles qui décident quand une tâche est due sont les mêmes que pour les véhicules : voir [Quand une tâche est due](vehicles#task-due). Les heures ou les kilomètres remplacent l’odomètre.
 
@@ -167,15 +168,24 @@ Les règles qui décident quand une tâche est due sont les mêmes que pour les 
 - VR et bateau : **Vérifier la batterie** (aux 6 mois).
 - Bateau : **Mise à l’eau du printemps** (1er mai), **Hivernage et remisage** (1er octobre), **Huile et filtre du moteur** (chaque année ou aux 100 heures), **Turbine de la pompe à eau** (aux 24 mois ou aux 300 heures).
 - Remorque : **Vérifier les feux et les freins** (15 avril).
+- Maison et chalet, pour chaque saison : **Vérifier les gouttières et les descentes** (30 avril), **Enlever la housse du climatiseur** (1er mai), **Poser les moustiquaires** (1er mai), **Nettoyer la sortie de la sécheuse** (30 septembre), **Couvrir le climatiseur pour l’hiver** (20 octobre), **Fermer les contre-fenêtres** (25 octobre).
+- Maison, chalet et terrain : **Rouvrir les robinets extérieurs** (15 avril) et **Fermer et purger les robinets extérieurs** (15 octobre, avant le premier gel). Elles vont sur la maison ou sur son terrain, pas les deux : un terrain qui fait partie d’une maison qui a déjà ces tâches ne les reçoit pas, et l’inverse.
+- Maison, chalet, et chauffage et climatisation : **Remplacer le tampon de l’humidificateur de la fournaise** (1er octobre).
+- Chalet : **Installer le quai** (15 mai), **Sortir le quai** (1er octobre).
+- Piscine : **Ouvrir la piscine** (20 mai, vers la fête de la Reine ou la Journée nationale des patriotes), **Analyser et équilibrer l’eau de la piscine** (chaque semaine du 20 mai au 15 septembre), **Nettoyer le panier de la pompe et le filtre** (chaque mois du 20 mai au 15 septembre), **Fermer et hiverner la piscine** (15 septembre, après la fête du Travail), **Vérifier la toile d’hiver (eau, feuilles, neige)** (chaque mois du 1er novembre au 30 avril).
+- Terrain et jardin : **Entretien de la tondeuse** (1er avril), **Nettoyage printanier du terrain** (20 avril), **Mettre en marche l’arrosage automatique** (10 mai), **Purger les conduites d’arrosage** (10 octobre), **Ramasser les feuilles mortes** (1er novembre), **Entretien de la souffleuse** (1er novembre).
 
-Un intervalle en heures ou en kilomètres n’est ajouté que si le **Compteur** du bien compte cette unité ; sinon la tâche revient seulement aux quelques mois.
+Ces dates conviennent à la plus grande partie du sud du Canada ; ajustez-les à votre région en modifiant la tâche (sa date **Faite la dernière fois le** fixe quand elle revient). Un intervalle en heures ou en kilomètres n’est ajouté que si le **Compteur** du bien compte cette unité ; sinon la tâche revient seulement aux quelques mois.
 
 ### Ajouter ou modifier une tâche {#task-form}
 
 - **Tâche** : le nom. Obligatoire.
 - Sans compteur : « Répétez-la aux quelques mois. Pour une tâche saisonnière, indiquez quand elle a été faite : elle revient un an plus tard. » Avec un compteur : « Remplissez l’un ou les deux : la tâche revient à ce qui arrive en premier. »
 - **Aux (mois)** : de 1 à 240 ; 12 proposé.
+- **Aux (semaines)** : de 1 à 104, pour une tâche faite chaque semaine ou aux quelques semaines, comme l’analyse de l’eau d’une piscine. Avec des mois aussi, ce qui arrive en premier.
 - **Toutes les (heures d’utilisation)** ou **Tous les (km)** : affiché avec un compteur. Au moins un intervalle est obligatoire.
+- « Seulement une partie de l’année? Inscrivez le début et la fin en mois-jour (05-20 au 09-15 pour une piscine) : en dehors, la tâche attend son prochain début. »
+- **Du (mois-jour)** et **Au (mois-jour)** : la partie de l’année où la tâche se fait, comme 05-20 et 09-15 ; les deux ou aucun. Elle peut chevaucher le Nouvel An (11-01 au 04-30). Une échéance qui tombe en dehors passe à la prochaine date **Du**, de sorte que l’analyse hebdomadaire d’une piscine s’arrête à la fermeture et revient à l’ouverture. Laissez les deux vides pour une tâche faite toute l’année.
 - **Faite la dernière fois le** : quand elle a été faite la dernière fois, ou la date à partir de laquelle compter ; aujourd’hui proposé. Dès qu’un entretien inscrit la tâche, le plus récent de ces entretiens sert.
 - **Heures à la dernière fois** ou **Kilomètres à la dernière fois** : affiché avec un compteur ; la dernière lecture est proposée.
 - **Me le rappeler (jours avant)** : 14 par défaut pour une nouvelle tâche (réglable dans [Taux et règles](rates-rules)).
@@ -226,12 +236,54 @@ Chaque ligne affiche la tâche, le bien ou le véhicule (marqué « véhicule »
 
 Les tâches **Bientôt** et **À faire** paraissent aussi dans les rappels en haut de la fenêtre et dans la notification du système, et les prochaines échéances au [Calendrier](calendar).
 
+## Onglet Liste saisonnière {#seasonal-tab}
+@index: liste saisonnière; ménage du printemps; liste d’automne; hivernage; ouverture du chalet; saisons; liste de tâches
+
+Tout ce qu’il y a à faire dans une saison, sur les véhicules, la maison, le chalet, la piscine, le terrain et tous les autres biens qui ont des tâches d’entretien, dans une seule liste à cocher.
+
+![L’onglet Liste saisonnière](images/assets-seasonal.png)
+
+En haut, un bouton par saison, la saison en cours d’abord et marquée « en cours », comme **Automne 2026 · en cours**, **Hiver 2026–2027**, **Printemps 2027** et **Été 2027**. Les autres saisons sont la prochaine fois qu’elles reviennent. En dessous, les dates de la saison (« Du 2026-09-22 au 2026-12-20 ») et l’avancement (« 7 sur 12 faites »), avec une barre, et les boutons **Imprimer** et **Enregistrer en PDF…**.
+
+Les tâches sont regroupées par véhicule ou par bien (un véhicule est marqué « véhicule »). Chaque ligne montre une case à cocher, la tâche, son échéance (« prévue le 2026-10-15 ») ou la date où elle a été faite (« faite le 2026-10-08 »), et son état :
+
+- **Faite** : faite pendant cette saison. Elle reste dans la liste, cochée.
+- **En retard** : sa date d’échéance est passée et elle n’a pas été faite depuis ; dans la saison en cours, une tâche en retard d’avant le début de la saison est aussi listée.
+- **Bientôt** : à faire d’ici son délai de rappel.
+- **À faire** : prévue plus tard dans la saison, ou dans une saison à venir.
+
+Une tâche fait partie d’une saison quand son échéance tombe pendant la saison ou qu’elle a été faite pendant la saison. Une tâche qui revient aux quelques semaines ou mois (l’analyse de l’eau d’une piscine, le filtre de la fournaise) est dans chaque saison où elle tombe ; pour une saison à venir, sa prochaine échéance est avancée de son intervalle pour la trouver. « Rien à faire cette saison. Ajoutez les tâches habituelles à vos véhicules et à vos biens pour remplir la liste. » quand il n’y a rien.
+
+Les tâches elles-mêmes sont celles des véhicules ([Véhicules](vehicles#usual-tasks)) et des biens ([Tâches habituelles](assets#usual-tasks)) ; ajoutez-les, modifiez-les ou mettez-les en pause là.
+
+### Cocher une tâche {#tick-task}
+
+Cochez la case d’une tâche pour l’inscrire comme faite. Une fenêtre au nom de la tâche et du véhicule ou du bien demande :
+
+- **Date** : quand elle a été faite ; aujourd’hui par défaut.
+- **Coût** : facultatif, dans la devise du véhicule ou du bien.
+- Le relevé, facultatif : **Kilomètres** pour un véhicule (son odomètre), ou **Heures d’utilisation** ou **Kilomètres** pour un bien qui a un compteur.
+- **Notes** : facultatif, par exemple qui l’a faite.
+
+**Inscrire comme faite** ajoute un entretien au carnet d’entretien du véhicule ou du bien avec cette tâche cochée, tout comme **Inscrire comme faite** sur la tâche, et le calendrier de la tâche repart de cette date. Pour lier un paiement, ajouter des détails ou annuler une coche, ouvrez l’entretien dans le carnet ([Carnet d’entretien](assets#service-log), ou l’onglet **Carnet d’entretien** du véhicule) et modifiez-le ou supprimez-le. Les coches faites sur le téléphone arrivent de la même façon : voir [Liste saisonnière sur le téléphone](phone-app#seasonal-form).
+
+Il faut la permission **Modification** ou **Saisie seulement** sur le groupe du véhicule ou du bien.
+
+### Imprimer ou enregistrer la liste {#print-checklist}
+
+**Imprimer** envoie la liste de la saison à l’imprimante (ou l’ouvre dans votre lecteur PDF quand le système ne peut pas imprimer directement). **Enregistrer en PDF…** demande où l’enregistrer. La liste porte un titre comme « Liste : Automne 2026 », les dates et l’avancement, puis pour chaque véhicule ou bien ses tâches avec une case (marquée X si elle est déjà faite), la date d’échéance ou de réalisation, et une ligne pour écrire la date, le coût ou une note. Apportez-la dehors, puis cochez les tâches dans l’application à votre retour.
+
+### Dates des saisons {#season-dates}
+@index: équinoxe; solstice; premier jour du printemps; premier jour de l’hiver
+
+Les saisons commencent aux dates astronomiques : le printemps le 20 mars, l’été le 21 juin, l’automne le 22 septembre et l’hiver le 21 décembre. Un ménage pour qui le printemps commence en avril peut déplacer ces dates dans [Taux et règles](rates-rules), sous Seuils : **Début du printemps**, **Début de l’été**, **Début de l’automne** et **Début de l’hiver**, en mois-jour. Le changement s’applique à partir de la date choisie. Les dates des pneus d’hiver du Québec sont des règles à part et ne changent pas.
+
 ## Onglet Projets {#projects-tab}
-@index: rénovation; amélioration de la maison; amélioration en capital; réparation; budget
+@index: rénovation; amélioration de la maison; amélioration en capital; réparation; budget; rénovation écoénergétique; thermopompe; isolation; panneaux solaires; remise; subvention
 
 « Les projets faits ou en cours sur une maison. Les améliorations en capital s’ajoutent à son prix de base, ce qui compte si la maison est vendue et n’a pas été la résidence principale chaque année. »
 
-En haut, **Ajouter un projet**. Pour chaque maison ou chalet qui a un prix payé ou des améliorations, une ligne « Maison : prix de base montant, dont des améliorations de montant ». Puis les projets, chacun avec son nom, son état, sa maison, « Amélioration en capital » ou « Réparation », le budget et ce qui a été dépensé, en rouge quand le budget est dépassé. Cliquez sur un projet pour voir et ajouter ses coûts ; **Modifier** ouvre son formulaire. « Aucun projet pour l’instant. » quand il n’y en a pas.
+En haut, **Ajouter un projet**. Pour chaque maison ou chalet qui a un prix payé ou des améliorations, une ligne « Maison : prix de base montant, dont des améliorations de montant », suivie de « moins montant en remises et subventions » quand des remises ont été reçues pour ses projets en capital. Puis les projets, chacun avec son nom, son état, sa maison, « Amélioration en capital » ou « Réparation », « rénovation écoénergétique : type » pour une rénovation écoénergétique, le budget et ce qui a été dépensé, en rouge quand le budget est dépassé. Cliquez sur un projet pour voir et ajouter ses coûts ; **Modifier** ouvre son formulaire. « Aucun projet pour l’instant. » quand il n’y en a pas.
 
 ### Ajouter ou modifier un projet {#project-form}
 
@@ -240,6 +292,7 @@ En haut, **Ajouter un projet**. Pour chaque maison ou chalet qui a un prix payé
 - **Maison** : la maison ou le chalet visé, parmi les biens du type Maison ou Chalet ; ou **Rien en particulier**. La première maison est proposée.
 - **Début** et **Fin** : la fin ne peut pas précéder le début.
 - **Budget** : ce que vous prévoyez dépenser.
+- **Rénovation écoénergétique** : **Pas une rénovation écoénergétique** (par défaut), ou le type de rénovation : **Isolation**, **Étanchéité à l’air**, **Thermopompe**, **Portes et fenêtres**, **Chauffe-eau**, **Panneaux solaires**, **Thermostat intelligent** ou **Autre rénovation**. Il désigne le projet comme rénovation écoénergétique dans la liste ; des remises et subventions peuvent être inscrites sur n’importe quel projet.
 - **Une amélioration en capital** : coché par défaut. « Un nouveau toit, un sous-sol fini ou un agrandissement est une amélioration en capital. Peindre ou réparer une fuite est une réparation. » Décochez-le pour une réparation.
 - **Notes**.
 - **Supprimer** (en modification) : demande « Supprimer le projet « nom » avec ses coûts? Il ne compte plus dans le prix de base de la propriété. » et, une fois confirmé, le supprime avec ses coûts.
@@ -256,10 +309,33 @@ Cliquez sur un projet pour ouvrir ses coûts. La ligne du haut indique « Dépen
 
 Les coûts d’un projet ne sont gardés qu’avec le projet : ce ne sont pas des paiements dans un compte, et ils ne changent ni les budgets ni les soldes. Inscrivez les paiements au registre comme d’habitude.
 
+### Remises et subventions {#rebates}
+@index: remise; subvention; remise écoénergétique; Rénoclimat; LogisVert; Chauffez vert; coût net
+
+Sous les coûts, **Remises et subventions** : « Les remises et subventions demandées pour ce projet (une remise d’Hydro-Québec, une subvention gouvernementale). Ce qui est reçu réduit le coût net du projet et, pour une amélioration en capital, ce qu’il ajoute au prix de base de la propriété. »
+
+![Les coûts, remises et documents d’une rénovation écoénergétique](images/assets-rebates.png)
+
+Chaque remise montre son programme, son état, « demandé montant », « reçu montant » et son numéro de dossier, avec **Modifier**. En dessous, « Coût net montant (dépensé montant, moins montant reçus) », et « montant encore attendus » pour celles demandées ou approuvées. **Ajouter une remise ou une subvention** ouvre le formulaire :
+
+- **Programme** : le nom du programme, comme « Rénoclimat » ou « LogisVert ». Obligatoire.
+- **État** : **À demander**, **Demandée** (par défaut), **Approuvée**, **Reçue** ou **Refusée**.
+- **Numéro de dossier** : la référence du programme pour votre demande.
+- **Montant demandé** : ce que vous avez demandé ou attendez. Compté dans « encore attendus » tant que la remise est demandée ou approuvée.
+- **Demandée le**, **Décision le** et **Reçue le** : les dates. La date de réception ne peut pas précéder la date de la demande.
+- **Montant reçu** : obligatoire quand l’état est **Reçue**. « Seul le montant reçu compte dans le coût net et le prix de base. »
+- **Notes**.
+- **Documents** (une fois enregistrée) : la demande, la lettre d’approbation, le talon du chèque. **Joindre un fichier…** range un fichier dans le coffre des [Documents](documents), déjà classé, et le lie à la remise ; **Retirer** l’enlève de la remise (il reste dans le coffre).
+- **Supprimer** (une fois enregistrée) : demande d’abord « Supprimer la remise « programme »? Ses documents restent dans le coffre. »
+
+Sous les remises, **Documents** garde de la même façon les documents du projet lui-même : le contrat, les rapports du conseiller en efficacité énergétique avant et après, les factures.
+
+Les remises sont gardées avec le projet : inscrivez le chèque ou le dépôt au registre comme d’habitude.
+
 ### Prix de base {#cost-base}
 @index: prix de base rajusté; PBR; résidence principale; gain en capital
 
-Le prix de base d’une maison est son **Prix payé** plus ce qui a été dépensé dans ses projets d’amélioration en capital en cours ou terminés. Les projets prévus et les réparations ne comptent pas. Quand une propriété qui n’a pas été votre résidence principale chaque année où vous l’avez possédée est vendue, le gain en capital est le prix de vente moins ce prix de base (et les frais de vente). Gardez les factures : joignez-les aux **Photos et documents** de la maison.
+Le prix de base d’une maison est son **Prix payé** plus ce qui a été dépensé dans ses projets d’amélioration en capital en cours ou terminés, moins les remises et subventions reçues pour ces projets : l’aide reçue pour payer une amélioration réduit ce qu’elle vous a coûté. Les projets prévus et les réparations ne comptent pas. Quand une propriété qui n’a pas été votre résidence principale chaque année où vous l’avez possédée est vendue, le gain en capital est le prix de vente moins ce prix de base (et les frais de vente). Gardez les factures : joignez-les aux **Photos et documents** de la maison.
 
 > Remarque : C’est de l’information pour vos dossiers, pas un conseil fiscal. Les règles de l’exemption pour résidence principale sont celles de l’ARC.
 

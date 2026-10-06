@@ -9,11 +9,12 @@ The **Home and assets** screen keeps track of the home and everything worth keep
 
 "The home and everything worth keeping track of (vehicles have their own section): where it is, what it cost and is worth, its warranties and what insures it."
 
-The screen has six tabs:
+The screen has seven tabs:
 
 - **Assets**: the list of assets, each opening a full record with value, warranties, documents and maintenance. See [Assets tab](assets#assets-tab).
 - **Maintenance**: what is due on the vehicles and everything else, in one list. See [Maintenance tab](assets#maintenance-tab).
-- **Projects**: renovations and repairs on a home, with budget, costs and the home's cost base. See [Projects tab](assets#projects-tab).
+- **Seasonal checklist**: every task of a season on the vehicles, home, cottage, pool, yard and everything else, ticked off one by one, and printable. See [Seasonal checklist tab](assets#seasonal-tab).
+- **Projects**: renovations, repairs and energy upgrades on a home, with budget, costs, rebates and grants, and the home's cost base. See [Projects tab](assets#projects-tab).
 - **Contractors**: the people who work on the home and vehicles, with their jobs and ratings. See [Contractors tab](assets#contractors-tab).
 - **Is it covered?**: find an item and see at once whether a warranty or protection still covers it. See [Is it covered? tab](assets#covered-tab).
 - **Insurance**: home, auto, life and other policies, their premiums, beneficiaries and claims, and what no policy covers. See [Insurance tab](assets#insurance-tab).
@@ -35,7 +36,7 @@ When the list is empty: "No assets yet: start with the home, then add appliances
 
 The dialog is titled **Add an asset** or **Asset**.
 
-- **Kind**: **Home**, **Cottage**, **RV**, **Boat**, **Trailer**, **Appliance** (the default), **Heating and cooling**, **Electronics**, **Computer**, **Furniture**, **Jewellery**, **Art**, **Tools**, **Sports equipment**, **Musical instrument** or **Other**. The kind decides which usual maintenance tasks are offered, which category a service payment gets, and whether a home can have projects (Home and Cottage only).
+- **Kind**: **Home**, **Cottage**, **Pool**, **Yard and garden**, **RV**, **Boat**, **Trailer**, **Appliance** (the default), **Heating and cooling**, **Electronics**, **Computer**, **Furniture**, **Jewellery**, **Art**, **Tools**, **Sports equipment**, **Musical instrument** or **Other**. The kind decides which usual maintenance tasks are offered, which category a service payment gets, and whether a home can have projects (Home and Cottage only).
 - **Name**: for example "House (Maple Street)" or "Kitchen fridge". Required.
 - **Part of**: another asset this one belongs to, or "(none)". The list shows it underneath, and a policy that covers the parent covers it too (a home policy covers its contents). An asset cannot be part of itself or of one of its own parts. An asset that has parts cannot be deleted until they are moved or deleted.
 - **Make**, **Model** and **Serial number**: from the label or the invoice. They can be searched on the **Is it covered?** tab, and are useful for a warranty or insurance claim.
@@ -143,7 +144,7 @@ Under the claims, **Proof of purchase and warranty documents** lets you attach t
 **Photos and documents** attaches photos, invoices, manuals and appraisals to the asset, with **Attach a file…** or **From the review inbox**. They are kept in the [Documents](documents) vault. Photos of every room and valuable are what an insurer asks for after a fire or a burglary: the **Assets and warranties** report under [Reports](reports) gives a home inventory.
 
 ## Maintenance on an asset {#asset-maintenance}
-@index: home maintenance; furnace filter; gutters; chimney; winterize
+@index: home maintenance; furnace filter; gutters; eavestroughs; chimney; winterize; pool; yard; garden; lawn mower; snow blower
 
 Once an asset is saved, the bottom of its dialog shows **Maintenance**: "Each task repeats after a number of months, a number of hours or kilometres on its meter, or every year in its season, whichever comes first."
 
@@ -151,7 +152,7 @@ Once an asset is saved, the bottom of its dialog shows **Maintenance**: "Each ta
 - **Add a task**: see [Add or edit a task](assets#task-form).
 - **Enter a meter reading** and "Meter: reading": shown when the asset has a meter. See [Meter readings](assets#meter).
 
-Each active task shows its interval, "last done date" (or "counting from date" while it was never done), its state (**Next**, **Due soon** in bold, **Due now** in red) with the due date or use, a forecast "at your usual use, around date" for a task by use, and the buttons **Record as done** and **Edit**. Paused tasks follow, marked "(paused)". "No maintenance tasks yet." when there are none.
+Each active task shows its interval (with "from 05-20 to 09-15" for a task kept to part of the year), "last done date" (or "counting from date" while it was never done), its state (**Next**, **Due soon** in bold, **Due now** in red) with the due date or use, a forecast "at your usual use, around date" for a task by use, and the buttons **Record as done** and **Edit**. Paused tasks follow, marked "(paused)". "No maintenance tasks yet." when there are none.
 
 The rules for when a task is due are the same as for vehicles: see [When a task is due](vehicles#task-due). Hours or kilometres replace the odometer.
 
@@ -167,15 +168,24 @@ The rules for when a task is due are the same as for vehicles: see [When a task 
 - RV and boat: **Battery check** (every 6 months).
 - Boat: **Spring launch** (May 1), **Winterize and store** (October 1), **Engine oil and filter** (yearly or 100 hours), **Water pump impeller** (every 24 months or 300 hours).
 - Trailer: **Lights and brakes check** (April 15).
+- Home and cottage, for each season: **Check the eavestroughs and downspouts** (April 30), **Take the cover off the air conditioner** (May 1), **Put in the window screens** (May 1), **Clean the dryer vent** (September 30), **Cover the air conditioner for winter** (October 20), **Close the storm windows** (October 25).
+- Home, cottage and yard: **Turn the outside taps back on** (April 15) and **Shut off and drain the outside taps** (October 15, before the first hard frost). They go on the home or on its yard, not both: a yard that is part of a home with these tasks does not get them again, and the other way around.
+- Home, cottage, and heating and cooling: **Replace the furnace humidifier pad** (October 1).
+- Cottage: **Put the dock in** (May 15), **Take the dock out** (October 1).
+- Pool: **Open the pool** (May 20, around Victoria Day), **Test and balance the pool water** (every week from May 20 to September 15), **Clean the pump basket and filter** (every month from May 20 to September 15), **Close and winterize the pool** (September 15, after Labour Day), **Check the winter cover (water, leaves, snow)** (every month from November 1 to April 30).
+- Yard and garden: **Service the lawn mower** (April 1), **Spring cleanup of the yard** (April 20), **Start up the irrigation system** (May 10), **Blow out the irrigation lines** (October 10), **Rake and bag the fall leaves** (November 1), **Service the snow blower** (November 1).
 
-An interval by hours or kilometres is only added when the asset's **Meter** counts that unit; otherwise the task repeats by months only.
+The dates suit most of southern Canada; move them to suit your region by editing the task (its **Last done on** date sets when it comes back). An interval by hours or kilometres is only added when the asset's **Meter** counts that unit; otherwise the task repeats by months only.
 
 ### Add or edit a task {#task-form}
 
 - **Task**: the name. Required.
 - Without a meter: "Repeat it every so many months. For a seasonal task, enter when it was last done: it comes back a year later." With a meter: "Fill in one or both: the task falls due at whichever comes first."
 - **Every (months)**: from 1 to 240; 12 proposed.
+- **Every (weeks)**: from 1 to 104, for a task done every week or few weeks, such as a pool's water test. With months too, whichever comes first.
 - **Every (hours of use)** or **Every (km)**: shown with a meter. At least one interval is required.
+- "Only part of the year? Enter from and to as month-day (05-20 to 09-15 for a pool): outside it the task waits for its next start."
+- **From (month-day)** and **To (month-day)**: the part of the year the task is done in, such as 05-20 and 09-15; both or neither. The part may run over the new year (11-01 to 04-30). A due date that falls outside it moves to the next **From** date, so a weekly pool test stops after closing and comes back at opening. Leave both empty for a task done all year.
 - **Last done on**: when it was last done, or the date to count from; today proposed. Once a service records the task, the latest such service is used.
 - **Hours when last done** or **Kilometres when last done**: shown with a meter; the latest reading proposed.
 - **Remind me (days before)**: 14 by default for a new task (set in [Rates and rules](rates-rules)).
@@ -226,12 +236,54 @@ Each line shows the task, the asset or vehicle (marked "vehicle"), its state and
 
 Tasks **Due soon** and **Due now** also appear in the reminders at the top of the window and in the system notification, and next due dates on the [Calendar](calendar).
 
+## Seasonal checklist tab {#seasonal-tab}
+@index: seasonal checklist; spring cleaning; fall checklist; winterize; open the cottage; seasons; to-do list
+
+Everything to do in a season, on the vehicles, the home, the cottage, the pool, the yard and every other asset with maintenance tasks, in one list to tick off.
+
+![The Seasonal checklist tab](images/assets-seasonal.png)
+
+At the top, a button for each season, the current one first and marked "now", such as **Fall 2026 · now**, **Winter 2026–2027**, **Spring 2027** and **Summer 2027**. The other seasons are the next time they come. Under them, the season's dates ("2026-09-22 to 2026-12-20") and how far along it is ("7 of 12 done"), with a bar, and the buttons **Print** and **Save as PDF…**.
+
+The tasks are grouped by vehicle or asset (a vehicle is marked "vehicle"). Each line shows a box to tick, the task, when it falls due ("due 2026-10-15") or when it was done ("done 2026-10-08"), and its state:
+
+- **Done**: done during this season. It stays on the list, ticked.
+- **Overdue**: its due date has passed and it was not done since; in the current season, a task overdue from before the season started is listed too.
+- **Due soon**: due within its reminder lead time.
+- **To do**: due later in the season, or in a season still to come.
+
+A task is in a season when it falls due during it or was done during it. A task that repeats every few weeks or months (a pool's water test, the furnace filter) is in every season it falls due in; for a season to come, its next due date is moved on by its interval to find it. "Nothing to do this season. Add the usual tasks to your vehicles and assets to fill the list." when there is nothing.
+
+The tasks themselves are those of the vehicles ([Vehicles](vehicles#usual-tasks)) and assets ([Usual tasks](assets#usual-tasks)); add, change or pause them there.
+
+### Tick a task {#tick-task}
+
+Tick a task's box to record it as done. A dialog titled with the task and the vehicle or asset asks for:
+
+- **Date**: when it was done; today by default.
+- **Cost**: optional, in the vehicle's or asset's currency.
+- The reading, optional: **Kilometres** for a vehicle (its odometer), or **Hours of use** or **Kilometres** for an asset with a meter.
+- **Notes**: optional, such as who did it.
+
+**Record as done** adds a service to the vehicle's or asset's service log with this task ticked, just as **Record as done** on the task does, and the task's schedule starts over from that date. To link a payment, add details or undo a tick, open the service in the service log ([Service log](assets#service-log), or the vehicle's **Service log** tab) and edit or delete it. Ticks made on the phone arrive the same way: see [Seasonal checklist on the phone](phone-app#seasonal-form).
+
+You need the **Edit** or **Capture only** permission on the group of the vehicle or asset.
+
+### Print or save the checklist {#print-checklist}
+
+**Print** sends the season's checklist to the printer (or opens it in your PDF viewer when the system cannot print directly). **Save as PDF…** asks where to save it. The checklist has a title such as "Checklist: Fall 2026", the dates and progress, then for each vehicle or asset its tasks with a box (marked X when already done), the due or done date, and a line to write the date, the cost or a note. Bring it outside, then tick the tasks in the app when you are back.
+
+### Season dates {#season-dates}
+@index: equinox; solstice; first day of spring; first day of winter
+
+The seasons start on the astronomical dates: spring on March 20, summer on June 21, fall on September 22 and winter on December 21. A household that thinks of spring as starting in April can move these dates in [Rates and rules](rates-rules), under Thresholds: **Spring starts**, **Summer starts**, **Fall starts** and **Winter starts**, as month-day. The change applies from the date chosen. Quebec's winter tire dates are separate rules and are not affected.
+
 ## Projects tab {#projects-tab}
-@index: renovation; home improvement; capital improvement; repair; budget
+@index: renovation; home improvement; capital improvement; repair; budget; energy upgrade; energy retrofit; heat pump; insulation; solar panels; rebate; grant
 
 "Projects done or under way on a home. Capital improvements add to its cost base, which matters if the home is ever sold and is not the principal residence for every year."
 
-At the top, **Add a project**. For each home or cottage that has a price paid or improvements, a line "Home: cost base amount, of which improvements amount". Then the projects, each with its name, status, home, "Capital improvement" or "Repair", the budget, and what was spent, in red when over budget. Click a project to see and add its costs; **Edit** opens its form. "No projects yet." when there are none.
+At the top, **Add a project**. For each home or cottage that has a price paid or improvements, a line "Home: cost base amount, of which improvements amount", followed by "less amount in rebates and grants" when rebates were received on its capital projects. Then the projects, each with its name, status, home, "Capital improvement" or "Repair", "energy upgrade: kind" for an energy upgrade, the budget, and what was spent, in red when over budget. Click a project to see and add its costs; **Edit** opens its form. "No projects yet." when there are none.
 
 ### Add or edit a project {#project-form}
 
@@ -240,6 +292,7 @@ At the top, **Add a project**. For each home or cottage that has a price paid or
 - **Home**: the home or cottage it is for, among assets of the kind Home or Cottage; or **Nothing in particular**. The first home is proposed.
 - **Start** and **End**: the end cannot be before the start.
 - **Budget**: what you plan to spend.
+- **Energy upgrade**: **Not an energy upgrade** (the default), or the kind of upgrade: **Insulation**, **Air sealing**, **Heat pump**, **Windows and doors**, **Water heater**, **Solar panels**, **Smart thermostat** or **Other upgrade**. It names the project as an energy upgrade in the list; rebates and grants can be kept on any project.
 - **A capital improvement**: ticked by default. "A new roof, a finished basement or an addition is a capital improvement. Painting or fixing a leak is a repair." Untick it for a repair.
 - **Notes**.
 - **Delete** (when editing): asks "Delete the project "name" with its costs? It no longer counts in the home's cost base." and, once confirmed, deletes it with its costs.
@@ -256,10 +309,33 @@ Click a project to open its costs. The top line reads "Spent amount of a budget 
 
 Project costs are kept with the project only: they are not payments in an account, and they do not change budgets or account balances. Enter the payments in the register as usual.
 
+### Rebates and grants {#rebates}
+@index: rebate; grant; energy rebate; Home Renovation Savings; Greener Homes; Rénoclimat; LogisVert; net cost
+
+Below the costs, **Rebates and grants**: "Rebates and grants applied for on this project (a utility rebate, a government energy grant). What is received lowers the project's net cost and, for a capital improvement, what it adds to the home's cost base."
+
+![An energy upgrade's costs, rebates and papers](images/assets-rebates.png)
+
+Each rebate shows its program, its status, "asked for amount", "received amount" and its file number, with **Edit**. Under them, "Net cost amount (spent amount, less amount received)", and "amount still expected" for those applied for or approved. **Add a rebate or grant** opens the form:
+
+- **Program**: the program's name, such as "Home Renovation Savings Program" or "Rénoclimat". Required.
+- **Status**: **To apply for**, **Applied for** (the default), **Approved**, **Received** or **Refused**.
+- **File number**: the program's reference for your application.
+- **Amount asked for**: what you applied for or expect. Counted in "still expected" while the rebate is applied for or approved.
+- **Applied on**, **Decision on** and **Received on**: the dates. The date received cannot be before the date applied.
+- **Amount received**: required when the status is **Received**. "Only the amount received counts in the net cost and the cost base."
+- **Notes**.
+- **Papers** (once saved): the application, the approval letter, the cheque stub. **Attach a file…** stores a file in the [Documents](documents) vault, already filed, and links it to the rebate; **Remove** takes it off the rebate (it stays in the vault).
+- **Delete** (once saved): asks "Delete the rebate "program"? Its papers stay in the vault." first.
+
+Under the rebates, **Papers** keeps the project's own documents the same way: the contract, the energy advisor's reports before and after, the invoices.
+
+Rebates are kept with the project: enter the cheque or deposit in the register as usual.
+
 ### Cost base {#cost-base}
 @index: adjusted cost base; ACB; principal residence; capital gain
 
-The cost base of a home is its **Price paid** plus what was spent on its capital improvement projects under way or done. Planned projects and repairs do not count. When a property that was not your principal residence for every year it was owned is sold, the capital gain is the selling price less this cost base (and selling costs). Keep the invoices: attach them to the home's **Photos and documents**.
+The cost base of a home is its **Price paid** plus what was spent on its capital improvement projects under way or done, less the rebates and grants received on them: help received to pay for an improvement lowers what it cost you. Planned projects and repairs do not count. When a property that was not your principal residence for every year it was owned is sold, the capital gain is the selling price less this cost base (and selling costs). Keep the invoices: attach them to the home's **Photos and documents**.
 
 > Note: This is information for your records, not tax advice. The rules for the principal residence exemption are the CRA's.
 
