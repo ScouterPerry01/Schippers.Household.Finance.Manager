@@ -343,7 +343,7 @@ class MigrationTest {
             fun saveBoat() = db.assetsQueries.upsertAsset("b", null, "BOAT", "Bateau", null, null, null, null, null, null, "CAD", null, null, null, "NONE", null, null, null, null, 0, "ACTIVE", null, null, null, null, 0, 0, "HOURS")
             saveBoat()
             val q = db.assetMaintenanceQueries
-            q.upsertTask("t", "b", "Vidange", null, 12, 100, "2026-05-01", 0, 14, 10, 1, null)
+            q.upsertTask("t", "b", "Vidange", null, 12, 100, "2026-05-01", 0, 14, 10, 1, null, null, null, null)
             q.insertReading("r", "b", "2026-08-01", 42, null)
             saveBoat()
             assertEquals(1, q.tasks("b").executeAsList().size)
@@ -623,6 +623,26 @@ class MigrationTest {
     }
 
     @Test
+    fun `version 30 ledgers keep their tasks and projects, and gain weekly tasks, energy upgrades and rebates`() {
+        val file = temp.resolve("ledger30.db")
+        older("../data/src/main/sqldelight/ledger/schemas/30.db", file, 30).use { driver ->
+            driver.execute(null, "INSERT INTO asset(id, kind, name, created_at, updated_at) VALUES ('p', 'POOL', 'Piscine', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO asset_task(id, asset_id, name, interval_months) VALUES ('t', 'p', 'Ouvrir', 12)", 0)
+            driver.execute(null, "INSERT INTO home_project(id, name, status, currency) VALUES ('h', 'Isolation', 'DONE', 'CAD')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            val db = LedgerDatabase(driver)
+            val task = db.assetMaintenanceQueries.tasks("p").executeAsOne()
+            assertEquals(12L, task.interval_months)
+            assertEquals(null, task.interval_weeks)
+            assertEquals(null, db.extrasQueries.homeProjects().executeAsOne().energy_kind)
+            db.projectRebatesQueries.upsertRebate("r", "h", "Renoclimat", "RECEIVED", null, 100000, null, null, "2026-08-01", 100000, null, 0)
+            assertEquals(1, db.projectRebatesQueries.rebates("h").executeAsList().size)
+        }
+    }
+
+    @Test
     fun `version 29 ledgers keep their medical plans and gain the plan year deadline`() {
         val file = temp.resolve("ledger29.db")
         older("../data/src/main/sqldelight/ledger/schemas/29.db", file, 29).use { driver ->
@@ -632,7 +652,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(30L, LedgerDatabase.Schema.version)
+            assertEquals(31L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).medicalQueries
             assertEquals("AFTER_SERVICE", q.planById("m").executeAsOne().claim_rule, "existing plans keep counting from the service")
