@@ -117,7 +117,7 @@ The Investment portfolio also warns when a security has no price on some dates: 
 
 A saved report keeps your choices under a name, so you can come back to the same view in one click. Saved reports are your own: other users of the household do not see them.
 
-What is kept: the report, the period (or the custom dates), the account group, the chosen accounts, the person, the tag, the currency (for the reports that have one), the comparison, the **Year** or **Tax year** of the reports that have one and, for a custom report, its rows, columns, measure and chart. A report saved before the year was kept opens with the year shown at the time. No amounts are kept: the report is worked out again from the books each time.
+What is kept: the report, the period (or the custom dates), the account group, the chosen accounts, the person, the tag, the currency (for the reports that have one), the comparison, the **Year** or **Tax year** of the reports that have one and, for a custom report, its rows, columns, measure, chart and category. A report saved before the year was kept opens with the year shown at the time. No amounts are kept: the report is worked out again from the books each time.
 
 ### Save the report {#save-dialog}
 
@@ -213,6 +213,7 @@ A custom report adds up the transactions in the period any way you choose: categ
 - **Columns**: what each column is: **Totals only** (one column), **Month**, **Quarter**, **Year**, **Person**, **Account** or **Category group**. The default is **Month**.
 - **Adds up**: **Spending** (shown as positive amounts), **Income**, or **Income less spending**. The default is **Spending**.
 - **Chart**: **Bars**, **Lines**, **Ranked bars** or **Table only**. The default is **Bars**.
+- **Category**: **All categories** (the default), or one category with its subcategories, for example Food to see groceries and restaurants by month. It is kept with a saved report.
 
 How the figures are worked out:
 

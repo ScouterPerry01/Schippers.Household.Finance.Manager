@@ -117,7 +117,7 @@ Le Portefeuille de placements avertit aussi quand un titre n’a pas de cours à
 
 Un rapport enregistré garde vos choix sous un nom, pour retrouver la même vue en un clic. Les rapports enregistrés vous appartiennent : les autres utilisateurs du ménage ne les voient pas.
 
-Ce qui est conservé : le rapport, la période (ou les dates au choix), le groupe de comptes, les comptes choisis, la personne, l’étiquette, la devise (pour les rapports qui en ont une), la comparaison, l’**Année** ou l’**Année d’imposition** des rapports qui en ont une et, pour un rapport personnalisé, ses lignes, colonnes, mesure et graphique. Un rapport enregistré avant que l’année soit conservée s’ouvre avec l’année affichée à ce moment. Aucun montant n’est conservé : le rapport est recalculé à partir des livres chaque fois.
+Ce qui est conservé : le rapport, la période (ou les dates au choix), le groupe de comptes, les comptes choisis, la personne, l’étiquette, la devise (pour les rapports qui en ont une), la comparaison, l’**Année** ou l’**Année d’imposition** des rapports qui en ont une et, pour un rapport personnalisé, ses lignes, colonnes, mesure, graphique et catégorie. Un rapport enregistré avant que l’année soit conservée s’ouvre avec l’année affichée à ce moment. Aucun montant n’est conservé : le rapport est recalculé à partir des livres chaque fois.
 
 ### Enregistrer le rapport {#save-dialog}
 
@@ -212,6 +212,7 @@ Un rapport personnalisé additionne les opérations de la période de la façon 
 - **Lignes** : ce qu’est chaque ligne du rapport : **Catégorie**, **Groupe de catégories** (la catégorie principale, sous-catégories comprises), **Bénéficiaire**, **Compte**, **Personne**, **Étiquette**, **Mois**, **Trimestre** ou **Année**. Par défaut : **Groupe de catégories**.
 - **Colonnes** : ce qu’est chaque colonne : **Totaux seulement** (une seule colonne), **Mois**, **Trimestre**, **Année**, **Personne**, **Compte** ou **Groupe de catégories**. Par défaut : **Mois**.
 - **Additionne** : **Dépenses** (en montants positifs), **Revenus** ou **Revenus moins dépenses**. Par défaut : **Dépenses**.
+- **Catégorie** : **Toutes les catégories** (par défaut), ou une catégorie avec ses sous-catégories, par exemple Alimentation pour voir l’épicerie et les restaurants par mois. Elle est gardée avec un rapport enregistré.
 - **Graphique** : **Barres**, **Lignes**, **Barres classées** ou **Tableau seulement**. Par défaut : **Barres**.
 
 Comment les montants sont calculés :
