@@ -105,8 +105,9 @@ The card shows this year's total (since January 1) and the last 12 months, with 
 
 ### The costs dialog {#costs-dialog}
 
-**Costs** opens "What name costs", covering January 1 four years ago to today:
+**Costs** opens "What name costs":
 
+- **Period**: **The last five years** (January 1 four years ago to today, the default) or one year, this year or one of the four before. Choosing a year shows that year's costs by category, for example what the vet, food and boarding cost in 2025.
 - **By year**: the total of each year.
 - **By category**: the total of each category, largest first; lines with no category appear as "(uncategorized)".
 - **Total**.

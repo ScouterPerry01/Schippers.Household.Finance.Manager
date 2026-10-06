@@ -105,8 +105,9 @@ La fiche montre le total de l’année (depuis le 1er janvier) et des 12 dernier
 
 ### La boîte des coûts {#costs-dialog}
 
-**Coûts** ouvre « Ce que coûte nom », du 1er janvier d’il y a quatre ans jusqu’à aujourd’hui :
+**Coûts** ouvre « Ce que coûte nom » :
 
+- **Période** : **Les cinq dernières années** (du 1er janvier d’il y a quatre ans jusqu’à aujourd’hui, par défaut) ou une année, l’année en cours ou l’une des quatre précédentes. Choisir une année affiche les coûts de cette année par catégorie, par exemple ce qu’ont coûté le vétérinaire, la nourriture et la pension en 2025.
 - **Par année** : le total de chaque année.
 - **Par catégorie** : le total de chaque catégorie, du plus grand au plus petit ; les lignes sans catégorie paraissent comme « (non catégorisé) ».
 - **Total**.

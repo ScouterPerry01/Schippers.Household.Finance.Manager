@@ -77,7 +77,18 @@ fun PetsScreen(model: BooksModel) {
     }
 
     editing?.let { PetDialog(model, it) { editing = null } }
-    costsOf?.let { CostsDialog(model, it.name, remember(it.id, model.revision) { books.pets.costs(it.id, LocalDate(today().year - 4, 1, 1), today()) }) { costsOf = null } }
+    costsOf?.let { pet ->
+        // PET-05: cost per pet per year by category: the last five years together, or one year.
+        var year by remember(pet.id) { mutableStateOf<Int?>(null) }
+        val thisYear = today().year
+        val costs = remember(pet.id, model.revision, year) {
+            year?.let { y -> books.pets.costs(pet.id, LocalDate(y, 1, 1), minOf(LocalDate(y, 12, 31), today())) }
+                ?: books.pets.costs(pet.id, LocalDate(thisYear - 4, 1, 1), today())
+        }
+        CostsDialog(model, pet.name, costs, extra = {
+            Picker(model.t("costs.period"), listOf<Int?>(null) + (thisYear downTo thisYear - 4).toList(), year, { it?.toString() ?: model.t("costs.fiveYears") }, Modifier.width(240.dp)) { year = it }
+        }) { costsOf = null }
+    }
     appointmentFor?.let { pet ->
         val draft = remember(pet.id) { model.newEventDraft(today(), EventCategory.PET, pet.id) }
         if (draft == null) appointmentFor = null else EventDialog(model, null, draft) { appointmentFor = null }
