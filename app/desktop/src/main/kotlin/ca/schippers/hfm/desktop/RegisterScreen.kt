@@ -159,6 +159,9 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     // MAN-05: named templates for this account, and the dialogs to manage them.
     val templates = remember(model.revision, account.id) { books.templates.forAccount(account.id) }
     var managingTemplates by remember { mutableStateOf(false) }
+    // CAT-03: categories a statement import filled in from the payee's habits, to review.
+    val suggested = remember(model.revision, account.id) { books.transactions.suggestedCategoryIds(account.id) }
+    var reviewing by remember { mutableStateOf(false) }
     var savingTemplate by remember { mutableStateOf<Transaction?>(null) }
     // TX-07, EXP-02: transactions chosen for a bulk change or an export.
     var choosing by remember(account.id) { mutableStateOf(false) }
@@ -267,6 +270,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
             }) { Text(model.t("reconcile.button")) }
             OutlinedButton(onClick = { showStatements = true }) { Text(model.t("statements.button")) }
             OutlinedButton(onClick = { managingTemplates = true }) { Text(model.t("templates.button")) }
+            if (suggested.isNotEmpty()) Button(onClick = { reviewing = true }) { Text(model.t("suggested.button", suggested.size)) }
             if (!choosing && rows.isNotEmpty()) OutlinedButton(onClick = { choosing = true; entry.clear() }) { Text(model.t("bulk.choose")) }
             OutlinedButton(onClick = { editingAccount = true }) { Text(model.t("account.edit")) }
             if (account.numberMasked != null) OutlinedButton(onClick = { revealing = true }) { Text(model.t("account.show")) }
@@ -342,7 +346,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                     }
                     Cell(model.date(txn.date), Modifier.width(100.dp))
                     Cell(txn.payeeId?.let(payeeNames::get) ?: txn.payeeText.orEmpty(), Modifier.weight(2f))
-                    Cell(category, Modifier.weight(2f))
+                    Cell(if (txn.id in suggested) model.t("suggested.mark", category) else category, Modifier.weight(2f))
                     Cell(txn.memo.orEmpty(), Modifier.weight(2f))
                     MoneyText(model, txn.amount, modifier = Modifier.width(120.dp), textAlign = TextAlign.End)
                     Text(
@@ -490,6 +494,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     pendingImport?.let { PendingImportDialog(model, it) { pendingImport = null } }
     if (showStatements) StatementsDialog(model, account) { showStatements = false }
     if (managingTemplates) TemplatesDialog(model, account, categoryTree) { managingTemplates = false }
+    if (reviewing) SuggestedCategoriesDialog(model, account, categories, onOpen = { load(it); reviewing = false }) { reviewing = false }
     savingTemplate?.let { t -> SaveAsTemplateDialog(model, t, t.payeeId?.let(payeeNames::get) ?: t.payeeText.orEmpty()) { savingTemplate = null } }
     if (splitting) {
         SplitDialog(model, account, entry, categoryTree) { splitting = false }

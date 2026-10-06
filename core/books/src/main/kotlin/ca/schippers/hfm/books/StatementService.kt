@@ -270,10 +270,14 @@ class StatementService internal constructor(private val books: Books) {
             splits + SplitDraft(fee, difference, books.text("generated.fxFee"))
         }
         val payee = t.payeeId?.let { id -> books.payees.list(true).firstOrNull { it.id == id }?.name } ?: t.payeeText
+        // The fee line is not a change of category: a category still to review stays so (CAT-03).
+        val (group, _) = books.accounts.locate(t.accountId)
+        val suggested = books.ledger(group).suggestedCategoriesQueries.suggestionFor(txnId).executeAsOneOrNull()
         books.transactions.update(
             txnId,
             TransactionDraft(t.accountId, t.date, statementAmount, payee, adjusted, t.memo, t.memberId, t.cleared, t.originalAmount, t.fxRate, t.tagIds, t.assetId, t.cardHolderId),
         )
+        suggested?.let { books.ledger(group).suggestedCategoriesQueries.markSuggested(it.txn_id, it.category_id, it.created_at) }
         // The audit log is in core.db, which every household user can read: no amounts (HH-11).
         books.session.audit("UPDATE", "txn", txnId, "fx fee")
     }
@@ -284,14 +288,22 @@ class StatementService internal constructor(private val books: Books) {
         if (txn.cleared == ClearedStatus.UNCLEARED.name) books.transactions.setCleared(txnId, ClearedStatus.CLEARED)
     }
 
-    /** A new cleared transaction for a statement line, categorized by rule, then by the payee's habits. */
+    /**
+     * A new cleared transaction for a statement line, categorized by rule, then by the payee's
+     * habits. A category from the payee's habits is marked as suggested, to review (CAT-03); one
+     * from a rule is not.
+     */
     private fun createFromLine(account: Account, date: LocalDate, amount: Money, payeeText: String?, memo: String?, externalId: String): Transaction {
         val rule = payeeText?.let { books.rules.find(it, amount) }
         val payeeName = rule?.payeeId?.let { id -> books.payees.list(true).firstOrNull { it.id == id }?.name }
             ?: payeeText?.let { books.payees.match(it)?.name ?: PayeeService.cleanName(it) }
-        val categoryId = rule?.categoryId
-            ?: payeeName?.let { books.payees.match(it)?.defaultCategoryId }
-            ?: payeeName?.let { books.transactions.suggest(account.id, it)?.splits?.singleOrNull()?.categoryId }
+        val habit = if (rule?.categoryId != null) {
+            null
+        } else {
+            payeeName?.let { books.payees.match(it)?.defaultCategoryId }
+                ?: payeeName?.let { books.transactions.suggest(account.id, it)?.splits?.singleOrNull()?.categoryId }
+        }
+        val categoryId = rule?.categoryId ?: habit
         val txn = books.transactions.create(
             TransactionDraft(
                 account.id, date, amount, payeeName,
@@ -300,7 +312,9 @@ class StatementService internal constructor(private val books: Books) {
             ),
         )
         val (group, _) = books.accounts.locate(account.id)
-        books.ledger(group).ledgerQueries.setExternalId(externalId, books.now(), txn.id)
+        val ledger = books.ledger(group)
+        ledger.ledgerQueries.setExternalId(externalId, books.now(), txn.id)
+        if (habit != null) ledger.suggestedCategoriesQueries.markSuggested(txn.id, habit, books.now())
         return txn
     }
 

@@ -20,6 +20,8 @@ Pour chaque ligne du relevé :
   - si le bénéficiaire n'en a pas, la catégorie de la plus récente opération du bénéficiaire, quand cette opération avait une seule catégorie ;
   - sinon, la ligne arrive sans catégorie, à remplir par vous.
 
+Une catégorie qui vient du bénéficiaire (sa catégorie par défaut ou sa plus récente opération) est une supposition, alors l'opération est marquée à vérifier : le registre affiche « (à vérifier) » après sa catégorie et un bouton **Catégories à vérifier**, où vous gardez ou changez chacune (voir [Catégories à vérifier](accounts#categories-to-review)). Une catégorie donnée par une règle n'est pas marquée : c'est vous qui avez fait la règle.
+
 Le même ordre sert quand vous choisissez d'ajouter une nouvelle opération pour une ligne de relevé pendant une conciliation.
 
 Une règle correspond quand :

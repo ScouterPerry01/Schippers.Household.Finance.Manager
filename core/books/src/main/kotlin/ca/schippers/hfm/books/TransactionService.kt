@@ -169,6 +169,9 @@ class TransactionService internal constructor(private val books: Books) {
         val ledger = books.ledger(group)
         ledger.transaction {
             val before = snapshot(ledger, transactionId)
+            // CAT-03: changing the category settles a category suggested on import.
+            val categoriesBefore = ledger.ledgerQueries.splitsForTxn(transactionId).executeAsList().map { it.category_id }.toSet()
+            if (prepared.splits.map { it.categoryId }.toSet() != categoriesBefore) ledger.suggestedCategoriesQueries.clearSuggested(transactionId)
             ledger.ledgerQueries.updateTxn(
                 draft.date.toString(), prepared.payeeId, draft.payeeName?.trim()?.ifEmpty { null }, draft.amount.minorUnits,
                 draft.originalAmount?.minorUnits, draft.originalAmount?.currency?.code, prepared.fxRate?.toPlainString(),
@@ -182,6 +185,38 @@ class TransactionService internal constructor(private val books: Books) {
             logChange(ledger, transactionId, "UPDATE", before, snapshot(ledger, transactionId))
         }
         return get(transactionId)
+    }
+
+    // --- Categories suggested on import (CAT-03) -------------------------------------------------
+
+    /**
+     * CAT-03: the transactions of [accountId] whose category a statement import filled in from the
+     * payee's habits rather than a rule, oldest first, until accepted or changed.
+     */
+    fun suggestedCategories(accountId: String): List<Transaction> {
+        val (group, _) = books.accounts.locate(accountId)
+        val ledger = books.ledger(group)
+        return ledger.suggestedCategoriesQueries.suggestedForAccount(accountId).executeAsList().map { id -> load(ledger, ledger.ledgerQueries.txnById(id).executeAsOne()) }
+    }
+
+    /** CAT-03: the ids of [accountId]'s transactions with a category still to review. */
+    fun suggestedCategoryIds(accountId: String): Set<String> {
+        val (group, _) = books.accounts.locate(accountId)
+        return books.ledger(group).suggestedCategoriesQueries.suggestedForAccount(accountId).executeAsList().toSet()
+    }
+
+    /** CAT-03: keeps the suggested category of one transaction as it is. */
+    fun acceptSuggestedCategory(transactionId: String) {
+        val (group, _) = locate(transactionId)
+        books.require(group, PermissionLevel.EDIT)
+        books.ledger(group).suggestedCategoriesQueries.clearSuggested(transactionId)
+    }
+
+    /** CAT-03: keeps every suggested category of [accountId] as it is. */
+    fun acceptSuggestedCategories(accountId: String) {
+        val (group, _) = books.accounts.locate(accountId)
+        books.require(group, PermissionLevel.EDIT)
+        books.ledger(group).suggestedCategoriesQueries.clearSuggestedForAccount(accountId)
     }
 
     // --- Bulk changes (TX-07) and export of chosen transactions (EXP-02) ------------------------

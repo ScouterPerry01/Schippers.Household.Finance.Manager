@@ -20,6 +20,8 @@ For each line of the statement:
   - if the payee has none, the category of the payee's most recent transaction, when that transaction had a single category;
   - otherwise the line comes in without a category, for you to fill in.
 
+A category that comes from the payee (its default, or its most recent transaction) is a guess, so the transaction is marked to review: the register shows "(to review)" after its category and a **Categories to review** button, where you keep or change each one (see [Categories to review](accounts#categories-to-review)). A category given by a rule is not marked: you set the rule.
+
 The same order is used when you choose to add a new transaction for a statement line during reconciliation.
 
 A rule matches when:

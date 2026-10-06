@@ -186,6 +186,7 @@ Which buttons appear depends on the account:
 - **Import statement…**: reads a statement file from the bank. See [Import a statement](accounts#import-statement).
 - **Reconcile…**: continues the statement being reconciled, if there is one; otherwise it opens Statements, where you can enter a paper statement. See [Reconcile a statement](accounts#reconcile).
 - **Statements**: the statements of the account, past and in progress. See [Statements](accounts#statements).
+- **Categories to review (number)**: only when a statement import filled in categories from the payees' habits that you have not checked yet. See [Categories to review](accounts#categories-to-review).
 - **Templates…**: the transaction templates of the account's group. See [Transaction templates](accounts#templates).
 - **Choose transactions…**: tick several transactions to categorize, tag, move or export them together. See [Change or export several transactions](accounts#bulk-edit).
 - **Edit account**: the account form (see [Add or edit an account](accounts#account-dialog)).
@@ -200,7 +201,7 @@ Which buttons appear depends on the account:
 
 - **Date**: the date of the transaction.
 - **Payee**: who was paid or who paid you.
-- **Category**: the category; Transfer: followed by the other account for a transfer; (split) when the transaction is split across several categories; (uncategorized) when it has none.
+- **Category**: the category; Transfer: followed by the other account for a transfer; (split) when the transaction is split across several categories; (uncategorized) when it has none. "(to review)" follows a category a statement import guessed from the payee (see [Categories to review](accounts#categories-to-review)).
 - **Memo**: the note on the transaction.
 - **Amount**: negative (in red) for money out, positive for money in.
 - **✓**: the cleared mark (see [Cleared and reconciled marks](accounts#cleared-status)).
@@ -489,11 +490,23 @@ Importing records the statement and goes through its lines one by one:
 - A line already imported from an earlier statement (same bank number, or same date, amount and description) is marked Already imported and skipped, so overlapping downloads never create duplicates.
 - A line that matches a transaction you already recorded (for example a receipt sent from the phone, or a transaction typed by hand) is linked to it. A match needs the same amount within 5 days. When the dates are within 3 days and it is the only candidate, or the payee looks the same, the link is made at once (Matched) and the transaction becomes cleared. Otherwise the line is marked To confirm, for you to decide.
 - A purchase you recorded in a foreign currency can match a line that differs by up to 3.5 % by default (the conversion fee and the day's rate; set in [Rates and rules](rates-rules)); such a match is always To confirm.
-- Every other line becomes a new transaction, already cleared (Added). Its category comes from your [Category rules](rules), or else from the payee's default category, or else from the category the payee had last time.
+- Every other line becomes a new transaction, already cleared (Added). Its category comes from your [Category rules](rules), or else from the payee's default category, or else from the category the payee had last time. A category from the payee is marked to review (see below); one from a rule is not.
 
 The same file cannot be imported twice into the same account: This statement file has already been imported into this account.
 
 The reconciliation then opens with a line such as Imported: 42 added, 6 matched, 2 to confirm, 3 already imported. The new transactions are in the register right away, even if you leave the reconciliation for later.
+
+### Categories to review {#categories-to-review}
+
+@index: suggested category; review categories; check categories; to review
+
+A category taken from the payee's habits is usually right, but not always (the same store for groceries one week and a gift the next). Such transactions show "(to review)" after their category in the register, and **Categories to review (number)** appears above it. The window lists each one, oldest first, with its date, payee, category and amount:
+
+- **Keep**: the category is right; the mark goes.
+- **Change**: closes the window and opens the transaction in the entry form. Choose the right category and save: changing the category removes the mark. Saving with the same category, for example after changing only the memo, leaves it to review.
+- **Keep all n** (or **Keep it**): accepts every category listed.
+
+The category counts in budgets and reports from the start, whether or not you review it; the mark only helps you check. Changing the category in any other way, such as [Choose transactions…](accounts#bulk-edit), also removes the mark. Keeping a category needs the right to change the account group.
 
 ## Reconcile a statement {#reconcile}
 

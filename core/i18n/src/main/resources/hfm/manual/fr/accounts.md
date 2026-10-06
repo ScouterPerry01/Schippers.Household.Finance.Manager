@@ -186,6 +186,7 @@ Les boutons affichés dépendent du compte :
 - **Importer un relevé…** : lit un fichier de relevé de la banque. Voir [Importer un relevé](accounts#import-statement).
 - **Rapprocher…** : continue le relevé en cours de rapprochement, s’il y en a un ; sinon, ouvre Relevés, où vous pouvez entrer un relevé papier. Voir [Rapprocher un relevé](accounts#reconcile).
 - **Relevés** : les relevés du compte, passés et en cours. Voir [Relevés](accounts#statements).
+- **Catégories à vérifier (nombre)** : seulement quand un import de relevé a rempli des catégories d’après les habitudes des bénéficiaires et que vous ne les avez pas encore vérifiées. Voir [Catégories à vérifier](accounts#categories-to-review).
 - **Modèles…** : les modèles d’opération du groupe du compte. Voir [Modèles d’opération](accounts#templates).
 - **Choisir des opérations…** : cochez plusieurs opérations pour les catégoriser, les étiqueter, les déplacer ou les exporter ensemble. Voir [Modifier ou exporter plusieurs opérations](accounts#bulk-edit).
 - **Modifier le compte** : le formulaire de compte (voir [Ajouter ou modifier un compte](accounts#account-dialog)).
@@ -200,7 +201,7 @@ Les boutons affichés dépendent du compte :
 
 - **Date** : la date de l’opération.
 - **Bénéficiaire** : qui a été payé ou qui vous a payé.
-- **Catégorie** : la catégorie ; Virement : suivi de l’autre compte pour un virement ; (ventilée) quand l’opération est répartie entre plusieurs catégories ; (non catégorisé) quand elle n’en a pas.
+- **Catégorie** : la catégorie ; Virement : suivi de l’autre compte pour un virement ; (ventilée) quand l’opération est répartie entre plusieurs catégories ; (non catégorisé) quand elle n’en a pas. « (à vérifier) » suit une catégorie qu’un import de relevé a devinée d’après le bénéficiaire (voir [Catégories à vérifier](accounts#categories-to-review)).
 - **Note** : la note de l’opération.
 - **Montant** : négatif (en rouge) pour l’argent qui sort, positif pour l’argent qui entre.
 - **✓** : la marque de compensation (voir [Marques compensée et rapprochée](accounts#cleared-status)).
@@ -489,11 +490,23 @@ L’importation inscrit le relevé et passe ses lignes une à une :
 - Une ligne déjà importée d’un relevé précédent (même numéro de la banque, ou même date, même montant et même description) est marquée Déjà importée et sautée ; des téléchargements qui se chevauchent ne créent donc jamais de doublons.
 - Une ligne qui correspond à une opération déjà inscrite (par exemple un reçu envoyé du téléphone, ou une opération tapée à la main) y est jumelée. Il faut le même montant, à 5 jours près. Quand les dates sont à 3 jours près et que c’est la seule candidate, ou que le bénéficiaire se ressemble, le jumelage se fait aussitôt (Jumelée) et l’opération devient compensée. Sinon la ligne est marquée À confirmer, pour que vous décidiez.
 - Un achat inscrit dans une devise étrangère peut correspondre à une ligne qui en diffère d’au plus 3,5 % par défaut (les frais de conversion et le taux du jour ; réglable dans [Taux et règles](rates-rules)) ; un tel jumelage est toujours À confirmer.
-- Toute autre ligne devient une nouvelle opération, déjà compensée (Ajoutée). Sa catégorie vient de vos [Règles de catégorie](rules), sinon de la catégorie par défaut du bénéficiaire, sinon de la catégorie que le bénéficiaire avait la dernière fois.
+- Toute autre ligne devient une nouvelle opération, déjà compensée (Ajoutée). Sa catégorie vient de vos [Règles de catégorie](rules), sinon de la catégorie par défaut du bénéficiaire, sinon de la catégorie que le bénéficiaire avait la dernière fois. Une catégorie venue du bénéficiaire est marquée à vérifier (voir plus bas) ; celle d’une règle ne l’est pas.
 
 Le même fichier ne peut pas être importé deux fois dans le même compte : Ce fichier de relevé a déjà été importé dans ce compte.
 
 Le rapprochement s’ouvre ensuite avec une ligne comme Importé : 42 ajoutées, 6 jumelées, 2 à confirmer, 3 déjà importées. Les nouvelles opérations sont aussitôt dans le registre, même si vous remettez le rapprochement à plus tard.
+
+### Catégories à vérifier {#categories-to-review}
+
+@index: catégorie suggérée; vérifier les catégories; à vérifier
+
+Une catégorie prise des habitudes du bénéficiaire est habituellement juste, mais pas toujours (le même magasin pour l’épicerie une semaine et un cadeau la suivante). Ces opérations affichent « (à vérifier) » après leur catégorie dans le registre, et **Catégories à vérifier (nombre)** paraît au-dessus. La fenêtre les liste, les plus anciennes d’abord, avec leur date, leur bénéficiaire, leur catégorie et leur montant :
+
+- **Garder** : la catégorie est juste ; la marque disparaît.
+- **Changer** : ferme la fenêtre et ouvre l’opération dans le formulaire de saisie. Choisissez la bonne catégorie et enregistrez : changer la catégorie retire la marque. Enregistrer avec la même catégorie, par exemple après avoir changé seulement la note, la laisse à vérifier.
+- **Garder les n** (ou **La garder**) : accepte toutes les catégories listées.
+
+La catégorie compte dans les budgets et les rapports dès le départ, vérifiée ou non ; la marque sert seulement à vous aider à vérifier. Changer la catégorie autrement, par exemple avec [Choisir des opérations…](accounts#bulk-edit), retire aussi la marque. Garder une catégorie demande le droit de modifier le groupe de comptes.
 
 ## Rapprocher un relevé {#reconcile}
 

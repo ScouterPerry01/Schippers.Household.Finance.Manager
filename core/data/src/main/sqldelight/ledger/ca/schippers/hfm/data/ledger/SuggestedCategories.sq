@@ -1,0 +1,23 @@
+-- CAT-03 (version 30): a category filled in on statement import from the payee's habits (its
+-- default category or the one it had last time), not by a rule, waiting for the user to accept it.
+-- Accepting it, or changing the transaction's category, removes the row.
+CREATE TABLE txn_suggested_category (
+    txn_id TEXT NOT NULL PRIMARY KEY REFERENCES txn(id) ON DELETE CASCADE,
+    category_id TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+markSuggested:
+INSERT OR REPLACE INTO txn_suggested_category(txn_id, category_id, created_at) VALUES (?, ?, ?);
+
+suggestionFor:
+SELECT * FROM txn_suggested_category WHERE txn_id = ?;
+
+clearSuggested:
+DELETE FROM txn_suggested_category WHERE txn_id = ?;
+
+suggestedForAccount:
+SELECT s.txn_id FROM txn_suggested_category s JOIN txn t ON t.id = s.txn_id WHERE t.account_id = ? ORDER BY t.date, t.created_at;
+
+clearSuggestedForAccount:
+DELETE FROM txn_suggested_category WHERE txn_id IN (SELECT id FROM txn WHERE account_id = ?);

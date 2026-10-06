@@ -14,7 +14,7 @@ The form at the bottom of the register adds a transaction: date, payee, category
 
 ## Import and reconcile a statement
 
-Download a statement from your bank and choose Import statement…. OFX, QFX, QBO and CSV files are accepted. Then choose Reconcile…, enter the closing balance on the statement and settle the lines: Same transaction, Add as new, or Ignore. When the difference is zero, choose Finish reconciliation. The reconciled transactions are then locked. Statements lists past statements, lets you enter a paper statement, and can undo the last reconciliation.
+Download a statement from your bank and choose Import statement…. OFX, QFX, QBO and CSV files are accepted. Then choose Reconcile…, enter the closing balance on the statement and settle the lines: Same transaction, Add as new, or Ignore. When the difference is zero, choose Finish reconciliation. The reconciled transactions are then locked. When the import took a category from a payee's habits rather than a rule, Categories to review lists those transactions: Keep each one, or Change it in the form. Statements lists past statements, lets you enter a paper statement, and can undo the last reconciliation.
 
 ## Other buttons
 

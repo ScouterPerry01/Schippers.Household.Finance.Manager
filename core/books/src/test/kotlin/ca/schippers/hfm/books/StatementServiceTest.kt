@@ -92,6 +92,37 @@ class StatementServiceTest {
     }
 
     @Test
+    fun `a category from the payee's habits is marked to review, one from a rule is not`() {
+        books.rules.create("PAIE", cat("income.employment.salary"))
+        // Last month's bill: Vidéotron is internet.
+        books.transactions.create(TransactionDraft(account.id, LocalDate(2026, 2, 18), cad("-95.00"), "Videotron Ltee", listOf(SplitDraft(cat("utilities.internet"), cad("-95.00")))))
+        books.statements.import(account.id, parsed(), "march.ofx", ofx.toByteArray())
+        val register = books.transactions.register(account.id).map { it.transaction }
+        val videotron = register.single { it.date == march(18) }
+        val salary = register.single { it.amount == cad("3150.00") }
+        assertEquals(cat("utilities.internet"), videotron.splits.single().categoryId, "the payee's last category is still filled in")
+        assertEquals(listOf(videotron.id), books.transactions.suggestedCategories(account.id).map { it.id }, "and marked to review; the rule's is not")
+        assertEquals(setOf(videotron.id), books.transactions.suggestedCategoryIds(account.id))
+        assertEquals(cat("income.employment.salary"), salary.splits.single().categoryId, "a rule's category is not to review")
+
+        // Accepting removes the mark; changing the category does too.
+        books.transactions.acceptSuggestedCategory(videotron.id)
+        assertTrue(books.transactions.suggestedCategories(account.id).isEmpty())
+        val april = ImportedStatement(
+            "OFX", null, Currency.CAD, LocalDate(2026, 4, 1), LocalDate(2026, 4, 30), null, null,
+            listOf(ImportedLine("A1", LocalDate(2026, 4, 18), cad("-95.00"), "VIDEOTRON LTEE", null, null), ImportedLine("A2", LocalDate(2026, 4, 19), cad("-40.00"), "VIDEOTRON LTEE", null, null)),
+        )
+        books.statements.import(account.id, april)
+        val (first, second) = books.transactions.suggestedCategories(account.id)
+        books.transactions.update(first.id, TransactionDraft(account.id, first.date, first.amount, "Videotron Ltee", listOf(SplitDraft(cat("utilities.mobile"), first.amount))))
+        assertEquals(listOf(second.id), books.transactions.suggestedCategories(account.id).map { it.id }, "editing the category clears the mark")
+        books.transactions.update(second.id, TransactionDraft(account.id, second.date, second.amount, "Videotron Ltee", listOf(SplitDraft(cat("utilities.internet"), second.amount)), memo = "Modem"))
+        assertEquals(1, books.transactions.suggestedCategories(account.id).size, "a memo alone leaves it to review")
+        books.transactions.acceptSuggestedCategories(account.id)
+        assertTrue(books.transactions.suggestedCategoryIds(account.id).isEmpty(), "keep all")
+    }
+
+    @Test
     fun `finishing locks the period and undo reopens it`() {
         val result = books.statements.import(account.id, parsed(), "march.ofx", ofx.toByteArray())
         val report = books.statements.finish(result.statementId)

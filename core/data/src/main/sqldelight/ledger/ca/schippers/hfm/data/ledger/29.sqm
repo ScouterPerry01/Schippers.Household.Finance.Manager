@@ -48,3 +48,12 @@ CREATE TABLE txn_template_line (
     memo TEXT,
     PRIMARY KEY (template_id, position)
 );
+
+-- CAT-03 (version 30): a category filled in on statement import from the payee's habits (its
+-- default category or the one it had last time), not by a rule, waiting for the user to accept it.
+-- Accepting it, or changing the transaction's category, removes the row.
+CREATE TABLE txn_suggested_category (
+    txn_id TEXT NOT NULL PRIMARY KEY REFERENCES txn(id) ON DELETE CASCADE,
+    category_id TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);

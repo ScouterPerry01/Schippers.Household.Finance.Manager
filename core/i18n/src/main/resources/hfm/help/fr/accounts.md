@@ -14,7 +14,7 @@ Le formulaire au bas du registre ajoute une opération : date, bénéficiaire, c
 
 ## Importer et rapprocher un relevé
 
-Téléchargez un relevé de votre banque et choisissez Importer un relevé…. Les fichiers OFX, QFX, QBO et CSV sont acceptés. Choisissez ensuite Rapprocher…, entrez le solde de clôture du relevé et réglez chaque ligne : Même opération, Ajouter comme nouvelle ou Ignorer. Quand l’écart est à zéro, choisissez Terminer le rapprochement. Les opérations rapprochées sont verrouillées. Relevés montre les relevés passés, permet d’entrer un relevé papier et d’annuler le dernier rapprochement.
+Téléchargez un relevé de votre banque et choisissez Importer un relevé…. Les fichiers OFX, QFX, QBO et CSV sont acceptés. Choisissez ensuite Rapprocher…, entrez le solde de clôture du relevé et réglez chaque ligne : Même opération, Ajouter comme nouvelle ou Ignorer. Quand l’écart est à zéro, choisissez Terminer le rapprochement. Les opérations rapprochées sont verrouillées. Quand l’import a pris une catégorie des habitudes d’un bénéficiaire plutôt que d’une règle, Catégories à vérifier liste ces opérations : Garder chacune, ou la Changer dans le formulaire. Relevés montre les relevés passés, permet d’entrer un relevé papier et d’annuler le dernier rapprochement.
 
 ## Autres boutons
 
