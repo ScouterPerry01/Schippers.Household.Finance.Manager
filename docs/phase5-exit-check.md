@@ -116,7 +116,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - CAT-06: Met.
 - PROV-01 to PROV-07: Met. Not modelled: Newfoundland's own holidays and Yukon's Heritage Day.
 - UPD-01, UPD-02, UPD-04: Met.
-- UPD-03 (signed list, size and hash checked): Met. A partial download is left behind in one error case (see security observations).
+- UPD-03 (signed list, size and hash checked): Met. Fixed afterwards: a partial download is now removed on every failure (security follow-ups).
 
 ## SRS Should items re-checked
 
