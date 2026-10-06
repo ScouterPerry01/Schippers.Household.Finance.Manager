@@ -97,6 +97,25 @@ class PhoneEventsTest {
     }
 
     @Test
+    fun `the phone gets who drives each way to a child's activity, carpool turns included`() {
+        household().use { books ->
+            val shared = books.groups().single().id
+            val lea = books.members.create("Léa", MemberKind.CHILD)
+            val perry = books.members.create("Perry", MemberKind.ADULT)
+            val soccer = books.calendar.create(
+                EventDraft(
+                    shared, "Soccer", EventCategory.ACTIVITY, d(10, 6), LocalTime(18, 0), 90, memberId = lea.id, recurrence = Recurrence(Frequency.WEEKLY),
+                    driverThere = Driver(memberId = perry.id), driverBack = Driver(name = "Sophie's mom"),
+                ),
+            )
+            books.calendar.setDrivers(soccer.id, d(10, 13), Driver(name = "Sophie's mom"), null)
+            val events = books.sync.reference(today, now).events.filter { it.title == "Soccer" }
+            assertEquals(listOf("Perry" to "Sophie's mom", "Sophie's mom" to null), events.take(2).map { it.driverThere to it.driverBack })
+            assertEquals("Perry", events[2].driverThere, "the series' drivers again the week after")
+        }
+    }
+
+    @Test
     fun `an email shared to the phone arrives as a text document with what was read`() {
         household().use { books ->
             val phone = KeyPair.generate()

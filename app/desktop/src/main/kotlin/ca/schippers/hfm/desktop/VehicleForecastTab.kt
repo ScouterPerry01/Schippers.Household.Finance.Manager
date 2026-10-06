@@ -55,17 +55,28 @@ internal fun ForecastTab(model: BooksModel, v: Vehicle) {
             f.unitPrice?.let { model.t(if (f.energy == Energy.ELECTRICITY) "forecast.priceKwh" else "forecast.priceLitre", MoneyFormat.formatDecimal(it, locale)) } ?: model.t("forecast.noPrice"),
             style = MaterialTheme.typography.bodySmall,
         )
+        // A plug-in hybrid's charging, beside its fuel.
+        f.charging?.let { c ->
+            val parts = listOfNotNull(
+                c.per100km?.let { model.t("trips.purposeKm", model.t("energy.ELECTRICITY"), model.t("vehicles.per100Kwh", MoneyFormat.formatDecimal(it, locale))) },
+                c.unitPrice?.let { model.t("forecast.priceKwh", MoneyFormat.formatDecimal(it, locale)) },
+            )
+            Text(parts.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
+        }
         HorizontalDivider(Modifier.padding(vertical = 6.dp))
         TableView(
             model,
             ReportTable(
                 model.t("forecast.title", v.name), model.t("report.inCurrency", f.currency.code),
-                listOf(model.t("forecast.months"), model.t("forecast.distance"), model.t("forecast.quantity", unit), model.t("energy.${f.energy}"), model.t("forecast.maintenance"), model.t("report.total")),
+                listOf(model.t("forecast.months"), model.t("forecast.distance"), model.t("forecast.quantity", unit), model.t("energy.${f.energy}")) +
+                    (if (f.charging != null) listOf(model.t("forecast.quantity", model.t("vehicles.kwh")), model.t("energy.ELECTRICITY")) else emptyList()) +
+                    listOf(model.t("forecast.maintenance"), model.t("report.total")),
                 f.periods.map { p ->
                     listOf<Any?>(
                         model.t("forecast.nextMonths", p.months), kmText(p.distanceKm), p.quantity?.let { MoneyFormat.formatDecimal(it, locale) } ?: "—",
-                        p.energyCost ?: "—", p.maintenance, p.total,
-                    )
+                        p.energyCost ?: "—",
+                    ) + (if (f.charging != null) listOf(p.electricityKwh?.let { MoneyFormat.formatDecimal(it, locale) } ?: "—", p.electricityCost ?: "—") else emptyList()) +
+                        listOf(p.maintenance, p.total)
                 },
             ),
             startOpen = true,

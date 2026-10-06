@@ -86,7 +86,7 @@ At the top of the screen, **Work and school schedules** opens the schedules (see
 The **Show** panel on the right chooses what every view shows. Untick a box to hide those items; tick it to show them again. Your choices are remembered for your user on this computer: another user, or you on another computer, sees the calendar as they left it.
 
 - Under **Show**, one box per kind: **Appointments and events** (activities included), **Bills**, **Health**, **Maintenance and seasonal tasks**, **Renewals**, **Work and school schedules**, and **Brought-in calendars** (shown only when the calendar has such items).
-- Under **People**, one box per household member and pet, with the colour of their schedule bars. Unticking a person hides their appointments, health dates and schedules; items for nobody in particular, such as bills, stay.
+- Under **People**, one box per household member and pet, with the colour of their schedule bars. Unticking a person hides their appointments, health dates and schedules, and the items brought in from their phone when a user is linked to them (Users); items for nobody in particular, such as bills, stay.
 - **Show everything**: shown when something is hidden. Ticks every box again.
 
 Hiding changes only what you see: nothing is deleted, and reminders still come.
@@ -201,7 +201,7 @@ Changing the Kind to something else removes the drivers and the cost from the ap
 - **Paid from**: the account it was paid from, among those in the cost's currency. Required.
 - **Category**: the spending category. Default: Children: Activities and camps. Choose "(none)" to leave it uncategorized.
 
-**Save** creates the transaction on the date of the activity, for the child (the activity's **Who**), with the activity's place (or its title) as the payee and its title as the memo. The date's line then shows "cost recorded" and no longer offers the button. The transaction is an ordinary one: change or delete it in the account's register. See [Accounts](accounts).
+**Save** creates the transaction on the date of the activity, for the child (the activity's **Who**), with the activity's place (or its title) as the payee and its title as the memo. The date's line then shows "cost recorded" and no longer offers the button. The transaction is an ordinary one: change or delete it in the account's register. Once it is deleted, the date offers **Record the cost** again; while it is there, the cost is not recorded a second time. See [Accounts](accounts).
 
 ### Repeats {#repeats}
 @index: recurring appointment; repeating event

@@ -190,6 +190,42 @@ class TripsOnPhoneTest {
     }
 
     @Test
+    fun `a plug-in hybrid's forecast and budget count its charging beside its fuel`() {
+        val books = household()
+        try {
+            val group = books.groups().first().id
+            val rav = books.vehicles.save(Vehicle("", group, "RAV4 Prime", fuelType = FuelType.PLUG_IN_HYBRID, purchaseDate = today.minus(DatePeriod(years = 2))))
+            // Full tanks every 1 000 km (50 L at 1.50 $), and home charges with no odometer (20 kWh at 0.12 $).
+            for (i in 0 until 9) {
+                books.vehicles.saveFuel(FuelEntry("", rav.id, today.minus(DatePeriod(days = 90 - i * 10)), 50_000 + i * 1_000, BigDecimal("50"), cad("75.00")))
+            }
+            for (i in 0 until 18) {
+                books.vehicles.saveFuel(FuelEntry("", rav.id, today.minus(DatePeriod(days = 88 - i * 5)), null, BigDecimal("20"), cad("2.40"), energy = Energy.ELECTRICITY, charging = Charging.HOME))
+            }
+            val f = books.vehicles.forecast(rav.id, today)
+            assertEquals(Energy.FUEL, f.energy)
+            // 360 kWh over the 8 000 km the readings show.
+            assertEquals(ChargingForecast(BigDecimal("4.5"), BigDecimal("0.120")), f.charging)
+            val three = f.periods.first { it.months == 3 }
+            assertEquals(9_200, three.distanceKm)
+            assertEquals(BigDecimal("414"), three.electricityKwh)
+            assertEquals(cad("49.68"), three.electricityCost)
+            assertEquals(three.energyCost!! + cad("49.68"), three.total)
+            val ev = books.categories.list().first { it.systemKey == "transport.ev_charging" }.id
+            val fuel = books.categories.list().first { it.systemKey == "transport.fuel" }.id
+            val lines = books.vehicles.budgetLines(today).associate { it.categoryId to it.monthly }
+            val year = f.periods.first { it.months == 12 }
+            assertEquals(year.electricityCost!!.toBigDecimal().divide(BigDecimal(12), 0, java.math.RoundingMode.UP), lines.getValue(ev).toBigDecimal().setScale(0))
+            assertTrue(fuel in lines)
+            // Its costs: charges as EV charging, fill-ups as fuel.
+            val costs = books.vehicles.costs(rav.id, today.minus(DatePeriod(years = 1)), today)
+            assertEquals(cad("43.20"), costs.costs.byCategory.single { it.first == ev }.second)
+        } finally {
+            books.session.close()
+        }
+    }
+
+    @Test
     fun `charging at home and in public, and electricity against fuel`() {
         val books = household()
         try {

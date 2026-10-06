@@ -366,7 +366,7 @@ The app uses Android's own location service (no Google service), takes one fix a
 - **Date (YYYY-MM-DD)**: today by default.
 - **Save**: available once a vehicle and a quantity are entered. The entry joins the queue and is sent at once if possible.
 
-On the computer, it goes straight to the vehicle's [Fuel tab](vehicles#fuel-tab), with "from the phone", without review. No payment is entered: enter it from the receipt, or from the card statement.
+On the computer, it goes straight to the vehicle's [Fuel tab](vehicles#fuel-tab), with "from the phone", without review. No payment is entered, and the line says "no payment entered yet": to enter it, click **Edit** on that line and tick **Also enter the payment in an account** (see [Also enter the payment](vehicles#payment)). If the payment reaches the books another way, such as a card statement import, leave it unlinked to the vehicle, or the fill-up's cost counts twice in the vehicle's **Costs** tab.
 
 ## The Sent tab {#sent-tab}
 
@@ -429,7 +429,7 @@ The Summary shows figures from your computer, as of the last transfer: the house
 
 - **Accounts**: each account and its balance.
 - **Bills due**: the bills due in the next 60 days that are not yet paid, up to 15, with the due date and the amount, or **about** an amount when it is estimated.
-- **Coming up**: first each person's work and school hours today and tomorrow, such as "Alex · Work · Office" with the date and "08:00–16:30"; then the appointments and events from the computer's calendar in the coming weeks, up to 12, each with who it is for, its date and its time, or **All day**. Only events from accounts your user can see on the computer are sent, so another user's private appointments never reach your phone. Events marked done or cancelled are left out.
+- **Coming up**: first each person's work and school hours today and tomorrow, such as "Alex · Work · Office" with the date and "08:00–16:30"; then the appointments and events from the computer's calendar in the coming weeks, up to 12, each with who it is for, its date and its time, or **All day**; for a child's activity, who drives there and who drives back that day, carpool turns included. Only events from accounts your user can see on the computer are sent, so another user's private appointments never reach your phone. Events marked done or cancelled are left out.
 - **Medication refills**: the active medications whose supply runs out in the next two months, or has already run out, with the date, and **renew** when no refills are left. Like the calendar, only medications your user can see are sent.
 - **Maintenance this month**: shown when something is due: each task, such as "Civic: Oil change", with **due now**, **due soon** or its date.
 - **Budgets this month**: each spending category with a budget: what was spent of the budget, such as "$412.30 of $600.00".

@@ -13,7 +13,7 @@ RANN's Roost never signs in to a calendar account. The phone app reads the calen
 1. On the phone, in **Settings**, open **Calendars on this phone** and turn on **Bring calendars to the computer**. Android asks once for calendar access.
 2. Tick the calendars to bring in, choose who sees each one on the computer, and how many days ahead are sent.
 3. At each transfer (over Wi-Fi, through the transfer folder or in a shared file), the phone sends each calendar that changed since the last time, whole. The computer replaces what it kept of that calendar from that day on: new items appear, changed ones are updated and deleted ones disappear.
-4. The items show in the Calendar's **Agenda** and **Month** tabs, read-only, marked with the calendar they come from and the person whose phone sent them.
+4. The items show in every view of the Calendar (**Agenda**, **Day**, **Week**, **Month**, and their days shaded in **Year**), read-only, marked with the calendar they come from and the person whose phone sent them.
 
 The phone sends only the calendars you tick, and only for the days chosen: the title, place, start and end of each item. Descriptions, guests, attachments and reminders are not read. Items you or someone else changes in the phone's calendar app change on the computer at the next transfer; nothing is ever written back to your calendars.
 

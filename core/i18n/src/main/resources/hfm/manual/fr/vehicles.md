@@ -237,7 +237,7 @@ Sans paiement, le coût de l’entretien compte tout de même seul à l’onglet
 ## Onglet Carburant {#fuel-tab}
 @index: essence; plein; recharge; consommation; L/100 km; kWh
 
-En haut, la consommation de la dernière année et ce que coûte un kilomètre, avec **Ajouter un plein** (ou **Ajouter une recharge** pour un véhicule électrique). En dessous, chaque plein, le plus récent d’abord : date, odomètre, quantité en L ou en kWh (« partiel » quand le plein n’a pas été fait), recharge à domicile ou publique, station, « du téléphone » pour une inscription faite sur le téléphone, « paiement inscrit », coût, et **Modifier**.
+En haut, la consommation de la dernière année et ce que coûte un kilomètre, avec **Ajouter un plein** (ou **Ajouter une recharge** pour un véhicule électrique). En dessous, chaque plein, le plus récent d’abord : date, odomètre, quantité en L ou en kWh (« partiel » quand le plein n’a pas été fait), recharge à domicile ou publique, station, « du téléphone » pour une inscription faite sur le téléphone, « paiement inscrit », ou « paiement pas encore inscrit » pour un plein du téléphone avec un coût et sans paiement, coût, et **Modifier**.
 
 ![L’onglet Carburant d’un véhicule hybride rechargeable](images/vehicles-fuel.png)
 
@@ -282,11 +282,11 @@ L’onglet **Prévisions** regarde les 3, 6 et 12 prochains mois :
 - Le tableau **Prévisions**, une ligne pour les 3, 6 et 12 prochains mois : **Distance**, **Quantité** (litres ou kWh), le coût du carburant ou de l’électricité, **Entretien** et **Total**. Il s’exporte ou s’imprime comme tout tableau.
 - « Entretien dû dans les 12 prochains mois » : chaque tâche qui arrive et combien de fois, à partir de sa prochaine date (aujourd’hui si elle est en retard) puis à chaque intervalle, l’intervalle en kilomètres changé en jours au rythme ci-dessus. Une tâche coûte ce qu’elle a coûté la dernière fois qu’un entretien avec un coût l’a inscrite (le coût d’un entretien réparti également entre ses tâches). Les tâches jamais faites avec un coût sont nommées à part et laissées hors des montants.
 
-Pour un hybride rechargeable, les prévisions comptent le carburant ; la recharge n’y est pas ajoutée.
+Pour un hybride rechargeable, les prévisions comptent les deux énergies. Son carburant est prévu comme ci-dessus ; sa recharge ajoute une ligne avec ses kWh/100 km et le prix récent d’un kWh, et deux colonnes au tableau : les kWh pour la distance et ce qu’ils coûtent, compris dans le **Total**. Les kWh/100 km viennent d’une recharge complète à la suivante, comme dans l’onglet Carburant ; quand les recharges n’ont pas de lecture d’odomètre (souvent le cas à la maison), de tous les kWh rechargés dans la dernière année sur la distance que montrent les lectures d’odomètre. Les deux énergies sont réparties sur tous les kilomètres parcourus : les additionner ne compte pas un kilomètre deux fois.
 
 ### Proposer au budget {#forecast-budget}
 
-**Proposer au budget** (pas pour un lecteur) ouvre une liste de montants mensuels pour les catégories Transport, tirés des 12 prochains mois de chaque véhicule en service gardé dans un groupe de comptes partagé et dans la devise de base : carburant (ou recharge électrique pour un véhicule électrique) et entretien du véhicule, chacun arrondi au dollar supérieur, à côté du budget actuel de la catégorie. Un véhicule d’un groupe privé est laissé de côté, puisque les budgets sont ceux de tout le ménage. **Utiliser ces montants** fixe chacun comme budget mensuel à partir de ce mois-ci, en gardant le choix de report de la catégorie ; les autres budgets ne changent pas. Voir [Budgets](budgets).
+**Proposer au budget** (pas pour un lecteur) ouvre une liste de montants mensuels pour les catégories Transport, tirés des 12 prochains mois de chaque véhicule en service gardé dans un groupe de comptes partagé et dans la devise de base : carburant (ou recharge électrique pour un véhicule électrique ; les deux pour un hybride rechargeable) et entretien du véhicule, chacun arrondi au dollar supérieur, à côté du budget actuel de la catégorie. Un véhicule d’un groupe privé est laissé de côté, puisque les budgets sont ceux de tout le ménage. **Utiliser ces montants** fixe chacun comme budget mensuel à partir de ce mois-ci, en gardant le choix de report de la catégorie ; les autres budgets ne changent pas. Voir [Budgets](budgets).
 
 ## Onglet Garanties {#warranties-tab}
 @index: garantie du véhicule; groupe motopropulseur; garantie prolongée; corrosion; garantie de la batterie

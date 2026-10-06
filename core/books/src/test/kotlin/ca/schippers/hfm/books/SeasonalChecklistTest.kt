@@ -116,6 +116,9 @@ class SeasonalChecklistTest {
         assertTrue(wipers.vehicle)
         books.seasonal.tick(wipers, d("2026-10-08"), null, null, 61200)
         assertEquals(61200, books.vehicles.services(car.id).single().odometer)
+        // Ticked again the same day (on a phone too): recorded once.
+        books.seasonal.record(true, car.id, wipers.taskId, d("2026-10-08"), "From the phone", null, null)
+        assertEquals(1, books.vehicles.services(car.id).size)
 
         val after = books.seasonal.checklist(Season.FALL, d("2026-10-08"))
         assertEquals(fall.total, after.total, "a ticked task stays on the list, done")
@@ -175,7 +178,7 @@ class SeasonalChecklistTest {
         assertTrue("t-2" in reply.imported)
         assertEquals(listOf("t-3"), reply.failed.map { it.id })
         assertEquals(1, books.assetMaintenance.services(yard.id).size)
-        assertEquals(4, ReferenceData.FORMAT)
+        assertEquals(5, ReferenceData.FORMAT)
     }
 
     @Test

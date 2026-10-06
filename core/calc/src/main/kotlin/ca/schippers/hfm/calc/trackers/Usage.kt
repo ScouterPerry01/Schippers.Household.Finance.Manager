@@ -128,12 +128,13 @@ object Tanks {
     /**
      * [lastLevel] litres on [lastDate], [deliveredSince] litres after it (up to [today]), using
      * [dailyUse] litres a day. The estimate stays between empty and [capacity]. Without a use per
-     * day the level stays as it is and no dates are given.
+     * day the level stays as it is and no dates are given, except that a level already at [orderAt]
+     * or below is to be ordered at once (from [lastDate]), so a first reading of a low tank reminds.
      */
     fun project(lastDate: LocalDate, lastLevel: BigDecimal, deliveredSince: BigDecimal, dailyUse: BigDecimal?, capacity: BigDecimal, orderAt: BigDecimal, today: LocalDate): TankProjection {
         val start = (lastLevel + deliveredSince).min(capacity)
         val elapsed = lastDate.daysUntil(today).coerceAtLeast(0)
-        val rate = dailyUse?.takeIf { it.signum() > 0 } ?: return TankProjection(start.max(BigDecimal.ZERO), dailyUse, null, null)
+        val rate = dailyUse?.takeIf { it.signum() > 0 } ?: return TankProjection(start.max(BigDecimal.ZERO), dailyUse, lastDate.takeIf { start <= orderAt }, null)
         val level = (start - rate.multiply(BigDecimal(elapsed))).max(BigDecimal.ZERO)
         fun reaches(target: BigDecimal): LocalDate {
             val days = (start - target).divide(rate, 0, RoundingMode.FLOOR).toInt().coerceAtLeast(0)

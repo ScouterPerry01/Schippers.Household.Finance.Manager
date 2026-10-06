@@ -131,6 +131,25 @@ class TrackersTest {
     }
 
     @Test
+    fun `chores a user may not mark paid are not paid either`() {
+        val kid = books.members.create("Emma", MemberKind.CHILD)
+        val shared = group
+        val family = books.session.createGroup("Family", private = false)
+        val sam = books.users.add("sam", "Sam", ca.schippers.hfm.domain.Role.MEMBER, "password2-long".toCharArray()).userId
+        books.session.setPermission(shared, sam, ca.schippers.hfm.domain.PermissionLevel.EDIT)
+        books.session.setPermission(family, sam, ca.schippers.hfm.domain.PermissionLevel.CAPTURE_ONLY)
+        books.allowances.save(Allowance("", shared, kid.id, cad("5.00"), AllowanceFrequency.WEEKLY, LocalDate(2026, 9, 5), null, null, emptyList()))
+        val dishes = books.chores.save(Chore("", family, kid.id, "Dishes", Currency.CAD, cad("1.00")))
+        books.chores.tick(dishes.id, LocalDate(2026, 10, 1))
+        books.session.close()
+        books = Books(HouseholdStore(SqlCipherJdbcDriverFactory(), KdfParams.TESTING).unlock(temp.resolve("T.hfm"), "sam", "password2-long".toCharArray()))
+        val allowance = books.allowances.list().single()
+        assertFailsWith<ca.schippers.hfm.data.AccessDeniedException> { books.chores.pay(allowance, today) }
+        assertTrue(books.allowances.list().single().entries.isEmpty(), "no allowance entry for chores left unpaid")
+        assertEquals(cad("1.00"), books.chores.earnings(kid.id, Currency.CAD, today).unpaid)
+    }
+
+    @Test
     fun `chores earn money paid with the allowance, and points`() {
         val kid = books.members.create("Emma", MemberKind.CHILD)
         val allowance = books.allowances.save(Allowance("", group, kid.id, cad("5.00"), AllowanceFrequency.WEEKLY, LocalDate(2026, 9, 5), null, null, emptyList()))

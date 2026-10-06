@@ -259,6 +259,9 @@ class CalendarService internal constructor(private val books: Books) {
         books.require(group, PermissionLevel.EDIT)
         val cost = event.cost
         validate(cost != null && cost.isPositive, "error.amountPositive")
+        // Once only: a cost already recorded, whose transaction is still there, is not entered again.
+        val recorded = books.ledger(group).eventActivitiesQueries.activityCostTxn(eventId, date.toString()).executeAsOneOrNull()?.cost_txn_id
+        validate(recorded == null || books.groups().none { g -> books.ledger(g).ledgerQueries.txnById(recorded).executeAsOneOrNull() != null }, "error.activityCostRecorded")
         val account = books.accounts.get(accountId)
         validate(account.currency == cost!!.currency, "error.currencyMismatch", account.currency.code)
         val txn = books.transactions.create(
@@ -266,6 +269,18 @@ class CalendarService internal constructor(private val books: Books) {
         )
         books.ledger(group).eventActivitiesQueries.setActivityCostTxn(eventId, date.toString(), txn.id)
         return txn.id
+    }
+
+    /**
+     * CAL-11: the transaction [transactionId] was deleted, so the activity date whose cost it was shows
+     * "Record the cost" again. Done in every group the user may change, wherever the event is kept.
+     */
+    internal fun forgetCost(transactionId: String) {
+        for (g in books.groups().filter { it.level.allows(PermissionLevel.CAPTURE_ONLY) }) {
+            val q = books.ledger(g).eventActivitiesQueries
+            q.clearActivityCostTxn(transactionId)
+            q.deleteEmptyActivityDays()
+        }
     }
 
     /**
@@ -291,7 +306,7 @@ class CalendarService internal constructor(private val books: Books) {
      * few days ahead among the reminders, so the calendar asks for every due date of the period.
      */
     private fun renewals(from: LocalDate, to: LocalDate): List<Renewal> =
-        (books.renewals(from, from.daysUntil(to)).filter { it.kind != RenewalKind.CARD_PAYMENT_DUE } + books.creditCards.paymentsDue(from, to))
+        (books.renewals(from, from.daysUntil(to), cardPayments = false) + books.creditCards.paymentsDue(from, to))
             .filter { it.date in from..to }
 
     /** CAL-03: events starting within one of their reminder lead times from [now]. */

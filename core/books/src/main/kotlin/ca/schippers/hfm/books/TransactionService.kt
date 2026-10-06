@@ -428,6 +428,7 @@ class TransactionService internal constructor(private val books: Books) {
             logChange(ledger, transactionId, "DELETE", snapshot(ledger, transactionId), null)
             ledger.ledgerQueries.deleteTxn(transactionId)
         }
+        books.calendar.forgetCost(transactionId)
     }
 
     fun setCleared(transactionId: String, status: ClearedStatus, confirmReconciled: Boolean = false) {

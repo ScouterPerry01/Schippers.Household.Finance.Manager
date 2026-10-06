@@ -39,38 +39,41 @@ class IcsImportService internal constructor(private val books: Books) {
         var expanded = 0
         // The file comes from outside: its repeats share one budget of periods gone through, and of single dates copied.
         val budget = ICalendar.Budget()
-        for (e in calendar.events) {
-            val title = e.title.ifBlank { books.text("ics.untitled") }
-            val skip = (if (e.recurrenceId == null) changed[e.uid].orEmpty() else emptySet()) + e.exDates
-            val rule = e.rule
-            if (rule == null) {
-                create(groupId, e, title, e.startDate, null, null)
-                created++
-                continue
-            }
-            val kept = recurrence(e, budget)
-            if (kept != null) {
-                for ((start, recurrence) in kept) {
-                    // A count of dates becomes the date of the last one.
-                    val end = rule.until ?: rule.count?.let {
-                        ICalendar.occurrences(e.copy(exDates = emptySet()), start, start.plusYears(MAX_COUNT_YEARS), limit = MAX_COUNT_EXPANSION, budget = budget)
-                            .lastOrNull { it.dayOfWeek == start.dayOfWeek || recurrence.frequency != Frequency.WEEKLY } ?: start
-                    }
-                    val event = create(groupId, e, title, start, recurrence, end)
+        // All or nothing: a file that fails halfway leaves no events behind.
+        books.ledger(group).transaction {
+            for (e in calendar.events) {
+                val title = e.title.ifBlank { books.text("ics.untitled") }
+                val skip = (if (e.recurrenceId == null) changed[e.uid].orEmpty() else emptySet()) + e.exDates
+                val rule = e.rule
+                if (rule == null) {
+                    create(groupId, e, title, e.startDate, null, null)
                     created++
-                    for (d in skip) if (d >= start && (end == null || d <= end)) books.calendar.mark(event.id, d.toKotlin(), OccurrenceMark.CANCELLED)
-                }
-            } else {
-                val room = MAX_EXPANDED_TOTAL - expanded
-                if (room <= 0) {
-                    budget.exhausted = true
                     continue
                 }
-                val dates = ICalendar.occurrences(e, maxOf(e.startDate, today.minusYears(1)), horizon, limit = minOf(MAX_EXPANDED, room), budget = budget).filter { it !in skip }
-                if (dates.isEmpty()) continue
-                dates.forEach { d -> create(groupId, e, title, d, null, null) }
-                expanded += dates.size
-                notes += books.text("ics.expanded", title, dates.size)
+                val kept = recurrence(e, budget)
+                if (kept != null) {
+                    for ((start, recurrence) in kept) {
+                        // A count of dates becomes the date of the last one.
+                        val end = rule.until ?: rule.count?.let {
+                            ICalendar.occurrences(e.copy(exDates = emptySet()), start, start.plusYears(MAX_COUNT_YEARS), limit = MAX_COUNT_EXPANSION, budget = budget)
+                                .lastOrNull { it.dayOfWeek == start.dayOfWeek || recurrence.frequency != Frequency.WEEKLY } ?: start
+                        }
+                        val event = create(groupId, e, title, start, recurrence, end)
+                        created++
+                        for (d in skip) if (d >= start && (end == null || d <= end)) books.calendar.mark(event.id, d.toKotlin(), OccurrenceMark.CANCELLED)
+                    }
+                } else {
+                    val room = MAX_EXPANDED_TOTAL - expanded
+                    if (room <= 0) {
+                        budget.exhausted = true
+                        continue
+                    }
+                    val dates = ICalendar.occurrences(e, maxOf(e.startDate, today.minusYears(1)), horizon, limit = minOf(MAX_EXPANDED, room), budget = budget).filter { it !in skip }
+                    if (dates.isEmpty()) continue
+                    dates.forEach { d -> create(groupId, e, title, d, null, null) }
+                    expanded += dates.size
+                    notes += books.text("ics.expanded", title, dates.size)
+                }
             }
         }
         if (budget.exhausted) notes += books.text("ics.limit")

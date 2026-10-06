@@ -265,7 +265,7 @@ Cochez la case d’une tâche pour l’inscrire comme faite. Une fenêtre au nom
 - Le relevé, facultatif : **Kilomètres** pour un véhicule (son odomètre), ou **Heures d’utilisation** ou **Kilomètres** pour un bien qui a un compteur.
 - **Notes** : facultatif, par exemple qui l’a faite.
 
-**Inscrire comme faite** ajoute un entretien au carnet d’entretien du véhicule ou du bien avec cette tâche cochée, tout comme **Inscrire comme faite** sur la tâche, et le calendrier de la tâche repart de cette date. Pour lier un paiement, ajouter des détails ou annuler une coche, ouvrez l’entretien dans le carnet ([Carnet d’entretien](assets#service-log), ou l’onglet **Carnet d’entretien** du véhicule) et modifiez-le ou supprimez-le. Les coches faites sur le téléphone arrivent de la même façon : voir [Liste saisonnière sur le téléphone](phone-app#seasonal-form).
+**Inscrire comme faite** ajoute un entretien au carnet d’entretien du véhicule ou du bien avec cette tâche cochée, tout comme **Inscrire comme faite** sur la tâche, et le calendrier de la tâche repart de cette date. Pour lier un paiement, ajouter des détails ou annuler une coche, ouvrez l’entretien dans le carnet ([Carnet d’entretien](assets#service-log), ou l’onglet **Carnet d’entretien** du véhicule) et modifiez-le ou supprimez-le. Les coches faites sur le téléphone arrivent de la même façon : voir [Liste saisonnière sur le téléphone](phone-app#seasonal-form). Une tâche déjà inscrite comme faite à la même date (cochée ici et sur un téléphone) n’est pas inscrite deux fois.
 
 Il faut la permission **Modification** ou **Saisie seulement** sur le groupe du véhicule ou du bien.
 

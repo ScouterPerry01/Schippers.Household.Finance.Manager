@@ -86,7 +86,7 @@ En haut de l’écran, **Horaires de travail et d’école** ouvre les horaires 
 Le panneau **Afficher**, à droite, choisit ce que montrent toutes les vues. Décochez une case pour masquer ces éléments ; cochez-la pour les afficher de nouveau. Vos choix sont retenus pour votre utilisateur sur cet ordinateur : un autre utilisateur, ou vous sur un autre ordinateur, voit le calendrier tel qu’il l’a laissé.
 
 - Sous **Afficher**, une case par sorte d’élément : **Rendez-vous et événements** (activités comprises), **Factures**, **Santé**, **Entretien et tâches saisonnières**, **Renouvellements**, **Horaires de travail et d’école**, et **Calendriers importés** (affichée seulement quand le calendrier contient de tels éléments).
-- Sous **Personnes**, une case par membre du ménage et par animal, avec la couleur de ses barres d’horaire. Décocher une personne masque ses rendez-vous, ses dates de santé et ses horaires ; les éléments qui ne visent personne en particulier, comme les factures, restent.
+- Sous **Personnes**, une case par membre du ménage et par animal, avec la couleur de ses barres d’horaire. Décocher une personne masque ses rendez-vous, ses dates de santé et ses horaires, et les éléments venus de son téléphone quand un utilisateur lui est lié (Utilisateurs) ; les éléments qui ne visent personne en particulier, comme les factures, restent.
 - **Tout afficher** : affiché quand quelque chose est masqué. Coche de nouveau toutes les cases.
 
 Masquer ne change que ce que vous voyez : rien n’est supprimé, et les rappels arrivent quand même.
@@ -201,7 +201,7 @@ Changer le Type pour un autre retire les conducteurs et le coût du rendez-vous.
 - **Payée à partir de** : le compte d’où elle a été payée, parmi ceux dans la devise du coût. Obligatoire.
 - **Catégorie** : la catégorie de dépense. Par défaut : Enfants : Activités et camps. Choisissez « (aucun) » pour la laisser sans catégorie.
 
-**Enregistrer** crée l’opération à la date de l’activité, pour l’enfant (le **Qui** de l’activité), avec le lieu de l’activité (ou son titre) comme bénéficiaire et son titre comme note. La ligne de cette date montre ensuite « coût inscrit » et n’offre plus le bouton. L’opération est une opération ordinaire : modifiez-la ou supprimez-la dans le registre du compte. Voir [Comptes](accounts).
+**Enregistrer** crée l’opération à la date de l’activité, pour l’enfant (le **Qui** de l’activité), avec le lieu de l’activité (ou son titre) comme bénéficiaire et son titre comme note. La ligne de cette date montre ensuite « coût inscrit » et n’offre plus le bouton. L’opération est une opération ordinaire : modifiez-la ou supprimez-la dans le registre du compte. Une fois supprimée, la date offre de nouveau **Inscrire le coût** ; tant qu’elle existe, le coût n’est pas inscrit une deuxième fois. Voir [Comptes](accounts).
 
 ### La répétition {#repeats}
 @index: rendez-vous récurrent; événement qui se répète
