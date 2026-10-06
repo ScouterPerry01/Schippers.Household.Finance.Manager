@@ -69,30 +69,42 @@ data class EventOccurrence(val event: CalendarEvent, val date: LocalDate, val ma
 /** An event coming up within one of its reminder lead times. */
 data class EventReminder(val occurrence: EventOccurrence, val minutesBefore: Long)
 
+/**
+ * CAL-08: the kinds of item the calendar can show or hide. Every [CalendarItem] has one; work and school
+ * schedules (CAL-09) and calendars brought in from the phone (CSY-01) have theirs ready.
+ */
+enum class CalendarKind { EVENTS, BILLS, HEALTH, MAINTENANCE, RENEWALS, SCHEDULES, IMPORTED }
+
 /** Everything the unified calendar shows on a day (CAL-04). */
 sealed interface CalendarItem {
     val date: LocalDate
+    val kind: CalendarKind
 
     data class Event(val occurrence: EventOccurrence) : CalendarItem {
         override val date get() = occurrence.date
+        override val kind get() = CalendarKind.EVENTS
     }
 
     data class Bill(val occurrence: Occurrence) : CalendarItem {
         override val date get() = occurrence.dueDate
+        override val kind get() = CalendarKind.BILLS
     }
 
     data class Health(val due: HealthDue) : CalendarItem {
         override val date get() = due.date
+        override val kind get() = CalendarKind.HEALTH
     }
 
     /** VEH-11, MNT-05: a maintenance task's next due date, on a vehicle or another asset. */
     data class Maintenance(val due: UpkeepDue) : CalendarItem {
         override val date get() = due.status.nextDate!!
+        override val kind get() = CalendarKind.MAINTENANCE
     }
 
     /** PET-02, VEH-02, VEH-03: a licence, policy, registration or warranty expiring. */
     data class Renewal(val renewal: ca.schippers.hfm.books.Renewal) : CalendarItem {
         override val date get() = renewal.date
+        override val kind get() = CalendarKind.RENEWALS
     }
 }
 
