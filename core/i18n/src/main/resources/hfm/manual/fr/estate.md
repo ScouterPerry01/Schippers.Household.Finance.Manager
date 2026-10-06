@@ -4,6 +4,8 @@ L’écran **Urgence et succession** rassemble ce dont un conjoint ou un liquida
 
 > Important : L’application ne donne pas de conseils juridiques. Elle note où sont vos papiers ; elle ne remplace pas un testament, une procuration ou un mandat de protection. Pour ceux-ci, consultez un notaire ou un avocat.
 
+![L’écran Urgence et succession, onglet Sommaire d’urgence](images/estate.png)
+
 ## L’écran en bref {#overview}
 @index: planification successorale; exécuteur testamentaire; liquidateur; en cas de décès; cartable d’urgence
 

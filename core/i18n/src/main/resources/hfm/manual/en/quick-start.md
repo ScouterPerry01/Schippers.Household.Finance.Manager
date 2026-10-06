@@ -30,6 +30,8 @@ On a Linux copy installed from a .deb or .rpm package or an AppImage, the app fi
 
 @index: create a household; new household
 
+![The Create a household form](images/create-household.png)
+
 1. Click **Create a new household**.
 2. Click **Choose folder…** and pick where the household will live, for example your Documents folder. The app makes a folder there named after the household.
 3. Fill in the form:
@@ -74,6 +76,8 @@ People let accounts, expenses, health records and taxes belong to someone. See [
 ## Step 6: Add your accounts {#accounts}
 
 @index: add an account; opening balance
+
+![The Add account form](images/accounts-add.png)
 
 1. Click **Add an account** in the guide. The **Add account** window opens.
 2. Enter the **Account name** (such as Joint chequing), choose the **Type** (Chequing, Savings, Credit card, Mortgage, RRSP, TFSA and so on) and leave **Currency (e.g. CAD, USD, BTC)** on CAD unless the account is in another currency.

@@ -2,6 +2,8 @@
 
 The **Home and assets** screen keeps track of the home and everything worth keeping track of: where it is, what it cost and what it is worth, its warranties, its maintenance, the work done on the home and the contractors who did it, and the insurance that covers it all. Vehicles have their own screen, [Vehicles](vehicles), but they appear here too where it helps: in the maintenance list, the **Is it covered?** search and the insurance. It is in the **Home and family** group of the menu.
 
+![The Home and assets screen, Assets tab](images/assets.png)
+
 ## The screen at a glance {#overview}
 @index: home inventory; possessions; property; belongings
 
@@ -311,6 +313,8 @@ To record a warranty claim, open the asset on the **Assets** tab, then the warra
 @index: insurance policy; home insurance; tenant insurance; auto insurance; life insurance; disability insurance; premiums
 
 At the top, **Add a policy**. Each policy shows its kind and insurer ("inactive" for one no longer in force), the policy number, "renews date", "covers amount", and the premium per year. Click a policy to open it. "No policies yet." when there are none.
+
+![The Insurance tab](images/assets-insurance.png)
 
 Below the list come two summaries: [Not covered by any policy](assets#uninsured) and [Life and disability cover](assets#life-cover).
 

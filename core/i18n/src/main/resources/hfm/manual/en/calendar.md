@@ -2,6 +2,8 @@
 
 The Calendar brings together your appointments and every date the rest of the app already knows: bills coming due, prescriptions to refill, vaccines, renewals and maintenance. One look shows what the coming weeks hold. Calendar is in the Money group of the menu.
 
+![The Calendar screen, Agenda tab](images/calendar.png)
+
 ## What the calendar shows {#overview}
 @index: agenda; schedule; appointments; due dates; what is coming up
 
@@ -72,6 +74,8 @@ The buttons on an appointment's line act on that one date only. For a repeating 
 ## The Month tab {#month-tab}
 
 **Month** shows a whole month as a grid, weeks starting on Monday. Today's date is in bold.
+
+![The Month tab](images/calendar-month.png)
 
 - **◀** and **▶**: previous and next month.
 - **Today**: back to the current month.

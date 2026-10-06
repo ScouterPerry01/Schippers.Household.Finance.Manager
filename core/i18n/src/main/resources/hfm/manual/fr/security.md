@@ -2,6 +2,8 @@
 
 Votre ménage est gardé chiffré sur cet ordinateur et ne s'ouvre qu'avec le mot de passe ou la clé de récupération d'un utilisateur. Ce chapitre couvre l'écran **Sécurité** (le délai de verrouillage automatique et les règles des mots de passe du ménage), le verrouillage, les mots de passe et la clé de récupération. L'écran se trouve dans le groupe **Réglages** du menu, sous **Sécurité**.
 
+![L’écran Sécurité](images/security.png)
+
 ## Comment votre ménage est protégé {#protection}
 
 @index: chiffrement; chiffré; mot de passe principal; protection des données; modèle de sécurité

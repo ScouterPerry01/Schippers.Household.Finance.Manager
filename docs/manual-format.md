@@ -20,7 +20,17 @@ The manual is the complete book about RANN's Roost: every screen, every field an
 - Callouts: a line starting `> Tip: `, `> Note: ` or `> Important: ` (French: `> Conseil : `, `> Remarque : `, `> Important : `). Further `> ` lines continue it.
 - `@index: term; other term; synonym` on its own line under a heading: extra index entries for that heading (concepts, abbreviations, synonyms people search for, such as RRSP, TFSA, T4, cheque). Separate with semicolons. Field names need no `@index`; they are indexed already.
 - Inline: `**bold**` for labels of buttons, tabs and menus in running text; links `[words](chapter-id)` or `[words](chapter-id#section-id)`. Every link must point to a chapter and section that exist (the test checks).
-- Nothing else: no tables, no images, no HTML, no code blocks, no italics, no `####`.
+- `![Caption](images/name.png)` on a line of its own: a picture of the app (see Pictures below).
+- Nothing else: no tables, no HTML, no code blocks, no italics, no `####`.
+
+## Pictures
+
+- Files: `core/i18n/src/main/resources/hfm/manual/<lang>/images/<name>.png`, lower case letters, digits and hyphens. The same picture has the same file name in English and French; each language has its own copy, taken in that language.
+- A picture line stands alone, with a blank line before and after. The caption says what the picture shows in a few words (The Bills screen, To pay tab), in the chapter's language; it is shown under the picture and read by screen readers in its place.
+- Place one near the top of each screen chapter, after the introduction, and others at the start of the section about a tab, dialog or view where a picture helps. Other chapters may show the same files.
+- The manual window shows a picture as wide as the page, never larger than its own size, with a thin outline.
+- `ManualTest` checks that every picture line is read as one, that each picture exists and is a PNG, that a picture shown in one language exists in the other, that every file in `images` is shown somewhere, and that each language's pictures stay under 8 MB.
+- The desktop pictures are taken by `./gradlew :app:desktop:manualScreenshots -Plang=en` (then `fr`), which draws the sample household offscreen; retake them after a screen changes. The phone pictures come from the emulator. See `tools/dev/README.md`.
 
 ## Writing rules
 

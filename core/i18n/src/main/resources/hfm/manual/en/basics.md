@@ -20,6 +20,8 @@ The Welcome screen is the first one you see. It shows the app's name and these c
 - **About and privacy**: shows the [About](about) page (version, updates, privacy, licence, support) before any household is open. **Back** returns to Welcome.
 - **Recent households**: the last five households opened on this computer, most recent first. Click one to go straight to its Unlock screen. A household whose folder was moved, renamed or deleted no longer appears; use **Open an existing household** to find it again.
 
+![The Welcome screen](images/welcome-screen.png)
+
 ### Restoring from a backup {#restore}
 
 @index: restore; backup file; hfmbak; new computer
@@ -37,6 +39,8 @@ If the backup cannot be restored, a message under the button says why. See [Back
 @index: create a household; new household; household folder; administrator
 
 This screen makes a new, empty household. The province, your name and your password can be changed later; the folder, the household name and the login name cannot.
+
+![The Create a household form](images/create-household.png)
 
 - **Choose folder…**: required. Opens a folder chooser for the Location: the folder where the household will be kept, such as Documents. The chosen path is shown beside the button. The app makes a new folder inside it named after the household with .hfm at the end (Tremblay Family.hfm). That folder must not already exist with files in it; if it does, choose another location or another name.
 - **Household name**: required. The household's name, used for the folder's name and shown to the phones you pair. Avoid characters your system does not allow in folder names, such as / or :.
@@ -111,6 +115,8 @@ The question is asked once per computer; change the answer later with **Check fo
 @index: main window; layout
 
 Once a household is open, the window has, from top to bottom: the top bar, any banners, and below them the menu (on the left, or across the top) beside the screen you chose.
+
+![The main window: the top bar, the reminder banner, the menu on the left and the screen](images/dashboard.png)
 
 ### The top bar {#top-bar}
 
@@ -190,6 +196,8 @@ The results open in a window titled Search: followed by what you typed. They are
 - Accounts: click one to open that account.
 - Payees, Categories, Bills and Institutions: click one to open that screen.
 - Documents: click one to open the Documents screen on that document.
+
+![The search results window](images/search.png)
 
 When nothing matches, the window says "Nothing found.". **Close** closes the window without going anywhere.
 

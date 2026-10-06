@@ -6,6 +6,8 @@ Un ménage fait souvent affaire avec plusieurs banques, plusieurs médecins ou d
 
 Les contacts sont liés aux éléments qui les concernent : les comptes qu’une banque détient, les polices qu’un assureur couvre, les médicaments qu’une pharmacie prépare, les rendez-vous avec un médecin, l’entrepreneur qui a fait des travaux à la maison, les papiers de succession dont un liquidateur a besoin. La page d’un contact les énumère tous ; l’écran de chaque élément affiche ses contacts.
 
+![L’écran Contacts : la liste à gauche, la fiche d’un contact à droite](images/contacts.png)
+
 ## Ce que contient un contact {#about-contacts}
 
 @index: carnet d’adresses; répertoire; annuaire; liste de contacts; qui appeler

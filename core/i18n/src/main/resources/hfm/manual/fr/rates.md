@@ -4,6 +4,8 @@ Taux et cours contient les taux de change qui convertissent les autres devises e
 
 > Remarque : Les taux d'imposition, plafonds de régimes, seuils et autres chiffres fixés par les gouvernements ne sont pas ici : ils sont à l'écran suivant, [Taux et règles](rates-rules), avec leurs dates et leurs provinces.
 
+![L’écran Taux et cours](images/rates.png)
+
 ## Pourquoi les taux comptent {#why-rates}
 
 @index: taux de change; devise étrangère; conversion de devises; dollars américains; USD; devise de base; change

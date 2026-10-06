@@ -4,6 +4,8 @@ Side income is for money the household earns outside a regular job: tutoring, mu
 
 @index: self-employment; freelance; small business; extra income; gig work
 
+![The Side income screen, Invoices tab](images/side.png)
+
 ## The Side income screen {#screen}
 
 The screen has a short explanation at the top and two tabs:

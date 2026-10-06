@@ -2,6 +2,8 @@
 
 Payees are the people and businesses money goes to or comes from: the grocery store, Hydro-Québec, your employer, the landlord. A clean list of payees makes transactions easy to read, search and report on, and lets the app suggest the right category. The screen is in the **Settings** group of the menu, under **Payees**.
 
+![The Payees screen](images/payees.png)
+
 ## How payees work {#about-payees}
 
 @index: merchant; vendor; store; supplier; payer

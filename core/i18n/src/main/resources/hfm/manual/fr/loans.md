@@ -4,6 +4,8 @@ Prêts et hypothèques montre les conditions de chaque prêt et de chaque hypoth
 
 > Remarque : Le calendrier est calculé à partir des conditions saisies, comme le font les prêteurs canadiens. Le relevé du prêteur a le dernier mot ; s’ils diffèrent, rajustez les conditions ou le versement pour qu’ils concordent.
 
+![L’écran Prêts et hypothèques avec le calendrier d’une hypothèque](images/loans.png)
+
 ## L’écran Prêts et hypothèques {#loans-screen}
 
 @index: prêt; hypothèque; amortissement; prêt auto; prêt étudiant; mortgage

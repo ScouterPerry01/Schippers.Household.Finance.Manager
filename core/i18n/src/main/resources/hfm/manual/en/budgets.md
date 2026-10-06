@@ -2,6 +2,8 @@
 
 Budgets compares what you plan to spend, or expect to receive, in each category with what actually happened. You set an amount per category, monthly or yearly, and the screen shows at a glance which categories are on track and which are over. Budgets is in the Money group of the menu.
 
+![The Budgets screen for the current month](images/budgets.png)
+
 ## What budgets do {#overview}
 @index: budget; spending plan; budget vs actual; overspending
 

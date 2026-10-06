@@ -51,7 +51,8 @@ fun PhonesScreen(model: BooksModel) {
     val groups = remember(model.revision) { books.groups().associate { it.id to it.name } }
     var pairing by remember { mutableStateOf<PairingInvitation?>(null) }
     var editing by remember { mutableStateOf<PairedDevice?>(null) }
-    val address = remember { SyncServer.localAddress() }
+    // The manual's pictures show a made-up address in place of this computer's (hfm.demo.address).
+    val address = remember { System.getProperty("hfm.demo.address")?.takeIf { System.getProperty("hfm.demo") == "true" } ?: SyncServer.localAddress() }
     val server = model.syncServer
 
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

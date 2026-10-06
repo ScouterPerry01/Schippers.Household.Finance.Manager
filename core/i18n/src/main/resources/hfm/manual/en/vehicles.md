@@ -2,6 +2,8 @@
 
 The **Vehicles** screen follows each car, truck, motorcycle or other road vehicle: its papers, odometer, maintenance schedule, service log, fuel or charging, warranties, and what it costs to run. It is in the **Home and family** group of the menu. Other things with an engine, such as a boat, an RV or a trailer, go in [Home and assets](assets).
 
+![The Vehicles screen, Overview tab](images/vehicles.png)
+
 ## The screen at a glance {#overview}
 @index: car; truck; automobile; motorcycle
 
@@ -258,6 +260,8 @@ Two buttons choose the period: this year, or **All years**. The tab shows:
 - "The purchase price (price) is not a running cost and is not included.";
 - a note when amounts in another currency have no exchange rate;
 - "Includes the transactions linked to this vehicle in the register, and fuel and service entries that have no payment of their own."
+
+![The Costs tab](images/vehicles-costs.png)
 
 A transaction is linked to the vehicle when it was entered from a service or fill-up with **Also enter the payment in an account**, or when the vehicle is chosen in its "Vehicle" field in the register: insurance, registration, parking, tolls, repairs. Amounts are converted to the base currency at the rate of their date.
 

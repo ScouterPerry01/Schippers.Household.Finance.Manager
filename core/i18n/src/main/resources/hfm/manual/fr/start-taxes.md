@@ -37,6 +37,8 @@ Voir [Acomptes](taxes#instalments).
 
 @index: estimation de l’impôt; estimation du remboursement
 
+![L’onglet Estimation](images/taxes-estimate.png)
+
 1. Ouvrez **Impôts**, puis l’onglet **Estimation**.
 2. Choisissez l’**Année d’imposition** et la **Personne**.
 3. Lisez **Montants utilisés** à gauche : chaque montant en indique l’origine. Entrez ce que les livres ne peuvent pas savoir, comme les frais médicaux que cette personne demande ou le revenu net d’un conjoint, et corrigez ce qui n’est pas juste. Entrez aussi, sous Reports des années antérieures, les soldes de l’avis de cotisation de l’an dernier : frais de scolarité inutilisés, dons, pertes en capital nettes, cotisations REER inutilisées et plafond de déduction REER. Ce que vous entrez est conservé pour cette personne et cette année.

@@ -4,6 +4,8 @@ Le tableau de bord est le premier écran qui s’affiche à l’ouverture du mé
 
 Rien ne se saisit dans le tableau de bord. Chaque chiffre vient du reste des livres : comptes, factures, budgets, relevés, sauvegardes et taux de change. Il est recalculé chaque fois que quelque chose change ; il est donc toujours à jour. Presque tout s’y clique pour ouvrir l’écran correspondant.
 
+![Le tableau de bord du ménage exemple](images/dashboard.png)
+
 ## Ce que montre le tableau de bord {#overview}
 
 @index: écran d’accueil; sommaire; vue d’ensemble

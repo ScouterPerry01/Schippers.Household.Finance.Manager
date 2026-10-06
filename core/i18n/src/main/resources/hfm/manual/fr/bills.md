@@ -4,6 +4,8 @@ Factures suit tout ce qui revient selon un calendrier : le loyer ou l’hypothè
 
 RANN's Roost ne paie pas les factures à votre place. Vous payez par votre banque comme d’habitude ; l’application inscrit, rappelle et prévoit.
 
+![L’écran Factures, onglet À payer](images/bills.png)
+
 ## Ce que fait l’écran Factures {#overview}
 @index: paiement de factures; paiements récurrents; opérations prévues; échéances; rappels
 
@@ -206,6 +208,8 @@ Une ligne rouge « Le compte de paiement passerait sous zéro. » apparaît sur 
 
 **Calendrier** montre un mois, les semaines commençant le lundi, avec les échéances et les montants de chaque jour. Utilisez **◀** et **▶** pour changer de mois. La date du jour est en gras.
 
+![L’onglet Calendrier : les factures du mois par date d’échéance](images/bills-calendar.png)
+
 - Les échéances à payer sont en texte normal ; celles en retard, en rouge.
 - Les échéances payées sont grisées ; les échéances sautées, plus pâles encore.
 - Un jour montre jusqu’à trois factures, puis « +n » pour les autres.
@@ -225,6 +229,8 @@ Le coût annuel est le montant multiplié par le nombre de paiements dans une an
 @index: trésorerie; prévision; solde prévu; aurai-je assez d’argent
 
 **Prévision de trésorerie** prévoit le solde de chaque compte à partir d’aujourd’hui, d’après les factures, revenus et virements encore à payer.
+
+![L’onglet Prévision de trésorerie pour les 30 prochains jours](images/bills-forecast.png)
 
 - **30 jours**, **60 jours**, **90 jours** : jusqu’où regarder. Par défaut : 30 jours.
 

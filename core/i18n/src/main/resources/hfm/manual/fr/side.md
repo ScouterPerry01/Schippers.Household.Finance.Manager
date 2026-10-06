@@ -4,6 +4,8 @@ Les revenus d’appoint sont l’argent que le ménage gagne en dehors d’un em
 
 @index: travail autonome; pigiste; petite entreprise; revenu supplémentaire; travail à la demande
 
+![L’écran Revenus d’appoint, onglet Factures](images/side.png)
+
 ## L’écran Revenus d’appoint {#screen}
 
 L’écran présente une courte explication en haut et deux onglets :

@@ -60,6 +60,8 @@ Categories make budgets and reports useful.
 
 Reconciling proves the account agrees with the bank to the cent, and locks the period.
 
+![Reconciling a statement](images/accounts-reconcile.png)
+
 1. Import the statement (step 2). The reconciliation opens. With a paper statement, choose **Reconcile…**, then **Enter a paper statement**, and type the date and closing balance.
 2. Check the **Statement date** and the **Closing balance on the statement**; correct them and choose **Apply** if needed.
 3. Under Needs your attention, settle each line: **Same transaction**, **Add as new**, **Link to a recorded transaction** or **Ignore**.

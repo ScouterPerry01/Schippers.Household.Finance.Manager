@@ -2,6 +2,8 @@
 
 L’écran **Animaux** garde une fiche pour chaque animal du ménage : ses renseignements, sa micropuce, sa licence municipale, son assurance et ce qu’il coûte. De chaque fiche, vous accédez au dossier de santé de l’animal et ajoutez un rendez-vous chez le vétérinaire. Il se trouve dans le groupe **Maison et famille** du menu.
 
+![L’écran Animaux](images/pets.png)
+
 ## L’écran en bref {#overview}
 @index: animaux de compagnie; chien; chat; fiche de l’animal
 

@@ -4,6 +4,8 @@ Accounts holds every account of the household (chequing, savings, credit cards, 
 
 For a short walk-through of the first steps, see [Getting started with accounts and transactions](start-money).
 
+![The Accounts screen with a credit card's register and the entry form below it](images/accounts.png)
+
 ## The Accounts screen {#accounts-screen}
 
 @index: account list; register; ledger
@@ -12,6 +14,8 @@ The screen has two parts:
 
 - On the left, a narrow column with the title Accounts, the **Add account** button, the **Show closed accounts** box, the **Import from Quicken…** button, the list of accounts and, at the bottom, the totals.
 - On the right, the register of the account you select. Until you select one, it says Select an account to see its transactions. When you are reconciling a statement, the reconciliation takes the place of the register (see [Reconcile a statement](accounts#reconcile)).
+
+![The account list, grouped by type, with the totals at the bottom](images/accounts-list.png)
 
 When the household has no account yet, the list says No accounts yet. Add your first account to get started.
 
@@ -107,6 +111,8 @@ The balance is the value: the opening balance, changed by what you enter in the 
 @index: new account; create account; open an account
 
 Choose **Add account** at the top of the account list (or **Add an account** in the Dashboard's Getting started guide). To change an existing account, open its register and choose **Edit account**. The same form is used for both: it is titled Add account or Edit account.
+
+![The Add account form](images/accounts-add.png)
 
 **Save** creates or updates the account; it stays greyed out until the name, a known currency, a valid opening balance and a valid opening date are filled in. **Cancel** or Escape closes the form without saving. A new account is selected right away, so its register opens.
 
@@ -443,6 +449,8 @@ The reconciliation then opens with a line such as Imported: 42 added, 6 matched,
 @index: reconcile; reconciliation; balance the chequebook; statement balance; difference
 
 Reconciling proves the books agree with the bank, to the cent, as of the statement date. Once a statement is reconciled, its transactions are locked, so a later mistake cannot silently change a period you checked.
+
+![Reconciling a downloaded statement: lines that need a decision](images/accounts-reconcile.png)
 
 The reconciliation opens after an import, from **Reconcile…** (which continues the statement in progress), or from **Continue** in Statements. It replaces the register. Its title is Reconcile followed by the account name, with the file name and the statement period under it. **Back to the register** leaves it; the statement stays In progress and you can continue later.
 

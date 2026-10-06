@@ -6,6 +6,8 @@ Le registre des déplacements garde les trajets que vous faites en voiture pour 
 
 > Remarque : L’ARC s’attend à un carnet de route des déplacements d’affaires ou d’emploi (date, destination, motif et distance) pour appuyer une déduction de frais de véhicule, avec le total des kilomètres parcourus dans l’année. RANN’s Roost ne donne pas de conseils fiscaux ; vérifiez les règles de l’ARC avant de déduire quoi que ce soit.
 
+![L’écran Déplacements](images/trips.png)
+
 ## L’écran Déplacements {#screen}
 
 En haut de l’écran :

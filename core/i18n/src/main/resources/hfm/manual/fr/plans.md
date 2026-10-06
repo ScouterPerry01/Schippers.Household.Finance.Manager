@@ -6,6 +6,8 @@ Ce que contiennent les régimes (leurs titres, cours et gains) se trouve dans l�
 
 > Important : Les droits de cotisation, les pénalités et les retraits minimums sont calculés à partir des chiffres saisis ici ; ils sont une aide à l’organisation et non des conseils fiscaux. Votre avis de cotisation et l’émetteur du régime ont le dernier mot.
 
+![L’écran Régimes enregistrés, onglet Droits de cotisation](images/plans.png)
+
 ## L’écran Régimes enregistrés {#plans-screen}
 
 @index: REER; CELI; CELIAPP; FERR; FRV; CRI; REEE; régime enregistré; RRSP; TFSA

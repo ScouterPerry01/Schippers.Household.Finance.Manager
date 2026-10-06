@@ -2,6 +2,8 @@
 
 Les règles de catégorie donnent automatiquement leur catégorie aux opérations importées. Une règle dit : quand la description d'une ligne importée contient ce texte (et, au besoin, que le montant est dans cette fourchette), utiliser cette catégorie. L'écran se trouve dans le groupe **Réglages** du menu, sous **Règles de catégorie**.
 
+![L’écran Règles de catégorie](images/rules.png)
+
 ## Comment les règles s'appliquent {#how-rules-apply}
 
 @index: catégorisation automatique; catégoriser automatiquement; règles d'importation; catégoriser les importations; correspondance

@@ -6,6 +6,8 @@ The app does not prepare or file a return. It gathers what the books already kno
 
 > Important: These figures help prepare a return; they are not tax advice. The slips and receipts are what counts: check every amount against them, and ask a tax professional when in doubt.
 
+![The Taxes screen, Slips tab](images/taxes.png)
+
 ## The Taxes screen {#taxes-screen}
 
 @index: tax; income tax; tax return; tax season
@@ -181,6 +183,8 @@ Payments count towards the earliest instalments first. The amounts paid go into 
 
 The **Year-end package** tab shows each person's figures for the return, gathered from the books, with the federal line each one goes on. Choose the **Tax year** and the **Person**; the household (amounts that belong to no one in particular) comes last.
 
+![The Year-end package tab](images/taxes-year-end.png)
+
 Each line shows the item, where it comes from (a payer, an account, a period), the line or form, and the amount. Lines from the same source are added together. Amounts in other currencies are converted to Canadian dollars at each transaction's date. Registered plans' own transactions are left out.
 
 "Nothing for this year yet" means no pay, deductions, credits or slips have been recorded for the year.
@@ -228,6 +232,8 @@ The **CSV**, **Excel** and **PDF** buttons beside **Folder for the accountant…
 @index: income tax estimate; tax estimate; refund; balance owing; how much tax; tax calculator; marginal rate; average rate
 
 The **Estimate** tab works out roughly how much income tax a person will pay for a year, from the figures of the year-end package and the rates of the person's province or territory, and compares it with the tax already deducted from pay and paid in instalments. It shows the result, every step of the calculation, and where each figure comes from. You can change any figure to see its effect, for example to try an RRSP contribution before the deadline.
+
+![The Estimate tab](images/taxes-estimate.png)
 
 > Important: This is an estimate, not a return and not tax advice. It applies the main rules to the figures shown and leaves some out (see [What the estimate leaves out](taxes#estimate-left-out)). Your return, your tax software or your accountant, and your notice of assessment have the final word.
 

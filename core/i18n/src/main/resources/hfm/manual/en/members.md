@@ -2,6 +2,8 @@
 
 Household members are the people your records are about: the adults, the children and anyone else who depends on the household. Accounts belong to them, expenses and medical claims are theirs, registered plans are held for them and tax slips are issued to them. The screen is the first item of the **Settings** group of the menu, under the name **Household members**.
 
+![The Household members screen](images/members.png)
+
 ## What a household member is {#about-members}
 
 @index: person; people; family member; spouse; partner; child; dependant

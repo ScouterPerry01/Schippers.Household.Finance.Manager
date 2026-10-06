@@ -2,6 +2,8 @@
 
 Les utilisateurs sont les personnes qui se connectent au ménage, chacune avec son propre nom d'utilisateur et son propre mot de passe. Cet écran décide qui peut se connecter, ce que chaque personne peut ouvrir, et montre qui a fait quoi. Il se trouve dans le groupe **Réglages** du menu, sous **Utilisateurs**.
 
+![L’écran Utilisateurs, onglet Utilisateurs](images/users.png)
+
 ## Utilisateurs, rôles et groupes de comptes {#concepts}
 
 @index: compte d'utilisateur; connexion; identifiant; rôle; permission; droits d'accès; groupe de comptes; groupe privé; groupe partagé
@@ -48,6 +50,8 @@ Chaque utilisateur a une fiche avec :
 @index: permissions; aucun accès; consultation; saisie seulement; modification; donner accès; partager un groupe de comptes
 
 L'onglet Accès est un tableau. Chaque ligne est un groupe de comptes que vous pouvez voir, avec « privé » ou « partagé » sous son nom. Chaque colonne est un utilisateur qui peut se connecter.
+
+![L’onglet Accès](images/users-access.png)
 
 Dans chaque case, un niveau :
 

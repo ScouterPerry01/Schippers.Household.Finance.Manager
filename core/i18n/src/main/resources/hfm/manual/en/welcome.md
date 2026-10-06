@@ -55,6 +55,8 @@ You do not need to read the manual from start to finish. The Quick Start and the
 
 The manual opens in its own window, beside the app. You can keep it open while you work and move between the two.
 
+![The Manual window: the contents on the left, a chapter with its first picture on the right](images/manual-window.png)
+
 ### Opening the manual {#opening}
 
 @index: Shift+F1; Manual button; open the manual
@@ -131,6 +133,8 @@ The app has two kinds of help:
 @index: Search the guide; help topics
 
 Press F1, or click **Help (F1)** in the top bar, to open the Help panel. It shows the topic for the screen you are on, and a list of every other topic on the left: first the general ones (getting started, privacy, sending from the phone, keyboard shortcuts), then one per screen in menu order.
+
+![The Help panel, opened on the Bills screen](images/help.png)
 
 - **Search the guide**: type words to list only the topics that contain them, each with the line that matched. If nothing is found, the panel says so; try other words.
 - **Close**: closes the panel. Escape or F1 closes it too.

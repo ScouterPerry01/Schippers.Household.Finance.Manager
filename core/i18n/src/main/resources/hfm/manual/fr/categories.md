@@ -2,6 +2,8 @@
 
 Les catégories classent l'argent qui entre et qui sort : Épicerie, Électricité, Salaire. Chaque opération, ou chaque ventilation d'une opération, peut avoir une catégorie, et les budgets, les rapports et la trousse fiscale additionnent les montants par catégorie. L'écran se trouve dans le groupe **Réglages** du menu, sous **Catégories**.
 
+![L’écran Catégories](images/categories.png)
+
 ## Comment fonctionnent les catégories {#about-categories}
 
 @index: arbre des catégories; sous-catégorie; catégorie de dépenses; catégorie de revenus; classement

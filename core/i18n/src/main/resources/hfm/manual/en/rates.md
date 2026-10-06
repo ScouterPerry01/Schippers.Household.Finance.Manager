@@ -4,6 +4,8 @@ Rates and prices holds the exchange rates that convert other currencies into Can
 
 > Note: Tax rates, plan limits, thresholds and other figures set by governments are not here: they are on the next screen, [Rates and rules](rates-rules), with their dates and provinces.
 
+![The Rates and prices screen](images/rates.png)
+
 ## Why rates matter {#why-rates}
 
 @index: exchange rate; foreign currency; currency conversion; US dollars; USD; base currency; FX

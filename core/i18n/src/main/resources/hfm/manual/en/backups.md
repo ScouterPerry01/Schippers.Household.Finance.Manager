@@ -2,6 +2,8 @@
 
 Backups are copies of the whole household, made automatically, checked, and kept in a folder you choose, so you can recover from a broken disk, a lost or stolen computer, or a mistake, and move the household to a new computer. The screen is in the **Settings** group of the menu, under **Backups**. It also holds **Export all data**.
 
+![The Backups screen](images/backups.png)
+
 ## What a backup is {#about-backups}
 
 @index: backup; copy; hfmbak; restore point; disaster recovery

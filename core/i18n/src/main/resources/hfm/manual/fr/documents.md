@@ -2,6 +2,8 @@
 
 L’écran Documents est le classeur de votre ménage. Il conserve les reçus, factures, relevés, talons de paie et autres papiers dans un coffre chiffré, les lit sur cet ordinateur et vous aide à classer chacun avec l’opération ou la facture à laquelle il se rapporte. Documents se trouve dans le groupe Argent du menu.
 
+![L’écran Documents, onglet À vérifier](images/documents.png)
+
 ## Ce que fait l’écran Documents {#overview}
 @index: coffre; coffre de documents; reçus; numérisation; sans papier; classeur
 
@@ -135,6 +137,8 @@ Chaque ligne montre :
 @index: chercher des documents; trouver un reçu
 
 **Tous les documents** trouve n’importe quel document du coffre, classé ou non, du plus récent au plus ancien (selon la date du document). Remplissez l’un ou l’autre des champs de recherche ; la liste se met à jour pendant que vous tapez.
+
+![L’onglet Tous les documents et ses champs de recherche](images/documents-all.png)
 
 - **Chercher dans le texte** : des mots à trouver dans le texte du document, son commerce, son titre, ses notes ou son nom de fichier. Laissez vide pour tout afficher.
 - **Du** : la date de document la plus ancienne, au format AAAA-MM-JJ. Laissez vide pour ne pas limiter.

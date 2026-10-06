@@ -6,6 +6,8 @@ The screen has three parts: the list of accounts on the left, the account or vie
 
 > Note: The figures on this screen are an organizational aid, not tax advice. Your slips, your brokerage statements and the CRA or Revenu Québec have the final word.
 
+![The Investments screen with a brokerage account's holdings](images/investments.png)
+
 ## The Investments screen {#investments-screen}
 
 @index: portfolio; brokerage; holdings; securities; stocks; ETF; mutual fund

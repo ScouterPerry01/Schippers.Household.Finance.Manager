@@ -2,6 +2,8 @@
 
 L’écran **Véhicules** suit chaque auto, camion, moto ou autre véhicule routier : ses papiers, son odomètre, son calendrier d’entretien, son carnet d’entretien, ses pleins ou recharges, ses garanties et ce qu’il coûte à utiliser. Il se trouve dans le groupe **Maison et famille** du menu. Les autres choses à moteur, comme un bateau, un VR ou une remorque, vont dans [Maison et biens](assets).
 
+![L’écran Véhicules, onglet Aperçu](images/vehicles.png)
+
 ## L’écran en bref {#overview}
 @index: auto; voiture; camion; automobile; moto
 
@@ -258,6 +260,8 @@ Deux boutons choisissent la période : l’année en cours, ou **Toutes les ann�
 - « Le prix d’achat (prix) n’est pas un coût d’utilisation et n’est pas compté. » ;
 - une remarque quand des montants dans une autre devise n’ont pas de taux de change ;
 - « Comprend les opérations liées à ce véhicule dans le registre, ainsi que les pleins et entretiens qui n’ont pas leur propre paiement. »
+
+![L’onglet Coûts](images/vehicles-costs.png)
 
 Une opération est liée au véhicule quand elle a été inscrite depuis un entretien ou un plein avec **Inscrire aussi le paiement dans un compte**, ou quand le véhicule est choisi dans son champ « Véhicule » au registre : assurance, immatriculation, stationnement, péages, réparations. Les montants sont convertis dans la devise de base au taux de leur date.
 

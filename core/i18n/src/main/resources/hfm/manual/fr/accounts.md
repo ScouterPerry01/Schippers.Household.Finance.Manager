@@ -4,6 +4,8 @@ Comptes contient tous les comptes du ménage (compte chèques, épargne, cartes 
 
 Pour un parcours rapide des premières étapes, voir [Premiers pas avec les comptes et les opérations](start-money).
 
+![L’écran Comptes avec le registre d’une carte de crédit et le formulaire de saisie dessous](images/accounts.png)
+
 ## L’écran Comptes {#accounts-screen}
 
 @index: liste des comptes; registre; grand livre
@@ -12,6 +14,8 @@ L’écran a deux parties :
 
 - À gauche, une colonne étroite avec le titre Comptes, le bouton **Ajouter un compte**, la case **Afficher les comptes fermés**, le bouton **Importer de Quicken…**, la liste des comptes et, en bas, les totaux.
 - À droite, le registre du compte choisi. Tant qu’aucun compte n’est choisi, elle affiche Choisissez un compte pour voir ses opérations. Pendant le rapprochement d’un relevé, le rapprochement prend la place du registre (voir [Rapprocher un relevé](accounts#reconcile)).
+
+![La liste des comptes, groupés par type, avec les totaux en bas](images/accounts-list.png)
 
 Quand le ménage n’a encore aucun compte, la liste affiche Aucun compte pour l’instant. Ajoutez votre premier compte pour commencer.
 
@@ -107,6 +111,8 @@ Le solde est la valeur : le solde d’ouverture, modifié par ce que vous entrez
 @index: nouveau compte; créer un compte; ouvrir un compte
 
 Choisissez **Ajouter un compte** en haut de la liste des comptes (ou **Ajouter un compte** dans le guide Premiers pas du tableau de bord). Pour changer un compte existant, ouvrez son registre et choisissez **Modifier le compte**. Le même formulaire sert aux deux : il s’intitule Ajouter un compte ou Modifier le compte.
+
+![Le formulaire Ajouter un compte](images/accounts-add.png)
 
 **Enregistrer** crée ou met à jour le compte ; le bouton reste grisé tant que le nom, une devise connue, un solde d’ouverture valide et une date d’ouverture valide ne sont pas remplis. **Annuler** ou Échap ferme le formulaire sans enregistrer. Un nouveau compte est aussitôt choisi, et son registre s’ouvre.
 
@@ -443,6 +449,8 @@ Le rapprochement s’ouvre ensuite avec une ligne comme Importé : 42 ajoutées,
 @index: rapprocher; rapprochement bancaire; conciliation; balancer le compte; solde du relevé; écart
 
 Le rapprochement prouve que les livres concordent avec la banque, au cent près, à la date du relevé. Une fois un relevé rapproché, ses opérations sont verrouillées ; une erreur ultérieure ne peut donc pas changer en silence une période vérifiée.
+
+![Le rapprochement d’un relevé téléchargé : les lignes qui demandent une décision](images/accounts-reconcile.png)
 
 Le rapprochement s’ouvre après une importation, par **Rapprocher…** (qui continue le relevé en cours) ou par **Continuer** dans Relevés. Il remplace le registre. Son titre est Rapprocher suivi du nom du compte, avec le nom du fichier et la période du relevé en dessous. **Retour au registre** le quitte ; le relevé reste En cours et vous pourrez le continuer plus tard.
 

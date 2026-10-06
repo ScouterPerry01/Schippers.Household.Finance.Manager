@@ -2,6 +2,8 @@
 
 La lecture par IA permet à Claude, l'IA d'Anthropic, de lire les documents difficiles à lire sur cet ordinateur, comme un reçu froissé, un long relevé de carte de crédit ou un talon de paie, avec votre propre compte et votre propre clé Anthropic. Elle est désactivée tant que vous ne l'activez pas. L'écran se trouve dans le groupe **Réglages** du menu, sous **Lecture par IA**.
 
+![L’écran Lecture par IA](images/ai.png)
+
 ## Comment fonctionne la lecture par IA {#how-it-works}
 
 @index: intelligence artificielle; IA; Claude; Anthropic; lecture infonuagique; ROC; lire avec l'IA; clé d'API

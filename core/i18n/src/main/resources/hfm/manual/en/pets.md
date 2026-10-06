@@ -2,6 +2,8 @@
 
 The **Pets** screen keeps a card for each animal in the household: its details, microchip, municipal licence, pet insurance and what it costs. From each card you reach the pet's health records and add a vet appointment. It is in the **Home and family** group of the menu.
 
+![The Pets screen](images/pets.png)
+
 ## The screen at a glance {#overview}
 @index: animals; dog; cat; pet card
 

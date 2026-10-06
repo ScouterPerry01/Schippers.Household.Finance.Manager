@@ -2,6 +2,8 @@
 
 Savings goals help you set money aside for specific things, such as a trip, a new car, a roof, holiday gifts or an emergency fund, inside an account you already have. Savings goals is in the Money group of the menu.
 
+![The Savings goals screen](images/goals.png)
+
 ## How savings goals work {#overview}
 @index: savings goal; sinking fund; emergency fund; envelope; earmark; saving for a purchase
 

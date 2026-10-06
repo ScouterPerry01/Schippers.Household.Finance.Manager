@@ -2,6 +2,8 @@
 
 Les objectifs d’épargne vous aident à mettre de l’argent de côté pour des projets précis, comme un voyage, une nouvelle auto, une toiture, les cadeaux des Fêtes ou un fonds d’urgence, dans un compte que vous avez déjà. Objectifs d’épargne se trouve dans le groupe Argent du menu.
 
+![L’écran Objectifs d’épargne](images/goals.png)
+
 ## Le fonctionnement des objectifs d’épargne {#overview}
 @index: objectif d’épargne; fonds d’amortissement; fonds d’urgence; enveloppe; réserver; épargner pour un achat
 

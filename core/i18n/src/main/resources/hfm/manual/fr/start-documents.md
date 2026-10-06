@@ -19,6 +19,8 @@ Voir [Faire entrer des documents](documents#adding-documents).
 
 ## Vérifier ce qui a été lu {#check}
 
+![Des documents à vérifier](images/documents.png)
+
 1. Dans **À vérifier**, cliquez sur **Vérifier** sur un document. Le document est à gauche, ce qui a été lu à droite.
 2. Comparez **Commerce ou fournisseur**, **Type**, **Date** et **Total** avec l’image. Les champs marqués « À vérifier : difficile à lire » méritent un examen attentif.
 3. Corrigez ce qui est faux. L’application retient vos corrections pour les prochains documents du même commerce.
