@@ -17,10 +17,11 @@ When the household opens, the Dashboard shows a Getting started guide with the s
 - The people in the household: click Add people. Accounts, expenses, health and taxes can then belong to each person.
 - Your accounts: click Add an account for chequing, savings, credit cards, loans and investments, with today's balances.
 - Your bills and pay: click Add bills for rent or mortgage, utilities, subscriptions and pay days.
-- A first statement: click Open an account, then import a statement downloaded from your bank (OFX, QFX or CSV). Transactions come in categorized, ready to reconcile.
+- A first receipt: click Open Documents, then import or drop a photo, PDF or saved e-receipt. The store, date and total are read for you.
+- A first statement, reconciled: click Open an account, import a statement downloaded from your bank (OFX, QFX or CSV), then click Reconcile… until the account agrees with the bank.
 - The phone (optional): click Pair a phone to send receipts and bills from RANN's Roost Mobile.
 
-The guide goes away once the first four steps are done.
+The guide goes away once the first five steps are done.
 
 ## Next
 

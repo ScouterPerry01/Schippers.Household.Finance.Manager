@@ -4,7 +4,7 @@ Le tableau de bord est le premier écran qui s’affiche à l’ouverture du mé
 
 ## Le guide Premiers pas
 
-Dans un nouveau ménage, un guide Premiers pas s’affiche en haut. Il propose quelques étapes : les personnes du ménage, vos comptes, vos factures et votre paie, un premier relevé, puis le téléphone (facultatif). Chaque étape a un bouton qui ouvre l’écran voulu. Le guide disparaît une fois les étapes faites; vous pouvez aussi choisir Masquer ce guide.
+Dans un nouveau ménage, un guide Premiers pas s’affiche en haut. Il propose quelques étapes : les personnes du ménage, vos comptes, vos factures et votre paie, un premier reçu, un premier relevé rapproché, puis le téléphone (facultatif). Chaque étape a un bouton qui ouvre l’écran voulu. Le guide disparaît une fois les étapes faites; vous pouvez aussi choisir Masquer ce guide.
 
 ## Les tuiles
 

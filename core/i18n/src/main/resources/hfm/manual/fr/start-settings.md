@@ -93,4 +93,4 @@ Détails : [Bénéficiaires](payees) et [Règles de catégorie](rules).
 - [Lecture par IA](ai) : laisser Claude lire les documents difficiles avec votre propre clé Anthropic.
 - [À propos](about) : votre version, et la vérification des mises à jour des paquets Linux.
 
-> Conseil : La carte **Premiers pas** du [Tableau de bord](dashboard) vous guide à travers les personnes, les comptes, les factures, un premier relevé et le téléphone, et coche chaque étape à mesure que vous la faites.
+> Conseil : La carte **Premiers pas** du [Tableau de bord](dashboard) vous guide à travers les personnes, les comptes, les factures, un premier reçu, un premier relevé rapproché et le téléphone, et coche chaque étape à mesure que vous la faites.

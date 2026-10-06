@@ -23,19 +23,20 @@ La page défile quand la fenêtre est trop petite pour tout afficher.
 
 @index: démarrage; configuration; premières étapes; Premiers pas
 
-Dans un nouveau ménage, une carte en couleur en haut du tableau de bord vous guide dans les premières étapes. Son titre compte les étapes faites, par exemple Premiers pas : 2 sur 5 faits. Sous le titre, une courte phrase explique que chaque étape ouvre l’écran qui s’en charge.
+Dans un nouveau ménage, une carte en couleur en haut du tableau de bord vous guide dans les premières étapes. Son titre compte les étapes faites, par exemple Premiers pas : 2 sur 6 faits. Sous le titre, une courte phrase explique que chaque étape ouvre l’écran qui s’en charge.
 
 Chaque étape affiche un cercle (à faire) ou un crochet (fait). Une étape à faire affiche une ligne d’aide et un bouton. La prochaine étape à faire est en gras et son bouton est plein, pour qu’elle ressorte ; les autres boutons sont simplement encadrés. Une étape se coche d’elle-même dès que les livres montrent qu’elle est faite : vous ne la cochez jamais à la main.
 
-### Les cinq étapes {#setup-steps}
+### Les six étapes {#setup-steps}
 
 - **Les personnes du ménage** : faite dès qu’il existe au moins un membre du ménage. Le bouton **Ajouter des personnes** ouvre Membres du ménage. Les personnes permettent que comptes, dépenses, dossiers de santé et impôts appartiennent à quelqu’un. Voir [Membres du ménage](members).
 - **Vos comptes** : faite dès que le ménage a au moins un compte. Le bouton **Ajouter un compte** ouvre le formulaire Ajouter un compte directement sur le tableau de bord, le même que dans l’écran Comptes. Voir [Ajouter ou modifier un compte](accounts#account-dialog).
 - **Vos factures et votre paie** : faite dès qu’au moins une facture ou un jour de paie est inscrit. Le bouton **Ajouter des factures** ouvre Factures. Voir [Factures](bills).
-- **Un premier relevé** : faite dès qu’un compte a un relevé, importé d’un fichier ou entré d’après un relevé papier. Le bouton **Ouvrir un compte** ouvre Comptes, où vous choisissez le compte puis **Importer un relevé…**. Voir [Importer un relevé](accounts#import-statement).
+- **Un premier reçu** : faite dès que le coffre contient un document, importé dans l’écran Documents, déposé là, envoyé du téléphone ou enregistré d’un courriel. Le bouton **Ouvrir Documents** ouvre Documents. Voir [Faire entrer des documents](documents#adding-documents).
+- **Un premier relevé, rapproché** : faite dès qu’un relevé d’un compte a été rapproché jusqu’au bout. Le bouton **Ouvrir un compte** ouvre Comptes, où vous choisissez le compte, puis **Importer un relevé…** et **Rapprocher…**. Voir [Importer un relevé](accounts#import-statement) et [Rapprocher un relevé](accounts#reconcile).
 - **Le téléphone (facultatif)** : faite dès qu’un téléphone est jumelé et non révoqué. Le bouton **Jumeler un téléphone** ouvre Téléphones. Voir [Téléphones](phones).
 
-Le guide disparaît de lui-même une fois les quatre premières étapes faites. Le téléphone étant facultatif, le guide ne l’attend pas.
+Le guide disparaît de lui-même une fois les cinq premières étapes faites. Le téléphone étant facultatif, le guide ne l’attend pas.
 
 ### Masquer ce guide {#hide-guide}
 
