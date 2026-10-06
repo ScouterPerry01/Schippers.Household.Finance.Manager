@@ -134,7 +134,7 @@ Click **Save this report…** above the report.
 Saved reports are listed under **Saved reports** below the list of reports. A clock sign (⏱) after a name marks a scheduled report.
 
 - Click a saved report to put its choices back on the screen.
-- Click **✕** beside a saved report to remove it. It is removed at once, without a question, and cannot be undone; only the saved choices are lost, never any transaction.
+- Click **✕** beside a saved report to remove it. You are asked first; once deleted it cannot be undone. Only the saved choices are lost, never any transaction, and PDFs already made stay where they are.
 
 ### Scheduled reports {#scheduled-reports}
 

@@ -103,7 +103,8 @@ Screen readers, such as Narrator or NVDA on Windows and Orca on Linux, read the 
 
 - whether each group of the menu on the left is open or closed;
 - that each group of the menu at the top opens a menu;
-- whether each step of the Getting started guide on the Dashboard is done or to do.
+- whether each step of the Getting started guide on the Dashboard is done or to do;
+- what each small **✕** button does: Remove (a line of a form) or Delete (a record). The same word shows when the mouse rests on it.
 
 ### Fewer things to remember {#memory-aids}
 

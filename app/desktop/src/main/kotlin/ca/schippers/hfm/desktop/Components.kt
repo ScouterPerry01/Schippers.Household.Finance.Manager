@@ -31,6 +31,9 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -207,6 +210,29 @@ fun FormDialog(title: String, saveLabel: String, cancelLabel: String, canSave: B
         confirmButton = { TextButton(onClick = onSave, enabled = canSave) { Text(saveLabel) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text(cancelLabel) } },
     )
+}
+
+/**
+ * A small "✕" button that removes a line or deletes a record. Screen readers announce [label]
+ * (not "multiplication sign"), and the label also shows as a tooltip on hover.
+ */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+fun RemoveButton(label: String, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
+    androidx.compose.foundation.TooltipArea(
+        tooltip = {
+            androidx.compose.material3.Surface(shape = MaterialTheme.shapes.small, tonalElevation = 4.dp, shadowElevation = 2.dp) {
+                Text(label, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(6.dp))
+            }
+        },
+        modifier = modifier,
+    ) {
+        TextButton(
+            onClick = onClick,
+            enabled = enabled,
+            modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = label },
+        ) { Text("✕", modifier = Modifier.clearAndSetSemantics { }) }
+    }
 }
 
 @Composable

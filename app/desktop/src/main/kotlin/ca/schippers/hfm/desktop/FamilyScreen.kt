@@ -148,7 +148,7 @@ private fun SharedTab(model: BooksModel) {
                         )
                     }
                     MoneyText(model, e.amount)
-                    TextButton(onClick = { deleting = e }) { Text("✕") }
+                    RemoveButton(model.t("common.delete")) { deleting = e }
                 }
             }
         }
@@ -184,7 +184,7 @@ private fun ShareGroupDialog(model: BooksModel, existing: ShareGroup?, onClose: 
                 Picker(model.t("share.member"), listOf(null) + members, members.firstOrNull { it.id == p.memberId }, { it?.displayName ?: model.t("share.notMember") }, Modifier.width(170.dp)) { m ->
                     people[i] = p.copy(memberId = m?.id, name = p.name.ifBlank { m?.displayName.orEmpty() })
                 }
-                TextButton(onClick = { people.removeAt(i) }) { Text("✕") }
+                RemoveButton(model.t("common.remove")) { people.removeAt(i) }
             }
         }
         TextButton(onClick = { people.add(SharePerson("", "")) }) { Text(model.t("share.addPerson")) }
@@ -332,7 +332,7 @@ private fun LoanPaymentsDialog(model: BooksModel, loan: FamilyLoan, onEdit: () -
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(p.date), Modifier.width(110.dp))
                 MoneyText(model, p.amount, modifier = Modifier.weight(1f))
-                TextButton(onClick = { deleting = p }) { Text("✕") }
+                RemoveButton(model.t("common.delete")) { deleting = p }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -450,7 +450,7 @@ private fun AllowanceEntriesDialog(model: BooksModel, a: Allowance, onEdit: () -
                 Text(model.date(e.date), Modifier.width(100.dp))
                 Text(model.t("allowanceKind.${e.kind}") + (e.notes?.let { " · $it" } ?: ""), Modifier.weight(1f))
                 MoneyText(model, if (e.kind == AllowanceKind.SPENT) -e.amount else e.amount)
-                TextButton(onClick = { deleting = e }) { Text("✕") }
+                RemoveButton(model.t("common.delete")) { deleting = e }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

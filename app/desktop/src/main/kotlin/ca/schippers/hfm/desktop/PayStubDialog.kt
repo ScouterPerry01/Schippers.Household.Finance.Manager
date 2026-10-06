@@ -96,7 +96,7 @@ fun PayStubDialog(model: BooksModel, accountId: String?, read: PayStub? = null, 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     TextInput(model.t("payStub.description"), r.description, Modifier.weight(1f)) { earnings[i] = r.copy(description = it) }
                     AmountInput(model.t("payStub.amount"), r.amount, currency, locale, Modifier.width(150.dp), model::money) { earnings[i] = r.copy(amount = it) }
-                    TextButton(onClick = { earnings.removeAt(i) }, enabled = earnings.size > 1) { Text("✕") }
+                    RemoveButton(model.t("common.remove"), enabled = earnings.size > 1) { earnings.removeAt(i) }
                 }
             }
             TextButton(onClick = { earnings.add(EarningRow("", "")) }) { Text(model.t("payStub.addEarning")) }
@@ -107,7 +107,7 @@ fun PayStubDialog(model: BooksModel, accountId: String?, read: PayStub? = null, 
                     Picker(model.t("payStub.kind"), DeductionKind.entries, r.kind, { model.t("deduction.$it") }, Modifier.width(170.dp)) { deductions[i] = r.copy(kind = it) }
                     TextInput(model.t("payStub.description"), r.description, Modifier.weight(1f)) { deductions[i] = r.copy(description = it) }
                     AmountInput(model.t("payStub.amount"), r.amount, currency, locale, Modifier.width(110.dp), model::money) { deductions[i] = r.copy(amount = it) }
-                    TextButton(onClick = { deductions.removeAt(i) }) { Text("✕") }
+                    RemoveButton(model.t("common.remove")) { deductions.removeAt(i) }
                 }
             }
             TextButton(onClick = { deductions.add(DeductionRow(DeductionKind.OTHER, "", "")) }) { Text(model.t("payStub.addDeduction")) }

@@ -134,7 +134,7 @@ Cliquez sur **Enregistrer ce rapport…** au-dessus du rapport.
 Les rapports enregistrés sont énumérés sous **Rapports enregistrés**, sous la liste des rapports. Une horloge (⏱) après un nom indique un rapport planifié.
 
 - Cliquez sur un rapport enregistré pour remettre ses choix à l’écran.
-- Cliquez sur **✕** à côté d’un rapport enregistré pour le retirer. Il est retiré tout de suite, sans question, et ne peut pas être récupéré ; seuls les choix enregistrés sont perdus, jamais une opération.
+- Cliquez sur **✕** à côté d’un rapport enregistré pour le retirer. L’application vous le demande d’abord ; une fois supprimé, il ne peut pas être récupéré. Seuls les choix enregistrés sont perdus, jamais une opération, et les PDF déjà produits restent où ils sont.
 
 ### Rapports planifiés {#scheduled-reports}
 

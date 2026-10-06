@@ -245,7 +245,7 @@ private fun PapersTab(model: BooksModel) {
                 TextInput(model.t("estate.organization"), text(c.organization), Modifier.width(220.dp)) { contacts[i] = c.copy(organization = clean(it)) }
                 TextInput(model.t("estate.phone"), text(c.phone), Modifier.width(170.dp)) { contacts[i] = c.copy(phone = clean(it)) }
                 TextInput(model.t("estate.email"), text(c.email), Modifier.width(220.dp)) { contacts[i] = c.copy(email = clean(it)) }
-                TextButton(onClick = { contacts.removeAt(i) }, modifier = Modifier.align(Alignment.CenterVertically)) { Text("✕") }
+                RemoveButton(model.t("common.remove"), Modifier.align(Alignment.CenterVertically)) { contacts.removeAt(i) }
             }
         }
         TextButton(onClick = { contacts.add(EstateContact(ContactRole.EXECUTOR, "")) }) { Text(model.t("estate.addContact")) }
