@@ -62,7 +62,7 @@ Fonctionnement du dossier surveillé :
 
 RANN's Roost ne se connecte jamais à votre boîte de courriel. Pour garder un reçu ou une facture reçus par courriel, enregistrez le courriel comme fichier (un fichier .eml) à partir de votre logiciel de courriel, puis importez-le, déposez-le sur l’écran ou enregistrez-le dans le dossier surveillé.
 
-- Si le courriel contient des pièces jointes PDF ou images, chaque pièce jointe devient un document et est lue.
+- Si le courriel contient des pièces jointes PDF ou images, chaque pièce jointe devient un document et est lue. Les petites images affichées dans le courriel lui-même, comme le logo du commerce, ne sont pas des pièces jointes et sont laissées de côté.
 - S’il n’en contient pas, le courriel lui-même est conservé sous forme de PDF de son objet, de son expéditeur, de sa date et de son texte, et le commerce, la date et le total sont lus dans ce texte.
 
 ### Captures du téléphone {#phone-captures}

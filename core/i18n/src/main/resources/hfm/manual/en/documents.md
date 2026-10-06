@@ -62,7 +62,7 @@ How the watched folder works:
 
 RANN's Roost never signs in to your mailbox. To keep an emailed receipt or bill, save the email from your email program as a file (an .eml file), then import it, drop it on the screen, or save it in the watched folder.
 
-- If the email has PDF or picture attachments, each attachment becomes a document and is read.
+- If the email has PDF or picture attachments, each attachment becomes a document and is read. Small pictures shown inside the email itself, such as the store's logo, are not attachments and are left out.
 - If it has none, the email itself is kept as a PDF of its subject, sender, date and text, and the store, date and total are read from that text.
 
 ### Captures from the phone {#phone-captures}
