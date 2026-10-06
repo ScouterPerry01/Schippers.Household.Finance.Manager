@@ -36,7 +36,7 @@ Cet avertissement signifie que de l’argent a été dépensé dans le compte sa
 Chaque objectif du compte a une ligne avec :
 
 - son nom, suivi de « (Atteint) » quand son état est Atteint ;
-- « … sur … (n %) » : ce qui est mis de côté, le montant visé et le pourcentage ;
+- « … sur … (n %) · il manque … » : ce qui est mis de côté, le montant visé, le pourcentage et ce qu’il reste à mettre de côté (absent une fois l’objectif atteint) ;
 - une barre de progression ;
 - le plan, voir [Progression et respect des délais](goals#progress) ;
 - les boutons :

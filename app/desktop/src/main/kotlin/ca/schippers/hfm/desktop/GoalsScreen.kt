@@ -108,7 +108,11 @@ private fun GoalRow(model: BooksModel, p: GoalProgress, onAction: (GoalAction) -
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(g.name + if (g.status == GoalStatus.REACHED) " (${model.t("goalStatus.REACHED")})" else "", fontWeight = FontWeight.Medium)
-                Text(model.t("goals.savedOf", model.money(p.saved), model.money(g.target), p.percent), style = MaterialTheme.typography.bodySmall)
+                Text(
+                    model.t("goals.savedOf", model.money(p.saved), model.money(g.target), p.percent) +
+                        (if (!p.reached) " · " + model.t("goals.stillNeeded", model.money(p.remaining)) else ""),
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedButton(onClick = { onAction(GoalAction.Amount(g, AmountKind.SET_ASIDE)) }) { Text(model.t("goals.setAside")) }

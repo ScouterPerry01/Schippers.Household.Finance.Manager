@@ -36,7 +36,7 @@ That warning means money was spent from the account without being taken from a g
 Each goal in the account has a line with:
 
 - its name, followed by "(Reached)" when its status is Reached;
-- "... of ... (n%)": what is set aside, the target, and the percentage;
+- "... of ... (n%) · ... still needed": what is set aside, the target, the percentage and what is left to set aside (not shown once the goal is reached);
 - a progress bar;
 - the plan, see [Progress and on track](goals#progress);
 - the buttons:
