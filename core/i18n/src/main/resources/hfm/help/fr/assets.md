@@ -12,7 +12,7 @@ Dans la fiche d’un bien, ajoutez des tâches avec Ajouter les tâches habituel
 
 ## Est-ce couvert?
 
-Dans l’onglet Est-ce couvert?, tapez dans Trouver un article pour chercher par nom, marque, modèle ou numéro de série. Vous voyez s’il est sous garantie ou protégé. Pour inscrire une réclamation, ouvrez la garantie dans la fiche du bien et choisissez Ajouter une réclamation.
+Dans l’onglet Est-ce couvert?, tapez dans Trouver un article pour chercher par nom, marque, modèle ou numéro de série. Vous voyez tout de suite s’il est sous garantie ou protégé. Pour inscrire une réclamation, ouvrez la garantie dans la fiche du bien et choisissez Ajouter une réclamation.
 
 ## Projets
 

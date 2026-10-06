@@ -14,7 +14,7 @@ L’application affiche ensuite votre clé de récupération. Aucun serveur ne p
 
 ## L’ordre des premières étapes
 
-- Les personnes du ménage : cliquez sur Ajouter des personnes.
+- Les personnes du ménage : cliquez sur Ajouter des personnes. Les comptes, les dépenses, la santé et les impôts peuvent ensuite appartenir à chacun.
 - Vos comptes : cliquez sur Ajouter un compte : chèques, épargne, cartes de crédit, prêts et placements, avec leurs soldes d’aujourd’hui.
 - Vos factures et votre paie : cliquez sur Ajouter des factures pour le loyer ou l’hypothèque, les services, les abonnements et les jours de paie.
 - Un premier relevé : cliquez sur Ouvrir un compte, puis importez un relevé téléchargé de votre banque (OFX, QFX ou CSV). Les opérations arrivent classées, prêtes à rapprocher.

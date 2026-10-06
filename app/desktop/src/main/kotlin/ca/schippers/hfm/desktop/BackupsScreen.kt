@@ -59,7 +59,7 @@ fun BackupsScreen(model: BooksModel) {
         scope.launch {
             val result = withContext(Dispatchers.IO) { runCatching { books.backups.backUpNow(SqlCipherJdbcDriverFactory()) } }
             message = result.fold(
-                { run -> if (run.check.ok) model.t("backup.done", run.backup.file.fileName) else model.t("backup.checkFailed", run.check.problems.joinToString("; ")) },
+                { run -> if (run.check.ok) model.t("backup.done", run.backup.file.fileName) else model.t("backup.checkFailed", run.check.issues.joinToString("; ") { model.t(it.key, *it.args.toTypedArray()) }) },
                 { model.describe(it) },
             )
             busy = false
@@ -111,7 +111,7 @@ fun BackupsScreen(model: BooksModel) {
                 Text(model.t("backup.size", (b.size + 1023) / 1024), Modifier.width(100.dp), style = MaterialTheme.typography.bodySmall)
                 TextButton(onClick = {
                     val check = books.backups.verify(b.file, SqlCipherJdbcDriverFactory())
-                    result = if (check.ok) model.t("backup.checkOk", check.checkedDatabases) else model.t("backup.checkFailed", check.problems.joinToString("; "))
+                    result = if (check.ok) model.t("backup.checkOk", check.checkedDatabases) else model.t("backup.checkFailed", check.issues.joinToString("; ") { model.t(it.key, *it.args.toTypedArray()) })
                 }) { Text(model.t("backup.check")) }
             }
             result?.let { Text(it, style = MaterialTheme.typography.bodySmall) }

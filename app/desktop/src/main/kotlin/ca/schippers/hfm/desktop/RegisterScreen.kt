@@ -770,7 +770,7 @@ private fun RevealNumberDialog(model: BooksModel, account: Account, onClose: () 
                     password = ""
                 }) { Text(model.t("account.show")) }
             } else {
-                TextButton(onClick = onClose) { Text("OK") }
+                TextButton(onClick = onClose) { Text(model.t("common.ok")) }
             }
         },
         dismissButton = { if (revealed == null) TextButton(onClick = onClose) { Text(model.t("common.cancel")) } },

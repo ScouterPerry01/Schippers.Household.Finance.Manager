@@ -55,7 +55,7 @@ class InvestmentCsvImporter : InvestmentImporter {
             return cleaned.trim('(', ')').toBigDecimalOrNull()?.let { if (negative) it.negate() else it }
         }
 
-        val warnings = ArrayList<String>()
+        val warnings = ArrayList<ImportNote>()
         val securities = LinkedHashMap<String, ImportedSecurity>()
         val actions = ArrayList<ImportedInvestmentAction>()
         val withholdings = ArrayList<Withholding>()
@@ -65,7 +65,7 @@ class InvestmentCsvImporter : InvestmentImporter {
             val line = index + 2
             val date = cell(dateCol)?.take(10)?.let { runCatching { java.time.LocalDate.parse(it, formatter) }.getOrNull() }
                 ?.let { LocalDate(it.year, it.monthValue, it.dayOfMonth) }
-            if (date == null) { warnings += "Line $line: no valid date, skipped."; continue }
+            if (date == null) { warnings += ImportNote.of("csvNoDate", "Line $line: no valid date, skipped.", line); continue }
             val actionText = cell(actionCol).orEmpty()
             if (isTaxWithheld(actionText)) {
                 val withheld = number(cell(amountCol))?.abs()?.takeIf { it.signum() != 0 }
@@ -73,7 +73,7 @@ class InvestmentCsvImporter : InvestmentImporter {
                 continue
             }
             val action = actionOf(actionText)
-            if (action == null) { warnings += "Line $line: action \"$actionText\" not recognised, skipped."; continue }
+            if (action == null) { warnings += ImportNote.of("csvAction", "Line $line: action \"$actionText\" not recognised, skipped.", line, actionText); continue }
             if (currency == null) currency = cell(currencyCol)?.let { runCatching { Currency.of(it.uppercase()) }.getOrNull() }
             val symbol = cell(symbolCol)?.uppercase()
             val name = cell(nameCol)
@@ -102,7 +102,7 @@ class InvestmentCsvImporter : InvestmentImporter {
             if (income != null) {
                 actions[income.index] = income.value.copy(withheld = (income.value.withheld ?: BigDecimal.ZERO) + w.amount)
             } else {
-                warnings += "Line ${w.line}: tax withheld with no income of the same day to take it from; recorded as a fee."
+                warnings += ImportNote.of("csvWithheld", "Line ${w.line}: tax withheld with no income of the same day to take it from; recorded as a fee.", w.line)
                 actions += ImportedInvestmentAction(null, w.date, ImportedAction.FEE, null, null, null, w.amount, null, null, null, null, "Tax withheld")
             }
         }

@@ -4,7 +4,7 @@ Vos renseignements financiers restent sur votre ordinateur et votre téléphone,
 
 ## Ce qui reste sur cet ordinateur
 
-Le ménage est un dossier de fichiers chiffrés sur votre ordinateur. Les documents importés sont gardés chiffrés dans le coffre et lus sur cet ordinateur. Les sauvegardes sont aussi chiffrées. Seul Exporter toutes les données… crée une copie non chiffrée, et l’application vous avertit avant.
+Le ménage est un dossier de fichiers chiffrés sur votre ordinateur. Il ne s’ouvre qu’avec le mot de passe ou la clé de récupération d’un utilisateur. Les documents importés sont gardés chiffrés dans le coffre et lus sur cet ordinateur. Les sauvegardes sont aussi chiffrées. Seul Exporter toutes les données… crée une copie non chiffrée, et l’application vous avertit avant.
 
 ## Quand l’application va sur Internet
 
@@ -19,7 +19,7 @@ Rien n’est envoyé ailleurs, sauf dans ces cas, la plupart désactivés tant q
 
 ## Votre téléphone
 
-RANN’s Roost Mobile ne parle qu’à cet ordinateur, par votre Wi-Fi, avec un chiffrement entre les deux. Loin de la maison, il peut déposer ses saisies, chiffrées, dans un dossier de votre propre service infonuagique; ce service ne voit que des fichiers qu’il ne peut pas lire.
+RANN’s Roost Mobile ne parle qu’à cet ordinateur, par votre Wi-Fi, avec un chiffrement entre les deux. Loin de la maison, il peut déposer ses saisies, chiffrées, dans un dossier de votre propre service infonuagique; ce service ne voit que des fichiers qu’il ne peut pas lire. Voyez la rubrique d’aide Envoyer depuis le téléphone.
 
 ## Pour en savoir plus
 
