@@ -66,7 +66,7 @@ class QifImportService internal constructor(private val books: Books) {
 
     fun preview(content: ByteArray, currency: Currency = books.rates.baseCurrency): QifPreview {
         val file = QifParser.parse(content)
-        val existing = books.accounts.list().map { it.account }
+        val existing = books.accounts.all()
         val counts = file.transactions.groupingBy { it.account }.eachCount() + file.investments.groupingBy { it.account }.eachCount()
         val names = (file.accounts.map { it.name to it.kind } + file.transactions.map { it.account to QifAccountKind.BANK }).distinctBy { it.first }
         val plans = names.map { (name, kind) ->
@@ -75,12 +75,12 @@ class QifImportService internal constructor(private val books: Books) {
         }
         val order = file.dateOrder ?: DateOrder.MONTH_DAY
         val dates = file.transactions.mapNotNull { it.date.toLocalDate(order) }
-        return QifPreview(plans, file.transactions.size, file.investments.size, dates.minOrNull(), dates.maxOrNull(), file.dateOrder, file.warnings)
+        return QifPreview(plans, file.transactions.size, file.investments.size, dates.minOrNull(), dates.maxOrNull(), file.dateOrder, file.warnings.map(books::note))
     }
 
     fun import(content: ByteArray, fileName: String?, groupId: String, plans: List<QifAccountPlan>, dateOrder: DateOrder, today: LocalDate): QifImportResult {
         val file = QifParser.parse(content)
-        val warnings = ArrayList(file.warnings)
+        val warnings = ArrayList(file.warnings.map(books::note))
         val included = plans.filter { it.include }.associateBy { it.qifName }
 
         // Accounts, with Quicken's opening balance (a transfer of the account to itself) as the opening balance.
@@ -98,7 +98,7 @@ class QifImportService internal constructor(private val books: Books) {
                 ).id
             }
             if (plan.targetAccountId != null && openings[plan.qifName] != null) {
-                warnings += "Opening balance of \"${plan.qifName}\" not applied: it was imported into an existing account."
+                warnings += books.text("importNote.qifOpening", plan.qifName)
             }
         }
 
@@ -114,7 +114,7 @@ class QifImportService internal constructor(private val books: Books) {
             books.transactions.register(accountId).map { key(it.transaction.date, it.transaction.amount, it.transaction.payeeText) }.groupingBy { it }.eachCount().toMutableMap()
         }
 
-        val ordered = file.transactions.mapNotNull { t -> t.date.toLocalDate(dateOrder)?.let { it to t } ?: run { warnings += "Invalid date in ${t.account}"; null } }.sortedBy { it.first }
+        val ordered = file.transactions.mapNotNull { t -> t.date.toLocalDate(dateOrder)?.let { it to t } ?: run { warnings += books.text("importNote.invalidDate", t.account); null } }.sortedBy { it.first }
         for ((date, t) in ordered) {
             if (t.transferAccount == t.account) continue
             val accountId = accountIds[t.account] ?: continue
@@ -147,7 +147,7 @@ class QifImportService internal constructor(private val books: Books) {
                     transfers++
                     continue
                 }
-                warnings += "Transfer between accounts in different currencies on $date imported as two separate lines."
+                warnings += books.text("importNote.qifCurrencies", date.toString())
             }
 
             val counts = existingCount(accountId)
@@ -162,13 +162,13 @@ class QifImportService internal constructor(private val books: Books) {
             val splits = if (t.splits.isNotEmpty()) {
                 t.splits.map { s ->
                     val memo = s.memo ?: s.transferAccount?.let { "→ $it" }
-                    if (s.transferAccount != null) warnings += "A split line moving money to \"${s.transferAccount}\" on $date was imported as an uncategorized line."
+                    if (s.transferAccount != null) warnings += books.text("importNote.qifSplitTransfer", s.transferAccount.orEmpty(), date.toString())
                     SplitDraft(s.category?.let { categories.resolve(it, s.amount.signum() > 0) }, Money.exact(s.amount, account.currency), memo)
                 }
             } else {
                 val category = t.category?.let { categories.resolve(it, t.amount.signum() > 0) }
                 val note = t.transferAccount?.let { "→ $it" }
-                if (note != null) warnings += "A transfer to \"${t.transferAccount}\", which was not imported, became an ordinary line on $date."
+                if (note != null) warnings += books.text("importNote.qifTransfer", t.transferAccount.orEmpty(), date.toString())
                 listOfNotNull(if (category != null || note != null) SplitDraft(category, amount, note) else null)
             }
             books.transactions.create(

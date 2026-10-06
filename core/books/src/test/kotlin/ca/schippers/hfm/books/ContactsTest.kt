@@ -30,7 +30,7 @@ class ContactsTest {
 
     private fun household(): Books = Books(store.create(dir, "C", "perry", "Perry", "password1".toCharArray()).session)
 
-    private fun Books.use(block: (Books) -> Unit) = try { block(this) } finally { session.close() }
+    private fun <T> Books.use(block: (Books) -> T): T = try { block(this) } finally { session.close() }
 
     @Test
     fun `a contact keeps its kinds, what-for line, people served and details, with numbers masked`() = household().use { books ->
@@ -176,7 +176,7 @@ class ContactsTest {
             val marie = books.users.add("marie", "Marie", Role.MEMBER, "password2-long".toCharArray()).userId
             books.session.setPermission(books.groups().single().id, marie, PermissionLevel.EDIT)
         }
-        Books(store.unlock(dir, "marie", "password2-long".toCharArray())).use { marie ->
+        val jobId = Books(store.unlock(dir, "marie", "password2-long".toCharArray())).use { marie ->
             val shared = marie.groups().first { !it.isPrivate }.id
             val own = marie.session.createGroup("Marie - privé", private = true)
             val c = marie.contractors.save(Contractor("", own, "Dre Dentiste rénos"))
@@ -184,12 +184,40 @@ class ContactsTest {
             val plumber = marie.contacts.save(Contact("", shared, "Plomberie Roy"))
             marie.contacts.link(plumber.id, LinkRole.DONE_BY, LinkTarget.CONTRACTOR_JOB, job.id)
             assertEquals(1, marie.contacts.links(plumber.id).size)
+            assertEquals(listOf("Plomberie Roy"), marie.contacts.list(ContactFilter(target = LinkTarget.CONTRACTOR_JOB)).map { it.name })
+            job.id
         }
         Books(store.unlock(dir, "perry", "password1".toCharArray())).use { perry ->
             val plumber = perry.contacts.list().single()
             assertTrue(perry.contacts.links(plumber.id).isEmpty(), "the private job is not shown on the shared contact")
             assertTrue(perry.contacts.candidates(LinkTarget.CONTRACTOR_JOB).isEmpty())
+            // The link is stored in the shared ledger, but nothing tells Perry it exists.
+            assertTrue(perry.contacts.list(ContactFilter(target = LinkTarget.CONTRACTOR_JOB)).isEmpty(), "the Linked to filter")
+            assertTrue(perry.contacts.allLinks().isEmpty())
+            assertTrue(perry.contacts.linkedTo(LinkTarget.CONTRACTOR_JOB, jobId).isEmpty(), "asked with the private record's id")
+            assertTrue(perry.contacts.proposals().none { p -> p.sources.any { it.targetId == jobId } })
         }
+        Books(store.unlock(dir, "marie", "password2-long".toCharArray())).use { marie ->
+            assertEquals(listOf("Plomberie Roy"), marie.contacts.linkedTo(LinkTarget.CONTRACTOR_JOB, jobId).map { it.contact.name }, "kept for the record's owner")
+        }
+    }
+
+    @Test
+    fun `gathered institution and transit numbers become masked numbers, never notes for the phone`() = household().use { books ->
+        val group = books.groups().single().id
+        books.institutions.create(Institution("", "Desjardins", institutionNumber = "815", transitNumber = "30123", notes = "Main branch"))
+        val gathered = books.contacts.gather(group, books.contacts.proposals().map { GatherDecision(it.sources) }).single()
+        assertEquals("Main branch", gathered.notes)
+        assertEquals(listOf("Institution number" to "••••", "Transit number" to "•••• 0123"), gathered.numbers.map { it.label to it.value })
+        val transit = gathered.numbers.first { it.label == "Transit number" }
+        assertEquals("30123", books.contacts.revealNumber(gathered.id, transit.id, "password1".toCharArray()))
+        val onPhone = books.phoneContacts.forPhone().single()
+        assertEquals("Main branch", onPhone.notes)
+        assertTrue(listOfNotNull(onPhone.notes, onPhone.purpose).none { "815" in it || "30123" in it }, "no number reaches the phone")
+        // Gathering into the same contact again does not add the numbers twice.
+        val again = Institution("", "Desjardins", institutionNumber = "815", transitNumber = "30123")
+        val source = GatherSource(LinkTarget.INSTITUTION, "x", again.name, emptySet(), emptyList(), numbers = listOf("Transit number" to "30123"))
+        assertEquals(2, books.contacts.gather(group, listOf(GatherDecision(listOf(source), intoContactId = gathered.id))).single().numbers.size)
     }
 
     @Test

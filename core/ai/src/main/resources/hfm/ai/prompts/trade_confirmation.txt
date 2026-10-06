@@ -1,0 +1,1 @@
+This is a trade confirmation from a broker or investment dealer. List every trade it confirms: buy or sell, trade date, settlement date, the security, units, price, gross amount, commission, other fees and the net amount paid or received. Write units and amounts as positive numbers; the action says the direction.

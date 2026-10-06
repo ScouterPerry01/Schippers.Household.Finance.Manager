@@ -15,8 +15,8 @@ En bref : vos renseignements financiers restent sur votre ordinateur et votre t�
 Un ménage est un dossier sur votre ordinateur, créé quand vous avez créé le ménage, dont le nom se termine par .hfm, comme Famille Tremblay.hfm. Tout ce qui concerne le ménage s'y trouve :
 
 - un fichier trousseau, qui contient les noms d'utilisateur et les clés verrouillées de chaque utilisateur, mais aucun nom de personne, aucun montant ni aucune institution ;
-- une base de données principale chiffrée : les utilisateurs, les personnes, les catégories, les bénéficiaires, les réglages et le journal d'activité ;
-- une base de données chiffrée pour chaque groupe de comptes : ses comptes, ses opérations, les détails de ses documents, ses budgets, ses placements et tout autre dossier tenu dans ce groupe ;
+- une base de données principale chiffrée : les utilisateurs, les personnes, les catégories, les bénéficiaires, les budgets, les réglages et le journal d'activité, que chaque utilisateur du ménage peut lire ;
+- une base de données chiffrée pour chaque groupe de comptes : ses comptes, ses opérations, les détails de ses documents, ses placements et tout autre dossier tenu dans ce groupe ;
 - le coffre des documents : un fichier chiffré pour chaque reçu, facture ou autre document ;
 - des copies prises automatiquement avant que l'application mette une base de données à niveau vers une nouvelle version, au cas où quelque chose tournerait mal.
 
@@ -141,7 +141,7 @@ Chacun envoie les symboles de ce que vous détenez, comme XIC ou BTC, et rien d'
 
 @index: Bitcoin; portefeuille en lecture seule; mempool.space; xpub
 
-Quand vous demandez à l'application de mettre à jour un portefeuille Bitcoin en lecture seule, elle interroge mempool.space, un explorateur de chaîne de blocs public, sur les adresses du portefeuille. Ce service apprend ces adresses, et rien d'autre sur vous. N'entrez jamais de clé privée ni de phrase de récupération : l'application les refuse. Voir [Placements](investments).
+Quand vous demandez à l'application de mettre à jour un portefeuille Bitcoin en lecture seule, elle interroge mempool.space, un explorateur de chaîne de blocs public, sur les adresses du portefeuille. Ce service apprend ces adresses et, comme tout site Web, l'adresse Internet (IP) de votre ordinateur, qui peut indiquer à peu près où vous êtes ; rien d'autre sur vous. N'entrez jamais de clé privée ni de phrase de récupération : l'application les refuse. Voir [Placements](investments).
 
 ### La lecture par IA {#ai-reading}
 

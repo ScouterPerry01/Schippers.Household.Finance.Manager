@@ -71,7 +71,7 @@ class RateService internal constructor(private val books: Books) {
 
     /** Every fiat currency that needs rates: account and security currencies, the base currency and followed ones (FX-07). */
     fun allNeeded(): Set<Currency> = (
-        books.accounts.list(includeClosed = true).map { it.account.currency } + baseCurrency + followed() +
+        books.accounts.all(includeClosed = true).map { it.currency } + baseCurrency + followed() +
             runCatching { books.investments.securities(includeArchived = true).map { it.currency } }.getOrDefault(emptyList())
         ).filter { it != Currency.CAD && !it.isCrypto }.toSet()
 
@@ -156,7 +156,7 @@ class RateService internal constructor(private val books: Books) {
     fun updateFromBankOfCanada(today: LocalDate, fetch: (String) -> String): Int {
         val currencies = neededCurrencies()
         if (currencies.isEmpty()) return 0
-        val earliestAccount = books.accounts.list(includeClosed = true).minOfOrNull { it.account.openingDate } ?: today
+        val earliestAccount = books.accounts.all(includeClosed = true).minOfOrNull { it.openingDate } ?: today
         val start = currencies.minOf { c ->
             books.core.latestRateDate(c.code).executeAsOneOrNull()?.latest?.let { LocalDate.parse(it).plus(DatePeriod(days = 1)) }
                 ?: maxOf(earliestAccount, today.minus(DatePeriod(years = 5)))

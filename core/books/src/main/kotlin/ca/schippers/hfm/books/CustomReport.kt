@@ -1,9 +1,11 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.data.ledger.CustomSplits
 import ca.schippers.hfm.domain.CategoryKind
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 import kotlinx.serialization.Serializable
 
 /** RPT-03: what a custom report's rows or columns are. */
@@ -65,7 +67,7 @@ class CustomReportService internal constructor(private val books: Books) {
     fun run(filter: ReportFilter, layout: CustomLayout, labels: (String) -> String, french: Boolean = false): PivotTable {
         val cur = filter.currency ?: books.reports.base
         val categories = books.categories.list(includeArchived = true).associateBy { it.id }
-        val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val accounts = books.accounts.all(includeClosed = true).associateBy { it.id }
         val members = books.members.list(includeArchived = true).associate { it.id to it.displayName }
         val tags = books.tags().associate { it.id to it.name }
         val payees = books.payees.list(includeArchived = true).associate { it.id to it.name }
@@ -93,17 +95,16 @@ class CustomReportService internal constructor(private val books: Books) {
         val cells = HashMap<Pair<String?, String?>, Money>()
         val rowLabels = HashMap<String?, String>()
         val columnLabels = HashMap<String?, String>()
+        // Each day parsed once: a long range has hundreds of thousands of splits on a few thousand days (NFR-02).
+        val dates = HashMap<String, LocalDate>()
         for (g in books.groups()) {
-            val q = books.ledger(g).taxYearQueries
-            val rows = q.packageSplits(filter.from.toString(), filter.to.toString()).executeAsList()
+            val q = books.ledger(g).ledgerQueries
+            val from = filter.from.toString()
+            val to = filter.to.toString()
+            val rows = if (filter.from.daysUntil(filter.to) > 400) q.customSplitsWide(from, to, ::CustomSplits).executeAsList() else q.customSplits(from, to).executeAsList()
             val tagsOf: Map<String, List<String>> =
                 if (layout.rows == ReportDimension.TAG || layout.columns == ReportDimension.TAG || filter.tagId != null) {
-                    rows.map { it.txn_id }.distinct().associateWith { id -> books.ledger(g).ledgerQueries.tagsForTxn(id).executeAsList() }
-                } else emptyMap()
-            // Payees are grouped as in the spending by payee report: by payee, or by the text typed.
-            val payeeOf: Map<String, String?> =
-                if (layout.rows == ReportDimension.PAYEE || layout.columns == ReportDimension.PAYEE) {
-                    books.ledger(g).ledgerQueries.reportSplits(filter.from.toString(), filter.to.toString(), null, null).executeAsList().associate { it.txn_id to it.payee_id }
+                    q.tagsBetween(from, to).executeAsList().groupBy({ it.txn_id }, { it.tag_id })
                 } else emptyMap()
             for (r in rows) {
                 val account = accounts[r.account_id] ?: continue
@@ -120,22 +121,23 @@ class CustomReportService internal constructor(private val books: Books) {
                     ReportMeasure.INCOME -> if (kind == CategoryKind.INCOME || (kind == null && raw.isPositive)) raw else continue
                     ReportMeasure.NET -> raw
                 }
-                val date = LocalDate.parse(r.date)
+                val date = dates.getOrPut(r.date) { LocalDate.parse(r.date) }
                 val money = convert(value, date) ?: continue
                 fun keys(d: ReportDimension?): List<Pair<String?, String>> = when (d) {
                     null -> listOf(PivotTable.TOTAL to labels("total"))
                     ReportDimension.CATEGORY -> listOf(r.category_id to categoryName(r.category_id))
                     ReportDimension.TOP_CATEGORY -> top(r.category_id).let { listOf(it to categoryName(it)) }
-                    ReportDimension.PAYEE -> payeeOf[r.txn_id].let { id ->
+                    // Payees are grouped as in the spending by payee report: by payee, or by the text typed.
+                    ReportDimension.PAYEE -> r.payee_id.let { id ->
                         listOf(ReportService.payeeKey(id, r.payee_text) to (id?.let(payees::get) ?: r.payee_text?.trim()?.ifEmpty { null } ?: labels("noPayee")))
                     }
                     ReportDimension.ACCOUNT -> listOf(account.id to account.name)
                     ReportDimension.PERSON -> listOf(r.member_id to (r.member_id?.let(members::get) ?: labels("household")))
                     // A transaction with several tags counts under each.
                     ReportDimension.TAG -> tagsOf[r.txn_id].orEmpty().ifEmpty { listOf(null) }.map { it to (it?.let(tags::get) ?: labels("untagged")) }
-                    ReportDimension.MONTH -> listOf("%04d-%02d".format(date.year, date.month.ordinal + 1) to "%04d-%02d".format(date.year, date.month.ordinal + 1))
+                    ReportDimension.MONTH -> r.date.substring(0, 7).let { listOf(it to it) }
                     ReportDimension.QUARTER -> ((date.month.ordinal / 3) + 1).let { listOf("${date.year}-Q$it" to labels("quarter").format(it, date.year)) }
-                    ReportDimension.YEAR -> listOf(date.year.toString() to date.year.toString())
+                    ReportDimension.YEAR -> r.date.substring(0, 4).let { listOf(it to it) }
                 }
                 for ((rowId, rowLabel) in keys(layout.rows)) {
                     for ((colId, colLabel) in keys(layout.columns)) {
@@ -147,10 +149,17 @@ class CustomReportService internal constructor(private val books: Books) {
             }
         }
         val time = setOf(ReportDimension.MONTH, ReportDimension.QUARTER, ReportDimension.YEAR)
+        // Each row's and column's total, added up once (sorting by a total worked out at every comparison took minutes; NFR-02).
+        val rowTotals = HashMap<String?, Long>()
+        val columnTotals = HashMap<String?, Long>()
+        for ((key, money) in cells) {
+            rowTotals.merge(key.first, money.minorUnits, Long::plus)
+            columnTotals.merge(key.second, money.minorUnits, Long::plus)
+        }
         val columns = columnLabels.map { (id, label) -> PivotKey(id, label) }
-            .sortedWith(if (layout.columns in time) compareBy { it.id } else compareByDescending { k -> cells.filterKeys { it.second == k.id }.values.sumOf { it.minorUnits } })
+            .sortedWith(if (layout.columns in time) compareBy { it.id } else compareByDescending { k -> columnTotals[k.id] ?: 0L })
         var rows = rowLabels.map { (id, label) -> PivotKey(id, label) }.let { keys ->
-            if (layout.rows in time) keys.sortedBy { it.id } else keys.sortedByDescending { k -> cells.filterKeys { it.first == k.id }.values.sumOf { it.minorUnits } }
+            if (layout.rows in time) keys.sortedBy { it.id } else keys.sortedByDescending { k -> rowTotals[k.id] ?: 0L }
         }
         // The smallest rows are added together, so the chart stays readable.
         if (layout.rows !in time && rows.size > layout.maxRows) {

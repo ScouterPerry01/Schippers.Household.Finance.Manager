@@ -1,6 +1,5 @@
 package ca.schippers.hfm.books
 
-import ca.schippers.hfm.domain.UserText
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.importers.DateOrder
 import ca.schippers.hfm.importers.ImportOptions
@@ -53,7 +52,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
     fun import(accountId: String, statement: ImportedInvestmentStatement): InvestmentImportResult {
         val account = books.accounts.get(accountId)
         validate(account.type.kind == AccountKind.INVESTMENT, "error.notInvestmentAccount")
-        val warnings = ArrayList(statement.warnings)
+        val warnings = ArrayList(statement.warnings.map(books::note))
         val group = books.accounts.locate(accountId).first
         var created = 0
         val ids = statement.securities.associate { s ->
@@ -66,26 +65,59 @@ class BrokerageImportService internal constructor(private val books: Books) {
             val date = s.priceDate ?: continue
             if (price.signum() > 0) investments.setPrice(ids.getValue(s.key), date, price, IMPORTED)
         }
-        val existing = investments.transactions(accountId).mapNotNull { it.externalId }.toMutableSet()
+        val txns = investments.transactions(accountId)
+        val existing = txns.mapNotNull { it.externalId }.toMutableSet()
+        // Documents read by AI carry no ids of their own: a trade or income already entered by hand,
+        // or imported from another document, is matched by what it is (INV-05).
+        val unmatched = if (statement.format == AI_FORMAT) txns.toMutableList() else mutableListOf()
         val seen = HashMap<String, Int>()
         var added = 0
         var already = 0
         for (a in statement.actions.sortedBy { it.date }) {
             val external = a.externalId ?: fingerprint(a, seen)
             if (external in existing) { already++; continue }
+            val twin = unmatched.firstOrNull { same(it, a, a.securityKey?.let(ids::get), account.currency) }
+            if (twin != null) { unmatched -= twin; already++; continue }
             runCatching { add(account, a, a.securityKey?.let(ids::get), external, warnings) }
                 .onSuccess { ok -> if (ok) { added++; existing += external } else already++ }
-                .onFailure { e -> warnings += UserText.of("importWarning.refused", a.date, a.action, (e as? ValidationException)?.let { v -> UserText.of(v.key, *v.args) } ?: e.message.orEmpty()) }
+                .onFailure { e -> warnings += "${a.date} ${a.action}: ${(e as? ValidationException)?.message(books.language) ?: e.message}" }
         }
         val saved = statement.asOf != null && (statement.positions.isNotEmpty() || statement.cash != null)
-        if (saved) {
+        val statementId = if (saved) {
             investments.saveStatement(
                 accountId, statement.asOf!!, statement.cash?.let { Money.of(it, account.currency) },
                 statement.positions.mapNotNull { p -> ids[p.securityKey]?.let { it to p.quantity } }.toMap(), statement.format,
-            )
+            ).id
+        } else {
+            null
         }
         books.session.audit("IMPORT", "investments", accountId, "$added actions")
-        return InvestmentImportResult(added, already, created, saved, warnings.distinct())
+        return InvestmentImportResult(added, already, created, saved, warnings.distinct(), statementId)
+    }
+
+    /**
+     * Whether [txn], already in the books, is the action [a]: same kind and security, within three
+     * days (a trade date against a settlement date), and the same units, or for income and fees
+     * the same amount.
+     */
+    private fun same(txn: InvestmentTxn, a: ImportedInvestmentAction, securityId: String?, currency: Currency): Boolean {
+        val kind = when (a.action) {
+            ImportedAction.BUY -> InvestmentKind.BUY
+            ImportedAction.SELL -> InvestmentKind.SELL
+            ImportedAction.DIVIDEND, ImportedAction.INTEREST, ImportedAction.DISTRIBUTION -> InvestmentKind.INCOME
+            ImportedAction.REINVEST -> InvestmentKind.REINVEST
+            ImportedAction.RETURN_OF_CAPITAL -> InvestmentKind.RETURN_OF_CAPITAL
+            ImportedAction.FEE -> InvestmentKind.FEE
+            else -> return false
+        }
+        if (txn.kind != kind || txn.securityId != securityId) return false
+        if (kotlin.math.abs(txn.date.toEpochDays() - a.date.toEpochDays()) > 3) return false
+        val units = a.quantity
+        return if (kind in setOf(InvestmentKind.BUY, InvestmentKind.SELL, InvestmentKind.REINVEST) && units != null) {
+            txn.quantity?.let { (it - units).abs() < BigDecimal("0.0001") } == true
+        } else {
+            a.amount?.let { txn.amount == Money.of(it, currency) } == true
+        }
     }
 
     /** Adds one imported action; cash deposits and withdrawals become ordinary register lines. */
@@ -106,7 +138,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
             ImportedAction.RETURN_OF_CAPITAL -> base.copy(kind = InvestmentKind.RETURN_OF_CAPITAL)
             ImportedAction.SPLIT -> base.copy(kind = InvestmentKind.SPLIT, ratio = a.ratio)
             ImportedAction.TRANSFER_IN -> {
-                warnings += UserText.of("importWarning.marketValue", a.date)
+                warnings += books.text("importNote.unitsAtMarket", a.date.toString())
                 base.copy(kind = InvestmentKind.TRANSFER_IN, amount = m(a.quantity?.let { q -> a.price?.let { q.multiply(it) } }))
             }
             ImportedAction.TRANSFER_OUT -> base.copy(kind = InvestmentKind.TRANSFER_OUT)
@@ -173,7 +205,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
             val accountId = accountIds[qifAccount] ?: continue
             val account = books.accounts.get(accountId)
             if (account.type.kind != AccountKind.INVESTMENT) {
-                warnings += UserText.of("importWarning.notInvestment", qifAccount, UserText.of("accountType.${account.type}"))
+                warnings += books.text("importNote.notInvestment", qifAccount, books.text("accountType.${account.type.name}"))
                 continue
             }
             val group = books.accounts.locate(accountId).first
@@ -197,7 +229,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
             }
             val existing = investments.transactions(accountId).mapNotNull { it.externalId }.toMutableSet()
             val seen = HashMap<String, Int>()
-            val dated = actions.mapNotNull { a -> a.date.toLocalDate(dateOrder)?.let { it to a } ?: run { warnings += UserText.of("importWarning.invalidDate", qifAccount); null } }
+            val dated = actions.mapNotNull { a -> a.date.toLocalDate(dateOrder)?.let { it to a } ?: run { warnings += books.text("importNote.invalidDate", qifAccount); null } }
             for ((date, a) in dated.sortedBy { it.first }) {
                 val action = qifAction(a, date, warnings) ?: continue
                 if (action.action in setOf(ImportedAction.CASH_IN, ImportedAction.CASH_OUT) && a.transferAccount != null && a.transferAccount in importedAccounts) continue
@@ -205,7 +237,7 @@ class BrokerageImportService internal constructor(private val books: Books) {
                 if (external in existing) { already++; continue }
                 runCatching { add(account, action, a.security?.let(::securityFor), external, warnings) }
                     .onSuccess { ok -> if (ok) { added++; existing += external } else already++ }
-                    .onFailure { e -> warnings += UserText.of("importWarning.refused", date, "${a.action} ${a.security.orEmpty()}".trim(), (e as? ValidationException)?.let { v -> UserText.of(v.key, *v.args) } ?: e.message.orEmpty()) }
+                    .onFailure { e -> warnings += "$date ${a.action} ${a.security.orEmpty()}: ${(e as? ValidationException)?.message(books.language) ?: e.message}" }
             }
         }
         return InvestmentImportResult(added, already, created, false, warnings.distinct())
@@ -225,12 +257,12 @@ class BrokerageImportService internal constructor(private val books: Books) {
         val names = file.investments.map { it.account }.distinct()
         val map = names.mapNotNull { n -> accounts.firstOrNull { FieldExtractor.fold(it.name) == FieldExtractor.fold(n) }?.let { n to it.id } }.toMap()
         val missing = names.filter { it !in map }
-        val all = books.accounts.list(includeClosed = true).map { FieldExtractor.fold(it.account.name) }.toSet()
+        val all = books.accounts.all(includeClosed = true).map { FieldExtractor.fold(it.name) }.toSet()
         val imported = file.accounts.map { it.name }.filter { FieldExtractor.fold(it) in all }.toSet() + file.transactions.map { it.account }.toSet()
         val result = importQif(file, dateOrder ?: file.dateOrder ?: DateOrder.MONTH_DAY, map, imported)
         val doc = books.documents.get(documentId)
         books.documents.update(documentId, DocumentDetails(doc.title ?: "Quicken (QIF)", doc.kind, doc.date, doc.merchant, doc.amount, doc.keepForever, notes = READ_NOTE))
-        return result.copy(warnings = missing.map { UserText.of("importWarning.noAccount", it) } + result.warnings)
+        return result.copy(warnings = missing.map { "No investment account named \"$it\"; its actions were not imported." } + result.warnings)
     }
 
     // --- Helpers ---------------------------------------------------------------------------------
@@ -279,12 +311,15 @@ class BrokerageImportService internal constructor(private val books: Books) {
             "miscexp", "margint" -> act(ImportedAction.FEE)
             "xin", "contrib", "cash" -> if ((a.amount ?: BigDecimal.ZERO).signum() < 0 && base == "cash") act(ImportedAction.CASH_OUT) else act(ImportedAction.CASH_IN)
             "xout", "withdrw" -> act(ImportedAction.CASH_OUT)
-            else -> { warnings += UserText.of("importWarning.quickenAction", date, a.action); null }
+            else -> { warnings += books.text("importNote.qifAction", date.toString(), a.action); null }
         }
     }
 
     companion object {
         const val IMPORTED = "IMPORT"
+
+        /** The format of statements and trade confirmations read by AI. */
+        const val AI_FORMAT = "AI"
         const val KEPT_NOTE = "investment actions kept for the investment module"
         const val READ_NOTE = "Investment history imported"
     }

@@ -146,6 +146,11 @@ data class GatherSource(
     val memberIds: Set<String> = emptySet(),
     /** The private group the record is kept in, where its contact stays; null for a shared record. */
     val privateGroupId: String? = null,
+    /**
+     * Numbers the record holds (an institution and a transit number), label to number. They become
+     * masked number details, which never go to the phone, rather than notes, which do.
+     */
+    val numbers: List<Pair<String, String>> = emptyList(),
 )
 
 /**
@@ -223,7 +228,7 @@ class ContactService internal constructor(private val books: Books) {
         val all = books.groups().flatMap { g -> rows(g) }
         val byId = all.associateBy { it.id }
         val needle = filter.text.trim().takeIf { it.isNotEmpty() }?.let(SearchService::fold)
-        val targets = if (filter.target != null) allLinks().filter { it.target == filter.target }.map { it.contactId }.toSet() else emptySet()
+        val targets = filter.target?.let { t -> visibleLinks(t).map { it.contactId }.toSet() }.orEmpty()
         return all.filter { c ->
             (filter.includeArchived || !c.archived) &&
                 (filter.kind == null || filter.kind in c.kinds) &&
@@ -293,7 +298,7 @@ class ContactService internal constructor(private val books: Books) {
     /** CON-02: a full account or client number, only after the user re-enters their password (SEC-04). */
     fun revealNumber(contactId: String, detailId: String, password: CharArray): String? {
         val (group, _) = locate(contactId)
-        if (!books.session.verifyPassword(password)) throw AccessDeniedException("Wrong password")
+        books.revealGuard.check(password, "contact", contactId)
         books.session.audit("REVEAL", "contact", contactId)
         return books.ledger(group).contactsQueries.detailValue(detailId, contactId).executeAsOneOrNull()
     }
@@ -309,12 +314,16 @@ class ContactService internal constructor(private val books: Books) {
     }
 
     /** The contacts linked to one record, for its screen (CON-04). */
-    fun linkedTo(target: LinkTarget, targetId: String): List<LinkedContact> = books.groups().flatMap { g ->
-        val q = books.ledger(g).contactsQueries
-        q.linksTo(target.name, targetId).executeAsList().mapNotNull { row ->
-            val link = row.toLink(g.id)
-            q.contactById(link.contactId).executeAsOneOrNull()?.let { LinkedContact(it.toContact(g.id, q.detailsFor(it.id).executeAsList()), link) }
+    fun linkedTo(target: LinkTarget, targetId: String): List<LinkedContact> {
+        val found = books.groups().flatMap { g ->
+            val q = books.ledger(g).contactsQueries
+            q.linksTo(target.name, targetId).executeAsList().mapNotNull { row ->
+                val link = row.toLink(g.id)
+                q.contactById(link.contactId).executeAsOneOrNull()?.let { LinkedContact(it.toContact(g.id, q.detailsFor(it.id).executeAsList()), link) }
+            }
         }
+        // A record the user cannot see has no contacts for them, whoever asks with its id (HH-11).
+        return if (found.isEmpty() || targetId in names(target)) found else emptyList()
     }
 
     /** Links a contact to a record in [role]; linking twice the same way changes nothing. */
@@ -349,15 +358,32 @@ class ContactService internal constructor(private val books: Books) {
     fun candidates(target: LinkTarget): List<LinkCandidate> =
         names(target).map { (id, name) -> LinkCandidate(target, id, name) }.sortedBy { SearchService.fold(it.name) }
 
-    /** Every link in the groups the user can see. */
-    fun allLinks(): List<ContactLink> = books.groups().flatMap { g -> books.ledger(g).contactsQueries.links().executeAsList().map { it.toLink(g.id) } }
+    /**
+     * Every link the user can see: in the groups they can open, to records they can see. A shared
+     * contact linked to a record in someone else's private group keeps that link, but it is not
+     * listed, so other users cannot learn that such a link exists (HH-11).
+     */
+    fun allLinks(): List<ContactLink> {
+        val links = storedLinks()
+        val names = links.map { it.target }.toSet().associateWith { names(it).keys }
+        return links.filter { names[it.target]?.contains(it.targetId) == true }
+    }
+
+    /** The links to records of [target] the user can see. */
+    private fun visibleLinks(target: LinkTarget): List<ContactLink> {
+        val visible = names(target).keys
+        return storedLinks().filter { it.target == target && it.targetId in visible }
+    }
+
+    /** Every link stored in the groups the user can open, whether its record is visible or not. */
+    private fun storedLinks(): List<ContactLink> = books.groups().flatMap { g -> books.ledger(g).contactsQueries.links().executeAsList().map { it.toLink(g.id) } }
 
     /** The names of the records of [target] the user can see, by id. */
     private fun names(target: LinkTarget): Map<String, String> = runCatching {
         when (target) {
             LinkTarget.INSTITUTION -> books.institutions.list().associate { it.id to it.name }
             LinkTarget.PAYEE -> books.payees.list(includeArchived = true).associate { it.id to it.name }
-            LinkTarget.ACCOUNT -> books.accounts.list(includeClosed = true).associate { it.account.id to it.account.name }
+            LinkTarget.ACCOUNT -> books.accounts.all(includeClosed = true).associate { it.id to it.name }
             LinkTarget.POLICY -> books.insurance.policies(includeInactive = true).associate { p ->
                 p.id to listOfNotNull(books.text("policyKind.${p.kind}"), p.insurer, p.policyNumber).joinToString(" · ")
             }
@@ -444,12 +470,17 @@ class ContactService internal constructor(private val books: Books) {
         val emails = s.mapNotNull { it.email?.trim()?.ifEmpty { null } }.distinctBy { it.lowercase() }
             .filter { e -> kept.none { it.type == DetailType.EMAIL && it.value.equals(e, ignoreCase = true) } }
         fun first(f: (GatherSource) -> String?) = s.firstNotNullOfOrNull { f(it)?.trim()?.ifEmpty { null } }
+        // Numbers: each once; one the contact already has (same label, same last digits) is not added again.
+        val numbers = s.flatMap { it.numbers }.map { (label, n) -> label to n.trim() }.filter { it.second.isNotEmpty() }
+            .distinctBy { (label, n) -> label to n.filter(Char::isLetterOrDigit).uppercase() }
+            .filter { (label, n) -> kept.none { it.type == DetailType.NUMBER && it.label == label && it.value == (AccountService.mask(n) ?: "••••") } }
         val contact = (base ?: Contact("", group, s.first().name.trim())).let { c ->
             c.copy(
                 purpose = c.purpose ?: first { it.purpose },
                 kinds = c.kinds + s.flatMap { it.kinds },
                 memberIds = c.memberIds + s.flatMap { it.memberIds },
-                details = kept + phones.map { ContactDetail(type = DetailType.PHONE, value = it) } + emails.map { ContactDetail(type = DetailType.EMAIL, value = it) },
+                details = kept + phones.map { ContactDetail(type = DetailType.PHONE, value = it) } + emails.map { ContactDetail(type = DetailType.EMAIL, value = it) } +
+                    numbers.map { (label, n) -> ContactDetail(type = DetailType.NUMBER, label = label, value = n) },
                 website = c.website ?: first { it.website },
                 address = c.address ?: first { it.address },
                 notes = c.notes ?: s.mapNotNull { it.notes?.trim()?.ifEmpty { null } }.distinct().joinToString("\n").ifEmpty { null },
@@ -466,7 +497,7 @@ class ContactService internal constructor(private val books: Books) {
         val privateGroups = books.groups().filter { it.isPrivate }
         val editablePrivate = privateGroups.filter { it.level == PermissionLevel.EDIT }.map { it.id }.toSet()
         fun private(groupId: String) = groupId.takeIf { id -> privateGroups.any { it.id == id } }
-        val accounts = runCatching { books.accounts.list(includeClosed = true).map { it.account } }.getOrDefault(emptyList())
+        val accounts = runCatching { books.accounts.all(includeClosed = true) }.getOrDefault(emptyList())
         for (i in books.institutions.list()) {
             val folded = SearchService.fold(i.name)
             val kind = if ("caisse" in folded || "credit union" in folded) ContactKind.CREDIT_UNION else ContactKind.BANK
@@ -478,11 +509,13 @@ class ContactService internal constructor(private val books: Books) {
                 }
                 role to (LinkTarget.ACCOUNT to a.id)
             }
-            val numbers = listOfNotNull(i.institutionNumber?.let { books.text("contact.gather.institutionNumber", it) }, i.transitNumber?.let { books.text("contact.gather.transitNumber", it) })
+            val numbers = listOfNotNull(
+                i.institutionNumber?.trim()?.ifEmpty { null }?.let { books.text("contact.gather.institutionNumber") to it },
+                i.transitNumber?.trim()?.ifEmpty { null }?.let { books.text("contact.gather.transitNumber") to it },
+            )
             out += GatherSource(
                 LinkTarget.INSTITUTION, i.id, i.name, setOf(kind), listOf(LinkRole.SAME_AS to (LinkTarget.INSTITUTION to i.id)) + accountLinks,
-                phone = i.phone, website = i.website, address = i.branch,
-                notes = (numbers + listOfNotNull(i.notes)).joinToString("\n").ifEmpty { null },
+                phone = i.phone, website = i.website, address = i.branch, notes = i.notes, numbers = numbers,
             )
         }
         val medications = runCatching { books.health.medications() }.getOrDefault(emptyList())

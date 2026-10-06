@@ -1,1 +1,1 @@
-This is an investment account statement. List every holding with its quantity and market value, and every activity line in the period.
+This is an investment account statement. List every holding with its quantity and market value, the cash at the start and end of the period, and every activity line in the period with its cash effect (money in positive, money out negative), units, price and commission.

@@ -61,7 +61,9 @@ class BudgetService internal constructor(private val books: Books) {
         Budget(it.category_id, BudgetPeriod.valueOf(it.period), Money.ofMinor(it.amount_minor, Currency.of(it.currency)), it.rollover == 1L, LocalDate.parse(it.start_month + "-01"))
     }
 
+    /** Budgets are the household's (core.db): a viewer cannot set them (M-77). */
     fun set(categoryId: String, period: BudgetPeriod, amount: Money, rollover: Boolean = false, startMonth: LocalDate) {
+        requireEditor(books)
         validate(books.categories.list(includeArchived = true).any { it.id == categoryId }, "error.unknownCategory")
         validate(amount.currency == base, "error.currencyMismatch", base.code)
         validate(!amount.isNegative, "error.billAmountPositive")
@@ -72,6 +74,7 @@ class BudgetService internal constructor(private val books: Books) {
     }
 
     fun remove(categoryId: String) {
+        requireEditor(books)
         books.core.deleteBudget(categoryId)
         books.session.audit("DELETE_BUDGET", "category", categoryId)
     }
@@ -199,12 +202,16 @@ class BudgetService internal constructor(private val books: Books) {
 
     /**
      * BUD-05: a starting budget from the last 12 full months: the monthly average of every
-     * top-level expense category that had spending.
+     * top-level expense category that had spending. Only the accounts of shared groups count:
+     * a budget is kept for the whole household (core.db), so one made from a private group's
+     * spending would show that spending to every user (HH-11).
      */
     fun suggestions(today: LocalDate): Map<String, Money> {
         val end = LocalDate(today.year, today.month, 1).minus(DatePeriod(days = 1))
         val start = LocalDate(end.year, end.month, 1).minus(DatePeriod(months = 11))
-        val totals = books.reports.byCategory(ReportFilter(start, end), CategoryKind.EXPENSE).value
+        val shared = books.groups().filter { !it.isPrivate }.map { it.id }.toSet()
+        val accounts = books.accounts.list(includeClosed = true).map { it.account }.filter { it.groupId in shared }.map { it.id }.toSet()
+        val totals = books.reports.byCategory(ReportFilter(start, end, accountIds = accounts), CategoryKind.EXPENSE).value
         return totals.mapNotNull { row ->
             val category = row.category ?: return@mapNotNull null
             val monthly = row.amount.toBigDecimal().divide(BigDecimal(12), 0, RoundingMode.UP)

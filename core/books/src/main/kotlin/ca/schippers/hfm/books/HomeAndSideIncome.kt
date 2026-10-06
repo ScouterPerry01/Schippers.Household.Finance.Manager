@@ -313,7 +313,7 @@ class InvoiceService internal constructor(private val books: Books) {
     fun deposit(i: Invoice): Transaction? {
         books.setting("$DEPOSIT_KEY.${i.id}")?.ifBlank { null }?.let { id -> return runCatching { books.transactions.get(id) }.getOrNull() }
         val paid = i.paidDate ?: return null
-        return books.accounts.list(includeClosed = true).map { it.account }.filter { it.currency == i.currency }.firstNotNullOfOrNull { a ->
+        return books.accounts.all(includeClosed = true).filter { it.currency == i.currency }.firstNotNullOfOrNull { a ->
             books.transactions.register(a.id).map { it.transaction }.firstOrNull { it.date == paid && it.amount == i.total && it.memo == i.number }
         }
     }

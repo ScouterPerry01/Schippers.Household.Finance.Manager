@@ -333,6 +333,9 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                 }
                 ExtractedDetails(model, doc)
                 AiPart(model, doc, kind, onClose)
+                // AI-03: shown even once AI reading is turned off, since the fields are kept with the document.
+                val reading = remember(model.revision, doc.id) { runCatching { books.ai.reading(doc.id) }.getOrNull() }
+                if (reading != null && ca.schippers.hfm.ai.DocumentType.kindFor(reading.typeId) == null) ReadFieldsPart(model, reading)
                 // SAL-02: a pay stub is recorded with or without AI; what AI read fills the form, else it is typed.
                 if (kind == DocumentKind.PAY_STUB) PayStubPart(model, doc, onClose)
                 // MED-08: an explanation of benefits proposes the claims it may answer.
@@ -362,7 +365,8 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                     TextButton(onClick = { saveCopy(model, doc) }) { Text(model.t("documents.saveCopy")) }
                     TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
                 }
-                doc.text?.takeIf { it.isNotBlank() }?.let {
+                // The fields an AI reading added to the text are shown above, with the reading.
+                ca.schippers.hfm.books.DocumentService.recognisedOnly(doc.text)?.let {
                     Text(model.t("documents.recognisedText"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 8.dp))
                     Text(it.take(4000), style = MaterialTheme.typography.bodySmall)
                 }
@@ -449,6 +453,7 @@ private fun AiPart(model: BooksModel, doc: VaultDocument, kind: DocumentKind, on
     }
     failure?.let { ErrorText(it) }
     if (reading != null && reading.typeId in ca.schippers.hfm.books.AiService.STATEMENT_TYPES) StatementPart(model, doc, reading.typeId, onClose)
+    if (reading != null && reading.typeId in ca.schippers.hfm.books.AiService.INVESTMENT_TYPES) InvestmentPart(model, doc, reading.typeId, onClose)
     if (asking) AiReadDialog(model, doc, kind) { asking = false }
 }
 
@@ -475,6 +480,65 @@ private fun StatementPart(model: BooksModel, doc: VaultDocument, typeId: String,
             model.section = Section.ACCOUNTS
             onClose()
         }) { Text(model.t("ai.reconcileStatement")) }
+    }
+}
+
+/**
+ * INV-05: a trade confirmation read by AI becomes its trades in an investment account; an
+ * investment statement brings its activity and waits, with its holdings and cash, for the check of
+ * the statement (REC-08). What is already in the account is matched, not added again.
+ */
+@Composable
+private fun InvestmentPart(model: BooksModel, doc: VaultDocument, typeId: String, onClose: () -> Unit) {
+    val accounts = remember(model.revision) { model.books.investments.accounts() }
+    if (accounts.isEmpty()) {
+        Text(model.t("ai.noInvestmentAccount"), style = MaterialTheme.typography.bodySmall)
+        return
+    }
+    val suggested = remember(doc.id, model.revision) { runCatching { model.books.ai.suggestInvestmentAccount(doc.id) }.getOrNull() }
+    var account by remember(doc.id) { mutableStateOf(accounts.firstOrNull { it.id == suggested } ?: accounts.first()) }
+    var result by remember(doc.id) { mutableStateOf<ca.schippers.hfm.books.InvestmentImportResult?>(null) }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Picker(model.t("ai.investmentAccount"), accounts, account, { it.name }, Modifier.weight(1f)) { account = it; result = null }
+        Button(enabled = result == null, onClick = { result = model.act { model.books.ai.importInvestments(doc.id, account.id) } }) {
+            Text(model.t(if (typeId == "trade_confirmation") "ai.addTrades" else "ai.importInvestmentStatement"))
+        }
+    }
+    val r = result ?: return
+    Text(model.t("investments.importResult", r.added, r.securitiesCreated), style = MaterialTheme.typography.bodySmall)
+    if (r.alreadyThere > 0) Text(model.t("investments.alreadyThere", r.alreadyThere), style = MaterialTheme.typography.bodySmall)
+    r.warnings.take(10).forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary) }
+    OutlinedButton(onClick = {
+        model.selectedAccountId = account.id
+        model.openInvestmentStatementId = r.statementId
+        model.section = Section.INVESTMENTS
+        onClose()
+    }) { Text(model.t(if (r.statementId != null) "ai.checkInvestmentStatement" else "ai.openInvestmentAccount")) }
+}
+
+/**
+ * AI-03: the fields of a document type added by the user, which the app has no screen for, listed
+ * as the type's schema names them. They are also kept with the document's text, for searching.
+ */
+@Composable
+private fun ReadFieldsPart(model: BooksModel, reading: ca.schippers.hfm.books.StoredAiReading) {
+    val fields = remember(reading) {
+        runCatching {
+            val answer = kotlinx.serialization.json.Json.parseToJsonElement(reading.answer) as kotlinx.serialization.json.JsonObject
+            ca.schippers.hfm.ai.AiFields.fields(answer, DesktopAi.types().get(reading.typeId)?.schema)
+        }.getOrDefault(emptyList())
+    }
+    Text(model.t("ai.readFields", reading.typeId), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 4.dp))
+    if (fields.isEmpty()) Text(model.t("ai.readFieldsNone"), style = MaterialTheme.typography.bodySmall)
+    androidx.compose.foundation.text.selection.SelectionContainer {
+        Column {
+            for (f in fields) {
+                Row(Modifier.padding(vertical = 1.dp)) {
+                    Text(f.label, Modifier.width(200.dp), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                    Text(f.value, Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
     }
 }
 
@@ -753,4 +817,4 @@ internal fun dateOfMillis(millis: Long): LocalDate =
 private val AI_PAYMENTS = setOf("cash", "debit", "credit", "gift_card", "other")
 
 /** Documents that summarise many transactions rather than record one. */
-private val SUMMARY_KINDS = setOf(DocumentKind.CARD_STATEMENT, DocumentKind.BANK_STATEMENT, DocumentKind.INVESTMENT_STATEMENT, DocumentKind.PAY_STUB, DocumentKind.EOB)
+private val SUMMARY_KINDS = setOf(DocumentKind.CARD_STATEMENT, DocumentKind.BANK_STATEMENT, DocumentKind.INVESTMENT_STATEMENT, DocumentKind.PAY_STUB, DocumentKind.EOB, DocumentKind.TRADE_CONFIRMATION)

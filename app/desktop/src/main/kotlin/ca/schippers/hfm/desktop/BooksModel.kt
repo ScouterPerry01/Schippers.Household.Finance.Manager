@@ -50,6 +50,9 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     /** The statement being reconciled; the register is shown again when null. */
     var reconcilingStatementId by mutableStateOf<String?>(null)
 
+    /** REC-08: an investment statement to open when the Investments screen shows next. */
+    var openInvestmentStatementId by mutableStateOf<String?>(null)
+
     /** Counts from the last import, shown at the top of the reconciliation screen. */
     var lastImport by mutableStateOf<ImportResult?>(null)
 
@@ -93,9 +96,6 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     val language: Language get() = app.language
 
     fun t(key: String, vararg args: Any): String = app.t(key, *args)
-
-    /** A warning or note from the books: a [ca.schippers.hfm.domain.UserText] in the user's language, or plain text as it is. */
-    fun userText(text: String): String = ca.schippers.hfm.domain.UserText.decode(text) { key, args -> t(key, *args.toTypedArray()) } ?: text
 
     fun money(m: Money): String = MoneyFormat.format(m, language.locale)
 

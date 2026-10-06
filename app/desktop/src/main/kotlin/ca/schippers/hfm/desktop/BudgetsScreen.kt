@@ -47,8 +47,11 @@ fun BudgetsScreen(model: BooksModel) {
     Column(Modifier.fillMaxSize().padding(12.dp).verticalScroll(rememberScrollState())) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(model.t("nav.budgets"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-            OutlinedButton(onClick = { suggesting = true }) { Text(model.t("budget.suggest")) }
-            Button(onClick = { adding = true }, modifier = Modifier.padding(start = 8.dp)) { Text(model.t("budget.add")) }
+            // Budgets are the household's: a viewer sees them but cannot change them.
+            if (model.books.canEdit) {
+                OutlinedButton(onClick = { suggesting = true }) { Text(model.t("budget.suggest")) }
+                Button(onClick = { adding = true }, modifier = Modifier.padding(start = 8.dp)) { Text(model.t("budget.add")) }
+            }
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
             SymbolButton(model.t(if (yearView) "common.previousYear" else "common.previousMonth"), "◀") { month = month.minus(DatePeriod(months = if (yearView) 12 else 1)) }
@@ -61,7 +64,7 @@ fun BudgetsScreen(model: BooksModel) {
             LabeledCheckbox(model.t("budget.yearView"), yearView) { yearView = it }
         }
         val report = remember(model.revision, month, yearView) { if (yearView) model.books.budgets.year(month.year) else model.books.budgets.month(month) }
-        BudgetReportView(model, report, yearView) { line -> editing = line.category to line }
+        BudgetReportView(model, report, yearView, onEdit = if (model.books.canEdit) { line -> editing = line.category to line } else null)
     }
 
     if (adding) {

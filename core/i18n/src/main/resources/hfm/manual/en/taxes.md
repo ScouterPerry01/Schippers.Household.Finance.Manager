@@ -372,7 +372,8 @@ Federal, then the province or territory:
 - **Tax after credits**: never below zero, since these credits are not refundable.
 - **Adjusted taxable income for the minimum tax**, **Minimum tax** and **Additional tax for minimum tax purposes**: shown only when the alternative minimum tax is more than the tax after credits; the tax is then the minimum tax. In a province or territory, **Additional tax for minimum tax purposes** is its share of the federal one. **Minimum tax carryover recovered**: minimum tax of earlier years taken off the tax (on the Quebec part, Quebec's own minimum tax carried forward).
 - **Refundable Quebec abatement**: for a Quebec resident, 16.5 % of the federal tax after credits.
-- **Surtax** and **Tax reduction**: Ontario's surtax on its tax above two thresholds, Ontario's tax reduction, and British Columbia's low-income tax reduction.
+- **Surtax** and **Tax reduction**: Ontario's surtax on its tax above two thresholds, Ontario's tax reduction, and the low-income tax reductions of British Columbia, New Brunswick, Nova Scotia, Newfoundland and Labrador and Prince Edward Island (the last four for the family, claimed by one spouse).
+- **Low-income individuals and families tax credit**: Ontario's LIFT credit, 5.05 % of employment income up to $875, reduced above $32,500 of net income ($65,000 for a family).
 - **Health premium**: the Ontario Health Premium, by tiers of taxable income.
 - **Tax**: the federal, or the provincial or territorial, tax.
 
@@ -440,7 +441,7 @@ The estimate claims each balance as fully as it can. On the return, some of them
 
 ### What the estimate leaves out {#estimate-left-out}
 
-The estimate does not count: amounts transferred from a spouse or child other than tuition, the education and textbook amounts some provinces and territories still have, the Canada training credit, non-capital losses of other years, low-income tax reductions other than Ontario's and British Columbia's, the disability amount for a person under 18 or transferred from a dependant, the other refundable credits and benefits (Quebec's solidarity credit, provincial benefits), political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
+The estimate does not count: amounts transferred from a spouse or child other than tuition, the education and textbook amounts some provinces and territories still have, the Canada training credit, non-capital losses of other years, Manitoba's family tax benefit, the disability amount for a person under 18 or transferred from a dependant, the other refundable credits and benefits (Quebec's solidarity credit, provincial benefits), political contributions, foreign tax credits, the Canada caregiver amount and the eligible dependant amount, Quebec's amount for a person living alone, and Nova Scotia's 2024 supplements to the spouse and age amounts. The spouse amount in Yukon is not reduced with the basic personal amount at high incomes. These can change the result: the return is what counts.
 
 ### Where the rates come from {#estimate-rates}
 

@@ -107,8 +107,7 @@ class MessageKeysTest {
             "aiProblem" to listOf(
                 "references", "notClosed", "noType", "noForm", "mustBe", "notOneOf", "expected", "missing", "notAllowed", "fewerFields", "fewerItems",
                 "moreItems", "notDate", "shorter", "longer", "noMatch", "below", "above", "notJson", "fileName", "fileSize", "fileNotJson",
-            ) + listOf("linesSubtotal", "subtotalTotal", "linesTotal", "amountDue", "newBalance", "closingBalance", "netPay", "grossPay", "totalPaid", "totalValue").map { "sum.$it" },
-            "importWarning" to listOf("noDate", "unknownAction", "withheldAlone", "refused", "marketValue", "notInvestment", "invalidDate", "noAccount", "quickenAction"),
+            ) + listOf("linesSubtotal", "subtotalTotal", "linesTotal", "amountDue", "newBalance", "closingBalance", "netPay", "grossPay", "totalPaid", "totalValue", "openingCash", "tradeGross", "tradeNetSell", "tradeNetBuy").map { "sum.$it" },
             "network" to listOf("http", "tooLarge", "timeout", "noConnection", "secure", "other"),
             "repeat" to listOf("ONCE", "WEEKLY", "BI_WEEKLY", "SEMI_MONTHLY", "MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL", "EVERY_N_DAYS", "EVERY_N_WEEKS", "EVERY_N_MONTHS"),
         ).flatMap { (prefix, values) -> values.map { "$prefix.$it" } }

@@ -312,7 +312,7 @@ The coloured banner under the top bar counts the reminders and shows the first t
 
 @index: system notification; tray icon; notification area
 
-While the app runs, its icon sits in the notification area of the taskbar (the system tray); hovering over it shows RANN's Roost. While a household is open, the app looks for new reminders every five minutes and shows a computer notification with how many there are and up to four of them. Each reminder is announced once while the household stays open; the banner keeps showing it until it is dealt with.
+While the app runs, its icon sits in the notification area of the taskbar (the system tray); hovering over it shows RANN's Roost. While a household is open, the app looks for new reminders every five minutes and shows a computer notification with how many there are and up to four of them. If others can see your screen, untick **Show details in notifications** in [Display and accessibility](display#notifications): the notification then says only how many reminders there are of each kind. Each reminder is announced once while the household stays open; the banner keeps showing it until it is dealt with.
 
 > Note: notifications need the household open. If the app is closed or locked, nothing is announced; the reminders appear when you next open it.
 

@@ -193,7 +193,7 @@ private fun RestoreButton(state: AppState) {
         if (chooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) return@OutlinedButton
         val backup = chooser.selectedFile.toPath()
         val parent = chooseFolder(state.t("welcome.restore.where")) ?: return@OutlinedButton
-        val base = backup.fileName.toString().substringBefore("-20").ifBlank { "Household" }
+        val base = backup.fileName.toString().substringBefore("-20").ifBlank { state.t("welcome.restore.defaultName") }
         var target = parent.resolve("$base.hfm")
         var n = 2
         while (Files.exists(target)) target = parent.resolve("$base ($n).hfm").also { n++ }
@@ -252,7 +252,10 @@ private fun CreateScreen(state: AppState) {
                     try {
                         val dir = parent!!.resolve("${name.trim()}.hfm")
                         val created = withContext(Dispatchers.IO) {
-                            state.store.create(dir, name, login, adminName, password.toCharArray(), locale = state.language.locale.toLanguageTag(), province = province!!.name)
+                            state.store.create(
+                                dir, name, login, adminName, password.toCharArray(), locale = state.language.locale.toLanguageTag(), province = province!!.name,
+                                sharedGroupName = state.t("group.sharedName"),
+                            )
                         }
                         state.remember(dir)
                         state.screen = Screen.ShowRecoveryKey(created.session, created.recoveryKey)

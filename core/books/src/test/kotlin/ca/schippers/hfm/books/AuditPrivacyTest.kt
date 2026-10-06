@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.CategoryKind
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
@@ -43,6 +46,37 @@ class AuditPrivacyTest {
         val details = books.session.core.coreQueries.recentAudit(100).executeAsList().mapNotNull { it.details }
         assertTrue(details.none { "1234" in it || "1 234" in it }, "no amount: $details")
         assertTrue(details.none { "private export" in it }, "no file name typed by the user: $details")
+    }
+
+    @Test
+    fun `wrong passwords to reveal a number are logged without the password, and slow down after three`() {
+        var now = 1_790_000_000_000L
+        val clocked = Books(books.session) { now }
+        val group = clocked.groups().single().id
+        val contact = clocked.contacts.save(Contact("", group, "Bank", details = listOf(ContactDetail(type = DetailType.NUMBER, label = "Client", value = "987654321"))))
+        val detail = clocked.contacts.get(contact.id).numbers.single().id
+        val account = clocked.accounts.create(AccountDraft(group, "Chequing", ca.schippers.hfm.domain.AccountType.CHEQUING, Currency.CAD, Money.parse("0", Currency.CAD), LocalDate(2026, 1, 1)))
+
+        assertFailsWith<AccessDeniedException> { clocked.contacts.revealNumber(contact.id, detail, "guess-one".toCharArray()) }
+        assertFailsWith<AccessDeniedException> { clocked.accounts.revealNumber(account.id, "guess-two".toCharArray()) }
+        assertFailsWith<AccessDeniedException> { clocked.contacts.revealNumber(contact.id, detail, "guess-three".toCharArray()) }
+        // After three wrong passwords, even the right one waits 30 seconds, and is not checked meanwhile.
+        assertEquals(30, assertFailsWith<TooManyAttemptsException> { clocked.contacts.revealNumber(contact.id, detail, "pw".toCharArray()) }.waitSeconds)
+        now += 30_000
+        assertFailsWith<AccessDeniedException> { clocked.contacts.revealNumber(contact.id, detail, "guess-four".toCharArray()) }
+        assertEquals(60, assertFailsWith<TooManyAttemptsException> { clocked.accounts.revealNumber(account.id, "pw".toCharArray()) }.waitSeconds, "twice as long")
+        now += 60_000
+        assertEquals("987654321", clocked.contacts.revealNumber(contact.id, detail, "pw".toCharArray()))
+        assertFailsWith<AccessDeniedException> { clocked.contacts.revealNumber(contact.id, detail, "guess-five".toCharArray()) }
+        assertFailsWith<AccessDeniedException> { clocked.contacts.revealNumber(contact.id, detail, "guess-six".toCharArray()) }
+        assertEquals("987654321", clocked.contacts.revealNumber(contact.id, detail, "pw".toCharArray()), "a right password starts the count over")
+
+        val log = books.session.core.coreQueries.recentAudit(100).executeAsList()
+        val failed = log.filter { it.action == "REVEAL_FAILED" }
+        assertEquals(6, failed.size)
+        assertEquals(setOf(contact.id, account.id), failed.mapNotNull { it.entity_id }.toSet())
+        val text = log.flatMap { listOfNotNull(it.details, it.entity_id) }
+        assertTrue(text.none { "guess" in it || "987654321" in it || "pw" == it }, "no password or number: $text")
     }
 
     @Test

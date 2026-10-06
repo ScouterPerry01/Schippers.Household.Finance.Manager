@@ -60,7 +60,7 @@ INSERT INTO tax_instalment(account_id, member_id, tax_year, authority, due_date,
 -- Splits between two dates on the given categories, with whom they are for, to work out the slips expected.
 slipSourceSplits:
 SELECT t.account_id, t.date, t.payee_text, coalesce(s.member_id, t.member_id) AS member_id, s.category_id, s.amount_minor
-FROM txn_split s JOIN txn t ON t.id = s.txn_id
+FROM txn t CROSS JOIN txn_split s ON s.txn_id = t.id
 WHERE t.date >= ? AND t.date <= ? AND t.transfer_id IS NULL AND s.category_id IN ?;
 
 -- Instalment payments: splits on the given category in one account between two dates.

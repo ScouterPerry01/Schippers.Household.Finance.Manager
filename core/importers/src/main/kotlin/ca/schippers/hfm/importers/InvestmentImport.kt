@@ -53,8 +53,8 @@ data class ImportedInvestmentStatement(
     val securities: List<ImportedSecurity>,
     val actions: List<ImportedInvestmentAction>,
     val positions: List<ImportedPosition>,
-    /** Rows that could not be read, in English, for the import summary. */
-    val warnings: List<String> = emptyList(),
+    /** Rows that could not be read, for the import summary. */
+    val warnings: List<ImportNote> = emptyList(),
 )
 
 /** Plug-in contract for brokerage files (INV-05, ARC-04). */
