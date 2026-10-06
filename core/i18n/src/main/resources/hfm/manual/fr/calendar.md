@@ -105,8 +105,11 @@ Les boutons de la ligne d’un rendez-vous n’agissent que sur cette date. Pour
 ### La répétition {#repeats}
 @index: rendez-vous récurrent; événement qui se répète
 
-- **Répétition** : Une seule fois, Chaque semaine, Aux deux semaines, Chaque mois, Chaque trimestre, Deux fois par année, Chaque année, Tous les … jours, Toutes les … semaines ou Tous les … mois. Par défaut : Une seule fois. Un rendez-vous mensuel revient le même jour du mois (dans un mois plus court, le dernier jour).
+- **Répétition** : Une seule fois, Chaque semaine, Aux deux semaines, Deux fois par mois, Chaque mois, Chaque trimestre, Deux fois par année, Chaque année, Tous les … jours, Toutes les … semaines ou Tous les … mois, les mêmes choix que pour les factures. Par défaut : Une seule fois. Un rendez-vous mensuel revient le même jour du mois (dans un mois plus court, le dernier jour).
 - **Tous les** : affiché pour les choix « Tous les … ». Le nombre de jours, de semaines ou de mois entre deux dates, 1 ou plus.
+- **Deuxième jour** : affiché pour Deux fois par mois. Le rendez-vous tombe le jour de la **Date** et ce jour-ci de chaque mois ; 0 veut dire le dernier jour du mois.
+- **Jour du mois** : affiché pour les choix comptés en mois. **Même jour chaque fois**, **Dernier jour du mois** ou **Dernier jour ouvrable** (fins de semaine et jours fériés de la province exclus).
+- **Les fins de semaine et jours fériés** : affiché quand le rendez-vous se répète. **Garder la date**, **Avancer au jour ouvrable précédent** ou **Reporter au jour ouvrable suivant**, quand une date tombe une fin de semaine ou un jour férié de la province du ménage.
 - **Dernière échéance (facultatif)** : affiché quand le rendez-vous se répète. La dernière date où il peut avoir lieu, au format AAAA-MM-JJ. Laissez vide pour qu’il n’ait pas de fin. Elle ne peut pas précéder la **Date**.
 
 ### Me le rappeler {#remind-me}
