@@ -57,6 +57,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val backups = BackupService(this)
     val search = SearchService(this)
     val calendar = CalendarService(this)
+    val schedules = ScheduleService(this)
     val health = HealthService(this)
     val goals = GoalService(this)
     val pets = PetService(this)

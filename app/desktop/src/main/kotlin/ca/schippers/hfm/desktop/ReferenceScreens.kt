@@ -156,6 +156,12 @@ private fun CategoryForm(model: BooksModel, existing: Category?, parent: Categor
     }
     Picker(model.t("category.tax"), listOf<TaxFlag?>(null) + TaxFlag.entries, tax, { it?.let { f -> model.t("tax.$f") } ?: model.t("common.none") }, enabled = editable) { tax = it }
     if (existing != null) LabeledCheckbox(model.t("category.archived"), archived, enabled = editable) { archived = it }
+    // CAL-09: the person's work and school schedules, also reached from the Calendar.
+    if (existing != null) {
+        var schedules by remember(existing) { mutableStateOf(false) }
+        OutlinedButton(onClick = { schedules = true }) { Text(model.t("schedule.title")) }
+        if (schedules) SchedulesDialog(model, existing.id) { schedules = false }
+    }
     if (editable) {
         Button(enabled = nameEn.isNotBlank() || nameFr.isNotBlank(), onClick = {
             val id = model.act {

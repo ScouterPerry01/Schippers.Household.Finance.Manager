@@ -28,6 +28,7 @@ import ca.schippers.hfm.sync.RefCategory
 import ca.schippers.hfm.sync.RefDue
 import ca.schippers.hfm.sync.RefEvent
 import ca.schippers.hfm.sync.RefRefill
+import ca.schippers.hfm.sync.RefSchedule
 import ca.schippers.hfm.sync.RefPayee
 import ca.schippers.hfm.sync.RefPerson
 import ca.schippers.hfm.sync.RefVehicle
@@ -322,6 +323,7 @@ class SyncService internal constructor(private val books: Books) {
             contacts = runCatching { books.phoneContacts.forPhone() }.getOrDefault(emptyList()),
             events = runCatching { events(today) }.getOrDefault(emptyList()),
             refills = runCatching { refills(today) }.getOrDefault(emptyList()),
+            schedules = runCatching { schedules(today) }.getOrDefault(emptyList()),
         )
     }
 
@@ -343,6 +345,17 @@ class SyncService internal constructor(private val books: Books) {
             )
         }
     }
+
+    /** CAL-10: each person's work and school hours today and tomorrow, from the groups the signed-in user can see. */
+    private fun schedules(today: LocalDate): List<RefSchedule> {
+        val who = names()
+        return books.schedules.days(today, today.plus(DatePeriod(days = 1))).mapNotNull { d ->
+            val person = who[d.memberId] ?: return@mapNotNull null
+            RefSchedule(person, d.schedule.kind.name, d.date.toString(), hhmm(d.start), hhmm(d.end), d.schedule.label)
+        }
+    }
+
+    private fun hhmm(t: kotlinx.datetime.LocalTime) = "%02d:%02d".format(t.hour, t.minute)
 
     /** HLT-03: active medications running out within [EVENT_DAYS] days, or already out. */
     private fun refills(today: LocalDate): List<RefRefill> {

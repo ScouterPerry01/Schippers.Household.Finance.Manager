@@ -144,6 +144,16 @@ class AppState(
 
     fun setClosedMenuGroups(userId: String, closed: Set<NavGroup>) = prefs.put("$PREF_MENU_CLOSED.$userId", closed.joinToString(",") { it.name })
 
+    /** CAL-08: the kinds ("K:BILLS") and people ("P:<id>") this user hid on the calendar; remembered on this computer. */
+    fun calendarHidden(userId: String): Set<String> = prefs.get("$PREF_CALENDAR_HIDDEN.$userId", "").split(',').filter { it.isNotBlank() }.toSet()
+
+    fun setCalendarHidden(userId: String, hidden: Set<String>) = prefs.put("$PREF_CALENDAR_HIDDEN.$userId", hidden.sorted().joinToString(","))
+
+    /** CAL-07: the calendar view this user saw last (Agenda, Day, Week, Month or Year); remembered on this computer. */
+    fun calendarView(userId: String): String? = prefs.get("$PREF_CALENDAR_VIEW.$userId", null)
+
+    fun setCalendarView(userId: String, view: String) = prefs.put("$PREF_CALENDAR_VIEW.$userId", view)
+
     fun switchLanguage(to: Language, remember: Boolean = true) {
         language = to
         if (remember) prefs.put(PREF_LANGUAGE, to.tag)
@@ -185,6 +195,8 @@ class AppState(
     companion object {
         private const val PREF_MENU_TOP = "nav.menuTop"
         private const val PREF_MENU_CLOSED = "nav.menuClosed"
+        private const val PREF_CALENDAR_HIDDEN = "calendar.hidden"
+        private const val PREF_CALENDAR_VIEW = "calendar.view"
         private const val PREF_THEME = "theme"
         private const val PREF_TEXT_SCALE = "textScale"
         private const val PREF_NOTIFICATION_DETAILS = "notificationDetails"

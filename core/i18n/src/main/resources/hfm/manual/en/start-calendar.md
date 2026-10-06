@@ -6,14 +6,15 @@ The Calendar puts your appointments next to the bills, health dates, renewals an
 
 1. Open **Calendar** in the Money group of the menu.
 2. The **Agenda** tab lists everything in the next 60 days, day by day: appointments, bills coming due, refills, renewals and maintenance.
-3. The **Month** tab shows a whole month. Use **◀** and **▶** to move, and **Today** to come back.
-4. On items that come from other screens, a button such as **Open bills** takes you where they are managed.
+3. The **Day**, **Week**, **Month** and **Year** tabs show the calendar by day, week, month or year. Use **◀** and **▶** to move, **Today** to come back, and **Go to a date** to jump to a date. In the Month and Year tabs, click a day to open it in the Day tab.
+4. Untick boxes in the **Show** panel on the right to hide kinds of items, or a person's. Your choice is remembered on this computer.
+5. On items that come from other screens, a button such as **Open bills** takes you where they are managed.
 
 The more you fill in elsewhere (bills, medications, vehicles, insurance), the more the calendar shows, with nothing to enter twice.
 
 ## Add an appointment {#add}
 
-1. Click **Add an appointment**, or click a day on the **Month** tab.
+1. Click **Add an appointment**, or click an empty hour on the **Day** or **Week** tab.
 2. Enter **What**, for example "Dentist - Léa", and choose a **Kind**.
 3. Set the **Date** and the **Time** (as HH:MM), or tick **All day**.
 4. If you like, fill in **Minutes**, **Where**, **Who** and **Provider**.
@@ -22,6 +23,16 @@ The more you fill in elsewhere (bills, medications, vehicles, insurance), the mo
 7. Click **Save**.
 
 See [Add or edit an appointment](calendar#appointment-form).
+
+For a child's practice, game or lesson, choose the kind **Child's activity**: the form then asks who drives there and back, and what it costs. See [Activities: drivers and cost](calendar#activity-fields).
+
+## Work and school hours {#schedules}
+
+1. Click **Work and school schedules**, then **Add a schedule**.
+2. Choose the **Person** and the **Kind**, and tick the days with their **Start** and **End**. For shift work, choose a **Rotation** of several weeks under **Repeats**.
+3. Click **Save**. Each day now shows a bar such as "Alex · Work 8:00–16:30".
+
+See [Work and school schedules](calendar#schedules).
 
 ## Reminders {#reminders}
 

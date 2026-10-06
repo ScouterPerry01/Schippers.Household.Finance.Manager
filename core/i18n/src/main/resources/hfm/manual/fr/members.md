@@ -74,6 +74,7 @@ La nouvelle personne apparaît dans la liste et reste choisie.
   - Si la date n'est pas une vraie date, l'application indique « Entrez la date au format AAAA-MM-JJ. » et rien n'est enregistré.
 - **Habite au ou en** : la province ou le territoire dont les règles s'appliquent à cette personne. **Comme le ménage** (la valeur par défaut) signifie la province du ménage. Choisissez-en une autre pour une personne qui vit ailleurs, comme un étudiant aux études dans une autre ville ou un parent dans une autre province. La province de la personne sert pour ses feuillets et sa trousse fiscale, son crédit pour frais médicaux, sa subvention provinciale au REEE et ses régimes immobilisés.
 - **Archivé (masqué des listes)** : affiché seulement pour une personne déjà enregistrée. Cochez-le pour une personne qui ne fait plus partie du ménage. Voir [Archiver une personne](members#archive-person).
+- **Horaires de travail et d’école** : affiché pour une personne déjà enregistrée. Ouvre les heures de travail et d’école de cette personne, montrées dans le calendrier. Voir [Horaires de travail et d’école](calendar#schedules).
 - **Enregistrer** : enregistre la personne. Rien n'est enregistré avant que vous cliquiez.
 
 ## Modifier une personne {#change-person}

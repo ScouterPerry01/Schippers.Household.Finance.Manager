@@ -95,6 +95,28 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
 
     val language: Language get() = app.language
 
+    /** CAL-08: what the calendar hides for this user on this computer (kinds as "K:<kind>", people as "P:<id>"). */
+    var calendarHidden by mutableStateOf(app.calendarHidden(session.userId))
+        private set
+
+    fun changeCalendarHidden(hidden: Set<String>) {
+        calendarHidden = hidden
+        app.setCalendarHidden(session.userId, hidden)
+    }
+
+    private var calendarViewState by mutableStateOf(app.calendarView(session.userId))
+
+    /** CAL-07: the calendar view last shown to this user on this computer. */
+    var calendarView: String?
+        get() = calendarViewState
+        set(value) {
+            calendarViewState = value
+            if (value != null) app.setCalendarView(session.userId, value)
+        }
+
+    /** CAL-07: the date the calendar's views are on, kept while moving between screens. */
+    var calendarDate by mutableStateOf(today())
+
     fun t(key: String, vararg args: Any): String = app.t(key, *args)
 
     fun money(m: Money): String = MoneyFormat.format(m, language.locale)

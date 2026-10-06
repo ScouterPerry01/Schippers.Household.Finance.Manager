@@ -631,6 +631,43 @@ object DemoHousehold {
         books.calendar.create(EventDraft(group, l("Toilettage de Rex", "Rex's grooming"), EventCategory.PET, today.plus(DatePeriod(days = 4)), LocalTime(13, 30), 90, l("Patte de velours", "Pampered Paws"), memberId = rex.id))
     }
 
+    /**
+     * CAL-09: Alex works office hours, Sam works twelve-hour shifts on a two-week rotation at the
+     * hospital, and the child goes to school, with a professional development day coming up.
+     */
+    private fun addSchedules(books: Books, shared: String, alex: Member, sam: Member, child: Member, today: LocalDate) {
+        fun t(h: Int, m: Int = 0) = LocalTime(h, m)
+        fun dow(n: Int) = kotlinx.datetime.DayOfWeek(n)
+        val weekdays = (1..5)
+        books.schedules.save(
+            ca.schippers.hfm.books.PersonSchedule(
+                "", shared, alex.id, ca.schippers.hfm.books.ScheduleKind.WORK, l("Bureau", "Office"), today.minus(DatePeriod(years = 2)), null, 1, true, null,
+                weekdays.map { ca.schippers.hfm.books.ScheduleShift(0, dow(it), t(8), t(16, 30)) },
+            ),
+        )
+        // Days in week 1, then nights in week 2: the rotation starts on this week's Monday.
+        val monday = today.minus(DatePeriod(days = today.dayOfWeek.ordinal))
+        books.schedules.save(
+            ca.schippers.hfm.books.PersonSchedule(
+                "", shared, sam.id, ca.schippers.hfm.books.ScheduleKind.WORK, l("Hôpital de l'Enfant-Jésus", "Civic Hospital"), monday.minus(DatePeriod(days = 28)), null, 2, false, null,
+                listOf(1, 2, 5).map { ca.schippers.hfm.books.ScheduleShift(0, dow(it), t(7), t(19)) } +
+                    listOf(3, 4).map { ca.schippers.hfm.books.ScheduleShift(1, dow(it), t(19), t(7)) } +
+                    ca.schippers.hfm.books.ScheduleShift(1, dow(6), t(7), t(19)),
+            ),
+        )
+        val schoolYear = if (today.month.ordinal >= 7) today.year else today.year - 1
+        // A weekday about ten days ahead is a professional development day.
+        val pdDay = today.plus(DatePeriod(days = 10)).let { d -> if (d.dayOfWeek.ordinal >= 5) d.plus(DatePeriod(days = 7 - d.dayOfWeek.ordinal)) else d }
+        books.schedules.save(
+            ca.schippers.hfm.books.PersonSchedule(
+                "", shared, child.id, ca.schippers.hfm.books.ScheduleKind.SCHOOL, l("École Saint-Roch", "Hopewell Public School"),
+                LocalDate(schoolYear, 9, 2), LocalDate(schoolYear + 1, 6, 23), 1, true, null,
+                weekdays.map { ca.schippers.hfm.books.ScheduleShift(0, dow(it), t(8, 15), t(15, 5)) },
+                listOf(ca.schippers.hfm.books.ScheduleException(pdDay, true, reason = l("Journée pédagogique", "PD day"))),
+            ),
+        )
+    }
+
     /** Appointments of several kinds, and health records kept in Alex's private group. */
     private fun addCalendarAndHealth(books: Books, shared: String, chequing: Account, alex: Member, sam: Member, lea: Member, today: LocalDate) {
         fun day(n: Int) = today.plus(DatePeriod(days = n))
@@ -646,7 +683,30 @@ object DemoHousehold {
         calendar.create(EventDraft(shared, l("Nettoyage dentaire", "Dental cleaning"), EventCategory.MEDICAL, day(9), LocalTime(10, 15), 60, memberId = lea.id, providerId = dentist.id))
         calendar.create(EventDraft(private, l("Bilan annuel", "Annual physical"), EventCategory.MEDICAL, day(14), LocalTime(8, 40), 30, memberId = alex.id, providerId = doctor.id))
         calendar.create(EventDraft(shared, l("Ramonage de la cheminée", "Chimney sweep"), EventCategory.HOME, day(20), reminderMinutes = listOf(2 * 1440)))
-        calendar.create(EventDraft(shared, l("Cours de natation", "Swimming lessons"), EventCategory.PERSONAL, day(-3), LocalTime(18, 0), 60, memberId = lea.id, recurrence = Recurrence.WEEKLY, endDate = day(60), reminderMinutes = listOf(120)))
+        // CAL-11: the child's activities, with the carpool and the cost of each lesson.
+        val cad = { v: String -> ca.schippers.hfm.money.Money.parse(v, ca.schippers.hfm.money.Currency.CAD) }
+        val noahsMom = ca.schippers.hfm.books.Driver(name = l("Julie (maman de Noah)", "Jen (Noah's mom)"))
+        // Swimming is on Wednesdays, from the last one before today.
+        val lastWednesday = today.minus(DatePeriod(days = ((today.dayOfWeek.ordinal + 5) % 7).let { if (it == 0) 7 else it }))
+        val swimming = calendar.create(
+            EventDraft(
+                shared, l("Cours de natation", "Swimming lessons"), EventCategory.ACTIVITY, lastWednesday, LocalTime(18, 0), 60, l("Centre aquatique", "Brewer Pool"),
+                memberId = lea.id, recurrence = Recurrence.WEEKLY, endDate = day(60), reminderMinutes = listOf(120),
+                driverThere = ca.schippers.hfm.books.Driver(memberId = sam.id), driverBack = noahsMom, cost = cad("15.00"),
+            ),
+        )
+        calendar.recordCost(swimming.id, lastWednesday, chequing.id, books.categories.list().first { it.systemKey == "children.activities" }.id)
+        // In two weeks the other family drives both ways.
+        calendar.setDrivers(swimming.id, lastWednesday.plus(DatePeriod(days = 14)), noahsMom, noahsMom)
+        val saturday = today.plus(DatePeriod(days = (5 - today.dayOfWeek.ordinal + 7) % 7))
+        calendar.create(
+            EventDraft(
+                shared, l("Match de soccer", "Soccer game"), EventCategory.ACTIVITY, saturday, LocalTime(9, 30), 90, l("Parc Victoria", "Lansdowne Park"),
+                memberId = lea.id, recurrence = Recurrence.WEEKLY, endDate = saturday.plus(DatePeriod(days = 42)), reminderMinutes = listOf(1440),
+                driverThere = ca.schippers.hfm.books.Driver(memberId = alex.id), driverBack = ca.schippers.hfm.books.Driver(memberId = alex.id),
+            ),
+        )
+        addSchedules(books, shared, alex, sam, lea, today)
 
         health.saveMedication(Medication("", private, alex.id, l("Atorvastatine", "Atorvastatin"), "20 mg", l("1 comprimé au coucher", "1 tablet at bedtime"), doctor.id, pharmacy.id, "RX-448120", day(-400), null, 30, 2, day(-27), 5, true, null))
         health.saveMedication(Medication("", private, alex.id, l("Vitamine D", "Vitamin D"), l("1000 UI", "1000 IU"), l("1 par jour", "1 a day"), null, null, null, null, null, null, null, null, 5, true, null))

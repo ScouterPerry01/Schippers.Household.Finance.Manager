@@ -77,7 +77,7 @@ class MigrationTest {
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
             assertEquals(1L, count(driver, "SELECT count(*) FROM txn"))
             val q = LedgerDatabase(driver)
-            q.calendarQueries.insertEvent("e", "Garage", "VEHICLE", "2026-10-05", "09:30", 60, null, null, null, null, null, null, null, "1440,60", 0, 0)
+            q.calendarQueries.insertEvent("e", "Garage", "VEHICLE", "2026-10-05", "09:30", 60, null, null, null, null, null, null, null, "1440,60", 0, 0, 0, null, null, null, null, null, null)
             q.healthQueries.upsertProvider("p", "Pharmacie", "PHARMACY", null, null, null, 0)
             assertEquals(1L, count(driver, "SELECT count(*) FROM event"))
             assertEquals(1L, count(driver, "SELECT count(*) FROM health_provider"))
@@ -100,7 +100,7 @@ class MigrationTest {
             assertEquals(1L, count(driver, "SELECT count(*) FROM health_provider"))
             val q = LedgerDatabase(driver)
             q.healthQueries.upsertProvider("v", "Clinique vétérinaire", "VET", null, null, null, 0)
-            q.calendarQueries.insertEvent("g", "Toilettage", "PET", "2026-10-09", null, null, null, null, null, null, null, null, null, "1440", 0, 0)
+            q.calendarQueries.insertEvent("g", "Toilettage", "PET", "2026-10-09", null, null, null, null, null, null, null, null, null, "1440", 0, 0, 0, null, null, null, null, null, null)
             q.calendarQueries.deleteEvent("e")
             assertEquals(0L, count(driver, "SELECT count(*) FROM event_occurrence"), "the foreign key still cascades after the rename")
             assertEquals(0L, count(driver, "SELECT count(*) FROM vehicle") + count(driver, "SELECT count(*) FROM savings_goal"))
@@ -632,7 +632,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(30L, LedgerDatabase.Schema.version)
+            assertEquals(31L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).medicalQueries
             assertEquals("AFTER_SERVICE", q.planById("m").executeAsOne().claim_rule, "existing plans keep counting from the service")
@@ -665,6 +665,36 @@ class MigrationTest {
             matching.insertMatch("g", "s", "t1")
             matching.setLineGroup("g", "PROPOSED", null, "l")
             assertEquals("g", matching.linesInGroup("g").executeAsOne().match_group, "statement lines gain their group")
+        }
+    }
+
+    @Test
+    fun `version 30 ledgers keep their events and gain activities and schedules`() {
+        val file = temp.resolve("ledger30.db")
+        older("../data/src/main/sqldelight/ledger/schemas/30.db", file, 30).use { driver ->
+            driver.execute(null, "INSERT INTO event(id, title, category, start_date, reminder_minutes, created_at, updated_at) VALUES ('e', 'Swimming', 'PERSONAL', '2026-10-07', '120', 0, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val db = LedgerDatabase(driver)
+            val e = db.calendarQueries.eventById("e").executeAsOne()
+            assertEquals(0L, e.activity, "existing events are not activities")
+            assertEquals(null, e.cost_minor)
+            db.eventActivitiesQueries.setActivityDrivers("e", "2026-10-14", null, "Jen", null, null)
+            db.eventActivitiesQueries.setActivityCostTxn("e", "2026-10-14", "t")
+            assertEquals("t", db.eventActivitiesQueries.activityDays().executeAsOne().cost_txn_id, "the drivers' row keeps the cost")
+            val s = db.personSchedulesQueries
+            s.insertSchedule("s", "alex", "WORK", null, "2026-09-01", null, 2, 1, null, 0, 0)
+            s.insertShift("s", 1, 3, "19:00", "07:00")
+            s.setException("s", "2026-10-12", 0, "09:00", "13:00", null)
+            s.setException("s", "2026-10-12", 1, null, null, "Holiday")
+            assertEquals(1L, s.exceptions().executeAsOne().off)
+            driver.execute(null, "PRAGMA foreign_keys = ON", 0)
+            s.deleteSchedule("s")
+            assertEquals(0L, count(driver, "SELECT count(*) FROM person_schedule_shift") + count(driver, "SELECT count(*) FROM person_schedule_exception"))
+            db.calendarQueries.deleteEvent("e")
+            assertEquals(0L, count(driver, "SELECT count(*) FROM event_activity_day"), "an event's dates go with it")
         }
     }
 }

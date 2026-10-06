@@ -176,14 +176,16 @@ data class ReferenceData(
     val events: List<RefEvent> = emptyList(),
     /** CAL-03, HLT-03 on the phone: medication refills coming up or overdue. */
     val refills: List<RefRefill> = emptyList(),
+    /** CAL-10 on the phone: each person's work and school hours today and tomorrow, from the groups the phone's user can see. */
+    val schedules: List<RefSchedule> = emptyList(),
 ) {
     companion object {
         /**
          * What a phone app understands of the reference data: 1 up to maintenance and budgets, 2
-         * with contacts, 3 with events and refills. A phone that kept its copy with an older app asks for all of it again
+         * with contacts, 3 with events and refills, 4 with schedules and the other additions before 1.0. A phone that kept its copy with an older app asks for all of it again
          * ([knownVersion]), since that app dropped what it did not know.
          */
-        const val FORMAT = 3
+        const val FORMAT = 4
 
         /** The version a phone sends: none when its copy was kept by an app reading an older [FORMAT]. */
         fun knownVersion(version: String?, storedFormat: Int): String? = version?.takeIf { storedFormat >= FORMAT }
@@ -278,6 +280,20 @@ data class RefRefill(
     val reminderDays: Int = 7,
     val forWhom: String? = null,
     val renewal: Boolean = false,
+)
+
+/**
+ * CAL-10: one person's hours on [date]: [kind] is WORK, SCHOOL or OTHER, [start] and [end] are "HH:mm"
+ * (an [end] before [start] ends the next day); [label] is where, when given.
+ */
+@Serializable
+data class RefSchedule(
+    val person: String,
+    val kind: String,
+    val date: String,
+    val start: String,
+    val end: String,
+    val label: String? = null,
 )
 
 /** A phone number or email with its label ("Office", "Cell"). */

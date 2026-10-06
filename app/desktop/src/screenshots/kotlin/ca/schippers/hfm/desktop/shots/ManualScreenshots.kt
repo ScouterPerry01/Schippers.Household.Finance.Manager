@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.hasScrollToNodeAction
 import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.test.DesktopComposeUiTest
 import ca.schippers.hfm.books.StatementStatus
@@ -105,6 +106,13 @@ private class ShotScope(val app: AppState, val model: BooksModel, val test: Desk
 
     fun l(fr: String, en: String) = if (model.language == Language.FRENCH) fr else en
 
+    /** CAL-11: the next date of a child's activity from today, for the calendar's Week and Day pictures. */
+    fun activityDay(): kotlinx.datetime.LocalDate {
+        val today = ca.schippers.hfm.desktop.today()
+        return model.books.calendar.occurrences(today, today.plus(kotlinx.datetime.DatePeriod(days = 14)))
+            .first { it.event.category == ca.schippers.hfm.books.EventCategory.ACTIVITY && it.event.cost != null }.date
+    }
+
     /** MAN-05: the templates the Templates window shows, added once to the credit card's account group. */
     fun addTemplates(cardId: String) {
         val books = model.books
@@ -176,7 +184,14 @@ private val SHOTS: List<Shot> = buildList {
     add(Shot("documents-all") { section(Section.DOCUMENTS); click(t("documents.tab.ALL")) })
     add(Shot("bills-calendar") { section(Section.BILLS); click(t("bills.tab.CALENDAR")) })
     add(Shot("bills-forecast") { section(Section.BILLS); click(t("bills.tab.FORECAST")) })
-    add(Shot("calendar-month") { section(Section.CALENDAR); click(t("calendar.tab.MONTH")) })
+    add(Shot("calendar-month") { model.calendarView = "AGENDA"; model.calendarDate = ca.schippers.hfm.desktop.today(); section(Section.CALENDAR); click(t("calendar.tab.MONTH")) })
+    // CAL-07 to CAL-11: the other views, on the day of the child's next swimming lesson (an activity with its carpool).
+    add(Shot("calendar-week") { model.calendarDate = activityDay(); section(Section.CALENDAR); click(t("calendar.tab.WEEK")) })
+    add(Shot("calendar-day") { model.calendarDate = activityDay(); section(Section.CALENDAR); click(t("calendar.tab.DAY")) })
+    add(Shot("calendar-year") { model.calendarDate = ca.schippers.hfm.desktop.today(); section(Section.CALENDAR); click(t("calendar.tab.YEAR")) })
+    add(Shot("calendar-activity") { model.calendarDate = activityDay(); section(Section.CALENDAR); click(t("calendar.tab.DAY")); click(l("Cours de natation", "Swimming lessons")) })
+    add(Shot("calendar-schedules") { model.calendarView = "AGENDA"; section(Section.CALENDAR); click(t("schedule.title")) })
+    add(Shot("calendar-schedule-edit") { model.calendarView = "AGENDA"; section(Section.CALENDAR); click(t("schedule.title")); click(t("common.edit")) })
     add(Shot("reports-spending") { model.reportState.kind = ReportKind.SPENDING_BY_CATEGORY; section(Section.REPORTS) })
     add(Shot("reports-net-worth") { model.reportState.kind = ReportKind.NET_WORTH; section(Section.REPORTS) })
     add(Shot("reports-portfolio") { model.reportState.kind = ReportKind.PORTFOLIO; section(Section.REPORTS) })

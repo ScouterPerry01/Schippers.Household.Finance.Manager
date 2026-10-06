@@ -74,6 +74,7 @@ The new person appears in the list and stays selected.
   - If the date is not a real date, the app says "Enter the date as YYYY-MM-DD." and nothing is saved.
 - **Lives in**: the province or territory whose rules apply to this person. **Same as the household** (the default) means the household's province. Choose another one for someone who lives elsewhere, such as a student away at school or a parent in another province. The person's own province is used for their tax slips and tax package, their medical expense credit, their provincial RESP grant and their locked-in plans.
 - **Archived (hidden from lists)**: shown only for a person already saved. Tick it for someone who is no longer part of the household. See [Archive a person](members#archive-person).
+- **Work and school schedules**: shown for a person already saved. Opens that person's work and school hours, shown on the calendar. See [Work and school schedules](calendar#schedules).
 - **Save**: saves the person. Nothing is saved until you click it.
 
 ## Change a person {#change-person}

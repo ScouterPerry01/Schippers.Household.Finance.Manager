@@ -1,0 +1,59 @@
+-- Version 30 to 31: calendar views, schedules and activities (CAL-09, CAL-11). Only additions.
+
+-- CAL-11: a child's activity, with who drives each way and its cost.
+ALTER TABLE event ADD COLUMN activity INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE event ADD COLUMN driver_there_member_id TEXT;
+ALTER TABLE event ADD COLUMN driver_there_name TEXT;
+ALTER TABLE event ADD COLUMN driver_back_member_id TEXT;
+ALTER TABLE event ADD COLUMN driver_back_name TEXT;
+ALTER TABLE event ADD COLUMN cost_minor INTEGER;
+ALTER TABLE event ADD COLUMN cost_currency TEXT;
+
+-- CAL-11: one date of an activity: drivers that differ from the series, and the transaction its cost became.
+CREATE TABLE event_activity_day (
+    event_id TEXT NOT NULL REFERENCES event(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    drivers_set INTEGER NOT NULL DEFAULT 0,
+    driver_there_member_id TEXT,
+    driver_there_name TEXT,
+    driver_back_member_id TEXT,
+    driver_back_name TEXT,
+    cost_txn_id TEXT,
+    PRIMARY KEY (event_id, date)
+);
+
+-- CAL-09: work and school schedules per person, with their hours and exceptions.
+CREATE TABLE person_schedule (
+    id TEXT NOT NULL PRIMARY KEY,
+    member_id TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('WORK', 'SCHOOL', 'OTHER')),
+    label TEXT,
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    rotation_weeks INTEGER NOT NULL DEFAULT 1,
+    holidays_off INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE person_schedule_shift (
+    schedule_id TEXT NOT NULL REFERENCES person_schedule(id) ON DELETE CASCADE,
+    week INTEGER NOT NULL,
+    day_of_week INTEGER NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    PRIMARY KEY (schedule_id, week, day_of_week)
+);
+
+CREATE TABLE person_schedule_exception (
+    schedule_id TEXT NOT NULL REFERENCES person_schedule(id) ON DELETE CASCADE,
+    date TEXT NOT NULL,
+    off INTEGER NOT NULL DEFAULT 1,
+    start_time TEXT,
+    end_time TEXT,
+    reason TEXT,
+    PRIMARY KEY (schedule_id, date)
+);
+
+CREATE INDEX person_schedule_member ON person_schedule(member_id);
