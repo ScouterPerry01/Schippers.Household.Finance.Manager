@@ -46,6 +46,7 @@ import ca.schippers.hfm.books.TaskStatus
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.books.Vehicle
 import ca.schippers.hfm.books.VehicleStatus
+import ca.schippers.hfm.books.Transaction
 import ca.schippers.hfm.books.Warranty
 import ca.schippers.hfm.books.WarrantyKind
 import ca.schippers.hfm.calc.rules.LeadTimes
@@ -164,6 +165,9 @@ private fun OverviewTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> 
         }
         if (v.status != VehicleStatus.ACTIVE) {
             Text(model.t("vehicles.disposalLine", model.t("vehicleStatus.${v.status}"), v.disposalDate?.let(model::date) ?: "—", v.disposalPrice?.let(model::money) ?: "—"))
+            // SAL-03: the sale deposit in the books; its payee is the buyer.
+            val sale = v.disposalTransactionId?.takeIf { v.status == VehicleStatus.SOLD }?.let { id -> remember(id, model.revision) { runCatching { model.books.transactions.get(id) }.getOrNull() } }
+            sale?.let { t -> Text(model.t("assets.sale", model.date(t.date), t.payeeText ?: "", model.money(t.amount)), style = MaterialTheme.typography.bodySmall) }
             // SAL-03: the gain or loss against the purchase price.
             if (v.status == VehicleStatus.SOLD) saleResult(model, v.purchasePrice, v.disposalPrice)?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         }
@@ -433,6 +437,8 @@ private fun VehicleDialog(model: BooksModel, existing: Vehicle, onClose: (String
     var status by remember { mutableStateOf(existing.status) }
     var disposalDate by remember { mutableStateOf(existing.disposalDate?.toString().orEmpty()) }
     var disposalPrice by remember { mutableStateOf(existing.disposalPrice?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
+    // SAL-03: the sale in the books (its payee is the buyer).
+    var saleId by remember { mutableStateOf(existing.disposalTransactionId) }
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
     var groupId by remember { mutableStateOf(existing.groupId) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -449,6 +455,7 @@ private fun VehicleDialog(model: BooksModel, existing: Vehicle, onClose: (String
                         purchasePrice = parseAmount(price, c, locale), seller = seller, purchaseOdometer = optionalInt(purchaseOdo),
                         registrationRenewal = optionalDate(registration), insurer = insurer, policyNumber = policy, insuranceRenewal = optionalDate(insurance),
                         status = status, disposalDate = optionalDate(disposalDate), disposalPrice = parseAmount(disposalPrice, c, locale), notes = notes,
+                        disposalTransactionId = saleId.takeIf { status == VehicleStatus.SOLD },
                     ),
                 )
             }
@@ -495,6 +502,15 @@ private fun VehicleDialog(model: BooksModel, existing: Vehicle, onClose: (String
                         DateInput(model.t("vehicles.disposalDate"), disposalDate, Modifier.weight(1f)) { disposalDate = it }
                         AmountInput(model.t("vehicles.disposalPrice"), disposalPrice, c, locale, Modifier.weight(1f), model::money) { disposalPrice = it }
                     }
+                }
+                if (status == VehicleStatus.SOLD) {
+                    SaleLink(model, saleId, onUnlink = { saleId = null }) { t ->
+                        saleId = t.id
+                        if (disposalDate.isBlank()) disposalDate = t.date.toString()
+                        if (disposalPrice.isBlank()) disposalPrice = MoneyFormat.formatAmount(t.amount, locale)
+                    }
+                    saleResult(model, runCatching { parseAmount(price, c, locale) }.getOrNull(), runCatching { parseAmount(disposalPrice, c, locale) }.getOrNull())
+                        ?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                 }
             }
             TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }

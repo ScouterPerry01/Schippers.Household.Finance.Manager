@@ -57,7 +57,8 @@ Chaque date donne une ligne dans l’aperçu, en gras dans les 30 jours qui pré
 En modifiant un véhicule enregistré :
 
 - **État** : **En service** (par défaut), **Vendu** ou **Retiré**. Un véhicule vendu ou retiré est caché de la liste **Véhicule** (à moins que **Afficher les véhicules vendus ou retirés** soit coché), des rappels, des listes d’entretien et de la recherche **Est-ce couvert ?**. Ses données sont conservées.
-- **Date** et **Prix de vente** : affichés quand l’état n’est pas **En service** : quand il a été vendu ou retiré, et pour combien. L’aperçu affiche alors une ligne comme « Vendu le date pour prix » et, pour une vente avec un prix d’achat, le gain ou la perte sur la vente (le prix de vente moins le prix d’achat), à titre indicatif.
+- **Date** et **Prix de vente** : affichés quand l’état n’est pas **En service** : quand il a été vendu ou retiré, et pour combien. L’aperçu affiche alors une ligne comme « Vendu le date pour prix » et, pour une vente avec un prix d’achat, le gain ou la perte sur la vente (le prix de vente moins le prix d’achat), à titre indicatif. La même ligne paraît dans le formulaire pendant la modification.
+- La vente dans les livres, affichée quand **Vendu** : tapez quelques lettres de l’acheteur ou de la note, ou le montant, dans **Trouver la vente**, puis choisissez le dépôt sous **Dépôts correspondants**. La ligne indique alors « Vente : date · acheteur · montant », l’acheteur étant le bénéficiaire du dépôt ; la date et le prix de vente sont remplis s’ils sont vides. **Délier** retire le lien ; le dépôt lui-même reste. L’aperçu affiche la même ligne. Remettre l’état à **En service** ou **Retiré** retire le lien à l’enregistrement.
 
 ### Enregistrer dans et supprimer {#store-delete}
 
@@ -77,7 +78,7 @@ L’onglet **Aperçu** affiche :
 - « Environ distance par année » : votre distance habituelle, d’après les lectures de la dernière année, dès qu’il y a des lectures à au moins deux semaines d’intervalle ;
 - les lignes d’immatriculation et d’assurance, colorées à l’approche de leurs dates ;
 - la ligne d’achat, « Acheté le date pour prix chez vendeur, à distance », quand une date ou un prix d’achat est entré ;
-- pour un véhicule qui n’est plus en service, son état, sa date et son prix de vente ;
+- pour un véhicule qui n’est plus en service, son état, sa date et son prix de vente et, pour un véhicule vendu, le gain ou la perte et la vente liée avec son acheteur ;
 - les notes ;
 - **Lectures de l’odomètre** : les 12 dernières lectures.
 

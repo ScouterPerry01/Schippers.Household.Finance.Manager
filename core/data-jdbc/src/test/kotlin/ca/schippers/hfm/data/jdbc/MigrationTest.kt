@@ -628,6 +628,7 @@ class MigrationTest {
         older("../data/src/main/sqldelight/ledger/schemas/29.db", file, 29).use { driver ->
             driver.execute(null, "INSERT INTO med_plan(id, kind, name, claim_days, created_at, updated_at) VALUES ('m', 'GROUP_HEALTH', 'Sun Life', 365, 0, 0)", 0)
             driver.execute(null, "INSERT INTO med_plan_person(plan_id, member_id) VALUES ('m', 'alex')", 0)
+            driver.execute(null, "INSERT INTO vehicle(id, name, status, disposal_date, disposal_price_minor, created_at, updated_at) VALUES ('v', 'Civic', 'SOLD', '2026-09-01', 1850000, 0, 0)", 0)
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
@@ -638,6 +639,9 @@ class MigrationTest {
             q.upsertPlan("m", "GROUP_HEALTH", "Sun Life", null, null, null, null, 1, 1, 90, null, 1, null, 0, 1, "AFTER_PLAN_YEAR")
             assertEquals("AFTER_PLAN_YEAR", q.planById("m").executeAsOne().claim_rule)
             assertEquals(1L, count(driver, "SELECT count(*) FROM med_plan_person"), "saving the plan again keeps its people")
+            val vehicles = LedgerDatabase(driver).vehiclesQueries
+            assertEquals(null, vehicles.vehicleById("v").executeAsOne().disposal_txn_id, "a vehicle sold before has no linked deposit")
+            assertEquals(1850000L, vehicles.vehicleById("v").executeAsOne().disposal_price_minor)
         }
     }
 }

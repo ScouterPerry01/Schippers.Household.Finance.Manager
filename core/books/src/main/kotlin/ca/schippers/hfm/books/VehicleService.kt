@@ -57,6 +57,8 @@ data class Vehicle(
     val disposalDate: LocalDate? = null,
     val disposalPrice: Money? = null,
     val notes: String? = null,
+    /** SAL-03: the sale deposit in the books, when sold; its payee is the buyer. */
+    val disposalTransactionId: String? = null,
 ) {
     val electric: Boolean get() = fuelType == FuelType.ELECTRIC
 }
@@ -190,7 +192,7 @@ class VehicleService internal constructor(private val books: Books) {
                 vin.blankToNull()?.uppercase(), plate.blankToNull()?.uppercase(), fuelType.name, driverMemberId, purchaseDate?.toString(),
                 purchasePrice?.minorUnits, seller.blankToNull(), purchaseOdometer?.toLong(), currency.code, registrationRenewal?.toString(),
                 insurer.blankToNull(), policyNumber.blankToNull(), insuranceRenewal?.toString(), status.name, disposalDate?.toString(),
-                disposalPrice?.minorUnits, notes.blankToNull(), created, books.now(),
+                disposalPrice?.minorUnits, notes.blankToNull(), created, books.now(), disposalTransactionId.takeIf { status == VehicleStatus.SOLD },
             )
         }
         return get(id)
@@ -516,7 +518,7 @@ class VehicleService internal constructor(private val books: Books) {
             id, groupId, name, make, model, model_year?.toInt(), trim_level, colour, vin, plate, FuelType.valueOf(fuel_type), driver_member_id,
             purchase_date?.let(LocalDate::parse), purchase_price_minor?.let { Money.ofMinor(it, c) }, seller, purchase_odometer?.toInt(), c,
             registration_renewal?.let(LocalDate::parse), insurer, policy_number, insurance_renewal?.let(LocalDate::parse), VehicleStatus.valueOf(status),
-            disposal_date?.let(LocalDate::parse), disposal_price_minor?.let { Money.ofMinor(it, c) }, notes,
+            disposal_date?.let(LocalDate::parse), disposal_price_minor?.let { Money.ofMinor(it, c) }, notes, disposal_txn_id,
         )
     }
 

@@ -125,6 +125,17 @@ class PetVehicleTest {
     }
 
     @Test
+    fun `a vehicle sale is linked to its deposit`() {
+        val v = civic()
+        val deposit = books.transactions.create(TransactionDraft(visa.id, d(9, 1), cad("18500"), "J. Tremblay"))
+        val sold = books.vehicles.save(v.copy(status = VehicleStatus.SOLD, disposalDate = d(9, 1), disposalPrice = cad("18500"), disposalTransactionId = deposit.id))
+        assertEquals(deposit.id, sold.disposalTransactionId, "SAL-03: the sale deposit is kept; its payee is the buyer")
+        assertEquals("J. Tremblay", books.transactions.get(sold.disposalTransactionId!!).payeeText)
+        assertEquals(deposit.id, books.vehicles.get(v.id).disposalTransactionId)
+        assertNull(books.vehicles.save(sold.copy(status = VehicleStatus.RETIRED)).disposalTransactionId, "only a sale keeps a sale deposit")
+    }
+
+    @Test
     fun `maintenance falls due by date, by distance, or by the forecast`() {
         val v = civic()
         val oil = books.vehicles.saveTask(MaintenanceTask("", v.id, "Vidange", "oil", 6, 8_000, startDate = d(1, 10), startOdometer = 40_000))

@@ -141,9 +141,9 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - TX-08: Met.
 - EXP-02 (export of chosen transactions as QIF, OFX or CSV): Fixed: never built. The same choice exports CSV, QIF or OFX; the three files are read back by the app's own importers in tests, each export is in the activity log, and the window says the file is not encrypted.
 - CAT-03 (learning suggestions shown for confirmation): Met in the register and for documents. Gap: on statement import the payee's last category is applied without asking (documented under Rules). Owner's decision.
-- SAL-03 (sales of personal items with buyer, price and the asset): Fixed for assets: the sale deposit can be linked (its payee is the buyer) and the gain or loss against the purchase price is shown; vehicles show the gain or loss too. Gap: a vehicle sale cannot be linked to its deposit (no column for it). Small with a schema addition.
+- SAL-03 (sales of personal items with buyer, price and the asset): Fixed for assets: the sale deposit can be linked (its payee is the buyer) and the gain or loss against the purchase price is shown; vehicles show the gain or loss too. Fixed: a vehicle sale is now linked to its deposit the same way (Find the sale, the buyer from its payee, the gain or loss in the form and the overview; ledger schema version 30).
 - AST-02, AST-03, AST-04: Met.
-- AST-05 (disposal linked to the sale): Fixed with SAL-03 for assets.
+- AST-05 (disposal linked to the sale): Fixed with SAL-03, for assets and vehicles.
 - REC-03 (one-to-many and many-to-one matching): Gap: deferred in Phase 1 and never built. Large (a link table, a multi-select matching screen, changes to finish and undo).
 - REC-04, REC-07, REC-08, REC-09: Met.
 - BILL-07, BILL-08, BILL-09: Met.

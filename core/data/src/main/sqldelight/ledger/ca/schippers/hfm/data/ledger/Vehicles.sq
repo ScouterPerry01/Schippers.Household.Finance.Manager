@@ -27,7 +27,9 @@ CREATE TABLE vehicle (
     disposal_price_minor INTEGER,
     notes TEXT,
     created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+    updated_at INTEGER NOT NULL,
+    -- SAL-03 (version 30): the sale deposit in the books; its payee is the buyer.
+    disposal_txn_id TEXT
 );
 
 -- VEH-04: odometer readings entered directly; fuel and service entries also carry readings.
@@ -113,8 +115,8 @@ upsertVehicle:
 -- CASCADE, everything that belongs to it.
 INSERT INTO vehicle(id, name, make, model, model_year, trim_level, colour, vin, plate, fuel_type, driver_member_id,
     purchase_date, purchase_price_minor, seller, purchase_odometer, currency, registration_renewal, insurer, policy_number,
-    insurance_renewal, status, disposal_date, disposal_price_minor, notes, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    insurance_renewal, status, disposal_date, disposal_price_minor, notes, created_at, updated_at, disposal_txn_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
     name = excluded.name,
     make = excluded.make,
@@ -138,6 +140,7 @@ ON CONFLICT(id) DO UPDATE SET
     status = excluded.status,
     disposal_date = excluded.disposal_date,
     disposal_price_minor = excluded.disposal_price_minor,
+    disposal_txn_id = excluded.disposal_txn_id,
     notes = excluded.notes,
     created_at = excluded.created_at,
     updated_at = excluded.updated_at;

@@ -57,7 +57,8 @@ Each date gives a line on the overview, in bold within 30 days and red once pass
 When editing a saved vehicle:
 
 - **Status**: **In use** (the default), **Sold** or **Retired**. A vehicle sold or retired is hidden from the **Vehicle** list (unless **Show sold and retired** is ticked), from reminders, from the maintenance lists and from the **Is it covered?** search. Its records are kept.
-- **Date** and **Sale price**: shown when the status is not **In use**: when it was sold or retired, and for how much. The overview then shows a line such as "Sold on date for price" and, for a sale with a purchase price, the gain or loss on the sale (the sale price less the purchase price), for your information.
+- **Date** and **Sale price**: shown when the status is not **In use**: when it was sold or retired, and for how much. The overview then shows a line such as "Sold on date for price" and, for a sale with a purchase price, the gain or loss on the sale (the sale price less the purchase price), for your information. The same line shows in the form while you edit.
+- The sale in the books, shown when **Sold**: type a few letters of the buyer or the memo, or the amount, in **Find the sale**, then choose the deposit under **Matching deposits**. The line then reads "Sale: date · buyer · amount", the buyer being the deposit's payee; the date and sale price are filled in when empty. **Unlink** removes the link; the deposit itself stays. The overview shows the same line. Changing the status back to **In use** or **Retired** drops the link when you save.
 
 ### Store in and delete {#store-delete}
 
@@ -77,7 +78,7 @@ The **Overview** tab shows:
 - "About distance a year": your usual distance, from the readings of the last year, once there are readings at least two weeks apart;
 - the registration and insurance lines, coloured as their dates approach;
 - the purchase line, "Bought date for price from seller, at distance", when a purchase date or price is entered;
-- for a vehicle no longer in use, its status, date and sale price;
+- for a vehicle no longer in use, its status, date and sale price, and for a sold one the gain or loss and the linked sale with its buyer;
 - the notes;
 - **Odometer readings**: the last 12 readings.
 

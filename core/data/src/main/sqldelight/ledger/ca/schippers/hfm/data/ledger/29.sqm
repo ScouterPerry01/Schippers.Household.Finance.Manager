@@ -4,3 +4,6 @@
 -- of service, as before) or AFTER_PLAN_YEAR (claim_days after the plan year of the service ends;
 -- 0 = by the last day of the plan year).
 ALTER TABLE med_plan ADD COLUMN claim_rule TEXT NOT NULL DEFAULT 'AFTER_SERVICE';
+
+-- SAL-03, AST-05: a sold vehicle's sale deposit in the books (its payee is the buyer).
+ALTER TABLE vehicle ADD COLUMN disposal_txn_id TEXT;

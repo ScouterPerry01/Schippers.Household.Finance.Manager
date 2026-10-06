@@ -53,6 +53,7 @@ import ca.schippers.hfm.books.PolicyKind
 import ca.schippers.hfm.books.PremiumFrequency
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.books.ValueMethod
+import ca.schippers.hfm.books.Transaction
 import ca.schippers.hfm.books.WarrantyClaim
 import ca.schippers.hfm.calc.rules.Thresholds
 import ca.schippers.hfm.domain.AccountKind
@@ -168,15 +169,12 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
     var disposalPrice by remember { mutableStateOf(amt(existing.disposalPrice)) }
     // SAL-03, AST-05: the sale in the books (its payee is the buyer).
     var saleId by remember { mutableStateOf(existing.disposalTransactionId) }
-    var findSale by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
     var meter by remember { mutableStateOf(existing.meter) }
     var saved by remember { mutableStateOf(existing.takeIf { it.id.isNotBlank() }) }
     var warranty by remember { mutableStateOf<AssetWarranty?>(null) }
     var asking by remember { mutableStateOf(false) }
     val linked = transactionId?.let { id -> remember(id) { runCatching { books.transactions.get(id) }.getOrNull() } }
-    val sale = saleId?.let { id -> remember(id) { runCatching { books.transactions.get(id) }.getOrNull() } }
-    val saleHits = remember(findSale) { if (findSale.trim().length < 2) emptyList() else books.search.search(findSale, locale, 30).transactions.filter { it.transaction.amount.isPositive } }
     val hits = remember(find) { if (find.trim().length < 2) emptyList() else books.search.search(find, locale, 30).transactions.filter { it.transaction.amount.isNegative } }
 
     WideDialog(model.t(if (existing.id.isBlank()) "assets.add" else "assets.asset"), model.t("common.close"), onClose) {
@@ -242,21 +240,10 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
                 }
             }
             if (status == AssetStatus.SOLD) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        sale?.let { t -> model.t("assets.sale", model.date(t.date), t.payeeText ?: "", model.money(t.amount)) } ?: model.t("assets.noSale"),
-                        Modifier.weight(1f), style = MaterialTheme.typography.bodySmall,
-                    )
-                    if (sale != null) TextButton(onClick = { saleId = null }) { Text(model.t("assets.unlink")) }
-                    TextInput(model.t("assets.findSale"), findSale, Modifier.width(220.dp)) { findSale = it }
-                    if (saleHits.isNotEmpty()) {
-                        Picker(model.t("assets.pickSale"), saleHits, null, { h -> "${model.date(h.transaction.date)} · ${h.payeeName.orEmpty()} · ${model.money(h.transaction.amount)}" }, Modifier.width(260.dp)) { h ->
-                            saleId = h.transaction.id
-                            if (disposalDate.isBlank()) disposalDate = h.transaction.date.toString()
-                            if (disposalPrice.isBlank()) disposalPrice = MoneyFormat.formatAmount(h.transaction.amount, locale)
-                            findSale = ""
-                        }
-                    }
+                SaleLink(model, saleId, onUnlink = { saleId = null }) { t ->
+                    saleId = t.id
+                    if (disposalDate.isBlank()) disposalDate = t.date.toString()
+                    if (disposalPrice.isBlank()) disposalPrice = MoneyFormat.formatAmount(t.amount, locale)
                 }
                 saleResult(model, runCatching { parseAmount(price, cur, locale) }.getOrNull(), runCatching { parseAmount(disposalPrice, cur, locale) }.getOrNull())
                     ?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
@@ -684,6 +671,33 @@ private fun ClaimDialog(model: BooksModel, existing: InsuranceClaim, items: List
             DocumentsBlock(model, InsuranceService.CLAIM, existing.id, groupId, "insurance.claimDocuments")
         } else {
             Text(model.t("insurance.claimDocumentsLater"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/**
+ * SAL-03, AST-05: the sale deposit in the books linked to a sold item or vehicle (its payee is the
+ * buyer), with a search among deposits to link one. [onPick] receives the chosen deposit.
+ */
+@Composable
+internal fun SaleLink(model: BooksModel, saleId: String?, onUnlink: () -> Unit, onPick: (Transaction) -> Unit) {
+    val books = model.books
+    val locale = model.language.locale
+    var findSale by remember { mutableStateOf("") }
+    val sale = saleId?.let { id -> remember(id) { runCatching { books.transactions.get(id) }.getOrNull() } }
+    val saleHits = remember(findSale) { if (findSale.trim().length < 2) emptyList() else books.search.search(findSale, locale, 30).transactions.filter { it.transaction.amount.isPositive } }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            sale?.let { t -> model.t("assets.sale", model.date(t.date), t.payeeText ?: "", model.money(t.amount)) } ?: model.t("assets.noSale"),
+            Modifier.weight(1f), style = MaterialTheme.typography.bodySmall,
+        )
+        if (sale != null) TextButton(onClick = onUnlink) { Text(model.t("assets.unlink")) }
+        TextInput(model.t("assets.findSale"), findSale, Modifier.width(220.dp)) { findSale = it }
+        if (saleHits.isNotEmpty()) {
+            Picker(model.t("assets.pickSale"), saleHits, null, { h -> "${model.date(h.transaction.date)} · ${h.payeeName.orEmpty()} · ${model.money(h.transaction.amount)}" }, Modifier.width(260.dp)) { h ->
+                onPick(h.transaction)
+                findSale = ""
+            }
         }
     }
 }
