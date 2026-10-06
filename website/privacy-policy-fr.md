@@ -75,10 +75,10 @@ Les versions du Microsoft Store et de Google Play ne consultent jamais GitHub : 
 
 ## Fonctions facultatives qui utilisent vos propres comptes
 
-Certaines fonctions facultatives sont encore en cours d'ajout aux applications avant la version 1.0. Elles sont décrites ici à l'avance, pour que cette politique n'ait pas à changer à leur arrivée. Elles sont toutes désactivées tant que vous ne les activez pas, et chacune indique ce qu'elle envoie avant d'envoyer quoi que ce soit.
+Ces fonctions sont désactivées tant que vous ne les activez pas, et chacune indique ce qu'elle envoie avant d'envoyer quoi que ce soit.
 
-**Lecture des documents par IA.** Si la lecture sur l'appareil ne suffit pas, vous pouvez demander à un service d'IA, comme Claude d'Anthropic, de lire un reçu ou une facture.
-- L'image de ce seul document est envoyée au service d'IA, avec des instructions indiquant les champs à retourner. On peut vous demander de confirmer chaque document, et vous pouvez brouiller des parties comme les numéros de compte avant l'envoi.
+**Lecture des documents par IA.** Sur l'ordinateur, si la lecture sur l'appareil ne suffit pas, vous pouvez demander à Claude d'Anthropic de lire un document, comme un reçu, une facture ou un relevé bancaire, de carte ou de placements.
+- Des images des pages de ce document sont envoyées au service d'IA, avec des instructions indiquant les champs à retourner. Vous voyez d'abord chaque page (sauf si vous désactivez cette étape), pouvez en laisser de côté et pouvez masquer des parties comme les numéros de compte : les parties masquées sont envoyées en gris uni, et non brouillées. Rien n'est envoyé avant que vous choisissiez de l'envoyer.
 - Vous utilisez votre propre compte auprès du service d'IA. Votre clé pour ce service est gardée dans le magasin d'identifiants sécurisé de votre ordinateur, et non par RANN.
 - Le service d'IA traite l'image selon ses propres conditions et sa propre politique de confidentialité. RANN ne reçoit rien.
 
@@ -91,6 +91,8 @@ Certaines fonctions facultatives sont encore en cours d'ajout aux applications a
 Sur Android, la reconnaissance de texte, le numériseur de documents et le lecteur de codes QR sont fournis par Google (ML Kit et les services Google Play). Ils fonctionnent sur votre téléphone, et Google indique que vos images et le texte qui en est lu ne sont pas envoyés à ses serveurs.
 
 Les composants de Google envoient toutefois à Google des renseignements techniques sur leur utilisation : le modèle de l'appareil et la version d'Android, le nom et la version de l'application, un identifiant de l'installation qui n'est pas destiné à vous identifier, et le rendement des fonctions. Ces renseignements sont régis par les [règles de confidentialité de Google](https://policies.google.com/privacy?hl=fr-CA). Ni RANN ni vous ne pouvez désactiver cet envoi, et il ne contient rien de vos documents ni de votre ménage.
+
+**Dictée.** Si vous touchez Dicter la note, la saisie vocale du téléphone (souvent celle de Google) écoute et ne remet à l'application que les mots; elle traite votre voix selon sa propre politique de confidentialité. Les notes vocales enregistrées dans l'application ne sont pas de la dictée : elles restent sur le téléphone jusqu'à leur arrivée sur votre ordinateur, chiffrées de bout en bout.
 
 Si vous installez l'application à partir de Google Play, Google s'occupe de son téléchargement et de ses mises à jour.
 

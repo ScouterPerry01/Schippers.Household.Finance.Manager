@@ -75,10 +75,10 @@ The Microsoft Store and Google Play versions never check GitHub: the store updat
 
 ## Optional features that use your own accounts
 
-Some optional features are still being added to the apps before version 1.0. They are described here in advance, so this policy does not need to change when they arrive. All of them are off until you turn them on, and each one says what it sends before it sends anything.
+These features are off until you turn them on, and each one says what it sends before it sends anything.
 
-**Reading documents with AI.** If on-device reading is not good enough, you can ask an AI service, such as Anthropic's Claude, to read a receipt or bill.
-- The image of that one document goes to the AI service, with instructions listing the fields to return. You can be asked to confirm each document, and you can blur parts such as account numbers before it is sent.
+**Reading documents with AI.** On the computer, if on-device reading is not good enough, you can ask Anthropic's Claude to read a document, such as a receipt, a bill or a bank, card or investment statement.
+- Pictures of that document's pages go to the AI service, with instructions listing the fields to return. You see each page first (unless you turn that off), can leave pages out, and can hide parts such as account numbers: hidden parts are sent as plain grey, not blurred. Nothing is sent until you choose to send it.
 - You use your own account with the AI service. Your key for it is kept in your computer's secure credential store, not by RANN.
 - The AI service handles the image under its own terms and privacy policy. RANN receives nothing.
 
@@ -91,6 +91,8 @@ Some optional features are still being added to the apps before version 1.0. The
 On Android, text recognition, the document scanner and the QR code scanner are provided by Google (ML Kit and Google Play services). They run on your phone, and Google states that your images and the text read from them are not sent to its servers.
 
 Google's components do send Google technical information about their use: the device model and Android version, the app's name and version, an identifier for the installation that is not meant to identify you, and how the features perform. This is governed by [Google's privacy policy](https://policies.google.com/privacy). Neither RANN nor you can turn it off, and it contains nothing from your documents or your household.
+
+**Dictation.** If you tap Dictate the note, the phone's own speech input (often Google's) listens and hands the app only the words; it handles your voice under its own privacy policy. Voice notes you record in the app are not dictation: they stay on the phone until they reach your computer, encrypted end to end.
 
 If you install the app from Google Play, Google handles its download and updates.
 

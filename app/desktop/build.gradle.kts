@@ -135,7 +135,12 @@ compose.desktop {
             description = "RANN's Roost: household finances for Canada"
             vendor = "RANN"
             licenseFile.set(rootProject.file("LICENSE"))
-            modules("java.sql", "java.prefs", "jdk.unsupported")
+            // The JDK modules the packaged runtime keeps, as `suggestRuntimeModules` lists them. A missing one
+            // fails only when its first class is used: without java.net.http the installed app did not open
+            // (the update check's client is made at start), and without jdk.httpserver phones could not
+            // connect. PackagedSelfCheck loads a class from each; rerun suggestRuntimeModules after adding
+            // a library or a JDK API.
+            modules("java.instrument", "java.naming", "java.net.http", "java.prefs", "java.sql", "jdk.httpserver", "jdk.unsupported")
             windows {
                 menuGroup = "RANN's Roost"
                 // Keep this fixed forever: Windows uses it to recognise upgrades of the same app.
