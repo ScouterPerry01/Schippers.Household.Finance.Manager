@@ -379,6 +379,10 @@ class SyncService internal constructor(private val books: Books) {
     /** TRP-05, TRP-10: a fill-up or charge entered on the phone, in the vehicle's currency. */
     private fun receiveFuel(deviceId: String, f: PhoneFuel) {
         val vehicle = books.vehicles.get(f.vehicleId)
+        // Kept under the phone's own id: received again (the answer was lost, or the computer stopped
+        // before noting it), it is the same fill-up.
+        validate(f.id.isNotBlank() && f.id.length <= MAX_ID, "error.invalidNumber")
+        if (books.vehicles.fuel(vehicle.id).any { it.id == f.id }) return
         val quantity = phoneDecimal(f.quantity) ?: throw ValidationException("error.fuelQuantity")
         val cost = phoneDecimal(f.cost)?.let { Money.of(it, vehicle.currency) }
         val place = f.placeId?.let { books.places.find(it) }
@@ -389,6 +393,7 @@ class SyncService internal constructor(private val books: Books) {
                 energy = Energy.entries.firstOrNull { it.name == f.energy }, charging = f.charging?.let { c -> Charging.entries.firstOrNull { it.name == c } },
                 placeId = place?.id, deviceId = deviceId,
             ),
+            newId = f.id,
         )
     }
 
@@ -430,12 +435,13 @@ class SyncService internal constructor(private val books: Books) {
         )
     }
 
-    /** SEA-04: the current season's checklist. */
+    /** SEA-04: the current season's checklist, without the tasks of vehicles and assets the user may only view. */
     private fun seasonal(today: LocalDate): RefSeasonal {
         val c = books.seasonal.checklist(Seasons.windowOf(today), today)
+        val may = HashMap<Pair<Boolean, String>, Boolean>()
         return RefSeasonal(
             c.window.season.name, c.window.start.toString(), c.window.end.toString(),
-            c.items.take(MAX_SEASONAL).map {
+            c.items.filter { may.getOrPut(it.vehicle to it.subjectId) { books.seasonal.mayTick(it.vehicle, it.subjectId) } }.take(MAX_SEASONAL).map {
                 RefSeasonalTask(it.taskId, it.subjectId, it.subjectName, it.taskName, it.vehicle, it.state.name, it.dueDate?.toString(), it.doneOn?.toString(), it.unit?.name, it.currency.code)
             },
         )
@@ -509,6 +515,9 @@ class SyncService internal constructor(private val books: Books) {
         private const val PRIVATE_KEY = "sync.privateKey"
         private const val MAX_ITEMS = 50
         private const val MAX_CALENDARS = 40
+
+        /** The longest id of an entry made on the phone (they are UUIDs). */
+        private const val MAX_ID = 64
 
         /** Section 3.1: how far back a reply file confirms items received from the phone, as long as replies are kept in the folder. */
         const val RECENT_CONFIRM_MS = 60L * 24 * 3600 * 1000

@@ -27,6 +27,7 @@ import java.math.BigDecimal
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -340,6 +341,67 @@ class TripsOnPhoneTest {
             assertEquals(120, trip.destination.length)
             assertEquals(500, trip.notes?.length)
             assertTrue(sam.vehicles.fuel(civicId).isEmpty())
+        } finally {
+            sam.session.close()
+        }
+    }
+
+    @Test
+    fun `trips follow their vehicle's group, deleted places stay deleted, and what a user may only view is not ticked`() {
+        val books = household()
+        val shared = books.groups().single().id
+        val private = books.session.createGroup("Perry private", private = true)
+        val van = books.vehicles.save(Vehicle("", shared, "Van", purchaseOdometer = 1_000))
+        val own = books.vehicles.save(Vehicle("", private, "Own car", purchaseOdometer = 1_000))
+        books.vehicles.addStarterTasks(van.id, today) { it }
+        val gone = books.places.save(Place("", shared, "Old office", latitude = 45.0, longitude = -75.0))
+        val samId = books.users.add("sam", "Sam", ca.schippers.hfm.domain.Role.MEMBER, "password2-long".toCharArray()).userId
+        books.session.setPermission(shared, samId, ca.schippers.hfm.domain.PermissionLevel.VIEW)
+        try {
+            // The administrator's phone stores in the shared group, but a trip in the private car stays private.
+            val key = pairPhone(books, "phone-1")
+            assertEquals(shared, books.sync.devices().single().groupId)
+            val trip = PhoneTrip("trip-own", now, own.id, "2026-10-03T08:00", "2026-10-03T08:30", 1_100, 1_120, endPlace = "Clinic")
+            assertEquals(listOf("trip-own"), send(books, "phone-1", key, SyncRequest(now, emptyList(), trips = listOf(trip))).imported)
+            assertEquals(private, books.trips.list(2026).single().groupId)
+            assertNull(books.ledger(books.group(shared)).extrasQueries.tripById("trip-own").executeAsOneOrNull())
+
+            // A place deleted here is not brought back by a phone that still has it.
+            books.places.delete(gone)
+            val renamed = send(books, "phone-1", key, SyncRequest(now, emptyList(), places = listOf(PhonePlace(gone.id, "c-9", now, "Old office (closed)"))))
+            assertEquals(listOf("c-9"), renamed.failed.map { it.id })
+            assertNull(books.places.find(gone.id))
+
+            // A fill-up stored under the phone's id before the computer could note it (it stopped in between) is not stored again.
+            books.vehicles.saveFuel(FuelEntry("", van.id, LocalDate(2026, 10, 4), null, BigDecimal("40")), newId = "fuel-9")
+            val again = send(books, "phone-1", key, SyncRequest(now, emptyList(), fuel = listOf(PhoneFuel("fuel-9", now, van.id, "2026-10-04", "40"))))
+            assertEquals(listOf("fuel-9"), again.imported)
+            assertEquals(1, books.vehicles.fuel(van.id).size)
+        } finally {
+            books.session.close()
+        }
+        val sam = Books(store.unlock(temp.resolve("T.hfm"), "sam", "password2-long".toCharArray()))
+        try {
+            sam.session.createGroup("Sam private", private = true)
+            assertEquals(1, sam.vehicles.fuel(van.id).size)
+            // Sam may only view the van: no trip in it, from the computer or the phone, and no seasonal tick.
+            assertFailsWith<ca.schippers.hfm.data.AccessDeniedException> {
+                sam.trips.save(Trip("", sam.groups().single { it.isPrivate }.id, today, "Store", BigDecimal("5"), false, TripPurpose.PERSONAL, van.id))
+            }
+            val key = pairPhone(sam, "phone-2")
+            val first = send(sam, "phone-2", key, SyncRequest(now, emptyList()))
+            assertTrue(assertNotNull(first.reference?.seasonal).tasks.none { it.subjectId == van.id }, "the van's tasks are not offered")
+            val task = sam.vehicles.tasks(van.id).first()
+            val answer = send(
+                sam, "phone-2", key,
+                SyncRequest(
+                    now, emptyList(),
+                    trips = listOf(PhoneTrip("trip-van", now, van.id, "2026-10-03T08:00", "2026-10-03T08:30", 1_100, 1_120)),
+                    tasksDone = listOf(ca.schippers.hfm.sync.PhoneTaskDone("tick-van", now, task.id, van.id, true, "2026-10-05")),
+                ),
+            )
+            assertEquals(setOf("trip-van", "tick-van"), answer.failed.map { it.id }.toSet())
+            assertTrue(sam.trips.list(2026).isEmpty() && sam.vehicles.services(van.id).isEmpty())
         } finally {
             sam.session.close()
         }

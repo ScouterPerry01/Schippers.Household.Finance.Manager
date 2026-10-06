@@ -63,10 +63,14 @@ class PlaceService internal constructor(private val books: Books) {
         return p.copy(id = id, groupId = group.id)
     }
 
-    /** A place's trips keep its name; only the place goes. */
+    /**
+     * A place's trips keep its name; only the place goes. Its id is remembered, so a phone that still
+     * has the place cannot bring it back by renaming it.
+     */
     fun delete(p: Place) {
         val group = books.group(p.groupId).also { books.require(it, PermissionLevel.EDIT) }
         books.ledger(group).placesQueries.deletePlace(p.id)
+        books.putSetting(DELETED_KEY + p.id, "1")
     }
 
     /**
@@ -76,6 +80,7 @@ class PlaceService internal constructor(private val books: Books) {
      */
     fun receive(groupId: String, deviceId: String, p: PhonePlace): Place {
         val existing = find(p.id)
+        if (existing == null) validate(books.setting(DELETED_KEY + p.id) == null, "error.notFound")
         val category = PlaceCategory.entries.firstOrNull { it.name == p.category } ?: PlaceCategory.OTHER
         val place = existing?.copy(
             name = p.name,
@@ -101,5 +106,8 @@ class PlaceService internal constructor(private val books: Books) {
 
     private companion object {
         const val MAX_NAME = 120
+
+        /** `place.deleted.<id>`: a place deleted on the computer, which a phone may not make again. */
+        const val DELETED_KEY = "place.deleted."
     }
 }

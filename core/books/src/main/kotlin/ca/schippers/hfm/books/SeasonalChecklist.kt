@@ -96,6 +96,7 @@ class SeasonalChecklistService internal constructor(private val books: Books) {
     fun record(vehicle: Boolean, subjectId: String, taskId: String, date: LocalDate, note: String?, cost: BigDecimal?, reading: Int?) {
         validate(cost == null || cost.signum() >= 0, "error.invalidNumber")
         validate(reading == null || reading >= 0, "error.invalidNumber")
+        if (!mayTick(vehicle, subjectId)) throw ca.schippers.hfm.data.AccessDeniedException("You may not add to this account group")
         if (vehicle) {
             val v = books.vehicles.get(subjectId)
             validate(books.vehicles.tasks(subjectId).any { it.id == taskId }, "error.taskGone")
@@ -114,6 +115,12 @@ class SeasonalChecklistService internal constructor(private val books: Books) {
                 ),
             )
         }
+    }
+
+    /** Whether the signed-in user may record a service of the vehicle or asset [subjectId]: the right to add in its group. */
+    fun mayTick(vehicle: Boolean, subjectId: String): Boolean {
+        val groupId = if (vehicle) books.vehicles.get(subjectId).groupId else books.assets.get(subjectId).groupId
+        return books.group(groupId).level.allows(ca.schippers.hfm.domain.PermissionLevel.CAPTURE_ONLY)
     }
 
     /** The dates each task was done, from a log of (date, tasks done). */

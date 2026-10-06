@@ -43,3 +43,15 @@ Everything built on 2026-10-06 (commits `d72479f` to `719fb7e`): calendars from 
 ## Tests
 
 New or extended: `MultiUserTest` (another user's phone), `BroughtInCalendarTest` (narrowed calendar, overlong ids, runaway .ics repeats), `ICalendarTest` (repeats from long ago, the shared budget, dates left out), `TripsOnPhoneTest` (capture-only rename, numbers with exponents, unknown trailer and driver, long texts), `TrackerSyncTest` (numbers and texts from the phone), `TrackersTest` (hours by id), `AuditPrivacyTest` (this round's records).
+
+## Follow-ups (exit check)
+
+The exit check of the round (`3fc7897`) listed further security observations. All are fixed, without any change to the database schema; `TripsOnPhoneTest` covers them.
+
+| # | Observation | Outcome |
+|---|---|---|
+| 1 | **Trips stored in the working group.** A trip, from the phone or the computer, went to the phone's (or the screen's) group with the permission checked there, not on the vehicle's: a user who may only view a vehicle could add trips, and so odometer readings, to it; an administrator's phone, which stores in the shared group, put the trips of a car kept in a private group where others read. | Fixed. A trip in a vehicle is kept in the vehicle's group, and refused unless the user may add there (`TripService.store`). Fill-ups and odometer readings already went to the vehicle's group with that check. |
+| 2 | **A deleted place came back** when a phone that still had it renamed it. | Fixed. Deleting a place remembers its id (`place.deleted.<id>` in the household settings: a random id, no name or coordinates), and a phone's change to it is refused. An archived place renamed from a phone stays archived. |
+| 3 | **Seasonal ticks for what the user may only view.** The phone's checklist offered the tasks of vehicles and assets in groups the user may only view; the tick was then refused by the service log. | Fixed. The phone's list leaves them out (`SeasonalChecklistService.mayTick`), and `record` refuses them before anything else. Changing a service or fill-up already saved now needs the right to change (`saveService`, `saveFuel`), adding one the right to add, as before. |
+| 4 | **Saved before the sync record.** A fill-up was stored in the ledger, then noted as received in core.db; the two are different databases, so one transaction cannot hold both, and a stop in between would have stored it twice when the phone sent it again. | Fixed by the phone's id: a fill-up is kept under the id the phone gave it, and one already stored under that id is acknowledged without storing it again. A seasonal tick is already recorded at most once per task and date (exit check). Trips already kept the phone's id. |
+| 5 | **Double tap on the phone's fuel form.** Two taps on Save queued two fill-ups. | Fixed. Save is disabled while saving, the form keeps one id, and the phone's queue keeps one entry per id. |

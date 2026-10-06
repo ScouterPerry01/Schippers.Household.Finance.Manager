@@ -254,7 +254,8 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
     /** Saves a service; with [payment], the matching transaction is entered too and linked to the asset. */
     fun saveService(record: AssetServiceRecord, payment: PaymentDraft? = null): AssetServiceRecord {
         val (group, a) = locate(record.assetId)
-        books.require(group, PermissionLevel.CAPTURE_ONLY)
+        // Adding needs the right to add; changing one already saved, the right to change.
+        books.require(group, if (record.id.isBlank()) PermissionLevel.CAPTURE_ONLY else PermissionLevel.EDIT)
         validate(record.cost == null || record.cost.currency == a.currency, "error.currencyMismatch", a.currency.code)
         validate(record.usage == null || record.usage >= 0, "error.invalidNumber")
         val txnId = payment?.let { pay(a, record, it) } ?: record.transactionId

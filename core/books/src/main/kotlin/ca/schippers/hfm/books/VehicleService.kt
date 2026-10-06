@@ -419,7 +419,8 @@ class VehicleService internal constructor(private val books: Books) {
     /** Saves a service; with [payment], the matching transaction is entered too and linked (VEH-08). */
     fun saveService(record: ServiceRecord, payment: PaymentDraft? = null): ServiceRecord {
         val (group, v) = locate(record.vehicleId)
-        books.require(group, PermissionLevel.CAPTURE_ONLY)
+        // Adding needs the right to add; changing one already saved, the right to change.
+        books.require(group, if (record.id.isBlank()) PermissionLevel.CAPTURE_ONLY else PermissionLevel.EDIT)
         validate(record.cost == null || record.cost.currency == v.currency, "error.currencyMismatch", v.currency.code)
         validate(record.odometer == null || record.odometer >= 0, "error.invalidNumber")
         val txnId = payment?.let { pay(v, record.date, record.cost, it, record.provider ?: v.name, record.notes) } ?: record.transactionId
@@ -452,9 +453,10 @@ class VehicleService internal constructor(private val books: Books) {
         return books.ledger(group).vehiclesQueries.fuelEntries(vehicleId).executeAsList().map { it.toFuel(v.currency) }
     }
 
-    fun saveFuel(entry: FuelEntry, payment: PaymentDraft? = null): FuelEntry {
+    fun saveFuel(entry: FuelEntry, payment: PaymentDraft? = null, newId: String? = null): FuelEntry {
         val (group, v) = locate(entry.vehicleId)
-        books.require(group, PermissionLevel.CAPTURE_ONLY)
+        // Adding needs the right to add; changing one already saved, the right to change.
+        books.require(group, if (entry.id.isBlank()) PermissionLevel.CAPTURE_ONLY else PermissionLevel.EDIT)
         validate(entry.quantity.signum() > 0, "error.fuelQuantity")
         validate(entry.cost == null || entry.cost.currency == v.currency, "error.currencyMismatch", v.currency.code)
         validate(entry.odometer == null || entry.odometer >= 0, "error.invalidNumber")
@@ -463,7 +465,7 @@ class VehicleService internal constructor(private val books: Books) {
         val charging = entry.charging?.takeIf { (energy ?: v.defaultEnergy) == Energy.ELECTRICITY }
         val txnId = payment?.let { pay(v, entry.date, entry.cost, it, entry.station ?: v.name, entry.notes) } ?: entry.transactionId
         val q = books.ledger(group).vehiclesQueries
-        val id = entry.id.ifBlank { Ids.newId() }
+        val id = entry.id.ifBlank { newId ?: Ids.newId() }
         with(entry) {
             if (entry.id.isBlank()) {
                 q.insertFuel(

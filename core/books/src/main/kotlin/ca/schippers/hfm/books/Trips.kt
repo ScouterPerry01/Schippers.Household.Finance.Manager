@@ -124,7 +124,10 @@ class TripService internal constructor(private val books: Books) {
         val km = if (byOdometer) BigDecimal(t.endOdometer - t.startOdometer) else t.kmOneWay
         validate(km.signum() > 0 && km < BigDecimal(10_000), "error.tripDistance")
         val existing = if (t.id.isBlank()) null else groupOf(t.id)
-        val group = books.group(existing ?: t.groupId).also { books.require(it, level) }
+        // A trip in a vehicle is kept with the vehicle, by someone who may add there: its odometers become the
+        // vehicle's readings, and a private group's vehicle must not have its trips land where others read.
+        val vehicleGroup = t.vehicleId?.let { id -> books.group(books.vehicles.get(id).groupId).also { books.require(it, level) } }
+        val group = books.group(existing ?: vehicleGroup?.id ?: t.groupId).also { books.require(it, level) }
         val id = t.id.ifBlank { Ids.newId() }
         val province = t.province?.trim()?.uppercase()?.ifEmpty { null }
             ?: t.startPlaceId?.let { places[it]?.province }
@@ -152,7 +155,7 @@ class TripService internal constructor(private val books: Books) {
     }?.id
 
     /**
-     * TRP-01, TRP-06: a trip driven with the phone, kept in [groupId]. Its distance is the odometers'
+     * TRP-01, TRP-06: a trip driven with the phone, kept with its vehicle (refused unless the user may add there). Its distance is the odometers'
      * difference; places the phone saved arrive before the trips that use them. The trip keeps the
      * phone's own id, so receiving it again changes nothing.
      */
