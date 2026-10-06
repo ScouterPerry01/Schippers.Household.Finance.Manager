@@ -18,6 +18,8 @@ import java.text.Normalizer
  * - `> Tip:`, `> Note:` or `> Important:` (`> Conseil :`, `> Remarque :`, `> Important :`) callouts.
  * - `@index: term; another term` under a heading: index entries for that heading.
  * - Inline `**bold**` and links `[text](chapter-id)` or `[text](chapter-id#section-id)`.
+ * - `![Caption](images/name.png)` on a line of its own: a picture of the app, from
+ *   `hfm/manual/<lang>/images/`, shown with its caption below it.
  *
  * A chapter whose id is a screen's help id (such as `bills`) is the one opened from that screen.
  */
@@ -29,6 +31,9 @@ object Manual {
         data class Step(val number: Int, val text: String) : Block
         data class Field(val name: String, val text: String) : Block
         data class Callout(val kind: CalloutKind, val text: String) : Block
+
+        /** A picture: [path] is relative to the language's folder (`images/name.png`); [caption] is shown below it and read by screen readers. */
+        data class Image(val path: String, val caption: String) : Block
     }
 
     enum class CalloutKind { TIP, NOTE, IMPORTANT }
@@ -60,6 +65,7 @@ object Manual {
                     is Block.Step -> b.text
                     is Block.Field -> b.name + ": " + b.text
                     is Block.Callout -> b.text
+                    is Block.Image -> b.caption
                 }
             }).joinToString("\n") { plain(it) }
         }
@@ -182,9 +188,16 @@ object Manual {
     private fun resource(language: Language, name: String): String? =
         Manual::class.java.getResourceAsStream("/hfm/manual/${language.tag}/$name")?.use { it.readBytes().decodeToString() }
 
+    /** The bytes of an [Block.Image]'s picture in [language], or null when it is missing. */
+    fun image(language: Language, path: String): ByteArray? =
+        if (IMAGE_PATH.matches(path)) Manual::class.java.getResourceAsStream("/hfm/manual/${language.tag}/$path")?.use { it.readBytes() } else null
+
     private val HEADING_ID = Regex("""\s*\{#([a-z0-9-]+)}\s*$""")
     private val STEP = Regex("""^(\d+)\.\s+(.*)$""")
     private val FIELD = Regex("""^\*\*(.+?)\*\*\s*(?::|—|–)?\s*(.*)$""")
+    /** A picture's path: a PNG in the language's images folder. */
+    val IMAGE_PATH = Regex("""images/[a-z0-9-]+\.png""")
+    private val IMAGE = Regex("""^!\[([^\]]+)]\((${IMAGE_PATH.pattern})\)$""")
     private val CALLOUT = Regex("""^(Tip|Note|Important|Conseil|Remarque|Attention)\s*:\s*(.*)$""", RegexOption.IGNORE_CASE)
 
     /** Parses one chapter's Markdown; [id] is the chapter's id. */
@@ -230,6 +243,11 @@ object Manual {
                 trimmed.startsWith("@index:") -> {
                     flush()
                     current().index += trimmed.removePrefix("@index:").split(';').map { it.trim() }.filter { it.isNotEmpty() }
+                }
+                IMAGE.matches(trimmed) && line == trimmed -> {
+                    flush()
+                    val m = IMAGE.find(trimmed)!!
+                    current().blocks += Block.Image(m.groupValues[2], m.groupValues[1].trim())
                 }
                 trimmed.startsWith("> ") || trimmed == ">" -> {
                     val body = trimmed.removePrefix(">").trim()

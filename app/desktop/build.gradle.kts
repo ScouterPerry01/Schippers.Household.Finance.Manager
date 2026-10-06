@@ -175,6 +175,51 @@ tasks.register<JavaExec>("runDemo") {
     providers.gradleProperty("aiUrl").orNull?.let { systemProperty("hfm.demo.aiUrl", it) }
 }
 
+// The manual's pictures (docs/manual-format.md): the sample household's screens drawn offscreen,
+// with no window and nothing else from the desktop, at a fixed size in light colours:
+// ./gradlew :app:desktop:manualScreenshots -Plang=en|fr [-Pshot=accounts]
+// A source set of its own, so the picture taker and the test library never ship with the app.
+val screenshots: SourceSet = sourceSets.create("screenshots")
+kotlin.target.compilations.getByName("screenshots").associateWith(kotlin.target.compilations.getByName("main"))
+configurations.getByName("screenshotsImplementation").extendsFrom(configurations.implementation.get())
+configurations.getByName("screenshotsRuntimeClasspath").attributes.attribute(hostNatives, true)
+dependencies {
+    "screenshotsImplementation"(libs.compose.ui.test)
+}
+// Compiled with every build, so a change to a screen that breaks the picture taker shows at once.
+tasks.named("check") { dependsOn(tasks.named("screenshotsClasses")) }
+
+tasks.register<JavaExec>("manualScreenshots") {
+    group = "documentation"
+    description = "Draws the manual's pictures of the sample household (-Plang=en or fr)"
+    mainClass.set("ca.schippers.hfm.desktop.shots.ManualScreenshotsKt")
+    classpath = screenshots.runtimeClasspath
+    val lang = providers.gradleProperty("lang").getOrElse("en")
+    systemProperty("hfm.shots.lang", lang)
+    systemProperty("hfm.shots.out", rootProject.file("core/i18n/src/main/resources/hfm/manual/$lang/images").absolutePath)
+    providers.gradleProperty("shot").orNull?.let { systemProperty("hfm.shots.only", it) }
+    // Skia draws offscreen without a window; no AWT window is ever opened.
+    systemProperty("java.awt.headless", "true")
+    // All the pictures are taken in one run of the test library, longer than its one-minute default.
+    systemProperty("kotlinx.coroutines.test.default_timeout", "30m")
+    // The AI screen shows where added document types go; a made-up user's folder, not this one's.
+    if (hostOs == "Windows") environment("APPDATA", "C:\\Users\\Alex\\AppData\\Roaming")
+}
+
+// The computer side for the manual's phone pictures: the sample household listening for a phone,
+// with no window. It writes the pairing text to build/phone-invitation.txt and stops when
+// build/phone-stop appears: ./gradlew :app:desktop:manualPhoneHost -Plang=en|fr (tools/dev/README.md).
+tasks.register<JavaExec>("manualPhoneHost") {
+    group = "documentation"
+    description = "Runs the sample household for pairing the emulator, without a window (-Plang=en or fr)"
+    mainClass.set("ca.schippers.hfm.desktop.shots.PhoneHostKt")
+    classpath = screenshots.runtimeClasspath
+    systemProperty("hfm.shots.lang", providers.gradleProperty("lang").getOrElse("en"))
+    systemProperty("hfm.phone.invitation", layout.buildDirectory.file("phone-invitation.txt").get().asFile.absolutePath)
+    systemProperty("hfm.phone.stop", layout.buildDirectory.file("phone-stop").get().asFile.absolutePath)
+    systemProperty("java.awt.headless", "true")
+}
+
 // Microsoft Store package (DIST-01): the same app image as the MSI, with the Store identity, the
 // tiles from branding/msix and a resource index so Windows picks each tile's size. Unsigned: the
 // Store signs it on submission. Windows only (needs makeappx and makepri from the Windows SDK).

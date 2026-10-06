@@ -29,6 +29,8 @@ class ManualTest {
         > Tip: pay early.
         > It is free.
 
+        ![The Bills screen](images/bills.png)
+
         ### The form {#form}
 
         Text.
@@ -50,6 +52,7 @@ class ManualTest {
         assertEquals(Manual.Block.Field("Remind me (days before)", "days, such as 7, 1."), add.blocks[3])
         assertEquals(Manual.Block.Bullet("a second-level point", 2), add.blocks[5])
         assertEquals(Manual.Block.Callout(Manual.CalloutKind.TIP, "Pay early. It is free."), add.blocks[6])
+        assertEquals(Manual.Block.Image("images/bills.png", "The Bills screen"), add.blocks[7])
         assertEquals("bills#form", add.children.single().key)
         assertEquals(3, add.children.single().level)
         assertEquals("pay", c.children[1].anchor, "a heading without an id gets one from its title")
@@ -118,12 +121,44 @@ class ManualTest {
         assertTrue(en.path(hit.node).isNotBlank())
     }
 
+    @Test
+    fun `every picture exists in both languages, and every picture file is used`() {
+        val image = Regex("""^!\[.*""")
+        val used = HashMap<Language, Set<String>>()
+        for (language in Language.entries) {
+            val book = Manual.book(language)
+            // A line that starts like a picture but is not read as one (a typo in the path or the caption).
+            for (c in book.chapters) {
+                val lines = resource(language, "${c.chapterId}.md")!!.lines().count { image.matches(it.trim()) }
+                assertEquals(lines, c.flatten().sumOf { n -> n.blocks.count { it is Manual.Block.Image } }, "every picture line in ${c.chapterId} ($language) is read as a picture")
+            }
+            val pictures = book.nodes.flatMap { n -> n.blocks.filterIsInstance<Manual.Block.Image>().map { n.key to it } }
+            for ((key, picture) in pictures) {
+                assertTrue(picture.caption.isNotBlank(), "$key has a caption")
+                val bytes = assertNotNull(Manual.image(language, picture.path), "${picture.path} in $key ($language) exists")
+                assertTrue(bytes.size > 8 && bytes[1] == 'P'.code.toByte() && bytes[2] == 'N'.code.toByte(), "${picture.path} ($language) is a PNG")
+            }
+            used[language] = pictures.map { it.second.path }.toSet()
+            val folder = java.io.File(assertNotNull(javaClass.getResource("/hfm/manual/${language.tag}/images"), "the $language images folder").toURI())
+            val files = folder.list().orEmpty().map { "images/$it" }.toSet()
+            assertEquals(emptySet(), files - used.getValue(language), "picture files no chapter shows ($language)")
+        }
+        // Pictures the other language shows must be there too, so both manuals stay alike.
+        for (language in Language.entries) for (other in Language.entries) {
+            val missing = used.getValue(other).filter { Manual.image(language, it) == null }
+            assertEquals(emptyList(), missing, "pictures shown in $other but missing in $language")
+        }
+        val total = Language.entries.associateWith { l -> used.getValue(l).sumOf { Manual.image(l, it)!!.size.toLong() } }
+        for ((language, bytes) in total) assertTrue(bytes < 8L * 1024 * 1024, "the $language pictures stay under 8 MB: $bytes bytes")
+    }
+
     private fun blockText(b: Manual.Block): String = when (b) {
         is Manual.Block.Paragraph -> b.text
         is Manual.Block.Bullet -> b.text
         is Manual.Block.Step -> b.text
         is Manual.Block.Field -> b.text
         is Manual.Block.Callout -> b.text
+        is Manual.Block.Image -> b.caption
     }
 
     private fun resource(language: Language, name: String): String? =

@@ -165,7 +165,9 @@ object DemoHousehold {
 
     fun create(store: HouseholdStore, language: ca.schippers.hfm.i18n.Language = ca.schippers.hfm.i18n.Language.ENGLISH): HouseholdSession {
         english = language == ca.schippers.hfm.i18n.Language.ENGLISH
-        val dir = Files.createTempDirectory("hfm-demo").resolve("Demo.hfm")
+        // The manual's pictures put it in a folder of their own (hfm.demo.dir), so no user name shows in its paths.
+        val parent = System.getProperty("hfm.demo.dir")?.let { java.nio.file.Path.of(it) } ?: Files.createTempDirectory("hfm-demo")
+        val dir = parent.resolve("Demo.hfm")
         val created = store.create(
             dir, l("Famille Démo", "Demo Family"), LOGIN, "Alex Demo", PASSWORD.toCharArray(),
             locale = l("fr-CA", "en-CA"), province = l("QC", "ON"),

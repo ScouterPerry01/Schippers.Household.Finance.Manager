@@ -1,16 +1,20 @@
 package ca.schippers.hfm.desktop
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -36,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isAltPressed
@@ -43,7 +48,10 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -53,6 +61,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
@@ -95,7 +104,7 @@ fun ManualWindow(state: AppState) {
 }
 
 @Composable
-private fun ManualContent(state: AppState) {
+internal fun ManualContent(state: AppState) {
     val book = remember(state.language) { Manual.book(state.language) }
     if (book.chapters.isEmpty()) {
         Text(state.t("manual.missing"), Modifier.padding(24.dp))
@@ -402,6 +411,39 @@ private fun BlockView(state: AppState, block: Manual.Block, linkColor: Color, on
                 Text(rich(block.text, linkColor, onOpen), style = body)
             }
         }
+        is Manual.Block.Image -> ManualPicture(state, block)
+    }
+}
+
+/**
+ * A picture of the app with its caption below. It fills the page's width but never grows past its
+ * own size (one picture pixel per screen pixel), and a thin outline sets the light picture apart in
+ * dark mode. Screen readers read the caption once, as the picture's description.
+ */
+@Composable
+private fun ManualPicture(state: AppState, block: Manual.Block.Image) {
+    val bitmap = remember(state.language, block.path) {
+        Manual.image(state.language, block.path)?.let { bytes -> runCatching { org.jetbrains.skia.Image.makeFromEncoded(bytes).toComposeImageBitmap() }.getOrNull() }
+    }
+    val density = LocalDensity.current
+    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        if (bitmap != null) {
+            Image(
+                bitmap,
+                contentDescription = block.caption,
+                modifier = Modifier.widthIn(max = with(density) { bitmap.width.toDp() }).fillMaxWidth()
+                    .aspectRatio(bitmap.width.toFloat() / bitmap.height)
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                contentScale = ContentScale.Fit,
+            )
+        }
+        Text(
+            block.caption,
+            Modifier.padding(top = 6.dp).then(if (bitmap != null) Modifier.clearAndSetSemantics { } else Modifier),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
