@@ -15,6 +15,9 @@
 #   topUpCredit, supplementalCredit: credit amounts above this threshold; the extra rate on them
 #   surtax: threshold; rate; threshold; rate, on the provincial tax after credits
 #   lowIncomeReduction: maximum; net income threshold; reduction rate
+#   familyLowIncomeReduction: basic reduction; for a spouse or an eligible dependant; for each other child under 18;
+#     for a person 65 or older; adjusted family income base, single; with a spouse or eligible dependant; reduction rate
+#   lift: maximum; rate of employment income; individual adjusted net income threshold; family threshold; reduction rate
 #   healthPremium: taxable income from; rate; cap, for each tier
 #   cpp, qpp: maximum employee contribution (first tier); base rate; employee rate
 #   qc.workerDeduction: rate of employment income; maximum
@@ -47,6 +50,8 @@ rule tax.prov.supplementalCredit LIST province
 rule tax.prov.surtax LIST province
 rule tax.prov.taxReduction AMOUNT province
 rule tax.prov.lowIncomeReduction LIST province
+rule tax.prov.familyLowIncomeReduction LIST province
+rule tax.prov.lift LIST province
 rule tax.prov.healthPremium LIST province
 rule tax.qc.workerDeduction LIST
 rule tax.qc.retirement LIST
@@ -166,6 +171,15 @@ tax.prov.dividends | BC | 2024-01-01 | 0.12; 0.0196 | CRA, Worksheet BC428 2024;
 tax.prov.lowIncomeReduction | BC | 2024-01-01 | 547; 24338; 0.0356 | CRA, Form BC428 2024
 tax.prov.lowIncomeReduction | BC | 2025-01-01 | 562; 25020; 0.0356 | CRA, Form BC428 2025
 tax.prov.lowIncomeReduction | BC | 2026-01-01 | 690; 25570; 0.0356 | Budget Measures Implementation Act, 2026, S.B.C. 2026 c. 5 (Royal Assent 2026-04-16); CRA, T4127 July 2026; Government of B.C., basic tax credits 2026
+tax.prov.familyLowIncomeReduction | NB | 2024-01-01 | 781; 781; 0; 0; 21343; 21343; 0.03 | CRA, Form NB428 2024 (5004-C), lines 77 to 86 (basic reduction $781, $781 for a spouse or an eligible dependant, base amount $21,343, 3 %)
+tax.prov.familyLowIncomeReduction | NB | 2025-01-01 | 802; 802; 0; 0; 21920; 21920; 0.03 | CRA, Form NB428 2025 (5004-C), lines 77 to 86 (basic reduction $802, $802 for a spouse or an eligible dependant, base amount $21,920, 3 %)
+tax.prov.familyLowIncomeReduction | NS | 2024-01-01 | 300; 300; 165; 0; 15000; 15000; 0.05 | CRA, Form NS428 2024 (5003-C), lines 68 to 79 (basic reduction $300, $300 for a spouse or an eligible dependant, $165 for each other dependent child, base amount $15,000, 5 %)
+tax.prov.familyLowIncomeReduction | NS | 2025-01-01 | 300; 300; 165; 0; 15000; 15000; 0.05 | CRA, Form NS428 2025 (5003-C), lines 71 to 84 (same amounts)
+tax.prov.familyLowIncomeReduction | NL | 2024-01-01 | 974; 544; 0; 0; 23390; 39551; 0.16 | CRA, Form NL428 2024 (5001-C), lines 95 to 104 (basic reduction $974, $544 for a spouse or an eligible dependant, base $23,390 or $39,551 with one, 16 %)
+tax.prov.familyLowIncomeReduction | NL | 2025-01-01 | 997; 557; 0; 0; 23928; 40460; 0.16 | CRA, Form NL428 2025 (5001-C), lines 95 to 104 (basic reduction $997, $557 for a spouse or an eligible dependant, base $23,928 or $40,460 with one, 16 %)
+tax.prov.familyLowIncomeReduction | PE | 2024-01-01 | 350; 350; 300; 250; 21500; 21500; 0.05 | CRA, Form PE428 2024 (5002-C), lines 75 to 87 (basic reduction $350, $250 at 65 or older, $350 for a spouse or an eligible dependant, $300 for each other dependent child, base amount $21,500, 5 %)
+tax.prov.familyLowIncomeReduction | PE | 2025-01-01 | 350; 350; 300; 250; 22650; 22650; 0.05 | CRA, Form PE428 2025 (5002-C), lines 75 to 87 (same reductions, base amount $22,650, 5 %)
+tax.prov.lift | ON | 2024-01-01 | 875; 0.0505; 32500; 65000; 0.05 | CRA, Schedule ON428-A 2024 and 2025 (5006-A), LIFT credit: 5.05 % of employment income (maximum $875), less 5 % of adjusted net income above $32,500, or of adjusted family net income above $65,000 when that is more; Form ON428, line 62140, after the Ontario tax reduction
 tax.prov.brackets | AB | 2024-01-01 | 0:0.1; 148269:0.12; 177922:0.13; 237230:0.14; 355845:0.15 | CRA, tax rates and income brackets (all years)
 tax.prov.brackets | AB | 2025-01-01 | 0:0.08; 60000:0.1; 151234:0.12; 181481:0.13; 241974:0.14; 362961:0.15 | CRA, Form AB428 2025; Government of Alberta
 tax.prov.brackets | AB | 2026-01-01 | 0:0.08; 61200:0.1; 154259:0.12; 185111:0.13; 246813:0.14; 370220:0.15 | CRA, tax rates and income brackets 2026; Government of Alberta
