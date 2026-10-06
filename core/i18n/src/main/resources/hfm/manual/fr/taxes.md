@@ -86,6 +86,7 @@ Les feuillets joints ici sont copiés dans le dossier pour le comptable (voir [D
 - **Personne** : qui reçoit le feuillet, ou **Ménage** quand ce n’est personne en particulier.
 - **Feuillet** : la sorte de feuillet, par exemple **T4A, pension ou autres revenus** (par défaut), **Relevé 24, frais de garde**, **T2202, frais de scolarité** ou **Autre feuillet**. Tous les feuillets fédéraux et du Québec que connaît la liste sont offerts.
 - **De (employeur, institution ou payeur)** : qui envoie le feuillet. Obligatoire.
+- **Enregistrer dans** : le groupe de comptes où sont gardés le feuillet et la copie numérisée que vous y joindrez plus tard. Il part de votre propre groupe privé si vous en avez un, pour que les autres utilisateurs du ménage ne le voient pas ; choisissez un groupe partagé pour un feuillet dont le ménage s’occupe ensemble. Si vous n’avez pas de groupe privé, une ligne offre d’en créer un.
 - **Enregistrer** : l’ajoute à la liste comme attendu ; il porte la mention « Ajouté à la main ». **Annuler** : ferme.
 
 Servez-vous-en pour un feuillet que les livres ne peuvent pas prévoir : un T4A pour un contrat, un Relevé 24 d’un camp de jour, un feuillet d’un payeur que vous n’inscrivez pas.

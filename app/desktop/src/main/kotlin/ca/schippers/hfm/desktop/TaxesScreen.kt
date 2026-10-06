@@ -258,13 +258,16 @@ private fun AddSlipDialog(model: BooksModel, year: Int, onClose: () -> Unit) {
     var member by remember { mutableStateOf(members.firstOrNull()) }
     var type by remember { mutableStateOf(SlipType.T4A) }
     var issuer by remember { mutableStateOf("") }
-    val group = remember { model.defaultDocumentGroup() ?: model.books.groups().first().id }
+    // HH-11: a slip and its scan are personal, so they go to the user's own private group by default.
+    var group by remember { mutableStateOf(model.defaultGroupForPersonalRecords()?.id ?: model.defaultDocumentGroup() ?: model.books.groups().first().id) }
     FormDialog(model.t("slips.addTitle", year.toString()), model.t("common.save"), model.t("common.cancel"), canSave = issuer.isNotBlank(), onDismiss = onClose, onSave = {
         if (model.act { model.books.slipChecklist.add(year, member?.id, type, issuer, group) } != null) onClose()
     }) {
         Picker(model.t("report.person"), listOf(null) + members, member, { it?.displayName ?: model.t("taxes.household") }) { member = it }
         Picker(model.t("slips.type"), SlipType.entries, type, { model.t("slipType.$it") }) { type = it }
         TextInput(model.t("slips.issuer"), issuer) { issuer = it }
+        GroupPicker(model, group, enabled = true) { group = it.id }
+        PrivateGroupHint(model) { group = it }
     }
 }
 
@@ -398,7 +401,7 @@ private fun PackageTab(model: BooksModel) {
                 Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(model.t("packageItem.${l.item}"), Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(packageDetail(model, l).orEmpty(), Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
-                    Text(l.item.line.orEmpty(), Modifier.width(110.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                    Text(packageLine(model, l.item).orEmpty(), Modifier.width(110.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                     MoneyText(model, l.amount, modifier = Modifier.width(140.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End)
                 }
                 HorizontalDivider()
@@ -431,7 +434,7 @@ private fun packageTable(model: BooksModel, year: Int, p: PersonPackage): Report
         model.t("package.title", model.personName(p.memberId), year.toString()),
         model.t("package.subtitle", model.date(today())),
         listOf(model.t("package.column.section"), model.t("package.column.item"), model.t("package.column.detail"), model.t("package.column.line"), model.t("package.column.amount")),
-        p.lines.map { l -> listOf(model.t("packageSection.${l.item.section}"), model.t("packageItem.${l.item}"), packageDetail(model, l), l.item.line, l.amount) },
+        p.lines.map { l -> listOf(model.t("packageSection.${l.item.section}"), model.t("packageItem.${l.item}"), packageDetail(model, l), packageLine(model, l.item), l.amount) },
         notes,
     )
 }
@@ -742,3 +745,8 @@ private fun lineDetail(model: BooksModel, l: TaxLine, locale: java.util.Locale):
 
 private fun percentText(rate: BigDecimal, locale: java.util.Locale): String =
     java.text.NumberFormat.getNumberInstance(locale).apply { minimumFractionDigits = 1; maximumFractionDigits = 3 }.format(rate.movePointRight(2)) + " %"
+
+/** Where an amount goes on the return: a line number or form as is, "Schedule 9" in the user's language. */
+internal fun packageLine(model: BooksModel, item: PackageItem): String? = item.line?.let { line ->
+    Regex("""Schedule (\d+)""").matchEntire(line)?.let { model.t("package.schedule", it.groupValues[1]) } ?: line
+}
