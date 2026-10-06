@@ -1,5 +1,5 @@
 {
-  "$id": "hfm/investment_statement/v1",
+  "$id": "hfm/investment_statement/v2",
   "title": "investment_statement",
   "type": "object",
   "properties": {
@@ -13,6 +13,10 @@
       "type": "string",
       "description": "Such as TFSA, RRSP, RRIF, RESP, FHSA, LIRA, LIF, margin or cash"
     },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
     "period_end": {
       "type": "string",
       "format": "date"
@@ -20,6 +24,10 @@
     "currency": {
       "type": "string",
       "description": "ISO 4217 code of the amounts, such as CAD or USD"
+    },
+    "opening_cash_balance": {
+      "type": "number",
+      "description": "Cash at the start of the period, if printed"
     },
     "cash_balance": {
       "type": "number"
@@ -49,6 +57,10 @@
           },
           "book_value": {
             "type": "number"
+          },
+          "identifier": {
+            "type": "string",
+            "description": "CUSIP or ISIN, if printed"
           }
         },
         "required": [
@@ -68,6 +80,10 @@
             "type": "string",
             "format": "date"
           },
+          "settlement_date": {
+            "type": "string",
+            "format": "date"
+          },
           "type": {
             "type": "string",
             "enum": [
@@ -77,6 +93,7 @@
               "interest",
               "distribution",
               "reinvestment",
+              "return_of_capital",
               "contribution",
               "withdrawal",
               "fee",
@@ -95,6 +112,14 @@
           },
           "price": {
             "type": "number"
+          },
+          "commission": {
+            "type": "number",
+            "description": "Commission and fees of a trade, always positive"
+          },
+          "tax_withheld": {
+            "type": "number",
+            "description": "Tax withheld from income, always positive"
           },
           "amount": {
             "type": "number",

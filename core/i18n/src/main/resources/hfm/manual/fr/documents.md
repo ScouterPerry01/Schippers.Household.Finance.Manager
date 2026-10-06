@@ -195,7 +195,8 @@ Sous la date et le total, une ligne peut montrer d’autres détails lus : le so
 - **Facture détaillée** : une facture d’entreprise, souvent avec des articles et des taxes. Peut être inscrite sur l’une de vos factures.
 - **Autre** : tout le reste.
 - **Relevé de carte de crédit** et **Relevé bancaire** : le relevé de nombreuses opérations. Classé tel quel ; lu par l’IA, il peut être rapproché avec le compte.
-- **Relevé de placements** : un relevé d’un courtier ou d’un régime. Classé tel quel.
+- **Relevé de placements** : un relevé d’un courtier ou d’un régime. Classé tel quel ; lu par l’IA, ses mouvements peuvent être importés et ses titres vérifiés.
+- **Avis d’exécution** : la confirmation d’un achat ou d’une vente par un courtier. Classé tel quel ; lu par l’IA, ses opérations peuvent être ajoutées à un compte de placement.
 - **Talon de paie** : un relevé de paie. Il peut être inscrit comme votre paie, tapé à partir du talon ou rempli par la lecture par IA.
 - **Relevé de prestations** : le relevé d’un assureur indiquant ce qu’il a payé sur une réclamation. Classé tel quel, et peut être joint à une réclamation dans l’écran Réclamations médicales.
 
@@ -300,9 +301,10 @@ Pour un document déjà classé, le même endroit affiche **Enregistrer**, qui e
 
 ### Relevés, talons de paie et relevés de prestations {#summary-documents}
 
-Pour un relevé de carte de crédit, un relevé bancaire, un relevé de placements, un talon de paie ou un relevé de prestations, la section **Classer avec** n’est pas affichée. Classez-le avec **Classer sans joindre**, ou :
+Pour un relevé de carte de crédit, un relevé bancaire, un relevé de placements, un avis d’exécution, un talon de paie ou un relevé de prestations, la section **Classer avec** n’est pas affichée. Classez-le avec **Classer sans joindre**, ou :
 
 - rapprochez un relevé lu par l’IA, voir [Rapprocher un relevé lu par l’IA](documents#ai-statement) ;
+- faites entrer un avis d’exécution ou un relevé de placements lu par l’IA dans un compte de placement, voir [Inscrire un avis d’exécution ou un relevé de placements](documents#ai-investments) ;
 - inscrivez un talon de paie comme votre paie, voir [Inscrire la paie à partir d’un talon de paie](documents#pay-stub) ;
 - joignez un relevé de prestations à la réclamation à laquelle il répond, ici même (voir [Associer un relevé de prestations](documents#eob-match)), ou dans l’écran [Réclamations médicales](medical).
 
@@ -349,7 +351,7 @@ Si la lecture échoue, une erreur sous le bouton en donne la raison (pas de rés
 
 La fenêtre montre chaque page exactement comme elle sera envoyée. Rien ne quitte l’ordinateur avant que vous cliquiez sur **Envoyer**.
 
-- **Type de document** : ce qu’on demande à l’IA de lire : reçu, facture, facture détaillée, relevé de carte de crédit, relevé bancaire, relevé de placements, talon de paie ou relevé de prestations (plus les types personnalisés ajoutés dans l’écran Lecture par IA). Il commence au type du document. Le type détermine les champs obtenus : articles et taxes pour un reçu, chaque opération pour un relevé, gains et retenues pour un talon de paie.
+- **Type de document** : ce qu’on demande à l’IA de lire : reçu, facture, facture détaillée, relevé de carte de crédit, relevé bancaire, relevé de placements, avis d’exécution, talon de paie ou relevé de prestations (plus les types personnalisés ajoutés dans l’écran Lecture par IA). Il commence au type du document. Le type détermine les champs obtenus : articles et taxes pour un reçu, chaque opération pour un relevé, gains et retenues pour un talon de paie.
 - **Masquer une zone** : avec cet outil, faites glisser un rectangle sur la page pour en masquer une partie, comme un numéro de compte complet ou un nom. Les zones masquées sont dessinées en blocs gris et remplacées par des blocs unis avant que l’image quitte l’ordinateur. Vous pouvez masquer plusieurs zones sur chaque page.
 - **Garder seulement** : avec cet outil, faites glisser un rectangle autour de la partie de la page à envoyer. Le reste est assombri et n’est pas envoyé. Une zone par page ; glisser de nouveau la remplace.
 - **Annuler la dernière zone masquée** : retire le dernier bloc gris de la page affichée.
@@ -374,6 +376,29 @@ Un relevé bancaire ou de carte de crédit lu par l’IA (avec le type **Relevé
 - **Rapprocher avec ce relevé** : fait entrer les lignes du relevé dans le compte. Les lignes déjà dans les livres sont jumelées, les autres sont ajoutées, comme pour un relevé téléchargé de votre banque. L’application ouvre ensuite le compte dans l’écran Comptes pour le rapprocher. Voir [Comptes](accounts). Le même document ne peut pas être importé deux fois.
 
 Sur un relevé de carte, les achats sont imprimés en montants positifs ; l’application les inscrit comme montants dus sur la carte.
+
+### Inscrire un avis d’exécution ou un relevé de placements {#ai-investments}
+@index: avis d’exécution; confirmation d’opération; relevé de placements PDF; relevé de courtage PDF; importer des opérations; date de règlement
+
+Un avis d’exécution ou un relevé de placements lu par l’IA (avec le type **Avis d’exécution** ou **Relevé de placements**) peut entrer dans un compte de placement. La fenêtre du document affiche alors :
+
+- **Compte de placement** : le compte auquel appartient le document. L’application choisit le compte dans la devise du document dont le numéro se termine par les chiffres imprimés, sinon le seul compte dans cette devise, sinon le premier. Si vous n’avez aucun compte de placement, la fenêtre indique « Ajoutez un compte de placement pour inscrire ce document dans les livres. »
+- **Ajouter les opérations à ce compte** (avis d’exécution) ou **Importer et vérifier ce relevé** (relevé de placements) : fait entrer le document dans le compte, comme un fichier de courtage importé (voir [Importer un relevé de courtage](investments#import-statement)).
+
+Ce que cela fait :
+
+- Chaque opération d’un avis d’exécution devient un achat ou une vente à sa date d’opération, avec ses unités, son prix, sa commission et ses autres frais. La date de règlement et le numéro de l’avis vont dans la note.
+- Les mouvements d’un relevé de placements deviennent des opérations de placement : achats, ventes, dividendes, intérêts, distributions (avec l’impôt retenu, s’il y en a), revenus réinvestis, remboursements de capital et frais ; les cotisations et les retraits deviennent des lignes du registre. Les lignes qui ne peuvent pas être placées, comme des unités transférées d’un autre courtier, sont énumérées en notes pour que vous les saisissiez à la main.
+- Une opération ou un revenu déjà dans le compte est laissé tel quel : qu’il vienne du même document, ait été saisi à la main ou vienne d’un autre document, comme l’avis d’exécution d’une opération que le relevé énumère. Ils sont jumelés par genre, titre, unités (ou montant pour les revenus et les frais) et une date à trois jours près, si bien qu’une opération saisie à sa date de règlement est quand même jumelée.
+- Les titres sont jumelés aux vôtres par symbole ou par nom ; les autres sont créés.
+- Les titres détenus et l’encaisse d’un relevé à la fin de la période sont enregistrés pour le compte ; **Vérifier le relevé** ouvre ensuite la comparaison avec les livres dans l’écran Placements (voir [Vérifier un relevé](investments#check-statement)). Après un avis d’exécution, **Ouvrir le compte** l’ouvre.
+
+La fenêtre indique combien d’opérations ont été ajoutées, combien y étaient déjà, et jusqu’à dix notes. Des montants dans une autre devise que celle du compte sont refusés : « Les montants de ce document sont en USD et le compte est en CAD. Choisissez un compte en USD. »
+
+### Champs lus avec votre propre type {#ai-custom-fields}
+@index: type de document personnalisé; propre type de document; champs lus
+
+Un document lu avec un type ajouté dans le dossier de la lecture par IA (voir [Types de documents](ai#document-types)) énumère, sous « Champs lus » et le nom du type, chaque valeur rendue par l’IA, dans l’ordre du schéma du type. Une liste dans la réponse donne une ligne par élément. La liste reste même si vous désactivez ensuite la lecture par IA. Les champs sont aussi gardés avec le texte du document, pour qu’une recherche dans l’écran Documents trouve le document par n’importe lequel d’entre eux. Lire de nouveau le document avec un type fourni les retire.
 
 ### Inscrire la paie à partir d’un talon de paie {#pay-stub}
 @index: talon de paie; bulletin de paie; chèque de paie; salaire; retenues; RPC; RRQ; AE; RQAP; cotisations syndicales; impôt retenu

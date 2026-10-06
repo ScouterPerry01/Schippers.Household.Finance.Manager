@@ -14,16 +14,16 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 
 - AI-01 (opt-in, ask each time): Met. Fixed: Read with AI is no longer offered to a user who could not save the reading (view only on the document's group) but would still be billed.
 - AI-02 (user's own key in the system keyring): Met. The keyring's own error texts are in English (see Hard-coded English).
-- AI-03 (versioned schemas and prompts, extendable): Met for the eight built-in types. Gap: a custom type with a new id is accepted and sent, but its answer is shown as an empty "Other" document (no generic view of the fields). Medium: a key and value view for custom types.
+- AI-03 (versioned schemas and prompts, extendable): Met, nine built-in types (trade confirmation added). Fixed: a custom type with a new id was shown as an empty "Other" document; its fields are now listed in the review dialog under "Fields read" (schema order, titles or field names, one line per list item), its sender, date and amount are guessed from common field names, and the fields are kept after the document's recognised text so Documents search finds them (no schema change). A custom type is chosen in the Read with AI window; with "ask before each document" off, the document's kind decides the type, so a custom type cannot be used that way.
 - AI-04 (see what is sent, crop or blur): Met (Hide an area, Keep only). Fixed: a page can be left out (Leave out this page), and a document longer than 20 pages now says only the first 20 can be sent instead of dropping the rest silently; the failure text and the manual already told the user to leave pages out.
 - AI-05 (answer checked against the schema and the sums): Met.
 - AI-06 (usage log): Met. The provider is stored but not shown as a column; requests retried by the SDK after a timeout are billed but not logged.
 - AI-07 (other providers): Met as architecture only (`AiProvider` interface); Claude is the only provider. Accepted for a Could item.
-- OCR-03 (line items to split a receipt): Met through AI reading (Split by items). Gap: on-device reading does not extract line items. Large; owner to confirm that AI-only is acceptable.
+- OCR-03 (line items to split a receipt): Met through AI reading (Split by items). On-device reading does not extract line items: owner's decision (2026-10-05), AI-only is accepted.
 - OCR-06 (optional cloud AI): Met.
 - OCR-07 (learns from corrections): Met for store name, kind and category. Fixed: Learned stores… on the Documents screen lists what was learned and forgets a store (the forget query existed but nothing called it). Gap: no learning of a store's layout (which field sits where). Large.
 - OCR-08 (document type detection): Met, desktop and phone.
-- OCR-09 (statements parsed into transactions): Met through AI reading for bank and card statements. Gap: no local parsing of text PDFs, investment statements not parsed into transactions. Medium to large.
+- OCR-09 (statements parsed into transactions): Met through AI reading for bank, card and investment statements and trade confirmations. Owner's decision (2026-10-05): line items and statement reading stay AI-only, no local parsing of text PDFs.
 
 ## Phase 5b: tax package
 
@@ -134,7 +134,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - FX-05, FX-06: Met.
 - CR-02 (watch-only addresses): Met for Bitcoin, updated when the user clicks Sync now (not on a schedule).
 - CR-03, CR-06: Met.
-- INV-05 (brokerage statements in CSV, OFX and PDF): Met for CSV and OFX. Gap: PDF trade confirmations and investment statements are not read into transactions (AI reading gives only a summary). Medium.
+- INV-05 (brokerage statements in CSV, OFX and PDF): Met. Fixed: PDF (or paper) trade confirmations and investment statements read by AI go into the chosen investment account through the brokerage import: trades with units, price, fees and trade date (settlement date and confirmation number in the memo, as there is no settlement date field), a statement's activity with income gross of tax withheld, and its holdings and cash saved for the statement check (REC-08). Actions already there, by the same document, by hand or from another document, are matched (kind, security, units or amount, date within three days). New type trade_confirmation v1 and investment_statement v2 with sums checks. Limits: amounts in another currency than the account's are refused; units moved in from another broker are left to enter by hand. PDF reading needs AI reading (owner's decision: AI-only).
 - INV-06, INV-07, INV-08, INV-11: Met.
 - PM-03, PM-04: Met.
 - TX-07 (bulk edit): Fixed: never built since Phase 1. Choose transactions… in a register now categorizes, tags or moves several transactions at once (moves within the same group and currency, never off a bank statement), with each change in the history.

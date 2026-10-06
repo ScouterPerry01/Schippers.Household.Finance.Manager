@@ -73,7 +73,33 @@ object AiFields {
                 expect("earnings vs. gross pay", earnings, gross)
             }
             "eob" -> expect("lines vs. total paid", answer.list("lines").mapNotNull { it.num("amount_paid") }, answer.num("total_paid"))
+            "trade_confirmation" -> for ((i, t) in answer.list("trades").withIndex()) {
+                val quantity = t.num("quantity")
+                val price = t.num("price")
+                val gross = t.num("gross_amount")
+                val net = t.num("net_amount")
+                val fees = listOfNotNull(t.num("commission"), t.num("other_fees"))
+                val sell = t.str("action") == "sell"
+                val label = "trade ${i + 1}"
+                // Prices are often rounded on the page: allow two cents, or 0.05 % of the trade.
+                fun near(a: BigDecimal, b: BigDecimal) = (a - b).abs() <= BigDecimal("0.02").max(b.abs().multiply(BigDecimal("0.0005")))
+                if (quantity != null && price != null && gross != null) {
+                    compared = true
+                    val product = quantity.multiply(price)
+                    if (!near(product, gross)) out += "$label units x price vs. gross amount: ${product.stripTrailingZeros().toPlainString()} instead of ${gross.toPlainString()}"
+                }
+                val base = gross ?: if (quantity != null && price != null) quantity.multiply(price) else null
+                if (base != null && net != null) {
+                    compared = true
+                    val feeSum = fees.fold(BigDecimal.ZERO, BigDecimal::add)
+                    val expected = if (sell) base - feeSum else base + feeSum
+                    if (!near(expected, net)) out += "$label gross ${if (sell) "less" else "plus"} fees vs. net amount: ${expected.stripTrailingZeros().toPlainString()} instead of ${net.toPlainString()}"
+                }
+            }
             "investment_statement" -> {
+                answer.num("opening_cash_balance")?.let { opening ->
+                    expect("opening cash and activity vs. cash balance", listOf(opening) + answer.list("activity").mapNotNull { it.num("amount") }, answer.num("cash_balance"))
+                }
                 val values = answer.list("holdings").mapNotNull { it.num("market_value") } + listOfNotNull(answer.num("cash_balance"))
                 val total = answer.num("total_value")
                 // Statements round each value; allow a dollar, or 0.1 % of large accounts.
@@ -93,7 +119,7 @@ object AiFields {
      * explanations of benefits give their issuer, date and main amount; their lines are used by
      * the screens built for them.
      */
-    fun draft(typeId: String, answer: JsonObject, checked: Boolean): DocumentDraft {
+    fun draft(typeId: String, answer: JsonObject, checked: Boolean, schema: JsonObject? = null): DocumentDraft {
         val c = if (checked) CHECKED else UNCHECKED
         val currency = answer.str("currency")?.let { runCatching { Currency.of(it.uppercase()) }.getOrNull() } ?: Currency.CAD
         fun <T> ai(v: T?) = v?.let { Extracted(it, c, FieldSource.CLOUD_AI) }
@@ -125,8 +151,76 @@ object AiFields {
             "investment_statement" -> DocumentDraft(kind, ai(answer.str("institution")), ai(date("period_end")), ai(money(answer.num("total_value"))), currency = currency)
             "pay_stub" -> DocumentDraft(kind, ai(answer.str("employer")), ai(date("pay_date")), ai(money(answer.num("net_pay"))), currency = currency)
             "eob" -> DocumentDraft(kind, ai(answer.str("insurer")), ai(date("statement_date")), ai(money(answer.num("total_paid"))), currency = currency)
-            else -> DocumentDraft(DocumentKind.OTHER, currency = currency)
+            "trade_confirmation" -> {
+                val trades = answer.list("trades")
+                val nets = trades.mapNotNull { it.num("net_amount") }
+                DocumentDraft(
+                    kind, ai(answer.str("institution")), ai(trades.firstNotNullOfOrNull { it.str("trade_date") }?.let { runCatching { LocalDate.parse(it) }.getOrNull() }),
+                    ai(money(nets.takeIf { it.size == trades.size && it.isNotEmpty() }?.fold(BigDecimal.ZERO, BigDecimal::add))), currency = currency,
+                    invoiceNumber = ai(answer.str("confirmation_number")),
+                )
+            }
+            // AI-03: a type added by the user. Its name, date and amount are guessed from the field
+            // names; every field is shown and kept as text ([fields]).
+            else -> {
+                val props = schema?.get("properties") as? JsonObject
+                fun first(names: List<String>, ok: (String) -> Boolean) = names.firstOrNull { it in answer && ok(it) }
+                val nameKey = first(NAME_KEYS) { answer.str(it) != null }
+                val dateKey = props?.entries?.firstOrNull { (k, v) -> ((v as? JsonObject)?.get("format") as? JsonPrimitive)?.contentOrNull == "date" && date(k) != null }?.key
+                    ?: answer.keys.firstOrNull { "date" in it && date(it) != null }
+                val amountKey = first(AMOUNT_KEYS) { answer.num(it) != null }
+                DocumentDraft(DocumentKind.OTHER, ai(nameKey?.let { answer.str(it) }), ai(dateKey?.let(::date)), ai(money(amountKey?.let { answer.num(it) })), currency = currency)
+            }
         }
+    }
+
+    private val NAME_KEYS = listOf("merchant", "issuer", "institution", "biller", "vendor", "payee", "employer", "insurer", "company", "provider", "sender", "name", "title")
+    private val AMOUNT_KEYS = listOf("total", "amount_due", "total_amount", "amount", "total_paid", "net_pay", "balance", "total_value", "value")
+
+    /**
+     * AI-03: every value in [answer], in the order of [schema] when it is known, as a label and a
+     * text, to show and search a reading of a type the app has no screen for. Labels are the
+     * schema's titles, else the field names; a list of objects gives one line per item.
+     */
+    fun fields(answer: JsonObject, schema: JsonObject? = null): List<AiField> {
+        val out = ArrayList<AiField>()
+        walk(answer, schema?.get("properties") as? JsonObject, "", out)
+        return out
+    }
+
+    /** The searchable text of [fields], one "label: value" per line. */
+    fun text(fields: List<AiField>): String = fields.joinToString("\n") { "${it.label}: ${it.value}" }
+
+    private fun walk(obj: JsonObject, props: JsonObject?, prefix: String, out: MutableList<AiField>) {
+        for ((k, v) in ordered(obj, props)) {
+            val def = props?.get(k) as? JsonObject
+            val name = prefix + label(k, def)
+            when {
+                v is JsonArray && v.any { it is JsonObject } ->
+                    v.forEachIndexed { i, item -> valueText(item, def?.get("items") as? JsonObject)?.let { out += AiField("$name ${i + 1}", it) } }
+                v is JsonObject -> walk(v, def?.get("properties") as? JsonObject, "$name › ", out)
+                else -> valueText(v, def)?.let { out += AiField(name, it) }
+            }
+        }
+    }
+
+    private fun label(key: String, def: JsonObject?): String = (def?.get("title") as? JsonPrimitive)?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
+        ?: key.replace('_', ' ').replaceFirstChar { it.uppercase() }
+
+    private fun valueText(e: JsonElement, def: JsonObject?): String? = when (e) {
+        is JsonPrimitive -> e.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
+        is JsonArray -> e.mapNotNull { valueText(it, def?.get("items") as? JsonObject) }.joinToString(", ").ifEmpty { null }
+        is JsonObject -> {
+            val inner = def?.get("properties") as? JsonObject
+            ordered(e, inner).mapNotNull { (k, v) -> valueText(v, inner?.get(k) as? JsonObject)?.let { "${label(k, inner?.get(k) as? JsonObject)}: $it" } }
+                .joinToString(" · ").ifEmpty { null }
+        }
+    }
+
+    /** The fields of [obj] in the schema's order, then any others. */
+    private fun ordered(obj: JsonObject, props: JsonObject?): List<Pair<String, JsonElement>> {
+        val known = props?.keys.orEmpty().filter { it in obj }
+        return (known + obj.keys.filter { it !in known }).map { it to obj.getValue(it) }
     }
 
     private fun JsonElement.str(key: String): String? = ((this as? JsonObject)?.get(key) as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
@@ -136,3 +230,6 @@ object AiFields {
 
     private fun JsonObject.list(key: String): List<JsonElement> = (this[key] as? JsonArray) ?: emptyList()
 }
+
+/** AI-03: one value of a reading, labelled for the screen. */
+data class AiField(val label: String, val value: String)

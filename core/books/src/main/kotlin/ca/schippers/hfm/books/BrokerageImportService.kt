@@ -65,26 +65,59 @@ class BrokerageImportService internal constructor(private val books: Books) {
             val date = s.priceDate ?: continue
             if (price.signum() > 0) investments.setPrice(ids.getValue(s.key), date, price, IMPORTED)
         }
-        val existing = investments.transactions(accountId).mapNotNull { it.externalId }.toMutableSet()
+        val txns = investments.transactions(accountId)
+        val existing = txns.mapNotNull { it.externalId }.toMutableSet()
+        // Documents read by AI carry no ids of their own: a trade or income already entered by hand,
+        // or imported from another document, is matched by what it is (INV-05).
+        val unmatched = if (statement.format == AI_FORMAT) txns.toMutableList() else mutableListOf()
         val seen = HashMap<String, Int>()
         var added = 0
         var already = 0
         for (a in statement.actions.sortedBy { it.date }) {
             val external = a.externalId ?: fingerprint(a, seen)
             if (external in existing) { already++; continue }
+            val twin = unmatched.firstOrNull { same(it, a, a.securityKey?.let(ids::get), account.currency) }
+            if (twin != null) { unmatched -= twin; already++; continue }
             runCatching { add(account, a, a.securityKey?.let(ids::get), external, warnings) }
                 .onSuccess { ok -> if (ok) { added++; existing += external } else already++ }
                 .onFailure { e -> warnings += "${a.date} ${a.action}: ${(e as? ValidationException)?.message ?: e.message}" }
         }
         val saved = statement.asOf != null && (statement.positions.isNotEmpty() || statement.cash != null)
-        if (saved) {
+        val statementId = if (saved) {
             investments.saveStatement(
                 accountId, statement.asOf!!, statement.cash?.let { Money.of(it, account.currency) },
                 statement.positions.mapNotNull { p -> ids[p.securityKey]?.let { it to p.quantity } }.toMap(), statement.format,
-            )
+            ).id
+        } else {
+            null
         }
         books.session.audit("IMPORT", "investments", accountId, "$added actions")
-        return InvestmentImportResult(added, already, created, saved, warnings.distinct())
+        return InvestmentImportResult(added, already, created, saved, warnings.distinct(), statementId)
+    }
+
+    /**
+     * Whether [txn], already in the books, is the action [a]: same kind and security, within three
+     * days (a trade date against a settlement date), and the same units, or for income and fees
+     * the same amount.
+     */
+    private fun same(txn: InvestmentTxn, a: ImportedInvestmentAction, securityId: String?, currency: Currency): Boolean {
+        val kind = when (a.action) {
+            ImportedAction.BUY -> InvestmentKind.BUY
+            ImportedAction.SELL -> InvestmentKind.SELL
+            ImportedAction.DIVIDEND, ImportedAction.INTEREST, ImportedAction.DISTRIBUTION -> InvestmentKind.INCOME
+            ImportedAction.REINVEST -> InvestmentKind.REINVEST
+            ImportedAction.RETURN_OF_CAPITAL -> InvestmentKind.RETURN_OF_CAPITAL
+            ImportedAction.FEE -> InvestmentKind.FEE
+            else -> return false
+        }
+        if (txn.kind != kind || txn.securityId != securityId) return false
+        if (kotlin.math.abs(txn.date.toEpochDays() - a.date.toEpochDays()) > 3) return false
+        val units = a.quantity
+        return if (kind in setOf(InvestmentKind.BUY, InvestmentKind.SELL, InvestmentKind.REINVEST) && units != null) {
+            txn.quantity?.let { (it - units).abs() < BigDecimal("0.0001") } == true
+        } else {
+            a.amount?.let { txn.amount == Money.of(it, currency) } == true
+        }
     }
 
     /** Adds one imported action; cash deposits and withdrawals become ordinary register lines. */
@@ -284,6 +317,9 @@ class BrokerageImportService internal constructor(private val books: Books) {
 
     companion object {
         const val IMPORTED = "IMPORT"
+
+        /** The format of statements and trade confirmations read by AI. */
+        const val AI_FORMAT = "AI"
         const val KEPT_NOTE = "investment actions kept for the investment module"
         const val READ_NOTE = "Investment history imported"
     }

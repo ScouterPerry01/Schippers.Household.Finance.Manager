@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -93,7 +94,9 @@ fun InvestmentsScreen(model: BooksModel) {
     val kept = remember(model.revision) { books.brokerage.keptQuickenFiles() }
     var view by remember { mutableStateOf<InvView?>(model.selectedAccountId?.takeIf { id -> all.any { it.account.id == id } }?.let { InvView.Of(it) }) }
     val shown = view ?: all.firstOrNull()?.let { InvView.Of(it.account.id) } ?: InvView.Securities
-    var action by remember { mutableStateOf<InvAction?>(null) }
+    // REC-08: a statement read by AI opens straight in its check.
+    var action by remember { mutableStateOf<InvAction?>(model.openInvestmentStatementId?.let { InvAction.Statement(it) }) }
+    LaunchedEffect(Unit) { model.openInvestmentStatementId = null }
     var keptResult by remember { mutableStateOf<InvestmentImportResult?>(null) }
     var exchangeFile by remember { mutableStateOf<File?>(null) }
 

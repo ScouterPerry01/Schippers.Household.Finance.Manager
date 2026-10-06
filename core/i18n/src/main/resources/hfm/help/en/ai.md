@@ -16,7 +16,7 @@ Leave Show me each document and let me hide parts before it is sent ticked if yo
 
 ## Read a document
 
-In Documents, open the document and click Read with AI. Check the fields it fills in before you save them.
+In Documents, open the document and click Read with AI. Check the fields it fills in before you save them. A trade confirmation or investment statement can then go into an investment account. A type you added lists every field it read.
 
 ## Follow the cost
 
