@@ -163,11 +163,14 @@ class TripService internal constructor(private val books: Books) {
         val startPlace = p.startPlaceId?.let { books.places.find(it) }
         val endPlace = p.endPlaceId?.let { books.places.find(it) }
         if (groupOf(p.id) != null) return list(start.date.year).first { it.id == p.id }
+        // What the phone names must be the household's: a driver among the members, a trailer among the assets.
+        validate(p.driverId == null || books.members.list(includeArchived = true).any { it.id == p.driverId }, "error.memberRequired")
+        validate(p.trailerId == null || books.assets.list().any { it.id == p.trailerId && it.kind == AssetKind.TRAILER }, "error.notFound")
         return store(
             Trip(
-                p.id, groupId, start.date, endPlace?.name ?: p.endPlace?.trim()?.ifEmpty { null } ?: vehicle.name, BigDecimal.ZERO, false,
+                p.id, groupId, start.date, endPlace?.name ?: phoneText(p.endPlace, MAX_PLACE) ?: vehicle.name, BigDecimal.ZERO, false,
                 TripPurpose.entries.firstOrNull { it.name == p.purpose } ?: TripPurpose.PERSONAL, vehicle.id, p.driverId,
-                startPlace?.name ?: p.startPlace?.trim()?.ifEmpty { null }, p.notes?.take(MAX_TEXT),
+                startPlace?.name ?: phoneText(p.startPlace, MAX_PLACE), phoneText(p.notes, MAX_TEXT),
                 start, end, p.startOdometer, p.endOdometer, startPlace?.id, endPlace?.id,
                 TripLoad.entries.firstOrNull { it.name == p.load } ?: TripLoad.NONE, p.trailerId,
                 p.passengers.map { it.trim() }.filter { it.isNotEmpty() }.joinToString(", ").take(MAX_TEXT).ifEmpty { null }, null, deviceId,
@@ -295,5 +298,8 @@ class TripService internal constructor(private val books: Books) {
 
         /** Notes and passengers sent by a phone are cut to this length. */
         private const val MAX_TEXT = 500
+
+        /** A place typed on the phone, as long as a saved place's name. */
+        private const val MAX_PLACE = 120
     }
 }

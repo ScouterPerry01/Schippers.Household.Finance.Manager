@@ -49,6 +49,7 @@ fun PhonesScreen(model: BooksModel) {
     val books = model.books
     val devices = remember(model.revision) { books.sync.devices() }
     val groups = remember(model.revision) { books.groups().associate { it.id to it.name } }
+    val admin = remember(model.revision) { books.users.isAdministrator }
     var pairing by remember { mutableStateOf<PairingInvitation?>(null) }
     var editing by remember { mutableStateOf<PairedDevice?>(null) }
     // The manual's pictures show a made-up address in place of this computer's (hfm.demo.address).
@@ -89,11 +90,13 @@ fun PhonesScreen(model: BooksModel) {
                                 style = MaterialTheme.typography.bodySmall,
                             )
                         }
+                        // Only its owner chooses where a phone's captures go; its owner or an administrator removes it.
+                        val mine = d.userId == books.userId
                         if (d.revoked) {
-                            TextButton(onClick = { model.act { books.sync.forget(d.id) } }) { Text(model.t("phones.forget")) }
+                            if (mine || admin) TextButton(onClick = { model.act { books.sync.forget(d.id) } }) { Text(model.t("phones.forget")) }
                         } else {
-                            TextButton(onClick = { editing = d }) { Text(model.t("common.edit")) }
-                            OutlinedButton(onClick = { model.act { books.sync.revoke(d.id, System.currentTimeMillis()) } }) {
+                            if (mine) TextButton(onClick = { editing = d }) { Text(model.t("common.edit")) }
+                            if (mine || admin) OutlinedButton(onClick = { model.act { books.sync.revoke(d.id, System.currentTimeMillis()) } }) {
                                 Text(model.t("phones.remove"), color = MaterialTheme.colorScheme.error)
                             }
                         }

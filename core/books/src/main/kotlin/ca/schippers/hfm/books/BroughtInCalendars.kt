@@ -84,6 +84,7 @@ class BroughtInCalendarService internal constructor(private val books: Books) {
         val others = master?.target_group_id?.let { t -> writable().firstOrNull { it.id == t } } ?: defaultOthersGroup() ?: private
         val from = runCatching { LocalDate.parse(snapshot.fromDate) }.getOrElse { books.today() }
         val items = snapshot.items.take(MAX_ITEMS).mapNotNull { i ->
+            if (i.eventId.length > MAX_ID) return@mapNotNull null
             val start = runCatching { LocalDate.parse(i.startDate) }.getOrNull() ?: return@mapNotNull null
             val end = runCatching { LocalDate.parse(i.endDate) }.getOrNull()?.takeIf { it >= start } ?: start
             Stored(
@@ -92,7 +93,15 @@ class BroughtInCalendarService internal constructor(private val books: Books) {
             )
         }
         val meta = Meta(id, deviceId, snapshot.calendarName.take(MAX_TEXT), snapshot.accountName?.take(MAX_TEXT), snapshot.colour, snapshot.visibility, snapshot.takenAtMillis)
-        place(meta, items, from, private, others, now)
+        val before = master?.let { CalendarVisibility.valueOf(it.visibility) }
+        if (before != null && snapshot.visibility < before) {
+            // CSY-03: a calendar made less visible takes its past items along (the phone no longer
+            // sends them): none of them stays more visible than the calendar now is.
+            val past = fullItems(id).values.filter { it.endDate < from }.map { it.narrowed(snapshot.visibility) }
+            place(meta, past + items, null, private, others, now)
+        } else {
+            place(meta, items, from, private, others, now)
+        }
     }
 
     /** The calendars the signed-in user brought in, from every phone. */
@@ -120,13 +129,17 @@ class BroughtInCalendarService internal constructor(private val books: Books) {
         val master = books.ledger(private).broughtInCalendarQueries.broughtInCalendarById(calendarId).executeAsOneOrNull()
             ?: throw ca.schippers.hfm.data.AccessDeniedException("Calendar not found")
         val target = writable().firstOrNull { it.id == groupId } ?: throw ca.schippers.hfm.data.AccessDeniedException("You cannot add to this account group")
-        // Everything in full: the private group's items and the shared ones kept for others.
+        val meta = Meta(calendarId, master.device_id, master.source_name.orEmpty(), master.account_name, master.colour?.toInt(), CalendarVisibility.valueOf(master.visibility), master.snapshot_at)
+        place(meta, fullItems(calendarId).values.toList(), null, private, target, books.now())
+    }
+
+    /** Every item of the calendar in full: the private group's items and the shared ones kept for others. */
+    private fun fullItems(calendarId: String): Map<String, Stored> {
         val full = LinkedHashMap<String, Stored>()
         for (g in writable()) {
             books.ledger(g).broughtInCalendarQueries.broughtInItemsOf(calendarId).executeAsList().filter { it.title != null }.forEach { full[it.id] = it.toStored() }
         }
-        val meta = Meta(calendarId, master.device_id, master.source_name.orEmpty(), master.account_name, master.colour?.toInt(), CalendarVisibility.valueOf(master.visibility), master.snapshot_at)
-        place(meta, full.values.toList(), null, private, target, books.now())
+        return full
     }
 
     /**
@@ -179,7 +192,11 @@ class BroughtInCalendarService internal constructor(private val books: Books) {
     private class Stored(
         val id: String, val eventId: String, val visibility: CalendarVisibility, val title: String, val location: String?,
         val startDate: LocalDate, val startTime: LocalTime?, val endDate: LocalDate, val endTime: LocalTime?,
-    )
+    ) {
+        /** The item seen by no more people than [limit] allows. */
+        fun narrowed(limit: CalendarVisibility): Stored =
+            if (visibility <= limit) this else Stored(id, eventId, limit, title, location, startDate, startTime, endDate, endTime)
+    }
 
     /**
      * Writes [items] (from [from] on, or all of them when null) into the private group and the group
@@ -190,10 +207,11 @@ class BroughtInCalendarService internal constructor(private val books: Books) {
         val forOthers = if (apart) items.filter { it.visibility != CalendarVisibility.PRIVATE } else emptyList()
         val forOwner = if (apart) items.filter { it.visibility != CalendarVisibility.SHARED } else items
         val pruneBefore = books.today().minus(DatePeriod(years = 1)).toString()
-        for (g in writable()) {
+        // Out of every other group that held it, also one the user may no longer add to: a copy left there could still be read.
+        for (g in books.groups()) {
             if (g.id == private.id || (apart && g.id == others.id)) continue
             val q = books.ledger(g).broughtInCalendarQueries
-            if (q.broughtInCalendarById(meta.id).executeAsOneOrNull() != null) q.deleteBroughtInCalendar(meta.id)
+            if (q.broughtInCalendarById(meta.id).executeAsOneOrNull()?.owner_user_id == books.userId) q.deleteBroughtInCalendar(meta.id)
         }
         books.ledger(private).broughtInCalendarQueries.transaction {
             val q = books.ledger(private).broughtInCalendarQueries
@@ -233,8 +251,9 @@ class BroughtInCalendarService internal constructor(private val books: Books) {
         )
     }
 
+    /** Deletes the user's own calendar wherever it is kept, also in a group the user may no longer add to. */
     private fun delete(calendarId: String) {
-        for (g in writable()) {
+        for (g in books.groups()) {
             val q = books.ledger(g).broughtInCalendarQueries
             val row = q.broughtInCalendarById(calendarId).executeAsOneOrNull() ?: continue
             if (row.owner_user_id == books.userId) q.deleteBroughtInCalendar(calendarId)
@@ -267,6 +286,9 @@ class BroughtInCalendarService internal constructor(private val books: Books) {
     companion object {
         private const val MAX_TEXT = 300
         private const val MAX_DAYS = 62
+
+        /** The longest event id kept (the phone's are numbers). */
+        private const val MAX_ID = 64
 
         /** Items per calendar kept at most, as the phone sends (CalendarShare.MAX_ITEMS). */
         private const val MAX_ITEMS = CalendarShare.MAX_ITEMS

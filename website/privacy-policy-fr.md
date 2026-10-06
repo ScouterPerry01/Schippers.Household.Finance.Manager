@@ -39,6 +39,7 @@ L'application mobile utilise votre position seulement si vous l'autorisez, et se
 
 - La position est comparée à vos lieux enregistrés sur le téléphone même. Aucun service de cartes, aucune recherche d'adresse ni aucune autre entreprise n'est consulté.
 - Ce qui va à votre ordinateur, chiffré de bout en bout comme tout le reste, c'est le nom du lieu, ou ses coordonnées quand vous le laissez sans nom, et les coordonnées d'un lieu que vous enregistrez pour que le prochain déplacement le reconnaisse.
+- Sur votre ordinateur, les lieux et les déplacements sont gardés dans le groupe de comptes où votre téléphone envoie, comme vos autres captures : les personnes de votre ménage qui peuvent ouvrir ce groupe les voient, et leurs téléphones reçoivent les lieux enregistrés des groupes qu'elles peuvent ouvrir. Gardez-les dans votre propre groupe privé s'ils ne sont que pour vous.
 - Le déplacement en cours et les lieux enregistrés sur le téléphone sont gardés dans le stockage chiffré du téléphone.
 - Vous pouvez refuser ou retirer l'autorisation dans les réglages d'Android en tout temps ; les déplacements fonctionnent alors en choisissant les lieux ou en tapant leur nom.
 

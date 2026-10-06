@@ -113,6 +113,33 @@ class MultiUserTest {
     }
 
     @Test
+    fun `only a phone's owner chooses where its captures, trips and places go`() {
+        val marieId = household()
+        val shared = perry().run {
+            val id = groups().single().id
+            users.setAccess(id, marieId, PermissionLevel.EDIT)
+            session.close()
+            id
+        }
+        marie().use { m -> pairPhone(m, "marie-phone") }
+        perry().use { p ->
+            pairPhone(p, "perry-phone")
+            // Perry could otherwise send Marie's trips and places, with their coordinates, to the shared group he reads.
+            assertFailsWith<AccessDeniedException> { p.sync.update("marie-phone", "Marie's phone", shared) }
+            assertTrue(p.sync.devices().single { it.id == "marie-phone" }.groupId != shared)
+            // As administrator he may still take a lost phone off.
+            p.sync.revoke("marie-phone", now)
+        }
+        marie().use { m ->
+            assertFailsWith<AccessDeniedException> { m.sync.revoke("perry-phone", now) }
+            assertFailsWith<AccessDeniedException> { m.sync.forget("perry-phone") }
+            m.sync.update("marie-phone", "Pixel", m.groups().single { it.isPrivate }.id)
+            assertEquals("Pixel", m.sync.devices().single { it.id == "marie-phone" }.name)
+            m.sync.forget("marie-phone")
+        }
+    }
+
+    @Test
     fun `activity is visible to administrators, and to each user for themselves (HH-13)`() {
         val marieId = household()
         perry().use { p ->

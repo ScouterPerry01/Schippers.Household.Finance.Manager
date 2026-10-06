@@ -72,6 +72,7 @@ class PlaceService internal constructor(private val books: Books) {
     /**
      * TRP-02: a place saved on the phone, or renamed there. A new place goes to [groupId]; a known
      * one keeps its group and everything but its name (and its fix and category when it had none).
+     * Saving a new place needs the right to add in the group; renaming one, the right to change it.
      */
     fun receive(groupId: String, deviceId: String, p: PhonePlace): Place {
         val existing = find(p.id)
@@ -85,7 +86,7 @@ class PlaceService internal constructor(private val books: Books) {
             p.id, groupId, p.name, category, latitude = p.latitude, longitude = p.longitude,
             radiusM = p.radiusM.coerceIn(10, 5_000), province = books.province.name, deviceId = deviceId,
         )
-        return store(place, PermissionLevel.CAPTURE_ONLY)
+        return store(place, if (existing == null) PermissionLevel.CAPTURE_ONLY else PermissionLevel.EDIT)
     }
 
     /** TRP-02: what the phone gets: the places of every group the user can see, not archived. */

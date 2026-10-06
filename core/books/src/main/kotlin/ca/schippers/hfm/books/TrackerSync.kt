@@ -11,6 +11,25 @@ import ca.schippers.hfm.sync.RefWorkTask
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
+import java.math.BigDecimal
+
+/**
+ * A decimal a phone sent ("12,5" too), or null when empty. At most [PHONE_DIGITS] digits before the
+ * point and [PHONE_DECIMALS] after it: an exponent such as 1E999999999 would otherwise become a
+ * billion characters when written out.
+ */
+internal fun phoneDecimal(text: String?): BigDecimal? {
+    val n = text?.trim()?.ifEmpty { null }?.let { it.replace(',', '.').toBigDecimalOrNull() ?: throw ValidationException("error.invalidNumber") } ?: return null
+    validate(n.precision() - n.scale() <= PHONE_DIGITS && n.scale() <= PHONE_DECIMALS, "error.invalidNumber")
+    return n
+}
+
+/** Text a phone sent, trimmed and cut to [max] characters, or null when empty. */
+internal fun phoneText(text: String?, max: Int = PHONE_TEXT): String? = text?.trim()?.take(max)?.ifEmpty { null }
+
+private const val PHONE_DIGITS = 12
+private const val PHONE_DECIMALS = 6
+private const val PHONE_TEXT = 500
 
 /**
  * UTL-01, UTL-02, HRS-01, CHO-01, VOL-01 on the phone: what its log forms send is stored as facts
@@ -20,20 +39,20 @@ internal class TrackerSync(private val books: Books) {
 
     private fun date(text: String): LocalDate = runCatching { LocalDate.parse(text.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
 
-    private fun number(text: String?): java.math.BigDecimal? = text?.trim()?.ifEmpty { null }?.let { it.replace(',', '.').toBigDecimalOrNull() ?: throw ValidationException("error.invalidNumber") }
+    private fun number(text: String?): BigDecimal? = phoneDecimal(text)
 
     /** Stores one entry from the phone [deviceId]; volunteer hours go in [groupId], the rest where their meter, tank, client or chore is. */
     fun receive(t: PhoneTracker, groupId: String?, deviceId: String) {
         t.meter?.let { m ->
-            books.utilities.addReading(m.meterId, date(m.date), number(m.value), number(m.onPeak), number(m.midPeak), number(m.offPeak), m.note, deviceId)
+            books.utilities.addReading(m.meterId, date(m.date), number(m.value), number(m.onPeak), number(m.midPeak), number(m.offPeak), phoneText(m.note), deviceId)
             return
         }
         t.tank?.let { r ->
-            books.utilities.addTankReading(r.tankId, date(r.date), number(r.percent), number(r.litres), r.note, deviceId)
+            books.utilities.addTankReading(r.tankId, date(r.date), number(r.percent), number(r.litres), phoneText(r.note), deviceId)
             return
         }
         t.hours?.let { h ->
-            books.workHours.save(WorkEntry("", h.clientId, date(h.date), h.minutes, h.taskId, h.description, startTime = h.startTime), deviceId)
+            books.workHours.save(WorkEntry("", h.clientId, date(h.date), h.minutes, h.taskId, phoneText(h.description), startTime = h.startTime), deviceId)
             return
         }
         t.chore?.let { c ->
@@ -44,7 +63,10 @@ internal class TrackerSync(private val books: Books) {
             validate(books.members.list(includeArchived = true).any { it.id == v.memberId }, "error.memberRequired")
             val kind = VolunteerKind.entries.firstOrNull { it.name == v.kind } ?: VolunteerKind.OTHER
             books.volunteer.save(
-                VolunteerEntry("", groupId ?: throw ValidationException("error.noEditableGroup"), v.memberId, v.organization, kind, date(v.date), v.minutes, v.contactId, v.activity),
+                VolunteerEntry(
+                    "", groupId ?: throw ValidationException("error.noEditableGroup"), v.memberId, phoneText(v.organization, MAX_NAME).orEmpty(), kind, date(v.date), v.minutes, v.contactId,
+                    phoneText(v.activity),
+                ),
                 deviceId,
             )
             return
@@ -82,5 +104,6 @@ internal class TrackerSync(private val books: Books) {
 
     private companion object {
         const val MAX_ORGANIZATIONS = 50
+        const val MAX_NAME = 120
     }
 }

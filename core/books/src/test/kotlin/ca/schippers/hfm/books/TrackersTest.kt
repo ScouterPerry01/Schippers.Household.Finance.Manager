@@ -121,6 +121,10 @@ class TrackersTest {
         assertEquals(3, books.workHours.unbilled(client.id).size)
         assertFailsWith<ValidationException> { books.workHours.save(WorkEntry("", client.id, today, 0)) }
         assertFailsWith<ValidationException> { books.workHours.save(WorkEntry("", client.id, today, 30, startTime = "25:00")) }
+        // Another client's hours cannot be reached through their id.
+        val other = books.workHours.saveClient(WorkClient("", group, "Other family", Currency.CAD))
+        assertFailsWith<ValidationException> { books.workHours.save(WorkEntry(a.id, other.id, today, 30)) }
+        assertEquals(client.id, books.workHours.hours().single { it.id == a.id }.clientId)
         // Tasks with hours are kept, archived, when removed from the client.
         val saved = books.workHours.saveClient(books.workHours.client(client.id).copy(tasks = listOf(tutoring)))
         assertEquals(listOf(false, true), saved.tasks.sortedBy { it.name != "Tutoring" }.map { it.archived })

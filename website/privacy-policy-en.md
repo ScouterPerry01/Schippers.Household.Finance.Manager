@@ -39,6 +39,7 @@ The phone app uses your location only if you allow it, and only for trips: it ta
 
 - The fix is compared with your saved places on the phone itself. No map service, address lookup or other company is asked.
 - What goes to your computer, encrypted end to end like everything else, is the name of the place, or its coordinates when you leave it unnamed, and the coordinates of a place you save so the next trip recognizes it.
+- On your computer, places and trips are kept in the account group your phone sends to, as your other captures are: the people of your household who can open that group see them, and their phones receive the saved places of the groups they can open. Keep them in your own private group if they are for you alone.
 - The trip in progress and the places saved on the phone are kept in the phone's encrypted storage.
 - You can refuse or withdraw the permission in Android's settings at any time; trips then work by choosing places or typing their names.
 

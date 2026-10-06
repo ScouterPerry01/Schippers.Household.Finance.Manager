@@ -116,8 +116,11 @@ never see it. That covers:
   maintenance checklist (task and vehicle or asset names, due and done dates), what the log
   forms pick from (utility meters and fuel tanks with their last reading, side-income clients and
   their tasks, the children's chores with what each is worth, organizations volunteered for), calendar
-  events (appointments), medication refills and the contacts the user may see (names, kinds,
-  phone numbers, emails, addresses, hours; never account or client numbers).
+  events (appointments), each person's work and school hours today and tomorrow, the saved places
+  (name, category, address and coordinates) and trailers of the groups the user may see,
+  medication refills and the contacts the user may see (names, kinds, phone numbers, emails,
+  addresses, hours; never account or client numbers). Calendar items brought in from phones never
+  go back to any phone.
 - On the phone only: event, refill, bill, maintenance and budget reminders are scheduled and shown
   by the app itself (local notifications); nothing is sent to raise them.
 

@@ -108,4 +108,65 @@ class AuditPrivacyTest {
             assertTrue(details.none { secret in it }, "\"$secret\" is not in the audit log: $details")
         }
     }
+
+    @Test
+    fun `calendars, places, trips and trackers leave no title, place, coordinate, amount or note in the audit log`() {
+        val group = books.groups().single().id
+        val cad = { a: String -> Money.parse(a, Currency.CAD) }
+        val kid = books.members.create("Emma Secretkid", ca.schippers.hfm.domain.MemberKind.CHILD)
+        // CSY-01 to CSY-05: a calendar brought in from a phone, with a private item, and an .ics file.
+        books.broughtIn.receive(
+            "phone-1",
+            ca.schippers.hfm.sync.CalendarSnapshot(
+                "s1", "7", 1_790_000_000_000L, "Secretcalendar", "perry@secret.ca", null, ca.schippers.hfm.sync.CalendarVisibility.BUSY, "2026-10-05", "2026-12-04",
+                listOf(ca.schippers.hfm.sync.CalendarInstance("1", "2026-10-07", "2026-10-07", "10:00", "11:00", "Oncology Secretvisit", "Secretclinic", ca.schippers.hfm.sync.CalendarVisibility.PRIVATE)),
+            ),
+            1_790_000_000_000L,
+        )
+        val ics = listOf("BEGIN:VCALENDAR", "BEGIN:VEVENT", "DTSTART:20261008T090000", "SUMMARY:Secretics meeting", "LOCATION:Secretroom", "END:VEVENT", "END:VCALENDAR")
+        books.icsImport.import(group, ics.joinToString("\r\n").encodeToByteArray())
+        // CAL-09 to CAL-11: a schedule and an activity with drivers and a cost that became a transaction.
+        books.schedules.save(
+            PersonSchedule(
+                "", group, kid.id, ScheduleKind.SCHOOL, "Secretschool", LocalDate(2026, 9, 1), null, 1, true, "typed schedule note",
+                listOf(ScheduleShift(0, kotlinx.datetime.DayOfWeek.MONDAY, kotlinx.datetime.LocalTime(8, 0), kotlinx.datetime.LocalTime(15, 0))), emptyList(),
+            ),
+        )
+        val account = books.accounts.create(AccountDraft(group, "Chequing", ca.schippers.hfm.domain.AccountType.CHEQUING, Currency.CAD, cad("0"), LocalDate(2026, 1, 1)))
+        val swim = books.calendar.create(
+            EventDraft(
+                group, "Secretswim lessons", EventCategory.ACTIVITY, LocalDate(2026, 10, 7), kotlinx.datetime.LocalTime(18, 0), 60, "Secretpool", memberId = kid.id,
+                driverThere = Driver(name = "Secretdriver"), cost = cad("44.44"),
+            ),
+        )
+        books.calendar.recordCost(swim.id, LocalDate(2026, 10, 7), account.id, null)
+        // TRP-01 to TRP-10: a place with its coordinates, a trip and a fill-up.
+        val car = books.vehicles.save(Vehicle("", group, "Secretcar", purchaseOdometer = 1_000))
+        val cottage = books.places.save(Place("", group, "Secretcottage", PlaceCategory.OTHER, "12 Secretlane", 44.77123, -76.69456))
+        books.trips.save(
+            Trip(
+                "", group, LocalDate(2026, 10, 3), "", java.math.BigDecimal.ZERO, false, TripPurpose.MEDICAL, car.id, endPlaceId = cottage.id, origin = "Secretorigin",
+                notes = "typed trip note", startOdometer = 61_500, endOdometer = 61_678, passengers = "Secretpassenger",
+            ),
+        )
+        books.vehicles.saveFuel(FuelEntry("", car.id, LocalDate(2026, 10, 4), 61_700, java.math.BigDecimal("62.9"), cad("98.76"), station = "Secretstation"))
+        // UTL-01, UTL-02, HRS-01, CHO-01, VOL-01.
+        val meter = books.utilities.saveMeter(UtilityMeter("", group, "Secretmeter", MeterKind.ELECTRICITY, notes = "typed meter note"))
+        books.utilities.addReading(meter.id, LocalDate(2026, 10, 5), java.math.BigDecimal("4321.5"), notes = "typed reading note")
+        val tank = books.utilities.saveTank(FuelTank("", group, "Secrettank", FuelKind.PROPANE, java.math.BigDecimal(500), supplier = "Secretsupplier"))
+        books.utilities.addDelivery(tank.id, LocalDate(2026, 9, 10), java.math.BigDecimal(250), cad("654.32"), account.id)
+        val client = books.workHours.saveClient(WorkClient("", group, "Secretclient", Currency.CAD, cad("88.88"), details = "Secretaddress"))
+        books.workHours.save(WorkEntry("", client.id, LocalDate(2026, 10, 5), 90, description = "typed hours note"))
+        books.workHours.invoice(client.id, books.workHours.unbilled(client.id).map { it.id }, LocalDate(2026, 10, 6))
+        val chore = books.chores.save(Chore("", group, kid.id, "Secretchore", Currency.CAD, cad("3.33")))
+        books.chores.tick(chore.id, LocalDate(2026, 10, 5))
+        books.volunteer.save(VolunteerEntry("", group, kid.id, "Secretorg", VolunteerKind.SCHOOL, LocalDate(2026, 10, 4), 120, activity = "typed activity"))
+
+        val details = books.session.core.coreQueries.recentAudit(300).executeAsList().mapNotNull { it.details }
+        for (secret in listOf(
+            "Secret", "secret", "Oncology", "typed", "44.44", "4444", "98.76", "9876", "4321", "654.32", "65432", "88.88", "8888", "3.33", "333", "44.77", "76.69", "62.9",
+        )) {
+            assertTrue(details.none { secret in it }, "\"$secret\" is not in the audit log: $details")
+        }
+    }
 }

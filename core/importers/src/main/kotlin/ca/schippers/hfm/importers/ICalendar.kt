@@ -31,6 +31,20 @@ object ICalendar {
 
     private const val MAX_LINE = 20_000
 
+    /** Dates left out (EXDATE) kept per event: each becomes a cancelled date in the calendar. */
+    const val MAX_EXDATES = 1000
+
+    /** Days, weeks, months or years gone through for one file's repeats, at most: a file of many long repeats stays quick. */
+    const val MAX_PERIODS = 200_000L
+
+    /**
+     * What [occurrences] may still go through, shared by the calls of one import. [exhausted] once
+     * a repeat was cut short by it.
+     */
+    class Budget(var periods: Long = MAX_PERIODS) {
+        var exhausted = false
+    }
+
     enum class Frequency { DAILY, WEEKLY, MONTHLY, YEARLY }
 
     /** A day of the week in a BYDAY list; [nth] is its rank in the month or year (2 = second, -1 = last). */
@@ -105,17 +119,23 @@ object ICalendar {
 
     /**
      * The dates [event] falls on between [from] and [to] (both included), at most [limit], without
-     * its EXDATEs. COUNT counts from the first date, as the standard says.
+     * its EXDATEs. COUNT counts from the first date, as the standard says. Without a COUNT, the
+     * periods before [from] are skipped; the periods gone through are taken from [budget].
      */
-    fun occurrences(event: Event, from: LocalDate, to: LocalDate, limit: Int = 1000): List<LocalDate> {
+    fun occurrences(event: Event, from: LocalDate, to: LocalDate, limit: Int = 1000, budget: Budget = Budget()): List<LocalDate> {
         val rule = event.rule ?: return if (event.startDate in from..to) listOf(event.startDate) else emptyList()
         val out = ArrayList<LocalDate>()
         var counted = 0
         val last = listOfNotNull(to, rule.until).min()
-        var period = 0L
+        var period = if (rule.count == null) firstPeriod(event.startDate, rule, from) else 0L
         // A period without any date (the 31st in a short month) is skipped; give up after many in a row.
         var empty = 0
         while (empty < 2000) {
+            if (budget.periods <= 0) {
+                budget.exhausted = true
+                return out
+            }
+            budget.periods--
             val dates = datesOfPeriod(event.startDate, rule, period).filter { it >= event.startDate }.sorted()
             period += rule.interval
             if (dates.isEmpty()) {
@@ -135,6 +155,19 @@ object ICalendar {
             }
         }
         return out
+    }
+
+    /** The last period, a whole number of intervals from the start, that ends before [from]: the ones before it have no date to give. */
+    private fun firstPeriod(start: LocalDate, rule: Rule, from: LocalDate): Long {
+        if (from <= start) return 0
+        val unit = when (rule.frequency) {
+            Frequency.DAILY -> ChronoUnit.DAYS
+            Frequency.WEEKLY -> ChronoUnit.WEEKS
+            Frequency.MONTHLY -> ChronoUnit.MONTHS
+            Frequency.YEARLY -> ChronoUnit.YEARS
+        }
+        val units = unit.between(periodStart(start, rule.frequency, 0), periodStart(from, rule.frequency, 0))
+        return maxOf(0L, (units / rule.interval - 1) * rule.interval)
     }
 
     // --- Reading ------------------------------------------------------------------------------------
@@ -203,9 +236,9 @@ object ICalendar {
             return null
         }
         if (props.any { it.name == "RDATE" }) notes += ImportNote.of("icsRdate", "\"$label\": extra dates (RDATE) were left out.", label)
-        val exDates = props.filter { it.name == "EXDATE" }.flatMap { p ->
-            p.value.split(',').mapNotNull { v -> moment(Property(p.name, p.params, v), zone)?.first }
-        }.toSet()
+        val exDates = props.asSequence().filter { it.name == "EXDATE" }.flatMap { p ->
+            p.value.split(',').asSequence().mapNotNull { v -> moment(Property(p.name, p.params, v), zone)?.first }
+        }.distinct().take(MAX_EXDATES).toSet()
         return Event(
             first("UID")?.value?.trim()?.take(MAX_TEXT), title ?: "", first("LOCATION")?.value?.let(::unescape)?.trim()?.take(MAX_TEXT)?.ifBlank { null },
             first("DESCRIPTION")?.value?.let(::unescape)?.trim()?.take(MAX_TEXT)?.ifBlank { null },

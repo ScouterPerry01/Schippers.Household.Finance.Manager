@@ -265,4 +265,47 @@ class TripsOnPhoneTest {
             books.session.close()
         }
     }
+
+    @Test
+    fun `a phone that may only add cannot rename a place, and what it sends is checked`() {
+        val books = household()
+        var civicId = ""
+        var homeId = ""
+        try {
+            val group = books.groups().first().id
+            civicId = books.vehicles.save(Vehicle("", group, "Civic", purchaseOdometer = 38_200)).id
+            homeId = books.places.save(Place("", group, "Home", PlaceCategory.HOME, latitude = 45.401, longitude = -75.703)).id
+            val sam = books.users.add("sam", "Sam", ca.schippers.hfm.domain.Role.MEMBER, "password2-long".toCharArray()).userId
+            books.session.setPermission(group, sam, ca.schippers.hfm.domain.PermissionLevel.CAPTURE_ONLY)
+        } finally {
+            books.session.close()
+        }
+        val sam = Books(store.unlock(temp.resolve("T.hfm"), "sam", "password2-long".toCharArray()))
+        try {
+            val key = pairPhone(sam, "phone-2")
+            val answer = send(
+                sam, "phone-2", key,
+                SyncRequest(
+                    now, emptyList(),
+                    places = listOf(PhonePlace("place-new", "c1", now, "Corner store", "STORE", 45.41, -75.70), PhonePlace(homeId, "c2", now, "Renamed by a phone")),
+                    fuel = listOf(PhoneFuel("f1", now, civicId, "2026-10-04", "1E999999999"), PhoneFuel("f2", now, civicId, "2026-10-04", "40", cost = "1e-999999999")),
+                    trips = listOf(
+                        PhoneTrip("t1", now, civicId, "2026-10-03T16:40", "2026-10-03T17:00", 61_500, 61_520, trailerId = "not-a-trailer"),
+                        PhoneTrip("t2", now, civicId, "2026-10-03T16:40", "2026-10-03T17:00", 61_500, 61_520, driverId = "not-a-member"),
+                        PhoneTrip("t3", now, civicId, "2026-10-03T18:40", "2026-10-03T19:00", 61_520, 61_540, endPlace = "x".repeat(100_000), notes = "n".repeat(100_000)),
+                    ),
+                ),
+            )
+            assertEquals(setOf("c1", "t3"), answer.imported.toSet(), "a new place, and the trip with its texts cut")
+            assertEquals(setOf("c2", "f1", "f2", "t1", "t2"), answer.failed.map { it.id }.toSet())
+            assertEquals("Home", sam.places.find(homeId)?.name, "renaming needs the right to change")
+            assertEquals("Corner store", sam.places.find("place-new")?.name)
+            val trip = sam.trips.list(2026).single()
+            assertEquals(120, trip.destination.length)
+            assertEquals(500, trip.notes?.length)
+            assertTrue(sam.vehicles.fuel(civicId).isEmpty())
+        } finally {
+            sam.session.close()
+        }
+    }
 }

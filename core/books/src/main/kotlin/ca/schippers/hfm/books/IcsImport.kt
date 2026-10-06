@@ -37,6 +37,8 @@ class IcsImportService internal constructor(private val books: Books) {
             .mapValues { (_, list) -> list.mapNotNull { it.recurrenceId }.toSet() }
         var created = 0
         var expanded = 0
+        // The file comes from outside: its repeats share one budget of periods gone through, and of single dates copied.
+        val budget = ICalendar.Budget()
         for (e in calendar.events) {
             val title = e.title.ifBlank { books.text("ics.untitled") }
             val skip = (if (e.recurrenceId == null) changed[e.uid].orEmpty() else emptySet()) + e.exDates
@@ -46,12 +48,12 @@ class IcsImportService internal constructor(private val books: Books) {
                 created++
                 continue
             }
-            val kept = recurrence(e)
+            val kept = recurrence(e, budget)
             if (kept != null) {
                 for ((start, recurrence) in kept) {
                     // A count of dates becomes the date of the last one.
                     val end = rule.until ?: rule.count?.let {
-                        ICalendar.occurrences(e.copy(exDates = emptySet()), start, start.plusYears(MAX_COUNT_YEARS), limit = MAX_COUNT_EXPANSION)
+                        ICalendar.occurrences(e.copy(exDates = emptySet()), start, start.plusYears(MAX_COUNT_YEARS), limit = MAX_COUNT_EXPANSION, budget = budget)
                             .lastOrNull { it.dayOfWeek == start.dayOfWeek || recurrence.frequency != Frequency.WEEKLY } ?: start
                     }
                     val event = create(groupId, e, title, start, recurrence, end)
@@ -59,13 +61,19 @@ class IcsImportService internal constructor(private val books: Books) {
                     for (d in skip) if (d >= start && (end == null || d <= end)) books.calendar.mark(event.id, d.toKotlin(), OccurrenceMark.CANCELLED)
                 }
             } else {
-                val dates = ICalendar.occurrences(e, maxOf(e.startDate, today.minusYears(1)), horizon, limit = MAX_EXPANDED).filter { it !in skip }
+                val room = MAX_EXPANDED_TOTAL - expanded
+                if (room <= 0) {
+                    budget.exhausted = true
+                    continue
+                }
+                val dates = ICalendar.occurrences(e, maxOf(e.startDate, today.minusYears(1)), horizon, limit = minOf(MAX_EXPANDED, room), budget = budget).filter { it !in skip }
                 if (dates.isEmpty()) continue
                 dates.forEach { d -> create(groupId, e, title, d, null, null) }
                 expanded += dates.size
                 notes += books.text("ics.expanded", title, dates.size)
             }
         }
+        if (budget.exhausted) notes += books.text("ics.limit")
         books.session.audit("IMPORT", "calendar_ics", groupId, "events $created, single dates $expanded")
         return IcsImportResult(created, expanded, notes)
     }
@@ -74,7 +82,7 @@ class IcsImportService internal constructor(private val books: Books) {
      * The repeating events that keep [e]'s repeat exactly, with their first dates; null when the
      * calendar cannot keep it (it is then copied date by date).
      */
-    private fun recurrence(e: ICalendar.Event): List<Pair<java.time.LocalDate, Recurrence>>? {
+    private fun recurrence(e: ICalendar.Event, budget: ICalendar.Budget): List<Pair<java.time.LocalDate, Recurrence>>? {
         val r = e.rule ?: return null
         if (r.byMonth.isNotEmpty() && !(r.frequency == ICalendar.Frequency.YEARLY && r.byMonth == listOf(e.startDate.monthValue))) return null
         return when (r.frequency) {
@@ -83,7 +91,7 @@ class IcsImportService internal constructor(private val books: Books) {
                 if (r.byMonthDay.isNotEmpty()) return null
                 val days = r.byDay.map { it.day }.ifEmpty { listOf(e.startDate.dayOfWeek) }.distinct()
                 // Each day's first date, within the first weeks of the series.
-                val firsts = ICalendar.occurrences(e.copy(exDates = emptySet()), e.startDate, e.startDate.plusWeeks(7L * r.interval + 7), limit = 64)
+                val firsts = ICalendar.occurrences(e.copy(exDates = emptySet()), e.startDate, e.startDate.plusWeeks(7L * r.interval + 7), limit = 64, budget = budget)
                 days.mapNotNull { d -> firsts.firstOrNull { it.dayOfWeek == d } }.sorted().map { it to Recurrence(Frequency.WEEKLY, r.interval) }
             }
             ICalendar.Frequency.MONTHLY -> when {
@@ -124,6 +132,9 @@ class IcsImportService internal constructor(private val books: Books) {
         /** Repeats the calendar cannot keep are copied this many years ahead. */
         private const val EXPAND_YEARS = 2L
         private const val MAX_EXPANDED = 250
+
+        /** Single dates copied from one file, at most. */
+        private const val MAX_EXPANDED_TOTAL = 5000
         private const val MAX_COUNT_EXPANSION = 100_000
         private const val MAX_COUNT_YEARS = 200L
         private const val MAX_MINUTES = 60L * 24 * 31

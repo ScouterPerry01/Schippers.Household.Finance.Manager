@@ -149,4 +149,26 @@ class ICalendarTest {
         val endless = one("DTSTART:20261001T080000", "SUMMARY:Forever", "RRULE:FREQ=DAILY")
         assertEquals(1000, ICalendar.occurrences(endless, d(1, 1), d(1, 1, 2100)).size, "at most the limit")
     }
+
+    @Test
+    fun `repeats from long ago cannot hold the import`() {
+        // Without a count, the days before the window are skipped, whatever the start.
+        val ancient = one("DTSTART:00010101T080000", "SUMMARY:Ancient", "RRULE:FREQ=DAILY;INTERVAL=3")
+        val budget = ICalendar.Budget()
+        val dates = ICalendar.occurrences(ancient, d(10, 1), d(10, 10), budget = budget)
+        assertEquals(3, dates.size)
+        assertTrue(dates.all { java.time.temporal.ChronoUnit.DAYS.between(LocalDate.of(1, 1, 1), it) % 3 == 0L }, "on the series' own days: $dates")
+        assertTrue(budget.periods > ICalendar.MAX_PERIODS - 10, "a handful of days gone through")
+        val monthly = one("DTSTART:19000131", "SUMMARY:Old", "RRULE:FREQ=MONTHLY;INTERVAL=5")
+        assertEquals(ICalendar.occurrences(monthly, d(1, 1, 1900), d(12, 31, 2027), limit = 100_000).filter { it.year >= 2026 }, ICalendar.occurrences(monthly, d(1, 1), d(12, 31, 2027)))
+        // With a count, every date from the start counts: the budget, shared by a file's events, ends it.
+        val counted = one("DTSTART:00010101T080000", "SUMMARY:Counted", "RRULE:FREQ=DAILY;BYDAY=MO;COUNT=100000")
+        val shared = ICalendar.Budget()
+        assertTrue(ICalendar.occurrences(counted, d(1, 1), d(12, 31), budget = shared).isEmpty())
+        assertTrue(shared.exhausted && shared.periods == 0L)
+        assertTrue(ICalendar.occurrences(ancient, d(10, 1), d(10, 10), budget = shared).isEmpty(), "nothing left for the next event")
+        // Dates left out: at most so many per event.
+        val excluded = one("DTSTART:20261001T080000", "SUMMARY:Excluded", "RRULE:FREQ=DAILY", "EXDATE:" + (0L until 5000L).joinToString(",") { LocalDate.of(2026, 10, 2).plusDays(it).toString().replace("-", "") + "T080000" })
+        assertEquals(ICalendar.MAX_EXDATES, excluded.exDates.size)
+    }
 }

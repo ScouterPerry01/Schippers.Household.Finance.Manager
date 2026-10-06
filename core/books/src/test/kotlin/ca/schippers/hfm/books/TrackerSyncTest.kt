@@ -121,4 +121,29 @@ class TrackerSyncTest {
         assertEquals(1, books.workHours.hours(client.id).size)
         assertEquals(listOf("2026-10-05"), again.reference?.trackers?.chores?.single()?.doneDates ?: books.sync.reference(today, now).trackers.chores.single().doneDates)
     }
+
+    @Test
+    fun `numbers and texts from the phone are bounded`() {
+        val sam = books.members.create("Sam", MemberKind.ADULT)
+        val meter = books.utilities.saveMeter(UtilityMeter("", group, "Hydro", MeterKind.ELECTRICITY))
+        val tank = books.utilities.saveTank(FuelTank("", group, "Propane", FuelKind.PROPANE, BigDecimal(500)))
+        val key = pair()
+        val answer = send(
+            key,
+            SyncRequest(
+                now, emptyList(),
+                trackers = listOf(
+                    PhoneTracker("huge", now, meter = PhoneMeterReading(meter.id, "2026-10-05", "1E999999999")),
+                    PhoneTracker("tiny", now, tank = PhoneTankReading(tank.id, "2026-10-05", litres = "1E-999999999")),
+                    PhoneTracker("ok", now, meter = PhoneMeterReading(meter.id, "2026-10-05", "12345.5", note = "n".repeat(100_000))),
+                    PhoneTracker("org", now, volunteer = PhoneVolunteer(sam.id, "o".repeat(100_000), "2026-10-04", 60, activity = "a".repeat(100_000))),
+                ),
+            ),
+        )
+        assertEquals(listOf("ok", "org"), answer.imported)
+        assertEquals(listOf("huge", "tiny"), answer.failed.map { it.id })
+        assertEquals(500, books.utilities.meter(meter.id).readings.single().notes?.length)
+        val entry = books.volunteer.list().single()
+        assertEquals(120 to 500, entry.organization.length to entry.activity?.length)
+    }
 }

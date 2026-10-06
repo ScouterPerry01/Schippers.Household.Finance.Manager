@@ -155,6 +155,41 @@ class BroughtInCalendarTest {
     }
 
     @Test
+    fun `a calendar made less visible takes its past items along`() {
+        val shared = setUp()
+        alex().use { a ->
+            val send = pair(a)
+            // Sent a week ago, shared: a lunch now past, a meeting still to come.
+            val past = CalendarInstance("20", "2026-09-29", "2026-09-29", "12:00", "13:00", "Lunch with Secretname", "Bistro")
+            val first = work("s1", now - 7_000, listOf(past, budget)).copy(visibility = CalendarVisibility.SHARED, fromDate = "2026-09-28")
+            send(SyncRequest(now, emptyList(), calendars = listOf(first)))
+            assertEquals("Lunch with Secretname", a.ledger(a.group(shared)).broughtInCalendarQueries.broughtInItemsOf(a.broughtIn.calendars().single().id).executeAsList().first().title)
+
+            // Now busy only: the phone sends only what is to come, and the past lunch keeps only its times for others.
+            send(SyncRequest(now, emptyList(), calendars = listOf(work("s2", now - 5_000, listOf(budget)))))
+            val forOthers = a.ledger(a.group(shared)).broughtInCalendarQueries.broughtInItemsBetween("2026-12-31", "2026-01-01").executeAsList()
+            assertEquals(setOf("20", "10"), forOthers.map { it.event_id }.toSet())
+            assertTrue(forOthers.all { it.title == null && it.location == null && it.visibility == "BUSY" }, "$forOthers")
+            assertNull(a.ledger(a.group(shared)).broughtInCalendarQueries.broughtInCalendars().executeAsList().single().source_name)
+
+            // Then private: nothing at all is left where others can read; the owner keeps it all.
+            send(SyncRequest(now, emptyList(), calendars = listOf(work("s3", now - 3_000, listOf(budget)).copy(visibility = CalendarVisibility.PRIVATE))))
+            assertTrue(a.ledger(a.group(shared)).broughtInCalendarQueries.broughtInCalendars().executeAsList().isEmpty())
+            assertEquals(listOf("Lunch with Secretname", "Budget meeting"), a.broughtIn.items(LocalDate(2026, 9, 1), d(31)).map { it.title })
+        }
+        sam().use { assertTrue(it.broughtIn.items(LocalDate(2026, 9, 1), d(31)).isEmpty()) }
+    }
+
+    @Test
+    fun `an item with an overlong id is left out`() {
+        setUp()
+        alex().use { a ->
+            pair(a)(SyncRequest(now, emptyList(), calendars = listOf(work("s1", now, listOf(budget, budget.copy(eventId = "9".repeat(5000)))))))
+            assertEquals(listOf("Budget meeting"), a.broughtIn.items(d(5), d(31)).map { it.title })
+        }
+    }
+
+    @Test
     fun `the owner can keep a calendar to themselves or remove it`() {
         val shared = setUp()
         alex().use { a ->
@@ -201,6 +236,21 @@ class BroughtInCalendarTest {
             assertEquals("Arena", practice.location)
             val cottage = a.calendar.occurrences(d(1), d(31)).filter { it.event.title == "Cottage" }.map { it.date }
             assertEquals(listOf(d(9), d(10), d(11)), cottage)
+        }
+    }
+
+    @Test
+    fun `an ics file of runaway repeats is cut short with a note`() {
+        val shared = setUp()
+        val events = (1..300).flatMap { listOf("BEGIN:VEVENT", "DTSTART:00010101T080000", "SUMMARY:Runaway $it", "RRULE:FREQ=DAILY;BYDAY=MO;COUNT=100000", "END:VEVENT") }
+        val file = (listOf("BEGIN:VCALENDAR", "VERSION:2.0") + events + "END:VCALENDAR").joinToString("\r\n").encodeToByteArray()
+        alex().use { a ->
+            val started = System.nanoTime()
+            val result = a.icsImport.import(shared, file, ZoneId.systemDefault())
+            assertTrue(System.nanoTime() - started < 60_000_000_000L, "within a minute")
+            assertEquals(0, result.created)
+            assertTrue(result.expanded <= 5000)
+            assertTrue(result.notes.any { "cut short" in it }, "${result.notes}")
         }
     }
 

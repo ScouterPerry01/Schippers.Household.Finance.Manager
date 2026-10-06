@@ -114,7 +114,9 @@ class WorkHoursService internal constructor(private val books: Books) {
         validate(e.startTime == null || TIME.matches(e.startTime), "error.invalidTime")
         validate(e.taskId == null || c.tasks.any { it.id == e.taskId }, "error.notFound")
         validate(e.rate == null || (e.rate.currency == c.currency && !e.rate.isNegative), "error.workRate")
-        val existing = e.id.takeIf { it.isNotBlank() }?.let { id -> hours(c.id).firstOrNull { it.id == id } }
+        // Any client's: an id of another client's hours must not let the right to add change them.
+        val existing = e.id.takeIf { it.isNotBlank() }?.let { id -> hours().firstOrNull { it.id == id } }
+        validate(existing == null || existing.clientId == c.id, "error.notFound")
         val group = group(c.groupId, if (existing == null) PermissionLevel.CAPTURE_ONLY else PermissionLevel.EDIT)
         val id = e.id.ifBlank { Ids.newId() }
         books.ledger(group).trackersQueries.upsertWorkHours(

@@ -47,7 +47,6 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
-import java.math.BigDecimal
 import java.security.MessageDigest
 
 /** A paired phone (SYNC-07), as the desktop's Phones screen shows it. */
@@ -148,20 +147,38 @@ class SyncService internal constructor(private val books: Books) {
         PairedDevice(it.id, it.name, it.user_id, it.group_id, it.paired_at, it.last_seen, it.items_received.toInt(), it.revoked_at != null)
     }
 
-    /** SYNC-08: the phone can no longer send or receive anything; it must be paired again. */
+    /** SYNC-08: the phone can no longer send or receive anything; it must be paired again. Its owner or an administrator. */
     fun revoke(deviceId: String, now: Long) {
+        manageable(deviceId, ownerOnly = false)
         books.core.revokeDevice(now, deviceId)
         books.session.audit("REVOKE", "device", deviceId)
     }
 
+    /** Removes a phone from the list; its owner or an administrator. */
     fun forget(deviceId: String) {
+        manageable(deviceId, ownerOnly = false)
         books.core.deleteDevice(deviceId)
         books.session.audit("DELETE", "device", deviceId)
     }
 
+    /**
+     * Renames the phone and chooses the group its captures, trips and places go to: only its owner
+     * (HH-11: another user could otherwise send them to a group they can read), and only a group the
+     * owner may add to.
+     */
     fun update(deviceId: String, name: String, groupId: String?) {
+        manageable(deviceId, ownerOnly = true)
         validate(name.isNotBlank(), "error.nameRequired")
+        groupId?.let { books.require(books.group(it), PermissionLevel.CAPTURE_ONLY) }
         books.core.renameDevice(name.trim(), groupId, deviceId)
+    }
+
+    /** Refuses unless the signed-in user owns the phone [deviceId], or is an administrator when not [ownerOnly]. */
+    private fun manageable(deviceId: String, ownerOnly: Boolean) {
+        val device = books.core.deviceById(deviceId).executeAsOneOrNull() ?: throw ca.schippers.hfm.data.AccessDeniedException("Phone not found")
+        if (device.user_id != books.userId && (ownerOnly || books.role != ca.schippers.hfm.domain.Role.ADMINISTRATOR)) {
+            throw ca.schippers.hfm.data.AccessDeniedException("Only the phone's owner can do this")
+        }
     }
 
     /**
@@ -299,8 +316,7 @@ class SyncService internal constructor(private val books: Books) {
     private fun recordTaskDone(done: PhoneTaskDone, today: LocalDate) {
         val date = runCatching { LocalDate.parse(done.date) }.getOrElse { throw ValidationException("error.invalidDate") }
         validate(date <= today.plus(DatePeriod(days = 1)), "error.invalidDate")
-        val cost = done.cost?.trim()?.takeIf { it.isNotEmpty() }?.let { c -> runCatching { BigDecimal(c.replace(',', '.')) }.getOrElse { throw ValidationException("error.invalidNumber") } }
-        books.seasonal.record(done.vehicle, done.subjectId, done.taskId, date, done.note, cost, done.reading)
+        books.seasonal.record(done.vehicle, done.subjectId, done.taskId, date, phoneText(done.note), phoneDecimal(done.cost), done.reading)
     }
 
     /** Stores one captured item; returns the document it became, if any. */
@@ -342,7 +358,7 @@ class SyncService internal constructor(private val books: Books) {
         ocr?.let { (result, engine) -> books.documents.recordText(doc.id, maxOf(1, pages.size), result, engine, today) }
         // What the person typed on the phone wins over what was read.
         val read = books.documents.get(doc.id)
-        val amount = f.amount?.let { a -> runCatching { Money.exact(BigDecimal(a), f.currency?.let(Currency::of) ?: read.amount?.currency ?: books.rates.baseCurrency) }.getOrNull() }
+        val amount = f.amount?.let { a -> runCatching { Money.exact(phoneDecimal(a)!!, f.currency?.let(Currency::of) ?: read.amount?.currency ?: books.rates.baseCurrency) }.getOrNull() }
         val kind = when (item.kind) {
             CaptureKind.BILL -> DocumentKind.BILL
             CaptureKind.RECEIPT, CaptureKind.QUICK_EXPENSE -> DocumentKind.RECEIPT
@@ -363,8 +379,8 @@ class SyncService internal constructor(private val books: Books) {
     /** TRP-05, TRP-10: a fill-up or charge entered on the phone, in the vehicle's currency. */
     private fun receiveFuel(deviceId: String, f: PhoneFuel) {
         val vehicle = books.vehicles.get(f.vehicleId)
-        val quantity = f.quantity.toBigDecimalOrNull() ?: throw ValidationException("error.fuelQuantity")
-        val cost = f.cost?.let { c -> c.toBigDecimalOrNull()?.let { Money.of(it, vehicle.currency) } ?: throw ValidationException("error.invalidNumber") }
+        val quantity = phoneDecimal(f.quantity) ?: throw ValidationException("error.fuelQuantity")
+        val cost = phoneDecimal(f.cost)?.let { Money.of(it, vehicle.currency) }
         val place = f.placeId?.let { books.places.find(it) }
         books.vehicles.saveFuel(
             FuelEntry(
