@@ -68,7 +68,8 @@ private fun desktopApp() = application {
             val keys = state.notified.fresh(model.session.householdId, today(), lines.map { it.key })
             val fresh = lines.filter { it.key in keys }
             if (fresh.isNotEmpty()) {
-                trayState.sendNotification(Notification(model.t("reminder.banner", fresh.size), fresh.take(4).joinToString("\n") { it.text }))
+                val body = notificationBody(fresh, state.notificationDetails) { model.t("nav.${it.name.lowercase()}") }
+                trayState.sendNotification(Notification(model.t("reminder.banner", fresh.size), body))
             }
             delay(5 * 60_000L)
         }

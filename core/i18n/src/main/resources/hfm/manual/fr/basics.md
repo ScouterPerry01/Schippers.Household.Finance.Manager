@@ -312,7 +312,7 @@ Le bandeau de couleur sous la barre du haut compte les rappels et présente les 
 
 @index: notification du système; icône de la zone de notification; barre des tâches
 
-Pendant que l'application fonctionne, son icône se trouve dans la zone de notification de la barre des tâches ; en y passant la souris, on voit RANN's Roost. Quand un ménage est ouvert, l'application cherche de nouveaux rappels toutes les cinq minutes et affiche une notification de l'ordinateur qui indique leur nombre et en présente jusqu'à quatre. Chaque rappel est annoncé une fois tant que le ménage reste ouvert ; le bandeau continue de l'afficher jusqu'à ce qu'il soit réglé.
+Pendant que l'application fonctionne, son icône se trouve dans la zone de notification de la barre des tâches ; en y passant la souris, on voit RANN's Roost. Quand un ménage est ouvert, l'application cherche de nouveaux rappels toutes les cinq minutes et affiche une notification de l'ordinateur qui indique leur nombre et en présente jusqu'à quatre. Si d'autres peuvent voir votre écran, décochez **Afficher les détails dans les notifications** dans [Affichage et accessibilité](display#notifications) : la notification indique alors seulement combien il y a de rappels de chaque sorte. Chaque rappel est annoncé une fois tant que le ménage reste ouvert ; le bandeau continue de l'afficher jusqu'à ce qu'il soit réglé.
 
 > Remarque : les notifications exigent que le ménage soit ouvert. Si l'application est fermée ou verrouillée, rien n'est annoncé ; les rappels paraissent à la prochaine ouverture.
 

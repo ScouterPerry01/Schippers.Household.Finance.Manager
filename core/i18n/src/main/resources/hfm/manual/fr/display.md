@@ -8,7 +8,7 @@ Affichage et accessibilité règle l'apparence de RANN's Roost sur cet ordinateu
 
 @index: préférences; réglages personnels; par ordinateur
 
-Les réglages d'affichage sont gardés sur cet ordinateur, pas dans le ménage. Un grand écran de bureau et un petit portable peuvent chacun avoir les leurs, et ils ne sont pas dans les sauvegardes. Les couleurs, la taille du texte et la langue s'appliquent à chaque ménage et à chaque utilisateur de cet ordinateur ; les choix de menu sont gardés pour chaque utilisateur.
+Les réglages d'affichage sont gardés sur cet ordinateur, pas dans le ménage. Un grand écran de bureau et un petit portable peuvent chacun avoir les leurs, et ils ne sont pas dans les sauvegardes. Les couleurs, la taille du texte, les détails des notifications et la langue s'appliquent à chaque ménage et à chaque utilisateur de cet ordinateur ; les choix de menu sont gardés pour chaque utilisateur.
 
 ## L'écran Affichage et accessibilité {#screen}
 
@@ -49,6 +49,14 @@ Tout fonctionne au clavier :
 - Dans un champ de date, taper + ou - avance ou recule la date d'un jour.
 
 Les lecteurs d'écran (Narrateur ou NVDA sous Windows, Orca sous Linux) lisent les libellés des champs et des boutons, et disent si un groupe du menu est ouvert ou fermé. Voir [Raccourcis clavier](shortcuts) pour la liste complète.
+
+### Notifications {#notifications}
+
+@index: détails des notifications; écran partagé; confidentialité des notifications
+
+- **Afficher les détails dans les notifications** : si la case est cochée (par défaut), une notification de l'ordinateur nomme jusqu'à quatre rappels, comme le fait le bandeau des rappels : une facture, un médicament avec la personne à qui il est destiné, ou un rendez-vous. Décochez-la quand d'autres peuvent voir cet écran : les notifications indiquent alors seulement combien il y a de rappels et de quelle sorte, comme « Factures (2) » ou « Santé (1) », sans rien nommer. Le bandeau dans l'application ne change pas.
+
+Le choix est gardé sur cet ordinateur, pour chaque ménage et chaque utilisateur. Voir [Les notifications de l'ordinateur et l'icône de la zone de notification](basics#tray).
 
 ### Guide Premiers pas {#getting-started-guide}
 
