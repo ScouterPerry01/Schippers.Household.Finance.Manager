@@ -237,7 +237,7 @@ class InvestmentService internal constructor(private val books: Books) {
 
     /** Investment and other accounts that hold securities. */
     fun accounts(includeClosed: Boolean = false): List<Account> =
-        books.accounts.list(includeClosed).map { it.account }.filter { it.type.kind == AccountKind.INVESTMENT }
+        books.accounts.all(includeClosed).filter { it.type.kind == AccountKind.INVESTMENT }
 
     fun transactions(accountId: String): List<InvestmentTxn> {
         val (group, account) = books.accounts.locate(accountId)

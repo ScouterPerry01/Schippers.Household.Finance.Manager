@@ -63,7 +63,7 @@ data class MetalValuation(val item: MetalItem, val spot: SpotPrice?, val value: 
 /** PM-01 to PM-04: precious metal items, their value from spot prices, sales and certificates. */
 class MetalService internal constructor(private val books: Books) {
 
-    fun accounts(): List<Account> = books.accounts.list().map { it.account }.filter { it.type == AccountType.PRECIOUS_METALS }
+    fun accounts(): List<Account> = books.accounts.all().filter { it.type == AccountType.PRECIOUS_METALS }
 
     fun items(accountId: String, includeSold: Boolean = false): List<MetalItem> {
         val (group, account) = books.accounts.locate(accountId)

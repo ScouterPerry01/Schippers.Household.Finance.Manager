@@ -125,7 +125,7 @@ internal fun Books.costs(
     lines: (ca.schippers.hfm.data.ledger.LedgerQueries) -> List<CostLine>,
 ): CostSummary {
     val base = rates.baseCurrency
-    val currencies = accounts.list(includeClosed = true).associate { it.account.id to it.account.currency }
+    val currencies = accounts.all(includeClosed = true).associate { it.id to it.currency }
     var unconverted = 0
     val items = ArrayList<Pair<LocalDate, Pair<String?, Money>>>()
     for (group in groups()) {

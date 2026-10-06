@@ -63,7 +63,7 @@ class FxGainService internal constructor(private val books: Books) {
         val missing = HashSet<Currency>()
         val problems = ArrayList<String>()
         val zero = Money.zero(base)
-        val accounts = books.accounts.list(includeClosed = true).map { it.account }
+        val accounts = books.accounts.all(includeClosed = true)
             .filter { it.currency != base && !it.currency.isCrypto && !it.type.isRegistered && it.type.kind in setOf(AccountKind.BANK, AccountKind.INVESTMENT) }
         data class Key(val currency: Currency, val owners: Set<String>)
         val pools = accounts.groupBy { Key(it.currency, it.ownerMemberIds) }

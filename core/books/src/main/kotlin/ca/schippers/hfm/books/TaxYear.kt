@@ -46,17 +46,22 @@ enum class SlipReason { EMPLOYMENT, PENSION, BENEFITS, INTEREST, TUITION, CHILD_
 class SlipChecklistService internal constructor(private val books: Books) {
 
     /** The slips for [year]: those the books expect, with what the user marked, and those the user added. */
-    fun checklist(year: Int): List<ChecklistSlip> {
+    fun checklist(year: Int): List<ChecklistSlip> = checklist(year, books.taxSlips.report(year))
+
+    /** The checklist with the year's investment income report already made (the tax package needs both). */
+    internal fun checklist(year: Int, report: InvestmentIncomeReport, yearSplits: Map<String, List<YearSplit>>? = null): List<ChecklistSlip> {
         val expected = LinkedHashMap<Triple<String?, String, SlipType>, Expected>()
+        val provinces = HashMap<String?, Boolean>()
+        val filesInQuebec = { member: String? -> provinces.getOrPut(member) { books.provinceOf(member) == Province.QC } }
         fun expect(member: String?, issuer: String, type: SlipType, group: String, reason: SlipReason) {
             val key = "${type.name.lowercase()}:${issuer.trim().lowercase()}"
             expected.putIfAbsent(Triple(member, key, type), Expected(member, key, type, issuer.trim(), group, reason))
             // Quebec issues its own slip for most federal ones (Relevé), to people who file there.
             if (filesInQuebec(member)) QUEBEC[type]?.let { rl -> expect(member, issuer, rl, group, reason) }
         }
-        fromCategories(year, ::expect)
+        fromCategories(year, yearSplits, filesInQuebec, ::expect)
         fromPlans(year, ::expect)
-        fromInvestments(year, ::expect)
+        fromInvestments(year, report, ::expect)
 
         val stored = books.groups().flatMap { g -> books.ledger(g).taxYearQueries.slipChecks(year.toLong()).executeAsList().map { g.id to it } }
         val marks = stored.associate { (_, r) -> (r.member_id.ifEmpty { null } to r.slip_key) to r }
@@ -66,7 +71,8 @@ class SlipChecklistService internal constructor(private val books: Books) {
         } + stored.filter { (_, r) -> r.manual == 1L }.map { (g, r) ->
             ChecklistSlip(year, r.member_id.ifEmpty { null }, r.slip_key, SlipType.valueOf(r.slip_type), r.issuer, g, SlipStatus.valueOf(r.status), true, null, 0)
         }
-        return slips.map { it.copy(documents = books.documents.documentsFor(ENTITY, it.id).size) }
+        val documents = books.documents.countsFor(ENTITY)
+        return slips.map { it.copy(documents = documents[it.id] ?: 0) }
             .sortedWith(compareBy<ChecklistSlip>({ it.memberId == null }, { it.memberId }, { it.type.quebec }, { it.type.ordinal }, { it.issuer.lowercase() }))
     }
 
@@ -94,28 +100,30 @@ class SlipChecklistService internal constructor(private val books: Books) {
         books.ledger(group).taxYearQueries.deleteSlipCheck(slip.year.toLong(), slip.memberId.orEmpty(), slip.key)
     }
 
-    private fun filesInQuebec(memberId: String?): Boolean = books.provinceOf(memberId) == Province.QC
-
     /** Income and payments on categories that come with a slip, by payee and person. */
-    private fun fromCategories(year: Int, expect: (String?, String, SlipType, String, SlipReason) -> Unit) {
+    private fun fromCategories(
+        year: Int, yearSplits: Map<String, List<YearSplit>>?, filesInQuebec: (String?) -> Boolean, expect: (String?, String, SlipType, String, SlipReason) -> Unit,
+    ) {
         val byKey = books.categories.list(includeArchived = true).mapNotNull { c -> c.systemKey?.let { it to c.id } }.toMap()
         val wanted = CATEGORY_SLIPS.keys.mapNotNull { k -> byKey[k]?.let { it to k } }.toMap()
         if (wanted.isEmpty()) return
-        val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val accounts = books.accounts.all(includeClosed = true).associateBy { it.id }
         for (g in books.groups()) {
-            val rows = books.ledger(g).taxYearQueries.slipSourceSplits(LocalDate(year, 1, 1).toString(), LocalDate(year, 12, 31).toString(), wanted.keys).executeAsList()
+            val rows = yearSplits?.get(g.id)?.filter { it.categoryId in wanted }
+                ?: books.ledger(g).taxYearQueries.slipSourceSplits(LocalDate(year, 1, 1).toString(), LocalDate(year, 12, 31).toString(), wanted.keys).executeAsList()
+                    .map { YearSplit(it.account_id, it.payee_text, it.member_id, it.category_id, it.amount_minor) }
             // Bank interest: no T5 under $50 a year from one payer (Rates and rules).
             val t5From = Thresholds.t5Interest(LocalDate(year, 12, 31)).movePointRight(2).toLong()
-            val interest = rows.filter { wanted[it.category_id] == "income.investment.interest" }.groupBy { it.member_id to it.payee_text.orEmpty() }
-                .filterValues { lines -> lines.sumOf { it.amount_minor } >= t5From }.keys
+            val interest = rows.filter { wanted[it.categoryId] == "income.investment.interest" }.groupBy { it.memberId to it.payeeText.orEmpty() }
+                .filterValues { lines -> lines.sumOf { it.amountMinor } >= t5From }.keys
             for (r in rows) {
-                val categoryKey = wanted[r.category_id] ?: continue
+                val categoryKey = wanted[r.categoryId] ?: continue
                 val (type, reason) = CATEGORY_SLIPS.getValue(categoryKey)
-                val payee = r.payee_text?.takeIf { it.isNotBlank() } ?: continue
-                if (type == SlipType.RL24 && !filesInQuebec(r.member_id)) continue
-                if (type == SlipType.T5 && (r.member_id to payee) !in interest) continue
-                if (accounts[r.account_id]?.type?.isRegistered == true) continue
-                val member = r.member_id ?: accounts[r.account_id]?.ownerMemberIds?.singleOrNull()
+                val payee = r.payeeText?.takeIf { it.isNotBlank() } ?: continue
+                if (type == SlipType.RL24 && !filesInQuebec(r.memberId)) continue
+                if (type == SlipType.T5 && (r.memberId to payee) !in interest) continue
+                if (accounts[r.accountId]?.type?.isRegistered == true) continue
+                val member = r.memberId ?: accounts[r.accountId]?.ownerMemberIds?.singleOrNull()
                 expect(member, payee, type, g.id, reason)
             }
         }
@@ -124,11 +132,12 @@ class SlipChecklistService internal constructor(private val books: Books) {
     /** Registered plans: RRSP contribution receipts, and slips for money taken out. */
     private fun fromPlans(year: Int, expect: (String?, String, SlipType, String, SlipReason) -> Unit) {
         val institutions = books.institutions.list().associate { it.id to it.name }
-        val all = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val all = books.accounts.all(includeClosed = true).associateBy { it.id }
         for (a in books.plans.registeredAccounts(includeClosed = true)) {
             val issuer = a.institutionId?.let(institutions::get) ?: a.name
             // M-32: cash imported from a brokerage file has no transfer, and still came from outside.
-            val lines = books.transactions.register(a.id).map { it.transaction }.filter { it.date.year == year && (it.transfer != null || books.plans.fromOutsideBooks(it)) }
+            val lines = books.transactions.between(a.id, LocalDate(year, 1, 1), LocalDate(year, 12, 31))
+                .filter { it.transfer != null || books.plans.fromOutsideBooks(it) }
             val outside = lines.filter { t -> t.transfer == null || all[t.transfer.otherAccountId]?.type?.isRegistered != true }
             val owner = a.ownerMemberIds.singleOrNull()
             when (a.type) {
@@ -148,10 +157,10 @@ class SlipChecklistService internal constructor(private val books: Books) {
     }
 
     /** Non-registered investment accounts: T5 and T3 (RL-3, RL-16) from the investment income report, T5008 for sales. */
-    private fun fromInvestments(year: Int, expect: (String?, String, SlipType, String, SlipReason) -> Unit) {
+    private fun fromInvestments(year: Int, report: InvestmentIncomeReport, expect: (String?, String, SlipType, String, SlipReason) -> Unit) {
         val institutions = books.institutions.list().associate { it.id to it.name }
         fun issuer(a: Account) = a.institutionId?.let(institutions::get) ?: a.name
-        for (person in books.taxSlips.report(year).people) {
+        for (person in report.people) {
             for (line in person.slips) {
                 if (line.boxes.values.all { it.isZero }) continue
                 val type = when (line.kind) { SlipKind.T5 -> SlipType.T5; SlipKind.T3 -> SlipType.T3; else -> continue }
@@ -165,6 +174,9 @@ class SlipChecklistService internal constructor(private val books: Books) {
             for (o in owners) expect(o, issuer(a), SlipType.T5008, a.groupId, SlipReason.SALES)
         }
     }
+
+    /** A split of the year, with what the checklist needs from it; the tax package reads the year's splits once for both. */
+    internal class YearSplit(val accountId: String, val payeeText: String?, val memberId: String?, val categoryId: String?, val amountMinor: Long)
 
     private data class Expected(val member: String?, val key: String, val type: SlipType, val issuer: String, val group: String, val reason: SlipReason)
 
