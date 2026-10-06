@@ -241,6 +241,24 @@ class ContactsTest {
     }
 
     @Test
+    fun `vehicles and assets bring their insurer, warranty providers and garages`() = household().use { books ->
+        val group = books.groups().single().id
+        val car = books.vehicles.save(Vehicle("", group, "RAV4", insurer = "Intact Assurance"))
+        books.vehicles.saveWarranty(Warranty("", car.id, WarrantyKind.POWERTRAIN, provider = "Toyota Canada", endKm = 100_000, phone = "1 888 869-6828"))
+        books.vehicles.saveService(ServiceRecord("", car.id, LocalDate(2026, 5, 2), provider = "garage lessard"))
+        books.vehicles.saveService(ServiceRecord("", car.id, LocalDate(2026, 9, 2), provider = "Garage Lessard"))
+        books.vehicles.saveService(ServiceRecord("", car.id, LocalDate(2026, 9, 9), provider = "Me", diy = true))
+
+        val sources = books.contacts.proposals().flatMap { it.sources }
+        assertEquals(setOf("Intact Assurance", "Toyota Canada", "Garage Lessard"), sources.map { it.name }.toSet(), "one garage, and nothing for a do-it-yourself entry")
+        books.contacts.gather(group, sources.map { GatherDecision(listOf(it)) })
+        val roles = books.contacts.linkedTo(LinkTarget.VEHICLE, car.id).associate { it.contact.name to it.link.role }
+        assertEquals(mapOf("Intact Assurance" to LinkRole.INSURER, "Toyota Canada" to LinkRole.SERVICE, "Garage Lessard" to LinkRole.GARAGE), roles)
+        assertEquals(listOf("1 888 869-6828"), books.contacts.list().single { it.name == "Toyota Canada" }.phones.map { it.value })
+        assertTrue(books.contacts.proposals().isEmpty())
+    }
+
+    @Test
     fun `a gathered record can be added to an existing contact`() = household().use { books ->
         val group = books.groups().single().id
         val existing = books.contacts.save(Contact("", group, "Plomberie Roy", kinds = setOf(ContactKind.CONTRACTOR)))

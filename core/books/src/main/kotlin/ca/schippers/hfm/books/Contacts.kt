@@ -525,6 +525,26 @@ class ContactService internal constructor(private val books: Books) {
                 out += GatherSource(LinkTarget.PET, pet.id, name, setOf(ContactKind.INSURER), listOf(LinkRole.INSURER to (LinkTarget.PET to pet.id)), memberIds = setOf(pet.id))
             }
         }
+        // Vehicles: the insurer, the warranty providers with their claim phone, and the garages in the service log.
+        for (v in runCatching { books.vehicles.list(includeInactive = true) }.getOrDefault(emptyList())) {
+            val drivers = setOfNotNull(v.driverMemberId)
+            v.insurer?.takeIf { it.isNotBlank() }?.let { name ->
+                out += GatherSource(LinkTarget.VEHICLE, v.id, name, setOf(ContactKind.INSURER), listOf(LinkRole.INSURER to (LinkTarget.VEHICLE to v.id)), memberIds = drivers, privateGroupId = private(v.groupId))
+            }
+            for (w in runCatching { books.vehicles.warranties(v.id) }.getOrDefault(emptyList())) {
+                val name = w.provider?.takeIf { it.isNotBlank() } ?: continue
+                out += GatherSource(LinkTarget.VEHICLE, v.id, name, setOf(ContactKind.OTHER), listOf(LinkRole.SERVICE to (LinkTarget.VEHICLE to v.id)), phone = w.phone, notes = w.notes, privateGroupId = private(v.groupId))
+            }
+            // Services come newest first, so a garage spelled several ways is offered under its latest spelling.
+            for (name in runCatching { books.vehicles.services(v.id) }.getOrDefault(emptyList()).filter { !it.diy }.mapNotNull { it.provider?.trim()?.ifEmpty { null } }.distinctBy { SearchService.fold(it) }) {
+                out += GatherSource(LinkTarget.VEHICLE, v.id, name, setOf(ContactKind.CONTRACTOR), listOf(LinkRole.GARAGE to (LinkTarget.VEHICLE to v.id)), privateGroupId = private(v.groupId))
+            }
+        }
+        // Other assets: the warranty providers, with their phone.
+        for (w in runCatching { books.assets.warranties() }.getOrDefault(emptyList())) {
+            val name = w.provider?.takeIf { it.isNotBlank() } ?: continue
+            out += GatherSource(LinkTarget.ASSET, w.assetId, name, setOf(ContactKind.OTHER), listOf(LinkRole.SERVICE to (LinkTarget.ASSET to w.assetId)), phone = w.phone, privateGroupId = private(w.groupId))
+        }
         for (r in runCatching { books.estate.records() }.getOrDefault(emptyList())) {
             for (c in r.plan.contacts.filter { it.name.isNotBlank() }) {
                 val role = LinkRole.of(c.role)
