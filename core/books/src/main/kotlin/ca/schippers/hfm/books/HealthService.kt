@@ -150,12 +150,14 @@ class HealthService internal constructor(private val books: Books) {
         books.ledger(group).transaction {
             q.insertFill(Ids.newId(), medicationId, date.toString(), daysSupply?.toLong(), quantity, notes)
             val isLatest = med.lastFillDate == null || date >= med.lastFillDate
-            saveMedication(
-                med.copy(
-                    lastFillDate = if (isLatest) date else med.lastFillDate,
-                    daysSupply = daysSupply ?: med.daysSupply,
-                    refillsRemaining = med.refillsRemaining?.let { (it - 1).coerceAtLeast(0) },
-                ),
+            // Only the fill fields change, so a capture-only user can record a refill (the rest of
+            // the medication stays theirs to read, not to edit).
+            q.updateMedicationFill(
+                (daysSupply ?: med.daysSupply)?.toLong(),
+                med.refillsRemaining?.let { (it - 1).coerceAtLeast(0) }?.toLong(),
+                (if (isLatest) date else med.lastFillDate).toString(),
+                books.now(),
+                medicationId,
             )
         }
         return locateMedication(medicationId).second
