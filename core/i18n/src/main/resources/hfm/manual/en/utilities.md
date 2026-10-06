@@ -82,7 +82,7 @@ Two level readings are needed before any use or date can be shown.
 
 The use between two level readings is the level at the first, plus what was delivered after it up to the second, less the level at the second. A reading on the day of a delivery is taken as made after the delivery. When the gauge reads more than that would give, the period counts nothing.
 
-The level today is the last reading plus the deliveries since, less the use per day for each day since, never below empty or above the capacity. The order date is when it is expected to reach the order level; fourteen days before (**Fuel order reminder (days ahead)** in [Rates and rules](rates-rules)), a reminder "time to order fuel" appears with the other reminders on the [dashboard](dashboard) and among the renewals in the [calendar](calendar). Use changes with the seasons, so the date is an estimate: read the gauge every few weeks.
+The level today is the last reading plus the deliveries since, less the use per day for each day since, never below empty or above the capacity. The order date is when it is expected to reach the order level; fourteen days before (**Fuel order reminder (days ahead)** in [Rates and rules](rates-rules)), a reminder "time to order fuel" appears with the other reminders on the [dashboard](dashboard) and among the renewals in the [calendar](calendar). Until two readings show a use per day, there is no order date, except that a reading at or below the order level reminds at once. Use changes with the seasons, so the date is an estimate: read the gauge every few weeks.
 
 ### Add a tank dialog {#tank-dialog}
 

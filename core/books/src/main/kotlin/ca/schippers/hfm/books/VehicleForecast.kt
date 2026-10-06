@@ -36,9 +36,16 @@ data class ForecastPeriod(
     val tasks: List<Pair<String, Int>>,
     /** Tasks due that no earlier service gives a cost for. */
     val unpriced: List<String>,
+    /** A plug-in hybrid's charging for the distance: kWh, when its consumption is known. */
+    val electricityKwh: BigDecimal? = null,
+    /** And what they cost, when the price of a kWh is known too. */
+    val electricityCost: Money? = null,
 ) {
-    val total: Money get() = (energyCost?.let { it + maintenance } ?: maintenance)
+    val total: Money get() = listOfNotNull(energyCost, electricityCost).fold(maintenance) { a, m -> a + m }
 }
+
+/** A plug-in hybrid's electricity (TRP-08): kWh/100 km over all the distance driven, and the recent price of a kWh. */
+data class ChargingForecast(val per100km: BigDecimal?, val unitPrice: BigDecimal?)
 
 /**
  * TRP-08: the coming months of a vehicle: the distance at the pace of the last 90 days, the fuel or
@@ -57,6 +64,8 @@ data class VehicleForecast(
     /** The price of a litre or kWh. */
     val unitPrice: BigDecimal?,
     val periods: List<ForecastPeriod>,
+    /** For a plug-in hybrid, its charging beside the fuel of [energy]; null for other vehicles. */
+    val charging: ChargingForecast? = null,
 )
 
 /** TRP-08: an amount a month for a Transport category, from the vehicles' forecasts, and the budget it has now. */

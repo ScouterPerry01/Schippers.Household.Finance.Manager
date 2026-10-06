@@ -197,8 +197,8 @@ private fun ScheduleEditor(model: BooksModel, start: PersonSchedule, onClose: ()
                             }
                         }
                         if (h.on) {
-                            TextInput(model.t("schedule.startTime"), h.start, Modifier.width(110.dp), error = if (parseTime(h.start) == null) "HH:MM" else null) { hours = hours + (key to h.copy(start = it)) }
-                            TextInput(model.t("schedule.endTime"), h.end, Modifier.width(110.dp), error = if (parseTime(h.end) == null) "HH:MM" else null) { hours = hours + (key to h.copy(end = it)) }
+                            TextInput(model.t("schedule.startTime"), h.start, Modifier.width(110.dp), error = if (parseTime(h.start) == null) model.t("error.invalidTime") else null) { hours = hours + (key to h.copy(start = it)) }
+                            TextInput(model.t("schedule.endTime"), h.end, Modifier.width(110.dp), error = if (parseTime(h.end) == null) model.t("error.invalidTime") else null) { hours = hours + (key to h.copy(end = it)) }
                         }
                     }
                 }

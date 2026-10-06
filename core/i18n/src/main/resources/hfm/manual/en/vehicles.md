@@ -237,7 +237,7 @@ Without a payment, the service's cost still counts in the **Costs** tab on its o
 ## Fuel tab {#fuel-tab}
 @index: gas; fill-up; charging; consumption; L/100 km; kWh
 
-At the top, the consumption over the last year and what a kilometre costs, with **Add a fill-up** (or **Add a charge** for an electric vehicle). Below, every fill-up, the most recent first: date, odometer, quantity in L or kWh ("partial" when the tank was not filled), home or public charging, station, "from the phone" for an entry made on the phone, "payment entered", cost, and **Edit**.
+At the top, the consumption over the last year and what a kilometre costs, with **Add a fill-up** (or **Add a charge** for an electric vehicle). Below, every fill-up, the most recent first: date, odometer, quantity in L or kWh ("partial" when the tank was not filled), home or public charging, station, "from the phone" for an entry made on the phone, "payment entered", or "no payment entered yet" for a fill-up from the phone with a cost and no payment, cost, and **Edit**.
 
 ![The Fuel tab of a plug-in hybrid](images/vehicles-fuel.png)
 
@@ -282,11 +282,11 @@ The **Forecast** tab looks at the next 3, 6 and 12 months:
 - The table **Forecast**, one row for the next 3, 6 and 12 months: **Distance**, **Quantity** (litres or kWh), the cost of the fuel or electricity, **Maintenance** and **Total**. It can be exported or printed like any table.
 - "Maintenance due in the next 12 months": each task falling due and how many times, from its next date (today if overdue) and then every interval, the interval in kilometres turned into days at the pace above. A task costs what it cost the last time a service with a cost recorded it (a service's cost shared evenly between its tasks). Tasks never done at a cost are named apart and left out of the amounts.
 
-For a plug-in hybrid, the forecast counts fuel; charging costs are not added.
+For a plug-in hybrid, the forecast counts both energies. Its fuel is forecast as above; its charging adds a line with its kWh/100 km and the recent price of a kWh, and two columns to the table: the kWh for the distance and what they cost, included in **Total**. The kWh/100 km comes from one full charge to the next, as on the Fuel tab; when the charges have no odometer (home charging often has none), from every kWh charged in the last year over the distance the odometer readings show. Both energies are spread over all the kilometres driven, so adding them does not count a kilometre twice.
 
 ### Suggest for the budget {#forecast-budget}
 
-**Suggest for the budget** (not for a viewer) opens a list of monthly amounts for the Transport categories, from the next 12 months of every vehicle in use kept in a shared account group and in the base currency: fuel (or EV charging for an electric vehicle) and vehicle maintenance, each rounded up to the dollar, beside the budget the category has now. A vehicle in a private group is left out, since budgets are the whole household's. **Use these amounts** sets each as a monthly budget from this month, keeping the category's rollover choice; other budgets do not change. See [Budgets](budgets).
+**Suggest for the budget** (not for a viewer) opens a list of monthly amounts for the Transport categories, from the next 12 months of every vehicle in use kept in a shared account group and in the base currency: fuel (or EV charging for an electric vehicle; both for a plug-in hybrid) and vehicle maintenance, each rounded up to the dollar, beside the budget the category has now. A vehicle in a private group is left out, since budgets are the whole household's. **Use these amounts** sets each as a monthly budget from this month, keeping the category's rollover choice; other budgets do not change. See [Budgets](budgets).
 
 ## Warranties tab {#warranties-tab}
 @index: vehicle warranty; powertrain; extended warranty; corrosion; battery warranty

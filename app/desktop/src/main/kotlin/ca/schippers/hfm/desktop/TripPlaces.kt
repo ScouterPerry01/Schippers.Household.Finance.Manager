@@ -156,7 +156,7 @@ internal fun LogbookDialog(model: BooksModel, startYear: Int, onClose: () -> Uni
             book.use?.let { u ->
                 Text(
                     listOfNotNull(
-                        u.totalKm?.let { model.t("trips.totalKm", model.t("trips.km", odometer(model, it))) }, model.t("trips.workKm", model.t("trips.km", u.workKm.stripTrailingZeros().toPlainString())),
+                        u.totalKm?.let { model.t("trips.totalKm", model.t("trips.km", odometer(model, it))) }, model.t("trips.workKm", model.t("trips.km", ca.schippers.hfm.money.MoneyFormat.formatDecimal(u.workKm, model.language.locale))),
                         u.workPercent?.let { model.t("trips.workShare", it) },
                     ).joinToString(" · "),
                     fontWeight = FontWeight.Medium,
@@ -166,7 +166,7 @@ internal fun LogbookDialog(model: BooksModel, startYear: Int, onClose: () -> Uni
                 Text(
                     model.t(
                         "trips.purposeKm", model.t("trips.byProvince"),
-                        provinces.entries.joinToString(" · ") { (p, km) -> "${provinceName(model, p)} ${model.t("trips.km", km.stripTrailingZeros().toPlainString())}" },
+                        provinces.entries.joinToString(" · ") { (p, km) -> "${provinceName(model, p)} ${model.t("trips.km", ca.schippers.hfm.money.MoneyFormat.formatDecimal(km, model.language.locale))}" },
                     ),
                 )
             }

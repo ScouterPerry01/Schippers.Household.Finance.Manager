@@ -211,6 +211,13 @@ class SchedulesActivitiesTest {
         assertEquals(category, txn.splits.single().categoryId)
         val occurrences = books.calendar.occurrences(d(10, 10), d(10, 17))
         assertEquals(listOf(null, id), occurrences.map { it.costTransactionId })
+        assertFailsWith<ValidationException>("recorded once") { books.calendar.recordCost(e.id, d(10, 17), account.id, category) }
+
+        // Its transaction deleted, the date's cost can be recorded again.
+        books.transactions.delete(id)
+        assertNull(books.calendar.occurrences(d(10, 17), d(10, 17)).single().costTransactionId)
+        val again = books.calendar.recordCost(e.id, d(10, 17), account.id, category)
+        assertEquals(again, books.calendar.occurrences(d(10, 17), d(10, 17)).single().costTransactionId)
 
         val free = books.calendar.create(EventDraft(shared, "Practice", EventCategory.ACTIVITY, d(10, 11), memberId = lea.id))
         assertFailsWith<ValidationException> { books.calendar.recordCost(free.id, d(10, 11), account.id, category) }

@@ -86,7 +86,8 @@ fun CalendarScreen(model: BooksModel) {
     // The day before too, so a night shift that started then shades the first morning (CAL-10).
     val all = remember(model.revision, from, to) { model.books.calendar.items(from.minus(DatePeriod(days = 1)), to) }
     val hidden = model.calendarHidden
-    val shown = all.filter { visible(it, hidden) }
+    val userMembers = remember(model.revision) { runCatching { model.books.users.list().associate { it.id to it.memberId } }.getOrDefault(emptyMap()) }
+    val shown = all.filter { visible(it, hidden, userMembers) }
     val people = remember(model.revision) { CalendarPeople.of(model) }
     val names = remember(model.revision) { lookups(model) }
     val openDay = { d: LocalDate -> model.calendarDate = d; model.calendarView = CalendarView.DAY.name }
@@ -183,16 +184,21 @@ internal fun BooksModel.newEventDraft(date: LocalDate, category: EventCategory =
 // --- Show and hide (CAL-08) -------------------------------------------------------------------------
 
 /** The person an item is for, if any: the calendar's people filter applies to it. */
-internal fun personOf(item: CalendarItem): String? = when (item) {
+internal fun personOf(item: CalendarItem, members: Map<String, String?> = emptyMap()): String? = when (item) {
     is CalendarItem.Event -> item.occurrence.event.memberId
     is CalendarItem.Health -> item.due.memberId
     is CalendarItem.Schedule -> item.day.memberId
+    // CSY-04: an item brought in from a phone is its owner's: the household member that user is.
+    is CalendarItem.Imported -> members[item.item.ownerUserId]
     else -> null
 }
 
-/** Whether the user's choices show [item]: its kind is not hidden, nor the person it is for. */
-internal fun visible(item: CalendarItem, hidden: Set<String>): Boolean =
-    "K:${item.kind.name}" !in hidden && personOf(item)?.let { "P:$it" !in hidden } != false
+/**
+ * Whether the user's choices show [item]: its kind is not hidden, nor the person it is for.
+ * [members] gives the household member each user is, for items brought in from phones.
+ */
+internal fun visible(item: CalendarItem, hidden: Set<String>, members: Map<String, String?> = emptyMap()): Boolean =
+    "K:${item.kind.name}" !in hidden && personOf(item, members)?.let { "P:$it" !in hidden } != false
 
 /**
  * The household's people and pets, each with a colour of its own for schedule bars (CAL-10). The

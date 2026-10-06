@@ -142,6 +142,15 @@ class AssetService internal constructor(private val books: Books) {
 
     fun get(id: String): Asset = list(includeDisposed = true).firstOrNull { it.id == id } ?: throw ValidationException("error.notFound")
 
+    /** The asset [id] and its group, read by its id alone (the maintenance screens ask often). */
+    internal fun locate(id: String): Pair<GroupInfo, Asset> {
+        for (g in books.groups()) {
+            val row = books.ledger(g).assetsQueries.assetById(id).executeAsOneOrNull() ?: continue
+            return g to row.toAsset(g.id)
+        }
+        throw ValidationException("error.notFound")
+    }
+
     /** AST-02: the assets directly inside [parentId] (top-level ones when null). */
     fun children(parentId: String?, includeDisposed: Boolean = false): List<Asset> = list(includeDisposed).filter { it.parentId == parentId }
 

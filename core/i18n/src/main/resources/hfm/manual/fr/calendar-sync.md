@@ -13,7 +13,7 @@ RANN's Roost ne se connecte jamais à un compte de calendrier. L’application d
 1. Sur le téléphone, dans **Réglages**, ouvrez **Calendriers de ce téléphone** et activez **Envoyer les calendriers à l’ordinateur**. Android demande une fois l’accès au calendrier.
 2. Cochez les calendriers à importer, choisissez qui voit chacun sur l’ordinateur et combien de jours à l’avance sont envoyés.
 3. À chaque transfert (par Wi-Fi, par le dossier de transfert ou dans un fichier partagé), le téléphone envoie en entier chaque calendrier qui a changé depuis la dernière fois. L’ordinateur remplace ce qu’il gardait de ce calendrier à partir de ce jour : les nouveaux éléments apparaissent, ceux qui ont changé sont mis à jour et ceux qui ont été supprimés disparaissent.
-4. Les éléments paraissent dans les onglets **Agenda** et **Mois** du Calendrier, en lecture seule, marqués du calendrier d’où ils viennent et de la personne dont le téléphone les a envoyés.
+4. Les éléments paraissent dans toutes les vues du Calendrier (**Agenda**, **Jour**, **Semaine**, **Mois**, et leurs jours ombrés dans **Année**), en lecture seule, marqués du calendrier d’où ils viennent et de la personne dont le téléphone les a envoyés.
 
 Le téléphone n’envoie que les calendriers que vous cochez, et seulement pour les jours choisis : le titre, le lieu, le début et la fin de chaque élément. Les descriptions, les invités, les pièces jointes et les rappels ne sont pas lus. Ce que vous ou quelqu’un d’autre changez dans l’application de calendrier du téléphone change sur l’ordinateur au prochain transfert ; rien n’est jamais écrit dans vos calendriers.
 

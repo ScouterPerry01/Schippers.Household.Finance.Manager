@@ -30,5 +30,12 @@ setActivityCostTxn:
 INSERT INTO event_activity_day(event_id, date, cost_txn_id) VALUES (?, ?, ?)
 ON CONFLICT(event_id, date) DO UPDATE SET cost_txn_id = excluded.cost_txn_id;
 
+activityCostTxn:
+SELECT cost_txn_id FROM event_activity_day WHERE event_id = ? AND date = ?;
+
+-- A deleted transaction no longer stands for the cost of an activity's date.
+clearActivityCostTxn:
+UPDATE event_activity_day SET cost_txn_id = NULL WHERE cost_txn_id = ?;
+
 deleteEmptyActivityDays:
 DELETE FROM event_activity_day WHERE drivers_set = 0 AND cost_txn_id IS NULL;

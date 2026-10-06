@@ -379,7 +379,10 @@ private fun FuelTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> Unit
                     val energy = e.energy ?: v.defaultEnergy
                     Text("${MoneyFormat.formatDecimal(e.quantity, model.language.locale)} ${unitOf(energy)}" + if (!e.fullTank) " (${model.t("vehicles.partial")})" else "", Modifier.width(180.dp))
                     Text(
-                        listOfNotNull(e.charging?.let { model.t("charging.$it") }, e.station, e.deviceId?.let { model.t("vehicles.fromPhone") }, e.transactionId?.let { model.t("vehicles.paymentLinked") }).joinToString(" · "),
+                        listOfNotNull(e.charging?.let { model.t("charging.$it") }, e.station, e.deviceId?.let { model.t("vehicles.fromPhone") }, e.transactionId?.let { model.t("vehicles.paymentLinked") },
+                            // A fill-up from the phone comes without its payment: Edit offers to enter it.
+                            model.t("vehicles.noPayment").takeIf { e.deviceId != null && e.transactionId == null && e.cost != null },
+                        ).joinToString(" · "),
                         Modifier.weight(1f), style = MaterialTheme.typography.bodySmall,
                     )
                     Text(e.cost?.let(model::money).orEmpty(), Modifier.width(120.dp))

@@ -440,6 +440,7 @@ class SyncService internal constructor(private val books: Books) {
             RefEvent(
                 "${e.id}|${o.date}", e.title, o.date.toString(), e.startTime?.let { "%02d:%02d".format(it.hour, it.minute) }, e.category.name,
                 e.location, e.memberId?.let(who::get), e.reminderMinutes,
+                o.driverThere?.let { it.name ?: who[it.memberId] }, o.driverBack?.let { it.name ?: who[it.memberId] },
             )
         }
     }

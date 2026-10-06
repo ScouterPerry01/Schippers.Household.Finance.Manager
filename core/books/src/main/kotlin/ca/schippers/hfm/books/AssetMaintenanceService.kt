@@ -168,6 +168,10 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
     /** Every reading, oldest first: those entered and those of services. */
     fun readings(assetId: String): List<MeterReading> {
         val (group, _) = locate(assetId)
+        return readings(group, assetId)
+    }
+
+    private fun readings(group: GroupInfo, assetId: String): List<MeterReading> {
         val q = books.ledger(group).assetMaintenanceQueries
         val direct = q.readings(assetId).executeAsList().map { MeterReading(it.id, LocalDate.parse(it.date), it.usage.toInt()) }
         val service = q.services(assetId).executeAsList().mapNotNull { r -> r.usage?.let { MeterReading(null, LocalDate.parse(r.date), it.toInt()) } }
@@ -194,8 +198,14 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
 
     fun taskStatuses(assetId: String, today: LocalDate): List<AssetTaskStatus> {
         val (group, a) = locate(assetId)
+        return taskStatuses(group, a, today)
+    }
+
+    /** [taskStatuses] of [a], kept in [group]: for lists that already have both. */
+    internal fun taskStatuses(group: GroupInfo, a: Asset, today: LocalDate): List<AssetTaskStatus> {
+        val assetId = a.id
         val q = books.ledger(group).assetMaintenanceQueries
-        val readings = readings(assetId)
+        val readings = readings(group, assetId)
         val current = readings.maxOfOrNull { it.usage }
         val rate = MaintenanceSchedule.usagePerDay(readings.map { it.date to it.usage })
         val services = q.services(assetId).executeAsList().associateBy { it.id }
@@ -218,14 +228,24 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
     fun due(today: LocalDate): List<UpkeepDue> = upkeep(today).filter { it.status.state != DueState.OK }
 
     /** Every active task on every asset still owned, with its status. */
-    fun upkeep(today: LocalDate): List<UpkeepDue> = books.assets.list().flatMap { a ->
-        taskStatuses(a.id, today).map { UpkeepDue(a.id, a.name, false, it.task.id, it.task.name, it.due, a.meter) }
+    fun upkeep(today: LocalDate): List<UpkeepDue> {
+        val groups = books.groups().associateBy { it.id }
+        return books.assets.list().flatMap { a -> upkeepOf(groups.getValue(a.groupId), a, today) }
     }
+
+    private fun upkeepOf(group: GroupInfo, a: Asset, today: LocalDate): List<UpkeepDue> =
+        taskStatuses(group, a, today).map { UpkeepDue(a.id, a.name, false, it.task.id, it.task.name, it.due, a.meter) }
 
     // --- Service log (MNT-04) ---------------------------------------------------------------------
 
     fun services(assetId: String): List<AssetServiceRecord> {
         val (group, a) = locate(assetId)
+        return services(group, a)
+    }
+
+    /** [services] of [a], kept in [group]. */
+    internal fun services(group: GroupInfo, a: Asset): List<AssetServiceRecord> {
+        val assetId = a.id
         val q = books.ledger(group).assetMaintenanceQueries
         val tasks = q.serviceTasks(assetId).executeAsList().groupBy({ it.service_id }, { it.task_id })
         return q.services(assetId).executeAsList().map { it.toService(a.currency, tasks[it.id].orEmpty().toSet()) }
@@ -294,10 +314,7 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
         ).id
     }
 
-    private fun locate(assetId: String): Pair<GroupInfo, Asset> {
-        val a = books.assets.get(assetId)
-        return books.group(a.groupId) to a
-    }
+    private fun locate(assetId: String): Pair<GroupInfo, Asset> = books.assets.locate(assetId)
 
     private fun TaskRow.toTask() = AssetTask(
         id, asset_id, name, template_key, interval_months?.toInt(), interval_usage?.toInt(), start_date?.let(LocalDate::parse), start_usage?.toInt(),

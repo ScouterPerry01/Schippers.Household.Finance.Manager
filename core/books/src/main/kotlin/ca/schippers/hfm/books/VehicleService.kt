@@ -276,6 +276,11 @@ class VehicleService internal constructor(private val books: Books) {
     /** Every reading, oldest first: the purchase, direct readings, fuel and service entries. */
     fun readings(vehicleId: String): List<OdometerReading> {
         val (group, v) = locate(vehicleId)
+        return readings(group, v)
+    }
+
+    private fun readings(group: GroupInfo, v: Vehicle): List<OdometerReading> {
+        val vehicleId = v.id
         val q = books.ledger(group).vehiclesQueries
         val purchase = listOfNotNull(v.purchaseOdometer?.let { odo -> v.purchaseDate?.let { OdometerReading(null, it, odo, ReadingSource.PURCHASE) } })
         val direct = q.readings(vehicleId).executeAsList().map { OdometerReading(it.id, LocalDate.parse(it.date), it.odometer.toInt(), ReadingSource.READING) }
@@ -362,8 +367,14 @@ class VehicleService internal constructor(private val books: Books) {
 
     fun taskStatuses(vehicleId: String, today: LocalDate): List<TaskStatus> {
         val (group, v) = locate(vehicleId)
+        return taskStatuses(group, v, today)
+    }
+
+    /** [taskStatuses] of [v], kept in [group]: for lists that already have both. */
+    internal fun taskStatuses(group: GroupInfo, v: Vehicle, today: LocalDate): List<TaskStatus> {
+        val vehicleId = v.id
         val q = books.ledger(group).vehiclesQueries
-        val readings = readings(vehicleId)
+        val readings = readings(group, v)
         val current = readings.maxByOrNull { it.odometer }?.odometer
         val rate = kmPerDay(readings)
         val services = q.services(vehicleId).executeAsList()
@@ -392,10 +403,16 @@ class VehicleService internal constructor(private val books: Books) {
     // --- Service log (VEH-06, VEH-08) -----------------------------------------------------------
 
     fun services(vehicleId: String): List<ServiceRecord> {
-        val (group, _) = locate(vehicleId)
+        val (group, v) = locate(vehicleId)
+        return services(group, v)
+    }
+
+    /** [services] of [v], kept in [group]. */
+    internal fun services(group: GroupInfo, v: Vehicle): List<ServiceRecord> {
+        val vehicleId = v.id
         val q = books.ledger(group).vehiclesQueries
         val tasks = q.serviceTasks(vehicleId).executeAsList().groupBy({ it.service_id }, { it.task_id })
-        val currency = get(vehicleId).currency
+        val currency = v.currency
         return q.services(vehicleId).executeAsList().map { it.toService(currency, tasks[it.id].orEmpty().toSet()) }
     }
 
@@ -543,6 +560,15 @@ class VehicleService internal constructor(private val books: Books) {
         val byLoad = fuelByLoad(vehicleId, yearAgo, today, energy).mapValues { it.value.per100km }
         val consumption = (listOf(TripLoad.NONE) + shares.keys).mapNotNull { load -> (byLoad[load] ?: byLoad[TripLoad.NONE] ?: all)?.let { load to it } }.toMap()
         val price = unitPrice(v, since, today, energy) ?: unitPrice(v, yearAgo, today, energy)
+        // A plug-in hybrid's charging too: its kWh/100 km spread over all the distance, as its fuel's is.
+        val charging = if (v.takesBoth) {
+            ChargingForecast(
+                fuelStats(vehicleId, yearAgo, today, Energy.ELECTRICITY).per100km ?: chargedPer100(v, readings, yearAgo, today),
+                unitPrice(v, since, today, Energy.ELECTRICITY) ?: unitPrice(v, yearAgo, today, Energy.ELECTRICITY),
+            ).takeIf { it.per100km != null || it.unitPrice != null }
+        } else {
+            null
+        }
         val statuses = taskStatuses(vehicleId, today)
         val costs = taskCosts(vehicleId)
         val periods = horizons.map { months ->
@@ -566,12 +592,30 @@ class VehicleService internal constructor(private val books: Books) {
             }
             val priced = due.filter { costs[it.first.id] != null }
             val maintenance = priced.fold(Money.zero(v.currency)) { a, (task, times) -> a + costs.getValue(task.id) * times.toLong() }
-            ForecastPeriod(months, distance, quantity, energyCost, maintenance, due.map { it.first.name to it.second }, due.filter { costs[it.first.id] == null }.map { it.first.name })
+            val kwh = charging?.per100km?.takeIf { pace != null }?.let { (it * BigDecimal(distance)).divide(BigDecimal(100), 0, RoundingMode.HALF_UP) }
+            val kwhCost = kwh?.let { k -> charging.unitPrice?.let { Money.of((k * it).setScale(2, RoundingMode.HALF_UP), v.currency) } }
+            ForecastPeriod(
+                months, distance, quantity, energyCost, maintenance, due.map { it.first.name to it.second }, due.filter { costs[it.first.id] == null }.map { it.first.name },
+                kwh, kwhCost,
+            )
         }
         return VehicleForecast(
             vehicleId, energy, v.currency, pace,
             shares.mapValues { (it.value * 100).toInt() }, consumption, price?.setScale(3, RoundingMode.HALF_UP), periods,
+            charging?.copy(unitPrice = charging.unitPrice?.setScale(3, RoundingMode.HALF_UP)),
         )
+    }
+
+    /**
+     * A plug-in hybrid's kWh/100 km when its charges have no odometer (home charging often has none):
+     * every kWh charged between [from] and [to] over the distance the odometer readings show.
+     */
+    private fun chargedPer100(v: Vehicle, readings: List<OdometerReading>, from: LocalDate, to: LocalDate): BigDecimal? {
+        val inRange = readings.filter { it.date in from..to }
+        val distance = if (inRange.size >= 2) inRange.maxOf { it.odometer } - inRange.minOf { it.odometer } else return null
+        if (distance <= 0) return null
+        val kwh = fuel(v.id).filter { it.date in from..to && (it.energy ?: v.defaultEnergy) == Energy.ELECTRICITY }.fold(BigDecimal.ZERO) { a, e -> a + e.quantity }
+        return if (kwh.signum() > 0) kwh.multiply(BigDecimal(100)).divide(BigDecimal(distance), 1, RoundingMode.HALF_UP) else null
     }
 
     /** The average price of a litre or kWh bought between [from] and [to], or null. */
@@ -603,6 +647,7 @@ class VehicleService internal constructor(private val books: Books) {
             val year = forecast(v.id, today, listOf(12)).periods.single()
             val energyKey = if (v.defaultEnergy == Energy.ELECTRICITY) "transport.ev_charging" else "transport.fuel"
             year.energyCost?.let { cost -> keys[energyKey]?.let { totals.merge(it, cost.minorUnits, Long::plus) } }
+            year.electricityCost?.let { cost -> keys["transport.ev_charging"]?.let { totals.merge(it, cost.minorUnits, Long::plus) } }
             if (year.maintenance.isPositive) keys["transport.maintenance"]?.let { totals.merge(it, year.maintenance.minorUnits, Long::plus) }
         }
         val budgets = books.budgets.list().associateBy { it.categoryId }
@@ -705,8 +750,9 @@ class VehicleService internal constructor(private val books: Books) {
     fun costs(vehicleId: String, from: LocalDate, to: LocalDate): OwnershipCost {
         val v = get(vehicleId)
         val keys = books.categories.list(includeArchived = true).associate { it.systemKey to it.id }
-        val fuelCategory = keys[if (v.electric) "transport.ev_charging" else "transport.fuel"]
-        val extra = fuel(vehicleId).filter { it.transactionId == null && it.cost != null }.map { it.date to (fuelCategory to it.cost!!) } +
+        // Each fill-up by what it bought: a plug-in hybrid's charges are EV charging, its fill-ups fuel.
+        fun fuelCategory(e: FuelEntry) = keys[if ((e.energy ?: v.defaultEnergy) == Energy.ELECTRICITY) "transport.ev_charging" else "transport.fuel"]
+        val extra = fuel(vehicleId).filter { it.transactionId == null && it.cost != null }.map { it.date to (fuelCategory(it) to it.cost!!) } +
             services(vehicleId).filter { it.transactionId == null && it.cost != null }.map { it.date to (keys["transport.maintenance"] to it.cost!!) }
         val summary = books.costs(from, to, extra) { q ->
             q.assetLines(vehicleId, from.toString(), to.toString()).executeAsList().map { CostLine(it.date, it.account_id, it.category_id, it.amount_minor) }

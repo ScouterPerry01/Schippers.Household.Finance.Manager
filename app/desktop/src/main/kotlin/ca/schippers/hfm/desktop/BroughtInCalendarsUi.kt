@@ -144,7 +144,8 @@ internal fun IcsImportDialog(model: BooksModel, onClose: () -> Unit) {
                     OutlinedButton(enabled = groupId != null, onClick = {
                         val file = chooseIcs(model) ?: return@OutlinedButton
                         result = model.act {
-                            require(Files.size(file) <= ca.schippers.hfm.importers.ICalendar.MAX_BYTES) { "Too large" }
+                            val max = ca.schippers.hfm.importers.ICalendar.MAX_BYTES
+                            if (Files.size(file) > max) throw ca.schippers.hfm.books.ValidationException("error.icsTooLarge", max / 1024 / 1024)
                             model.books.icsImport.import(groupId!!, Files.readAllBytes(file))
                         }
                     }) { Text(model.t("calendar.ics.choose")) }

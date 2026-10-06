@@ -109,6 +109,8 @@ class ChoreService internal constructor(private val books: Books) {
     fun pay(a: Allowance, date: LocalDate): Money? {
         val total = earnings(a.memberId, a.amount.currency, date).unpaid
         if (!total.isPositive) return null
+        // Every chore to mark paid must be changeable first, so nothing is paid without being marked (and paid again).
+        owing(a.memberId, a.amount.currency, date).forEach { group(it.groupId) }
         val entry = books.allowances.addEntry(a, date, total, AllowanceKind.EARNED, Messages.get(books.language, "chores.paidNote"))
         markPaid(a.memberId, a.amount.currency, date, entry)
         return total
@@ -116,9 +118,16 @@ class ChoreService internal constructor(private val books: Books) {
 
     /** Marks the chores of [memberId] done up to [date] paid, for a child without an allowance (paid by hand). */
     fun markPaid(memberId: String, currency: Currency, date: LocalDate, allowanceEntryId: String? = null) {
-        list(true).filter { it.memberId == memberId }.forEach { c ->
+        val chores = owing(memberId, currency, date)
+        chores.forEach { group(it.groupId) }
+        chores.forEach { c ->
             val q = books.ledger(group(c.groupId)).trackersQueries
             c.ticks.filter { !it.paid && it.date <= date && it.amount?.currency == currency && it.amount.isPositive }.forEach { q.payChoreTick(allowanceEntryId, date.toString(), it.id) }
         }
+    }
+
+    /** The chores of [memberId] with ticks up to [date] not paid yet in [currency]. */
+    private fun owing(memberId: String, currency: Currency, date: LocalDate): List<Chore> = list(true).filter { c ->
+        c.memberId == memberId && c.ticks.any { !it.paid && it.date <= date && it.amount?.currency == currency && it.amount.isPositive }
     }
 }

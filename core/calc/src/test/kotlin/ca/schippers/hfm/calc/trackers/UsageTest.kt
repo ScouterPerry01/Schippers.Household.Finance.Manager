@@ -81,6 +81,8 @@ class UsageTest {
         assertEquals("500", filled.levelToday.toPlainString())
         // Without use per day, no dates.
         assertNull(Tanks.project(d(2026, 10, 1), n("300"), BigDecimal.ZERO, null, n("500"), n("125"), d(2026, 10, 11)).orderDate)
+        // ...unless the level is already at the order level: order at once.
+        assertEquals(d(2026, 10, 1), Tanks.project(d(2026, 10, 1), n("100"), BigDecimal.ZERO, null, n("500"), n("125"), d(2026, 10, 11)).orderDate)
         assertEquals("60.0", Tanks.percent(n("300"), n("500")).toPlainString())
         assertEquals("300", Tanks.litres(n("60"), n("500")).stripTrailingZeros().toPlainString())
     }

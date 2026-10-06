@@ -198,13 +198,20 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
 
     /** MNT-05: every task next due between [from] and [to], on vehicles and other assets, for the calendar. */
     fun upkeepBetween(from: LocalDate, to: LocalDate, today: LocalDate): List<UpkeepDue> =
-        (vehicles.list().flatMap { v -> vehicles.taskStatuses(v.id, today).map { MaintenanceDue(v, it).toUpkeep() } } + assetMaintenance.upkeep(today))
+        groups().associateBy { it.id }.let { groups ->
+            vehicles.list().flatMap { v -> vehicles.taskStatuses(groups.getValue(v.groupId), v, today).map { MaintenanceDue(v, it).toUpkeep() } } + assetMaintenance.upkeep(today)
+        }
             .filter { u -> u.status.nextDate?.let { it in from..to } == true }
             .sortedWith(compareBy(nullsLast()) { it.status.nextDate })
 
-    fun renewals(today: LocalDate, withinDays: Int? = null): List<Renewal> {
+    /**
+     * Everything coming up for renewal within [withinDays] of [today]. Without [cardPayments], the
+     * cards' payment due dates are left out (the calendar asks for those of its own period).
+     */
+    fun renewals(today: LocalDate, withinDays: Int? = null, cardPayments: Boolean = true): List<Renewal> {
         val w = withinDays ?: LeadTimes.renewals(today)
-        return (pets.renewals(today, w) + vehicles.renewals(today, w) + loans.renewals(today, w) + creditCards.renewals(today, w) +
+        val cards = if (cardPayments) creditCards.renewals(today, w) else creditCards.annualFees(today, w)
+        return (pets.renewals(today, w) + vehicles.renewals(today, w) + loans.renewals(today, w) + cards +
             medical.deadlines(today, withinDays ?: LeadTimes.medicalClaim(today)) + assets.renewals(today, maxOf(w, LeadTimes.warranty(today))) +
             insurance.renewals(today, withinDays ?: LeadTimes.insurance(today)) + instalments.renewals(today, withinDays ?: LeadTimes.instalment(today)) +
             investments.maturities(today, withinDays ?: LeadTimes.maturity(today)) +

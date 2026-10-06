@@ -56,9 +56,12 @@ class SeasonalChecklistService internal constructor(private val books: Books) {
     fun checklist(window: SeasonWindow, today: LocalDate): SeasonalChecklist {
         val current = today in window
         val items = ArrayList<ChecklistItem>()
+        // Each vehicle and asset read once from its own group.
+        val groups = books.groups().associateBy { it.id }
         for (v in books.vehicles.list()) {
-            val done = doneDates(books.vehicles.services(v.id).map { it.date to it.taskIds })
-            for (s in books.vehicles.taskStatuses(v.id, today)) {
+            val g = groups[v.groupId] ?: continue
+            val done = doneDates(books.vehicles.services(g, v).map { it.date to it.taskIds })
+            for (s in books.vehicles.taskStatuses(g, v, today)) {
                 val t = s.task
                 val state = DueState.valueOf(s.state.name)
                 item(window, current, s.nextDate, state, t.intervalMonths, null, null, done[t.id].orEmpty())?.let { (due, st, on) ->
@@ -67,8 +70,9 @@ class SeasonalChecklistService internal constructor(private val books: Books) {
             }
         }
         for (a in books.assets.list()) {
-            val done = doneDates(books.assetMaintenance.services(a.id).map { it.date to it.taskIds })
-            for (s in books.assetMaintenance.taskStatuses(a.id, today)) {
+            val g = groups[a.groupId] ?: continue
+            val done = doneDates(books.assetMaintenance.services(g, a).map { it.date to it.taskIds })
+            for (s in books.assetMaintenance.taskStatuses(g, a, today)) {
                 val t = s.task
                 item(window, current, s.due.nextDate, s.due.state, t.intervalMonths, t.intervalWeeks, t.part, done[t.id].orEmpty())?.let { (due, st, on) ->
                     items += ChecklistItem(a.id, a.name, false, t.id, t.name, due, st, on, a.currency, a.meter)
@@ -85,19 +89,24 @@ class SeasonalChecklistService internal constructor(private val books: Books) {
     fun tick(item: ChecklistItem, date: LocalDate, note: String? = null, cost: BigDecimal? = null, reading: Int? = null) =
         record(item.vehicle, item.subjectId, item.taskId, date, note, cost, reading)
 
-    /** [tick] by ids, for a tick made on the phone; [vehicle] tells which log the task is in. */
+    /**
+     * [tick] by ids, for a tick made on the phone; [vehicle] tells which log the task is in. A task
+     * already recorded as done on [date] (ticked on the computer and on a phone) is not recorded twice.
+     */
     fun record(vehicle: Boolean, subjectId: String, taskId: String, date: LocalDate, note: String?, cost: BigDecimal?, reading: Int?) {
         validate(cost == null || cost.signum() >= 0, "error.invalidNumber")
         validate(reading == null || reading >= 0, "error.invalidNumber")
         if (vehicle) {
             val v = books.vehicles.get(subjectId)
             validate(books.vehicles.tasks(subjectId).any { it.id == taskId }, "error.taskGone")
+            if (books.vehicles.services(subjectId).any { it.date == date && taskId in it.taskIds }) return
             books.vehicles.saveService(
                 ServiceRecord("", subjectId, date, reading, notes = note?.trim()?.ifEmpty { null }, cost = cost?.let { Money.exact(it, v.currency) }, taskIds = setOf(taskId)),
             )
         } else {
             val a = books.assets.get(subjectId)
             validate(books.assetMaintenance.tasks(subjectId).any { it.id == taskId }, "error.taskGone")
+            if (books.assetMaintenance.services(subjectId).any { it.date == date && taskId in it.taskIds }) return
             books.assetMaintenance.saveService(
                 AssetServiceRecord(
                     "", subjectId, date, reading.takeIf { a.meter != null }, notes = note?.trim()?.ifEmpty { null }, cost = cost?.let { Money.exact(it, a.currency) },

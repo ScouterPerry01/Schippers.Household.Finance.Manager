@@ -1,5 +1,6 @@
 package ca.schippers.hfm.books
 
+import ca.schippers.hfm.calc.schedule.Seasons
 import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.domain.AccountType
@@ -196,7 +197,7 @@ class PerformanceTest {
     @Test
     fun `screens open in under a second`() {
         val list = timed("account list", 1000) { books.accounts.list() }
-        assertEquals(TRANSACTIONS + investmentLines, books.ledger(books.groups().single()).ledgerQueries.txnCount().executeAsOne())
+        assertEquals(TRANSACTIONS + investmentLines, books.ledger(books.groups().first { !it.isPrivate }).ledgerQueries.txnCount().executeAsOne())
         assertEquals(accounts.size + portfolio.size, list.size)
         val register = timed("largest register, latest 1000", 1000) { books.transactions.register(accounts[0].id, limit = 1000) }
         assertEquals(1000, register.size)
@@ -264,7 +265,148 @@ class PerformanceTest {
         assertTrue(review.spending.isPositive)
     }
 
+    /**
+     * Calendars, seasons, trips and trackers (2026-10-06 round): a year of calendar with events,
+     * activities with carpool turns, rotating schedules and a calendar brought in from a phone (which adds the user's private group); ten
+     * years of weekly meter readings; 5,000 trips with their fill-ups; a seasonal checklist over
+     * many assets; and what the phone receives.
+     */
+    @Test
+    fun `calendars, trips and trackers`() {
+        val group = books.groups().first { !it.isPrivate }
+        val gid = group.id
+        val year = LocalDate(today.year, 1, 1)
+        val (_, made) = measureTimedValue {
+            val people = (1..4).map { books.members.create("Person $it", ca.schippers.hfm.domain.MemberKind.ADULT) }
+            repeat(30) { i ->
+                books.calendar.create(
+                    EventDraft(
+                        gid, "Event $i", EventCategory.PERSONAL, year.plus(DatePeriod(days = i)), kotlinx.datetime.LocalTime(9 + i % 8, 0), 60,
+                        recurrence = if (i % 3 == 0) ca.schippers.hfm.calc.schedule.Recurrence.MONTHLY else ca.schippers.hfm.calc.schedule.Recurrence.WEEKLY,
+                        reminderMinutes = listOf(1440),
+                    ),
+                )
+            }
+            repeat(10) { i ->
+                val activity = books.calendar.create(
+                    EventDraft(
+                        gid, "Practice $i", EventCategory.ACTIVITY, year.plus(DatePeriod(days = i)), kotlinx.datetime.LocalTime(18, 0), 90,
+                        memberId = people[i % 4].id, recurrence = ca.schippers.hfm.calc.schedule.Recurrence.WEEKLY, cost = Money.parse("15", Currency.CAD),
+                        driverThere = Driver(memberId = people[0].id), driverBack = Driver(name = "Other parent"),
+                    ),
+                )
+                for (week in 0 until 52 step 2) {
+                    books.calendar.setDrivers(activity.id, year.plus(DatePeriod(days = i + 7 * week)), Driver(memberId = people[1].id), null)
+                }
+            }
+            people.forEachIndexed { p, person ->
+                val shifts = (0 until 2).flatMap { w ->
+                    (1..5).map { d -> ScheduleShift(w, kotlinx.datetime.DayOfWeek(d), kotlinx.datetime.LocalTime(if (w == 0) 7 else 15, 0), kotlinx.datetime.LocalTime(if (w == 0) 15 else 23, 0)) }
+                }
+                val exceptions = (0 until 25).map { ScheduleException(year.plus(DatePeriod(days = 3 + it * 13)), off = it % 2 == 0, start = kotlinx.datetime.LocalTime(10, 0), end = kotlinx.datetime.LocalTime(14, 0)) }
+                books.schedules.save(PersonSchedule("", gid, person.id, if (p < 2) ScheduleKind.WORK else ScheduleKind.SCHOOL, null, year, null, 2, true, null, shifts, exceptions))
+            }
+            val items = (0 until ca.schippers.hfm.sync.CalendarShare.MAX_ITEMS).map { i ->
+                val day = year.plus(DatePeriod(days = i % 365)).toString()
+                ca.schippers.hfm.sync.CalendarInstance("e$i", day, day, "%02d:00".format(8 + i % 10), "%02d:30".format(8 + i % 10), "Meeting $i", "Room ${i % 9}",
+                    ca.schippers.hfm.sync.CalendarVisibility.entries[i % 3])
+            }
+            books.broughtIn.receive("phone-perf", ca.schippers.hfm.sync.CalendarSnapshot("s1", "7", 1L, "Work", "perry@work.ca", null, ca.schippers.hfm.sync.CalendarVisibility.BUSY, year.toString(), year.plus(DatePeriod(years = 1)).toString(), items), 1L)
+        }
+        println("Generated a year of calendar in $made")
+
+        timed("calendar, year view", 3000) { books.calendar.items(year, LocalDate(today.year, 12, 31)) }
+        val month = timed("calendar, month view", 1000) { books.calendar.items(LocalDate(today.year, today.month, 1), LocalDate(today.year, today.month, 1).plus(DatePeriod(months = 1))) }
+        assertTrue(month.any { it is CalendarItem.Imported } && month.any { it is CalendarItem.Schedule })
+        timed("calendar, week view", 1000) { books.calendar.items(today, today.plus(DatePeriod(days = 6))) }
+        timed("calendar reminders", 1000) { books.calendar.reminders(kotlinx.datetime.LocalDateTime(today.year, today.month, today.day, 8, 0)) }
+
+        // Ten years of weekly readings on three meters, and a propane tank read monthly.
+        val (_, metered) = measureTimedValue {
+            val ledger = books.ledger(group)
+            val meters = MeterKind.entries.map { books.utilities.saveMeter(UtilityMeter("", gid, "Meter $it", it)) }
+            ledger.transaction {
+                for (m in meters) {
+                    var value = BigDecimal(10_000)
+                    for (w in 0 until 520) {
+                        value += BigDecimal(150 + (w % 52) * 3 + w % 7)
+                        ledger.trackersQueries.insertUtilityReading(Ids.newId(), m.id, today.minus(DatePeriod(days = 7 * (520 - w))).toString(), value.toPlainString(), null, null, null, null, null, 0)
+                    }
+                }
+            }
+            val tank = books.utilities.saveTank(FuelTank("", gid, "Propane", FuelKind.PROPANE, BigDecimal(500)))
+            for (m in 0 until 120) {
+                val date = today.minus(DatePeriod(months = 120 - m))
+                books.utilities.addTankReading(tank.id, date, BigDecimal(90 - (m % 6) * 12))
+                if (m % 6 == 5) books.utilities.addDelivery(tank.id, date.plus(DatePeriod(days = 2)), BigDecimal(300))
+            }
+        }
+        println("Generated ten years of meter readings in $metered")
+        val meters = timed("utilities, meters with ten years of readings", 1000) { books.utilities.meters() }
+        assertEquals(520 * 3, meters.sumOf { it.readings.size })
+        timed("utilities, use by month of every meter", 1000) { meters.map { books.utilities.summary(it, today) } }
+        timed("utilities, add a reading", 1000) { books.utilities.addReading(meters.first().id, today, meters.first().readings.maxOf { it.value } + BigDecimal.ONE) }
+        timed("utilities, tank status and order reminder", 1000) { books.utilities.tanks().map { books.utilities.status(it, today) } + books.utilities.orders(today) }
+
+        // 5,000 trips over ten years, with a fill-up every 600 km or so.
+        val car = books.vehicles.save(Vehicle("", gid, "Truck", purchaseDate = today.minus(DatePeriod(years = 10)), purchaseOdometer = 100))
+        books.vehicles.addStarterTasks(car.id, today) { it }
+        val (_, driven) = measureTimedValue {
+            val places = PlaceCategory.entries.map { books.places.save(Place("", gid, "Place $it", it, latitude = 45.0 + it.ordinal / 100.0, longitude = -75.0, province = "ON")) }
+            var odometer = 100
+            var sinceFill = 0
+            val ledger = books.ledger(group)
+            ledger.transaction {
+                repeat(TRIPS) { i ->
+                    val date = today.minus(DatePeriod(days = (TRIPS - i) * 3650 / TRIPS))
+                    val km = 5 + (i * 37) % 120
+                    books.trips.save(
+                        Trip(
+                            "", gid, date, "", BigDecimal.ZERO, false, TripPurpose.entries[i % TripPurpose.entries.size], car.id,
+                            startAt = kotlinx.datetime.LocalDateTime(date.year, date.month, date.day, 8, 0), endAt = kotlinx.datetime.LocalDateTime(date.year, date.month, date.day, 9, 0),
+                            startOdometer = odometer, endOdometer = odometer + km, startPlaceId = places[i % places.size].id, endPlaceId = places[(i + 1) % places.size].id,
+                            load = TripLoad.entries[i % 7 % 3], province = if (i % 10 == 0) "QC" else null,
+                        ),
+                    )
+                    odometer += km
+                    sinceFill += km
+                    if (sinceFill > 600) {
+                        books.vehicles.saveFuel(FuelEntry("", car.id, date, odometer, BigDecimal(sinceFill / 10), Money.parse("${sinceFill / 6}", Currency.CAD)))
+                        sinceFill = 0
+                    }
+                }
+            }
+        }
+        println("Generated $TRIPS trips in $driven")
+        timed("trip log, one year", 1000) { books.trips.list(today.year - 1) }
+        timed("trip log, kilometres by province", 1000) { books.trips.kmByProvince(today.year - 1) }
+        timed("trip log, CRA logbook of a year", 1000) { books.trips.logbook(car.id, today.year - 1) }
+        timed("vehicle odometer readings with every trip", 1000) { books.vehicles.readings(car.id) }
+        timed("fuel by kind of driving, ten years", 3000) { books.vehicles.fuelByLoad(car.id, today.minus(DatePeriod(years = 10)), today) }
+        val forecast = timed("vehicle forecast", 1000) { books.vehicles.forecast(car.id, today) }
+        assertTrue(forecast.kmPerDay != null)
+        timed("Transport budget suggestions", 1000) { books.vehicles.budgetLines(today) }
+
+        // A seasonal checklist over twenty homes, pools and yards and five vehicles.
+        val (_, listed) = measureTimedValue {
+            repeat(5) { h ->
+                val home = books.assets.save(Asset("", gid, if (h % 2 == 0) AssetKind.HOME else AssetKind.COTTAGE, "Home $h"))
+                val pool = books.assets.save(Asset("", gid, AssetKind.POOL, "Pool $h", parentId = home.id))
+                val yard = books.assets.save(Asset("", gid, AssetKind.YARD, "Yard $h", parentId = home.id))
+                val trailer = books.assets.save(Asset("", gid, AssetKind.TRAILER, "Trailer $h"))
+                for (a in listOf(home, pool, yard, trailer)) books.assetMaintenance.addStarterTasks(a.id, today) { it }
+                val v = books.vehicles.save(Vehicle("", gid, "Car $h", purchaseDate = today.minus(DatePeriod(years = 3)), purchaseOdometer = 10))
+                books.vehicles.addStarterTasks(v.id, today) { it }
+            }
+        }
+        println("Generated the seasonal assets in $listed")
+        val checklist = timed("seasonal checklist", 1000) { books.seasonal.checklist(Seasons.windowOf(today), today) }
+        assertTrue(checklist.total > 20)
+        timed("what the phone receives", 3000) { books.sync.reference(today, 0L) }
+    }
+
     private companion object {
+        const val TRIPS = 5_000
         const val CONTACTS = 2_000
         const val TRANSACTIONS = 250_000
         const val DOCUMENTS = 50_000

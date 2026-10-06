@@ -233,10 +233,11 @@ data class ReferenceData(
     companion object {
         /**
          * What a phone app understands of the reference data: 1 up to maintenance and budgets, 2
-         * with contacts, 3 with events and refills, 4 with the seasonal checklist, what the log forms pick from, schedules, places, trailers and the vehicles' fuel type and use. A phone that kept its copy with an older app asks for all of it again
+         * with contacts, 3 with events and refills, 4 with the seasonal checklist, what the log forms pick from, schedules, places, trailers and the vehicles' fuel type and use, 5 with
+         * the drivers of children's activities. A phone that kept its copy with an older app asks for all of it again
          * ([knownVersion]), since that app dropped what it did not know.
          */
-        const val FORMAT = 4
+        const val FORMAT = 5
 
         /** The version a phone sends: none when its copy was kept by an app reading an older [FORMAT]. */
         fun knownVersion(version: String?, storedFormat: Int): String? = version?.takeIf { storedFormat >= FORMAT }
@@ -326,6 +327,9 @@ data class RefEvent(
     val location: String? = null,
     val forWhom: String? = null,
     val reminderMinutes: List<Int> = emptyList(),
+    /** CAL-11: for a child's activity, who drives there and who drives back that day (a carpool turn), when chosen. */
+    val driverThere: String? = null,
+    val driverBack: String? = null,
 )
 
 /**

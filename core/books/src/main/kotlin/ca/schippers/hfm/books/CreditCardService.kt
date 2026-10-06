@@ -323,13 +323,17 @@ class CreditCardService internal constructor(private val books: Books) {
      * the card payment lead time of Rates and rules (or [withinDays] if shorter) on cards that are
      * owed something.
      */
-    fun renewals(today: LocalDate, withinDays: Int = LeadTimes.renewals(today)): List<Renewal> = books.accounts.all()
+    fun renewals(today: LocalDate, withinDays: Int = LeadTimes.renewals(today)): List<Renewal> =
+        annualFees(today, withinDays) + paymentsDue(today, today.plus(DatePeriod(days = minOf(withinDays, LeadTimes.cardPayment(today)))), today)
+
+    /** The cards' annual fees within [withinDays] of [today]; without the balances, which payment dates need. */
+    fun annualFees(today: LocalDate, withinDays: Int = LeadTimes.renewals(today)): List<Renewal> = books.accounts.all()
         .filter { it.type.kind == AccountKind.CREDIT }
         .mapNotNull { a ->
             val next = terms(a.id)?.takeIf { it.annualFee?.isPositive == true }?.nextAnnualFee(today) ?: return@mapNotNull null
             val days = today.daysUntil(next)
             if (days > withinDays) null else Renewal(RenewalKind.CARD_ANNUAL_FEE, a.id, a.name, next, days)
-        } + paymentsDue(today, today.plus(DatePeriod(days = minOf(withinDays, LeadTimes.cardPayment(today)))), today)
+        }
 
     /**
      * CC-01: the payment due dates between [from] and [to] of every open card with a due day that

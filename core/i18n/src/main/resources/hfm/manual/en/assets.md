@@ -265,7 +265,7 @@ Tick a task's box to record it as done. A dialog titled with the task and the ve
 - The reading, optional: **Kilometres** for a vehicle (its odometer), or **Hours of use** or **Kilometres** for an asset with a meter.
 - **Notes**: optional, such as who did it.
 
-**Record as done** adds a service to the vehicle's or asset's service log with this task ticked, just as **Record as done** on the task does, and the task's schedule starts over from that date. To link a payment, add details or undo a tick, open the service in the service log ([Service log](assets#service-log), or the vehicle's **Service log** tab) and edit or delete it. Ticks made on the phone arrive the same way: see [Seasonal checklist on the phone](phone-app#seasonal-form).
+**Record as done** adds a service to the vehicle's or asset's service log with this task ticked, just as **Record as done** on the task does, and the task's schedule starts over from that date. To link a payment, add details or undo a tick, open the service in the service log ([Service log](assets#service-log), or the vehicle's **Service log** tab) and edit or delete it. Ticks made on the phone arrive the same way: see [Seasonal checklist on the phone](phone-app#seasonal-form). A task already recorded as done on the same date (ticked here and on a phone) is not recorded twice.
 
 You need the **Edit** or **Capture only** permission on the group of the vehicle or asset.
 

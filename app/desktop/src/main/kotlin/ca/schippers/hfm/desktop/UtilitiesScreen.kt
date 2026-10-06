@@ -132,7 +132,7 @@ private fun MetersTab(model: BooksModel) {
                             Text(model.monthName(c.use) + if (!c.use.complete) " " + model.t("utilities.partial") else "", Modifier.width(270.dp))
                             Text("${model.quantity(c.use.amount, 0)} $unit", Modifier.width(130.dp))
                             Text(c.lastYear?.takeIf { c.use.complete }?.let { model.t("utilities.lastYear", model.quantity(it, 0), unit) } ?: "", Modifier.width(220.dp), style = MaterialTheme.typography.bodySmall)
-                            Text(c.changePercent?.takeIf { c.use.complete }?.let { model.t("utilities.change", (if (it.signum() > 0) "+" else "") + it.toPlainString()) } ?: "", Modifier.width(80.dp), style = MaterialTheme.typography.bodySmall)
+                            Text(c.changePercent?.takeIf { c.use.complete }?.let { model.t("utilities.change", (if (it.signum() > 0) "+" else "") + ca.schippers.hfm.money.MoneyFormat.formatDecimal(it, model.language.locale)) } ?: "", Modifier.width(80.dp), style = MaterialTheme.typography.bodySmall)
                             Text(
                                 s.cost?.let { cost -> model.t("utilities.about", model.money(Money.of((c.use.amount * cost.perUnit).setScale(2, RoundingMode.HALF_UP), cost.currency))) } ?: "",
                                 Modifier.width(120.dp), style = MaterialTheme.typography.bodySmall,

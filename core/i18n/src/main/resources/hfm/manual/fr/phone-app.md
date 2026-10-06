@@ -366,7 +366,7 @@ L’application utilise le service de localisation d’Android même (aucun serv
 - **Date (AAAA-MM-JJ)** : aujourd’hui par défaut.
 - **Enregistrer** : offert dès qu’un véhicule et une quantité sont saisis. L’inscription rejoint la file d’attente et est envoyée aussitôt si possible.
 
-Sur l’ordinateur, elle va directement à l’[onglet Carburant](vehicles#fuel-tab) du véhicule, avec « du téléphone », sans vérification. Aucun paiement n’est inscrit : inscrivez-le à partir du reçu, ou du relevé de la carte.
+Sur l’ordinateur, elle va directement à l’[onglet Carburant](vehicles#fuel-tab) du véhicule, avec « du téléphone », sans vérification. Aucun paiement n’est inscrit, et la ligne indique « paiement pas encore inscrit » : pour l’inscrire, cliquez sur **Modifier** sur cette ligne et cochez **Inscrire aussi le paiement dans un compte** (voir [Inscrire aussi le paiement](vehicles#payment)). Si le paiement arrive dans les comptes autrement, comme par l’importation d’un relevé de carte, ne le liez pas au véhicule, sinon le coût du plein compte deux fois dans l’onglet **Coûts** du véhicule.
 
 ## L’onglet Envois {#sent-tab}
 
@@ -429,7 +429,7 @@ Le Résumé affiche les chiffres de votre ordinateur au dernier transfert : le n
 
 - **Comptes** : chaque compte et son solde.
 - **Factures à payer** : les factures dues dans les 60 prochains jours et pas encore payées, jusqu’à 15, avec la date d’échéance et le montant, ou **environ** un montant quand il est estimé.
-- **À venir** : d’abord les heures de travail et d’école de chaque personne aujourd’hui et demain, comme « Alex · Travail · Bureau » avec la date et « 08:00–16:30 » ; puis les rendez-vous et événements du calendrier de l’ordinateur dans les prochaines semaines, jusqu’à 12, chacun avec la personne concernée, sa date et son heure, ou **Toute la journée**. Seuls les événements des comptes que votre utilisateur peut voir sur l’ordinateur sont envoyés : les rendez-vous privés d’un autre utilisateur n’arrivent jamais sur votre téléphone. Les événements marqués faits ou annulés sont laissés de côté.
+- **À venir** : d’abord les heures de travail et d’école de chaque personne aujourd’hui et demain, comme « Alex · Travail · Bureau » avec la date et « 08:00–16:30 » ; puis les rendez-vous et événements du calendrier de l’ordinateur dans les prochaines semaines, jusqu’à 12, chacun avec la personne concernée, sa date et son heure, ou **Toute la journée** ; pour l’activité d’un enfant, qui conduit à l’aller et au retour ce jour-là, tours de covoiturage compris. Seuls les événements des comptes que votre utilisateur peut voir sur l’ordinateur sont envoyés : les rendez-vous privés d’un autre utilisateur n’arrivent jamais sur votre téléphone. Les événements marqués faits ou annulés sont laissés de côté.
 - **Renouvellements de médicaments** : les médicaments actifs dont la provision se termine dans les deux prochains mois, ou est déjà terminée, avec la date, et **à renouveler** quand il ne reste plus de renouvellements. Comme pour le calendrier, seuls les médicaments que votre utilisateur peut voir sont envoyés.
 - **Entretien du mois** : affiché quand quelque chose est prévu : chaque tâche, comme « Civic : Vidange d’huile », avec **à faire**, **bientôt** ou sa date.
 - **Budgets du mois** : chaque catégorie de dépenses qui a un budget : ce qui a été dépensé sur le budget, par exemple « 412,30 $ sur 600,00 $ ».
