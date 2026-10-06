@@ -22,3 +22,7 @@ Cliquez sur Prévoir des acomptes… et entrez les montants du rappel de l’ARC
 ## Trousse de fin d’année
 
 L’onglet Trousse de fin d’année montre les montants de chaque personne pour la déclaration, tirés des livres, avec la ligne fédérale de chacun. Choisissez l’année et la personne. Cliquez sur Dossier pour le comptable… pour enregistrer un dossier avec chaque sommaire et les feuillets et reçus classés, ou exportez un sommaire en PDF, Excel ou CSV.
+
+## Estimation
+
+L’onglet Estimation calcule l’impôt fédéral et provincial ou territorial de chaque personne pour une année, et le solde dû ou le remboursement. Choisissez l’année et la personne. Les montants viennent de la trousse de fin d’année ; changez-en un pour essayer un autre montant, et ce que vous entrez est conservé pour cette personne et cette année. Entrez de l’avis de cotisation les montants reportés (frais de scolarité, dons, pertes, REER, impôt minimum fédéral et du Québec). Cochez Admissible au crédit d’impôt pour personnes handicapées quand le formulaire T2201 est approuvé : elle ajoute le montant pour personnes handicapées et le supplément pour personnes handicapées de l’allocation pour les travailleurs. Les options d’achat de titres, la déduction pour gains en capital, les titres cotés donnés et, au Québec, les montants du Fonds des services de santé ont leurs propres lignes. C’est une estimation, pas une déclaration.

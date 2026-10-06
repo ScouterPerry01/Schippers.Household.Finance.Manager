@@ -184,6 +184,21 @@ Supposons qu'un budget baisse le taux d'un palier ou en ajoute un à partir du 1
 
 Le tableau entier est la nouvelle valeur : les paliers laissés tels quels restent les mêmes, et l'application utilise le nouvel ensemble pour chaque année d'imposition à partir de 2027.
 
+### Un chiffre pas encore publié {#example-unpublished}
+
+@index: chiffre non publié; formulaires de 2026; supplément pour personnes handicapées; annexe 6
+
+Certains chiffres ne sont publiés que sur les formulaires d'impôt de l'année, qui paraissent tard dans l'année ou au début de la suivante. D'ici là, l'application garde la dernière valeur publiée, et sa source le dit. Par exemple, le supplément pour personnes handicapées de l'Allocation canadienne pour les travailleurs garde ses valeurs de 2025 au Québec, en Alberta et au Nunavut jusqu'à ce que l'ARC publie l'annexe 6 de 2026. À ce moment :
+
+1. Ouvrez **Taux et règles** et tapez « cwb » dans **Filtrer par nom ou par clé**.
+2. Cliquez sur **Supplément pour personnes handicapées de l'Allocation canadienne pour les travailleurs** (Impôt sur le revenu).
+3. Sous **Ajouter une valeur**, réglez **En vigueur à partir du** au 1er janvier de l'année, comme 2026-01-01, et choisissez la province ou le territoire, comme l'Alberta.
+4. Dans **Valeurs, séparées par ;**, tapez les dix nombres dans l'ordre que donne la description de la règle, tirés des lignes 30 à 38 de l'annexe 6 de cette province, comme 910; 0,26; 0,26; 860; 38583; 51237; 51237; 51237; 0,15; 0,075 (un exemple, pas les chiffres publiés).
+5. Dans **Note**, indiquez d'où ils viennent, comme « ARC, annexe 6 pour les résidents de l'Alberta (5009-S6) 2026 ».
+6. Cliquez sur **Ajouter une valeur**.
+
+L'estimation de l'impôt sur le revenu de l'écran [Impôts](taxes#estimate-refundable) utilise les nouveaux chiffres pour 2026 et après.
+
 ## Chapitres liés {#related}
 
 - [Taux et cours](rates) : les taux de change et les cours du marché, qui sont téléchargés plutôt que fixés par la loi.

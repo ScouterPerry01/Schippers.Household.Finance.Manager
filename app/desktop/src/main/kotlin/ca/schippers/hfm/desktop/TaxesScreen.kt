@@ -558,7 +558,15 @@ private fun EstimateTab(model: BooksModel) {
                 items(figures, key = { "f/${it.input}" }) { f ->
                     Column(Modifier.padding(vertical = 2.dp)) {
                         val shown = entered[f.input] ?: f.fromBooks?.let { shownAmount(f.input, it, locale) }.orEmpty()
-                        if (f.input.count) {
+                        if (f.input.flag) {
+                            // A yes or no, kept as 1 or 0.
+                            val checked = shown.trim().let { it.isNotEmpty() && it != "0" }
+                            LabeledCheckbox(model.t("taxEstimateInput.${f.input}"), checked) { on ->
+                                val text = if (on) "1" else "0"
+                                entered[f.input] = text
+                                keep(f.input, text)
+                            }
+                        } else if (f.input.count) {
                             TextInput(model.t("taxEstimateInput.${f.input}"), shown, Modifier.fillMaxWidth(), error = if (shown.isNotBlank() && shown.trim().toIntOrNull()?.takeIf { it >= 0 } == null) "?" else null) {
                                 entered[f.input] = it
                                 if (it.isBlank() || it.trim().toIntOrNull()?.takeIf { n -> n >= 0 } != null) keep(f.input, it.trim())
@@ -570,14 +578,17 @@ private fun EstimateTab(model: BooksModel) {
                             }
                         }
                         val source = when {
+                            f.input.flag -> null
                             f.input in entered -> model.t(if (groupId != null) "taxEstimate.entered" else "taxEstimate.enteredNotSaved")
                             f.from.isNotEmpty() -> model.t("taxEstimate.from", f.from.joinToString(", ") { model.t("packageItem.$it") })
                             f.fromMembers -> model.t("taxEstimate.fromMembers")
                             else -> model.t(EMPTY_HINTS[f.input] ?: if (f.input.group == TaxInputGroup.CARRY_FORWARD) "taxEstimate.fromNotice" else "taxEstimate.notInBooks")
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(source, Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                            if (f.input in entered) TextButton(onClick = { entered.remove(f.input); keep(f.input, null) }) { Text(model.t("taxEstimate.useBooks")) }
+                        if (source != null) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(source, Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                if (f.input in entered) TextButton(onClick = { entered.remove(f.input); keep(f.input, null) }) { Text(model.t("taxEstimate.useBooks")) }
+                            }
                         }
                         INPUT_HINTS[f.input]?.let { Text(model.t(it), style = MaterialTheme.typography.bodySmall) }
                         if (f.input == TaxInput.MEDICAL && result.householdMedical.signum() > 0) {
@@ -679,7 +690,7 @@ private fun EstimateTab(model: BooksModel) {
 }
 
 /** Figures where a blank amount means "none" rather than zero. */
-private val BLANK_IS_NONE = setOf(TaxInput.SPOUSE_NET_INCOME, TaxInput.RRSP_LIMIT, TaxInput.DRUG_PLAN_MONTHS)
+private val BLANK_IS_NONE = setOf(TaxInput.SPOUSE_NET_INCOME, TaxInput.RRSP_LIMIT, TaxInput.DRUG_PLAN_MONTHS, TaxInput.SECURITY_OPTIONS_DEDUCTION_QC)
 
 /** What the line under an empty figure says, where it is not "Not in the books". */
 private val EMPTY_HINTS = mapOf(
@@ -687,6 +698,7 @@ private val EMPTY_HINTS = mapOf(
     TaxInput.RRSP_LIMIT to "taxEstimate.noRrspLimit",
     TaxInput.TUITION_TO_TRANSFER to "taxEstimate.noTransfer",
     TaxInput.DRUG_PLAN_MONTHS to "taxEstimate.drugPlanAllYear",
+    TaxInput.SECURITY_OPTIONS_DEDUCTION_QC to "taxEstimate.sameAsFederal",
 )
 
 /** A further explanation under some figures. */
@@ -701,11 +713,21 @@ private val INPUT_HINTS = mapOf(
     TaxInput.OAS to "taxEstimateHint.OAS",
     TaxInput.AMT_CARRIED to "taxEstimateHint.AMT_CARRIED",
     TaxInput.DRUG_PLAN_MONTHS to "taxEstimateHint.DRUG_PLAN_MONTHS",
+    TaxInput.DISABILITY to "taxEstimateHint.DISABILITY",
+    TaxInput.SPOUSE_DISABILITY to "taxEstimateHint.SPOUSE_DISABILITY",
+    TaxInput.DONATED_SECURITIES_GAINS to "taxEstimateHint.DONATED_SECURITIES_GAINS",
+    TaxInput.FSS_EXEMPT_INCOME to "taxEstimateHint.FSS_EXEMPT_INCOME",
+    TaxInput.SECURITY_OPTIONS_DEDUCTION to "taxEstimateHint.SECURITY_OPTIONS_DEDUCTION",
+    TaxInput.SECURITY_OPTIONS_GIFTS to "taxEstimateHint.SECURITY_OPTIONS_GIFTS",
+    TaxInput.SECURITY_OPTIONS_DEDUCTION_QC to "taxEstimateHint.SECURITY_OPTIONS_DEDUCTION_QC",
+    TaxInput.CAPITAL_GAINS_DEDUCTION to "taxEstimateHint.CAPITAL_GAINS_DEDUCTION",
+    TaxInput.FSS_DEDUCTIONS to "taxEstimateHint.FSS_DEDUCTIONS",
+    TaxInput.AMT_CARRIED_QC to "taxEstimateHint.AMT_CARRIED_QC",
 )
 
 private val TOTAL_LINES = setOf(
     TaxLineKind.NET_INCOME, TaxLineKind.TAXABLE_INCOME, TaxLineKind.TAX_ON_INCOME, TaxLineKind.BASIC_TAX, TaxLineKind.TAX,
-    TaxLineKind.CWB, TaxLineKind.MEDICAL_SUPPLEMENT, TaxLineKind.WORK_PREMIUM, TaxLineKind.QC_MEDICAL_CREDIT, TaxLineKind.REFUNDABLE_TOTAL,
+    TaxLineKind.CWB, TaxLineKind.CWB_DISABILITY, TaxLineKind.MEDICAL_SUPPLEMENT, TaxLineKind.WORK_PREMIUM, TaxLineKind.QC_MEDICAL_CREDIT, TaxLineKind.REFUNDABLE_TOTAL,
     TaxLineKind.GST_CREDIT, TaxLineKind.CHILD_BENEFIT, TaxLineKind.MINIMUM_TAX, TaxLineKind.OTHER_TOTAL,
 )
 
@@ -714,9 +736,9 @@ private val ABOVE_THRESHOLD = setOf(
     TaxLineKind.BRACKET, TaxLineKind.INCOME_REDUCTION, TaxLineKind.OAS_DEDUCTION, TaxLineKind.OAS_RECOVERY, TaxLineKind.MINIMUM_TAX,
 )
 
-/** A figure as shown in its field: a count as a whole number, an amount in the user's format. */
+/** A figure as shown in its field: a count or a yes or no (1 or 0) as a whole number, an amount in the user's format. */
 private fun shownAmount(input: TaxInput, amount: BigDecimal, locale: java.util.Locale): String =
-    if (input.count) amount.toInt().toString() else MoneyFormat.formatAmount(Money.of(amount, Currency.CAD), locale)
+    if (input.count || input.flag) amount.toInt().toString() else MoneyFormat.formatAmount(Money.of(amount, Currency.CAD), locale)
 
 @Composable
 private fun ResultRow(label: String, value: String, bold: Boolean = false) {
