@@ -239,6 +239,7 @@ tasks.register<JavaExec>("manualPhoneHost") {
     classpath = screenshots.runtimeClasspath
     systemProperty("hfm.shots.lang", providers.gradleProperty("lang").getOrElse("en"))
     systemProperty("hfm.phone.invitation", layout.buildDirectory.file("phone-invitation.txt").get().asFile.absolutePath)
+    systemProperty("hfm.phone.minutes", providers.gradleProperty("minutes").getOrElse("60"))
     systemProperty("hfm.phone.stop", layout.buildDirectory.file("phone-stop").get().asFile.absolutePath)
     providers.gradleProperty("eventIn").orNull?.let { systemProperty("hfm.phone.eventIn", it) }
     systemProperty("java.awt.headless", "true")

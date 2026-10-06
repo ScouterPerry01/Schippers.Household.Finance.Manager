@@ -50,7 +50,8 @@ fun main() {
     invitationFile.parentFile?.mkdirs()
     invitationFile.writeText(invitation.toQrText())
     println("Listening on $address:${model.syncServer.port}; pairing text in $invitationFile; create $stop to stop.")
-    val end = System.currentTimeMillis() + 60 * 60_000L
+    // An hour by default; -Pminutes=N keeps the sample household listening longer, to try the phone at leisure.
+    val end = System.currentTimeMillis() + (System.getProperty("hfm.phone.minutes")?.toLongOrNull() ?: 60L) * 60_000L
     while (!stop.exists() && System.currentTimeMillis() < end) Thread.sleep(500)
     model.syncServer.close()
     model.session.close()
