@@ -13,10 +13,25 @@ CREATE TABLE trip (
     round_trip INTEGER NOT NULL DEFAULT 0,
     -- BUSINESS, EMPLOYMENT, MEDICAL, PERSONAL.
     purpose TEXT NOT NULL,
-    notes TEXT
+    notes TEXT,
+    -- TRP-01 to TRP-06, TRP-09 (version 31): times ("yyyy-MM-ddTHH:mm"), odometers and saved places at
+    -- each end, NONE, TOWING or HEAVY with the trailer (an asset), the passengers, the province or
+    -- state driven in, and the phone it came from.
+    start_at TEXT,
+    end_at TEXT,
+    start_odometer INTEGER,
+    end_odometer INTEGER,
+    start_place_id TEXT,
+    end_place_id TEXT,
+    load_kind TEXT NOT NULL DEFAULT 'NONE',
+    trailer_id TEXT,
+    passengers TEXT,
+    province TEXT,
+    device_id TEXT
 );
 
 CREATE INDEX trip_date ON trip(date);
+CREATE INDEX trip_vehicle ON trip(vehicle_id, date);
 
 -- MNT-08: contractors and service providers, with ratings and past jobs.
 CREATE TABLE contractor (
@@ -125,9 +140,20 @@ trips:
 SELECT * FROM trip WHERE date >= ? AND date <= ? ORDER BY date DESC, rowid DESC;
 
 upsertTrip:
-INSERT INTO trip(id, date, vehicle_id, member_id, origin, destination, km_tenths, round_trip, purpose, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO trip(id, date, vehicle_id, member_id, origin, destination, km_tenths, round_trip, purpose, notes,
+    start_at, end_at, start_odometer, end_odometer, start_place_id, end_place_id, load_kind, trailer_id, passengers, province, device_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET date = excluded.date, vehicle_id = excluded.vehicle_id, member_id = excluded.member_id, origin = excluded.origin,
-    destination = excluded.destination, km_tenths = excluded.km_tenths, round_trip = excluded.round_trip, purpose = excluded.purpose, notes = excluded.notes;
+    destination = excluded.destination, km_tenths = excluded.km_tenths, round_trip = excluded.round_trip, purpose = excluded.purpose, notes = excluded.notes,
+    start_at = excluded.start_at, end_at = excluded.end_at, start_odometer = excluded.start_odometer, end_odometer = excluded.end_odometer,
+    start_place_id = excluded.start_place_id, end_place_id = excluded.end_place_id, load_kind = excluded.load_kind, trailer_id = excluded.trailer_id,
+    passengers = excluded.passengers, province = excluded.province, device_id = excluded.device_id;
+
+tripsForVehicle:
+SELECT * FROM trip WHERE vehicle_id = ? ORDER BY date, start_at, rowid;
+
+tripById:
+SELECT * FROM trip WHERE id = ?;
 
 deleteTrip:
 DELETE FROM trip WHERE id = ?;

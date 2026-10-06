@@ -1,6 +1,6 @@
 # RANN's Roost Mobile
 
-RANN's Roost Mobile is the companion app for Android phones. It photographs receipts, bills and other documents, records quick expenses and odometer readings, and sends them to RANN's Roost on your computer. In return it shows a summary of your balances, bills due, coming appointments, medication refills, budgets and maintenance and the household's contacts, and reminds you of bills, appointments, refills and budgets. Contacts you meet while out can be added on the phone and sent to the computer for review.
+RANN's Roost Mobile is the companion app for Android phones. It photographs receipts, bills and other documents, records quick expenses, odometer readings, trips, fill-ups and charges, and sends them to RANN's Roost on your computer. In return it shows a summary of your balances, bills due, coming appointments, medication refills, budgets and maintenance and the household's contacts, and reminds you of bills, appointments, refills and budgets. Contacts you meet while out can be added on the phone and sent to the computer for review.
 
 The phone is not a second copy of your books: the computer is the master copy. The phone keeps only what is waiting to be sent and the latest summary and contacts from the computer. Under its icon, the app is called RANN's Roost.
 
@@ -25,6 +25,7 @@ RANN's Roost Mobile comes in two editions that work the same way:
 - The app is excluded from Android's cloud backups, so none of it is copied to Google.
 - Captures go only to your computer, encrypted with the key made when you paired. Away from home, they may go through a folder of your own cloud storage, still encrypted.
 - The only other connection is the daily update check of the GitHub edition, if you allow it. It sends nothing about you or your household.
+- Location: only if you allow it, the app takes one location fix when you start a trip, when you arrive, and when you save a place or look for the nearest station, never in the background and never at other times. The fix is matched to your saved places on the phone itself; no map service is asked. What travels to your computer, encrypted like the rest, is the place's name, or the coordinates when you leave a place unnamed, and the coordinates of a place you save. See [Location](#location).
 - Once your computer confirms it received a capture, the phone deletes its copy of the pictures and details.
 
 ## The lock {#lock}
@@ -124,6 +125,8 @@ The buttons:
 - **Other document**: scan anything else to keep, such as a warranty or a letter.
 - **Quick expense**: record a purchase without a photo.
 - **Odometer or hours**: record a vehicle's odometer or an equipment's hours of use.
+- **Trip**: start a trip, or arrive when one is under way. While a trip is under way, a line under the button says so, such as "Trip under way: RAV4, left at 4:30 PM from Home (Maple Street)". See [Trip](#trip-form).
+- **Fuel or charge**: record a fill-up or a charge. See [Fuel or charge](#fuel-form).
 
 The kind you choose decides how the capture is filed on the computer: a bill as a bill, a receipt or quick expense as a receipt, another document as whatever the computer reads it to be.
 
@@ -216,6 +219,103 @@ Records a reading for a vehicle, or for equipment measured in hours of use (a ge
 - **Save**: available once an item and a reading are entered. The reading joins the queue and is sent at once if possible.
 
 On the computer, the reading is added straight to the vehicle on the Vehicles screen, or to the equipment's meter on Home and assets, without review.
+
+## Trip {#trip-form}
+
+@index: trip; mileage log; logbook; Start; Arrive; towing; trailer; passengers
+
+**Trip** records a trip from start to arrival: the vehicle, the driver, the odometer and the place at each end, the times, what you towed or carried, the passengers and the purpose. The distance is the difference between the two odometer readings, the way the CRA counts it. The trip goes to the [Trip log](trips#from-phone) on the computer, and its odometers to the vehicle.
+
+The trip under way is kept on the phone, encrypted, until you arrive: closing the app or restarting the phone does not lose it.
+
+### Start a trip {#trip-start}
+
+![Starting a trip](images/phone-trip-start.png)
+
+- **Vehicle**: the vehicles from your computer that count kilometres. The list fills in after the first transfer; with none, the form says "No vehicles yet: add them on the computer."
+- **Driver**: the household's people; the person your user is on the computer is proposed.
+- **Odometer (km)**: the vehicle's latest reading is proposed: the computer's, or the last one this phone recorded if higher. Check it against the dashboard and correct it. Required.
+- **Where you leave from**: see [Where you are](#trip-where).
+- **Towing or load**: **Normal** (the default), **Towing a trailer** or **Heavy load**. Towing and heavy loads are measured apart in the vehicle's fuel consumption.
+- **Trailer**: when towing, the trailers from your computer (assets of the kind trailer).
+- **Passengers**: a box for each person in the household other than the driver, and **Others (names, separated by commas)**.
+- **Places**: opens [Places](#trip-places).
+- **Cancel**: closes without starting.
+- **Start**: available once a vehicle and an odometer reading are entered. The trip is kept on the phone and the Capture tab shows it under way. Nothing is sent yet.
+
+### Where you are {#trip-where}
+
+@index: location; GPS; saved place
+
+When the app is allowed to use the location, the form takes one fix as it opens ("Finding where you are…"). Then:
+
+- "You are at name": the fix is within the radius of a saved place, the nearest one.
+- "Not a saved place (coordinates)": no saved place is near.
+- "No location: pick a saved place or type a name.": location is off, not allowed, or no fix came within 30 seconds.
+
+- **Place**: the saved places, the nearest first; the matched one is chosen. Choose another, or "(not a saved place)".
+- **Name this place (optional)**: with no saved place chosen, a name for where you are, such as "Cottage".
+- **Kind of place**: once a name is typed: **Home**, **Work**, **Client**, **Store**, **Fuel or charging**, **Garage**, **Medical** or **Other**.
+- **Save as a place**: once a name is typed and there is a fix; ticked by default. The place is saved with the fix and a radius of 150 m, kept on the phone and sent to the computer, so the next trip recognizes it. Unticked, the trip keeps the name only.
+- **Use my location**: shown until there is a fix. The first time, Android asks whether to allow the location (precise or approximate, only while using the app); see [Location](#location).
+- **Find where I am again**: takes another fix, for example after moving to the other end of a parking lot.
+
+With no saved place and no name, the trip keeps the coordinates.
+
+### Arrive {#trip-arrive}
+
+![Arriving: the distance and the suggested purpose](images/phone-trip-arrive.png)
+
+With a trip under way, **Trip** opens **Arrive**:
+
+- A card recalls the trip: the vehicle, when and where it left, the odometer at the start, the towing or load, and the passengers.
+- **Odometer at arrival (km)**: required. Once typed, "Distance: 178 km" shows, or "Enter more than 61,500 km, the odometer at the start." when it is not above it. A trip of 10,000 km or more is refused.
+- **Where you arrived**: as at the start; see [Where you are](#trip-where).
+- **Purpose**: **Business**, **Employment**, **Medical** or **Personal**. "Suggested from the places; change it if it is not right.": to or from a **Client** is **Business**; to a **Medical** place, or home from one, is **Medical**; other trips in a vehicle whose use is commercial are **Business**; everything else is **Personal**, including the drive between home and work, which the CRA counts as personal.
+- **Note**: anything to remember, such as the client's name.
+- **Later**: back to the Capture tab; the trip stays under way.
+- **Arrive and send**: available with a valid odometer. The trip joins the queue, labelled with the vehicle, the places and the distance, and is sent at once if possible.
+- **Places**: opens [Places](#trip-places).
+- **Discard the trip**: asks "Discard this trip? Nothing about it is sent to the computer." A place saved at the start stays saved.
+
+### Places {#trip-places}
+
+@index: saved places; rename a place
+
+"Saved places name the ends of your trips. They stay on this phone and your computer; no map service is used."
+
+- **Add the place where I am**: takes a fix, then asks for the name and kind of place; **Save** keeps it and queues it for the computer. Not available when the fix is already a saved place.
+- The list of places, by name, with their kind and address. **Rename** changes a name; the new name is sent to the computer, which keeps the place's other details.
+
+Places come from the computer's [Places](trips#places) and from those saved on this phone. A place saved or renamed here shows at once and travels with the next transfer, before the trips that use it.
+
+### Location {#location}
+
+@index: location permission; GPS; privacy; ACCESS_FINE_LOCATION
+
+The app asks for permission only when you tap **Use my location**, **Add the place where I am** or **Find the nearest saved station**, never when it starts. Once allowed, it takes one fix as the Start and Arrive forms open, and when you tap those buttons. Android offers **Precise** or **Approximate**, and **While using the app** or **Only this time**: the app never needs more. With approximate location, matches are less sure; use a larger radius on the computer or choose the place yourself.
+
+The app uses Android's own location service (no Google service), takes one fix at a time and stops; it never follows the phone in the background. The fixes stay on the phone: only the place's name, or the coordinates of an unnamed place or of a place you save, go to your computer with the trip. You can refuse or withdraw the permission in Android's settings at any time; trips then work by choosing places or typing names.
+
+## Fuel or charge {#fuel-form}
+
+@index: fill-up; gas; charging; kWh; litres; EV
+
+![A fill-up entered on the phone](images/phone-fuel.png)
+
+- **Vehicle**: the vehicles from your computer.
+- **Fuel or electricity**: for a plug-in hybrid only.
+- **Odometer (km)**: the latest reading is proposed; needed for the consumption.
+- **Litres** (or **kWh** for a charge): the quantity. Required, above zero.
+- **Cost**: what you paid, such as 68.55.
+- **Full tank** (or **Charged to full**): ticked by default; untick it for a partial fill. Consumption is measured from one full tank to the next.
+- **Where charged**: for a charge, **At home** or **Public charger**.
+- **Station**: a saved place, stations first, or "(none)".
+- **Find the nearest saved station**: takes one location fix and chooses the saved place you are at, if any.
+- **Date (YYYY-MM-DD)**: today by default.
+- **Save**: available once a vehicle and a quantity are entered. The entry joins the queue and is sent at once if possible.
+
+On the computer, it goes straight to the vehicle's [Fuel tab](vehicles#fuel-tab), with "from the phone", without review. No payment is entered: enter it from the receipt, or from the card statement.
 
 ## The Sent tab {#sent-tab}
 

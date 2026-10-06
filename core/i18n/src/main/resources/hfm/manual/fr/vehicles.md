@@ -13,7 +13,7 @@ En haut :
 - **Afficher les véhicules vendus ou retirés** : décoché par défaut. Cochez-le pour inclure les véhicules qui ne sont plus en service dans la liste **Véhicule**.
 - **Ajouter un véhicule** : ouvre un formulaire vierge. Voir [Ajouter ou modifier un véhicule](vehicles#vehicle-form).
 
-Quand il n’y a aucun véhicule, l’écran indique « Aucun véhicule pour l’instant. » Sinon, six onglets montrent le véhicule choisi : **Aperçu**, **Entretien**, **Carnet d’entretien**, **Carburant**, **Garanties** et **Coûts**.
+Quand il n’y a aucun véhicule, l’écran indique « Aucun véhicule pour l’instant. » Sinon, sept onglets montrent le véhicule choisi : **Aperçu**, **Entretien**, **Carnet d’entretien**, **Carburant**, **Prévisions**, **Garanties** et **Coûts**.
 
 ## Ajouter ou modifier un véhicule {#vehicle-form}
 
@@ -29,6 +29,23 @@ Quand il n’y a aucun véhicule, l’écran indique « Aucun véhicule pour l�
 - **Plaque d’immatriculation** : enregistrée en majuscules. Affichée dans l’aperçu et avec le rappel d’immatriculation.
 - **Numéro d’identification du véhicule (NIV)** : le numéro de 17 caractères inscrit sur le certificat d’immatriculation et le tableau de bord ; enregistré en majuscules. On peut le chercher à l’onglet **Est-ce couvert ?** de [Maison et biens](assets#covered-tab).
 - **Conducteur principal** : un membre du ménage, ou « (aucun) ». Pour mémoire ; affiché dans l’aperçu.
+- **Usage** : **Personnel** (par défaut), **Commercial** ou **Personnel et affaires**. Il est affiché dans l’aperçu quand il n’est pas personnel. Sur le téléphone, un déplacement dans un véhicule commercial est proposé comme **Affaires**. Le [registre](trips#logbook) propose le premier véhicule qui n’est pas personnel, et la date **Renouvellement IUVU ou CCS** est offerte pour un véhicule qui n’est pas personnel.
+
+### Détails techniques {#technical}
+@index: moteur; transmission; dimension des pneus; type d’huile; capacité de remorquage; PNBV; poids nominal brut du véhicule; capacité de la batterie
+
+Sous **Détails techniques**, tous facultatifs, pour mémoire quand vous achetez des pneus ou de l’huile, prenez rendez-vous au garage ou attelez une remorque. Ce que vous entrez s’affiche sur une ligne sous le titre de l’onglet **Aperçu**.
+
+- **Moteur** : comme vous le décrivez, par exemple « 2,0 L 4 cylindres ».
+- **Transmission** : **Automatique**, **Manuelle**, **À variation continue**, **À double embrayage** ou **À un rapport (électrique)**, ou « (aucun) ».
+- **Motricité** : **Traction avant**, **Propulsion arrière**, **Traction intégrale** ou **Quatre roues motrices**, ou « (aucun) ».
+- **Réservoir (L)** : la capacité du réservoir en litres, par exemple 47. Absent pour un véhicule électrique.
+- **Batterie (kWh)** : la capacité utile de la batterie, affichée pour un véhicule hybride, hybride rechargeable ou électrique.
+- **Pneus d’été** et **Pneus d’hiver** : les dimensions inscrites sur le flanc, par exemple 215/50R17.
+- **Huile moteur** et **Capacité d’huile (L)** : le grade et la quantité d’une vidange, par exemple 0W-20 et 4,4. Absents pour un véhicule électrique.
+- **Capacité de remorquage (kg)** et **PNBV (kg)** : le maximum que le véhicule peut remorquer, et son poids nominal brut (le poids maximal une fois chargé), d’après le manuel du propriétaire ou l’étiquette dans le cadre de la portière. En kilogrammes entiers, de 1 à 100 000.
+
+Les capacités acceptent une virgule ou un point décimal et doivent être plus grandes que zéro.
 
 ### Achat {#purchase}
 
@@ -47,6 +64,9 @@ Sous **Immatriculation et assurance** :
 - **Renouvellement de l’immatriculation** : quand l’immatriculation (la plaque) doit être renouvelée.
 - **Renouvellement de l’assurance** : quand la police d’assurance auto se renouvelle.
 - **Assureur** et **Numéro de police** : affichés dans l’aperçu avec le renouvellement de l’assurance.
+
+- **Inspection de sécurité due** : quand la prochaine inspection de sécurité est due, par exemple la vérification annuelle d’un véhicule commercial ou d’un véhicule qui doit être inspecté dans votre province.
+- **Renouvellement IUVU ou CCS** : affiché quand l’**Usage** du véhicule n’est pas personnel : quand l’inscription de l’exploitant doit être renouvelée (l’immatriculation d’utilisateur de véhicule utilitaire en Ontario, le certificat du Code canadien de sécurité ailleurs).
 
 Chaque date donne une ligne dans l’aperçu, en gras dans les 30 jours qui précèdent et en rouge une fois passée, et un rappel à partir de 30 jours avant (délai de renouvellement par défaut, réglable dans [Taux et règles](rates-rules)). Voir [Rappels et calendrier](vehicles#reminders).
 
@@ -73,10 +93,11 @@ Ajouter ou changer un véhicule demande la permission **Modification** sur son g
 L’onglet **Aperçu** affiche :
 
 - le titre (année, marque, modèle, version), l’énergie, la couleur, la plaque et le conducteur principal, et le NIV ;
+- les détails techniques entrés, et l’usage quand il n’est pas personnel ;
 - les boutons **Inscrire l’odomètre** et **Modifier** ;
 - « Odomètre distance le date » : la plus haute lecture inscrite, ou « Aucune lecture de l’odomètre pour l’instant. » ;
 - « Environ distance par année » : votre distance habituelle, d’après les lectures de la dernière année, dès qu’il y a des lectures à au moins deux semaines d’intervalle ;
-- les lignes d’immatriculation et d’assurance, colorées à l’approche de leurs dates ;
+- les lignes d’immatriculation et d’assurance, et celles de l’inspection de sécurité et du renouvellement IUVU ou CCS quand elles ont une date, colorées à l’approche de leurs dates ;
 - la ligne d’achat, « Acheté le date pour prix chez vendeur, à distance », quand une date ou un prix d’achat est entré ;
 - pour un véhicule qui n’est plus en service, son état, sa date et son prix de vente et, pour un véhicule vendu, le gain ou la perte et la vente liée avec son acheteur ;
 - les notes ;
@@ -85,12 +106,13 @@ L’onglet **Aperçu** affiche :
 ### Lectures de l’odomètre {#odometer}
 @index: kilométrage; kilomètres; odomètre
 
-L’application rassemble les lectures de quatre sources, affichées dans la liste avec leur provenance :
+L’application rassemble les lectures de cinq sources, affichées dans la liste avec leur provenance :
 
 - **à l’achat** : la date et l’odomètre d’achat ;
 - **inscrite** : les lectures tapées avec **Inscrire l’odomètre** ;
 - **plein** : l’odomètre d’un plein ou d’une recharge ;
-- **entretien** : l’odomètre d’un entretien.
+- **entretien** : l’odomètre d’un entretien ;
+- **Déplacement** : l’odomètre au départ et à l’arrivée d’un déplacement des [Déplacements](trips), comme un déplacement fait avec le téléphone.
 
 Seules les lectures entrées avec **Inscrire l’odomètre** ont un bouton **Supprimer**, qui demande d’abord « Supprimer la lecture de 52 300 km du date? » ; les autres se changent dans leur propre fiche.
 
@@ -211,22 +233,54 @@ Sans paiement, le coût de l’entretien compte tout de même seul à l’onglet
 ## Onglet Carburant {#fuel-tab}
 @index: essence; plein; recharge; consommation; L/100 km; kWh
 
-En haut, la consommation de la dernière année et le coût du carburant par kilomètre, avec **Ajouter un plein** (ou **Ajouter une recharge** pour un véhicule électrique). En dessous, chaque plein, le plus récent d’abord : date, odomètre, quantité en L ou en kWh (« partiel » quand le plein n’a pas été fait), station, « paiement inscrit », coût, et **Modifier**.
+En haut, la consommation de la dernière année et ce que coûte un kilomètre, avec **Ajouter un plein** (ou **Ajouter une recharge** pour un véhicule électrique). En dessous, chaque plein, le plus récent d’abord : date, odomètre, quantité en L ou en kWh (« partiel » quand le plein n’a pas été fait), recharge à domicile ou publique, station, « du téléphone » pour une inscription faite sur le téléphone, « paiement inscrit », coût, et **Modifier**.
+
+![L’onglet Carburant d’un véhicule hybride rechargeable](images/vehicles-fuel.png)
 
 ### Ajouter un plein ou une recharge {#fuel-form}
 
+- **Carburant ou électricité** : pour un hybride rechargeable seulement, ce qu’il a reçu : **Carburant** (litres) ou **Électricité** (kWh). Les deux se mesurent à part.
 - **Date** : obligatoire ; aujourd’hui par défaut.
 - **Odomètre (km)** : l’odomètre actuel est proposé. Nécessaire pour la consommation ; il compte comme lecture de l’odomètre.
-- **Litres** (ou **kWh** pour un véhicule électrique) : la quantité, plus grande que zéro. Obligatoire.
+- **Litres** (ou **kWh** pour une recharge) : la quantité, plus grande que zéro. Obligatoire.
 - **Coût** : ce que vous avez payé.
 - **Plein fait** (ou **Recharge complète**) : coché par défaut. « La consommation se calcule d’un plein à l’autre. » Décochez-le pour un plein partiel.
-- **Station**.
+- **Lieu de recharge** : pour une recharge, **Recharge à domicile** (par défaut) ou **Recharge publique**. L’onglet **Carburant** affiche le prix d’un kWh à chacune.
+- **Station (lieu enregistré)** : un des [lieux](trips#places) enregistrés, ou « (aucun lieu enregistré) ». En choisir un remplit **Station** avec son nom.
+- **Station** : le nom de la station, tapé ou rempli à partir du lieu.
 - Paiement : comme pour un entretien, avec la catégorie carburant ou recharge électrique proposée. Voir [Inscrire aussi le paiement](vehicles#payment).
 - **Supprimer** (en modification) : demande « Supprimer l’inscription du date? Un paiement inscrit avec elle reste dans son compte. » et, une fois confirmé, supprime l’inscription.
 
 ### Consommation {#consumption}
 
-« Depuis un an : 7,4 L/100 km » (ou kWh/100 km) se mesure d’un plein à l’autre, à partir du premier jour du même mois l’an dernier : le carburant acheté après un plein, jusqu’au plein suivant inclusivement, a servi pour la distance entre les deux. Tant qu’il n’y a pas deux pleins avec lecture de l’odomètre, l’écran indique « La consommation s’affiche après deux pleins avec lecture de l’odomètre. » « Carburant : montant par km » est affiché quand chaque plein de ces intervalles a un coût.
+« Depuis un an : 7,4 L/100 km » (ou kWh/100 km) se mesure d’un plein à l’autre, à partir du premier jour du même mois l’an dernier : le carburant acheté après un plein, jusqu’au plein suivant inclusivement, a servi pour la distance entre les deux. Tant qu’il n’y a pas deux pleins avec lecture de l’odomètre, l’écran indique « La consommation s’affiche après deux pleins avec lecture de l’odomètre. » « Carburant : montant par km » (ou « Électricité : montant par km ») est affiché quand chaque plein de ces intervalles a un coût.
+
+Les lignes suivantes, quand elles s’appliquent :
+
+- Pour un hybride rechargeable, l’autre énergie : sa consommation et son coût par km, mesurés sur ses propres pleins ou recharges. Les deux sont répartis sur tous les kilomètres parcourus, donc chacun est plus bas que pour un véhicule à une seule énergie.
+- Selon le type de conduite, par exemple « Conduite normale : 6,6 L/100 km · Avec remorque : 12,1 L/100 km ». Chaque intervalle entre deux pleins compte comme remorquage quand au moins la moitié de ses kilomètres ont été faits avec une remorque, comme charge lourde de même, et sinon comme conduite normale. Les kilomètres viennent des [déplacements](trips) inscrits avec les deux lectures de l’odomètre. Pour bien mesurer le remorquage, faites le plein avant de partir avec la remorque et de nouveau au retour ; les déplacements du téléphone font le reste.
+- La recharge : « Recharge à domicile : 201,6 kWh à 0,078 $/kWh · Recharge publique : 12,4 kWh à 0,5 $/kWh », d’après les recharges avec un coût.
+- « Vos autres véhicules, Carburant : montant par km » (ou Électricité) : ce que coûte un kilomètre avec l’autre énergie dans les autres véhicules du ménage, pour comparer un véhicule électrique à un véhicule à essence, ou l’inverse.
+
+@index: consommation avec remorque; coût par km d’un VÉ; électricité contre essence; recharge à domicile; recharge publique
+
+## Onglet Prévisions {#forecast-tab}
+@index: budget du véhicule; budget de carburant; prévisions; coût d’entretien prévu
+
+L’onglet **Prévisions** regarde les 3, 6 et 12 prochains mois :
+
+- « Environ distance par mois » : le rythme des 90 derniers jours, d’après chaque lecture de l’odomètre de ces jours (lectures inscrites, pleins, entretiens et déplacements). Avec moins de deux lectures à deux semaines d’intervalle dans les 90 jours, le rythme de la dernière année sert ; sans aucune, l’onglet indique « Les prévisions demandent des lectures de l’odomètre : au moins deux, à deux semaines d’intervalle. »
+- La part de la distance faite avec une remorque et avec une charge lourde, d’après les déplacements des 90 derniers jours.
+- La consommation utilisée pour chaque type de conduite : celle du véhicule selon le type, de la dernière année (voir [Consommation](vehicles#consumption)) ; un type sans intervalle de plein à plein à lui utilise celle de la conduite normale.
+- « Prix récent » : le prix moyen d’un litre (ou d’un kWh) payé depuis 90 jours, sinon depuis un an.
+- Le tableau **Prévisions**, une ligne pour les 3, 6 et 12 prochains mois : **Distance**, **Quantité** (litres ou kWh), le coût du carburant ou de l’électricité, **Entretien** et **Total**. Il s’exporte ou s’imprime comme tout tableau.
+- « Entretien dû dans les 12 prochains mois » : chaque tâche qui arrive et combien de fois, à partir de sa prochaine date (aujourd’hui si elle est en retard) puis à chaque intervalle, l’intervalle en kilomètres changé en jours au rythme ci-dessus. Une tâche coûte ce qu’elle a coûté la dernière fois qu’un entretien avec un coût l’a inscrite (le coût d’un entretien réparti également entre ses tâches). Les tâches jamais faites avec un coût sont nommées à part et laissées hors des montants.
+
+Pour un hybride rechargeable, les prévisions comptent le carburant ; la recharge n’y est pas ajoutée.
+
+### Proposer au budget {#forecast-budget}
+
+**Proposer au budget** (pas pour un lecteur) ouvre une liste de montants mensuels pour les catégories Transport, tirés des 12 prochains mois de chaque véhicule en service gardé dans un groupe de comptes partagé et dans la devise de base : carburant (ou recharge électrique pour un véhicule électrique) et entretien du véhicule, chacun arrondi au dollar supérieur, à côté du budget actuel de la catégorie. Un véhicule d’un groupe privé est laissé de côté, puisque les budgets sont ceux de tout le ménage. **Utiliser ces montants** fixe chacun comme budget mensuel à partir de ce mois-ci, en gardant le choix de report de la catégorie ; les autres budgets ne changent pas. Voir [Budgets](budgets).
 
 ## Onglet Garanties {#warranties-tab}
 @index: garantie du véhicule; groupe motopropulseur; garantie prolongée; corrosion; garantie de la batterie
@@ -289,6 +343,7 @@ Le rapport **Entretien et coût de possession** sous [Rapports](reports) réunit
 Pour chaque véhicule en service :
 
 - **Renouvellement de l’immatriculation** et **Renouvellement de l’assurance** : un rappel à partir de 30 jours avant la date (par défaut), qui reste une fois la date passée jusqu’à ce que vous entriez la nouvelle date, par exemple « Civic : immatriculation (ABC 123) dans 12 jours ».
+- **Inspection de sécurité due** et **Renouvellement IUVU ou CCS** : rappelés de la même façon, par exemple « Transit : Inspection de sécurité (AB 123) dans 20 jours ».
 - Garanties : un rappel à partir de 60 jours avant la date de fin (par défaut, réglable dans [Taux et règles](rates-rules)), ou avant le jour où l’odomètre devrait atteindre la limite de kilométrage, selon ce qui arrive en premier, par exemple « Civic : fin de garantie (Honda · 100000 km) dans 40 jours ». Une garantie déjà passée sa date ou son kilométrage ne donne pas de rappel.
 - Entretien : les tâches **Bientôt** et **À faire**.
 

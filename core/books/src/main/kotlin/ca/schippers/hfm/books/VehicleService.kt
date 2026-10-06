@@ -27,7 +27,18 @@ import ca.schippers.hfm.data.ledger.Vehicle_warranty as WarrantyRow
 enum class FuelType { GASOLINE, DIESEL, HYBRID, PLUG_IN_HYBRID, ELECTRIC, OTHER }
 enum class VehicleStatus { ACTIVE, SOLD, RETIRED }
 enum class WarrantyKind { MANUFACTURER, POWERTRAIN, EXTENDED, CORROSION, BATTERY, OTHER }
-enum class ReadingSource { PURCHASE, READING, FUEL, SERVICE }
+enum class ReadingSource { PURCHASE, READING, FUEL, SERVICE, TRIP }
+
+/** TRP-07: how the vehicle is used: CRA logbooks and inspection reminders matter for commercial use. */
+enum class VehicleUsage { PERSONAL, COMMERCIAL, MIXED }
+enum class Transmission { AUTOMATIC, MANUAL, CVT, DUAL_CLUTCH, SINGLE_SPEED }
+enum class DriveKind { FWD, RWD, AWD, FOUR_WD }
+
+/** TRP-05, TRP-10: what a fill-up bought: fuel (litres) or electricity (kWh). */
+enum class Energy { FUEL, ELECTRICITY }
+
+/** TRP-10: where an electric charge was made. */
+enum class Charging { HOME, PUBLIC }
 enum class TaskState { OK, SOON, DUE }
 
 /** VEH-01, VEH-02. An empty [id] means a new vehicle, stored in [groupId]. */
@@ -59,9 +70,39 @@ data class Vehicle(
     val notes: String? = null,
     /** SAL-03: the sale deposit in the books, when sold; its payee is the buyer. */
     val disposalTransactionId: String? = null,
+    /** TRP-07: technical details, all optional. */
+    val details: VehicleDetails = VehicleDetails(),
+    val usage: VehicleUsage = VehicleUsage.PERSONAL,
+    /** TRP-09: the annual safety inspection's due date and the CVOR or NSC renewal, reminded like the registration. */
+    val inspectionDue: LocalDate? = null,
+    val operatorRenewal: LocalDate? = null,
 ) {
     val electric: Boolean get() = fuelType == FuelType.ELECTRIC
+
+    /** TRP-05: what a fill-up of this vehicle buys unless it says otherwise. */
+    val defaultEnergy: Energy get() = if (electric) Energy.ELECTRICITY else Energy.FUEL
+
+    /** A plug-in hybrid takes both fuel and electricity. */
+    val takesBoth: Boolean get() = fuelType == FuelType.PLUG_IN_HYBRID
 }
+
+/**
+ * TRP-07: engine, transmission, drive, the fuel tank and battery capacities, tire sizes for summer
+ * and winter, the engine oil and how much it takes, towing capacity and gross vehicle weight rating.
+ */
+data class VehicleDetails(
+    val engine: String? = null,
+    val transmission: Transmission? = null,
+    val drive: DriveKind? = null,
+    val tankLitres: BigDecimal? = null,
+    val batteryKwh: BigDecimal? = null,
+    val tiresSummer: String? = null,
+    val tiresWinter: String? = null,
+    val oilType: String? = null,
+    val oilLitres: BigDecimal? = null,
+    val towingKg: Int? = null,
+    val gvwrKg: Int? = null,
+)
 
 /** VEH-04: an odometer reading, from wherever it was recorded. [id] is set for direct readings only. */
 data class OdometerReading(val id: String?, val date: LocalDate, val odometer: Int, val source: ReadingSource)
@@ -122,6 +163,14 @@ data class FuelEntry(
     val station: String? = null,
     val transactionId: String? = null,
     val notes: String? = null,
+    /** TRP-05: fuel or electricity; none means the vehicle's own ([Vehicle.defaultEnergy]). */
+    val energy: Energy? = null,
+    /** TRP-10: home or public charging, for electricity. */
+    val charging: Charging? = null,
+    /** TRP-05: the station as a saved place. */
+    val placeId: String? = null,
+    /** The phone it was entered on. */
+    val deviceId: String? = null,
 )
 
 data class Warranty(
@@ -192,6 +241,10 @@ class VehicleService internal constructor(private val books: Books) {
         validate(v.name.isNotBlank(), "error.nameRequired")
         validate(v.modelYear == null || v.modelYear in 1900..2100, "error.invalidNumber")
         validate(listOfNotNull(v.purchasePrice, v.disposalPrice).all { it.currency == v.currency }, "error.currencyMismatch", v.currency.code)
+        with(v.details) {
+            validate(listOfNotNull(tankLitres, batteryKwh, oilLitres).all { it.signum() > 0 && it < BigDecimal(10_000) }, "error.invalidNumber")
+            validate(listOfNotNull(towingKg, gvwrKg).all { it in 1..100_000 }, "error.invalidNumber")
+        }
         val group = if (v.id.isBlank()) books.group(v.groupId) else locate(v.id).first
         books.require(group, PermissionLevel.EDIT)
         val q = books.ledger(group).vehiclesQueries
@@ -204,6 +257,9 @@ class VehicleService internal constructor(private val books: Books) {
                 purchasePrice?.minorUnits, seller.blankToNull(), purchaseOdometer?.toLong(), currency.code, registrationRenewal?.toString(),
                 insurer.blankToNull(), policyNumber.blankToNull(), insuranceRenewal?.toString(), status.name, disposalDate?.toString(),
                 disposalPrice?.minorUnits, notes.blankToNull(), created, books.now(), disposalTransactionId.takeIf { status == VehicleStatus.SOLD },
+                details.engine.blankToNull(), details.transmission?.name, details.drive?.name, details.tankLitres?.toPlainString(), details.batteryKwh?.toPlainString(),
+                details.tiresSummer.blankToNull(), details.tiresWinter.blankToNull(), details.oilType.blankToNull(), details.oilLitres?.toPlainString(),
+                details.towingKg?.toLong(), details.gvwrKg?.toLong(), usage.name, inspectionDue?.toString(), operatorRenewal?.toString(),
             )
         }
         return get(id)
@@ -225,7 +281,14 @@ class VehicleService internal constructor(private val books: Books) {
         val direct = q.readings(vehicleId).executeAsList().map { OdometerReading(it.id, LocalDate.parse(it.date), it.odometer.toInt(), ReadingSource.READING) }
         val fuel = q.fuelEntries(vehicleId).executeAsList().mapNotNull { r -> r.odometer?.let { OdometerReading(null, LocalDate.parse(r.date), it.toInt(), ReadingSource.FUEL) } }
         val service = q.services(vehicleId).executeAsList().mapNotNull { r -> r.odometer?.let { OdometerReading(null, LocalDate.parse(r.date), it.toInt(), ReadingSource.SERVICE) } }
-        return (purchase + direct + fuel + service).sortedWith(compareBy({ it.date }, { it.odometer }))
+        // TRP-06: each trip's odometer at both ends, so forecasts follow the real driving.
+        val trips = books.trips.forVehicle(vehicleId).flatMap { t ->
+            listOfNotNull(
+                t.startOdometer?.let { OdometerReading(null, t.startAt?.date ?: t.date, it, ReadingSource.TRIP) },
+                t.endOdometer?.let { OdometerReading(null, t.endAt?.date ?: t.date, it, ReadingSource.TRIP) },
+            )
+        }
+        return (purchase + direct + fuel + service + trips).sortedWith(compareBy({ it.date }, { it.odometer }))
     }
 
     fun addReading(vehicleId: String, date: LocalDate, odometer: Int, notes: String? = null) {
@@ -377,14 +440,24 @@ class VehicleService internal constructor(private val books: Books) {
         books.require(group, PermissionLevel.CAPTURE_ONLY)
         validate(entry.quantity.signum() > 0, "error.fuelQuantity")
         validate(entry.cost == null || entry.cost.currency == v.currency, "error.currencyMismatch", v.currency.code)
+        validate(entry.odometer == null || entry.odometer >= 0, "error.invalidNumber")
+        // Only a plug-in hybrid takes both; a charge's place matters only for electricity.
+        val energy = entry.energy?.takeIf { v.takesBoth }
+        val charging = entry.charging?.takeIf { (energy ?: v.defaultEnergy) == Energy.ELECTRICITY }
         val txnId = payment?.let { pay(v, entry.date, entry.cost, it, entry.station ?: v.name, entry.notes) } ?: entry.transactionId
         val q = books.ledger(group).vehiclesQueries
         val id = entry.id.ifBlank { Ids.newId() }
         with(entry) {
             if (entry.id.isBlank()) {
-                q.insertFuel(id, vehicleId, date.toString(), odometer?.toLong(), quantity.toPlainString(), cost?.minorUnits, if (fullTank) 1 else 0, station.blankToNull(), txnId, notes.blankToNull(), books.now())
+                q.insertFuel(
+                    id, vehicleId, date.toString(), odometer?.toLong(), quantity.toPlainString(), cost?.minorUnits, if (fullTank) 1 else 0, station.blankToNull(), txnId,
+                    notes.blankToNull(), books.now(), energy?.name, charging?.name, placeId, deviceId,
+                )
             } else {
-                q.updateFuel(date.toString(), odometer?.toLong(), quantity.toPlainString(), cost?.minorUnits, if (fullTank) 1 else 0, station.blankToNull(), txnId, notes.blankToNull(), id)
+                q.updateFuel(
+                    date.toString(), odometer?.toLong(), quantity.toPlainString(), cost?.minorUnits, if (fullTank) 1 else 0, station.blankToNull(), txnId, notes.blankToNull(),
+                    energy?.name, charging?.name, placeId, id,
+                )
             }
         }
         return fuel(entry.vehicleId).first { it.id == id }
@@ -400,36 +473,143 @@ class VehicleService internal constructor(private val books: Books) {
      * VEH-07: consumption from full tank to full tank. The fuel bought after one full tank, up to
      * and including the next, was used over the distance between them.
      */
-    fun fuelStats(vehicleId: String, from: LocalDate, to: LocalDate): FuelStats {
+    fun fuelStats(vehicleId: String, from: LocalDate, to: LocalDate, energy: Energy? = null): FuelStats {
         val v = get(vehicleId)
-        val entries = fuel(vehicleId).filter { it.date in from..to && it.odometer != null }.sortedWith(compareBy({ it.date }, { it.odometer }))
-        var distance = 0
-        var used = BigDecimal.ZERO
-        var cost = 0L
-        var costed = true
-        var lastFull: FuelEntry? = null
-        var since = BigDecimal.ZERO
-        var sinceCost = 0L
-        var sinceCosted = true
-        for (e in entries) {
-            since += e.quantity
-            if (e.cost != null) sinceCost += e.cost.minorUnits else sinceCosted = false
-            if (!e.fullTank) continue
-            val start = lastFull
-            if (start != null && e.odometer!! > start.odometer!!) {
-                distance += e.odometer - start.odometer
-                used += since
-                cost += sinceCost
-                costed = costed && sinceCosted
+        val kind = energy ?: v.defaultEnergy
+        val entries = entries(v, from, to, kind)
+        return FuelMath.stats(FuelMath.intervals(entries), entries.fold(BigDecimal.ZERO) { a, e -> a + e.quantity }, v.currency)
+    }
+
+    private fun entries(v: Vehicle, from: LocalDate, to: LocalDate, energy: Energy): List<FuelEntry> =
+        fuel(v.id).filter { it.date in from..to && it.odometer != null && (it.energy ?: v.defaultEnergy) == energy }.sortedWith(compareBy({ it.date }, { it.odometer }))
+
+    /**
+     * TRP-05: consumption apart for normal driving, towing and heavy loads. Each full-to-full
+     * interval counts for the kind of driving of at least half its distance, from the trips logged
+     * in it (otherwise normal driving).
+     */
+    fun fuelByLoad(vehicleId: String, from: LocalDate, to: LocalDate, energy: Energy? = null): Map<TripLoad, FuelStats> {
+        val v = get(vehicleId)
+        val trips = books.trips.forVehicle(vehicleId)
+        val intervals = FuelMath.intervals(entries(v, from, to, energy ?: v.defaultEnergy))
+        return intervals.groupBy { FuelMath.loadOf(it, trips) }
+            .mapValues { (_, list) -> FuelMath.stats(list, list.fold(BigDecimal.ZERO) { a, i -> a + i.quantity }, v.currency) }
+            .toSortedMap()
+    }
+
+    /** TRP-10: electricity bought at home and in public: kWh, cost and the price of a kWh. */
+    fun chargingCosts(vehicleId: String, from: LocalDate, to: LocalDate): List<ChargingCost> {
+        val v = get(vehicleId)
+        val charges = fuel(vehicleId).filter { it.date in from..to && (it.energy ?: v.defaultEnergy) == Energy.ELECTRICITY && it.cost != null }
+        return charges.groupBy { it.charging ?: Charging.HOME }.map { (kind, list) ->
+            val kwh = list.fold(BigDecimal.ZERO) { a, e -> a + e.quantity }
+            val cost = list.fold(Money.zero(v.currency)) { a, e -> a + e.cost!! }
+            ChargingCost(kind, kwh, cost, if (kwh.signum() > 0) cost.toBigDecimal().divide(kwh, 3, RoundingMode.HALF_UP) else null)
+        }.sortedBy { it.charging }
+    }
+
+    /**
+     * TRP-10: what [energy] costs a kilometre across the household's other vehicles in [currency],
+     * for comparison (fuel for an electric vehicle, and the other way round), or null.
+     */
+    fun householdCostPerKm(energy: Energy, from: LocalDate, to: LocalDate, exceptVehicleId: String, currency: Currency): Money? {
+        val all = list().filter { it.id != exceptVehicleId && it.currency == currency }.flatMap { v -> FuelMath.intervals(entries(v, from, to, energy)) }
+        return FuelMath.stats(all, BigDecimal.ZERO, currency).costPerKm
+    }
+
+    // --- Forecast and budget (TRP-08) --------------------------------------------------------------
+
+    /**
+     * TRP-08: the next [horizons] months: the distance at the pace of the last 90 days (else the
+     * last year), the fuel or energy for it by kind of driving at the consumption of the last year,
+     * at the average price of the last 90 days (else the last year), and the maintenance due.
+     */
+    fun forecast(vehicleId: String, today: LocalDate, horizons: List<Int> = listOf(3, 6, 12)): VehicleForecast {
+        val v = get(vehicleId)
+        val energy = v.defaultEnergy
+        val since = today.minus(DatePeriod(days = RECENT_DAYS))
+        val yearAgo = today.minus(DatePeriod(years = 1))
+        val readings = readings(vehicleId)
+        val recent = readings.filter { it.date in since..today }
+        val recentDays = if (recent.size >= 2) recent.last().date.toEpochDays() - recent.first().date.toEpochDays() else 0
+        val pace = if (recentDays >= MIN_PACE_DAYS) (recent.maxOf { it.odometer } - recent.minOf { it.odometer }).toDouble() / recentDays else kmPerDay(readings)
+        // The shares of towing and heavy loads among the distance of the last 90 days.
+        val trips = books.trips.forVehicle(vehicleId).filter { it.date in since..today }
+        val driven = maxOf(pace?.let { it * RECENT_DAYS } ?: 0.0, trips.sumOf { it.km.toDouble() })
+        val shares = TripLoad.entries.filter { it != TripLoad.NONE }.associateWith { load ->
+            if (driven <= 0.0) 0.0 else trips.filter { it.load == load }.sumOf { it.km.toDouble() } / driven
+        }.filterValues { it > 0.0 }
+        val all = fuelStats(vehicleId, yearAgo, today, energy).per100km
+        val byLoad = fuelByLoad(vehicleId, yearAgo, today, energy).mapValues { it.value.per100km }
+        val consumption = (listOf(TripLoad.NONE) + shares.keys).mapNotNull { load -> (byLoad[load] ?: byLoad[TripLoad.NONE] ?: all)?.let { load to it } }.toMap()
+        val price = unitPrice(v, since, today, energy) ?: unitPrice(v, yearAgo, today, energy)
+        val statuses = taskStatuses(vehicleId, today)
+        val costs = taskCosts(vehicleId)
+        val periods = horizons.map { months ->
+            val end = today.plus(DatePeriod(months = months))
+            val days = end.toEpochDays() - today.toEpochDays()
+            val distance = ((pace ?: 0.0) * days).toInt()
+            val normalShare = 1.0 - shares.values.sum()
+            val quantity = if (consumption[TripLoad.NONE] == null || pace == null) {
+                null
+            } else {
+                val litres = (mapOf(TripLoad.NONE to normalShare) + shares).entries.sumOf { (load, share) ->
+                    share * distance * (consumption[load] ?: consumption.getValue(TripLoad.NONE)).toDouble() / 100.0
+                }
+                BigDecimal(litres).setScale(0, RoundingMode.HALF_UP)
             }
-            lastFull = e
-            since = BigDecimal.ZERO
-            sinceCost = 0L
-            sinceCosted = true
+            val energyCost = if (quantity != null && price != null) Money.of((quantity * price).setScale(2, RoundingMode.HALF_UP), v.currency) else null
+            val due = statuses.mapNotNull { s ->
+                val every = listOfNotNull(s.task.intervalMonths?.let { it * DAYS_PER_MONTH }, s.task.intervalKm?.let { km -> pace?.takeIf { it > 0 }?.let { km / it } }).minOrNull()
+                val times = FuelMath.occurrences(s.nextDate, every, today, end)
+                if (times > 0) s.task to times else null
+            }
+            val priced = due.filter { costs[it.first.id] != null }
+            val maintenance = priced.fold(Money.zero(v.currency)) { a, (task, times) -> a + costs.getValue(task.id) * times.toLong() }
+            ForecastPeriod(months, distance, quantity, energyCost, maintenance, due.map { it.first.name to it.second }, due.filter { costs[it.first.id] == null }.map { it.first.name })
         }
-        val per100 = if (distance > 0) used.multiply(BigDecimal(100)).divide(BigDecimal(distance), 1, RoundingMode.HALF_UP) else null
-        val perKm = if (distance > 0 && costed) Money.ofMinor((cost + distance / 2) / distance, v.currency) else null
-        return FuelStats(distance, entries.fold(BigDecimal.ZERO) { a, e -> a + e.quantity }, per100, perKm)
+        return VehicleForecast(
+            vehicleId, energy, v.currency, pace,
+            shares.mapValues { (it.value * 100).toInt() }, consumption, price?.setScale(3, RoundingMode.HALF_UP), periods,
+        )
+    }
+
+    /** The average price of a litre or kWh bought between [from] and [to], or null. */
+    private fun unitPrice(v: Vehicle, from: LocalDate, to: LocalDate, energy: Energy): BigDecimal? {
+        val bought = fuel(v.id).filter { it.date in from..to && it.cost != null && (it.energy ?: v.defaultEnergy) == energy }
+        val quantity = bought.fold(BigDecimal.ZERO) { a, e -> a + e.quantity }
+        if (quantity.signum() <= 0) return null
+        return bought.fold(BigDecimal.ZERO) { a, e -> a + e.cost!!.toBigDecimal() }.divide(quantity, 4, RoundingMode.HALF_UP)
+    }
+
+    /** What each task cost the last time it was done at a cost, a service's cost shared evenly between its tasks. */
+    private fun taskCosts(vehicleId: String): Map<String, Money> = services(vehicleId)
+        .filter { it.cost != null && it.taskIds.isNotEmpty() }
+        .sortedBy { it.date }
+        .flatMap { s -> s.taskIds.map { it to Money.ofMinor(s.cost!!.minorUnits / s.taskIds.size, s.cost.currency) } }
+        .toMap()
+
+    /**
+     * TRP-08: an amount a month for the Transport categories from the next 12 months of every active
+     * vehicle kept in the base currency in a shared group (a budget is the whole household's, so a
+     * private group's vehicle stays out of it): fuel, charging and maintenance, rounded up to the dollar.
+     */
+    fun budgetLines(today: LocalDate): List<VehicleBudgetLine> {
+        val base = books.rates.baseCurrency
+        val shared = books.groups().filter { !it.isPrivate }.map { it.id }.toSet()
+        val keys = books.categories.list(includeArchived = true).associate { it.systemKey to it.id }
+        val totals = LinkedHashMap<String, Long>()
+        for (v in list().filter { it.groupId in shared && it.currency == base }) {
+            val year = forecast(v.id, today, listOf(12)).periods.single()
+            val energyKey = if (v.defaultEnergy == Energy.ELECTRICITY) "transport.ev_charging" else "transport.fuel"
+            year.energyCost?.let { cost -> keys[energyKey]?.let { totals.merge(it, cost.minorUnits, Long::plus) } }
+            if (year.maintenance.isPositive) keys["transport.maintenance"]?.let { totals.merge(it, year.maintenance.minorUnits, Long::plus) }
+        }
+        val budgets = books.budgets.list().associateBy { it.categoryId }
+        return totals.map { (category, yearMinor) ->
+            val monthly = BigDecimal(yearMinor).movePointLeft(2).divide(BigDecimal(12), 0, RoundingMode.UP)
+            VehicleBudgetLine(category, Money.of(monthly, base), budgets[category]?.takeIf { it.period == BudgetPeriod.MONTHLY }?.amount)
+        }
     }
 
     // --- Warranties (VEH-03) ----------------------------------------------------------------------
@@ -504,6 +684,9 @@ class VehicleService internal constructor(private val books: Books) {
         listOfNotNull(
             v.registrationRenewal?.let { Renewal(RenewalKind.REGISTRATION, v.id, v.name, it, today.daysUntil(it), v.plate) }?.takeIf { it.daysLeft <= withinDays },
             v.insuranceRenewal?.let { Renewal(RenewalKind.VEHICLE_INSURANCE, v.id, v.name, it, today.daysUntil(it), v.insurer) }?.takeIf { it.daysLeft <= withinDays },
+            // TRP-09: the annual safety inspection and the operator's registration (CVOR, NSC).
+            v.inspectionDue?.let { Renewal(RenewalKind.SAFETY_INSPECTION, v.id, v.name, it, today.daysUntil(it), v.plate) }?.takeIf { it.daysLeft <= withinDays },
+            v.operatorRenewal?.let { Renewal(RenewalKind.OPERATOR_RENEWAL, v.id, v.name, it, today.daysUntil(it)) }?.takeIf { it.daysLeft <= withinDays },
         ) + warranties(v.id).filter { it.covers(today, odometer) }.mapNotNull { w ->
             val byKm = w.endKm?.let { MaintenanceSchedule.limitReachedOn(it, odometer, kmPerDay(readings), today) }
             val end = listOfNotNull(w.endDate, byKm).minOrNull() ?: return@mapNotNull null
@@ -570,6 +753,12 @@ class VehicleService internal constructor(private val books: Books) {
             purchase_date?.let(LocalDate::parse), purchase_price_minor?.let { Money.ofMinor(it, c) }, seller, purchase_odometer?.toInt(), c,
             registration_renewal?.let(LocalDate::parse), insurer, policy_number, insurance_renewal?.let(LocalDate::parse), VehicleStatus.valueOf(status),
             disposal_date?.let(LocalDate::parse), disposal_price_minor?.let { Money.ofMinor(it, c) }, notes, disposal_txn_id,
+            VehicleDetails(
+                engine, transmission?.let { t -> Transmission.entries.firstOrNull { it.name == t } }, drive?.let { d -> DriveKind.entries.firstOrNull { it.name == d } },
+                tank_litres?.toBigDecimalOrNull(), battery_kwh?.toBigDecimalOrNull(), tires_summer, tires_winter, oil_type, oil_litres?.toBigDecimalOrNull(),
+                towing_kg?.toInt(), gvwr_kg?.toInt(),
+            ),
+            VehicleUsage.entries.firstOrNull { it.name == vehicle_use } ?: VehicleUsage.PERSONAL, inspection_due?.let(LocalDate::parse), operator_renewal?.let(LocalDate::parse),
         )
     }
 
@@ -584,6 +773,7 @@ class VehicleService internal constructor(private val books: Books) {
 
     private fun FuelRow.toFuel(currency: Currency) = FuelEntry(
         id, vehicle_id, LocalDate.parse(date), odometer?.toInt(), BigDecimal(quantity), cost_minor?.let { Money.ofMinor(it, currency) }, full_tank == 1L, station, txn_id, notes,
+        energy?.let { e -> Energy.entries.firstOrNull { it.name == e } }, charging?.let { c -> Charging.entries.firstOrNull { it.name == c } }, place_id, device_id,
     )
 
     private fun WarrantyRow.toWarranty() = Warranty(
@@ -603,6 +793,13 @@ class VehicleService internal constructor(private val books: Books) {
     )
 
     companion object {
+        /** TRP-08: the recent driving the forecast follows. */
+        private const val RECENT_DAYS = 90
+
+        /** Readings closer together than this do not give a pace. */
+        private const val MIN_PACE_DAYS = 14
+        private const val DAYS_PER_MONTH = 30.44
+
         private val TEMPLATES = listOf(
             Template("oil", 6, 8_000, combustion = true),
             Template("tire_rotation", 12, 10_000),

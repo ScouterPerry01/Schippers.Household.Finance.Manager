@@ -185,6 +185,12 @@ private val SHOTS: List<Shot> = buildList {
     add(Shot("health-appointments") { section(Section.HEALTH); click(t("health.tab.APPOINTMENTS")) })
     add(Shot("medical-coverage") { section(Section.MEDICAL); click(t("medical.tab.COVERAGE")) })
     add(Shot("vehicles-costs") { section(Section.VEHICLES); click(t("vehicles.tab.COSTS")) })
+    // TRP-05, TRP-08, TRP-10: the plug-in hybrid's fuel and charging, and its forecast.
+    add(Shot("vehicles-fuel") { section(Section.VEHICLES); click("Civic"); click("RAV4"); click(t("vehicles.tab.FUEL")) })
+    add(Shot("vehicles-forecast") { section(Section.VEHICLES); click("Civic"); click("RAV4"); click(t("vehicles.tab.FORECAST")) })
+    // TRP-02, TRP-09: the saved places and a vehicle's logbook.
+    add(Shot("trips-places") { section(Section.TRIPS); click(t("places.title")) })
+    add(Shot("trips-logbook") { section(Section.TRIPS); click(t("trips.logbook")) })
     add(Shot("assets-insurance") { section(Section.ASSETS); click(t("assets.tab.INSURANCE")) })
     add(Shot("users-access") { section(Section.USERS); click(t("users.tab.ACCESS")) })
     // The basics: search, help, the menu at the top, dark colours.

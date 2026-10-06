@@ -362,6 +362,7 @@ object DemoHousehold {
         addPetAndCarRecords(books, group, visa, rex, civic, today)
         addAssets(books, group, visa, alex, sam, lea, civic, today)
         addExtras(books, group, chequing, visa, alex, sam, civic, today)
+        DemoTrips(books, english).add(group, visa, alex, sam, lea, civic, today)
         addInvestments(books, group, alex, sam, desjardins, today)
         addPlans(books, group, chequing, savings, alex, sam, lea, desjardins, today)
         addCrypto(books, group, chequing, alex, today)

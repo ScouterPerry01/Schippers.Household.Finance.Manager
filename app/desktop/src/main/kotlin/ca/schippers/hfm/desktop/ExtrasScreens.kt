@@ -50,6 +50,7 @@ import ca.schippers.hfm.books.RentalProperty
 import ca.schippers.hfm.books.RewardKind
 import ca.schippers.hfm.books.RewardUnit
 import ca.schippers.hfm.books.Trip
+import ca.schippers.hfm.books.TripLoad
 import ca.schippers.hfm.books.TripPurpose
 import ca.schippers.hfm.books.TripService
 import ca.schippers.hfm.books.ValidationException
@@ -58,7 +59,10 @@ import ca.schippers.hfm.calc.salestax.SalesTaxes
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.money.MoneyFormat
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.plus
 import java.io.File
 import java.math.BigDecimal
 import javax.swing.JFileChooser
@@ -84,7 +88,12 @@ fun TripsScreen(model: BooksModel) {
     var year by remember { mutableStateOf(thisYear) }
     var editing by remember { mutableStateOf<Trip?>(null) }
     var toMedical by remember { mutableStateOf<Trip?>(null) }
+    var showPlaces by remember { mutableStateOf(false) }
+    var showLogbook by remember { mutableStateOf(false) }
     val trips = remember(model.revision, year) { books.trips.list(year) }
+    val byProvince = remember(trips) { books.trips.kmByProvince(year) }
+    val trailers = remember(model.revision) { books.assets.list(includeDisposed = true).filter { it.kind == AssetKind.TRAILER }.associate { it.id to it.name } }
+    val phones = remember(model.revision) { runCatching { books.sync.devices().associate { it.id to it.name } }.getOrDefault(emptyMap()) }
     val use = remember(model.revision, year) { books.trips.vehicleUse(year) }
     val vehicles = remember(model.revision) { books.vehicles.list(includeInactive = true).associate { it.id to it.name } }
     val totals = remember(trips) { books.trips.totals(year) }
@@ -99,6 +108,9 @@ fun TripsScreen(model: BooksModel) {
             Button(onClick = { editing = Trip("", model.workGroup(), today(), "", BigDecimal.ZERO, true, TripPurpose.BUSINESS) }, modifier = Modifier.padding(top = 8.dp)) {
                 Text(model.t("trips.add"))
             }
+            // TRP-02: the saved places the phone matches its location to; TRP-09: the CRA logbook.
+            OutlinedButton(onClick = { showPlaces = true }, modifier = Modifier.padding(top = 8.dp)) { Text(model.t("places.title")) }
+            OutlinedButton(onClick = { showLogbook = true }, modifier = Modifier.padding(top = 8.dp)) { Text(model.t("trips.logbook")) }
         }
         if (totals.isNotEmpty() || use.isNotEmpty()) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -120,6 +132,15 @@ fun TripsScreen(model: BooksModel) {
                         }
                     }
                 }
+                // TRP-09: where the kilometres were driven, for fuel tax reports such as IFTA.
+                if (byProvince.size > 1) {
+                    Card {
+                        Column(Modifier.padding(12.dp).width(220.dp)) {
+                            Text(model.t("trips.byProvince"), fontWeight = FontWeight.Medium)
+                            for ((where, v) in byProvince) Text(model.t("trips.purposeKm", provinceName(model, where), km(v)))
+                        }
+                    }
+                }
             }
         }
         if (trips.isEmpty()) Text(model.t("trips.none"))
@@ -132,6 +153,19 @@ fun TripsScreen(model: BooksModel) {
                         listOfNotNull(model.t("tripPurpose.${t.purpose}"), model.memberName(t.memberId), t.vehicleId?.let(vehicles::get), t.notes).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                     )
+                    // TRP-01, TRP-04: times, odometers, what was towed or carried, and the phone it came from.
+                    val more = listOfNotNull(
+                        tripTimes(model, t),
+                        if (t.startOdometer != null && t.endOdometer != null) model.t("trips.odometers", odometer(model, t.startOdometer!!), odometer(model, t.endOdometer!!)) else null,
+                        when (t.load) {
+                            TripLoad.TOWING -> model.t("trips.towingWhat", t.trailerId?.let(trailers::get) ?: model.t("tripLoad.TOWING"))
+                            TripLoad.HEAVY -> model.t("tripLoad.HEAVY")
+                            TripLoad.NONE -> null
+                        },
+                        t.passengers?.let { model.t("trips.passengersAre", it) },
+                        t.deviceId?.let { model.t("trips.fromPhone", phones[it] ?: model.t("trips.aPhone")) },
+                    )
+                    if (more.isNotEmpty()) Text(more.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (t.id in inMedical) {
                     TextButton(onClick = {}, enabled = false) { Text(model.t("trips.addedToMedical")) }
@@ -145,7 +179,40 @@ fun TripsScreen(model: BooksModel) {
     }
     editing?.let { t -> TripDialog(model, t) { editing = null } }
     toMedical?.let { t -> TripMedicalDialog(model, t) { toMedical = null } }
+    if (showPlaces) PlacesDialog(model) { showPlaces = false }
+    if (showLogbook) LogbookDialog(model, year) { showLogbook = false }
 }
+
+/** "08:05 to 08:31 (26 min)": a trip's times, when it has them. */
+private fun tripTimes(model: BooksModel, t: Trip): String? {
+    val start = t.startAt ?: return null
+    val end = t.endAt ?: return model.t("trips.startedAt", hhmm(start))
+    return model.t("trips.times", hhmm(start), hhmm(end), duration(model, t.minutes ?: 0))
+}
+
+internal fun hhmm(t: LocalDateTime): String = "%02d:%02d".format(t.hour, t.minute)
+
+internal fun duration(model: BooksModel, minutes: Long): String =
+    if (minutes < 60) model.t("trips.minutes", minutes) else model.t("trips.hoursMinutes", minutes / 60, "%02d".format(minutes % 60))
+
+internal fun odometer(model: BooksModel, value: Int): String = String.format(model.language.locale, "%,d", value)
+
+/** A province's name, or a state's two letters as entered. */
+internal fun provinceName(model: BooksModel, code: String): String =
+    ca.schippers.hfm.calc.Province.of(code)?.let { model.t("province.$it") } ?: code
+
+/** "HH:mm" typed on a trip, on [day]; empty is none. */
+private fun timeOn(day: LocalDate, text: String): LocalDateTime? {
+    val t = text.trim().ifEmpty { return null }
+    val parts = t.split(':', 'h', 'H').map { it.trim() }
+    val hour = parts.getOrNull(0)?.toIntOrNull()
+    val minute = parts.getOrNull(1)?.ifEmpty { "0" }?.toIntOrNull() ?: 0
+    if (hour == null || hour !in 0..23 || minute !in 0..59) throw ValidationException("error.invalidTime")
+    return LocalDateTime(day.year, day.month, day.day, hour, minute)
+}
+
+private fun optionalWhole(text: String): Int? =
+    text.filter { !it.isWhitespace() && it != ',' && it != ' ' && it != ' ' }.ifEmpty { null }?.let { it.toIntOrNull() ?: throw ValidationException("error.invalidNumber") }
 
 @Composable
 private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
@@ -163,34 +230,93 @@ private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
     var vehicle by remember { mutableStateOf(if (t.id.isBlank()) vehicles.firstOrNull { it.status == VehicleStatus.ACTIVE } else vehicles.firstOrNull { it.id == t.vehicleId }) }
     var notes by remember { mutableStateOf(t.notes.orEmpty()) }
     var asking by remember { mutableStateOf(false) }
+    // TRP-01 to TRP-04, TRP-09: times, odometers, places, what was towed or carried, passengers and province.
+    val places = remember { model.books.places.list(includeArchived = true).filter { !it.archived || it.id == t.startPlaceId || it.id == t.endPlaceId } }
+    val trailers = remember { model.books.assets.list(includeDisposed = true).filter { it.kind == AssetKind.TRAILER } }
+    var startTime by remember { mutableStateOf(t.startAt?.let(::hhmm).orEmpty()) }
+    var endTime by remember { mutableStateOf(t.endAt?.let(::hhmm).orEmpty()) }
+    var startOdo by remember { mutableStateOf(t.startOdometer?.toString().orEmpty()) }
+    var endOdo by remember { mutableStateOf(t.endOdometer?.toString().orEmpty()) }
+    var startPlace by remember { mutableStateOf(places.firstOrNull { it.id == t.startPlaceId }) }
+    var endPlace by remember { mutableStateOf(places.firstOrNull { it.id == t.endPlaceId }) }
+    var load by remember { mutableStateOf(t.load) }
+    var trailer by remember { mutableStateOf(trailers.firstOrNull { it.id == t.trailerId }) }
+    var passengers by remember { mutableStateOf(t.passengers.orEmpty()) }
+    var province by remember { mutableStateOf(t.province.orEmpty()) }
+    val byOdometer = startOdo.isNotBlank() && endOdo.isNotBlank()
     FormDialog(model.t(if (t.id.isBlank()) "trips.add" else "trips.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
-            model.books.trips.save(t.copy(date = date(day), origin = origin, destination = destination, kmOneWay = decimal(km, "error.tripDistance"), roundTrip = round, purpose = purpose, memberId = member?.id, vehicleId = vehicle?.id, notes = notes))
+            val d = date(day)
+            val start = timeOn(d, startTime)
+            // An arrival earlier in the day than the start is the next day's.
+            val end = timeOn(d, endTime)?.let { e -> if (start != null && e < start) timeOn(d.plus(DatePeriod(days = 1)), endTime) else e }
+            model.books.trips.save(
+                t.copy(
+                    date = d, origin = origin, destination = destination, kmOneWay = if (byOdometer) BigDecimal.ZERO else decimal(km, "error.tripDistance"), roundTrip = round && !byOdometer,
+                    purpose = purpose, memberId = member?.id, vehicleId = vehicle?.id, notes = notes, startAt = start, endAt = end,
+                    startOdometer = optionalWhole(startOdo), endOdometer = optionalWhole(endOdo), startPlaceId = startPlace?.id, endPlaceId = endPlace?.id,
+                    load = load, trailerId = trailer?.id, passengers = passengers, province = province,
+                ),
+            )
         }
         if (ok != null) onClose()
     }) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DateInput(model.t("report.date"), day, Modifier.width(170.dp)) { day = it }
-            Picker(model.t("trips.purpose"), TripPurpose.entries, purpose, { model.t("tripPurpose.$it") }, Modifier.weight(1f)) { purpose = it }
+        Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DateInput(model.t("report.date"), day, Modifier.width(170.dp)) { day = it }
+                TextInput(model.t("trips.startTime"), startTime, Modifier.width(120.dp)) { startTime = it }
+                TextInput(model.t("trips.endTime"), endTime, Modifier.width(120.dp)) { endTime = it }
+                Picker(model.t("trips.purpose"), TripPurpose.entries, purpose, { model.t("tripPurpose.$it") }, Modifier.weight(1f)) { purpose = it }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Picker(model.t("trips.startPlace"), listOf(null) + places, startPlace, { it?.name ?: model.t("trips.noPlace") }, Modifier.weight(1f)) { p ->
+                    startPlace = p
+                    if (p != null) origin = p.name
+                }
+                Picker(model.t("trips.endPlace"), listOf(null) + places, endPlace, { it?.name ?: model.t("trips.noPlace") }, Modifier.weight(1f)) { p ->
+                    endPlace = p
+                    if (p != null) destination = p.name
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextInput(model.t("trips.from"), origin, Modifier.weight(1f)) { origin = it }
+                TextInput(model.t("trips.to"), destination, Modifier.weight(1f)) { destination = it }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                TextInput(model.t("trips.startOdometer"), startOdo, Modifier.width(170.dp)) { startOdo = it }
+                TextInput(model.t("trips.endOdometer"), endOdo, Modifier.width(170.dp)) { endOdo = it }
+                if (!byOdometer) {
+                    TextInput(model.t("trips.kmOneWay"), km, Modifier.width(170.dp)) { km = it }
+                    LabeledCheckbox(model.t("trips.roundTrip"), round) { round = it }
+                } else {
+                    val diff = runCatching { (optionalWhole(endOdo) ?: 0) - (optionalWhole(startOdo) ?: 0) }.getOrNull()
+                    Text(diff?.takeIf { it > 0 }?.let { model.t("trips.km", odometer(model, it)) } ?: "—", fontWeight = FontWeight.Medium)
+                }
+            }
+            if (byOdometer) Text(model.t("trips.byOdometerHint"), style = MaterialTheme.typography.bodySmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Picker(model.t("report.person"), listOf(null) + members, member, { it?.displayName ?: model.t("taxes.household") }, Modifier.weight(1f)) { member = it }
+                Picker(model.t("trips.vehicle"), listOf(null) + vehicles, vehicle, { it?.name ?: model.t("trips.noVehicle") }, Modifier.weight(1f)) { vehicle = it }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Picker(model.t("trips.load"), TripLoad.entries, load, { model.t("tripLoad.$it") }, Modifier.weight(1f)) { load = it }
+                if (load == TripLoad.TOWING) Picker(model.t("trips.trailer"), listOf(null) + trailers, trailer, { it?.name ?: model.t("common.none") }, Modifier.weight(1f)) { trailer = it }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextInput(model.t("trips.passengers"), passengers, Modifier.weight(2f)) { passengers = it }
+                TextInput(model.t("trips.province"), province, Modifier.weight(1f), supporting = model.t("trips.province.hint")) { province = it.take(2) }
+            }
+            TextInput(model.t("calendar.notes"), notes) { notes = it }
+            t.deviceId?.let { id ->
+                val phone = remember(id) { runCatching { model.books.sync.devices().firstOrNull { it.id == id }?.name }.getOrNull() }
+                Text(model.t("trips.fromPhone", phone ?: model.t("trips.aPhone")), style = MaterialTheme.typography.bodySmall)
+            }
+            if (purpose == TripPurpose.MEDICAL) {
+                val minimum = model.books.trips.medicalMinimumKm(runCatching { LocalDate.parse(day) }.getOrDefault(t.date))
+                Text(model.t("trips.medicalHint", minimum.stripTrailingZeros().toPlainString()), style = MaterialTheme.typography.bodySmall)
+            }
+            if (t.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextInput(model.t("trips.from"), origin, Modifier.weight(1f)) { origin = it }
-            TextInput(model.t("trips.to"), destination, Modifier.weight(1f)) { destination = it }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextInput(model.t("trips.kmOneWay"), km, Modifier.width(170.dp)) { km = it }
-            LabeledCheckbox(model.t("trips.roundTrip"), round) { round = it }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Picker(model.t("report.person"), listOf(null) + members, member, { it?.displayName ?: model.t("taxes.household") }, Modifier.weight(1f)) { member = it }
-            Picker(model.t("trips.vehicle"), listOf(null) + vehicles, vehicle, { it?.name ?: model.t("trips.noVehicle") }, Modifier.weight(1f)) { vehicle = it }
-        }
-        TextInput(model.t("calendar.notes"), notes) { notes = it }
-        if (purpose == TripPurpose.MEDICAL) {
-            val minimum = model.books.trips.medicalMinimumKm(runCatching { LocalDate.parse(day) }.getOrDefault(t.date))
-            Text(model.t("trips.medicalHint", minimum.stripTrailingZeros().toPlainString()), style = MaterialTheme.typography.bodySmall)
-        }
-        if (t.id.isNotBlank()) TextButton(onClick = { asking = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
     }
     if (asking) {
         AskBeforeDeleting(model, model.t("trips.delete.body", model.date(t.date), t.destination), onDismiss = { asking = false }) {

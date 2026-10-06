@@ -23,6 +23,15 @@ RANN never has a copy and cannot recover your data or your password.
 
 The phone sends captures straight to your computer over your home network. Every exchange is encrypted end to end with a key the two devices create when you pair them. Nothing passes through RANN or any other company.
 
+## Location on the phone
+
+The phone app uses your location only if you allow it, and only for trips: it takes one location fix when you start a trip, one when you arrive, and one when you save a place or look for the nearest saved fuel station. It never follows your phone in the background and never asks for location when it starts.
+
+- The fix is compared with your saved places on the phone itself. No map service, address lookup or other company is asked.
+- What goes to your computer, encrypted end to end like everything else, is the name of the place, or its coordinates when you leave it unnamed, and the coordinates of a place you save so the next trip recognizes it.
+- The trip in progress and the places saved on the phone are kept in the phone's encrypted storage.
+- You can refuse or withdraw the permission in Android's settings at any time; trips then work by choosing places or typing their names.
+
 ## What the apps send over the internet
 
 All requests use HTTPS. Each service sees your device's internet address, as for any web page, and applies its own privacy policy.

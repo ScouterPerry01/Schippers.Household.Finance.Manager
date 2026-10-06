@@ -1,6 +1,6 @@
 # RANN’s Roost Mobile
 
-RANN’s Roost Mobile est l’application compagnon pour téléphones Android. Elle photographie les reçus, les factures et d’autres documents, inscrit des dépenses rapides et des lectures d’odomètre, et les envoie à RANN’s Roost sur votre ordinateur. En retour, elle affiche un résumé de vos soldes, des factures à payer, des rendez-vous à venir, des renouvellements de médicaments, des budgets et de l’entretien ainsi que les contacts du ménage, et vous rappelle les factures, les rendez-vous, les renouvellements et les budgets. Les contacts rencontrés en chemin peuvent être ajoutés sur le téléphone et envoyés à l’ordinateur pour vérification.
+RANN’s Roost Mobile est l’application compagnon pour téléphones Android. Elle photographie les reçus, les factures et d’autres documents, inscrit des dépenses rapides, des lectures d’odomètre, des déplacements, des pleins et des recharges, et les envoie à RANN’s Roost sur votre ordinateur. En retour, elle affiche un résumé de vos soldes, des factures à payer, des rendez-vous à venir, des renouvellements de médicaments, des budgets et de l’entretien ainsi que les contacts du ménage, et vous rappelle les factures, les rendez-vous, les renouvellements et les budgets. Les contacts rencontrés en chemin peuvent être ajoutés sur le téléphone et envoyés à l’ordinateur pour vérification.
 
 Le téléphone n’est pas une deuxième copie de vos livres : l’ordinateur garde l’exemplaire de référence. Le téléphone ne garde que ce qui attend d’être envoyé et le dernier résumé et les contacts venus de l’ordinateur. Sous son icône, l’application s’appelle RANN’s Roost.
 
@@ -25,6 +25,7 @@ RANN’s Roost Mobile existe en deux éditions qui fonctionnent de la même faç
 - L’application est exclue des sauvegardes infonuagiques d’Android : rien n’en est copié chez Google.
 - Les captures ne vont qu’à votre ordinateur, chiffrées avec la clé créée au jumelage. Loin de la maison, elles peuvent passer par un dossier de votre propre stockage infonuagique, toujours chiffrées.
 - La seule autre connexion est la vérification quotidienne des mises à jour de l’édition GitHub, si vous l’autorisez. Elle n’envoie rien sur vous ni sur votre ménage.
+- Position : seulement si vous l’autorisez, l’application prend une seule position au départ d’un déplacement, à l’arrivée, et quand vous enregistrez un lieu ou cherchez la station la plus proche, jamais en arrière-plan ni à d’autres moments. La position est comparée à vos lieux enregistrés sur le téléphone même ; aucun service de cartes n’est consulté. Ce qui va à votre ordinateur, chiffré comme le reste, c’est le nom du lieu, ou les coordonnées quand vous laissez un lieu sans nom, et les coordonnées d’un lieu que vous enregistrez. Voir [Position](#location).
 - Dès que votre ordinateur confirme avoir reçu une capture, le téléphone supprime sa copie des images et des détails.
 
 ## Le verrou {#lock}
@@ -124,6 +125,8 @@ Les boutons :
 - **Autre document** : numériser tout autre document à garder, comme une garantie ou une lettre.
 - **Dépense rapide** : inscrire un achat sans photo.
 - **Odomètre ou heures** : inscrire l’odomètre d’un véhicule ou les heures d’utilisation d’un équipement.
+- **Déplacement** : commencer un déplacement, ou arriver quand un déplacement est en cours. Pendant un déplacement, une ligne sous le bouton l’indique, par exemple « Déplacement en cours : RAV4, parti à 16 h 30 de Maison (rue des Érables) ». Voir [Déplacement](#trip-form).
+- **Plein ou recharge** : inscrire un plein ou une recharge. Voir [Plein ou recharge](#fuel-form).
 
 Le genre choisi décide du classement de la capture sur l’ordinateur : une facture comme facture, un reçu ou une dépense rapide comme reçu, un autre document selon ce que l’ordinateur y lit.
 
@@ -216,6 +219,103 @@ Inscrit une lecture pour un véhicule, ou pour un équipement mesuré en heures 
 - **Enregistrer** : offert dès qu’un élément et une lecture sont saisis. La lecture rejoint la file d’attente et est envoyée aussitôt si possible.
 
 Sur l’ordinateur, la lecture est ajoutée directement au véhicule dans l’écran Véhicules, ou au compteur de l’équipement dans Maison et biens, sans vérification.
+
+## Déplacement {#trip-form}
+
+@index: déplacement; registre de kilométrage; carnet de route; Partir; Arrivée; remorque; passagers
+
+**Déplacement** inscrit un déplacement du départ à l’arrivée : le véhicule, le conducteur, l’odomètre et le lieu à chaque bout, les heures, ce que vous avez remorqué ou transporté, les passagers et le motif. La distance est la différence entre les deux lectures de l’odomètre, comme l’ARC la compte. Le déplacement va dans les [Déplacements](trips#from-phone) de l’ordinateur, et ses lectures d’odomètre au véhicule.
+
+Le déplacement en cours est gardé sur le téléphone, chiffré, jusqu’à l’arrivée : fermer l’application ou redémarrer le téléphone ne le perd pas.
+
+### Commencer un déplacement {#trip-start}
+
+![Commencer un déplacement](images/phone-trip-start.png)
+
+- **Véhicule** : les véhicules de votre ordinateur qui comptent des kilomètres. La liste se remplit après le premier transfert ; sans véhicule, le formulaire indique « Aucun véhicule : ajoutez-les sur l’ordinateur. »
+- **Conducteur** : les personnes du ménage ; la personne qu’est votre utilisateur sur l’ordinateur est proposée.
+- **Odomètre (km)** : la dernière lecture du véhicule est proposée : celle de l’ordinateur, ou la dernière inscrite sur ce téléphone si elle est plus haute. Vérifiez-la au tableau de bord et corrigez-la. Obligatoire.
+- **Lieu de départ** : voir [Où vous êtes](#trip-where).
+- **Remorque ou charge** : **Normal** (par défaut), **Avec une remorque** ou **Charge lourde**. Le remorquage et les charges lourdes se mesurent à part dans la consommation du véhicule.
+- **Remorque** : avec une remorque, les remorques de votre ordinateur (biens du type remorque).
+- **Passagers** : une case pour chaque personne du ménage autre que le conducteur, et **Autres (noms, séparés par des virgules)**.
+- **Lieux** : ouvre [Lieux](#trip-places).
+- **Annuler** : ferme sans partir.
+- **Partir** : offert dès qu’un véhicule et une lecture de l’odomètre sont saisis. Le déplacement est gardé sur le téléphone et l’onglet Capturer l’affiche en cours. Rien n’est encore envoyé.
+
+### Où vous êtes {#trip-where}
+
+@index: position; GPS; lieu enregistré
+
+Quand l’application peut utiliser la position, le formulaire en prend une à l’ouverture (« Recherche de votre position… »). Ensuite :
+
+- « Vous êtes à nom » : la position est dans le rayon d’un lieu enregistré, le plus proche.
+- « Pas un lieu enregistré (coordonnées) » : aucun lieu enregistré n’est proche.
+- « Aucune position : choisissez un lieu enregistré ou tapez un nom. » : la localisation est désactivée, pas autorisée, ou aucune position n’est venue en 30 secondes.
+
+- **Lieu** : les lieux enregistrés, les plus proches d’abord ; celui qui correspond est choisi. Choisissez-en un autre, ou « (pas un lieu enregistré) ».
+- **Nom de ce lieu (facultatif)** : sans lieu enregistré choisi, un nom pour l’endroit où vous êtes, par exemple « Chalet ».
+- **Type de lieu** : une fois un nom tapé : **Domicile**, **Travail**, **Client**, **Commerce**, **Carburant ou recharge**, **Garage**, **Médical** ou **Autre**.
+- **Enregistrer comme lieu** : une fois un nom tapé et une position prise ; coché par défaut. Le lieu est enregistré avec la position et un rayon de 150 m, gardé sur le téléphone et envoyé à l’ordinateur, pour que le prochain déplacement le reconnaisse. Décoché, le déplacement garde le nom seulement.
+- **Utiliser ma position** : affiché tant qu’il n’y a pas de position. La première fois, Android demande s’il faut autoriser la position (précise ou approximative, seulement pendant l’utilisation de l’application) ; voir [Position](#location).
+- **Chercher ma position de nouveau** : prend une autre position, par exemple après avoir changé de bout de stationnement.
+
+Sans lieu enregistré ni nom, le déplacement garde les coordonnées.
+
+### Arrivée {#trip-arrive}
+
+![L’arrivée : la distance et le motif proposé](images/phone-trip-arrive.png)
+
+Avec un déplacement en cours, **Déplacement** ouvre **Arrivée** :
+
+- Une carte rappelle le déplacement : le véhicule, quand et d’où il est parti, l’odomètre au départ, la remorque ou la charge, et les passagers.
+- **Odomètre à l’arrivée (km)** : obligatoire. Une fois tapé, « Distance : 178 km » s’affiche, ou « Entrez plus de 61 500 km, l’odomètre au départ. » quand il ne le dépasse pas. Un déplacement de 10 000 km ou plus est refusé.
+- **Lieu d’arrivée** : comme au départ ; voir [Où vous êtes](#trip-where).
+- **Motif** : **Affaires**, **Emploi**, **Médical** ou **Personnel**. « Proposé selon les lieux ; changez-le au besoin. » : vers ou depuis un **Client**, c’est **Affaires** ; vers un lieu **Médical**, ou le retour à la maison depuis un tel lieu, c’est **Médical** ; les autres déplacements dans un véhicule à usage commercial sont **Affaires** ; tout le reste est **Personnel**, y compris le trajet entre la maison et le travail, que l’ARC compte comme personnel.
+- **Note** : ce qu’il faut retenir, comme le nom du client.
+- **Plus tard** : retour à l’onglet Capturer ; le déplacement reste en cours.
+- **Arriver et envoyer** : offert avec un odomètre valide. Le déplacement rejoint la file d’attente, nommé d’après le véhicule, les lieux et la distance, et est envoyé aussitôt si possible.
+- **Lieux** : ouvre [Lieux](#trip-places).
+- **Abandonner le déplacement** : demande « Abandonner ce déplacement? Rien n’en est envoyé à l’ordinateur. » Un lieu enregistré au départ reste enregistré.
+
+### Lieux {#trip-places}
+
+@index: lieux enregistrés; renommer un lieu
+
+« Les lieux enregistrés nomment les extrémités de vos déplacements. Ils restent sur ce téléphone et votre ordinateur ; aucun service de cartes n’est utilisé. »
+
+- **Ajouter le lieu où je suis** : prend une position, puis demande le nom et le type de lieu ; **Enregistrer** le garde et le met en file pour l’ordinateur. Pas offert quand la position est déjà un lieu enregistré.
+- La liste des lieux, par nom, avec leur type et leur adresse. **Renommer** change un nom ; le nouveau nom est envoyé à l’ordinateur, qui garde les autres renseignements du lieu.
+
+Les lieux viennent des [Lieux](trips#places) de l’ordinateur et de ceux enregistrés sur ce téléphone. Un lieu enregistré ou renommé ici paraît tout de suite et part avec le prochain transfert, avant les déplacements qui l’utilisent.
+
+### Position {#location}
+
+@index: autorisation de position; GPS; confidentialité; ACCESS_FINE_LOCATION
+
+L’application demande l’autorisation seulement quand vous touchez **Utiliser ma position**, **Ajouter le lieu où je suis** ou **Trouver la station enregistrée la plus proche**, jamais au démarrage. Une fois autorisée, elle prend une position à l’ouverture des formulaires de départ et d’arrivée, et quand vous touchez ces boutons. Android offre **Précise** ou **Approximative**, et **Lorsque vous utilisez l’appli** ou **Uniquement cette fois-ci** : l’application n’a jamais besoin de plus. Avec la position approximative, les correspondances sont moins sûres ; prenez un plus grand rayon sur l’ordinateur ou choisissez le lieu vous-même.
+
+L’application utilise le service de localisation d’Android même (aucun service de Google), prend une position à la fois et s’arrête ; elle ne suit jamais le téléphone en arrière-plan. Les positions restent sur le téléphone : seul le nom du lieu, ou les coordonnées d’un lieu sans nom ou d’un lieu que vous enregistrez, va à votre ordinateur avec le déplacement. Vous pouvez refuser ou retirer l’autorisation dans les réglages d’Android en tout temps ; les déplacements fonctionnent alors en choisissant les lieux ou en tapant les noms.
+
+## Plein ou recharge {#fuel-form}
+
+@index: plein; essence; recharge; kWh; litres; VÉ
+
+![Un plein inscrit sur le téléphone](images/phone-fuel.png)
+
+- **Véhicule** : les véhicules de votre ordinateur.
+- **Carburant ou électricité** : pour un hybride rechargeable seulement.
+- **Odomètre (km)** : la dernière lecture est proposée ; nécessaire pour la consommation.
+- **Litres** (ou **kWh** pour une recharge) : la quantité. Obligatoire, plus grande que zéro.
+- **Coût** : ce que vous avez payé, par exemple 68,55.
+- **Plein complet** (ou **Recharge complète**) : coché par défaut ; décochez-le pour un plein partiel. La consommation se mesure d’un plein à l’autre.
+- **Lieu de recharge** : pour une recharge, **À domicile** ou **Borne publique**.
+- **Station** : un lieu enregistré, les stations d’abord, ou « (aucun) ».
+- **Trouver la station enregistrée la plus proche** : prend une seule position et choisit le lieu enregistré où vous êtes, s’il y en a un.
+- **Date (AAAA-MM-JJ)** : aujourd’hui par défaut.
+- **Enregistrer** : offert dès qu’un véhicule et une quantité sont saisis. L’inscription rejoint la file d’attente et est envoyée aussitôt si possible.
+
+Sur l’ordinateur, elle va directement à l’[onglet Carburant](vehicles#fuel-tab) du véhicule, avec « du téléphone », sans vérification. Aucun paiement n’est inscrit : inscrivez-le à partir du reçu, ou du relevé de la carte.
 
 ## L’onglet Envois {#sent-tab}
 

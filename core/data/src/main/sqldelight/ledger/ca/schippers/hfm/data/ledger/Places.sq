@@ -1,0 +1,37 @@
+-- TRP-02 (version 31): saved places, kept on the user's own devices only and never sent to a map
+-- service. A location fix within [radius_m] metres of a place is that place. [category] is HOME,
+-- WORK, CLIENT, STORE, FUEL, GARAGE, MEDICAL or OTHER; [province] (two letters) is where trips from
+-- the place are counted (TRP-09); [device_id] names the phone a place was made on.
+CREATE TABLE trip_place (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'OTHER',
+    address TEXT,
+    latitude REAL,
+    longitude REAL,
+    radius_m INTEGER NOT NULL DEFAULT 150,
+    province TEXT,
+    notes TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    device_id TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX trip_place_name ON trip_place(name);
+
+places:
+SELECT * FROM trip_place ORDER BY archived, name COLLATE NOCASE;
+
+placeById:
+SELECT * FROM trip_place WHERE id = ?;
+
+upsertPlace:
+INSERT INTO trip_place(id, name, category, address, latitude, longitude, radius_m, province, notes, archived, device_id, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET name = excluded.name, category = excluded.category, address = excluded.address, latitude = excluded.latitude,
+    longitude = excluded.longitude, radius_m = excluded.radius_m, province = excluded.province, notes = excluded.notes, archived = excluded.archived,
+    updated_at = excluded.updated_at;
+
+deletePlace:
+DELETE FROM trip_place WHERE id = ?;

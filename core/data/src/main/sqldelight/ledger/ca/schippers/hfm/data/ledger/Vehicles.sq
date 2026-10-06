@@ -29,7 +29,24 @@ CREATE TABLE vehicle (
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL,
     -- SAL-03 (version 30): the sale deposit in the books; its payee is the buyer.
-    disposal_txn_id TEXT
+    disposal_txn_id TEXT,
+    -- TRP-07 (version 31): technical details; capacities as decimal strings, weights in kilograms.
+    engine TEXT,
+    transmission TEXT,
+    drive TEXT,
+    tank_litres TEXT,
+    battery_kwh TEXT,
+    tires_summer TEXT,
+    tires_winter TEXT,
+    oil_type TEXT,
+    oil_litres TEXT,
+    towing_kg INTEGER,
+    gvwr_kg INTEGER,
+    -- PERSONAL, COMMERCIAL or MIXED.
+    vehicle_use TEXT NOT NULL DEFAULT 'PERSONAL',
+    -- TRP-09 (version 31): the annual safety inspection and the CVOR or NSC renewal.
+    inspection_due TEXT,
+    operator_renewal TEXT
 );
 
 -- VEH-04: odometer readings entered directly; fuel and service entries also carry readings.
@@ -90,7 +107,13 @@ CREATE TABLE fuel_entry (
     station TEXT,
     txn_id TEXT,
     notes TEXT,
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    -- TRP-05, TRP-10 (version 31): FUEL or ELECTRICITY (none: the vehicle's own), HOME or PUBLIC
+    -- charging, the station as a saved place, and the phone it came from.
+    energy TEXT,
+    charging TEXT,
+    place_id TEXT,
+    device_id TEXT
 );
 
 -- VEH-03.
@@ -129,8 +152,10 @@ upsertVehicle:
 -- CASCADE, everything that belongs to it.
 INSERT INTO vehicle(id, name, make, model, model_year, trim_level, colour, vin, plate, fuel_type, driver_member_id,
     purchase_date, purchase_price_minor, seller, purchase_odometer, currency, registration_renewal, insurer, policy_number,
-    insurance_renewal, status, disposal_date, disposal_price_minor, notes, created_at, updated_at, disposal_txn_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    insurance_renewal, status, disposal_date, disposal_price_minor, notes, created_at, updated_at, disposal_txn_id,
+    engine, transmission, drive, tank_litres, battery_kwh, tires_summer, tires_winter, oil_type, oil_litres, towing_kg, gvwr_kg,
+    vehicle_use, inspection_due, operator_renewal)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
     name = excluded.name,
     make = excluded.make,
@@ -157,7 +182,21 @@ ON CONFLICT(id) DO UPDATE SET
     disposal_txn_id = excluded.disposal_txn_id,
     notes = excluded.notes,
     created_at = excluded.created_at,
-    updated_at = excluded.updated_at;
+    updated_at = excluded.updated_at,
+    engine = excluded.engine,
+    transmission = excluded.transmission,
+    drive = excluded.drive,
+    tank_litres = excluded.tank_litres,
+    battery_kwh = excluded.battery_kwh,
+    tires_summer = excluded.tires_summer,
+    tires_winter = excluded.tires_winter,
+    oil_type = excluded.oil_type,
+    oil_litres = excluded.oil_litres,
+    towing_kg = excluded.towing_kg,
+    gvwr_kg = excluded.gvwr_kg,
+    vehicle_use = excluded.vehicle_use,
+    inspection_due = excluded.inspection_due,
+    operator_renewal = excluded.operator_renewal;
 
 deleteVehicle:
 DELETE FROM vehicle WHERE id = ?;
@@ -225,11 +264,11 @@ serviceTasks:
 SELECT st.service_id, st.task_id FROM service_task st JOIN service_record r ON r.id = st.service_id WHERE r.vehicle_id = ?;
 
 insertFuel:
-INSERT INTO fuel_entry(id, vehicle_id, date, odometer, quantity, cost_minor, full_tank, station, txn_id, notes, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO fuel_entry(id, vehicle_id, date, odometer, quantity, cost_minor, full_tank, station, txn_id, notes, created_at, energy, charging, place_id, device_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateFuel:
-UPDATE fuel_entry SET date = ?, odometer = ?, quantity = ?, cost_minor = ?, full_tank = ?, station = ?, txn_id = ?, notes = ? WHERE id = ?;
+UPDATE fuel_entry SET date = ?, odometer = ?, quantity = ?, cost_minor = ?, full_tank = ?, station = ?, txn_id = ?, notes = ?, energy = ?, charging = ?, place_id = ? WHERE id = ?;
 
 deleteFuel:
 DELETE FROM fuel_entry WHERE id = ?;

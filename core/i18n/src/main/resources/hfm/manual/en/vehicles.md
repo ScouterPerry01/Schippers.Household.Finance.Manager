@@ -13,7 +13,7 @@ At the top:
 - **Show sold and retired**: unticked by default. Tick it to include vehicles no longer in use in the **Vehicle** list.
 - **Add a vehicle**: opens a blank vehicle form. See [Add or edit a vehicle](vehicles#vehicle-form).
 
-When there is no vehicle, the screen says "No vehicles yet." Otherwise six tabs show the chosen vehicle: **Overview**, **Maintenance**, **Service log**, **Fuel**, **Warranties** and **Costs**.
+When there is no vehicle, the screen says "No vehicles yet." Otherwise seven tabs show the chosen vehicle: **Overview**, **Maintenance**, **Service log**, **Fuel**, **Forecast**, **Warranties** and **Costs**.
 
 ## Add or edit a vehicle {#vehicle-form}
 
@@ -29,6 +29,23 @@ When there is no vehicle, the screen says "No vehicles yet." Otherwise six tabs 
 - **Licence plate**: saved in capital letters. Shown on the overview and with the registration reminder.
 - **Vehicle identification number (VIN)**: the 17-character number on the registration and the dashboard; saved in capital letters. It can be searched on the **Is it covered?** tab of [Home and assets](assets#covered-tab).
 - **Main driver**: a household member, or "(none)". For your reference; shown on the overview.
+- **Use**: **Personal** (the default), **Commercial** or **Personal and business**. It is shown on the overview when not personal. On the phone, a trip in a commercial vehicle is suggested as **Business**. The [logbook](trips#logbook) proposes the first vehicle that is not personal, and the **CVOR or NSC renewal** date is offered for a vehicle that is not personal.
+
+### Technical details {#technical}
+@index: engine; transmission; tire size; oil type; towing capacity; GVWR; gross vehicle weight rating; battery capacity
+
+Under **Technical details**, all optional, for your reference when buying tires or oil, booking a service or hitching a trailer. What you enter shows on one line under the title on the **Overview** tab.
+
+- **Engine**: as you describe it, such as "2.0 L 4-cylinder".
+- **Transmission**: **Automatic**, **Manual**, **CVT**, **Dual-clutch** or **Single-speed (electric)**, or "(none)".
+- **Drive**: **Front-wheel drive**, **Rear-wheel drive**, **All-wheel drive** or **Four-wheel drive**, or "(none)".
+- **Fuel tank (L)**: the tank's capacity in litres, such as 47. Not shown for an electric vehicle.
+- **Battery (kWh)**: the usable battery capacity, shown for a hybrid, a plug-in hybrid or an electric vehicle.
+- **Summer tires** and **Winter tires**: the sizes on the sidewall, such as 215/50R17.
+- **Engine oil** and **Oil capacity (L)**: the grade and how much an oil change takes, such as 0W-20 and 4.4. Not shown for an electric vehicle.
+- **Towing capacity (kg)** and **GVWR (kg)**: the most the vehicle may tow, and its gross vehicle weight rating (the most it may weigh loaded), from the owner's manual or the sticker in the door frame. Whole kilograms, from 1 to 100,000.
+
+Capacities accept a decimal comma or point and must be above zero.
 
 ### Purchase {#purchase}
 
@@ -47,6 +64,9 @@ Under **Registration and insurance**:
 - **Registration renewal**: when the registration (plate) must be renewed.
 - **Insurance renewal**: when the auto policy renews.
 - **Insurer** and **Policy number**: shown on the overview with the insurance renewal.
+
+- **Safety inspection due**: when the next safety inspection is due, such as the annual inspection of a commercial vehicle or a vehicle that must be inspected in your province.
+- **CVOR or NSC renewal**: shown when the vehicle's **Use** is not personal: when the operator's registration must be renewed (the Commercial Vehicle Operator's Registration in Ontario, the National Safety Code certificate elsewhere).
 
 Each date gives a line on the overview, in bold within 30 days and red once passed, and a reminder from 30 days before (the default renewal lead time, set in [Rates and rules](rates-rules)). See [Reminders and calendar](vehicles#reminders).
 
@@ -73,10 +93,11 @@ Adding or changing a vehicle needs the **Edit** permission on its group. A user 
 The **Overview** tab shows:
 
 - the title (year, make, model, trim), the energy, colour, plate and main driver, and the VIN;
+- the technical details entered, and the use when it is not personal;
 - **Enter odometer** and **Edit** buttons;
 - "Odometer distance on date": the highest reading recorded, or "No odometer reading yet.";
 - "About distance a year": your usual distance, from the readings of the last year, once there are readings at least two weeks apart;
-- the registration and insurance lines, coloured as their dates approach;
+- the registration and insurance lines, and the safety inspection and CVOR or NSC lines when they have a date, coloured as their dates approach;
 - the purchase line, "Bought date for price from seller, at distance", when a purchase date or price is entered;
 - for a vehicle no longer in use, its status, date and sale price, and for a sold one the gain or loss and the linked sale with its buyer;
 - the notes;
@@ -85,12 +106,13 @@ The **Overview** tab shows:
 ### Odometer readings {#odometer}
 @index: mileage; kilometres; odometer
 
-The app gathers readings from four places, shown in the list with their source:
+The app gathers readings from five places, shown in the list with their source:
 
 - **at purchase**: the purchase date and odometer;
 - **entered**: readings typed with **Enter odometer**;
 - **fill-up**: the odometer of a fill-up or charge;
-- **service**: the odometer of a service.
+- **service**: the odometer of a service;
+- **Trip**: the odometer at the start and at the arrival of a trip in the [Trip log](trips), such as one driven with the phone.
 
 Only readings entered with **Enter odometer** have a **Delete** button, which asks "Delete the reading of 52,300 km on date?" first; the others are changed in their own record.
 
@@ -211,22 +233,54 @@ Without a payment, the service's cost still counts in the **Costs** tab on its o
 ## Fuel tab {#fuel-tab}
 @index: gas; fill-up; charging; consumption; L/100 km; kWh
 
-At the top, the consumption over the last year and the fuel cost per kilometre, with **Add a fill-up** (or **Add a charge** for an electric vehicle). Below, every fill-up, the most recent first: date, odometer, quantity in L or kWh ("partial" when the tank was not filled), station, "payment entered", cost, and **Edit**.
+At the top, the consumption over the last year and what a kilometre costs, with **Add a fill-up** (or **Add a charge** for an electric vehicle). Below, every fill-up, the most recent first: date, odometer, quantity in L or kWh ("partial" when the tank was not filled), home or public charging, station, "from the phone" for an entry made on the phone, "payment entered", cost, and **Edit**.
+
+![The Fuel tab of a plug-in hybrid](images/vehicles-fuel.png)
 
 ### Add a fill-up or charge {#fuel-form}
 
+- **Fuel or electricity**: for a plug-in hybrid only, which it took: **Fuel** (litres) or **Electricity** (kWh). The two are measured apart.
 - **Date**: required; today by default.
 - **Odometer (km)**: the current odometer is proposed. Needed for the consumption; it counts as an odometer reading.
-- **Litres** (or **kWh** for an electric vehicle): the quantity, above zero. Required.
+- **Litres** (or **kWh** for a charge): the quantity, above zero. Required.
 - **Cost**: what you paid.
 - **Filled the tank** (or **Charged to full**): ticked by default. "Consumption is measured from one full tank to the next." Untick it for a partial fill.
-- **Station**.
+- **Where charged**: for a charge, **Home charging** (the default) or **Public charging**. The **Fuel** tab shows the price of a kWh at each.
+- **Station (saved place)**: one of the saved [places](trips#places), or "(no saved place)". Choosing one fills in **Station** with its name.
+- **Station**: the station's name, typed or filled in from the place.
 - Payment: as for a service, with the fuel or EV charging category proposed. See [Also enter the payment](vehicles#payment).
 - **Delete** (when editing): asks "Delete the entry of date? A payment entered with it stays in its account." and, once confirmed, deletes the entry.
 
 ### Consumption {#consumption}
 
-"Over the last year: 7.4 L/100 km" (or kWh/100 km) is measured from one full tank to the next, from the first day of the same month last year: the fuel bought after a full tank, up to and including the next full tank, was used over the distance between them. Until there are two full tanks with odometer readings, it says "Consumption appears after two full tanks with odometer readings." "Fuel: amount per km" is shown when every fill-up in those intervals has a cost.
+"Over the last year: 7.4 L/100 km" (or kWh/100 km) is measured from one full tank to the next, from the first day of the same month last year: the fuel bought after a full tank, up to and including the next full tank, was used over the distance between them. Until there are two full tanks with odometer readings, it says "Consumption appears after two full tanks with odometer readings." "Fuel: amount per km" (or "Electricity: amount per km") is shown when every fill-up in those intervals has a cost.
+
+The lines under it, when they apply:
+
+- For a plug-in hybrid, the other energy: its consumption and cost per km, measured on its own fill-ups or charges. Both are spread over all the kilometres driven, so each is lower than for a vehicle running on one energy.
+- By kind of driving, such as "Normal driving: 6.6 L/100 km · Towing: 12.1 L/100 km". Each interval between two full tanks counts as towing when at least half its kilometres were driven towing a trailer, as a heavy load likewise, and otherwise as normal driving. The kilometres come from the [trips](trips) logged with both odometer readings. To measure towing well, fill the tank before leaving with the trailer and again on return; the phone's trips do the rest.
+- Charging: "Home charging: 201.6 kWh at 0.098 $/kWh · Public charging: 12.4 kWh at 0.5 $/kWh", from the charges with a cost.
+- "Your other vehicles, Fuel: amount per km" (or Electricity): what the other energy costs a kilometre in the household's other vehicles, to compare an electric vehicle with a gasoline one, or the other way round.
+
+@index: towing consumption; EV cost per km; electricity versus gasoline; home charging; public charging
+
+## Forecast tab {#forecast-tab}
+@index: vehicle budget; fuel budget; forecast; maintenance cost forecast
+
+The **Forecast** tab looks at the next 3, 6 and 12 months:
+
+- "About distance a month": the pace of the last 90 days, from every odometer reading of those days (entered readings, fill-ups, services and trips). With fewer than two readings two weeks apart in the 90 days, the pace of the last year is used; with none at all, the tab says "The forecast needs odometer readings: at least two, two weeks apart."
+- The share of the distance driven towing and with a heavy load, from the trips of the last 90 days.
+- The consumption used for each kind of driving: the vehicle's own by kind, from the last year (see [Consumption](vehicles#consumption)); a kind with no full-tank interval of its own uses normal driving's.
+- "Recent price": the average price of a litre (or kWh) paid over the last 90 days, else over the last year.
+- The table **Forecast**, one row for the next 3, 6 and 12 months: **Distance**, **Quantity** (litres or kWh), the cost of the fuel or electricity, **Maintenance** and **Total**. It can be exported or printed like any table.
+- "Maintenance due in the next 12 months": each task falling due and how many times, from its next date (today if overdue) and then every interval, the interval in kilometres turned into days at the pace above. A task costs what it cost the last time a service with a cost recorded it (a service's cost shared evenly between its tasks). Tasks never done at a cost are named apart and left out of the amounts.
+
+For a plug-in hybrid, the forecast counts fuel; charging costs are not added.
+
+### Suggest for the budget {#forecast-budget}
+
+**Suggest for the budget** (not for a viewer) opens a list of monthly amounts for the Transport categories, from the next 12 months of every vehicle in use kept in a shared account group and in the base currency: fuel (or EV charging for an electric vehicle) and vehicle maintenance, each rounded up to the dollar, beside the budget the category has now. A vehicle in a private group is left out, since budgets are the whole household's. **Use these amounts** sets each as a monthly budget from this month, keeping the category's rollover choice; other budgets do not change. See [Budgets](budgets).
 
 ## Warranties tab {#warranties-tab}
 @index: vehicle warranty; powertrain; extended warranty; corrosion; battery warranty
@@ -289,6 +343,7 @@ The **Maintenance and cost of ownership** report under [Reports](reports) brings
 For each vehicle in use:
 
 - **Registration renewal** and **Insurance renewal**: a reminder from 30 days before the date (the default), which stays once the date has passed until you enter the new date, for example "Civic: registration (ABC 123) in 12 days".
+- **Safety inspection due** and **CVOR or NSC renewal**: reminded the same way, for example "Transit: Safety inspection (AB 123) in 20 days".
 - Warranties: a reminder from 60 days before the end date (the default, set in [Rates and rules](rates-rules)), or before the day the odometer should reach the distance limit, whichever is first, for example "Civic: warranty ends (Honda · 100000 km) in 40 days". A warranty already past its date or distance is not a reminder.
 - Maintenance: tasks **Due soon** and **Due now**.
 

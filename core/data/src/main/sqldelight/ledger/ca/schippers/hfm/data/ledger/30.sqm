@@ -1,0 +1,65 @@
+-- Version 30 to 31. Only additions: new columns with defaults and new tables.
+
+-- TRP-07: a vehicle's technical details. Capacities are decimal strings (litres or kWh);
+-- weights in kilograms. [vehicle_use] is PERSONAL, COMMERCIAL or MIXED.
+ALTER TABLE vehicle ADD COLUMN engine TEXT;
+ALTER TABLE vehicle ADD COLUMN transmission TEXT;
+ALTER TABLE vehicle ADD COLUMN drive TEXT;
+ALTER TABLE vehicle ADD COLUMN tank_litres TEXT;
+ALTER TABLE vehicle ADD COLUMN battery_kwh TEXT;
+ALTER TABLE vehicle ADD COLUMN tires_summer TEXT;
+ALTER TABLE vehicle ADD COLUMN tires_winter TEXT;
+ALTER TABLE vehicle ADD COLUMN oil_type TEXT;
+ALTER TABLE vehicle ADD COLUMN oil_litres TEXT;
+ALTER TABLE vehicle ADD COLUMN towing_kg INTEGER;
+ALTER TABLE vehicle ADD COLUMN gvwr_kg INTEGER;
+ALTER TABLE vehicle ADD COLUMN vehicle_use TEXT NOT NULL DEFAULT 'PERSONAL';
+-- TRP-09: the annual safety inspection and the operator's registration (CVOR, NSC) renewal.
+ALTER TABLE vehicle ADD COLUMN inspection_due TEXT;
+ALTER TABLE vehicle ADD COLUMN operator_renewal TEXT;
+
+-- TRP-01, TRP-03, TRP-04, TRP-06: a trip's times ("yyyy-MM-ddTHH:mm"), odometers and places at each
+-- end, what it towed or carried ([load_kind] NONE, TOWING or HEAVY; [trailer_id] an asset), the
+-- passengers, the province or state it was driven in (TRP-09) and the phone it came from.
+ALTER TABLE trip ADD COLUMN start_at TEXT;
+ALTER TABLE trip ADD COLUMN end_at TEXT;
+ALTER TABLE trip ADD COLUMN start_odometer INTEGER;
+ALTER TABLE trip ADD COLUMN end_odometer INTEGER;
+ALTER TABLE trip ADD COLUMN start_place_id TEXT;
+ALTER TABLE trip ADD COLUMN end_place_id TEXT;
+ALTER TABLE trip ADD COLUMN load_kind TEXT NOT NULL DEFAULT 'NONE';
+ALTER TABLE trip ADD COLUMN trailer_id TEXT;
+ALTER TABLE trip ADD COLUMN passengers TEXT;
+ALTER TABLE trip ADD COLUMN province TEXT;
+ALTER TABLE trip ADD COLUMN device_id TEXT;
+
+CREATE INDEX trip_vehicle ON trip(vehicle_id, date);
+
+-- TRP-05, TRP-10: what was bought ([energy] FUEL or ELECTRICITY; none = the vehicle's own), where
+-- an electric charge was made ([charging] HOME or PUBLIC), the station as a saved place, and the
+-- phone it came from.
+ALTER TABLE fuel_entry ADD COLUMN energy TEXT;
+ALTER TABLE fuel_entry ADD COLUMN charging TEXT;
+ALTER TABLE fuel_entry ADD COLUMN place_id TEXT;
+ALTER TABLE fuel_entry ADD COLUMN device_id TEXT;
+
+-- TRP-02: saved places, kept on the user's own devices only. A location fix within [radius_m]
+-- metres of a place is that place. [category] is HOME, WORK, CLIENT, STORE, FUEL, GARAGE, MEDICAL
+-- or OTHER; [province] (two letters) is where trips from the place are counted (TRP-09).
+CREATE TABLE trip_place (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'OTHER',
+    address TEXT,
+    latitude REAL,
+    longitude REAL,
+    radius_m INTEGER NOT NULL DEFAULT 150,
+    province TEXT,
+    notes TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    device_id TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX trip_place_name ON trip_place(name);

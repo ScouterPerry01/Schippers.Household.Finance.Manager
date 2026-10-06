@@ -497,7 +497,7 @@ class MigrationTest {
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).extrasQueries
-            q.upsertTrip("t", "2026-10-01", null, null, "Home", "Client", 425, 1, "BUSINESS", null)
+            q.upsertTrip("t", "2026-10-01", null, null, "Home", "Client", 425, 1, "BUSINESS", null, null, null, null, null, null, null, "NONE", null, null, null, null)
             assertEquals(1, q.trips("2026-01-01", "2026-12-31").executeAsList().size)
             q.upsertContractor("c", "Plombier", "Plumbing", null, null, null, null, 0)
             q.upsertContractorJob("j", "c", "2026-05-01", "Water heater", 180000, "CAD", 5, null, null)
@@ -632,7 +632,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(30L, LedgerDatabase.Schema.version)
+            assertEquals(31L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).medicalQueries
             assertEquals("AFTER_SERVICE", q.planById("m").executeAsOne().claim_rule, "existing plans keep counting from the service")
@@ -665,6 +665,40 @@ class MigrationTest {
             matching.insertMatch("g", "s", "t1")
             matching.setLineGroup("g", "PROPOSED", null, "l")
             assertEquals("g", matching.linesInGroup("g").executeAsOne().match_group, "statement lines gain their group")
+        }
+    }
+
+    @Test
+    fun `version 30 ledgers keep their vehicles, trips and fill-ups and gain places and trip details`() {
+        val file = temp.resolve("ledger30.db")
+        older("../data/src/main/sqldelight/ledger/schemas/30.db", file, 30).use { driver ->
+            driver.execute(null, "INSERT INTO vehicle(id, name, created_at, updated_at) VALUES ('v', 'Civic', 0, 0)", 0)
+            driver.execute(null, "INSERT INTO fuel_entry(id, vehicle_id, date, odometer, quantity, created_at) VALUES ('f', 'v', '2026-09-01', 61200, '41.8', 0)", 0)
+            driver.execute(null, "INSERT INTO trip(id, date, vehicle_id, destination, km_tenths, round_trip, purpose) VALUES ('t', '2026-09-02', 'v', 'Client', 280, 1, 'BUSINESS')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val db = LedgerDatabase(driver)
+            val vehicle = db.vehiclesQueries.vehicleById("v").executeAsOne()
+            assertEquals("PERSONAL", vehicle.vehicle_use, "existing vehicles are for personal use")
+            assertEquals(null, vehicle.engine)
+            val fuel = db.vehiclesQueries.fuelEntries("v").executeAsOne()
+            assertEquals(null, fuel.energy, "an old fill-up buys the vehicle's own energy")
+            assertEquals(null, fuel.place_id)
+            val trip = db.extrasQueries.tripById("t").executeAsOne()
+            assertEquals("NONE", trip.load_kind)
+            assertEquals(null, trip.start_odometer)
+            assertEquals(1, db.extrasQueries.tripsForVehicle("v").executeAsList().size)
+            db.placesQueries.upsertPlace("p", "Home", "HOME", null, 45.4, -75.7, 150, "ON", null, 0, null, 0, 0)
+            db.placesQueries.upsertPlace("p", "Maison", "HOME", null, 45.4, -75.7, 150, "ON", null, 0, null, 0, 1)
+            assertEquals("Maison", db.placesQueries.placeById("p").executeAsOne().name)
+            db.vehiclesQueries.upsertVehicle(
+                "v", "Civic", "Honda", null, null, null, null, null, null, "GASOLINE", null, null, null, null, null, "CAD", null, null, null, null, "ACTIVE", null, null, null, 0, 1, null,
+                "2.0 L", "CVT", "FWD", "47", null, null, null, "0W-20", "4.4", 680, 1_800, "MIXED", "2027-05-01", null,
+            )
+            assertEquals(1, db.vehiclesQueries.fuelEntries("v").executeAsList().size, "saving the vehicle again keeps its fill-ups")
+            assertEquals("MIXED", db.vehiclesQueries.vehicleById("v").executeAsOne().vehicle_use)
         }
     }
 }

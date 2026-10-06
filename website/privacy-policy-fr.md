@@ -23,6 +23,15 @@ RANN n'en a jamais de copie et ne peut récupérer ni vos données ni votre mot 
 
 Le téléphone envoie les captures directement à votre ordinateur sur votre réseau domestique. Chaque échange est chiffré de bout en bout avec une clé que les deux appareils créent au jumelage. Rien ne passe par RANN ni par une autre entreprise.
 
+## La position sur le téléphone
+
+L’application mobile utilise votre position seulement si vous l’autorisez, et seulement pour les déplacements : elle prend une seule position au départ d’un déplacement, une à l’arrivée, et une quand vous enregistrez un lieu ou cherchez la station de carburant enregistrée la plus proche. Elle ne suit jamais votre téléphone en arrière-plan et ne demande jamais la position au démarrage.
+
+- La position est comparée à vos lieux enregistrés sur le téléphone même. Aucun service de cartes, aucune recherche d’adresse ni aucune autre entreprise n’est consulté.
+- Ce qui va à votre ordinateur, chiffré de bout en bout comme tout le reste, c’est le nom du lieu, ou ses coordonnées quand vous le laissez sans nom, et les coordonnées d’un lieu que vous enregistrez pour que le prochain déplacement le reconnaisse.
+- Le déplacement en cours et les lieux enregistrés sur le téléphone sont gardés dans le stockage chiffré du téléphone.
+- Vous pouvez refuser ou retirer l’autorisation dans les réglages d’Android en tout temps ; les déplacements fonctionnent alors en choisissant les lieux ou en tapant leur nom.
+
 ## Ce que les applications envoient sur Internet
 
 Toutes les demandes utilisent HTTPS. Chaque service voit l'adresse Internet de votre appareil, comme pour toute page Web, et applique sa propre politique de confidentialité.

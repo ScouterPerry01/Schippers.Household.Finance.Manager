@@ -21,6 +21,8 @@ import ca.schippers.hfm.sync.Direction
 import ca.schippers.hfm.sync.PairRequest
 import ca.schippers.hfm.sync.PairResponse
 import ca.schippers.hfm.sync.PairingInvitation
+import ca.schippers.hfm.sync.PhoneFuel
+import ca.schippers.hfm.sync.RefTrailer
 import ca.schippers.hfm.sync.RefAccount
 import ca.schippers.hfm.sync.RefBill
 import ca.schippers.hfm.sync.RefBudget
@@ -208,6 +210,24 @@ class SyncService internal constructor(private val books: Books) {
                 }
                 .onFailure { failed += failure(contact.id, it) }
         }
+        // TRP-02, TRP-01, TRP-05: places first, so the trips and fill-ups that name them find them.
+        val group = device.group_id ?: defaultGroup()
+        val travel = request.places.take(MAX_ITEMS).map { Triple(it.changeId, CaptureKind.PLACE) { g: String -> books.places.receive(g, deviceId, it) } } +
+            request.trips.take(MAX_ITEMS).map { Triple(it.id, CaptureKind.TRIP) { g: String -> books.trips.receive(g, deviceId, it) } } +
+            request.fuel.take(MAX_ITEMS).map { Triple(it.id, CaptureKind.FUEL) { _: String -> receiveFuel(deviceId, it) } }
+        for ((id, kind, store) in travel) {
+            if (books.core.syncItemById(id).executeAsOneOrNull() != null) {
+                imported += id
+                continue
+            }
+            runCatching { store(group ?: throw ValidationException("error.noEditableGroup")) }
+                .onSuccess {
+                    books.core.insertSyncItem(id, deviceId, kind.name, now, null, "IMPORTED")
+                    imported += id
+                    added++
+                }
+                .onFailure { failed += failure(id, it) }
+        }
         books.core.deviceSeen(now, added.toLong(), deviceId)
         if (confirmRecent) {
             imported += books.core.syncItemsForDevice(deviceId, MAX_RECENT_CONFIRM).executeAsList()
@@ -293,6 +313,22 @@ class SyncService internal constructor(private val books: Books) {
         return doc.id
     }
 
+    /** TRP-05, TRP-10: a fill-up or charge entered on the phone, in the vehicle's currency. */
+    private fun receiveFuel(deviceId: String, f: PhoneFuel) {
+        val vehicle = books.vehicles.get(f.vehicleId)
+        val quantity = f.quantity.toBigDecimalOrNull() ?: throw ValidationException("error.fuelQuantity")
+        val cost = f.cost?.let { c -> c.toBigDecimalOrNull()?.let { Money.of(it, vehicle.currency) } ?: throw ValidationException("error.invalidNumber") }
+        val place = f.placeId?.let { books.places.find(it) }
+        books.vehicles.saveFuel(
+            FuelEntry(
+                "", vehicle.id, runCatching { LocalDate.parse(f.date) }.getOrElse { throw ValidationException("error.invalidDate") }, f.odometer, quantity, cost, f.fullTank,
+                place?.name ?: f.station?.trim()?.take(120)?.ifEmpty { null },
+                energy = Energy.entries.firstOrNull { it.name == f.energy }, charging = f.charging?.let { c -> Charging.entries.firstOrNull { it.name == c } },
+                placeId = place?.id, deviceId = deviceId,
+            ),
+        )
+    }
+
     /** SYNC-06, RPT-06, BILL-04: what the phone shows and picks from. */
     fun reference(today: LocalDate, now: Long): ReferenceData {
         val base = books.rates.baseCurrency
@@ -306,7 +342,7 @@ class SyncService internal constructor(private val books: Books) {
             categories = books.categories.list().map { RefCategory(it.id, it.parentId, it.nameEn, it.nameFr, it.kind == CategoryKind.INCOME) },
             payees = books.payees.list().take(MAX_PAYEES).map { RefPayee(it.name, it.defaultCategoryId) },
             people = books.members.list().map { RefPerson(it.id, it.displayName, false) } + books.pets.list().map { RefPerson(it.id, it.name, true) },
-            vehicles = books.vehicles.list().map { RefVehicle(it.id, it.name, books.vehicles.latestOdometer(it.id)?.odometer) } +
+            vehicles = books.vehicles.list().map { RefVehicle(it.id, it.name, books.vehicles.latestOdometer(it.id)?.odometer, fuelType = it.fuelType.name, use = it.usage.name) } +
                 books.assets.list().mapNotNull { a -> a.meter?.let { RefVehicle(a.id, a.name, books.assetMaintenance.latestUsage(a.id), it.name) } },
             bills = books.bills.occurrences(today, today.plus(DatePeriod(days = 60))).filter { it.status == OccurrenceStatus.DUE && it.bill.kind == BillKind.BILL }.map {
                 RefBill(it.bill.name, it.dueDate.toString(), it.amount.toBigDecimal().toPlainString(), it.amount.currency.code, !it.amountKnown, it.bill.reminderDays)
@@ -322,6 +358,9 @@ class SyncService internal constructor(private val books: Books) {
             contacts = runCatching { books.phoneContacts.forPhone() }.getOrDefault(emptyList()),
             events = runCatching { events(today) }.getOrDefault(emptyList()),
             refills = runCatching { refills(today) }.getOrDefault(emptyList()),
+            places = runCatching { books.places.forPhone() }.getOrDefault(emptyList()),
+            trailers = books.assets.list().filter { it.kind == AssetKind.TRAILER }.map { RefTrailer(it.id, it.name) },
+            userMemberId = runCatching { books.users.list().firstOrNull { it.isMe }?.memberId }.getOrNull(),
         )
     }
 

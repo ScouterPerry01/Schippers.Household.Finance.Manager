@@ -92,6 +92,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val familyLoans = FamilyLoanService(this)
     val allowances = AllowanceService(this)
     val trips = TripService(this)
+    val places = PlaceService(this)
     val contractors = ContractorService(this)
     val contacts = ContactService(this)
     val phoneContacts = PhoneContactService(this)

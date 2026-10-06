@@ -33,8 +33,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import ca.schippers.hfm.books.Charging
+import ca.schippers.hfm.books.DriveKind
+import ca.schippers.hfm.books.Energy
 import ca.schippers.hfm.books.FuelEntry
 import ca.schippers.hfm.books.FuelType
+import ca.schippers.hfm.books.Transmission
+import ca.schippers.hfm.books.TripLoad
+import ca.schippers.hfm.books.VehicleDetails
+import ca.schippers.hfm.books.VehicleUsage
 import ca.schippers.hfm.books.LinkRole
 import ca.schippers.hfm.books.LinkTarget
 import ca.schippers.hfm.books.MaintenanceTask
@@ -58,7 +65,7 @@ import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
 
-private enum class VehicleTab { OVERVIEW, MAINTENANCE, SERVICE, FUEL, WARRANTIES, COSTS }
+private enum class VehicleTab { OVERVIEW, MAINTENANCE, SERVICE, FUEL, FORECAST, WARRANTIES, COSTS }
 
 /** What the Vehicles screen is editing; an empty id means a new record. */
 private sealed interface VehicleEdit {
@@ -104,6 +111,7 @@ fun VehiclesScreen(model: BooksModel) {
                     VehicleTab.MAINTENANCE -> MaintenanceTab(model, vehicle) { edit = it }
                     VehicleTab.SERVICE -> ServiceTab(model, vehicle) { edit = it }
                     VehicleTab.FUEL -> FuelTab(model, vehicle) { edit = it }
+                    VehicleTab.FORECAST -> ForecastTab(model, vehicle)
                     VehicleTab.WARRANTIES -> WarrantiesTab(model, vehicle) { edit = it }
                     VehicleTab.COSTS -> CostsTab(model, vehicle)
                 }
@@ -127,6 +135,22 @@ private fun vehicleLabel(model: BooksModel, v: Vehicle): String =
 
 private fun km(model: BooksModel, value: Int): String = model.t("vehicles.km", String.format(model.language.locale, "%,d", value))
 
+/** TRP-07: "3.5 L V6 · Automatic · Rear-wheel drive · Tank 95 L · ..." from the details entered, or null. */
+private fun detailsLine(model: BooksModel, v: Vehicle): String? {
+    val d = v.details
+    val locale = model.language.locale
+    fun dec(x: BigDecimal) = MoneyFormat.formatDecimal(x, locale)
+    fun kg(x: Int) = String.format(locale, "%,d", x)
+    return listOfNotNull(
+        d.engine, d.transmission?.let { model.t("transmission.$it") }, d.drive?.let { model.t("drive.$it") },
+        d.tankLitres?.let { model.t("vehicles.tankIs", dec(it)) }, d.batteryKwh?.let { model.t("vehicles.batteryIs", dec(it)) },
+        d.oilType?.let { t -> model.t("vehicles.oilIs", t + (d.oilLitres?.let { " · ${dec(it)} L" }.orEmpty())) } ?: d.oilLitres?.let { model.t("vehicles.oilIs", "${dec(it)} L") },
+        d.tiresSummer?.let { model.t("vehicles.tiresSummerIs", it) }, d.tiresWinter?.let { model.t("vehicles.tiresWinterIs", it) },
+        d.towingKg?.let { model.t("vehicles.towsIs", kg(it)) }, d.gvwrKg?.let { model.t("vehicles.gvwrIs", kg(it)) },
+        v.usage.takeIf { it != VehicleUsage.PERSONAL }?.let { model.t("vehicleUsage.$it") },
+    ).joinToString(" · ").ifEmpty { null }
+}
+
 // --- Overview (VEH-01, VEH-02, VEH-04) -------------------------------------------------------------
 
 @Composable
@@ -145,6 +169,7 @@ private fun OverviewTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> 
                         .joinToString(" · "),
                 )
                 v.vin?.let { Text(model.t("vehicles.vinIs", it), style = MaterialTheme.typography.bodySmall) }
+                detailsLine(model, v)?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             }
             OutlinedButton(onClick = { onEdit(VehicleEdit.Reading(v)) }) { Text(model.t("vehicles.addReading")) }
             TextButton(onClick = { onEdit(VehicleEdit.Details(v)) }) { Text(model.t("common.edit")) }
@@ -158,6 +183,9 @@ private fun OverviewTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> 
         rate?.let { Text(model.t("vehicles.perYear", km(model, (it * 365).toInt())), style = MaterialTheme.typography.bodySmall) }
         RenewalLine(model, v.registrationRenewal, model.t("vehicles.registrationLine", v.plate ?: "—"))
         RenewalLine(model, v.insuranceRenewal, model.t("vehicles.insuranceLine", v.insurer ?: "—", v.policyNumber ?: "—"))
+        // TRP-09: a commercial vehicle's safety inspection and operator registration.
+        v.inspectionDue?.let { RenewalLine(model, it, model.t("renewalKind.SAFETY_INSPECTION")) }
+        v.operatorRenewal?.let { RenewalLine(model, it, model.t("renewalKind.OPERATOR_RENEWAL")) }
         if (v.purchaseDate != null || v.purchasePrice != null) {
             Text(
                 model.t("vehicles.purchaseLine", v.purchaseDate?.let(model::date) ?: "—", v.purchasePrice?.let(model::money) ?: "—", v.seller ?: "—",
@@ -305,17 +333,38 @@ private fun FuelTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> Unit
     val books = model.books
     val today = today()
     val entries = remember(model.revision, v.id) { books.vehicles.fuel(v.id).reversed() }
-    val year = remember(model.revision, v.id) { books.vehicles.fuelStats(v.id, LocalDate(today.year - 1, today.month, 1), today) }
-    val unit = model.t(if (v.electric) "vehicles.kwh" else "vehicles.litres")
+    val from = LocalDate(today.year - 1, today.month, 1)
+    val year = remember(model.revision, v.id) { books.vehicles.fuelStats(v.id, from, today) }
+    // TRP-05: consumption by kind of driving; TRP-10: charging and the cost of a km on each energy.
+    val byLoad = remember(model.revision, v.id) { books.vehicles.fuelByLoad(v.id, from, today) }
+    val other = if (v.defaultEnergy == Energy.FUEL) Energy.ELECTRICITY else Energy.FUEL
+    val otherStats = remember(model.revision, v.id) { if (v.takesBoth) books.vehicles.fuelStats(v.id, from, today, other) else null }
+    val charging = remember(model.revision, v.id) { books.vehicles.chargingCosts(v.id, from, today) }
+    val compare = remember(model.revision, v.id) { books.vehicles.householdCostPerKm(other, from, today, v.id, v.currency) }
+    fun unitOf(e: Energy) = model.t(if (e == Energy.ELECTRICITY) "vehicles.kwh" else "vehicles.litres")
+    fun per100(e: Energy, x: BigDecimal) = model.t(if (e == Energy.ELECTRICITY) "vehicles.consumptionKwh" else "vehicles.consumption", MoneyFormat.formatDecimal(x, model.language.locale))
+    fun short(e: Energy, x: BigDecimal) = model.t(if (e == Energy.ELECTRICITY) "vehicles.per100Kwh" else "vehicles.per100L", MoneyFormat.formatDecimal(x, model.language.locale))
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(
-                    year.per100km?.let { model.t(if (v.electric) "vehicles.consumptionKwh" else "vehicles.consumption", MoneyFormat.formatDecimal(it, model.language.locale)) }
-                        ?: model.t("vehicles.consumptionUnknown"),
-                    fontWeight = FontWeight.Medium,
-                )
-                year.costPerKm?.let { Text(model.t("vehicles.fuelPerKm", model.money(it)), style = MaterialTheme.typography.bodySmall) }
+                Text(year.per100km?.let { per100(v.defaultEnergy, it) } ?: model.t("vehicles.consumptionUnknown"), fontWeight = FontWeight.Medium)
+                year.costPerKm?.let { Text(model.t("vehicles.costPerKmOn", model.t("energy.${v.defaultEnergy}"), model.money(it)), style = MaterialTheme.typography.bodySmall) }
+                otherStats?.per100km?.let { Text(model.t("trips.purposeKm", model.t("energy.$other"), short(other, it)) + (otherStats.costPerKm?.let { c -> " · " + model.t("vehicles.costPerKmOn", model.t("energy.$other"), model.money(c)) }.orEmpty()), style = MaterialTheme.typography.bodySmall) }
+                if (byLoad.keys.any { it != TripLoad.NONE }) {
+                    Text(
+                        byLoad.entries.mapNotNull { (load, s) -> s.per100km?.let { model.t("trips.purposeKm", model.t("vehicles.driving.$load"), short(v.defaultEnergy, it)) } }.joinToString(" · "),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                if (charging.isNotEmpty()) {
+                    Text(
+                        charging.joinToString(" · ") { c ->
+                            model.t("vehicles.chargingLine", model.t("charging.${c.charging}"), MoneyFormat.formatDecimal(c.kwh, model.language.locale), c.perKwh?.let { MoneyFormat.formatDecimal(it, model.language.locale) } ?: "—")
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                compare?.takeIf { !v.takesBoth }?.let { Text(model.t("vehicles.compareOther", model.t("energy.$other"), model.money(it)), style = MaterialTheme.typography.bodySmall) }
             }
             Button(onClick = { onEdit(VehicleEdit.Fuel(v, FuelEntry("", v.id, today, books.vehicles.latestOdometer(v.id)?.odometer, BigDecimal.ZERO))) }) {
                 Text(model.t(if (v.electric) "vehicles.addCharge" else "vehicles.addFuel"))
@@ -327,8 +376,12 @@ private fun FuelTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> Unit
                 Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(e.date), Modifier.width(110.dp))
                     Text(e.odometer?.let { km(model, it) }.orEmpty(), Modifier.width(120.dp))
-                    Text("${MoneyFormat.formatDecimal(e.quantity, model.language.locale)} $unit" + if (!e.fullTank) " (${model.t("vehicles.partial")})" else "", Modifier.width(180.dp))
-                    Text(listOfNotNull(e.station, e.transactionId?.let { model.t("vehicles.paymentLinked") }).joinToString(" · "), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                    val energy = e.energy ?: v.defaultEnergy
+                    Text("${MoneyFormat.formatDecimal(e.quantity, model.language.locale)} ${unitOf(energy)}" + if (!e.fullTank) " (${model.t("vehicles.partial")})" else "", Modifier.width(180.dp))
+                    Text(
+                        listOfNotNull(e.charging?.let { model.t("charging.$it") }, e.station, e.deviceId?.let { model.t("vehicles.fromPhone") }, e.transactionId?.let { model.t("vehicles.paymentLinked") }).joinToString(" · "),
+                        Modifier.weight(1f), style = MaterialTheme.typography.bodySmall,
+                    )
                     Text(e.cost?.let(model::money).orEmpty(), Modifier.width(120.dp))
                     TextButton(onClick = { onEdit(VehicleEdit.Fuel(v, e)) }) { Text(model.t("common.edit")) }
                 }
@@ -469,6 +522,24 @@ private fun VehicleDialog(model: BooksModel, existing: Vehicle, onClose: (String
     var notes by remember { mutableStateOf(existing.notes.orEmpty()) }
     var groupId by remember { mutableStateOf(existing.groupId) }
     var confirmDelete by remember { mutableStateOf(false) }
+    // TRP-07, TRP-09.
+    val d = existing.details
+    fun dec(x: BigDecimal?) = x?.let { MoneyFormat.formatDecimal(it, locale) }.orEmpty()
+    var engine by remember { mutableStateOf(d.engine.orEmpty()) }
+    var transmission by remember { mutableStateOf(d.transmission) }
+    var drive by remember { mutableStateOf(d.drive) }
+    var tank by remember { mutableStateOf(dec(d.tankLitres)) }
+    var battery by remember { mutableStateOf(dec(d.batteryKwh)) }
+    var tiresSummer by remember { mutableStateOf(d.tiresSummer.orEmpty()) }
+    var tiresWinter by remember { mutableStateOf(d.tiresWinter.orEmpty()) }
+    var oilType by remember { mutableStateOf(d.oilType.orEmpty()) }
+    var oilLitres by remember { mutableStateOf(dec(d.oilLitres)) }
+    var towing by remember { mutableStateOf(d.towingKg?.toString().orEmpty()) }
+    var gvwr by remember { mutableStateOf(d.gvwrKg?.toString().orEmpty()) }
+    var usage by remember { mutableStateOf(existing.usage) }
+    var inspection by remember { mutableStateOf(existing.inspectionDue?.toString().orEmpty()) }
+    var operator by remember { mutableStateOf(existing.operatorRenewal?.toString().orEmpty()) }
+    fun decimalOrNull(text: String): BigDecimal? = text.trim().ifEmpty { null }?.let { runCatching { MoneyFormat.parseDecimal(it, locale) }.getOrElse { throw ValidationException("error.invalidNumber") } }
 
     FormDialog(
         model.t(if (existing.id.isBlank()) "vehicles.add" else "vehicles.edit"), model.t("common.save"), model.t("common.cancel"),
@@ -483,6 +554,11 @@ private fun VehicleDialog(model: BooksModel, existing: Vehicle, onClose: (String
                         registrationRenewal = optionalDate(registration), insurer = insurer, policyNumber = policy, insuranceRenewal = optionalDate(insurance),
                         status = status, disposalDate = optionalDate(disposalDate), disposalPrice = parseAmount(disposalPrice, c, locale), notes = notes,
                         disposalTransactionId = saleId.takeIf { status == VehicleStatus.SOLD },
+                        details = VehicleDetails(
+                            engine, transmission, drive, decimalOrNull(tank), decimalOrNull(battery), tiresSummer, tiresWinter, oilType, decimalOrNull(oilLitres),
+                            optionalInt(towing), optionalInt(gvwr),
+                        ),
+                        usage = usage, inspectionDue = optionalDate(inspection), operatorRenewal = optionalDate(operator),
                     ),
                 )
             }
@@ -505,7 +581,31 @@ private fun VehicleDialog(model: BooksModel, existing: Vehicle, onClose: (String
                 TextInput(model.t("vehicles.plate"), plate, Modifier.weight(1f)) { plate = it }
                 TextInput(model.t("vehicles.vin"), vin, Modifier.weight(2f)) { vin = it }
             }
-            Picker(model.t("vehicles.driver"), listOf(null) + people, people.firstOrNull { it.id == driverId }, { it?.displayName ?: model.t("common.none") }) { driverId = it?.id }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Picker(model.t("vehicles.driver"), listOf(null) + people, people.firstOrNull { it.id == driverId }, { it?.displayName ?: model.t("common.none") }, Modifier.weight(1f)) { driverId = it?.id }
+                Picker(model.t("vehicles.usage"), VehicleUsage.entries, usage, { model.t("vehicleUsage.$it") }, Modifier.weight(1f)) { usage = it }
+            }
+            // TRP-07: technical details.
+            Text(model.t("vehicles.technical"), style = MaterialTheme.typography.labelLarge)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextInput(model.t("vehicles.engine"), engine, Modifier.weight(1f), supporting = model.t("vehicles.engine.hint")) { engine = it }
+                Picker(model.t("vehicles.transmission"), listOf(null) + Transmission.entries, transmission, { it?.let { t -> model.t("transmission.$t") } ?: model.t("common.none") }, Modifier.weight(1f)) { transmission = it }
+                Picker(model.t("vehicles.drive"), listOf(null) + DriveKind.entries, drive, { it?.let { x -> model.t("drive.$x") } ?: model.t("common.none") }, Modifier.weight(1f)) { drive = it }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (fuel != FuelType.ELECTRIC) TextInput(model.t("vehicles.tankLitres"), tank, Modifier.weight(1f)) { tank = it }
+                if (fuel == FuelType.ELECTRIC || fuel == FuelType.PLUG_IN_HYBRID || fuel == FuelType.HYBRID) TextInput(model.t("vehicles.batteryKwh"), battery, Modifier.weight(1f)) { battery = it }
+                TextInput(model.t("vehicles.tiresSummer"), tiresSummer, Modifier.weight(1f)) { tiresSummer = it }
+                TextInput(model.t("vehicles.tiresWinter"), tiresWinter, Modifier.weight(1f)) { tiresWinter = it }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (fuel != FuelType.ELECTRIC) {
+                    TextInput(model.t("vehicles.oilType"), oilType, Modifier.weight(1f)) { oilType = it }
+                    TextInput(model.t("vehicles.oilLitres"), oilLitres, Modifier.weight(1f)) { oilLitres = it }
+                }
+                TextInput(model.t("vehicles.towingKg"), towing, Modifier.weight(1f)) { towing = it }
+                TextInput(model.t("vehicles.gvwrKg"), gvwr, Modifier.weight(1f)) { gvwr = it }
+            }
             Text(model.t("vehicles.purchase"), style = MaterialTheme.typography.labelLarge)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DateInput(model.t("report.date"), purchaseDate, Modifier.weight(1f)) { purchaseDate = it }
@@ -521,6 +621,11 @@ private fun VehicleDialog(model: BooksModel, existing: Vehicle, onClose: (String
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextInput(model.t("pets.insurer"), insurer, Modifier.weight(1f)) { insurer = it }
                 TextInput(model.t("pets.policy"), policy, Modifier.weight(1f)) { policy = it }
+            }
+            // TRP-09: reminded like the registration; mostly for commercial vehicles.
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DateInput(model.t("vehicles.inspectionDue"), inspection, Modifier.weight(1f)) { inspection = it }
+                if (usage != VehicleUsage.PERSONAL || operator.isNotBlank()) DateInput(model.t("vehicles.operatorRenewal"), operator, Modifier.weight(1f)) { operator = it }
             }
             if (existing.id.isNotBlank()) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -727,14 +832,23 @@ private fun FuelDialog(model: BooksModel, v: Vehicle, existing: FuelEntry, onClo
     var station by remember { mutableStateOf(existing.station.orEmpty()) }
     val payment = remember { PaymentState() }
     var asking by remember { mutableStateOf(false) }
+    // TRP-05, TRP-10: fuel or electricity (a plug-in hybrid takes both), home or public charging, the station as a saved place.
+    var energy by remember { mutableStateOf(existing.energy ?: v.defaultEnergy) }
+    var charging by remember { mutableStateOf(existing.charging ?: Charging.HOME) }
+    val places = remember { books.places.list(includeArchived = true).filter { !it.archived || it.id == existing.placeId } }
+    var place by remember { mutableStateOf(places.firstOrNull { it.id == existing.placeId }) }
+    val electricity = energy == Energy.ELECTRICITY
     FormDialog(
-        model.t(if (v.electric) "vehicles.addCharge" else "vehicles.addFuel") + " · " + v.name, model.t("common.save"), model.t("common.cancel"),
+        model.t(if (electricity) "vehicles.addCharge" else "vehicles.addFuel") + " · " + v.name, model.t("common.save"), model.t("common.cancel"),
         onDismiss = onClose,
         onSave = {
             val ok = model.act {
                 val q = runCatching { MoneyFormat.parseDecimal(quantity, locale) }.getOrElse { throw ValidationException("error.fuelQuantity") }
                 books.vehicles.saveFuel(
-                    existing.copy(date = requiredDate(date), odometer = optionalInt(odometer), quantity = q, cost = parseAmount(cost, v.currency, locale), fullTank = full, station = station),
+                    existing.copy(
+                        date = requiredDate(date), odometer = optionalInt(odometer), quantity = q, cost = parseAmount(cost, v.currency, locale), fullTank = full, station = station,
+                        energy = energy, charging = charging.takeIf { electricity }, placeId = place?.id,
+                    ),
                     payment.draft().takeIf { existing.transactionId == null },
                 )
             }
@@ -742,19 +856,27 @@ private fun FuelDialog(model: BooksModel, v: Vehicle, existing: FuelEntry, onClo
         },
     ) {
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            if (v.takesBoth) Picker(model.t("vehicles.energy"), Energy.entries, energy, { model.t("energy.$it") }) { energy = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DateInput(model.t("report.date"), date, Modifier.weight(1f)) { date = it }
                 TextInput(model.t("vehicles.odometer"), odometer, Modifier.weight(1f)) { odometer = it }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextInput(model.t(if (v.electric) "vehicles.kwhField" else "vehicles.litresField"), quantity, Modifier.weight(1f)) { quantity = it }
+                TextInput(model.t(if (electricity) "vehicles.kwhField" else "vehicles.litresField"), quantity, Modifier.weight(1f)) { quantity = it }
                 AmountInput(model.t("vehicles.cost"), cost, v.currency, locale, Modifier.weight(1f), model::money) { cost = it }
             }
-            LabeledCheckbox(model.t(if (v.electric) "vehicles.fullCharge" else "vehicles.fullTank"), full) { full = it }
+            LabeledCheckbox(model.t(if (electricity) "vehicles.fullCharge" else "vehicles.fullTank"), full) { full = it }
             Text(model.t("vehicles.fullTank.hint"), style = MaterialTheme.typography.bodySmall)
-            TextInput(model.t("vehicles.station"), station) { station = it }
+            if (electricity) Picker(model.t("vehicles.charging"), Charging.entries, charging, { model.t("charging.$it") }) { charging = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Picker(model.t("vehicles.stationPlace"), listOf(null) + places, place, { it?.name ?: model.t("trips.noPlace") }, Modifier.weight(1f)) { p ->
+                    place = p
+                    if (p != null) station = p.name
+                }
+                TextInput(model.t("vehicles.station"), station, Modifier.weight(1f)) { station = it }
+            }
             if (existing.transactionId == null) {
-                PaymentFields(model, v.currency, if (v.electric) "transport.ev_charging" else "transport.fuel", payment)
+                PaymentFields(model, v.currency, if (electricity) "transport.ev_charging" else "transport.fuel", payment)
             } else {
                 Text(model.t("vehicles.paymentLinked"), style = MaterialTheme.typography.bodySmall)
             }

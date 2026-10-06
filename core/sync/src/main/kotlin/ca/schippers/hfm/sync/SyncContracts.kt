@@ -56,7 +56,12 @@ enum class TransferStatus { PENDING, SENT, IMPORTED, FAILED }
  * phone's own queue: contacts travel in [SyncRequest.contacts], never as a [CaptureItem], so a
  * desktop that does not know them still reads the request.
  */
-enum class CaptureKind { RECEIPT, BILL, DOCUMENT, QUICK_EXPENSE, METER_READING, CONTACT }
+enum class CaptureKind {
+    RECEIPT, BILL, DOCUMENT, QUICK_EXPENSE, METER_READING, CONTACT,
+
+    /** TRP-01, TRP-05, TRP-02: like [CONTACT], only marks in the phone's queue what travels in [SyncRequest.trips], [SyncRequest.fuel] and [SyncRequest.places]. */
+    TRIP, FUEL, PLACE,
+}
 
 /**
  * One captured item. [id] is created on the phone, so the desktop imports it at most once however
@@ -132,6 +137,12 @@ data class SyncRequest(
     val items: List<CaptureItem>,
     val referenceVersion: String? = null,
     val contacts: List<PhoneContact> = emptyList(),
+    /** TRP-01: trips driven, started and ended on the phone; a desktop that predates them leaves them queued. */
+    val trips: List<PhoneTrip> = emptyList(),
+    /** TRP-05, TRP-10: fill-ups and charges entered on the phone. */
+    val fuel: List<PhoneFuel> = emptyList(),
+    /** TRP-02: places saved or renamed on the phone; the desktop stores them before the trips that use them. */
+    val places: List<PhonePlace> = emptyList(),
 )
 
 /**
@@ -176,14 +187,20 @@ data class ReferenceData(
     val events: List<RefEvent> = emptyList(),
     /** CAL-03, HLT-03 on the phone: medication refills coming up or overdue. */
     val refills: List<RefRefill> = emptyList(),
+    /** TRP-02: the saved places of the groups the phone's user can see. They stay on the user's devices. */
+    val places: List<RefPlace> = emptyList(),
+    /** TRP-04: trailers (assets of the kind trailer) a trip may tow. */
+    val trailers: List<RefTrailer> = emptyList(),
+    /** TRP-01: the household member the phone's user is, proposed as the driver. */
+    val userMemberId: String? = null,
 ) {
     companion object {
         /**
          * What a phone app understands of the reference data: 1 up to maintenance and budgets, 2
-         * with contacts, 3 with events and refills. A phone that kept its copy with an older app asks for all of it again
+         * with contacts, 3 with events and refills, 4 with places, trailers and the vehicles' fuel type and use. A phone that kept its copy with an older app asks for all of it again
          * ([knownVersion]), since that app dropped what it did not know.
          */
-        const val FORMAT = 3
+        const val FORMAT = 4
 
         /** The version a phone sends: none when its copy was kept by an app reading an older [FORMAT]. */
         fun knownVersion(version: String?, storedFormat: Int): String? = version?.takeIf { storedFormat >= FORMAT }
@@ -204,7 +221,16 @@ data class RefPerson(val id: String, val name: String, val pet: Boolean)
 
 /** A vehicle, or another asset with a meter (MNT-03); [unit] is what the reading counts: KM or HOURS. */
 @Serializable
-data class RefVehicle(val id: String, val name: String, val odometer: Int?, val unit: String = "KM")
+data class RefVehicle(
+    val id: String,
+    val name: String,
+    val odometer: Int?,
+    val unit: String = "KM",
+    /** TRP-05: the vehicle's fuel type (GASOLINE... ELECTRIC), so the phone asks for litres or kWh; none for other assets. */
+    val fuelType: String? = null,
+    /** TRP-03: PERSONAL, COMMERCIAL or MIXED, for the suggested purpose. */
+    val use: String? = null,
+)
 
 @Serializable
 data class RefBill(val name: String, val dueDate: String, val amount: String, val currency: String, val estimated: Boolean, val reminderDays: List<Int>)
@@ -278,6 +304,89 @@ data class RefRefill(
     val reminderDays: Int = 7,
     val forWhom: String? = null,
     val renewal: Boolean = false,
+)
+
+/**
+ * TRP-02: a saved place. [category] is HOME, WORK, CLIENT, STORE, FUEL, GARAGE, MEDICAL or OTHER;
+ * a location fix within [radiusM] metres of [latitude], [longitude] is this place.
+ */
+@Serializable
+data class RefPlace(
+    val id: String,
+    val name: String,
+    val category: String = "OTHER",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val radiusM: Int = 150,
+    val address: String? = null,
+    val province: String? = null,
+)
+
+/** TRP-04: a trailer a vehicle can tow. */
+@Serializable
+data class RefTrailer(val id: String, val name: String)
+
+/**
+ * TRP-02: a place saved or renamed on the phone. [id] is the place's own (made on the phone for a new
+ * one); [changeId] names this change, so the desktop applies it at most once.
+ */
+@Serializable
+data class PhonePlace(
+    val id: String,
+    val changeId: String,
+    val createdAtMillis: Long,
+    val name: String,
+    val category: String = "OTHER",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val radiusM: Int = 150,
+)
+
+/**
+ * TRP-01, TRP-03, TRP-04: a trip driven, from Start to Arrive. Times are the phone's local time,
+ * "yyyy-MM-ddTHH:mm"; the distance is [endOdometer] less [startOdometer]. Each end names a saved
+ * place ([startPlaceId]) or, with no place, what to show ([startPlace]: a name or the coordinates).
+ * [purpose] is BUSINESS, EMPLOYMENT, MEDICAL or PERSONAL; [load] NONE, TOWING or HEAVY.
+ */
+@Serializable
+data class PhoneTrip(
+    val id: String,
+    val createdAtMillis: Long,
+    val vehicleId: String,
+    val start: String,
+    val end: String,
+    val startOdometer: Int,
+    val endOdometer: Int,
+    val purpose: String = "PERSONAL",
+    val driverId: String? = null,
+    val startPlaceId: String? = null,
+    val startPlace: String? = null,
+    val endPlaceId: String? = null,
+    val endPlace: String? = null,
+    val load: String = "NONE",
+    val trailerId: String? = null,
+    val passengers: List<String> = emptyList(),
+    val notes: String? = null,
+)
+
+/**
+ * TRP-05, TRP-10: a fill-up or charge. [quantity] and [cost] are decimal strings, litres or kWh as
+ * [energy] says (FUEL or ELECTRICITY); [charging] is HOME or PUBLIC for a charge.
+ */
+@Serializable
+data class PhoneFuel(
+    val id: String,
+    val createdAtMillis: Long,
+    val vehicleId: String,
+    val date: String,
+    val quantity: String,
+    val odometer: Int? = null,
+    val cost: String? = null,
+    val fullTank: Boolean = true,
+    val energy: String = "FUEL",
+    val charging: String? = null,
+    val placeId: String? = null,
+    val station: String? = null,
 )
 
 /** A phone number or email with its label ("Office", "Cell"). */
