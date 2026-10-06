@@ -298,7 +298,15 @@ Pour un relevé de carte de crédit, un relevé bancaire, un relevé de placemen
 
 - rapprochez un relevé lu par l’IA, voir [Rapprocher un relevé lu par l’IA](documents#ai-statement) ;
 - inscrivez un talon de paie comme votre paie, voir [Inscrire la paie à partir d’un talon de paie](documents#pay-stub) ;
-- joignez un relevé de prestations à une réclamation dans l’écran [Réclamations médicales](medical).
+- joignez un relevé de prestations à la réclamation à laquelle il répond, ici même (voir [Associer un relevé de prestations](documents#eob-match)), ou dans l’écran [Réclamations médicales](medical).
+
+### Associer un relevé de prestations {#eob-match}
+@index: relevé de prestations; EOB; associer une réclamation; remboursement
+
+Pour un document de la sorte **Relevé de prestations**, la fenêtre énumère sous « Réclamations auxquelles ce relevé de prestations peut répondre » les réclamations encore en attente de paiement faites pour le **Total** du document ou plus, et soumises à sa **Date** ou avant, le montant le plus proche d’abord (au plus cinq). Chaque ligne donne la personne, le service et sa date, le montant réclamé et le régime.
+
+- **Joindre à cette réclamation** : joint le document à cette réclamation, le classe et ferme la fenêtre. Inscrivez ensuite ce que le régime a payé avec **Inscrire le paiement** sur la réclamation, sous [Réclamations médicales](medical).
+- Sans total, la fenêtre demande d’abord le montant payé par l’assureur. Quand rien ne correspond, elle l’indique ; joignez-le alors à partir de la réclamation.
 
 ### Joint à {#attached-to}
 

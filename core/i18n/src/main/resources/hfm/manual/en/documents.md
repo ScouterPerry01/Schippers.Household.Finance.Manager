@@ -298,7 +298,15 @@ For a credit card statement, bank statement, investment statement, pay stub or e
 
 - reconcile a statement read by AI, see [Reconcile a statement read by AI](documents#ai-statement);
 - record a pay stub as your pay, see [Record the pay from a pay stub](documents#pay-stub);
-- attach an explanation of benefits to a claim on the [Medical claims](medical) screen.
+- attach an explanation of benefits to the claim it answers, right here (see [Match an explanation of benefits](documents#eob-match)), or on the [Medical claims](medical) screen.
+
+### Match an explanation of benefits {#eob-match}
+@index: explanation of benefits; EOB; match claim; reimbursement
+
+For a document of the kind **Explanation of benefits**, the window lists under "Claims this explanation of benefits may answer" the claims still waiting for payment that were claimed at the document's **Total** or more, and submitted on or before its **Date**, closest amount first (at most five). Each line gives the person, the service and its date, the amount claimed and the plan.
+
+- **Attach to this claim**: attaches the document to that claim, files it, and closes the window. Then record what the plan paid with **Record the payment** on the claim, under [Medical claims](medical).
+- Without a total, the window asks for the amount paid by the insurer first. When nothing matches, it says so; attach it from the claim instead.
 
 ### Attached to {#attached-to}
 

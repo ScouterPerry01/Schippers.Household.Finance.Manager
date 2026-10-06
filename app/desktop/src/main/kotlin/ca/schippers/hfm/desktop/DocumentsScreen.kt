@@ -295,6 +295,15 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                 AiPart(model, doc, kind, onClose)
                 // SAL-02: a pay stub is recorded with or without AI; what AI read fills the form, else it is typed.
                 if (kind == DocumentKind.PAY_STUB) PayStubPart(model, doc, onClose)
+                // MED-08: an explanation of benefits proposes the claims it may answer.
+                if (kind == DocumentKind.EOB) {
+                    EobPart(
+                        model, doc,
+                        runCatching { parseAmount(amount, currency, locale) }.getOrNull() ?: doc.amount,
+                        runCatching { LocalDate.parse(date.trim()) }.getOrNull() ?: doc.date,
+                        onClose,
+                    )
+                }
                 VoicePart(model, doc)
                 Duplicates(model, doc)
                 LabeledCheckbox(model.t("documents.keepForever"), keep) { keep = it }
@@ -440,6 +449,39 @@ private fun PayStubPart(model: BooksModel, doc: VaultDocument, onClose: () -> Un
     if (open) {
         val read = remember(doc.id) { model.books.ai.payStub(doc.id, ca.schippers.hfm.money.Currency.CAD) }
         PayStubDialog(model, null, read, doc.id) { done -> open = false; if (done) onClose() }
+    }
+}
+
+/**
+ * MED-08: claims waiting for payment that this explanation of benefits may answer (claimed at least
+ * its amount, submitted on or before its date), likeliest first; one click attaches it to the claim.
+ */
+@Composable
+private fun EobPart(model: BooksModel, doc: VaultDocument, amount: ca.schippers.hfm.money.Money?, date: LocalDate?, onClose: () -> Unit) {
+    val books = model.books
+    if (amount == null || !amount.isPositive) {
+        Text(model.t("documents.eobNeedsAmount"), style = MaterialTheme.typography.bodySmall)
+        return
+    }
+    val candidates = remember(model.revision, amount, date) { books.medical.eobCandidates(amount, date ?: today()).take(5) }
+    val plans = remember(model.revision) { books.medical.plans().associate { it.id to it.name } }
+    val people = remember { books.members.list().associate { it.id to it.displayName } }
+    Text(model.t("documents.eobMatches"), style = MaterialTheme.typography.titleSmall)
+    if (candidates.isEmpty()) Text(model.t("documents.eobNone"), style = MaterialTheme.typography.bodySmall)
+    for ((e, c) in candidates) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                model.t("documents.eobLine", people[e.memberId].orEmpty(), model.t("medService.${e.service}"), model.date(e.serviceDate), model.money(c.claimed), plans[c.planId].orEmpty()),
+                Modifier.weight(1f), style = MaterialTheme.typography.bodySmall,
+            )
+            OutlinedButton(onClick = {
+                val done = model.act {
+                    books.medical.attach(ca.schippers.hfm.books.MedicalService.CLAIM, c.id, doc.id)
+                    books.documents.setStatus(doc.id, DocumentStatus.FILED)
+                }
+                if (done != null) { model.lastImportMessage = model.t("documents.eobAttached"); onClose() }
+            }) { Text(model.t("documents.eobAttach")) }
+        }
     }
 }
 
