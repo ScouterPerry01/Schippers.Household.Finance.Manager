@@ -2,7 +2,7 @@
 
 *Version française : https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr*
 
-Effective: October 3, 2026
+Effective: October 6, 2026
 
 RANN's Roost (for Windows and Linux) and RANN's Roost Mobile (for Android) are published by Perry Schippers, trading as RANN, in Canada ("RANN", "we"). This policy covers both apps. It is published at https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en.
 
@@ -22,6 +22,16 @@ RANN never has a copy and cannot recover your data or your password.
 ## Between your phone and your computer
 
 The phone sends captures straight to your computer over your home network. Every exchange is encrypted end to end with a key the two devices create when you pair them. Nothing passes through RANN or any other company.
+
+## Calendars on your phone
+
+The phone app can bring the calendars your phone already shows (Google, Outlook or Exchange, Samsung and others) to your computer. It is off until you turn it on in the app's Settings, and Android then asks you for calendar access.
+
+- The app reads only the calendars you tick, for the number of days ahead you choose: each item's title, place, start and end. It does not read descriptions, guests, attachments or reminders, and it never changes your calendars.
+- The app never signs in to your calendar accounts. It reads what Android already keeps on the phone.
+- What it reads goes only to your own computer, encrypted end to end like your captures, over your home network or through your own cloud folder or email. RANN and the cloud or email provider cannot read it.
+- On your computer, each calendar is kept private, shown to the other people of your household as busy times only, or shared with them, as you choose. Private calendars are kept in your own encrypted account group.
+- Turning it off stops all reading, and the calendars brought in before are removed from your computer at the next transfer. You can also withdraw the permission in Android's settings at any time.
 
 ## Location on the phone
 

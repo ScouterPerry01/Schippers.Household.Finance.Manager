@@ -1,6 +1,9 @@
 package ca.schippers.hfm.desktop
 
 import ca.schippers.hfm.books.Account
+import ca.schippers.hfm.sync.CalendarInstance
+import ca.schippers.hfm.sync.CalendarSnapshot
+import ca.schippers.hfm.sync.CalendarVisibility
 import ca.schippers.hfm.books.CardReward
 import ca.schippers.hfm.books.Contact
 import ca.schippers.hfm.books.ContactDetail
@@ -359,6 +362,7 @@ object DemoHousehold {
         importStatement(books, chequing, today)
         addBills(books, chequing, savings, visa, today)
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
+        addBroughtInCalendars(books, today)
         addPetAndCarRecords(books, group, visa, rex, civic, today)
         addAssets(books, group, visa, alex, sam, lea, civic, today)
         addExtras(books, group, chequing, visa, alex, sam, civic, today)
@@ -630,6 +634,43 @@ object DemoHousehold {
         books.health.saveImmunization(Immunization("", group, rex.id, l("Rage", "Rabies"), start.plus(DatePeriod(days = 20)), vet.id, start.plus(DatePeriod(days = 20, years = 3)), null))
         books.health.saveImmunization(Immunization("", group, rex.id, "DHPP", start.plus(DatePeriod(days = 20)).minus(DatePeriod(years = 1)), vet.id, today.plus(DatePeriod(days = 18)), null))
         books.calendar.create(EventDraft(group, l("Toilettage de Rex", "Rex's grooming"), EventCategory.PET, today.plus(DatePeriod(days = 4)), LocalTime(13, 30), 90, l("Patte de velours", "Pampered Paws"), memberId = rex.id))
+    }
+
+    /**
+     * CSY-01 to CSY-04: two calendars Alex brought in from the phone: work, busy only (one lunch shared,
+     * one appointment kept private), and the family's, shared.
+     */
+    private fun addBroughtInCalendars(books: Books, today: LocalDate) {
+        fun day(n: Int) = today.plus(DatePeriod(days = n)).toString()
+        fun item(id: String, n: Int, start: String?, end: String?, title: String, place: String? = null, vis: CalendarVisibility? = null, days: Int = 0) =
+            CalendarInstance(id, day(n), day(n + days), start, end, title, place, vis)
+        val now = System.currentTimeMillis()
+        val until = day(60)
+        books.broughtIn.receive(
+            "demo-phone",
+            CalendarSnapshot(
+                "demo-work", "3", now, l("Travail", "Work"), l("alex@employeur.ca", "alex@employer.ca"), 0x3F51B5, CalendarVisibility.BUSY, day(0), until,
+                listOf(
+                    item("101", 2, "10:00", "11:30", l("Planification trimestrielle", "Quarterly planning"), l("Salle 4", "Room 4")),
+                    item("102", 3, "14:00", "15:00", l("Appel client", "Client call")),
+                    item("103", 4, "12:00", "13:00", l("Dîner d'équipe", "Team lunch"), l("Café du Monde", "The Wellington"), CalendarVisibility.SHARED),
+                    item("104", 5, "07:30", "08:15", l("Physiothérapie", "Physio"), vis = CalendarVisibility.PRIVATE),
+                    item("105", 10, "09:00", "16:00", l("Formation", "Training day")),
+                ),
+            ),
+            now,
+        )
+        books.broughtIn.receive(
+            "demo-phone",
+            CalendarSnapshot(
+                "demo-family", "5", now, l("Famille", "Family"), "alex.demo@gmail.com", 0x43A047, CalendarVisibility.SHARED, day(0), until,
+                listOf(
+                    item("201", 6, null, null, l("Tournoi de soccer de Léa", "Maya's soccer tournament"), l("Parc Victoria", "Mooney's Bay"), days = 1),
+                    item("202", 8, "17:30", "20:00", l("Souper chez grand-maman", "Dinner at Grandma's")),
+                ),
+            ),
+            now,
+        )
     }
 
     /** Appointments of several kinds, and health records kept in Alex's private group. */

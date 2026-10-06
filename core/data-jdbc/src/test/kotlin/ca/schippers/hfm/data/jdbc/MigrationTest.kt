@@ -669,17 +669,27 @@ class MigrationTest {
     }
 
     @Test
-    fun `version 30 ledgers keep their vehicles, trips and fill-ups and gain places and trip details`() {
+    fun `version 30 ledgers gain calendars brought in, places and trip and vehicle details`() {
         val file = temp.resolve("ledger30.db")
         older("../data/src/main/sqldelight/ledger/schemas/30.db", file, 30).use { driver ->
+            driver.execute(null, "INSERT INTO event(id, title, category, start_date, created_at, updated_at) VALUES ('e', 'Garage', 'VEHICLE', '2026-10-05', 0, 0)", 0)
             driver.execute(null, "INSERT INTO vehicle(id, name, created_at, updated_at) VALUES ('v', 'Civic', 0, 0)", 0)
             driver.execute(null, "INSERT INTO fuel_entry(id, vehicle_id, date, odometer, quantity, created_at) VALUES ('f', 'v', '2026-09-01', 61200, '41.8', 0)", 0)
             driver.execute(null, "INSERT INTO trip(id, date, vehicle_id, destination, km_tenths, round_trip, purpose) VALUES ('t', '2026-09-02', 'v', 'Client', 280, 1, 'BUSINESS')", 0)
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(31L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val db = LedgerDatabase(driver)
+            assertEquals("Garage", db.calendarQueries.eventById("e").executeAsOne().title, "events stay")
+            val q = db.broughtInCalendarQueries
+            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "BUSY", null, 1, 1)
+            q.insertBroughtInItem("i", "c", "10", "BUSY", null, null, "2026-10-07", "10:00", "2026-10-07", "11:00", 1)
+            q.upsertBroughtInCalendar("c", "u", "phone", "Work", null, null, "SHARED", "g", 2, 2)
+            assertEquals(1, q.broughtInItemsOf("c").executeAsList().size, "saving the calendar again keeps its items")
+            q.deleteBroughtInCalendar("c")
+            assertEquals(0L, count(driver, "SELECT count(*) FROM brought_in_item"), "and deleting it removes them")
             val vehicle = db.vehiclesQueries.vehicleById("v").executeAsOne()
             assertEquals("PERSONAL", vehicle.vehicle_use, "existing vehicles are for personal use")
             assertEquals(null, vehicle.engine)
