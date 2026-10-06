@@ -68,7 +68,7 @@ data class QifFile(
     val investments: List<QifInvestment>,
     /** What the dates say: decided when any day is over 12, otherwise null (ask the user). */
     val dateOrder: DateOrder?,
-    val warnings: List<String>,
+    val warnings: List<ImportNote>,
     val securities: List<QifSecurity> = emptyList(),
 )
 
@@ -88,7 +88,7 @@ object QifParser {
         val transactions = ArrayList<QifTransaction>()
         val investments = ArrayList<QifInvestment>()
         val securities = ArrayList<QifSecurity>()
-        val warnings = ArrayList<String>()
+        val warnings = ArrayList<ImportNote>()
         var section = ""
         var currentAccount: QifAccount? = null
         var autoSwitch = false
@@ -144,7 +144,7 @@ object QifParser {
             record += line
         }
         flush()
-        if (!autoSwitch && accounts.isEmpty() && transactions.isNotEmpty()) warnings += "No account list: everything was read into one account."
+        if (!autoSwitch && accounts.isEmpty() && transactions.isNotEmpty()) warnings += ImportNote.of("qifOneAccount", "No account list: everything was read into one account.")
         return QifFile(accounts.values.toList(), categories, classes, transactions, investments, dateOrder(transactions.map { it.date } + investments.map { it.date }), warnings, securities)
     }
 
@@ -159,8 +159,8 @@ object QifParser {
         }
     }
 
-    private fun parseTransaction(fields: List<String>, account: String, warnings: MutableList<String>): QifTransaction? {
-        val date = value(fields, 'D')?.let(::date) ?: run { warnings += "A transaction without a valid date was skipped in $account."; return null }
+    private fun parseTransaction(fields: List<String>, account: String, warnings: MutableList<ImportNote>): QifTransaction? {
+        val date = value(fields, 'D')?.let(::date) ?: run { warnings += ImportNote.of("qifNoDate", "A transaction without a valid date was skipped in $account.", account); return null }
         val amount = (value(fields, 'T') ?: value(fields, 'U'))?.let(::amount) ?: BigDecimal.ZERO
         val (category, transfer, classList) = categoryField(value(fields, 'L'))
         val splits = ArrayList<QifSplit>()
@@ -186,8 +186,8 @@ object QifParser {
         )
     }
 
-    private fun parseInvestment(fields: List<String>, account: String, warnings: MutableList<String>): QifInvestment? {
-        val date = value(fields, 'D')?.let(::date) ?: run { warnings += "An investment action without a valid date was skipped in $account."; return null }
+    private fun parseInvestment(fields: List<String>, account: String, warnings: MutableList<ImportNote>): QifInvestment? {
+        val date = value(fields, 'D')?.let(::date) ?: run { warnings += ImportNote.of("qifInvestmentNoDate", "An investment action without a valid date was skipped in $account.", account); return null }
         val (_, transfer, _) = categoryField(value(fields, 'L'))
         return QifInvestment(
             account, date, value(fields, 'N').orEmpty(), value(fields, 'Y'), value(fields, 'I')?.let(::amount), value(fields, 'Q')?.let(::amount),

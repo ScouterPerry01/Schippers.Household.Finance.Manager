@@ -20,7 +20,7 @@ L’onglet Sommaire d’urgence rassemble le tout : les papiers et les contacts 
 
 ## Le remettre
 
-- Choisissez Enregistrer en PDF…. Laissez Le protéger par un mot de passe coché, et donnez le mot de passe séparément, par téléphone ou en personne.
+- Choisissez Enregistrer en PDF… pour enregistrer le sommaire. Laissez Le protéger par un mot de passe coché, et donnez le mot de passe séparément, par téléphone ou en personne. Le fichier ne peut pas être ouvert sans lui.
 - Choisissez Imprimer pour une copie papier.
 
 Gardez toute copie en lieu sûr.

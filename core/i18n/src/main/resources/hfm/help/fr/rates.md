@@ -4,7 +4,7 @@ Cet écran garde les taux de change et les cours qui servent à tout évaluer en
 
 ## Taux de change
 
-Les montants en devises sont convertis au taux quotidien de la Banque du Canada.
+Les montants en devises sont convertis au taux quotidien de la Banque du Canada. Chaque devise utilisée est listée avec son dernier taux, sa date et sa source.
 
 - Cliquez sur Mettre à jour les taux pour télécharger les derniers taux de la Banque du Canada.
 - Cliquez sur Taux récents à côté d’une devise pour voir ses taux des dernières semaines. Un taux entré à la main peut y être supprimé.

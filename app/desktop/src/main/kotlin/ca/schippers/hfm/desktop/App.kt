@@ -79,9 +79,16 @@ fun AppTheme(state: AppState, content: @Composable () -> Unit) {
         LocalDarkTheme provides dark,
         androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(density.density, density.fontScale * state.textScale),
     ) {
-        MaterialTheme(colorScheme = if (dark) darkColorScheme() else lightColorScheme(), content = content)
+        MaterialTheme(colorScheme = appColorScheme(dark), content = content)
     }
 }
+
+/**
+ * NFR-08: Material's colours, with the outline (used for hint text) darkened in the light theme
+ * and lightened in the dark one so hints reach 4.5:1 on every surface (ContrastTest).
+ */
+fun appColorScheme(dark: Boolean): androidx.compose.material3.ColorScheme =
+    if (dark) darkColorScheme(outline = androidx.compose.ui.graphics.Color(0xFFBAB5C0)) else lightColorScheme(outline = androidx.compose.ui.graphics.Color(0xFF5F5B66))
 
 @Composable
 private fun AppContent(state: AppState) {
@@ -186,7 +193,7 @@ private fun RestoreButton(state: AppState) {
         if (chooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) return@OutlinedButton
         val backup = chooser.selectedFile.toPath()
         val parent = chooseFolder(state.t("welcome.restore.where")) ?: return@OutlinedButton
-        val base = backup.fileName.toString().substringBefore("-20").ifBlank { "Household" }
+        val base = backup.fileName.toString().substringBefore("-20").ifBlank { state.t("welcome.restore.defaultName") }
         var target = parent.resolve("$base.hfm")
         var n = 2
         while (Files.exists(target)) target = parent.resolve("$base ($n).hfm").also { n++ }
@@ -245,7 +252,10 @@ private fun CreateScreen(state: AppState) {
                     try {
                         val dir = parent!!.resolve("${name.trim()}.hfm")
                         val created = withContext(Dispatchers.IO) {
-                            state.store.create(dir, name, login, adminName, password.toCharArray(), locale = state.language.locale.toLanguageTag(), province = province!!.name)
+                            state.store.create(
+                                dir, name, login, adminName, password.toCharArray(), locale = state.language.locale.toLanguageTag(), province = province!!.name,
+                                sharedGroupName = state.t("group.sharedName"),
+                            )
                         }
                         state.remember(dir)
                         state.screen = Screen.ShowRecoveryKey(created.session, created.recoveryKey)

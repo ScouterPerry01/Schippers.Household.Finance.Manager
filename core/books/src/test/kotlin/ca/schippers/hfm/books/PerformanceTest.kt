@@ -92,6 +92,29 @@ class PerformanceTest {
         println("Generated 30 years of investments in $investing")
         val (_, filing) = measureTimedValue { documents(group.id) }
         println("Generated $DOCUMENTS documents in $filing")
+        val (_, people) = measureTimedValue { contacts(group.id) }
+        println("Generated $CONTACTS contacts in $people")
+    }
+
+    /** CON-01: a large address book, each contact with a phone, an email and a client number, a few linked to payees. */
+    private fun contacts(groupId: String) {
+        val trades = listOf("Plomberie", "Pharmacie", "Clinique", "Garage", "Notaire", "Assurances", "Banque", "École")
+        val kinds = ContactKind.entries
+        val payees = books.payees.list()
+        repeat(CONTACTS) { i ->
+            val c = books.contacts.save(
+                Contact(
+                    "", groupId, "${trades[i % trades.size]} Roy $i", purpose = "For the house $i", kinds = setOf(kinds[i % kinds.size]),
+                    details = listOf(
+                        ContactDetail(type = DetailType.PHONE, label = "Office", value = "418 555-${(1000 + i).toString().takeLast(4)}"),
+                        ContactDetail(type = DetailType.EMAIL, value = "contact$i@example.ca"),
+                        ContactDetail(type = DetailType.NUMBER, label = "Client", value = "${100000 + i}"),
+                    ),
+                    notes = if (i % 3 == 0) "Call before ten" else null,
+                ),
+            )
+            if (i % 4 == 0) books.contacts.link(c.id, LinkRole.SAME_AS, LinkTarget.PAYEE, payees[i % payees.size].id)
+        }
     }
 
     private val realDocuments = mutableListOf<String>()
@@ -211,7 +234,38 @@ class PerformanceTest {
         timed("investment income and gains, one tax year", 3000) { books.taxSlips.report(today.year - 1) }
     }
 
+    /** Screens and reports added in Phase 5: contacts, the tax package and estimate, custom reports and the year in review. */
+    @Test
+    fun `phase 5 screens and reports`() {
+        val contacts = timed("contacts list, 2,000", 1000) { books.contacts.list() }
+        assertEquals(CONTACTS, contacts.size)
+        val found = timed("contacts, text search", 1000) { books.contacts.list(ContactFilter(text = "plomberie")) }
+        assertEquals(CONTACTS / 8, found.size)
+        timed("contact links of a payee", 1000) { books.contacts.linkedTo(LinkTarget.PAYEE, books.payees.list().first().id) }
+        val search = timed("search with contacts", 1000) { books.search.search("roy 12") }
+        assertTrue(search.contacts.isNotEmpty())
+        val year = today.year - 1
+        val pkg = timed("tax package, one year", 3000) { books.taxPackage.build(year) }
+        val member = books.members.list().firstOrNull()?.id ?: books.members.create("Perry", ca.schippers.hfm.domain.MemberKind.ADULT).id
+        timed("income tax estimate", 3000) { books.incomeTax.estimate(year, member, entered = emptyMap()) }
+        timed("income tax estimate, package already built", 1000) { books.incomeTax.estimate(year, member, entered = emptyMap(), pkg = pkg) }
+        val all = ReportFilter(start, today)
+        val pivot = timed("custom report, 30 years by category and year", 3000) {
+            books.customReports.run(all, CustomLayout(ReportDimension.TOP_CATEGORY, ReportDimension.YEAR), { it })
+        }
+        assertEquals(31, pivot.columns.size)
+        timed("custom report, 30 years by payee and month", 3000) {
+            books.customReports.run(all, CustomLayout(ReportDimension.PAYEE, ReportDimension.MONTH, maxRows = 25), { it })
+        }
+        timed("custom report, one year by person and category", 1000) {
+            books.customReports.run(ReportFilter(today.minus(DatePeriod(years = 1)), today), CustomLayout(ReportDimension.PERSON, ReportDimension.CATEGORY), { it })
+        }
+        val review = timed("year in review", 3000) { books.yearReview.review(year, { it }) }
+        assertTrue(review.spending.isPositive)
+    }
+
     private companion object {
+        const val CONTACTS = 2_000
         const val TRANSACTIONS = 250_000
         const val DOCUMENTS = 50_000
         const val REAL_DOCUMENTS = 300

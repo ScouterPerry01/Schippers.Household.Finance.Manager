@@ -8,6 +8,7 @@ The list on the left shows non-registered accounts first, then registered plans,
 
 - Choose an account, then click Add transaction to record a buy, sell, income, reinvested income (DRIP), return of capital, split, merger, fee or units moved in or out.
 - Click Import statement… to read a brokerage statement (OFX, QFX or CSV). Transactions already there are not added twice.
+- A PDF statement or trade confirmation read by AI goes into the account from its document, in Documents.
 - Click Update prices to enter the latest price of each security. Without a price, a security counts at its book cost.
 
 Each account has three tabs: Holdings, Transactions and Statements.

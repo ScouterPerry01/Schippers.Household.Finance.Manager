@@ -54,10 +54,10 @@ object Http {
             .header("User-Agent", "RANNsRoost/1.0").GET().build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
         response.body().use { body ->
-            check(response.statusCode() == 200) { "HTTP ${response.statusCode()}" }
+            if (response.statusCode() != 200) throw HttpStatusException(response.statusCode())
             // A public service's answer is not trusted: anything larger than any real answer is refused.
             val bytes = body.readNBytes(MAX_BYTES + 1)
-            check(bytes.size <= MAX_BYTES) { "Answer too large" }
+            if (bytes.size > MAX_BYTES) throw AnswerTooLargeException()
             return String(bytes, Charsets.UTF_8)
         }
     }
@@ -96,7 +96,7 @@ fun RatesScreen(model: BooksModel) {
                 busy = true
                 scope.launch {
                     val result = withContext(Dispatchers.IO) { runCatching { books.rates.updateAll(today, Http::get) } }
-                    status = result.fold({ model.t("rates.updated", it) }, { model.t("rates.failed", it.message.orEmpty()) })
+                    status = result.fold({ model.t("rates.updated", it) }, { model.t("rates.failed", networkError(it, model.language)) })
                     busy = false
                     model.changed()
                 }
@@ -205,7 +205,7 @@ private fun MarketPrices(model: BooksModel) {
                 val result = withContext(Dispatchers.IO) { runCatching { books.prices.updateAll(today, Http::get) } }
                 status = result.fold(
                     { r -> model.t("prices.updated", r.total) + if (r.problems.isNotEmpty()) " " + model.t("prices.problems", r.problems.joinToString("; ")) else "" },
-                    { model.t("rates.failed", it.message.orEmpty()) },
+                    { model.t("rates.failed", networkError(it, model.language)) },
                 )
                 busy = false
                 model.changed()

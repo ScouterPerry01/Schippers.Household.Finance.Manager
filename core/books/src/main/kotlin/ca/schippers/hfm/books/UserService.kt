@@ -158,7 +158,7 @@ class UserService internal constructor(private val books: Books) {
         /** The actions recorded in the activity log, each with a name in both languages. */
         val ACTIONS = listOf(
             "ACTIVATE", "BACKUP", "BACKUP_SETTINGS", "CHANGE_PASSWORD", "CREATE", "DEACTIVATE", "DELETE", "DELETE_BUDGET", "EXPORT", "IMPORT", "LINK",
-            "MATCH", "MERGE", "PAID", "PAIR", "RECONCILE", "RESET_PASSWORD", "REVEAL", "REVOKE", "SET_BUDGET", "SET_PERMISSION", "SET_RATE", "SET_ROLE",
+            "MATCH", "MERGE", "PAID", "PAIR", "RECONCILE", "RESET_PASSWORD", "REVEAL", "REVEAL_FAILED", "REVOKE", "SET_BUDGET", "SET_PERMISSION", "SET_RATE", "SET_ROLE",
             "UNDO_RECONCILE", "UPDATE",
         )
 

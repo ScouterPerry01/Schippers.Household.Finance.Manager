@@ -34,8 +34,11 @@ object SchemaCheck {
 
     private val DATE = Regex("""\d{4}-\d{2}-\d{2}""")
 
-    /** Problems of [value] against [schema], each with its JSON path; empty when it conforms. */
-    fun validate(value: JsonElement, schema: JsonObject): List<String> = ArrayList<String>().also { check(value, schema, "$", it) }
+    /** Problems of [value] against [schema], each with its JSON path, in English; empty when it conforms. */
+    fun validate(value: JsonElement, schema: JsonObject): List<String> = validateProblems(value, schema).map { it.english }
+
+    /** [validate] as problems the screen can show in the user's language. */
+    fun validateProblems(value: JsonElement, schema: JsonObject): List<AiProblem> = ArrayList<AiProblem>().also { check(value, schema, "$", it) }
 
     /** The schema as sent to the provider. */
     fun forApi(schema: JsonObject): JsonObject = strip(schema) as JsonObject
@@ -44,18 +47,21 @@ object SchemaCheck {
      * Why a schema added by the user cannot be used, or nothing. The API needs every object closed
      * with `additionalProperties: false`, and references and recursion are not supported here.
      */
-    fun problems(schema: JsonObject): List<String> = ArrayList<String>().also { findProblems(schema, "$", it) }
+    fun problems(schema: JsonObject): List<String> = schemaProblems(schema).map { it.english }
 
-    private fun findProblems(s: JsonObject, path: String, out: MutableList<String>) {
-        if ("\$ref" in s || "\$defs" in s || "definitions" in s) out += "$path: references (\$ref) are not supported"
+    /** [problems] as problems the screen can show in the user's language. */
+    fun schemaProblems(schema: JsonObject): List<AiProblem> = ArrayList<AiProblem>().also { findProblems(schema, "$", it) }
+
+    private fun findProblems(s: JsonObject, path: String, out: MutableList<AiProblem>) {
+        if ("\$ref" in s || "\$defs" in s || "definitions" in s) out += AiProblem("references", "$path: references (\$ref) are not supported", path)
         val type = types(s)
         if ("object" in type) {
-            if (s["additionalProperties"] != JsonPrimitive(false)) out += "$path: objects need \"additionalProperties\": false"
+            if (s["additionalProperties"] != JsonPrimitive(false)) out += AiProblem("notClosed", "$path: objects need \"additionalProperties\": false", path)
             s["properties"]?.jsonObject?.forEach { (k, v) -> (v as? JsonObject)?.let { findProblems(it, "$path.$k", out) } }
         }
         (s["items"] as? JsonObject)?.let { findProblems(it, "$path[]", out) }
         listOf("anyOf", "allOf").forEach { key -> (s[key] as? JsonArray)?.forEachIndexed { i, e -> (e as? JsonObject)?.let { findProblems(it, "$path/$key[$i]", out) } } }
-        if (type.isEmpty() && "enum" !in s && "const" !in s && "anyOf" !in s && "allOf" !in s) out += "$path: no type"
+        if (type.isEmpty() && "enum" !in s && "const" !in s && "anyOf" !in s && "allOf" !in s) out += AiProblem("noType", "$path: no type", path)
     }
 
     private fun strip(e: JsonElement): JsonElement = when (e) {
@@ -74,48 +80,48 @@ object SchemaCheck {
         else -> emptySet()
     }
 
-    private fun check(v: JsonElement, s: JsonObject, path: String, out: MutableList<String>) {
+    private fun check(v: JsonElement, s: JsonObject, path: String, out: MutableList<AiProblem>) {
         (s["anyOf"] as? JsonArray)?.let { options ->
-            if (options.none { o -> validate(v, o.jsonObject).isEmpty() }) out += "$path: matches none of the allowed forms"
+            if (options.none { o -> validate(v, o.jsonObject).isEmpty() }) out += AiProblem("noForm", "$path: matches none of the allowed forms", path)
         }
         (s["allOf"] as? JsonArray)?.forEach { o -> check(v, o.jsonObject, path, out) }
-        s["const"]?.let { if (it != v) out += "$path: must be $it" }
-        (s["enum"] as? JsonArray)?.let { if (v !in it) out += "$path: ${short(v)} is not one of ${it.joinToString { e -> short(e) }}" }
+        s["const"]?.let { if (it != v) out += AiProblem("mustBe", "$path: must be $it", path, it.toString()) }
+        (s["enum"] as? JsonArray)?.let { if (v !in it) out += AiProblem("notOneOf", "$path: ${short(v)} is not one of ${it.joinToString { e -> short(e) }}", path, short(v), it.joinToString { e -> short(e) }) }
         val type = types(s)
         if (type.isNotEmpty() && type.none { matches(v, it) }) {
-            out += "$path: expected ${type.joinToString(" or ")}, found ${short(v)}"
+            out += AiProblem("expected", "$path: expected ${type.joinToString(" or ")}, found ${short(v)}", path, type.joinToString(" | "), short(v))
             return
         }
         when {
             v is JsonObject -> {
                 val props = s["properties"]?.jsonObject ?: JsonObject(emptyMap())
-                s["required"]?.jsonArray?.forEach { r -> r.jsonPrimitive.contentOrNull?.let { if (it !in v) out += "$path: \"$it\" is missing" } }
+                s["required"]?.jsonArray?.forEach { r -> r.jsonPrimitive.contentOrNull?.let { if (it !in v) out += AiProblem("missing", "$path: \"$it\" is missing", path, it) } }
                 for ((k, child) in v) {
                     val sub = props[k]
                     if (sub == null) {
-                        if (s["additionalProperties"] == JsonPrimitive(false)) out += "$path: \"$k\" is not allowed"
+                        if (s["additionalProperties"] == JsonPrimitive(false)) out += AiProblem("notAllowed", "$path: \"$k\" is not allowed", path, k)
                     } else {
                         check(child, sub.jsonObject, "$path.$k", out)
                     }
                 }
-                s["minProperties"]?.jsonPrimitive?.intOrNull?.let { if (v.size < it) out += "$path: fewer than $it fields" }
+                s["minProperties"]?.jsonPrimitive?.intOrNull?.let { if (v.size < it) out += AiProblem("fewerFields", "$path: fewer than $it fields", path, it.toString()) }
             }
             v is JsonArray -> {
                 (s["items"] as? JsonObject)?.let { item -> v.forEachIndexed { i, e -> check(e, item, "$path[$i]", out) } }
-                s["minItems"]?.jsonPrimitive?.intOrNull?.let { if (v.size < it) out += "$path: fewer than $it items" }
-                s["maxItems"]?.jsonPrimitive?.intOrNull?.let { if (v.size > it) out += "$path: more than $it items" }
+                s["minItems"]?.jsonPrimitive?.intOrNull?.let { if (v.size < it) out += AiProblem("fewerItems", "$path: fewer than $it items", path, it.toString()) }
+                s["maxItems"]?.jsonPrimitive?.intOrNull?.let { if (v.size > it) out += AiProblem("moreItems", "$path: more than $it items", path, it.toString()) }
             }
             v is JsonPrimitive && v.isString -> {
                 val text = v.content
-                if (s["format"]?.jsonPrimitive?.contentOrNull == "date" && !isDate(text)) out += "$path: \"$text\" is not a date (YYYY-MM-DD)"
-                s["minLength"]?.jsonPrimitive?.intOrNull?.let { if (text.length < it) out += "$path: shorter than $it characters" }
-                s["maxLength"]?.jsonPrimitive?.intOrNull?.let { if (text.length > it) out += "$path: longer than $it characters" }
-                s["pattern"]?.jsonPrimitive?.contentOrNull?.let { p -> if (runCatching { !Regex(p).containsMatchIn(text) }.getOrDefault(false)) out += "$path: does not match $p" }
+                if (s["format"]?.jsonPrimitive?.contentOrNull == "date" && !isDate(text)) out += AiProblem("notDate", "$path: \"$text\" is not a date (YYYY-MM-DD)", path, text)
+                s["minLength"]?.jsonPrimitive?.intOrNull?.let { if (text.length < it) out += AiProblem("shorter", "$path: shorter than $it characters", path, it.toString()) }
+                s["maxLength"]?.jsonPrimitive?.intOrNull?.let { if (text.length > it) out += AiProblem("longer", "$path: longer than $it characters", path, it.toString()) }
+                s["pattern"]?.jsonPrimitive?.contentOrNull?.let { p -> if (runCatching { !Regex(p).containsMatchIn(text) }.getOrDefault(false)) out += AiProblem("noMatch", "$path: does not match $p", path, p) }
             }
             v is JsonPrimitive && v != JsonNull -> {
                 val d = v.doubleOrNull ?: return
-                s["minimum"]?.jsonPrimitive?.doubleOrNull?.let { if (d < it) out += "$path: below $it" }
-                s["maximum"]?.jsonPrimitive?.doubleOrNull?.let { if (d > it) out += "$path: above $it" }
+                s["minimum"]?.jsonPrimitive?.doubleOrNull?.let { if (d < it) out += AiProblem("below", "$path: below $it", path, it.toString()) }
+                s["maximum"]?.jsonPrimitive?.doubleOrNull?.let { if (d > it) out += AiProblem("above", "$path: above $it", path, it.toString()) }
             }
         }
     }

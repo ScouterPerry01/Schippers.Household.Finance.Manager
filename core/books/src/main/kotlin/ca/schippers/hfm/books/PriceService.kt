@@ -117,7 +117,7 @@ class PriceService internal constructor(private val books: Books) {
     // --- Crypto-assets (CR-05) ----------------------------------------------------------------------
 
     /** Coins held in the household's wallets. */
-    fun coinsHeld(): List<Currency> = books.accounts.list(includeClosed = true).map { it.account.currency }.filter { it.isCrypto }.distinct().sortedBy { it.code }
+    fun coinsHeld(): List<Currency> = books.accounts.all(includeClosed = true).map { it.currency }.filter { it.isCrypto }.distinct().sortedBy { it.code }
 
     /** CoinGecko's name for a coin: the user's choice when set, else the usual one. */
     fun coinId(c: Currency): String? = books.setting(COIN_KEY + c.code)?.ifBlank { null } ?: COIN_IDS[c.code]
@@ -128,7 +128,7 @@ class PriceService internal constructor(private val books: Books) {
     }
 
     private fun updateCrypto(today: LocalDate, fetch: (String) -> String, problems: MutableList<String>): Int = coinsHeld().sumOf { c ->
-        val id = coinId(c) ?: run { problems += "${c.code}: no CoinGecko name"; return@sumOf 0 }
+        val id = coinId(c) ?: run { problems += books.text("importNote.noCoinGeckoName", c.code); return@sumOf 0 }
         val latest = books.core.latestMarketDate(c.code).executeAsOneOrNull()?.latest?.let(LocalDate::parse)
         val days = latest?.let { (it.toEpochDays() until today.toEpochDays()).count().coerceIn(2, 365) } ?: 365
         runCatching { applyCoinGecko(c, fetch(coinGeckoUrl(id, days))) }.getOrElse { problems += "${c.code}: ${it.message}"; 0 }

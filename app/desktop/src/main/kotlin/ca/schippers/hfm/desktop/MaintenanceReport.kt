@@ -43,7 +43,7 @@ internal fun MaintenanceReport(model: BooksModel, year: Int) {
         for (v in vehicles) {
             val c = books.vehicles.costs(v.id, from, to)
             val names = books.vehicles.tasks(v.id).associate { it.id to it.name }
-            owned += Owned(v.name, model.t("assets.vehicle"), c.costs.total, null, c.distanceKm, MeterUnit.KM, c.costPerKm)
+            owned += Owned(v.name, model.t("assets.vehicle"), c.costs.total, c.insurance, c.distanceKm, MeterUnit.KM, c.costPerKm)
             for (s in books.vehicles.services(v.id).filter { it.date in from..to }) {
                 log += Done(s.date, v.name, s.taskIds.mapNotNull(names::get).joinToString(", ").ifBlank { s.notes.orEmpty() }, if (s.diy) model.t("vehicles.diy") else s.provider.orEmpty(), null, inBase(s.cost, s.date))
             }

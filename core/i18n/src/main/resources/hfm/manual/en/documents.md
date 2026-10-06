@@ -195,7 +195,8 @@ Under the date and total, one line can show other details that were read: the su
 - **Invoice**: a detailed bill from a business, often with items and taxes. Can be recorded on one of your bills.
 - **Other**: anything else.
 - **Credit card statement** and **Bank statement**: a statement of many transactions. Filed as is; when read by AI it can be reconciled with the account.
-- **Investment statement**: a statement from a broker or plan. Filed as is.
+- **Investment statement**: a statement from a broker or plan. Filed as is; when read by AI its activity can be imported and its holdings checked.
+- **Trade confirmation**: a broker's confirmation of a purchase or sale. Filed as is; when read by AI its trades can be added to an investment account.
 - **Pay stub**: a pay statement. It can be recorded as your pay, typed from the stub or filled in by AI reading.
 - **Explanation of benefits**: an insurer's statement of what it paid on a claim. Filed as is, and can be attached to a claim on the Medical claims screen.
 
@@ -300,9 +301,10 @@ For a document that is already filed, the same place shows **Save**, which saves
 
 ### Statements, pay stubs and benefit statements {#summary-documents}
 
-For a credit card statement, bank statement, investment statement, pay stub or explanation of benefits, the **File it with** section is not shown. File it with **File without attaching**, or:
+For a credit card statement, bank statement, investment statement, trade confirmation, pay stub or explanation of benefits, the **File it with** section is not shown. File it with **File without attaching**, or:
 
 - reconcile a statement read by AI, see [Reconcile a statement read by AI](documents#ai-statement);
+- bring a trade confirmation or investment statement read by AI into an investment account, see [Bring a trade confirmation or investment statement into the books](documents#ai-investments);
 - record a pay stub as your pay, see [Record the pay from a pay stub](documents#pay-stub);
 - attach an explanation of benefits to the claim it answers, right here (see [Match an explanation of benefits](documents#eob-match)), or on the [Medical claims](medical) screen.
 
@@ -349,7 +351,7 @@ If the reading fails, an error under the button says why (no network, a refused 
 
 The window shows each page exactly as it will be sent. Nothing leaves the computer before you click **Send**.
 
-- **Document type**: what the AI is asked to read: receipt, bill, invoice, credit card statement, bank statement, investment statement, pay stub or explanation of benefits (plus any custom types added on the AI reading screen). It starts on the document's kind. The type decides which fields come back: items and taxes for a receipt, every transaction for a statement, earnings and deductions for a pay stub.
+- **Document type**: what the AI is asked to read: receipt, bill, invoice, credit card statement, bank statement, investment statement, trade confirmation, pay stub or explanation of benefits (plus any custom types added on the AI reading screen). It starts on the document's kind. The type decides which fields come back: items and taxes for a receipt, every transaction for a statement, earnings and deductions for a pay stub.
 - **Hide an area**: with this tool chosen, drag a rectangle on the page to hide that part, such as a full account number or a name. Hidden areas are drawn as grey blocks and replaced by flat blocks before the picture leaves the computer. You can hide several areas on each page.
 - **Keep only**: with this tool chosen, drag a rectangle around the part of the page to send. The rest is dimmed and is not sent. One area per page; dragging again replaces it.
 - **Undo last hidden area**: removes the last grey block on the page shown.
@@ -374,6 +376,29 @@ A bank or credit card statement read by AI (with the type **Bank statement** or 
 - **Reconcile with this statement**: brings the statement's lines into the account. Lines already in the books are matched, the rest are added, as for a statement downloaded from your bank. The app then opens the account on the Accounts screen to reconcile it. See [Accounts](accounts). The same document cannot be imported twice.
 
 On a card statement, charges are printed as positive amounts; the app records them as money owed on the card.
+
+### Bring a trade confirmation or investment statement into the books {#ai-investments}
+@index: trade confirmation; investment statement PDF; brokerage PDF; import trades; settlement date
+
+A trade confirmation or investment statement read by AI (with the type **Trade confirmation** or **Investment statement**) can go into an investment account. The document window then shows:
+
+- **Investment account**: the account the document belongs to. The app picks the account in the document's currency whose number ends with the digits printed on it, else the only account in that currency, else the first one. If you have no investment account, the window says "Add an investment account to bring this document into the books."
+- **Add the trades to this account** (trade confirmation) or **Import and check this statement** (investment statement): brings the document into the account, as a brokerage file is imported (see [Import a brokerage statement](investments#import-statement)).
+
+What it does:
+
+- Each trade on a confirmation becomes a purchase or sale on its trade date, with its units, price, commission and other fees. The settlement date and the confirmation number go in the memo.
+- An investment statement's activity becomes investment transactions: purchases, sales, dividends, interest, distributions (with any tax withheld), reinvested income, returns of capital and fees; contributions and withdrawals become register lines. Lines it cannot place, such as units moved in from another broker, are listed as notes for you to enter by hand.
+- A trade or income already in the account is left alone: whether it came from the same document, was entered by hand, or came from another document, such as the confirmation of a trade the statement lists. They are matched by kind, security, units (or amount for income and fees) and a date within three days, so a trade entered on its settlement date still matches.
+- Securities are matched with yours by symbol or name; the others are created.
+- A statement's holdings and cash at the end of the period are saved for the account; **Check the statement** then opens the comparison with the books on the Investments screen (see [Check a statement](investments#check-statement)). After a confirmation, **Open the account** opens it.
+
+The window lists how many transactions were added, how many were already there, and up to ten notes. Amounts in another currency than the account's are refused: "This document's amounts are in USD and the account is in CAD. Choose an account in USD."
+
+### Fields read with your own type {#ai-custom-fields}
+@index: custom document type; own document type; fields read
+
+A document read with a type added in the AI reading folder (see [Document types](ai#document-types)) lists, under "Fields read" and the type's name, every value the AI returned, in the order of the type's schema. A list in the answer gives one line per item. The list stays even if you later turn AI reading off. The fields are also kept with the document's text, so a search on the Documents screen finds the document by any of them. Reading the document again with a shipped type removes them.
 
 ### Record the pay from a pay stub {#pay-stub}
 @index: pay stub; payslip; paycheque; salary; deductions; CPP; QPP; EI; QPIP; union dues; income tax withheld

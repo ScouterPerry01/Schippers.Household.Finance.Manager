@@ -8,7 +8,7 @@ Display and accessibility sets how RANN's Roost looks on this computer: the colo
 
 @index: preferences; personal settings; per computer
 
-Display settings are kept on this computer, not in the household. A large desktop screen and a small laptop can each have their own, and they are not in backups. The theme, text size and language apply to every household and user on this computer; the menu choices are kept for each user.
+Display settings are kept on this computer, not in the household. A large desktop screen and a small laptop can each have their own, and they are not in backups. The theme, text size, notification details and language apply to every household and user on this computer; the menu choices are kept for each user.
 
 ## The Display and accessibility screen {#screen}
 
@@ -49,6 +49,14 @@ Everything works from the keyboard:
 - In a date field, typing + or - moves the date one day forward or back.
 
 Screen readers (Narrator or NVDA on Windows, Orca on Linux) read the labels of fields and buttons, and say whether a menu group is open or closed. See [Keyboard shortcuts](shortcuts) for the full list.
+
+### Notifications {#notifications}
+
+@index: notification details; shared screen; privacy of notifications
+
+- **Show details in notifications**: ticked (the default), a computer notification names up to four reminders, as the reminder banner does, such as a bill, a medication with the person it is for, or an appointment. Untick it when others can see this screen: notifications then say only how many reminders there are and of which kind, such as "Bills (2)" or "Health (1)", and name nothing. The banner inside the app is not changed.
+
+The choice is kept on this computer, for every household and user. See [Computer notifications and the tray icon](basics#tray).
 
 ### Getting started guide {#getting-started-guide}
 

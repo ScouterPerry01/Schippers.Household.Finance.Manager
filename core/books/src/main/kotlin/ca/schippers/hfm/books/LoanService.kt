@@ -106,6 +106,21 @@ data class DebtLine(
     val cashAdvanceRate: BigDecimal? = null,
 )
 
+/**
+ * Section 12 debt summary: a loan from today's balance to its payoff, payment by payment, for the
+ * payoff chart and the interest still to pay each year. In the loan's currency.
+ */
+data class DebtPayoff(val account: Account, val owed: Money, val rows: List<ca.schippers.hfm.calc.loan.DatedRow>) {
+    val payoffDate: LocalDate? get() = rows.lastOrNull()?.date
+
+    /** What is still owed after the last payment of [year] (today's balance before the first one). */
+    fun balanceAtEndOf(year: Int): Money = rows.lastOrNull { it.date.year <= year }?.balance ?: owed
+
+    /** Interest paid with each year's payments, from today on. */
+    val interestByYear: Map<Int, Money>
+        get() = rows.groupBy { it.date.year }.mapValues { (_, list) -> list.fold(Money.zero(owed.currency)) { a, r -> a + r.interest } }.toSortedMap()
+}
+
 /** LN-01 to LN-06: loan and mortgage terms, schedules, payments, prepayments, renewals and what-ifs. */
 class LoanService internal constructor(private val books: Books) {
 
@@ -351,6 +366,19 @@ class LoanService internal constructor(private val books: Books) {
             }
         }
         .sortedByDescending { it.owed.minorUnits }
+
+    /**
+     * Section 12 debt summary: every loan and mortgage with terms, projected from what is owed
+     * today to its payoff, as [status] projects it. Loans that would never be repaid are left out.
+     */
+    fun debtPayoffs(today: LocalDate): List<DebtPayoff> = accounts().mapNotNull { (summary, details) ->
+        details ?: return@mapNotNull null
+        val (group, account) = books.accounts.locate(summary.account.id)
+        val owed = owed(group, account)
+        if (!owed.isPositive) return@mapNotNull null
+        val rows = runCatching { LoanProjection.whatIf(plan(account.id), details.lastPaidDate ?: today, owed).base.rows }.getOrNull() ?: return@mapNotNull null
+        DebtPayoff(account, owed, rows)
+    }.sortedByDescending { it.owed.minorUnits }
 
     // --- Helpers ----------------------------------------------------------------------------------
 

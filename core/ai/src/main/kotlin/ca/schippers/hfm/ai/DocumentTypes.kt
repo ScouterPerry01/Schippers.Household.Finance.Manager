@@ -32,7 +32,7 @@ data class DocumentType(
         private val KINDS = mapOf(
             "receipt" to DocumentKind.RECEIPT, "bill" to DocumentKind.BILL, "invoice" to DocumentKind.INVOICE,
             "card_statement" to DocumentKind.CARD_STATEMENT, "bank_statement" to DocumentKind.BANK_STATEMENT,
-            "investment_statement" to DocumentKind.INVESTMENT_STATEMENT, "pay_stub" to DocumentKind.PAY_STUB, "eob" to DocumentKind.EOB,
+            "investment_statement" to DocumentKind.INVESTMENT_STATEMENT, "pay_stub" to DocumentKind.PAY_STUB, "eob" to DocumentKind.EOB, "trade_confirmation" to DocumentKind.TRADE_CONFIRMATION,
         )
 
         fun kindFor(id: String): DocumentKind? = KINDS[id]
@@ -42,8 +42,10 @@ data class DocumentType(
     }
 }
 
-/** A file in the user's folder that could not be used, and why. */
-data class RejectedType(val file: String, val reason: String)
+/** A file in the user's folder that could not be used, and why ([reason] in English, [problems] for the screen). */
+data class RejectedType(val file: String, val reason: String, val problems: List<AiProblem> = emptyList()) {
+    constructor(file: String, problem: AiProblem) : this(file, problem.english, listOf(problem))
+}
 
 data class LoadedTypes(val types: List<DocumentType>, val rejected: List<RejectedType>) {
     fun get(id: String): DocumentType? = types.firstOrNull { it.id == id }
@@ -57,7 +59,7 @@ data class LoadedTypes(val types: List<DocumentType>, val rejected: List<Rejecte
  */
 object DocumentTypes {
 
-    val BUILT_IN = listOf("receipt", "bill", "invoice", "card_statement", "bank_statement", "investment_statement", "pay_stub", "eob")
+    val BUILT_IN = listOf("receipt", "bill", "invoice", "card_statement", "bank_statement", "investment_statement", "trade_confirmation", "pay_stub", "eob")
 
     private val ID = Regex("[a-z][a-z0-9_]{0,39}")
     private const val MAX_FILE = 256 * 1024
@@ -79,8 +81,8 @@ object DocumentTypes {
             for (file in files) {
                 val id = file.nameWithoutExtension
                 val reason = when {
-                    !ID.matches(id) -> "the file name must be lowercase letters, digits and _"
-                    Files.size(file) > MAX_FILE -> "larger than 256 KB"
+                    !ID.matches(id) -> AiProblem("fileName", "the file name must be lowercase letters, digits and _")
+                    Files.size(file) > MAX_FILE -> AiProblem("fileSize", "larger than 256 KB", "256")
                     else -> null
                 }
                 if (reason != null) {
@@ -88,12 +90,12 @@ object DocumentTypes {
                     continue
                 }
                 val schema = runCatching { json.parseToJsonElement(file.readText()).jsonObject }.getOrElse {
-                    rejected += RejectedType(file.fileName.toString(), "not a JSON object: ${it.message}")
+                    rejected += RejectedType(file.fileName.toString(), AiProblem("fileNotJson", "not a JSON object: ${it.message}", it.message.orEmpty()))
                     continue
                 }
-                val problems = SchemaCheck.problems(schema)
+                val problems = SchemaCheck.schemaProblems(schema)
                 if (problems.isNotEmpty()) {
-                    rejected += RejectedType(file.fileName.toString(), problems.take(3).joinToString("; "))
+                    rejected += RejectedType(file.fileName.toString(), problems.take(3).joinToString("; ") { it.english }, problems.take(3))
                     continue
                 }
                 val text = file.resolveSibling("$id.txt").takeIf { Files.isRegularFile(it) }?.readText()?.trim()

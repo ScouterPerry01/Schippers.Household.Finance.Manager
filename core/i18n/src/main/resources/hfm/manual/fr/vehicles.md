@@ -271,16 +271,17 @@ Deux boutons choisissent la période : l’année en cours, ou **Toutes les ann�
 - **Total** : les coûts d’utilisation de la période ;
 - « distance parcourus » et « montant par km », d’après les lectures de l’odomètre de la période (il en faut au moins deux) ;
 - le total de chaque catégorie, du plus grand au plus petit ;
-- avec **Toutes les années**, le total de chaque année ;
+- « Part des primes d’assurance (estimation, non comprise dans le total) » : quand une police d’assurance nomme le véhicule (voir [Maison et biens](assets)), sa prime annuelle répartie également entre les biens que la police nomme, pour les jours de la période où le véhicule était à vous (depuis sa date d’achat, ou sa première lecture de l’odomètre) et où la police était en vigueur. C’est une estimation montrée à côté des coûts d’utilisation, sans y être ajoutée, puisque les paiements de prime peuvent aussi être liés au véhicule dans le registre ;
+- avec **Toutes les années**, les coûts par année et par catégorie : un graphique à barres avec un groupe de barres par année, une barre pour chacune des quatre plus grandes catégories et une pour les autres ensemble, puis le tableau **Année**, **Catégorie**, **Montant**, avec le total de chaque année et sa part d’assurance, que vous pouvez exporter ou imprimer ;
 - « Le prix d’achat (prix) n’est pas un coût d’utilisation et n’est pas compté. » ;
 - une remarque quand des montants dans une autre devise n’ont pas de taux de change ;
-- « Comprend les opérations liées à ce véhicule dans le registre, ainsi que les pleins et entretiens qui n’ont pas leur propre paiement. »
+- « Comprend les opérations liées à ce véhicule dans le registre, ainsi que les pleins et entretiens qui n’ont pas leur propre paiement. La part des primes d’assurance est une estimation tirée des polices qui nomment le véhicule, montrée à part et non ajoutée au total. »
 
 ![L’onglet Coûts](images/vehicles-costs.png)
 
 Une opération est liée au véhicule quand elle a été inscrite depuis un entretien ou un plein avec **Inscrire aussi le paiement dans un compte**, ou quand le véhicule est choisi dans son champ « Véhicule » au registre : assurance, immatriculation, stationnement, péages, réparations. Les montants sont convertis dans la devise de base au taux de leur date.
 
-Le rapport **Entretien et coût de possession** sous [Rapports](reports) réunit les véhicules et les autres biens.
+Le rapport **Entretien et coût de possession** sous [Rapports](reports) réunit les véhicules et les autres biens, avec la part d’assurance de chacun.
 
 ## Rappels et calendrier {#reminders}
 @index: rappel; renouvellement; notification

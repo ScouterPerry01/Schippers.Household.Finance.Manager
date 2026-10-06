@@ -26,7 +26,10 @@ class AiReading(
     /** Whether the amounts were checked and add up (some documents have nothing to check). */
     val checked: Boolean,
     val usage: List<AiUsage>,
-)
+) {
+    /** AI-03: every value read, labelled; what a type the app has no screen for shows and keeps. */
+    val fields: List<AiField> get() = AiFields.fields(answer, type.schema)
+}
 
 /**
  * Runs one reading (section 4.5, steps 2 to 4): sends the pages with the type's instructions and
@@ -40,28 +43,28 @@ class AiReader(private val provider: AiProvider) {
     private val json = Json { ignoreUnknownKeys = true }
 
     fun read(type: DocumentType, pages: List<ByteArray>, model: AiModel, onUsage: (AiUsage) -> Unit = {}): AiReading {
-        require(pages.isNotEmpty() && pages.size <= MAX_PAGES) { "1 to $MAX_PAGES pages" }
+        if (pages.isEmpty() || pages.size > MAX_PAGES) throw AiFailure(AiFailure.Reason.PAGES, "1 to $MAX_PAGES pages")
         val usage = ArrayList<AiUsage>()
         var task = TASK.format(pages.size)
-        var problems: List<String> = emptyList()
+        var problems: List<AiProblem> = emptyList()
         repeat(2) { attempt ->
             val request = AiRequest(model, pages, DocumentTypes.common + "\n" + type.instructions, task, SchemaCheck.forApi(type.schema))
             val reply = provider.read(request)
             val price = AiModel.priceOf(reply.modelUsed, model)
             val answer = runCatching { json.parseToJsonElement(reply.text).jsonObject }.getOrNull()
-            problems = if (answer == null) listOf("the answer is not a JSON object") else SchemaCheck.validate(answer, type.schema)
-            val sums = if (answer != null && problems.isEmpty()) AiFields.arithmetic(type.id, answer) else emptyList()
+            problems = if (answer == null) listOf(AiProblem("notJson", "the answer is not a JSON object")) else SchemaCheck.validateProblems(answer, type.schema)
+            val sums = if (answer != null && problems.isEmpty()) AiFields.arithmeticProblems(type.id, answer) else emptyList()
             val ok = problems.isEmpty() && sums.isEmpty()
             AiUsage(provider.id, reply.modelUsed, type.id, reply.inputTokens, reply.outputTokens, price.cost(reply.inputTokens, reply.outputTokens), ok)
                 .also { usage += it; onUsage(it) }
             if (ok) {
                 val checkable = AiFields.hasSums(type.id, answer!!)
-                return AiReading(type, answer, AiFields.draft(type.id, answer, checkable), checkable, usage)
+                return AiReading(type, answer, AiFields.draft(type.id, answer, checkable, type.schema), checkable, usage)
             }
             problems = problems + sums
-            if (attempt == 0) task = TASK.format(pages.size) + "\n\n" + RETRY.format(problems.take(5).joinToString("\n- ", "- "))
+            if (attempt == 0) task = TASK.format(pages.size) + "\n\n" + RETRY.format(problems.take(5).joinToString("\n- ", "- ") { it.english })
         }
-        throw AiFailure(AiFailure.Reason.INVALID, problems.take(5).joinToString("; "))
+        throw AiFailure(AiFailure.Reason.INVALID, problems.take(5).joinToString("; ") { it.english }, problems = problems.take(5))
     }
 
     companion object {

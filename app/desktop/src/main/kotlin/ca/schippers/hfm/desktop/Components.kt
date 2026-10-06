@@ -216,9 +216,17 @@ fun FormDialog(title: String, saveLabel: String, cancelLabel: String, canSave: B
  * A small "✕" button that removes a line or deletes a record. Screen readers announce [label]
  * (not "multiplication sign"), and the label also shows as a tooltip on hover.
  */
+@Composable
+fun RemoveButton(label: String, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) =
+    SymbolButton(label, "✕", modifier, enabled, onClick)
+
+/**
+ * NFR-08, NFR-12: a button that shows only a symbol (◀, ▶, ✕). Screen readers announce [label]
+ * instead of the symbol, and the label shows as a tooltip on hover.
+ */
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-fun RemoveButton(label: String, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
+fun SymbolButton(label: String, symbol: String, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
     androidx.compose.foundation.TooltipArea(
         tooltip = {
             androidx.compose.material3.Surface(shape = MaterialTheme.shapes.small, tonalElevation = 4.dp, shadowElevation = 2.dp) {
@@ -231,7 +239,7 @@ fun RemoveButton(label: String, modifier: Modifier = Modifier, enabled: Boolean 
             onClick = onClick,
             enabled = enabled,
             modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = label },
-        ) { Text("✕", modifier = Modifier.clearAndSetSemantics { }) }
+        ) { Text(symbol, modifier = Modifier.clearAndSetSemantics { }) }
     }
 }
 

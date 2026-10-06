@@ -231,6 +231,12 @@ La fenêtre de comparaison, « Relevé du » suivi de la date, a deux colonnes :
 
 Les relevés importés d’un fichier s’ouvrent dans la même fenêtre de comparaison à partir de l’onglet Relevés.
 
+### Relevés PDF et avis d’exécution {#pdf-statements}
+
+@index: relevé PDF; avis d’exécution; lecture par IA
+
+Un relevé en PDF ou sur papier, ou un avis d’exécution, peut être lu par l’IA et inscrit dans le compte à partir de l’écran Documents : ses opérations et ses mouvements sont ajoutés, ceux déjà dans les livres sont jumelés plutôt qu’ajoutés en double, et les titres détenus et l’encaisse d’un relevé sont enregistrés ici pour la vérification. Voir [Inscrire un avis d’exécution ou un relevé de placements](documents#ai-investments). Sans la lecture par IA, saisissez les opérations à la main et utilisez **Vérifier un relevé**.
+
 ## Titres {#securities}
 
 @index: symbole boursier; téléscripteur; fonds; obligation; CPG; option

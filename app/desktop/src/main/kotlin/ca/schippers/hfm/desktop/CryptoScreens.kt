@@ -101,7 +101,7 @@ fun WalletView(model: BooksModel, account: Account) {
                 busy = true
                 scope.launch {
                     val r = withContext(Dispatchers.IO) { runCatching { books.crypto.sync(account.id, Http::get) } }
-                    status = r.fold({ model.t("wallet.synced", it.added, it.addresses) }, { (it as? ValidationException)?.message(model.language) ?: model.t("rates.failed", it.message.orEmpty()) })
+                    status = r.fold({ model.t("wallet.synced", it.added, it.addresses) }, { (it as? ValidationException)?.message(model.language) ?: model.t("rates.failed", networkError(it, model.language)) })
                     busy = false
                     model.changed()
                 }

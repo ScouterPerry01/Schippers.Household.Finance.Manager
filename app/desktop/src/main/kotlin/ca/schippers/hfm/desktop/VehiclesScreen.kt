@@ -53,6 +53,7 @@ import ca.schippers.hfm.books.WarrantyKind
 import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.domain.AccountType
 import ca.schippers.hfm.money.Currency
+import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.money.MoneyFormat
 import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
@@ -399,9 +400,34 @@ private fun CostsTab(model: BooksModel, v: Vehicle) {
         for ((id, total) in cost.costs.byCategory) {
             Row { Text(id?.let(categories::get) ?: model.t("register.uncategorized"), Modifier.width(320.dp)); Text(model.money(total)) }
         }
+        // MNT-13: the vehicle's share of the policies that name it, an estimate beside the running costs.
+        cost.insurance?.let { Text(model.t("vehicles.insuranceShare", model.money(it)), modifier = Modifier.padding(top = 4.dp)) }
         if (allYears && cost.costs.byYear.size > 1) {
+            // VEH-10: each year by category; the largest categories as bars, the rest together.
             Text(model.t("costs.byYear"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
-            for ((year, total) in cost.costs.byYear) Row { Text(year.toString(), Modifier.width(120.dp)); Text(model.money(total)) }
+            val years = cost.costs.byYear.keys.toList()
+            val top = cost.costs.byCategory.take(4).map { it.first }
+            val zero = Money.zero(cost.costs.total.currency)
+            fun name(category: String?) = category?.let(categories::get) ?: model.t("register.uncategorized")
+            fun amount(year: Int, category: String?) = cost.costs.byYearCategory[year].orEmpty().firstOrNull { it.first == category }?.second ?: zero
+            fun rest(year: Int) = cost.costs.byYearCategory[year].orEmpty().filter { it.first !in top }.fold(zero) { a, b -> a + b.second }
+            val series = top.map { c -> Series(name(c), years.map { amount(it, c).d() }, years.map { model.money(amount(it, c)) }) } +
+                listOfNotNull(
+                    Series(model.t("costs.otherCategories"), years.map { rest(it).d() }, years.map { model.money(rest(it)) }).takeIf { years.any { y -> rest(y).isPositive } },
+                )
+            GroupedBarChart(years.map { it.toString() }, series, model.axis())
+            TableView(
+                model,
+                ReportTable(
+                    model.t("costs.byYearCategory", v.name), model.t("report.inCurrency", cost.costs.total.currency.code),
+                    listOf(model.t("loans.year"), model.t("register.category"), model.t("register.amount")),
+                    years.flatMap { y ->
+                        cost.costs.byYearCategory[y].orEmpty().map { (c, m) -> listOf<Any?>(y.toString(), name(c), m) } +
+                            listOf(listOf<Any?>(y.toString(), model.t("report.total"), cost.costs.byYear[y])) +
+                            listOfNotNull(cost.insuranceByYear[y]?.let { listOf<Any?>(y.toString(), model.t("vehicles.insuranceEstimate"), it) })
+                    },
+                ),
+            )
         }
         v.purchasePrice?.let { Text(model.t("vehicles.purchaseNotIncluded", model.money(it)), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp)) }
         if (cost.costs.unconverted > 0) Text(model.t("costs.unconverted", cost.costs.unconverted), style = MaterialTheme.typography.bodySmall)

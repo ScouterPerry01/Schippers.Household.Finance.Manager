@@ -16,7 +16,7 @@ Gardez cochée l’option Me montrer chaque document et me laisser en masquer de
 
 ## Lire un document
 
-Dans Documents, ouvrez le document et cliquez sur Lire avec l’IA. Vérifiez les champs remplis avant de les enregistrer.
+Dans Documents, ouvrez le document et cliquez sur Lire avec l’IA. Vérifiez les champs remplis avant de les enregistrer. Un avis d’exécution ou un relevé de placements peut ensuite entrer dans un compte de placement. Un type que vous avez ajouté énumère chaque champ lu.
 
 ## Suivre les coûts
 

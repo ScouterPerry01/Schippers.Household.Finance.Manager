@@ -323,7 +323,7 @@ class CreditCardService internal constructor(private val books: Books) {
      * the card payment lead time of Rates and rules (or [withinDays] if shorter) on cards that are
      * owed something.
      */
-    fun renewals(today: LocalDate, withinDays: Int = LeadTimes.renewals(today)): List<Renewal> = books.accounts.list().map { it.account }
+    fun renewals(today: LocalDate, withinDays: Int = LeadTimes.renewals(today)): List<Renewal> = books.accounts.all()
         .filter { it.type.kind == AccountKind.CREDIT }
         .mapNotNull { a ->
             val next = terms(a.id)?.takeIf { it.annualFee?.isPositive == true }?.nextAnnualFee(today) ?: return@mapNotNull null

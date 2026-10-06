@@ -124,7 +124,7 @@ class InvestmentImportTest {
         assertEquals(BigDecimal("7.50"), st.actions.single { it.securityKey == "VTI" }.withheld, "on the VTI dividend")
         assertEquals(null, st.actions.single { it.securityKey == "XEQT" }.withheld)
         assertEquals(BigDecimal("3.00"), st.actions[2].amount, "no income that day: kept as a fee")
-        assertTrue(st.warnings.single().startsWith("Line 5"))
+        assertTrue(st.warnings.single().english.startsWith("Line 5"))
     }
 
     @Test

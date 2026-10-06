@@ -14,7 +14,6 @@ import org.openpdf.text.Phrase
 import org.openpdf.text.pdf.PdfPCell
 import org.openpdf.text.pdf.PdfPTable
 import org.openpdf.text.pdf.PdfWriter
-import java.awt.Desktop
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
@@ -66,10 +65,9 @@ object ReportExport {
 
     /** Prints through the system's PDF viewer. */
     fun print(table: ReportTable, locale: Locale) {
-        val file = File.createTempFile("hfm-report-", ".pdf").apply { deleteOnExit() }
+        val file = PrintFiles.create("hfm-report-")
         pdf(table, file, locale)
-        val desktop = Desktop.getDesktop()
-        if (desktop.isSupported(Desktop.Action.PRINT)) desktop.print(file) else desktop.open(file)
+        PrintFiles.printOrOpen(file)
     }
 
     /**

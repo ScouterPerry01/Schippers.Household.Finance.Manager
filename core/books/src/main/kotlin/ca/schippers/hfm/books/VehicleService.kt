@@ -159,8 +159,19 @@ data class MaintenanceDue(val vehicle: Vehicle, val status: TaskStatus) {
     )
 }
 
-/** VEH-10. */
-data class OwnershipCost(val costs: CostSummary, val distanceKm: Int?, val costPerKm: Money?)
+/**
+ * VEH-10: running costs by category and year, distance and cost per km. MNT-13: [insurance] is an
+ * estimate of the vehicle's share of the premiums of the policies that name it (by year in
+ * [insuranceByYear]), shown beside the running costs and not added to them, since premiums may
+ * also be linked to the vehicle as transactions.
+ */
+data class OwnershipCost(
+    val costs: CostSummary,
+    val distanceKm: Int?,
+    val costPerKm: Money?,
+    val insurance: Money? = null,
+    val insuranceByYear: Map<Int, Money> = emptyMap(),
+)
 
 /**
  * Vehicles and everything about them (VEH-01 to VEH-11): papers, warranties, odometer,
@@ -520,7 +531,13 @@ class VehicleService internal constructor(private val books: Books) {
         val inRange = readings(vehicleId).filter { it.date in from..to }
         val distance = if (inRange.size >= 2) inRange.maxOf { it.odometer } - inRange.minOf { it.odometer } else null
         val perKm = distance?.takeIf { it > 0 }?.let { Money.ofMinor((summary.total.minorUnits + it / 2) / it, summary.total.currency) }
-        return OwnershipCost(summary, distance, perKm)
+        // MNT-13: from the first day the vehicle was owned in the period.
+        // Without a purchase date, from the first odometer reading, so "all years" does not reach back to 1990.
+        val owned = maxOf(from, v.purchaseDate ?: readings(vehicleId).minOfOrNull { it.date } ?: from)
+        val until = minOf(to, v.disposalDate ?: to)
+        val insurance = if (owned <= until) books.insurance.premiumShare(vehicleId, owned, until) else null
+        val insuranceByYear = if (insurance != null) books.insurance.premiumShareByYear(vehicleId, owned, until) else emptyMap()
+        return OwnershipCost(summary, distance, perKm, insurance, insuranceByYear)
     }
 
     // --- Helpers ---------------------------------------------------------------------------------

@@ -75,6 +75,11 @@ data class CaptureItem(
     val fields: CaptureFields = CaptureFields(),
     /** CAP-08: a spoken note, as a WAV file in base64 (mono, 16 kHz); its words are in the note when dictated. */
     val voice: String? = null,
+    /**
+     * CAP-05: text shared from another app (an email), kept as a plain text document. Its lines are
+     * also sent as [ocrLines], so a desktop that predates this field keeps the words as the text it read.
+     */
+    val text: String? = null,
 )
 
 @Serializable
@@ -167,14 +172,18 @@ data class ReferenceData(
     val generatedAtMillis: Long = 0,
     /** CON-07: the contacts the phone's user can see, without account or client numbers. */
     val contacts: List<RefContact> = emptyList(),
+    /** CAL-03 on the phone: coming events, from the groups the phone's user can see, with their reminders. */
+    val events: List<RefEvent> = emptyList(),
+    /** CAL-03, HLT-03 on the phone: medication refills coming up or overdue. */
+    val refills: List<RefRefill> = emptyList(),
 ) {
     companion object {
         /**
          * What a phone app understands of the reference data: 1 up to maintenance and budgets, 2
-         * with contacts. A phone that kept its copy with an older app asks for all of it again
+         * with contacts, 3 with events and refills. A phone that kept its copy with an older app asks for all of it again
          * ([knownVersion]), since that app dropped what it did not know.
          */
-        const val FORMAT = 2
+        const val FORMAT = 3
 
         /** The version a phone sends: none when its copy was kept by an app reading an older [FORMAT]. */
         fun knownVersion(version: String?, storedFormat: Int): String? = version?.takeIf { storedFormat >= FORMAT }
@@ -237,6 +246,38 @@ data class RefContact(
     val website: String? = null,
     val hours: String? = null,
     val notes: String? = null,
+)
+
+/**
+ * CAL-03: one occurrence of an event. [id] names the occurrence (the event and its date), so each
+ * reminder is shown once. [time] is "HH:mm", absent for an all-day event (reminded from 08:00);
+ * [reminderMinutes] are the lead times chosen on the computer. [category] is the computer's
+ * (MEDICAL, FINANCIAL...): a medical event is health data.
+ */
+@Serializable
+data class RefEvent(
+    val id: String,
+    val title: String,
+    val date: String,
+    val time: String? = null,
+    val category: String = "OTHER",
+    val location: String? = null,
+    val forWhom: String? = null,
+    val reminderMinutes: List<Int> = emptyList(),
+)
+
+/**
+ * HLT-03: a medication whose supply runs out on [dueDate], reminded [reminderDays] ahead; [renewal]
+ * when no refills are left, so the prescription must be renewed. The medication's name is health data.
+ */
+@Serializable
+data class RefRefill(
+    val id: String,
+    val medication: String,
+    val dueDate: String,
+    val reminderDays: Int = 7,
+    val forWhom: String? = null,
+    val renewal: Boolean = false,
 )
 
 /** A phone number or email with its label ("Office", "Cell"). */

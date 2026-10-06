@@ -11,6 +11,8 @@ Un budget est un montant pour une catégorie, comme Épicerie 800 $ par mois ou 
 
 Les budgets utilisent les catégories de vos opérations ; ils ne valent donc que ce que vaut votre catégorisation. Voir [Catégories](categories).
 
+Les budgets appartiennent à tout le ménage : chaque utilisateur voit les mêmes budgets, et chacun voit les montants réels des groupes qu’il peut ouvrir. Un lecteur peut consulter les budgets, mais non en ajouter, en modifier ni en supprimer.
+
 ## L’écran Budgets {#budgets-screen}
 
 En haut :
@@ -100,7 +102,7 @@ Le report compte chaque mois depuis le mois de départ du budget jusqu’au mois
 ## Suggérer d’après les 12 derniers mois {#suggest}
 @index: budget automatique; budget d’après l’historique; dépenses moyennes
 
-**Suggérer d’après les 12 derniers mois** examine vos dépenses des 12 derniers mois complets (sans compter le mois en cours) et propose un budget mensuel pour chaque catégorie de dépenses de premier niveau qui a eu des dépenses : la moyenne mensuelle, arrondie au montant entier supérieur.
+**Suggérer d’après les 12 derniers mois** examine vos dépenses des 12 derniers mois complets (sans compter le mois en cours) et propose un budget mensuel pour chaque catégorie de dépenses de premier niveau qui a eu des dépenses : la moyenne mensuelle, arrondie au montant entier supérieur. Seuls les comptes des groupes partagés comptent : comme chaque utilisateur voit les budgets, une suggestion tirée des dépenses d’un groupe privé montrerait ces dépenses aux autres.
 
 - Chaque catégorie est affichée avec son montant suggéré « par mois », la plus grande d’abord.
 - Les catégories sans budget sont cochées. Celles qui en ont déjà un sont marquées « (a déjà un budget) » et laissées décochées ; en cocher une remplace son budget par la suggestion.

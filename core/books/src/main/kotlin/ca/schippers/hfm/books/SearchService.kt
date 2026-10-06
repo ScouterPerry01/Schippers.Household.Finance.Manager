@@ -40,7 +40,7 @@ class SearchService internal constructor(private val books: Books) {
         val needle = fold(text)
         fun matches(s: String?) = s != null && fold(s).contains(needle)
 
-        val accounts = books.accounts.list(includeClosed = true).map { it.account }
+        val accounts = books.accounts.all(includeClosed = true)
         val payees = books.payees.list(includeArchived = true)
         val matchingPayees = payees.filter { matches(it.name) }
         val amount = amountOf(text, locale)
@@ -56,10 +56,14 @@ class SearchService internal constructor(private val books: Books) {
                 amount = amount ?: Long.MIN_VALUE,
                 negativeAmount = amount?.let { -it } ?: Long.MIN_VALUE,
                 limit = limit.toLong(),
-            ).executeAsList().mapNotNull { row ->
+            ).executeAsList().let { rows ->
+                // The splits of every hit in a few queries, not one query per hit.
+                val splits = rows.map { it.id }.chunked(500).flatMap { ids -> q.splitsForTxns(ids).executeAsList() }.groupBy { it.txn_id }
+                rows.map { it to splits[it.id].orEmpty() }
+            }.mapNotNull { (row, splits) ->
                 val account = accountById[row.account_id] ?: return@mapNotNull null
                 TransactionHit(
-                    row.toTransaction(account.currency, q.splitsForTxn(row.id).executeAsList(), emptySet()),
+                    row.toTransaction(account.currency, splits, emptySet()),
                     account,
                     row.payee_id?.let(payeeNames::get) ?: row.payee_text,
                 )

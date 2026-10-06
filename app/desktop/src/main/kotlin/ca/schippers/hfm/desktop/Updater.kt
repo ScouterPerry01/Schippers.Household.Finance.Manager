@@ -48,7 +48,8 @@ sealed interface UpdateStatus {
     data class Ready(val offer: UpdateOffer, val file: Path, val replacedAppImage: Boolean) : UpdateStatus
 
     /** [messageKey] is user text; [detail] says what went wrong. */
-    data class Failed(val messageKey: String, val detail: String) : UpdateStatus
+    /** [cause] gives [detail] in the user's language when it is a network error. */
+    data class Failed(val messageKey: String, val detail: String, val cause: Throwable? = null) : UpdateStatus
 }
 
 /** Where releases come from: GitHub Releases, or a folder in the demo. */
@@ -120,7 +121,7 @@ class Updater(
         } catch (e: UpdateRejected) {
             UpdateStatus.Failed("update.rejected", e.message.orEmpty())
         } catch (e: Exception) {
-            UpdateStatus.Failed("update.unreachable", e.message ?: e.javaClass.simpleName)
+            UpdateStatus.Failed("update.unreachable", e.message ?: e.javaClass.simpleName, e)
         }
     }
 
@@ -137,36 +138,38 @@ class Updater(
                 val dir = appImage?.parent ?: downloads()
                 Files.createDirectories(dir)
                 val part = dir.resolve(offer.file.name + ".part")
-                val digest = MessageDigest.getInstance("SHA-256")
-                var size = 0L
-                source.open(offer.file.url).use { input ->
-                    Files.newOutputStream(part).use { out ->
-                        val buffer = ByteArray(1 shl 16)
-                        while (true) {
-                            val n = input.read(buffer)
-                            if (n < 0) break
-                            size += n
-                            if (size > offer.file.size) throw UpdateRejected("The download is larger than announced")
-                            digest.update(buffer, 0, n)
-                            out.write(buffer, 0, n)
-                            status = UpdateStatus.Downloading(offer, size.toFloat() / offer.file.size)
+                // Whatever goes wrong before the file is in place (too large, a bad hash, a network
+                // or disk error, the user cancelling), no partial download is left behind.
+                try {
+                    val digest = MessageDigest.getInstance("SHA-256")
+                    var size = 0L
+                    source.open(offer.file.url).use { input ->
+                        Files.newOutputStream(part).use { out ->
+                            val buffer = ByteArray(1 shl 16)
+                            while (true) {
+                                val n = input.read(buffer)
+                                if (n < 0) break
+                                size += n
+                                if (size > offer.file.size) throw UpdateRejected("The download is larger than announced")
+                                digest.update(buffer, 0, n)
+                                out.write(buffer, 0, n)
+                                status = UpdateStatus.Downloading(offer, size.toFloat() / offer.file.size)
+                            }
                         }
                     }
-                }
-                try {
                     UpdateCheck.verifyDownload(offer.file, size, UpdateCheck.sha256Hex(digest))
-                } catch (e: UpdateRejected) {
-                    Files.deleteIfExists(part)
+                    if (appImage != null) {
+                        part.toFile().setExecutable(true)
+                        Files.move(part, appImage, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+                        UpdateStatus.Ready(offer, appImage, replacedAppImage = true)
+                    } else {
+                        val file = dir.resolve(offer.file.name)
+                        Files.move(part, file, StandardCopyOption.REPLACE_EXISTING)
+                        UpdateStatus.Ready(offer, file, replacedAppImage = false)
+                    }
+                } catch (e: Throwable) {
+                    runCatching { Files.deleteIfExists(part) }
                     throw e
-                }
-                if (appImage != null) {
-                    part.toFile().setExecutable(true)
-                    Files.move(part, appImage, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
-                    UpdateStatus.Ready(offer, appImage, replacedAppImage = true)
-                } else {
-                    val file = dir.resolve(offer.file.name)
-                    Files.move(part, file, StandardCopyOption.REPLACE_EXISTING)
-                    UpdateStatus.Ready(offer, file, replacedAppImage = false)
                 }
             }
         } catch (e: CancellationException) {
@@ -175,7 +178,7 @@ class Updater(
         } catch (e: UpdateRejected) {
             UpdateStatus.Failed("update.badDownload", e.message.orEmpty())
         } catch (e: Exception) {
-            UpdateStatus.Failed("update.downloadFailed", e.message ?: e.javaClass.simpleName)
+            UpdateStatus.Failed("update.downloadFailed", e.message ?: e.javaClass.simpleName, e)
         }
     }
 
@@ -234,7 +237,7 @@ private object GitHubSource : UpdateSource {
         val response = client.send(request(url, Duration.ofMinutes(30)), HttpResponse.BodyHandlers.ofInputStream())
         if (response.statusCode() != 200) {
             response.body().close()
-            throw IOException("HTTP ${response.statusCode()}")
+            throw HttpStatusException(response.statusCode())
         }
         return response.body()
     }

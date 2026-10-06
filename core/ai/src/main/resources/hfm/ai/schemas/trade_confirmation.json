@@ -1,0 +1,101 @@
+{
+  "$id": "hfm/trade_confirmation/v1",
+  "title": "trade_confirmation",
+  "type": "object",
+  "properties": {
+    "institution": {
+      "type": "string"
+    },
+    "account_number_last_digits": {
+      "type": "string"
+    },
+    "account_type": {
+      "type": "string",
+      "description": "Such as TFSA, RRSP, RRIF, RESP, FHSA, LIRA, LIF, margin or cash"
+    },
+    "confirmation_number": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 code of the amounts, such as CAD or USD"
+    },
+    "trades": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "buy",
+              "sell"
+            ]
+          },
+          "trade_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "settlement_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Ticker as printed, such as XIC or RY.TO"
+          },
+          "description": {
+            "type": "string",
+            "description": "The security's name as printed"
+          },
+          "identifier": {
+            "type": "string",
+            "description": "CUSIP or ISIN, if printed"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Units bought or sold, always positive"
+          },
+          "price": {
+            "type": "number",
+            "description": "Price per unit"
+          },
+          "gross_amount": {
+            "type": "number",
+            "description": "Quantity times price, before commission and fees, always positive"
+          },
+          "commission": {
+            "type": "number",
+            "description": "Always positive"
+          },
+          "other_fees": {
+            "type": "number",
+            "description": "Other fees and charges added to the trade, always positive"
+          },
+          "net_amount": {
+            "type": "number",
+            "description": "The amount paid for a purchase or received for a sale, always positive"
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217 code, if this trade differs from the document's"
+          }
+        },
+        "required": [
+          "action",
+          "trade_date",
+          "description",
+          "quantity",
+          "price",
+          "net_amount"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "institution",
+    "trades"
+  ],
+  "additionalProperties": false
+}

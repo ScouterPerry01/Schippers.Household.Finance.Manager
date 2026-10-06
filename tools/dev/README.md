@@ -13,6 +13,7 @@ Small scripts used while building and checking the app. They are not part of the
 
 Typical check of a screen: `./gradlew :app:desktop:runDemo -Plang=en -Psection=DOCUMENTS` in the background, then `shot.ps1`.
 Android: start the emulator (`pixel_7_-_api_36_0`), `adb install -r app/android/build/outputs/apk/github/debug/android-github-debug.apk`, and `adb exec-out screencap -p > phone.png` (from Git Bash, not PowerShell, which corrupts binary output).
+Phone reminders: `./gradlew :app:desktop:manualPhoneHost -Plang=en -PeventIn=7` adds two events starting in 7 minutes, reminded 2 minutes before (one medical, whose notification names nothing); pair the phone within 5 minutes and watch the notification. `adb shell appops set ca.ranns.roost.mobile SCHEDULE_EXACT_ALARM allow` makes it ring on the minute.
 To pair the emulator with the demo (each demo run is a new household): run the demo with `-Psection=PHONES`, click "Pair a phone", then "Copy as text", and open the copied `hfmpair:` text on the phone with `adb shell am start -a android.intent.action.VIEW -d "'<text>'" ca.ranns.roost.mobile`. The phone's screen is 1080x2400 for `adb shell input tap`.
 Update screens: sign a test release with a throwaway key (`tools/release` `keygen` into a temporary folder, then `sign-release`; delete the `release-key.pub` it writes into `core/update` afterwards), put that key's `release-key.pub` beside the files, and run the demo with `-Pupdate=<folder> -Psection=ABOUT`. The demo keeps its own settings, so the first-start question appears until it is answered there.
 

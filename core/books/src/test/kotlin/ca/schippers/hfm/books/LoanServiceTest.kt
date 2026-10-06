@@ -155,6 +155,25 @@ class LoanServiceTest {
     }
 
     @Test
+    fun `debt payoff goes from today's balance to zero, with the interest of each year`() {
+        books.loans.save(terms())
+        val today = d("2026-01-15")
+        val payoff = books.loans.debtPayoffs(today).single()
+        assertEquals(mortgage.id, payoff.account.id)
+        assertEquals(cad("500000"), payoff.balanceAtEndOf(2025), "nothing paid yet")
+        assertTrue(payoff.balanceAtEndOf(2026) < cad("500000"))
+        assertEquals(cad("0"), payoff.balanceAtEndOf(2051))
+        assertEquals(books.loans.status(mortgage.id, today).payoffDate, payoff.payoffDate)
+        val interest = payoff.interestByYear
+        assertEquals(2026, interest.keys.first())
+        assertEquals(books.loans.status(mortgage.id, today).interestRemaining, interest.values.reduce { a, b -> a + b }, "the years add up to the interest left")
+        assertTrue(interest.getValue(2027) > interest.getValue(2040), "less interest each year as the balance falls")
+        // A card has no payoff schedule.
+        books.accounts.create(AccountDraft(group, "Visa", AccountType.CREDIT_CARD, Currency.CAD, cad("-1200"), d("2026-01-01")))
+        assertEquals(1, books.loans.debtPayoffs(today).size)
+    }
+
+    @Test
     fun `debt summary lists every liability`() {
         books.loans.save(terms().copy(frequency = PaymentFrequency.ACCELERATED_BI_WEEKLY, firstPaymentDate = d("2026-01-16")))
         val visa = books.accounts.create(AccountDraft(group, "Visa", AccountType.CREDIT_CARD, Currency.CAD, cad("-1200"), d("2026-01-01")))

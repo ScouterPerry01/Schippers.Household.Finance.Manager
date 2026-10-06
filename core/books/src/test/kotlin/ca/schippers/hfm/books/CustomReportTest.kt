@@ -91,6 +91,13 @@ class CustomReportTest {
         assertEquals("2026-03" to cad("980.00"), r.busiestMonth)
         val food = r.topCategories.first { it.thisYear == cad("200.00") }
         assertEquals(cad("-100.00"), food.change, "food went down by 100")
+        // The chart's months: income and spending month by month, adding up to the year.
+        assertEquals(LocalDate(2026, 1, 1), r.months.first().start)
+        assertEquals(listOf(cad("4000.00"), cad("0"), cad("0")), r.months.take(3).map { it.income })
+        assertEquals(listOf(cad("0"), cad("120.00"), cad("980.00")), r.months.take(3).map { it.expense })
+        assertEquals(r.spending, r.months.map { it.expense }.reduce { a, b -> a + b })
+        // A past year has all twelve months.
+        assertEquals(12, books.yearReview.review(2025, labels).months.size)
     }
 
     @Test

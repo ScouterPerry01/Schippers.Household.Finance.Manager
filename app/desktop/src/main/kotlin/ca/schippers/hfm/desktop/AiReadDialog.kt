@@ -100,9 +100,9 @@ fun AiReadDialog(model: BooksModel, doc: VaultDocument, kind: ca.schippers.hfm.o
                     TextButton(enabled = edits[index] != PageEdit(), onClick = { edits[index] = PageEdit() }) { Text(model.t("ai.read.clear")) }
                     if (all.size > 1) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            TextButton(enabled = index > 0, onClick = { index-- }) { Text("<") }
+                            SymbolButton(model.t("common.previousPage"), "<", enabled = index > 0) { index-- }
                             Text(model.t("ai.read.page", index + 1, all.size))
-                            TextButton(enabled = index < all.size - 1, onClick = { index++ }) { Text(">") }
+                            SymbolButton(model.t("common.nextPage"), ">", enabled = index < all.size - 1) { index++ }
                         }
                         // AI-04: a page that is not needed (a blank back, the terms) can be left out.
                         LabeledCheckbox(model.t("ai.read.leaveOut"), index in leftOut) { if (it) leftOut += index else leftOut -= index }

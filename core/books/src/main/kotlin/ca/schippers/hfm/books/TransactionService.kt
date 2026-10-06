@@ -84,6 +84,15 @@ class TransactionService internal constructor(private val books: Books) {
         return result.asReversed()
     }
 
+    /** An account's transactions dated from [from] to [to], oldest first, without running balances or tags. */
+    internal fun between(accountId: String, from: LocalDate, to: LocalDate): List<Transaction> {
+        val (group, account) = books.accounts.locate(accountId)
+        val q = books.ledger(group).ledgerQueries
+        val rows = q.txnsForAccountBetween(accountId, from.toString(), to.toString()).executeAsList()
+        val splits = rows.map { it.id }.chunked(500).flatMap { ids -> q.splitsForTxns(ids).executeAsList() }.groupBy { it.txn_id }
+        return rows.map { it.toTransaction(account.currency, splits[it.id].orEmpty(), emptySet()) }
+    }
+
     /** How many transactions the account has in all, for "showing the last N of M". */
     fun count(accountId: String): Long {
         val (group, _) = books.accounts.locate(accountId)

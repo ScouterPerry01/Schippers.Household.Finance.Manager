@@ -6,7 +6,7 @@ Chaque ligne montre une catégorie avec le montant dépensé (ou reçu, pour un 
 
 ## Laisser l’application suggérer
 
-Si vous avez déjà un historique, choisissez Suggérer d’après les 12 derniers mois. L’application affiche la moyenne mensuelle de chaque catégorie sur les 12 derniers mois complets. Cochez les catégories à budgéter, puis choisissez Créer les budgets. Les catégories qui ont déjà un budget sont signalées.
+Si vous avez déjà un historique, choisissez Suggérer d’après les 12 derniers mois. L’application affiche la moyenne mensuelle de chaque catégorie sur les 12 derniers mois complets. Cochez les catégories à budgéter, puis choisissez Créer les budgets. Les catégories qui ont déjà un budget sont signalées. Seuls les comptes partagés comptent, puisque chaque utilisateur du ménage voit les budgets.
 
 ## Ajouter un budget vous-même
 

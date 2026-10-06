@@ -259,14 +259,14 @@ private fun CalendarTab(model: BooksModel) {
 
     Column(Modifier.verticalScroll(rememberScrollState())) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { month = month.minus(DatePeriod(months = 1)) }) { Text("◀") }
+            SymbolButton(model.t("common.previousMonth"), "◀") { month = month.minus(DatePeriod(months = 1)) }
             Text(
                 java.time.YearMonth.of(month.year, month.month.ordinal + 1)
                     .format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy", locale)).replaceFirstChar { it.titlecase(locale) },
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.width(220.dp),
             )
-            TextButton(onClick = { month = month.plus(DatePeriod(months = 1)) }) { Text("▶") }
+            SymbolButton(model.t("common.nextMonth"), "▶") { month = month.plus(DatePeriod(months = 1)) }
         }
         Row {
             for (dow in 0 until 7) {
@@ -363,6 +363,11 @@ private fun ForecastTab(model: BooksModel) {
             }
         }
         LazyColumn(Modifier.padding(top = 8.dp)) {
+            // BILL-08: the bank accounts' balances day by day, with a line at zero.
+            item(key = "chart") {
+                val flow = remember(model.revision, days) { model.books.bills.cashFlow(today(), days) }
+                if (flow.accounts.any { it.points.size > 1 }) CashFlowChart(model, flow)
+            }
             items(forecast.filter { it.points.size > 1 || it.start.isNegative }, key = { it.account.id }) { f ->
                 Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                     Column(Modifier.padding(12.dp)) {

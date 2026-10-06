@@ -1,6 +1,6 @@
 # RANN's Roost Mobile
 
-RANN's Roost Mobile is the companion app for Android phones. It photographs receipts, bills and other documents, records quick expenses and odometer readings, and sends them to RANN's Roost on your computer. In return it shows a summary of your balances, bills due, budgets and maintenance and the household's contacts, and reminds you of bills and budgets. Contacts you meet while out can be added on the phone and sent to the computer for review.
+RANN's Roost Mobile is the companion app for Android phones. It photographs receipts, bills and other documents, records quick expenses and odometer readings, and sends them to RANN's Roost on your computer. In return it shows a summary of your balances, bills due, coming appointments, medication refills, budgets and maintenance and the household's contacts, and reminds you of bills, appointments, refills and budgets. Contacts you meet while out can be added on the phone and sent to the computer for review.
 
 The phone is not a second copy of your books: the computer is the master copy. The phone keeps only what is waiting to be sent and the latest summary and contacts from the computer. Under its icon, the app is called RANN's Roost.
 
@@ -68,7 +68,7 @@ What stays: everything the computer already received, and the household on the c
 
 ## The first start {#first-start}
 
-- On Android 13 and later, the app asks whether it may show notifications. Allow it to get bill, budget and maintenance reminders.
+- On Android 13 and later, the app asks whether it may show notifications. Allow it to get bill, appointment, refill, budget and maintenance reminders.
 - The GitHub edition asks **Check for updates?** once: **Check once a day** or **Don't check**. You can change it later in [Settings](#updates).
 - Until the phone is paired, the Capture and Settings tabs show **Not paired yet** and a **Pair with a computer** button.
 
@@ -148,9 +148,18 @@ Pages are sent as pictures no larger than 2,400 pixels on their longest side, wh
 In another app (email, a store's app, your files, the photo gallery), use **Share** and choose RANN's Roost Mobile to send it:
 
 - a PDF, such as an e-receipt or an e-bill, is kept as it is;
-- one or more pictures become the pages of one document.
+- one or more pictures become the pages of one document, as a scan of several pages does;
+- text, such as an email shared from your mail app, is kept as a text document named after the email's subject. A text file is kept the same way.
 
-After you unlock the app, the capture form opens as a **Document** capture, with the file's name kept. Shared pictures are read like scanned pages; a PDF is not read on the phone, and the computer reads it instead. Save it as usual.
+After you unlock the app, the capture form opens as a **Document** capture, with the file's name kept. Shared pictures are read like scanned pages; a PDF is not read on the phone, and the computer reads it instead. Shared text is shown at the top of the form under **Shared text**, and the phone fills in the store, date and amount it finds in it. Save it as usual. On the computer the text is the document, and what you typed in **Note** stays a note.
+
+### Several files at once {#share-several}
+
+@index: share several files; several PDFs
+
+You can select several files in another app and share them together. Pictures are gathered into one document, since they are usually the pages of one receipt or letter. Each PDF and each text file is already a whole document, so each becomes its own capture. The forms then come one after another, each showing its place, such as **1 of 3**: save or cancel each one, and the next opens. After the last, the Sent tab opens.
+
+Files of other kinds (a video, a spreadsheet) are left out, and a message says how many could not be used.
 
 ## The capture form {#capture-form}
 
@@ -259,7 +268,7 @@ Items are sent in small batches, oldest first. A capture already left in the fol
 
 ## The Summary tab {#summary-tab}
 
-@index: balances; bills due; budgets; maintenance due
+@index: balances; bills due; budgets; maintenance due; coming appointments; refills
 
 The Summary shows figures from your computer, as of the last transfer: the household's name, then **From your computer** and the date and time of that transfer. Before the first transfer it asks you to pair.
 
@@ -267,6 +276,8 @@ The Summary shows figures from your computer, as of the last transfer: the house
 
 - **Accounts**: each account and its balance.
 - **Bills due**: the bills due in the next 60 days that are not yet paid, up to 15, with the due date and the amount, or **about** an amount when it is estimated.
+- **Coming up**: the appointments and events from the computer's calendar in the coming weeks, up to 12, each with who it is for, its date and its time, or **All day**. Only events from accounts your user can see on the computer are sent, so another user's private appointments never reach your phone. Events marked done or cancelled are left out.
+- **Medication refills**: the active medications whose supply runs out in the next two months, or has already run out, with the date, and **renew** when no refills are left. Like the calendar, only medications your user can see are sent.
 - **Maintenance this month**: shown when something is due: each task, such as "Civic: Oil change", with **due now**, **due soon** or its date.
 - **Budgets this month**: each spending category with a budget: what was spent of the budget, such as "$412.30 of $600.00".
 
@@ -329,15 +340,24 @@ A new contact goes the same ways as captures: over your home Wi-Fi, through the 
 
 ## Notifications {#notifications}
 
-@index: reminders; bill reminder; budget alert; maintenance reminder; notifications
+@index: reminders; bill reminder; budget alert; maintenance reminder; notifications; appointment reminder; refill reminder; lock screen
 
-From the latest summary, the phone shows notifications, each once, checked after every transfer and about every 12 hours:
+From the latest summary, the phone shows notifications, each once. Appointment reminders come at their time; the others are checked after every transfer and about every 12 hours:
+
+- **Calendar reminders**: at each reminder time chosen for an appointment on the computer, such as a day and an hour before, for example "Winter tires on: Tomorrow at 9:30 a.m. · Main Street Auto" or "In 2 minutes". An all-day event is reminded counting from 8:00 that morning. If the phone was off or had not yet received the appointment, the latest reminder that has come up is shown late, until the appointment starts. Reminders come even when the app is closed and after the phone restarts. See [Reminders on the minute](#exact-reminders).
+- **Medication refills**: from a medication's reminder days before its supply runs out, and when it has run out ("Refill due in 3 days · Alex"), with a reminder to ask for a new prescription when no refills are left.
 
 - **Bill reminders**: when a bill is due within its reminder days, as set on the computer ("Hydro is due in 3 days", "due tomorrow", "due today").
-- **Budget alerts**: when a category's spending this month reaches 80 % of its budget, and again when the budget is used up. They use only figures from a transfer made this month.
+- **Budget alerts**: when a category's spending this month reaches 80 % of its budget, and again when the budget is used up. They use only figures from a transfer made this month. The notification names the category but not the amounts, which are in the Summary, behind the PIN.
 - **Maintenance reminders**: when a task becomes due soon, and when it is due.
 
 They appear only if you allowed notifications. Each kind has its own channel in Android's notification settings, where you can turn it off.
+
+### Health and the lock screen {#lock-screen}
+
+Health details never appear in a notification, locked or not: a medical appointment shows only **Health appointment** and when, and a refill reminder names no medication. Open the Summary tab, behind the app's PIN, to see which one.
+
+Other notifications show their title and text. When the phone has a screen lock and is set to hide sensitive notification content on the lock screen (in Android's settings, under notifications on the lock screen), a locked phone shows only **Reminder** for appointments and refills, and only the title for budget alerts.
 
 ## The Settings tab {#settings-tab}
 
@@ -356,6 +376,12 @@ Shown when paired. When the computer is not in reach, captures can be left, encr
 - The line shows **Transfer folder:** and the folder, or **No transfer folder chosen.**
 - **Choose a folder…** (or **Change the folder…**): opens Android's folder picker. Choose your cloud service in its menu, then the folder, and allow access. The service's app must be installed on the phone.
 - **Stop using it**: the phone stops using the folder and gives back its access. Nothing in the folder is deleted.
+
+### Reminders on the minute {#exact-reminders}
+
+@index: exact alarms; alarms and reminders; late reminder
+
+Android lets an app ring at an exact minute only once you allow it. Until then, calendar reminders come within ten minutes after their time. While it is not allowed, and the phone is paired, Settings shows **Reminders on the minute** and the button **Allow on-time reminders**, which opens Android's **Alarms & reminders** page for the app: turn it on and come back. The section then disappears and reminders come on time.
 
 ### Change PIN {#change-pin}
 

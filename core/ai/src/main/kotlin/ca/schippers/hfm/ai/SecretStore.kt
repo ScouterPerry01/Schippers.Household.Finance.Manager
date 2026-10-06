@@ -41,7 +41,13 @@ interface SecretStore {
     }
 }
 
-class SecretStoreException(message: String) : Exception(message)
+/**
+ * The system's key store refused. [reason] names the text shown to the user (key
+ * `secretStore.<reason>`), with [detail] (an error number or the keyring's own message) as its value.
+ */
+class SecretStoreException(val reason: Reason, val detail: String? = null) : Exception("${reason.name}${detail?.let { ": $it" }.orEmpty()}") {
+    enum class Reason { WINDOWS_REFUSED, KEYRING_ERROR, KEYRING_REFUSED }
+}
 
 /** Keeps keys in memory only: the user enters the key again after restarting. */
 class SessionSecrets : SecretStore {
@@ -114,7 +120,7 @@ class WindowsCredentials : SecretStore {
                 Persist = CRED_PERSIST_LOCAL_MACHINE
                 UserName = WString("RANN's Roost")
             }
-            if (!api.CredWriteW(cred, 0)) throw SecretStoreException("Credential Manager refused the key (error ${Native.getLastError()})")
+            if (!api.CredWriteW(cred, 0)) throw SecretStoreException(SecretStoreException.Reason.WINDOWS_REFUSED, Native.getLastError().toString())
         } finally {
             blob.clear()
             blob.close()
@@ -181,15 +187,15 @@ class LinuxSecretService : SecretStore {
     override fun get(name: String): String? {
         val error = PointerByReference()
         val found = lib.secret_password_lookup_sync(schema, null, error, "application", APP, "key", name, null)
-        failed(error)?.let { throw SecretStoreException(it) }
+        failed(error)?.let { throw SecretStoreException(SecretStoreException.Reason.KEYRING_ERROR, it) }
         return found?.let { p -> try { p.getString(0, "UTF-8") } finally { lib.secret_password_free(p) } }
     }
 
     override fun put(name: String, secret: String) {
         val error = PointerByReference()
         val ok = lib.secret_password_store_sync(schema, null, "RANN's Roost: AI reading key", secret, null, error, "application", APP, "key", name, null)
-        failed(error)?.let { throw SecretStoreException(it) }
-        if (!ok) throw SecretStoreException("the keyring refused the key")
+        failed(error)?.let { throw SecretStoreException(SecretStoreException.Reason.KEYRING_ERROR, it) }
+        if (!ok) throw SecretStoreException(SecretStoreException.Reason.KEYRING_REFUSED)
     }
 
     override fun delete(name: String) {
@@ -202,7 +208,7 @@ class LinuxSecretService : SecretStore {
     private fun failed(error: PointerByReference): String? {
         val e = error.value ?: return null
         // struct GError { GQuark domain; gint code; gchar *message; }
-        val message = e.getPointer(8)?.getString(0, "UTF-8") ?: "Secret Service error"
+        val message = e.getPointer(8)?.getString(0, "UTF-8") ?: "Secret Service"
         glib.g_error_free(e)
         return message
     }

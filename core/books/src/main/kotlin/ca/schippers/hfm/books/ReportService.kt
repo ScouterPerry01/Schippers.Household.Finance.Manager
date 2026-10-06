@@ -109,7 +109,7 @@ class ReportService internal constructor(private val books: Books) {
      * summed by day so each day converts at its own rate (FX-01).
      */
     private fun categoryRows(filter: ReportFilter, converter: Converter): List<Row> {
-        val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val accounts = books.accounts.all(includeClosed = true).associateBy { it.id }
         fun wanted(accountId: String) = filter.wants(accounts[accountId])
         val foreign = accounts.values.filter { it.currency != filter.cur && wanted(it.id) }.map { it.id }
         val out = ArrayList<Row>()
@@ -242,7 +242,7 @@ class ReportService internal constructor(private val books: Books) {
      */
     fun byPayee(filter: ReportFilter): Report<List<PayeeAmount>> {
         val converter = Converter(books.rates, filter.cur)
-        val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val accounts = books.accounts.all(includeClosed = true).associateBy { it.id }
         val names = books.payees.list(includeArchived = true).associate { it.id to it.name }
         val totals = HashMap<String, Money>()
         val labels = HashMap<String, Pair<String?, String>>()
@@ -276,7 +276,7 @@ class ReportService internal constructor(private val books: Books) {
     fun netWorth(dates: List<LocalDate>, accountIds: Set<String>? = null, currency: Currency? = null): Report<List<NetWorthPoint>> {
         val cur = currency ?: base
         val converter = Converter(books.rates, cur)
-        val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val accounts = books.accounts.all(includeClosed = true).associateBy { it.id }
         val zero = Money.zero(cur)
         val sortedDates = dates.sorted()
         val last = sortedDates.lastOrNull() ?: return Report(emptyList(), emptySet())
@@ -333,7 +333,7 @@ class ReportService internal constructor(private val books: Books) {
     fun drillDown(filter: ReportFilter, categoryId: String? = null, uncategorized: Boolean = false, payeeId: String? = null, payeeText: String? = null): List<DrillRow> {
         val converter = Converter(books.rates, filter.cur)
         val categories = categories()
-        val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val accounts = books.accounts.all(includeClosed = true).associateBy { it.id }
         val names = books.payees.list(includeArchived = true).associate { it.id to it.name }
         fun inSubtree(id: String?): Boolean {
             if (categoryId == null) return true

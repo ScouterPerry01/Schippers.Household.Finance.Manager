@@ -50,13 +50,13 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import java.time.format.DateTimeFormatter
 
-enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, CUSTOM, YEAR_IN_REVIEW, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, PLANS, FX, MEDICAL, ASSETS, MAINTENANCE, DEBT, BUDGET, RECONCILIATION }
+enum class ReportKind { INCOME_EXPENSE, SPENDING_BY_CATEGORY, INCOME_BY_CATEGORY, SPENDING_BY_PAYEE, CUSTOM, YEAR_IN_REVIEW, NET_WORTH, PORTFOLIO, INVESTMENT_INCOME, PLANS, FX, MEDICAL, ASSETS, MAINTENANCE, CASH_FLOW, DEBT, BUDGET, RECONCILIATION }
 /** FX-06: reports that can show one currency's accounts in their own amounts. */
 internal val BY_CURRENCY = setOf(ReportKind.INCOME_EXPENSE, ReportKind.SPENDING_BY_CATEGORY, ReportKind.INCOME_BY_CATEGORY, ReportKind.SPENDING_BY_PAYEE, ReportKind.NET_WORTH)
 /** RPT-07: reports that do not use the account group and the chosen accounts, so those choices are not shown. */
 private val NO_ACCOUNT_CHOICE = setOf(
     ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE,
-    ReportKind.YEAR_IN_REVIEW, ReportKind.BUDGET, ReportKind.RECONCILIATION,
+    ReportKind.YEAR_IN_REVIEW, ReportKind.BUDGET, ReportKind.RECONCILIATION, ReportKind.CASH_FLOW,
 )
 
 enum class RangePreset { THIS_MONTH, LAST_MONTH, THIS_YEAR, LAST_YEAR, LAST_12_MONTHS, CUSTOM }
@@ -78,6 +78,8 @@ class ReportState {
     var reviewYear by mutableStateOf(today().year)
     /** The year of the registered plans report: this year by default, for the room left. */
     var planYear by mutableStateOf(today().year)
+    /** BILL-08: how many days ahead the cash flow forecast looks. */
+    var forecastDays by mutableStateOf(ca.schippers.hfm.calc.rules.LeadTimes.billsForecast(today()))
     /** FX-06: show only the accounts in this currency, in their own amounts; null for everything in the base currency. */
     var currency by mutableStateOf<Currency?>(null)
     /** Drill path in the category reports: the category whose subcategories are shown. */
@@ -173,7 +175,11 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                 if (state.kind in setOf(ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.MEDICAL)) {
                     Picker(model.t("income.year"), (today().year downTo today().year - 10).toList(), state.taxYear, { it.toString() }, Modifier.width(190.dp)) { state.taxYear = it }
                 }
-                if (state.kind !in setOf(ReportKind.RECONCILIATION, ReportKind.DEBT, ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE, ReportKind.YEAR_IN_REVIEW)) {
+                if (state.kind == ReportKind.CASH_FLOW) {
+                    val choices = (listOf(30, 60, 90, 180) + ca.schippers.hfm.calc.rules.LeadTimes.billsForecast(today())).distinct().sorted()
+                    Picker(model.t("report.forecastDays"), choices, state.forecastDays, { model.t("bills.days", it) }, Modifier.width(200.dp)) { state.forecastDays = it }
+                }
+                if (state.kind !in setOf(ReportKind.CASH_FLOW, ReportKind.RECONCILIATION, ReportKind.DEBT, ReportKind.INVESTMENT_INCOME, ReportKind.FX, ReportKind.PLANS, ReportKind.MEDICAL, ReportKind.ASSETS, ReportKind.MAINTENANCE, ReportKind.YEAR_IN_REVIEW)) {
                     Picker(model.t("report.period"), RangePreset.entries, state.preset, { model.t("range.$it") }, Modifier.width(200.dp)) { state.preset = it }
                     if (state.preset == RangePreset.CUSTOM) {
                         DateInput(model.t("report.from"), state.customFrom, Modifier.width(150.dp)) { state.customFrom = it }
@@ -233,7 +239,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                 when (state.kind) {
                     ReportKind.CUSTOM -> CustomReportView(model, state, filter)
-                    ReportKind.YEAR_IN_REVIEW -> YearReviewReport(model, state.reviewYear)
+                    ReportKind.YEAR_IN_REVIEW -> YearReviewReport(model, state.reviewYear, state)
                     ReportKind.INCOME_EXPENSE -> IncomeExpenseReport(model, state, filter)
                     ReportKind.SPENDING_BY_CATEGORY -> CategoryReport(model, state, filter, CategoryKind.EXPENSE)
                     ReportKind.INCOME_BY_CATEGORY -> CategoryReport(model, state, filter, CategoryKind.INCOME)
@@ -246,6 +252,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                     ReportKind.MEDICAL -> MedicalReport(model, state.taxYear, state.memberId)
                     ReportKind.ASSETS -> AssetsReport(model)
                     ReportKind.MAINTENANCE -> MaintenanceReport(model, state.planYear)
+                    ReportKind.CASH_FLOW -> CashFlowReport(model, state.forecastDays)
                     ReportKind.DEBT -> DebtReport(model, filter.accountIds)
                     ReportKind.BUDGET -> {
                         // The chosen period, whatever it is (a month, a year, the last 12 months, custom dates).
@@ -489,6 +496,65 @@ private fun NetWorthReport(model: BooksModel, filter: ReportFilter) {
     )
 }
 
+// --- Cash flow forecast ---------------------------------------------------------------------------
+
+/**
+ * BILL-08 and section 12, cash flow forecast: the bank accounts' balances day by day from the
+ * scheduled bills, income and transfers, with their total and a line at zero.
+ */
+@Composable
+private fun CashFlowReport(model: BooksModel, days: Int) {
+    val books = model.books
+    val flow = remember(model.revision, days) { books.bills.cashFlow(today(), days) }
+    Text(model.t("report.CASH_FLOW"), style = MaterialTheme.typography.titleLarge)
+    Text(model.t("report.cashFlowHint", days, books.reports.base.code), style = MaterialTheme.typography.bodySmall)
+    MissingRates(model, flow.missingRates)
+    if (flow.accounts.isEmpty()) {
+        Text(model.t("report.noCashFlow"), Modifier.padding(vertical = 8.dp))
+        return
+    }
+    val lowest = flow.total.minByOrNull { it.minorUnits }
+    Row(horizontalArrangement = Arrangement.spacedBy(32.dp), modifier = Modifier.padding(vertical = 8.dp)) {
+        Stat(model.t("report.cashToday"), model.money(flow.total.first()))
+        Stat(model.t("report.cashEnd", model.date(flow.dates.last())), model.money(flow.total.last()))
+        lowest?.let { Stat(model.t("report.cashLowest"), model.money(it)) }
+    }
+    flow.firstShortfall?.let { Text(model.t("report.cashShortfall", model.date(it)), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Medium) }
+    for (f in flow.accounts.filter { it.shortfalls.isNotEmpty() }) {
+        Text(model.t("report.accountShortfall", f.account.name, model.date(f.shortfalls.first().date)), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+    }
+    CashFlowChart(model, flow)
+    TableView(
+        model,
+        ReportTable(
+            model.t("report.CASH_FLOW"), model.t("report.inCurrency", books.reports.base.code),
+            listOf(model.t("report.date"), model.t("nav.accounts"), model.t("report.bill"), model.t("register.amount"), model.t("report.balance")),
+            flow.accounts.flatMap { f -> f.points.drop(1).map { p -> Triple(f, p, p.occurrence) } }.sortedBy { it.second.date }.map { (f, p, o) ->
+                val amount = o?.let { if (it.bill.transferAccountId == f.account.id) it.amount else it.signedAmount }
+                listOf<Any?>(p.date, f.account.name, o?.bill?.name.orEmpty(), amount, p.balance)
+            },
+        ),
+        startOpen = true,
+    )
+}
+
+/**
+ * The bank accounts together (in the base currency) and each base-currency account on its own,
+ * day by day, with a line at zero. Shared by the report and the Bills Forecast tab.
+ */
+@Composable
+internal fun CashFlowChart(model: BooksModel, flow: ca.schippers.hfm.books.CashFlowForecast, modifier: Modifier = Modifier) {
+    val base = model.books.reports.base
+    val labels = flow.dates.map { model.date(it) }
+    val each = flow.accounts.filter { it.account.currency == base && it.points.size > 1 }.take(7)
+    val series = listOf(Series(model.t("report.allBankAccounts"), flow.total.map { it.d() }, flow.total.map { model.money(it) })) +
+        each.map { f ->
+            val values = flow.dates.map { f.balanceOn(it) }
+            Series(f.account.name, values.map { it.d() }, values.map { model.money(it) })
+        }
+    LineChart(labels, series, model.axis(), modifier.padding(top = 8.dp), threshold = 0.0)
+}
+
 // --- Debt summary ---------------------------------------------------------------------------------
 
 /** Every liability: what is owed, at what rate, the payment, and when it will be paid off. */
@@ -514,6 +580,66 @@ private fun DebtReport(model: BooksModel, accountIds: Set<String>?) {
             lines.map { listOf(it.account.name, model.t("accountType.${it.account.type}"), it.owed, pct(it.annualRate), pct(it.cashAdvanceRate), it.payment, it.payoffDate, it.interestRemaining, it.termEnd) },
         ),
         startOpen = true,
+    )
+    DebtPayoffCharts(model, accountIds)
+}
+
+/**
+ * The loans and mortgages with terms, from today's balance to payoff: a line per debt (what is
+ * still owed at the end of each year) and the interest paid each year, in the base currency at
+ * today's rate. Clicking a year's interest bar opens the loan payments recorded that year (RPT-01).
+ */
+@Composable
+private fun DebtPayoffCharts(model: BooksModel, accountIds: Set<String>?) {
+    val books = model.books
+    val base = books.reports.base
+    val today = today()
+    val data = remember(model.revision, accountIds) {
+        val payoffs = books.loans.debtPayoffs(today).filter { accountIds == null || it.account.id in accountIds }.take(8)
+        val rates = payoffs.map { it.account.currency }.distinct().associateWith { c -> if (c == base) java.math.BigDecimal.ONE else books.rates.rate(c, base, today) }
+        payoffs.filter { rates[it.account.currency] != null } to rates
+    }
+    val (payoffs, rates) = data
+    if (payoffs.isEmpty()) return
+    fun inBase(m: Money) = m.convert(base, rates.getValue(m.currency)!!)
+    val last = payoffs.mapNotNull { it.payoffDate?.year }.maxOrNull() ?: return
+    val years = (today.year..last).toList()
+    val zero = Money.zero(base)
+
+    Text(model.t("report.payoffTitle"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
+    Text(model.t("report.payoffHint", base.code), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+    // Today's balance first, then the end of each year.
+    val labels = listOf(model.date(today)) + years.map { it.toString() }
+    LineChart(
+        labels,
+        payoffs.map { p ->
+            val values = listOf(inBase(p.owed)) + years.map { inBase(p.balanceAtEndOf(it)) }
+            Series(p.account.name, values.map { it.d() }, values.map { model.money(it) })
+        },
+        model.axis(),
+        modifier = Modifier.padding(top = 8.dp),
+    )
+    val interest = years.map { y -> payoffs.fold(zero) { a, p -> a + (p.interestByYear[y]?.let(::inBase) ?: zero) } }
+    Text(model.t("report.interestByYear"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
+    GroupedBarChart(
+        years.map { it.toString() },
+        listOf(Series(model.t("loans.interest"), interest.map { it.d() }, interest.map { model.money(it) })),
+        model.axis(),
+        onClick = { p, _ ->
+            val year = years[p]
+            // What was already paid this year: the loans' own register lines.
+            val ids = payoffs.map { it.account.id }.toSet()
+            model.reportState.drill = "${model.t("report.interestByYear")} · $year" to
+                books.reports.drillDown(ReportFilter(LocalDate(year, 1, 1), minOf(LocalDate(year, 12, 31), today), ids))
+        },
+    )
+    TableView(
+        model,
+        ReportTable(
+            model.t("report.payoffTitle"), model.t("report.inCurrency", base.code),
+            listOf(model.t("loans.year")) + payoffs.map { it.account.name } + model.t("report.interestByYear"),
+            years.mapIndexed { i, y -> listOf<Any?>(y.toString()) + payoffs.map { inBase(it.balanceAtEndOf(y)) } + interest[i] },
+        ),
     )
 }
 

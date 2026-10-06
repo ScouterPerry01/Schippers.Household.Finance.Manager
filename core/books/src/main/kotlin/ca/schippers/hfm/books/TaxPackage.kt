@@ -4,6 +4,7 @@ import ca.schippers.hfm.calc.Province
 import ca.schippers.hfm.calc.medical.Window
 import ca.schippers.hfm.calc.invest.SlipKind
 import ca.schippers.hfm.calc.invest.TaxSlips
+import ca.schippers.hfm.data.ledger.PackageSplits
 import ca.schippers.hfm.domain.TaxFlag
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
@@ -85,19 +86,27 @@ class TaxPackageService internal constructor(private val books: Books) {
         fun add(member: String?, item: PackageItem, detail: String?, amount: Money) {
             if (!amount.isZero) lines.getOrPut(member) { mutableListOf() } += PackageLine(item, detail, amount)
         }
-        fromSplits(year, ::add)
+        // Made once: the slip checklist needs the investment report too, and each person's documents the donations.
+        val report = books.taxSlips.report(year)
+        val donations = books.donations.list(year)
+        val splits = books.groups().associate { g ->
+            g.id to books.ledger(g).taxYearQueries.packageSplits(LocalDate(year, 1, 1).toString(), LocalDate(year, 12, 31).toString()).executeAsList()
+        }
+        fromSplits(year, splits, ::add)
         fromPlans(year, ::add)
-        fromInvestments(year, ::add)
+        fromInvestments(report, year, ::add)
         fromMedical(year, ::add)
-        books.donations.totals(year).forEach { t ->
+        books.donations.totals(donations).forEach { t ->
             add(t.memberId, PackageItem.DONATIONS, null, t.charitable)
             add(t.memberId, PackageItem.POLITICAL, null, t.political)
         }
         books.instalments.schedule(year).groupBy { it.memberId to it.authority }.forEach { (key, rows) ->
             add(key.first, PackageItem.INSTALMENTS, key.second.name, rows.fold(Money.zero(cad)) { a, i -> a + toCad(i.covered, i.dueDate) })
         }
-
-        val slips = books.slipChecklist.checklist(year)
+        val yearSplits = splits.mapValues { (_, rows) ->
+            rows.map { SlipChecklistService.YearSplit(it.account_id, it.payee_text, it.member_id, it.category_id, it.amount_minor) }
+        }
+        val slips = books.slipChecklist.checklist(year, report, yearSplits)
         val members = books.members.list(includeArchived = true).associateBy { it.id }
         val people = (lines.keys + slips.map { it.memberId }).distinct()
         return TaxPackage(
@@ -109,7 +118,7 @@ class TaxPackageService internal constructor(private val books: Books) {
                     .filter { !it.amount.isZero }
                     .sortedWith(compareBy({ it.item.ordinal }, { it.detail.orEmpty() }))
                 val province = m?.let { books.provinceOf(it) } ?: books.province
-                PersonPackage(m, province, relabel(mine, province), slips.filter { it.memberId == m && it.status == SlipStatus.EXPECTED }, documents(year, m, slips))
+                PersonPackage(m, province, relabel(mine, province), slips.filter { it.memberId == m && it.status == SlipStatus.EXPECTED }, documents(year, m, slips, donations))
             }.filter { it.lines.isNotEmpty() || it.missingSlips.isNotEmpty() }
                 .sortedWith(compareBy({ it.memberId == null }, { members[it.memberId]?.displayName.orEmpty() })),
         )
@@ -122,14 +131,14 @@ class TaxPackageService internal constructor(private val books: Books) {
     private fun toCad(m: Money, date: LocalDate): Money = if (m.currency == cad) m else books.rates.convert(m, cad, date) ?: Money.zero(cad)
 
     /** Income, payroll deductions and flagged spending, by person and payer. */
-    private fun fromSplits(year: Int, add: (String?, PackageItem, String?, Money) -> Unit) {
+    private fun fromSplits(year: Int, splits: Map<String, List<PackageSplits>>, add: (String?, PackageItem, String?, Money) -> Unit) {
         val categories = books.categories.list(includeArchived = true)
         val byKey = categories.mapNotNull { c -> c.systemKey?.let { it to c.id } }.toMap()
         val keyOf = byKey.entries.associate { (k, v) -> v to k }
         val flagOf = categories.associate { it.id to it.taxFlag }
-        val accounts = books.accounts.list(includeClosed = true).associate { it.account.id to it.account }
+        val accounts = books.accounts.all(includeClosed = true).associateBy { it.id }
         for (g in books.groups()) {
-            val rows = books.ledger(g).taxYearQueries.packageSplits(LocalDate(year, 1, 1).toString(), LocalDate(year, 12, 31).toString()).executeAsList()
+            val rows = splits[g.id].orEmpty()
             for (r in rows) {
                 val account = accounts[r.account_id] ?: continue
                 if (account.type.isRegistered) continue
@@ -196,9 +205,9 @@ class TaxPackageService internal constructor(private val books: Books) {
     }
 
     /** From the investment income report (INV-08): dividends as taxable amounts, interest, foreign tax, and the taxable half of capital gains. */
-    private fun fromInvestments(year: Int, add: (String?, PackageItem, String?, Money) -> Unit) {
+    private fun fromInvestments(report: InvestmentIncomeReport, year: Int, add: (String?, PackageItem, String?, Money) -> Unit) {
         fun box(line: SlipLine, code: String) = line.boxes[code] ?: Money.zero(cad)
-        for (p in books.taxSlips.report(year).people) {
+        for (p in report.people) {
             val m = p.member?.id
             var slipGains = Money.zero(cad)
             for (line in p.slips) {
@@ -246,14 +255,14 @@ class TaxPackageService internal constructor(private val books: Books) {
     }
 
     /** The slips from the checklist, donation receipts and medical receipts behind one person's package. */
-    private fun documents(year: Int, memberId: String?, slips: List<ChecklistSlip>): List<PackageDocument> {
+    private fun documents(year: Int, memberId: String?, slips: List<ChecklistSlip>, donations: List<Donation>): List<PackageDocument> {
         val docs = LinkedHashMap<String, String>()
         fun put(id: String, name: String) { docs.putIfAbsent(id, name) }
         for (s in slips.filter { it.memberId == memberId && it.documents > 0 }) {
             for (d in books.documents.documentsFor(SlipChecklistService.ENTITY, s.id)) put(d.id, "${s.type.name} - ${s.issuer}")
         }
-        for (d in books.donations.list(year).filter { it.memberId == memberId && it.documents > 0 }) {
-            for (doc in books.documents.documentsFor(DocumentEntity.TRANSACTION, d.transactionId)) put(doc.id, "Donation - ${d.receipt?.charity ?: d.payee.orEmpty()} - ${d.date}")
+        for (d in donations.filter { it.memberId == memberId && it.documents > 0 }) {
+            for (doc in books.documents.documentsFor(DocumentEntity.TRANSACTION, d.transactionId)) put(doc.id, books.text("package.docDonation", d.receipt?.charity ?: d.payee.orEmpty(), d.date.toString()))
         }
         // The medical receipts go with the household's package, for the periods its lines claim.
         if (memberId == null) {
@@ -262,7 +271,7 @@ class TaxPackageService internal constructor(private val books: Books) {
                 report.people.filter { it.otherDependant && it.best != null }.map { it.best!! to setOf(it.member.id) }
             for ((window, people) in claimed) {
                 for (e in books.medical.expensesIn(window, people)) {
-                    for (doc in books.documents.documentsFor(MedicalService.EXPENSE, e.id)) put(doc.id, "Medical - ${e.description ?: e.service.name} - ${e.taxDate}")
+                    for (doc in books.documents.documentsFor(MedicalService.EXPENSE, e.id)) put(doc.id, books.text("package.docMedical", e.description ?: books.text("medService.${e.service}"), e.taxDate.toString()))
                 }
             }
         }

@@ -261,16 +261,24 @@ class DocumentService internal constructor(private val books: Books) {
      * Stores fields read another way, such as by cloud AI (section 4.5): they become the
      * document's kind, date, merchant and amount, and its recognised text is kept.
      */
-    internal fun recordDraft(documentId: String, read: DocumentDraft, engineId: String): VaultDocument {
+    internal fun recordDraft(documentId: String, read: DocumentDraft, engineId: String, readText: String? = null): VaultDocument {
         val (group, row) = locate(documentId)
         books.require(group, PermissionLevel.CAPTURE_ONLY)
         val key = readKey(read.merchant?.value)
         val draft = applyLearned(group, key, read)
-        books.ledger(group).aiQueries.updateDocumentDraft(
-            draft.kind.name, draft.date?.value?.toString() ?: row.doc_date, draft.merchant?.value ?: row.merchant,
-            draft.total?.value?.minorUnits ?: row.amount_minor, (draft.total?.value?.currency ?: draft.currency).code,
-            json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft).copy(readKey = key, chosen = storedChoices(row))), engineId, books.now(), documentId,
-        )
+        val date = draft.date?.value?.toString() ?: row.doc_date
+        val merchant = draft.merchant?.value ?: row.merchant
+        val amount = draft.total?.value?.minorUnits ?: row.amount_minor
+        val currency = (draft.total?.value?.currency ?: draft.currency).code
+        val stored = json.encodeToString(StoredDraft.serializer(), StoredDraft.of(draft).copy(readKey = key, chosen = storedChoices(row)))
+        val marker = READ_TEXT_MARKER
+        if (readText == null && row.recognized_text?.contains(marker) != true) {
+            books.ledger(group).aiQueries.updateDocumentDraft(draft.kind.name, date, merchant, amount, currency, stored, engineId, books.now(), documentId)
+        } else {
+            // AI-03: the fields read are kept after the recognised text, replacing those of an earlier reading, so they can be searched.
+            val text = listOfNotNull(recognisedOnly(row.recognized_text), readText?.let { "$marker\n$it" }).joinToString("\n\n").take(MAX_TEXT).ifEmpty { null }
+            books.ledger(group).ledgerQueries.updateDocumentText(row.page_count, text, draft.kind.name, date, merchant, amount, currency, stored, engineId, books.now(), documentId)
+        }
         return get(documentId)
     }
 
@@ -313,6 +321,11 @@ class DocumentService internal constructor(private val books: Books) {
     fun documentsFor(entity: String, entityId: String): List<VaultDocument> = books.groups().flatMap { g ->
         toDocuments(g, books.ledger(g).ledgerQueries.documentsFor(entity, entityId).executeAsList())
     }
+
+    /** How many documents each record of [entity] has, in the groups the user can see: the counts [documentsFor] would give. */
+    internal fun countsFor(entity: String): Map<String, Int> = books.groups()
+        .flatMap { g -> books.ledger(g).ledgerQueries.documentCountsFor(entity).executeAsList() }
+        .groupingBy { it.entity_id }.fold(0) { a, r -> a + r.total.toInt() }
 
     /** OCR-10: the same file, or another document with the same date and amount and a similar merchant. */
     fun duplicates(documentId: String): List<PossibleDuplicate> {
@@ -504,6 +517,12 @@ class DocumentService internal constructor(private val books: Books) {
         const val DESKTOP = "desktop"
         private const val MAX_BYTES = 50 * 1024 * 1024
         private const val MAX_TEXT = 200_000
+
+        /** Separates a document's recognised text from the fields an AI reading added (AI-03). */
+        const val READ_TEXT_MARKER = "=== AI ==="
+
+        /** A document's recognised text without the fields an AI reading added. */
+        fun recognisedOnly(text: String?): String? = text?.substringBefore(READ_TEXT_MARKER)?.trimEnd()?.takeIf { it.isNotEmpty() }
 
         /** Confidence of a merchant name the user taught (OCR-07). */
         private const val LEARNED = 0.95f

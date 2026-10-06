@@ -221,7 +221,7 @@ fun makeDueReports(model: BooksModel, today: LocalDate = today()): List<String> 
 
 /** The year in review: the year at a glance against the one before, to read, print or share. */
 @Composable
-fun YearReviewReport(model: BooksModel, year: Int) {
+fun YearReviewReport(model: BooksModel, year: Int, state: ReportState) {
     val r = remember(model.revision, year) { model.books.yearReview.review(year, model.pivotLabels(), model.language == Language.FRENCH) }
     val title = model.t(if (year == today().year) "review.titleSoFar" else "review.title", year.toString())
     Text(title, style = MaterialTheme.typography.titleLarge)
@@ -233,6 +233,41 @@ fun YearReviewReport(model: BooksModel, year: Int) {
         Stat(model.t("review.kept"), model.money(r.kept) + (r.savingsRate?.let { " ($it %)" } ?: ""))
         if (start != null && end != null) Stat(model.t("review.netWorth"), model.money(end - start))
     }
+    // Month by month: income against spending; a bar opens the transactions behind it (RPT-01).
+    val monthFormat = java.time.format.DateTimeFormatter.ofPattern("MMM", model.language.locale)
+    fun monthLabel(d: LocalDate) = java.time.LocalDate.of(d.year, d.month.ordinal + 1, 1).format(monthFormat)
+    if (r.months.any { it.income.isPositive || it.expense.isPositive }) {
+        Text(model.t("review.byMonth"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+        GroupedBarChart(
+            r.months.map { monthLabel(it.start) },
+            listOf(
+                Series(model.t("review.income"), r.months.map { it.income.d() }, r.months.map { model.money(it.income) }),
+                Series(model.t("review.spending"), r.months.map { it.expense.d() }, r.months.map { model.money(it.expense) }),
+            ),
+            model.axis(),
+            onClick = { p, s ->
+                val month = r.months[p]
+                val categories = model.books.categories.list(true).associateBy { it.id }
+                val rows = model.books.reports.drillDown(ReportFilter(month.start, month.end)).filter { row ->
+                    val income = row.categoryId?.let { categories[it]?.kind == ca.schippers.hfm.domain.CategoryKind.INCOME } ?: row.amount.isPositive
+                    income == (s == 0)
+                }
+                state.drill = "${monthLabel(month.start)} ${month.start.year} · ${model.t(if (s == 0) "review.income" else "review.spending")}" to rows
+            },
+        )
+    }
+    // Where the money went, against the year before; a bar opens its transactions.
+    if (r.topCategories.isNotEmpty()) {
+        Text(model.t("review.topCategories"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+        RankedBars(
+            r.topCategories.map { c -> RankedBar(c.name, c.thisYear.d(), model.money(c.thisYear), note = model.t("review.lastYear", (year - 1).toString(), model.money(c.lastYear))) },
+            slot = 1,
+            onClick = { i ->
+                val c = r.topCategories[i]
+                state.drill = c.name to model.books.reports.drillDown(ReportFilter(LocalDate(year, 1, 1), LocalDate(year, 12, 31)), categoryId = c.categoryId, uncategorized = c.categoryId == null)
+            },
+        )
+    }
     val sections = listOf(
         model.t("review.compared", (year - 1).toString()) to listOf<Pair<String, Any?>>(model.t("review.income") to r.lastYearIncome, model.t("review.spending") to r.lastYearSpending),
         model.t("review.topCategories") to r.topCategories.map { it.name to it.thisYear },
@@ -243,7 +278,8 @@ fun YearReviewReport(model: BooksModel, year: Int) {
         model.t("review.payees") to r.frequentPayees.map { (name, visits, spent) -> name to model.t("review.visits", visits, model.money(spent)) },
         model.t("review.busiest") to listOfNotNull(r.busiestMonth),
     ).filter { it.second.isNotEmpty() }
-    for ((name, lines) in sections) {
+    // The top categories are in the chart above; the table below still lists them.
+    for ((name, lines) in sections.filter { it.first != model.t("review.topCategories") }) {
         Text(name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
         for ((label, value) in lines) {
             Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
@@ -252,6 +288,10 @@ fun YearReviewReport(model: BooksModel, year: Int) {
             }
         }
     }
-    val rows = sections.flatMap { (name, lines) -> lines.map { (label, value) -> listOf(name, label, value) } }
+    val rows = sections.flatMap { (name, lines) -> lines.map { (label, value) -> listOf(name, label, value) } } +
+        r.months.flatMap { m ->
+            val month = "${monthLabel(m.start)} ${m.start.year}"
+            listOf(listOf(model.t("review.byMonth"), "$month · ${model.t("review.income")}", m.income), listOf(model.t("review.byMonth"), "$month · ${model.t("review.spending")}", m.expense))
+        }
     TableView(model, ReportTable(title, model.t("review.subtitle", model.books.reports.base.code), listOf(model.t("review.section"), model.t("review.item"), model.t("review.value")), rows))
 }

@@ -89,7 +89,7 @@ class BackupService internal constructor(private val books: Books) {
                 books.putSetting(LAST_SUCCESS, backup.createdAt.toEpochMilli().toString())
                 books.putSetting(LAST_PROBLEM, "")
             } else {
-                books.putSetting(LAST_PROBLEM, check.problems.joinToString("; "))
+                books.putSetting(LAST_PROBLEM, check.issues.joinToString("; ") { books.text(it.key, *it.args.toTypedArray()) })
             }
             return BackupRun(backup, check, pruned)
         } catch (e: Exception) {

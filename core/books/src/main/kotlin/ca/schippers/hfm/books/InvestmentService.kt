@@ -157,7 +157,15 @@ data class StatementCheck(val statement: InvestmentStatement, val booksCash: Mon
     val matches: Boolean get() = cashMatches && positions.all { it.matches }
 }
 
-data class InvestmentImportResult(val added: Int, val alreadyThere: Int, val securitiesCreated: Int, val statementSaved: Boolean, val warnings: List<String>)
+data class InvestmentImportResult(
+    val added: Int,
+    val alreadyThere: Int,
+    val securitiesCreated: Int,
+    val statementSaved: Boolean,
+    val warnings: List<String>,
+    /** The statement saved for reconciliation (REC-08), if any. */
+    val statementId: String? = null,
+)
 
 /** INV-01 to INV-05, REC-08: securities, prices, investment transactions, holdings, ACB and imports. */
 class InvestmentService internal constructor(private val books: Books) {
@@ -237,7 +245,7 @@ class InvestmentService internal constructor(private val books: Books) {
 
     /** Investment and other accounts that hold securities. */
     fun accounts(includeClosed: Boolean = false): List<Account> =
-        books.accounts.list(includeClosed).map { it.account }.filter { it.type.kind == AccountKind.INVESTMENT }
+        books.accounts.all(includeClosed).filter { it.type.kind == AccountKind.INVESTMENT }
 
     fun transactions(accountId: String): List<InvestmentTxn> {
         val (group, account) = books.accounts.locate(accountId)

@@ -46,6 +46,8 @@ data class CostSummary(
     val byYear: Map<Int, Money>,
     /** Lines in another currency with no exchange rate, left out of the totals. */
     val unconverted: Int,
+    /** VEH-10: each year's costs by category, largest first. */
+    val byYearCategory: Map<Int, List<Pair<String?, Money>>> = emptyMap(),
 )
 
 /**
@@ -125,7 +127,7 @@ internal fun Books.costs(
     lines: (ca.schippers.hfm.data.ledger.LedgerQueries) -> List<CostLine>,
 ): CostSummary {
     val base = rates.baseCurrency
-    val currencies = accounts.list(includeClosed = true).associate { it.account.id to it.account.currency }
+    val currencies = accounts.all(includeClosed = true).associate { it.id to it.currency }
     var unconverted = 0
     val items = ArrayList<Pair<LocalDate, Pair<String?, Money>>>()
     for (group in groups()) {
@@ -146,5 +148,8 @@ internal fun Books.costs(
         .map { (category, list) -> category to list.fold(zero) { a, b -> a + b } }
         .sortedByDescending { it.second.minorUnits }
     val byYear = items.groupBy({ it.first.year }, { it.second.second }).mapValues { (_, list) -> list.fold(zero) { a, b -> a + b } }.toSortedMap()
-    return CostSummary(items.fold(zero) { a, b -> a + b.second.second }, byCategory, byYear, unconverted)
+    val byYearCategory = items.groupBy { it.first.year }.mapValues { (_, list) ->
+        list.groupBy({ it.second.first }, { it.second.second }).map { (category, amounts) -> category to amounts.fold(zero) { a, b -> a + b } }.sortedByDescending { it.second.minorUnits }
+    }.toSortedMap()
+    return CostSummary(items.fold(zero) { a, b -> a + b.second.second }, byCategory, byYear, unconverted, byYearCategory)
 }
