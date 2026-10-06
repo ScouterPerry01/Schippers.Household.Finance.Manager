@@ -229,10 +229,11 @@ object DemoHousehold {
         val usd = books.accounts.create(AccountDraft(group, l("Compte US", "US dollar account"), AccountType.CHEQUING, Currency.USD, Money.parse("500.00", Currency.USD), start, bank.id))
 
         // A cottage mortgage renewed two years ago, with its term ending soon (LN-01 to LN-04).
+        // Opened in the books from its first payment, so net worth before the demo's first month counts the debt with the cottage.
         val firstPayment = LocalDate(start.year, start.month, 1).minus(DatePeriod(months = 22))
         val terms = LoanTerms(cad("148000"), BigDecimal("0.0489"), Compounding.SEMI_ANNUAL, 21 * 12, PaymentFrequency.MONTHLY)
         val owedAtStart = LoanProjection.project(LoanPlan(terms, firstPayment)).balanceOn(start.minus(DatePeriod(days = 1)))
-        val mortgage = books.accounts.create(AccountDraft(group, l("Hypothèque du chalet", "Cottage mortgage"), AccountType.MORTGAGE, Currency.CAD, -owedAtStart, start, desjardins.id, "MTG-7745120"))
+        val mortgage = books.accounts.create(AccountDraft(group, l("Hypothèque du chalet", "Cottage mortgage"), AccountType.MORTGAGE, Currency.CAD, -owedAtStart, firstPayment, desjardins.id, "MTG-7745120"))
         books.loans.save(
             LoanDetails(
                 mortgage.id, terms.principal, terms.annualRate, amortizationMonths = terms.amortizationMonths, firstPaymentDate = firstPayment,
