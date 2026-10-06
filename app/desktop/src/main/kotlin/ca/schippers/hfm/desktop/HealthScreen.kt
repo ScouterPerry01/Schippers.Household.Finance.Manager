@@ -80,7 +80,7 @@ fun HealthScreen(model: BooksModel) {
     val person = people.firstOrNull { it.id == personId } ?: people.firstOrNull()
     summaryFor?.let { id ->
         val name = people.firstOrNull { it.id == id }?.name.orEmpty()
-        ExportPdfDialog(model, model.t("health.summaryTitle", name), healthSections(model, id)) { summaryFor = null }
+        ExportPdfDialog(model, model.t("health.summaryTitle", name), healthSections(model, id), "health.prepared") { summaryFor = null }
     }
 
     Column(Modifier.fillMaxSize().padding(12.dp)) {
@@ -90,6 +90,9 @@ fun HealthScreen(model: BooksModel) {
             Box(Modifier.weight(1f))
             // HLT-09: a printable summary for appointments and emergencies.
             if (person != null && !person.isPet) {
+                OutlinedButton(onClick = { model.act { printSections(model, model.t("health.summaryTitle", person.name), healthSections(model, person.id), "health.prepared") } }) {
+                    Text(model.t("health.printSummary"))
+                }
                 OutlinedButton(onClick = { summaryFor = person.id }) { Text(model.t("health.summary")) }
             }
             if (person != null && tab != HealthTab.PROVIDERS) {

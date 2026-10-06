@@ -163,16 +163,17 @@ fun healthSections(model: BooksModel, memberId: String): List<DocSection> {
     )
 }
 
-private fun printSections(model: BooksModel, title: String, sections: List<DocSection>) {
+/** Prints the sections (or opens them when the system has no print action); [subtitleKey] is the line under the title. */
+internal fun printSections(model: BooksModel, title: String, sections: List<DocSection>, subtitleKey: String = "estate.prepared") {
     val file = File.createTempFile("hfm-summary-", ".pdf").apply { deleteOnExit() }
-    SectionsPdf.write(title, model.t("estate.prepared", model.date(today())), sections, file)
+    SectionsPdf.write(title, model.t(subtitleKey, model.date(today())), sections, file)
     val desktop = java.awt.Desktop.getDesktop()
     if (desktop.isSupported(java.awt.Desktop.Action.PRINT)) desktop.print(file) else desktop.open(file)
 }
 
 /** EST-03: saves the summary as a PDF, protected by a password when one is given, for a spouse or an executor. */
 @Composable
-fun ExportPdfDialog(model: BooksModel, title: String, sections: List<DocSection>, onClose: () -> Unit) {
+fun ExportPdfDialog(model: BooksModel, title: String, sections: List<DocSection>, subtitleKey: String = "estate.prepared", onClose: () -> Unit) {
     var protect by remember { mutableStateOf(true) }
     var password by remember { mutableStateOf("") }
     var again by remember { mutableStateOf("") }
@@ -181,7 +182,7 @@ fun ExportPdfDialog(model: BooksModel, title: String, sections: List<DocSection>
         val chooser = JFileChooser().apply { selectedFile = File(title.replace(Regex("""[\\/:*?"<>|]"""), "-") + ".pdf") }
         if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             val file = chooser.selectedFile.let { if (it.extension.equals("pdf", true)) it else File(it.path + ".pdf") }
-            if (model.act { SectionsPdf.write(title, model.t("estate.prepared", model.date(today())), sections, file, password.toCharArray().takeIf { protect }) } != null) onClose()
+            if (model.act { SectionsPdf.write(title, model.t(subtitleKey, model.date(today())), sections, file, password.toCharArray().takeIf { protect }) } != null) onClose()
         }
     }) {
         Text(model.t("estate.exportHint"), style = MaterialTheme.typography.bodySmall)
