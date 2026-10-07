@@ -13,6 +13,10 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.hasScrollToNodeAction
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
@@ -99,6 +103,35 @@ private class ShotScope(val app: AppState, val model: BooksModel, val test: Desk
         }
         test.mainClock.autoAdvance = false
         if (!found) error("nothing to scroll to showing \"$label\"")
+    }
+
+    /** Brings the button showing [label] into view in its scrolling dialog, then clicks it. */
+    fun press(label: String) {
+        settle(test)
+        val node = test.onAllNodes((hasText(label) or hasContentDescription(label)) and hasClickAction())[0]
+        // Outside a scrolling list there is nothing to scroll.
+        runCatching { node.performScrollTo() }
+        node.performClick()
+    }
+
+    /** Types [text] into the [index]th field labelled [label], replacing what it shows. */
+    fun type(label: String, text: String, index: Int = 0) {
+        settle(test)
+        test.onAllNodes(hasSetTextAction() and hasText(label))[index].performTextReplacement(text)
+    }
+
+    /** Ticks the [index]th chip labelled [label]. */
+    fun tick(label: String, index: Int = 0) {
+        settle(test)
+        test.onAllNodes(hasText(label) and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))[index].performClick()
+    }
+
+    /** Picks [option] in the [index]th drop-down labelled [label], by typing the start of it. */
+    fun choose(label: String, option: String, index: Int = 0) {
+        type(label, option.take(6), index)
+        settle(test)
+        val items = test.onAllNodes(hasText(option) and hasClickAction() and !hasSetTextAction())
+        items[items.fetchSemanticsNodes().size - 1].performClick()
     }
 
     /** The account the register pictures show: the household's credit card. */
@@ -283,6 +316,23 @@ private val SHOTS: List<Shot> = buildList {
     add(Shot("utilities-tanks") { section(Section.UTILITIES); click(t("utilities.tab.TANKS")) })
     add(Shot("side-hours") { section(Section.SIDE); click(t("side.tab.HOURS")) })
     add(Shot("family-chores") { section(Section.FAMILY); click(t("family.tab.CHORES")) })
+    // DOC-02: the Canadian Tire receipt itemized by hand, its taxes as read on this computer.
+    add(
+        Shot("documents-itemize") {
+            model.focusDocumentId = model.books.documents.inbox().first { it.fileName == "scan-0031.jpg" }.id
+            section(Section.DOCUMENTS)
+            press(t("documents.itemize"))
+            type(t("itemize.item"), l("Lave-glace -40", "Washer fluid -40"), 0)
+            type(t("register.amount"), l("5,99", "5.99"), 0)
+            type(t("itemize.item"), l("Ampoule H11", "H11 headlight bulb"), 1)
+            type(t("register.amount"), l("24,99", "24.99"), 1)
+            choose(t("register.category"), l("Entretien du véhicule", "Vehicle maintenance"), 0)
+            for (code in if (model.language == Language.FRENCH) listOf("GST", "QST") else listOf("HST")) {
+                tick(t("taxName.$code"), 0)
+                tick(t("taxName.$code"), 1)
+            }
+        },
+    )
     // Before a household is open: last, since leaving the household's screens stops its phone listener.
     // The manual's own window, on the Bills chapter with its first picture.
     add(Shot("manual-window") { section(Section.BILLS); app.openManual("bills"); manualShown = true })

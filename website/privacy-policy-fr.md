@@ -2,7 +2,7 @@
 
 *English version: https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en*
 
-En vigueur le 6 octobre 2026
+En vigueur le 7 octobre 2026
 
 RANN's Roost (pour Windows et Linux) et RANN's Roost Mobile (pour Android) sont publiés par Perry Schippers, faisant affaire sous le nom de RANN, au Canada (« RANN », « nous »). Cette politique vise les deux applications. Elle est publiée à l'adresse https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr.
 
@@ -25,14 +25,22 @@ Le téléphone envoie les captures directement à votre ordinateur sur votre ré
 
 ## Les calendriers de votre téléphone
 
-L'application mobile peut envoyer à votre ordinateur les calendriers que votre téléphone affiche déjà (Google, Outlook ou Exchange, Samsung et autres). Cette fonction est désactivée tant que vous ne l'activez pas dans les réglages de l'application ; Android vous demande alors l'accès au calendrier.
+L'application mobile peut envoyer à votre ordinateur les calendriers que votre téléphone affiche déjà (Google, Outlook ou Exchange, Samsung et autres) et, seulement si vous choisissez « Dans les deux sens », écrire les prochains éléments de votre ménage dans un calendrier du téléphone. Rien n'est lu tant que vous n'autorisez pas l'accès au calendrier dans les réglages de l'application et ne cochez pas de calendriers.
 
-- L'application ne lit que les calendriers que vous cochez, pour le nombre de jours à l'avance que vous choisissez : le titre, le lieu, le début et la fin de chaque élément. Elle ne lit ni les descriptions, ni les invités, ni les pièces jointes, ni les rappels, et ne modifie jamais vos calendriers.
+- L'application ne lit que les calendriers que vous cochez, pour le nombre de jours à l'avance que vous choisissez : le titre, le lieu, le début et la fin de chaque élément. Elle ne lit ni les descriptions, ni les invités, ni les pièces jointes, ni les rappels. La lecture ne modifie jamais vos calendriers.
 - L'agenda de l'application affiche aussi les calendriers que vous cochez, pour les 60 prochains jours, à côté de ce que votre ordinateur a envoyé. Elle les lit sur le téléphone chaque fois que vous ouvrez l'agenda, seulement pour les y afficher ; cette lecture n'envoie rien nulle part.
 - L'application ne se connecte jamais à vos comptes de calendrier. Elle lit ce qu'Android garde déjà sur le téléphone.
 - Ce qu'elle lit ne va qu'à votre propre ordinateur, chiffré de bout en bout comme vos captures, par votre réseau domestique ou par votre propre dossier infonuagique ou courriel. Ni RANN ni le fournisseur infonuagique ou de courriel ne peuvent le lire.
 - Sur votre ordinateur, chaque calendrier est gardé privé, montré aux autres personnes de votre ménage comme heures occupées seulement, ou partagé avec elles, selon votre choix. Les calendriers privés sont gardés dans votre propre groupe de comptes chiffré.
 - La désactiver arrête toute lecture, et les calendriers importés auparavant sont retirés de votre ordinateur au prochain transfert. Vous pouvez aussi retirer la permission dans les paramètres d'Android en tout temps.
+
+Écrire dans un calendrier est un choix à part, « Dans les deux sens », désactivé tant que vous ne le choisissez pas. Android vous demande alors d'autoriser l'application à écrire dans vos calendriers.
+
+- L'application écrit les rendez-vous et événements du ménage, les heures de travail et d'école et les factures à payer des 60 prochains jours, tirés de ce que votre ordinateur envoie déjà au téléphone, et seulement ce que votre utilisateur peut y voir.
+- Vous choisissez où. « Calendrier RANN's Roost sur ce téléphone seulement » est un calendrier à l'application qui n'appartient à aucun compte : il reste sur le téléphone et n'est jamais synchronisé. Les autres applications de votre téléphone que vous avez autorisées à lire les calendriers peuvent le voir, comme elles voient vos autres calendriers.
+- Si vous choisissez un calendrier d'un de vos comptes (par exemple Google ou Outlook), Android synchronise ce que l'application y écrit avec le fournisseur de ce compte, selon la politique de confidentialité de ce fournisseur, et les personnes avec qui vous partagez ce calendrier le voient. RANN n'en reçoit rien.
+- Dans l'un ou l'autre calendrier, un rendez-vous médical est écrit seulement comme « Rendez-vous santé », sans lieu ni détails, et une facture seulement comme « Facture à payer » avec son nom, jamais son montant.
+- L'application ne modifie et ne supprime que les éléments qu'elle a écrits elle-même, et ne les renvoie jamais à votre ordinateur comme éléments de calendrier. Désactiver « Dans les deux sens », choisir un autre calendrier ou annuler le jumelage du téléphone retire tous les éléments qu'elle a écrits, ainsi que le calendrier du téléphone.
 
 ## La position sur le téléphone
 

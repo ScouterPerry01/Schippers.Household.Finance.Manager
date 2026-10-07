@@ -167,9 +167,18 @@ L’Agence du revenu du Canada demande en général de conserver les documents f
 
 **Vérifier** ou **Ouvrir** sur un document ouvre sa fenêtre. Le titre est le nom du document. La partie gauche montre le document ; la partie droite montre ce qui a été lu et ce que vous pouvez en faire. **Fermer** au bas ferme la fenêtre sans enregistrer les changements que vous n’avez pas enregistrés.
 
-### L’aperçu {#preview}
+### L’aperçu, les pages et le zoom {#preview}
+@index: pages; zoom; document de plusieurs pages; page par page; agrandir un reçu
 
-La partie gauche montre la première page du document sous forme d’image, que vous pouvez faire défiler. Pendant le chargement, elle affiche « Chargement… ». Une dépense rapide saisie sur le téléphone affiche « Saisi sur le téléphone, sans photo. », et une photo HEIC sur un ordinateur sans décodeur HEIC indique comment en installer un.
+La partie gauche montre le document, une page à la fois. Pendant le chargement d’une page, elle affiche « Chargement… ». Une dépense rapide saisie sur le téléphone affiche « Saisi sur le téléphone, sans photo. », une photo HEIC sur un ordinateur sans décodeur HEIC indique comment en installer un, et un fichier qui ne peut pas être dessiné affiche « Ce fichier ne peut pas être affiché ici. Enregistrez-en une copie pour l’ouvrir dans un autre programme. »
+
+Un PDF montre chacune de ses pages ; une photo est une page. Une facture ou un reçu photographié en plusieurs pages sur le téléphone arrive en un seul PDF de ses pages, dans l’ordre où elles ont été prises : toutes les pages sont donc ici.
+
+- **◀** et **▶** (Page précédente, Page suivante), avec Page 1 de 2 entre les deux : affichés quand le document a plus d’une page. Les touches Page précédente et Page suivante (Pg préc., Pg suiv.) font de même une fois que vous avez cliqué sur la page.
+- **−** et **+** (Zoom arrière, Zoom avant) : rapetissent ou agrandissent la page, de 50 % à 500 % de la largeur de la partie gauche ; le pourcentage s’affiche entre les deux. Ctrl avec la molette de la souris, et Ctrl + et Ctrl -, font de même.
+- **Ajuster** : revient à 100 %, la page aussi large que la partie gauche (aussi Ctrl 0).
+
+Quand la page dépasse la partie gauche, faites-la glisser avec la souris ou utilisez les barres de défilement pour vous y déplacer. Chaque page commence en haut. Tourner les pages et zoomer ne changent que ce que vous voyez, jamais le document. **Enregistrer une copie…** enregistre le fichier entier, toutes les pages, et toutes les pages vont aussi dans un PDF de reçus fait à partir des documents, comme celui des frais médicaux.
 
 ### Les détails lus sur le document {#document-details}
 
@@ -273,6 +282,7 @@ La ligne du haut reprend le commerce, la date et le total de la fenêtre du docu
 Un choix fait sur le téléphone n’est utilisé que s’il existe toujours sur l’ordinateur (et, pour le compte, s’il est dans la devise du document) ; sinon, le choix habituel s’applique. Vous pouvez tous les changer avant d’enregistrer.
 - **Véhicule** : affiché seulement si vous avez des véhicules. Associe la dépense à un véhicule pour ses rapports de coûts.
 - **Ventiler par article** : voir [Ventiler par article](documents#split-by-items).
+- Ouvert à partir de **Détailler…**, le formulaire montre les lignes de ventilation des articles saisis au lieu d’une seule catégorie : voir [Détailler à la main](documents#itemize).
 
 **Enregistrer** crée l’opération et classe le document :
 
@@ -292,6 +302,43 @@ Quand un reçu ou une facture détaillée a été lu par l’IA et compte au moi
 - Les articles de la même catégorie forment une seule ventilation de l’opération, dont la note énumère les articles qu’elle couvre.
 - Les taxes sont réparties sur les articles : chaque taxe va aux articles que le reçu marque de son code. Les codes sont retenus quand chaque montant de taxe correspond à ce que donnent les articles marqués à un taux que cette taxe a quelque part au Canada à la date du reçu (tiré de [Taux et règles](rates-rules)). Si le reçu n’indique pas quels articles sont taxés, ou si ses codes de taxe ne correspondent pas à ses montants de taxe, les taxes sont réparties sur tous les articles en proportion, et une note le signale ; vérifiez les catégories que vous suivez de près.
 - Une opération ventilée ainsi n’enseigne pas de catégorie unique pour le commerce.
+
+### Détailler à la main {#itemize}
+@index: détailler; reçu détaillé à la main; ventiler un reçu sans IA; taxe de vente par article
+
+![La fenêtre Détailler le reçu, un reçu saisi article par article](images/documents-itemize.png)
+
+Pour un document de type **Reçu** ou **Facture détaillée**, **Détailler…** (à côté de **Nouvelle opération à partir de ce document**) le ventile par article sans IA : vous saisissez les articles, et l’application y répartit les taxes de la même façon que pour un reçu lu par l’IA. Le bouton enregistre d’abord les détails que vous avez corrigés, puis ouvre la fenêtre Détailler le reçu.
+
+Si le reçu a été lu par l’IA, la fenêtre commence avec les articles et les taxes lus ; sinon, avec les taxes lues sur cet ordinateur et deux lignes vides. Ce que vous saisissez est gardé tant que la fenêtre du document reste ouverte : vous pouvez donc y revenir.
+
+Pour chaque article :
+
+- **Article** : la description, telle qu’imprimée. Elle va dans la note de sa ligne de ventilation.
+- **Montant** : le prix de l’article avant taxes, tel qu’imprimé. Saisissez un rabais ou un coupon comme un montant négatif. Une somme simple comme 3,49+3,49 fonctionne.
+- **Catégorie** : la catégorie de l’article. « (catégorie de l’opération) » la laisse à la catégorie choisie ensuite dans le formulaire de nouvelle opération (ou, dans un registre, à celle choisie dans le formulaire).
+- Les pastilles de taxe (**TPS**, **TVH**, **TVQ**, **TVP**) : une pour chaque taxe saisie plus bas. Cochez celles qui s’appliquent à l’article, comme le reçu les marque d’une lettre ou d’un code ; une pastille cochée affiche ✓.
+- À droite : la part du total de l’article, taxes comprises, calculée pendant la saisie.
+- **✕** (Retirer cet article) retire la ligne. **Ajouter un article** en ajoute une vide.
+
+**Taxes de vente sur le reçu** : un champ chacune pour la TPS, la TVH, la TVQ et la TVP, pour les montants imprimés sur le reçu. La TVD du Manitoba et de l’Ontario va sous TVP. Laissez les autres vides.
+
+En dessous, le total courant, Articles ... + taxes ... = ..., puis s’il correspond au **Total** de la fenêtre du document :
+
+- « Cela correspond au total de ... » quand les articles et les taxes donnent exactement le total.
+- « Cela diffère du total de ... de ... », en rouge, sinon. L’écart est réparti sur tous les articles en proportion, comme le serait un pourboire ou l’arrondi du reçu. Vérifiez s’il manque un article ou une taxe, ou s’il y a une faute de frappe ; vous pouvez tout de même continuer, par exemple avec le pourboire d’une addition au restaurant.
+- Sans **Total** dans la fenêtre du document, les articles et les taxes forment le total.
+
+Comment les taxes sont réparties :
+
+- Chaque taxe va aux articles où elle est cochée, en proportion de leurs montants : une denrée détaxée n’en porte donc aucune.
+- Les cases cochées sont retenues quand chaque taxe correspond à ce que donnent ses articles cochés à un taux que cette taxe a quelque part au Canada à la date du document (tiré de [Taux et règles](rates-rules)). Sinon, une note indique que les taxes cochées ne peuvent donner ces montants, et chaque taxe est répartie sur tous les articles en proportion.
+- Si aucune taxe n’est cochée sur un article, chaque taxe est répartie sur tous les articles en proportion, et une note le signale.
+- Les parts sont arrondies au cent pour donner exactement le total ; les cents laissés par l’arrondi vont aux articles qui ont le plus perdu.
+
+**Utiliser ces articles** (offert dès qu’un article a un montant et que tous les montants sont lisibles) ouvre le formulaire de [Nouvelle opération à partir de ce document](documents#new-transaction) avec les lignes de ventilation au lieu d’une seule catégorie : **Catégorie** devient **Catégorie des articles qui n’en ont pas**, pour les articles laissés à « (catégorie de l’opération) », et les lignes sont énumérées dessous avec leur catégorie, leur montant et leurs articles. Les articles de la même catégorie forment une seule ligne de ventilation. **Enregistrer** crée l’opération pour le total, avec ces lignes, et classe le document. **Annuler**, dans l’une ou l’autre fenêtre, revient à la fenêtre du document et garde ce que vous avez saisi.
+
+> Conseil : Dans le registre d’un compte, **Détailler…** à côté de **Ventiler…** ouvre la même fenêtre pour l’opération du formulaire, sans article au départ. **Utiliser ces articles** met les lignes de ventilation dans le formulaire (et le total comme montant si aucun n’était saisi) ; **Enregistrer** dans le formulaire les enregistre. Voir [Ventiler une opération](accounts#split-transaction).
 
 ### Classer sans joindre {#file-without-attaching}
 

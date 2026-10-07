@@ -2,7 +2,7 @@
 
 Each person can bring the calendars their phone already shows (Google, Outlook or Exchange, Samsung and others) into the household's [Calendar](calendar), and choose who sees them. An iCalendar (.ics) file, sent by a school, a team or another program, can also be copied in once.
 
-RANN's Roost never signs in to a calendar account. The phone app reads the calendars Android already keeps, with your permission, and sends them to the computer with its other transfers, encrypted from end to end.
+RANN's Roost never signs in to a calendar account. The phone app reads the calendars Android already keeps, with your permission, and sends them to the computer with its other transfers, encrypted from end to end. If you choose, it also writes the household's coming appointments, hours and bills into a calendar on the phone (see [Writing into a phone calendar](#both-ways)).
 
 ![Items brought in from a phone in the Agenda](images/calendar-brought-in.png)
 
@@ -10,14 +10,24 @@ RANN's Roost never signs in to a calendar account. The phone app reads the calen
 
 ## How it works {#how-it-works}
 
-1. On the phone, in **Settings**, open **Calendars on this phone** and turn on **Bring calendars to the computer**. Android asks once for calendar access.
+1. On the phone, in **Settings**, open **Calendars on this phone** and choose **Bring in only** (the default) or **Both ways**, then **Allow calendar access**. Android asks once.
 2. Tick the calendars to bring in, choose who sees each one on the computer, and how many days ahead are sent.
 3. At each transfer (over Wi-Fi, through the transfer folder or in a shared file), the phone sends each calendar that changed since the last time, whole. The computer replaces what it kept of that calendar from that day on: new items appear, changed ones are updated and deleted ones disappear.
 4. The items show in every view of the Calendar (**Agenda**, **Day**, **Week**, **Month**, and their days shaded in **Year**), read-only, marked with the calendar they come from and the person whose phone sent them.
 
-The phone sends only the calendars you tick, and only for the days chosen: the title, place, start and end of each item. Descriptions, guests, attachments and reminders are not read. Items you or someone else changes in the phone's calendar app change on the computer at the next transfer; nothing is ever written back to your calendars.
+The phone sends only the calendars you tick, and only for the days chosen: the title, place, start and end of each item. Descriptions, guests, attachments and reminders are not read. Items you or someone else changes in the phone's calendar app change on the computer at the next transfer. Nothing is written into your calendars unless you choose **Both ways**.
 
 > Note: The computer must be open with the phone owner's sign-in when a transfer arrives over Wi-Fi, as for captures. A file left in the transfer folder waits until the owner signs in.
+
+## Writing into a phone calendar {#both-ways}
+@index: both ways; two-way calendar sync; write to Google Calendar; RANN's Roost calendar
+
+With **Both ways** chosen on the phone, the phone writes the household's coming 60 days into one calendar: appointments and events, each person's work and school hours, and bills due. It writes only what that phone's user may see on the computer. Each person chooses on their own phone where it goes:
+
+- **RANN's Roost calendar on this phone only**: a calendar of the app's own, which belongs to no account and is never synced to Google, Outlook or anywhere else.
+- A calendar of one of the phone's accounts, such as a Google or Outlook calendar. It then syncs with that provider, and is seen wherever that account is used and by anyone it is shared with.
+
+In either one, a medical appointment is written only as "Health appointment", with no place or details, and a bill as "Bill due: name", never its amount. Changes on the computer reach the calendar at the next transfer; items removed or paid are deleted there. What the app wrote is never brought back in as a brought-in item. Turning it off, choosing another calendar or unpairing the phone removes everything it wrote. See [Both ways](phone-app#calendar-both-ways) in the phone chapter.
 
 ## Who sees what {#visibility}
 @index: private calendar; busy only; free busy; shared calendar

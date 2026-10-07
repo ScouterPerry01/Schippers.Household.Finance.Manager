@@ -254,6 +254,7 @@ Quand vous modifiez un achat par carte de crédit et que la carte a des avantage
 Les boutons à droite du formulaire :
 
 - **Ventiler…** : répartit l’opération entre plusieurs catégories (pas offert pour un virement).
+- **Détailler…** : répartit l’opération sur les articles de son reçu, saisis avec leurs catégories et leurs taxes de vente, qui sont réparties sur les articles (pas offert pour un virement). Voir [Détailler à la main](documents#itemize).
 - **Talon de paie…** : dans un compte bancaire, à l’entrée d’une nouvelle opération, entre une paie d’après son talon (voir [Paie selon le talon de paie](accounts#pay-stub)).
 - **Taxes de vente…** et **Remboursement…** : pendant la modification d’une opération existante (voir [Taxes de vente sur un achat](accounts#sales-tax) et [Inscrire un remboursement](accounts#refund)).
 - **Enregistrer comme modèle** : pendant la modification d’une opération ordinaire, la garde comme modèle pour la prochaine fois (voir [Modèles d’opération](accounts#templates)).

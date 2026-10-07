@@ -186,11 +186,10 @@ class AiService internal constructor(private val books: Books) {
         books.brokerage.import(accountId, investmentStatement(documentId, accountId))
 
     /**
-     * OCR-03: a receipt or invoice read by AI, split by its items, each with its share of [total]
-     * (the amount paid), by the receipt's tax codes when it shows them ([ItemSplitter]). Null when
-     * the reading has fewer than two items or they add up to nothing.
+     * OCR-03, DOC-02: the items and printed taxes of a receipt or invoice read by AI, with the date
+     * whose sales tax rates apply; null when it was not read as a receipt or invoice.
      */
-    fun itemSplit(documentId: String, total: Money): ItemSplit? {
+    fun readReceipt(documentId: String): ReadReceipt? {
         val reading = reading(documentId)?.takeIf { it.typeId == "receipt" || it.typeId == "invoice" } ?: return null
         val answer = Json.parseToJsonElement(reading.answer).jsonObject
         val lines = (answer["line_items"] as? JsonArray).orEmpty().mapNotNull { e ->
@@ -206,8 +205,16 @@ class AiService internal constructor(private val books: Books) {
         }.groupBy({ it.first }, { it.second }).mapValues { (_, v) -> v.fold(BigDecimal.ZERO, BigDecimal::add) }
         // The rates in effect on the receipt's date: as read, else the document's, else today.
         val on = answer.text("date")?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: books.documents.get(documentId).date ?: books.today()
-        return ItemSplitter.split(lines, printed, total, on)
+        return ReadReceipt(lines, printed, on)
     }
+
+    /**
+     * OCR-03: a receipt or invoice read by AI, split by its items, each with its share of [total]
+     * (the amount paid), by the receipt's tax codes when it shows them ([ItemSplitter]). Null when
+     * the reading has fewer than two items or they add up to nothing.
+     */
+    fun itemSplit(documentId: String, total: Money): ItemSplit? =
+        readReceipt(documentId)?.let { ItemSplitter.split(it.lines, it.taxes, total, it.on) }
 
     /**
      * SAL-02: a pay stub read by AI, ready for the pay stub dialog. Without earnings lines the gross

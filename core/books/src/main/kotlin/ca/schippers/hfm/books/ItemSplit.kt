@@ -121,4 +121,74 @@ object ItemSplitter {
         }
         return result
     }
+
+    /**
+     * The split lines of a receipt shared by item: items of the same category ([categoryOf] an
+     * item's index) become one line, noting the items it covers; money out when [negative].
+     */
+    fun combine(shares: List<ItemShare>, categoryOf: (Int) -> String?, negative: Boolean): List<SplitDraft> =
+        shares.indices.groupBy(categoryOf).map { (category, items) ->
+            val sum = items.map { shares[it].share }.reduce(Money::plus)
+            val memo = items.map { shares[it].description.trim() }.filter { it.isNotEmpty() }.joinToString(", ").take(250).ifEmpty { null }
+            SplitDraft(category, if (negative) -sum else sum, memo)
+        }
+}
+
+/** DOC-02: an item of a receipt typed by hand: what it is, its amount as printed, its category, and the sales taxes charged on it. */
+data class TypedItem(val description: String, val amount: BigDecimal, val categoryId: String? = null, val taxes: Set<String> = emptySet())
+
+/** OCR-03, DOC-02: the items and printed taxes of a receipt read by AI, and the date whose rates apply. */
+data class ReadReceipt(val lines: List<ReceiptLine>, val taxes: Map<String, BigDecimal>, val on: LocalDate)
+
+/**
+ * DOC-02: items typed by hand, each with its share of the receipt's [total], and how the items and
+ * taxes compare with that total. [difference] is the total less the items and taxes: a tip, a tax
+ * not typed, an item missing or a typing error; it is shared over every item, as on a receipt split
+ * by AI.
+ */
+data class Itemized(
+    val shares: List<ItemShare>,
+    val categories: List<String?>,
+    val itemsTotal: Money,
+    val taxesTotal: Money,
+    val total: Money,
+    val note: SplitNote,
+) {
+    val difference: Money get() = total - itemsTotal - taxesTotal
+    val matches: Boolean get() = difference.isZero
+
+    /** The transaction's split lines: items of the same category combined, an item without one taking [fallbackCategory]. */
+    fun splits(fallbackCategory: String?, negative: Boolean): List<SplitDraft> =
+        ItemSplitter.combine(shares, { categories[it] ?: fallbackCategory }, negative)
+}
+
+/** DOC-02: a receipt itemized by hand, its taxes shared exactly as [ItemSplitter] shares a receipt read by AI. */
+object Itemizer {
+
+    /**
+     * Shares [total] (the amount paid, taken as positive) over [items], with the sales [taxes]
+     * printed on the receipt (GST, HST, QST, PST) over the items each is ticked on. With no tax
+     * ticked on any item, every tax is shared over every item. Null without items or when they add
+     * up to nothing.
+     */
+    fun itemize(items: List<TypedItem>, taxes: Map<String, BigDecimal>, total: Money, on: LocalDate): Itemized? {
+        if (items.isEmpty()) return null
+        val currency = total.currency
+        val magnitude = total.abs()
+        val itemsTotal = items.fold(BigDecimal.ZERO) { a, i -> a + i.amount }
+        if (itemsTotal.signum() == 0) return null
+        val printed = taxes.filterValues { it.signum() != 0 }
+        val taxesTotal = printed.values.fold(BigDecimal.ZERO, BigDecimal::add)
+        val (shares, note) = if (items.size == 1) {
+            val only = items.single()
+            listOf(ItemShare(only.description, Money.of(only.amount, currency), magnitude, only.taxes)) to SplitNote.NONE
+        } else {
+            val ticked = items.any { it.taxes.isNotEmpty() }
+            val lines = items.map { ReceiptLine(it.description, it.amount, if (ticked) it.taxes else null) }
+            val split = ItemSplitter.split(lines, printed, magnitude, on) ?: return null
+            // Without a tax there is nothing to share by codes, whatever was ticked.
+            split.shares to (if (printed.isEmpty()) SplitNote.NONE else split.note)
+        }
+        return Itemized(shares, items.map { it.categoryId }, Money.of(itemsTotal, currency), Money.of(taxesTotal, currency), magnitude, note)
+    }
 }

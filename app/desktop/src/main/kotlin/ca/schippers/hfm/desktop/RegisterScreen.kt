@@ -151,6 +151,8 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     var confirmDelete by remember { mutableStateOf<Transaction?>(null) }
     var historyOf by remember { mutableStateOf<Transaction?>(null) }
     var splitting by remember { mutableStateOf(false) }
+    // DOC-02: a receipt itemized by hand, its taxes shared over the items, becoming the split lines.
+    var itemizing by remember { mutableStateOf<ItemizeState?>(null) }
     var salesTaxFor by remember { mutableStateOf<Transaction?>(null) }
     var refunding by remember { mutableStateOf<Transaction?>(null) }
     var deletingGrant by remember { mutableStateOf<RespGrantRecord?>(null) }
@@ -476,6 +478,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                     FlowRow(Modifier.weight(1f).padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
                         if (entry.choice !is CategoryChoice.TransferWith) {
                             OutlinedButton(onClick = { splitting = true }) { Text(model.t("register.splitButton")) }
+                            OutlinedButton(onClick = { itemizing = ItemizeState.start(null, emptyMap(), model.language.locale, account.currency) }) { Text(model.t("register.itemizeButton")) }
                         }
                         // SAL-02: pay entered from its stub, gross pay less each deduction.
                         if (entry.editing == null && account.type.kind == AccountKind.BANK) {
@@ -512,6 +515,24 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     savingTemplate?.let { t -> SaveAsTemplateDialog(model, t, t.payeeId?.let(payeeNames::get) ?: t.payeeText.orEmpty()) { savingTemplate = null } }
     if (splitting) {
         SplitDialog(model, account, entry, categoryTree) { splitting = false }
+    }
+    itemizing?.let { state ->
+        val locale = model.language.locale
+        val total = runCatching { parseAmount(entry.deposit, account.currency, locale) ?: parseAmount(entry.payment, account.currency, locale)?.let { -it } }.getOrNull()
+        val negative = total?.isNegative ?: entry.deposit.isBlank()
+        ItemizeDialog(
+            model, state, account.currency, total?.abs(), runCatching { LocalDate.parse(entry.date.trim()) }.getOrNull() ?: today(),
+            onDismiss = { itemizing = null },
+        ) { result ->
+            if (total == null) {
+                val text = MoneyFormat.formatAmount(result.total, locale)
+                if (negative) entry.payment = text else entry.deposit = text
+            }
+            // Items left without a category take the one chosen for the transaction.
+            entry.splits = result.splits((entry.choice as? CategoryChoice.Of)?.category?.id, negative)
+            entry.choice = null
+            itemizing = null
+        }
     }
     salesTaxFor?.let { txn -> SalesTaxDialog(model, account, txn) { salesTaxFor = null } }
     if (payStub) PayStubDialog(model, account.id) { done -> payStub = false; if (done) entry.clear() }

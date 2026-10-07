@@ -2,7 +2,7 @@
 
 *Version française : https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr*
 
-Effective: October 6, 2026
+Effective: October 7, 2026
 
 RANN's Roost (for Windows and Linux) and RANN's Roost Mobile (for Android) are published by Perry Schippers, trading as RANN, in Canada ("RANN", "we"). This policy covers both apps. It is published at https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en.
 
@@ -25,14 +25,22 @@ The phone sends captures straight to your computer over your home network. Every
 
 ## Calendars on your phone
 
-The phone app can bring the calendars your phone already shows (Google, Outlook or Exchange, Samsung and others) to your computer. It is off until you turn it on in the app's Settings, and Android then asks you for calendar access.
+The phone app can bring the calendars your phone already shows (Google, Outlook or Exchange, Samsung and others) to your computer and, only if you choose "Both ways", write your household's coming items into a calendar on the phone. Nothing is read until you allow calendar access in the app's Settings and tick calendars.
 
-- The app reads only the calendars you tick, for the number of days ahead you choose: each item's title, place, start and end. It does not read descriptions, guests, attachments or reminders, and it never changes your calendars.
+- The app reads only the calendars you tick, for the number of days ahead you choose: each item's title, place, start and end. It does not read descriptions, guests, attachments or reminders. Reading never changes your calendars.
 - The app's agenda also shows the calendars you tick, for the coming 60 days, beside what your computer sent. It reads them on the phone each time you open the agenda, only to show them there; that reading sends nothing anywhere.
 - The app never signs in to your calendar accounts. It reads what Android already keeps on the phone.
 - What it reads goes only to your own computer, encrypted end to end like your captures, over your home network or through your own cloud folder or email. RANN and the cloud or email provider cannot read it.
 - On your computer, each calendar is kept private, shown to the other people of your household as busy times only, or shared with them, as you choose. Private calendars are kept in your own encrypted account group.
 - Turning it off stops all reading, and the calendars brought in before are removed from your computer at the next transfer. You can also withdraw the permission in Android's settings at any time.
+
+Writing into a calendar is a separate choice, "Both ways", off unless you pick it. Android then asks you to allow the app to write to your calendars.
+
+- The app writes the household's appointments and events, work and school hours, and bills due for the coming 60 days, taken from what your computer already sends to the phone and only what your user may see there.
+- You choose where. "RANN's Roost calendar on this phone only" is a calendar of the app's own that belongs to no account: it stays on the phone and is never synced. Other apps on your phone that you have allowed to read calendars can see it, as they can see your other calendars.
+- If you choose a calendar of one of your accounts (for example Google or Outlook), Android syncs what the app writes there with that account's provider, under that provider's own privacy policy, and anyone you share that calendar with sees it. RANN receives none of it.
+- In either calendar, a medical appointment is written only as "Health appointment", with no place or details, and a bill only as "Bill due" with its name, never its amount.
+- The app changes or deletes only the items it wrote itself, and never sends them back to your computer as calendar items. Turning "Both ways" off, choosing another calendar or unpairing the phone removes every item it wrote, and the phone-only calendar.
 
 ## Location on the phone
 

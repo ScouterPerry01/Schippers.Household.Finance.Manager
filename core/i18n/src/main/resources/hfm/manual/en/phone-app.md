@@ -24,7 +24,7 @@ RANN's Roost Mobile comes in two editions that work the same way:
 - Everything the app keeps (its settings, the captures and new contacts waiting to be sent, the summary and the contacts) is encrypted with a key kept in the phone's secure key store. The key never leaves the phone.
 - The app is excluded from Android's cloud backups, so none of it is copied to Google.
 - Captures go only to your computer, encrypted with the key made when you paired. Away from home, they may go through a folder of your own cloud storage, still encrypted.
-- Calendars are read only if you turn on [Calendars on this phone](phone-app#phone-calendars), only those you tick, and they go only to your computer, encrypted the same way. [The agenda](#agenda) also shows them, read on the phone while it is open; that sends nothing more.
+- Calendars are read only if you turn on [Calendars on this phone](phone-app#phone-calendars), only those you tick, and they go only to your computer, encrypted the same way. [The agenda](#agenda) also shows them, read on the phone while it is open; that sends nothing more. Only if you choose **Both ways**, the app also writes the household's coming appointments, hours and bills into the calendar you pick: a calendar kept only on this phone, or one of your accounts' calendars, which then syncs with that account. See [Both ways](phone-app#calendar-both-ways).
 - The only other connection is the daily update check of the GitHub edition, if you allow it. It sends nothing about you or your household.
 - Location: only if you allow it, the app takes one location fix when you start a trip, when you arrive, and when you save a place or look for the nearest station, never in the background and never at other times. The fix is matched to your saved places on the phone itself; no map service is asked. What travels to your computer, encrypted like the rest, is the place's name, or the coordinates when you leave a place unnamed, and the coordinates of a place you save. See [Location](#location).
 - Once your computer confirms it received a capture, the phone deletes its copy of the pictures and details.
@@ -46,7 +46,7 @@ The PIN is not stored on the phone, only a scrambled check of it. A forgotten PI
 - **Enter your PIN**, then **OK**. A wrong PIN shows **Wrong PIN** and clears the box.
 - **Use fingerprint or face**: shown when the phone supports it and **Unlock with fingerprint or face** is on in Settings. Android's own prompt appears; **Cancel** returns to the PIN.
 
-The app locks again when you come back to it after more than a minute away.
+The app locks again when you come back to it after the time chosen in Settings under [Ask for the PIN again](phone-app#lock-time): a minute unless you change it.
 
 - **Forgot your PIN?**: see [Forgot your PIN](phone-app#forgot-pin).
 
@@ -62,7 +62,7 @@ A forgotten PIN cannot be recovered, by you or by the computer. To use the app a
 4. The app asks you to choose a new PIN, as the first time.
 5. Pair the phone with the computer again. See [Pair a phone](phones#pair).
 
-What is erased, on this phone only: captures not yet sent to the computer (photos, receipts, notes, odometer readings), the list of what was sent, the pairing with the computer, the summary received from it, and every setting, including fingerprint unlock and the transfer folder. It cannot be undone.
+What is erased, on this phone only: captures not yet sent to the computer (photos, receipts, notes, odometer readings), the list of what was sent, the pairing with the computer, the summary received from it, and every setting, including fingerprint unlock and the transfer folder. What the app wrote into a calendar with **Both ways** is removed too. It cannot be undone.
 
 What stays: everything the computer already received, and the household on the computer. The old pairing can no longer send anything; remove it from the list on the computer's **Phones** screen. See [The list of phones](phones#phone-list).
 
@@ -83,6 +83,8 @@ Five tabs run along the bottom of the screen:
 - **Summary**: balances, bills, maintenance and budgets from your computer, and the agenda of the coming 60 days. See [The Summary tab](#summary-tab) and [The agenda](#agenda).
 - **Contacts**: the household's contacts from your computer, and new contacts to send. See [The Contacts tab](#contacts-tab).
 - **Settings**: pairing, the transfer folder, the lock and updates. See [The Settings tab](#settings-tab).
+
+On the **Capture** and **Summary** tabs, the calendar icon at the top right opens [the agenda](#agenda); screen readers call it **Open the agenda**.
 
 When a newer version is available (GitHub edition), a band at the top of the other tabs says so; tap it to go to Settings.
 
@@ -505,7 +507,7 @@ The figures do not change until the next transfer. Tap **Send now** on the Sent 
 
 @index: agenda; month view; calendar on the phone; what is coming up; due dates
 
-**See the agenda**, under **Coming up** on the Summary tab, opens everything coming up in the next 60 days, today included, in one place. It only shows: nothing can be changed here. **Back**, Android's back gesture or the **Summary** tab again returns to the Summary. Under the title, **From your computer** gives the date and time of the last transfer, as on the Summary.
+The calendar icon at the top right of the **Capture** and **Summary** tabs, or **See the agenda** under **Coming up** on the Summary tab, opens everything coming up in the next 60 days, today included, in one place. It only shows: nothing can be changed here. **Back** or Android's back gesture returns to the tab you came from; tapping any tab goes to that tab. Under the title, **From your computer** gives the date and time of the last transfer, as on the Summary.
 
 Two chips at the top choose the view: **Agenda**, day by day, or **Month**.
 
@@ -540,7 +542,7 @@ Like the Summary, the agenda shows only what your user can see on the computer: 
 
 @index: phone calendar in agenda; Google Calendar in agenda
 
-While [Calendars on this phone](#phone-calendars) is on and calendar access is allowed, the agenda also shows the items of the calendars you ticked there, for the next 60 days whatever the number of days you chose to send. They are read from the phone's calendars each time the agenda opens, only to show them here: the agenda sends nothing to the computer and writes nothing to your calendars. An all-day item spanning several days shows on each of them; an item that began yesterday and is still going shows under **Today** as **continued**.
+While [Calendars on this phone](#phone-calendars) is on and calendar access is allowed, the agenda also shows the items of the calendars you ticked there, for the next 60 days whatever the number of days you chose to send. They are read from the phone's calendars each time the agenda opens, only to show them here: the agenda sends nothing to the computer and writes nothing to your calendars. An all-day item spanning several days shows on each of them; an item that began yesterday and is still going shows under **Today** as **continued**. Items the app wrote into a ticked calendar itself (with **Both ways**) are not shown a second time.
 
 ## The Contacts tab {#contacts-tab}
 
@@ -625,7 +627,7 @@ The pairing card is at the top, as on the Capture tab.
 
 ### Unpair {#unpair}
 
-**Unpair**, shown when paired, makes the phone forget the computer at once. Captures not yet sent stay on the phone until you pair again. The computer still lists the phone: use **Remove** on its Phones screen to stop it there too.
+**Unpair**, shown when paired, makes the phone forget the computer at once. Captures not yet sent stay on the phone until you pair again. What the app wrote into a calendar with [Both ways](#calendar-both-ways) is removed from it, and the phone-only RANN's Roost calendar is deleted. The computer still lists the phone: use **Remove** on its Phones screen to stop it there too.
 
 ### Away from home {#transfer-folder}
 
@@ -645,17 +647,50 @@ Android lets an app ring at an exact minute only once you allow it. Until then, 
 
 ### Calendars on this phone {#phone-calendars}
 
-@index: calendar permission; READ_CALENDAR; Google Calendar; Outlook calendar; bring in calendars
+@index: calendar permission; READ_CALENDAR; Google Calendar; Outlook calendar; bring in calendars; calendar sync
 
-Shown when paired. Brings the calendars this phone already shows (Google, Outlook or Exchange, Samsung and others) to the computer's Calendar, with your other transfers. The app never signs in to a calendar account. The line under the title says **Off**, or how many calendars are brought in and how many days ahead. **Set up** (or **Change**) opens the page where it is chosen:
+Shown when paired. Brings the calendars this phone already shows (Google, Outlook or Exchange, Samsung and others) to the computer's Calendar, with your other transfers, and, if you choose, writes the household's coming items into a calendar. The app never signs in to a calendar account. The line under the title says **Off**, or how many calendars are brought in and how many days ahead, and with **Both ways** where the app writes (**Writing into:**). **Set up** (or **Change**) opens the page where it is chosen. At the top, choose one of three:
 
-- **Bring calendars to the computer**: turns it on or off. The first time, the app says why it needs calendar access, then Android asks for it. If you refuse, nothing is read; allow Calendar for the app in Android's settings to change your mind. While it is off, nothing is read, and the calendars brought in before are removed from the computer at the next transfer.
+- **Off**: nothing is read from or written into your calendars. The calendars brought in before are removed from the computer at the next transfer, and what the app wrote is removed from your calendar.
+- **Bring in only** (the default): the calendars you tick go to the computer; nothing is written into your calendars.
+- **Both ways**: as **Bring in only**, and the app also writes the household's appointments, work and school hours, and bills due into a calendar you choose. See [Both ways](#calendar-both-ways).
+
+The first time you bring calendars in, the page shows **Allow calendar access**: the app says why it needs to read your calendars, then Android asks. If you refuse, nothing is read; allow Calendar for the app in Android's settings to change your mind. Once allowed:
+
 - **Days ahead**: 14, 30, 60 (the default), 90 or 180 days of each calendar are sent, from today.
 - **Calendars to bring in, and who sees them on the computer**: every calendar Android shows, with its account. Tick the ones to bring in, and choose for each **Private** (the default: only you see it), **Busy only** (the others see you busy at those times, without details) or **Shared** (the others see the items).
 - **Mark single items**: the coming items of the ticked calendars. Each can be **As its calendar**, **Private**, **Busy only** or **Shared**; the choice applies to every date of a repeating item.
 - **Done** goes back to Settings.
 
-Only the ticked calendars are read, for the days chosen: each item's title, place, start and end, never its description, guests or reminders. They go only to your paired computer, encrypted like your captures, over Wi-Fi, through the transfer folder or in a shared file. A calendar is sent whole when it changed since the last transfer; nothing is written to your calendars. If the computer could not store one, the reason shows under the title and the phone tries again at the next transfer. See [Calendars from phones and files](calendar-sync). The ticked calendars also show in [the agenda](#agenda-phone-calendars), read on the phone only.
+Only the ticked calendars are read, for the days chosen: each item's title, place, start and end, never its description, guests or reminders. They go only to your paired computer, encrypted like your captures, over Wi-Fi, through the transfer folder or in a shared file. A calendar is sent whole when it changed since the last transfer; nothing is written to your calendars unless you choose **Both ways**. If the computer could not store one, the reason shows under the title and the phone tries again at the next transfer. See [Calendars from phones and files](calendar-sync). The ticked calendars also show in [the agenda](#agenda-phone-calendars), read on the phone only.
+
+### Both ways {#calendar-both-ways}
+
+@index: write to calendar; WRITE_CALENDAR; RANN's Roost calendar; calendar on this phone only; two-way calendar
+
+With **Both ways**, the app writes into one calendar the household's appointments and events, each person's work and school hours, and the bills due, for the coming 60 days. It writes only what your user may see on the computer, as sent to this phone. The first time you choose it, the app says why, then Android asks to allow writing to your calendars; if you refuse, the choice stays as it was.
+
+- **Where RANN's Roost writes**: choose one.
+  - **RANN's Roost calendar on this phone only** (chosen at first): a calendar of the app's own, kept only on this phone. It belongs to no account, so it is never synced to Google, Outlook or anywhere else. Your calendar app shows it among the others.
+  - A calendar of one of your accounts: every calendar you can write into, with its colour and account. That calendar syncs with its provider, so what the app writes there is seen wherever that account is used, and by anyone the calendar is shared with.
+
+What is written, in either calendar:
+
+- Appointments and events at their date and time (an hour long), or all day, with their place and, in the notes, who they are for and who drives there and back.
+- Work and school hours, as "Alex: work" or "Sam: school", with the place; a night shift ends the next morning.
+- Bills due, all day, as "Bill due: Hydro".
+
+The same privacy rule applies in both calendars, since other apps on the phone can read the phone-only calendar too: a medical appointment is written only as **Health appointment**, with no place, drivers or details, and a bill never shows its amount. Each item's notes end with "Written by RANN's Roost: change it on the computer."
+
+Each item written is followed by the app. When something changes on the computer, its item is updated at the next transfer; when it is removed or paid, its item is deleted. Items already past are left as they were. If you change or delete an item yourself, the app changes it back only when it changes on the computer. The items the app wrote are never brought back in to the computer, even when you also tick that calendar to bring in.
+
+Turning **Both ways** off (to **Bring in only** or **Off**), choosing another calendar, or unpairing removes every item the app wrote, and deletes the phone-only calendar. If calendar access was taken back in Android's settings, they are removed once it is allowed again.
+
+### Ask for the PIN again {#lock-time}
+
+@index: lock time; auto-lock; relock; lock after
+
+- **Ask for the PIN again**: how long the app may be away before it asks for the PIN (or your fingerprint or face) again: **Immediately**, **After 1 minute** (the default), **After 5 minutes** or **After 15 minutes**. Coming back from a screen the app opened itself, such as the document scanner or a file picker, counts as at least a minute, so a scan does not lock you out halfway.
 
 ### Trips: addresses and stations {#trip-lookups}
 

@@ -24,7 +24,7 @@ RANN’s Roost Mobile existe en deux éditions qui fonctionnent de la même faç
 - Tout ce que l’application garde (ses réglages, les captures et nouveaux contacts en attente, le résumé et les contacts) est chiffré avec une clé conservée dans le magasin de clés sécurisé du téléphone. La clé ne quitte jamais le téléphone.
 - L’application est exclue des sauvegardes infonuagiques d’Android : rien n’en est copié chez Google.
 - Les captures ne vont qu’à votre ordinateur, chiffrées avec la clé créée au jumelage. Loin de la maison, elles peuvent passer par un dossier de votre propre stockage infonuagique, toujours chiffrées.
-- Les calendriers ne sont lus que si vous activez [Calendriers de ce téléphone](phone-app#phone-calendars), seulement ceux que vous cochez, et ne vont qu’à votre ordinateur, chiffrés de la même façon. [L’agenda](#agenda) les affiche aussi, lus sur le téléphone pendant qu’il est ouvert ; rien de plus n’est envoyé.
+- Les calendriers ne sont lus que si vous activez [Calendriers de ce téléphone](phone-app#phone-calendars), seulement ceux que vous cochez, et ne vont qu’à votre ordinateur, chiffrés de la même façon. [L’agenda](#agenda) les affiche aussi, lus sur le téléphone pendant qu’il est ouvert ; rien de plus n’est envoyé. Seulement si vous choisissez **Dans les deux sens**, l’application écrit aussi les prochains rendez-vous, horaires et factures du ménage dans le calendrier que vous choisissez : un calendrier gardé seulement sur ce téléphone, ou un calendrier d’un de vos comptes, qui se synchronise alors avec ce compte. Voir [Dans les deux sens](phone-app#calendar-both-ways).
 - La seule autre connexion est la vérification quotidienne des mises à jour de l’édition GitHub, si vous l’autorisez. Elle n’envoie rien sur vous ni sur votre ménage.
 - Position : seulement si vous l’autorisez, l’application prend une seule position au départ d’un déplacement, à l’arrivée, et quand vous enregistrez un lieu ou cherchez la station la plus proche, jamais en arrière-plan ni à d’autres moments. La position est comparée à vos lieux enregistrés sur le téléphone même ; aucun service de cartes n’est consulté. Ce qui va à votre ordinateur, chiffré comme le reste, c’est le nom du lieu, ou les coordonnées quand vous laissez un lieu sans nom, et les coordonnées d’un lieu que vous enregistrez. Voir [Position](#location).
 - Dès que votre ordinateur confirme avoir reçu une capture, le téléphone supprime sa copie des images et des détails.
@@ -46,7 +46,7 @@ Le NIP n’est pas gardé sur le téléphone, seulement une empreinte brouillée
 - **Entrez votre NIP**, puis **OK**. Un NIP erroné affiche **NIP incorrect** et vide la case.
 - **Utiliser l’empreinte ou le visage** : affiché quand le téléphone le permet et que **Déverrouiller avec l’empreinte ou le visage** est activé dans Réglages. La fenêtre d’Android apparaît ; **Annuler** revient au NIP.
 
-L’application se verrouille de nouveau quand vous y revenez après plus d’une minute d’absence.
+L’application se verrouille de nouveau quand vous y revenez après le délai choisi dans les Réglages sous [Redemander le NIP](phone-app#lock-time) : une minute, sauf si vous le changez.
 
 - **NIP oublié?** : voir [NIP oublié](phone-app#forgot-pin).
 
@@ -62,7 +62,7 @@ Un NIP oublié ne peut pas être récupéré, ni par vous ni par l’ordinateur.
 4. L’application vous demande de choisir un nouveau NIP, comme la première fois.
 5. Jumelez de nouveau le téléphone avec l’ordinateur. Voir [Jumeler un téléphone](phones#pair).
 
-Ce qui est effacé, sur ce téléphone seulement : les saisies pas encore envoyées à l’ordinateur (photos, reçus, notes, lectures d’odomètre), la liste de ce qui a été envoyé, le jumelage avec l’ordinateur, le résumé reçu de lui, et tous les réglages, y compris le déverrouillage par empreinte et le dossier de transfert. Cela ne peut pas être annulé.
+Ce qui est effacé, sur ce téléphone seulement : les saisies pas encore envoyées à l’ordinateur (photos, reçus, notes, lectures d’odomètre), la liste de ce qui a été envoyé, le jumelage avec l’ordinateur, le résumé reçu de lui, et tous les réglages, y compris le déverrouillage par empreinte et le dossier de transfert. Ce que l’application a écrit dans un calendrier avec **Dans les deux sens** est retiré aussi. Cela ne peut pas être annulé.
 
 Ce qui reste : tout ce que l’ordinateur a déjà reçu, et le ménage sur l’ordinateur. L’ancien jumelage ne peut plus rien envoyer ; retirez-le de la liste à l’écran **Téléphones** de l’ordinateur. Voir [La liste des téléphones](phones#phone-list).
 
@@ -83,6 +83,8 @@ Cinq onglets s’alignent au bas de l’écran :
 - **Résumé** : les soldes, les factures, l’entretien et les budgets venus de votre ordinateur, et l’agenda des 60 prochains jours. Voir [L’onglet Résumé](#summary-tab) et [L’agenda](#agenda).
 - **Contacts** : les contacts du ménage venus de votre ordinateur, et les nouveaux contacts à envoyer. Voir [L’onglet Contacts](#contacts-tab).
 - **Réglages** : le jumelage, le dossier de transfert, le verrou et les mises à jour. Voir [L’onglet Réglages](#settings-tab).
+
+Dans les onglets **Capturer** et **Résumé**, l’icône de calendrier en haut à droite ouvre [l’agenda](#agenda) ; les lecteurs d’écran la nomment **Ouvrir l’agenda**.
 
 Quand une version plus récente est offerte (édition GitHub), une bande en haut des autres onglets l’indique ; touchez-la pour aller aux Réglages.
 
@@ -505,7 +507,7 @@ Les chiffres ne changent pas avant le prochain transfert. Touchez **Envoyer main
 
 @index: agenda; vue du mois; calendrier sur le téléphone; ce qui s’en vient; échéances
 
-**Voir l’agenda**, sous **À venir** dans l’onglet Résumé, ouvre en un seul endroit tout ce qui s’en vient dans les 60 prochains jours, aujourd’hui compris. Il ne fait qu’afficher : rien ne peut y être modifié. **Retour**, le geste de retour d’Android ou l’onglet **Résumé** touché de nouveau ramène au Résumé. Sous le titre, **De votre ordinateur** donne la date et l’heure du dernier transfert, comme dans le Résumé.
+L’icône de calendrier en haut à droite des onglets **Capturer** et **Résumé**, ou **Voir l’agenda** sous **À venir** dans l’onglet Résumé, ouvre en un seul endroit tout ce qui s’en vient dans les 60 prochains jours, aujourd’hui compris. Il ne fait qu’afficher : rien ne peut y être modifié. **Retour** ou le geste de retour d’Android ramène à l’onglet d’où vous venez ; toucher un onglet mène à cet onglet. Sous le titre, **De votre ordinateur** donne la date et l’heure du dernier transfert, comme dans le Résumé.
 
 Deux puces en haut choisissent la vue : **Agenda**, jour par jour, ou **Mois**.
 
@@ -540,7 +542,7 @@ Comme le Résumé, l’agenda n’affiche que ce que votre utilisateur peut voir
 
 @index: calendrier du téléphone dans l’agenda; Google Agenda dans l’agenda
 
-Tant que [Calendriers de ce téléphone](#phone-calendars) est activé et que l’accès au calendrier est autorisé, l’agenda affiche aussi les éléments des calendriers que vous y avez cochés, pour les 60 prochains jours, quel que soit le nombre de jours choisi pour l’envoi. Ils sont lus dans les calendriers du téléphone chaque fois que l’agenda s’ouvre, seulement pour les afficher ici : l’agenda n’envoie rien à l’ordinateur et n’écrit rien dans vos calendriers. Un élément d’une journée entière qui couvre plusieurs jours paraît à chacun d’eux ; un élément commencé la veille et toujours en cours paraît sous **Aujourd’hui** avec **suite**.
+Tant que [Calendriers de ce téléphone](#phone-calendars) est activé et que l’accès au calendrier est autorisé, l’agenda affiche aussi les éléments des calendriers que vous y avez cochés, pour les 60 prochains jours, quel que soit le nombre de jours choisi pour l’envoi. Ils sont lus dans les calendriers du téléphone chaque fois que l’agenda s’ouvre, seulement pour les afficher ici : l’agenda n’envoie rien à l’ordinateur et n’écrit rien dans vos calendriers. Un élément d’une journée entière qui couvre plusieurs jours paraît à chacun d’eux ; un élément commencé la veille et toujours en cours paraît sous **Aujourd’hui** avec **suite**. Les éléments que l’application a écrits elle-même dans un calendrier coché (avec **Dans les deux sens**) ne paraissent pas une deuxième fois.
 
 ## L’onglet Contacts {#contacts-tab}
 
@@ -625,7 +627,7 @@ La carte du jumelage est en haut, comme dans l’onglet Capturer.
 
 ### Annuler le jumelage {#unpair}
 
-**Annuler le jumelage**, affiché quand le téléphone est jumelé, fait oublier l’ordinateur au téléphone aussitôt. Les captures non envoyées restent sur le téléphone jusqu’au prochain jumelage. L’ordinateur liste toujours le téléphone : utilisez **Retirer** dans son écran Téléphones pour l’arrêter là aussi.
+**Annuler le jumelage**, affiché quand le téléphone est jumelé, fait oublier l’ordinateur au téléphone aussitôt. Les captures non envoyées restent sur le téléphone jusqu’au prochain jumelage. Ce que l’application a écrit dans un calendrier avec [Dans les deux sens](#calendar-both-ways) en est retiré, et le calendrier RANN's Roost du téléphone est supprimé. L’ordinateur liste toujours le téléphone : utilisez **Retirer** dans son écran Téléphones pour l’arrêter là aussi.
 
 ### Loin de la maison {#transfer-folder}
 
@@ -645,17 +647,50 @@ Android ne laisse une application sonner à la minute exacte qu’une fois que v
 
 ### Calendriers de ce téléphone {#phone-calendars}
 
-@index: permission du calendrier; READ_CALENDAR; Google Agenda; calendrier Outlook; importer des calendriers
+@index: permission du calendrier; READ_CALENDAR; Google Agenda; calendrier Outlook; importer des calendriers; synchronisation des calendriers
 
-Affiché une fois jumelé. Envoie au Calendrier de l’ordinateur les calendriers que ce téléphone affiche déjà (Google, Outlook ou Exchange, Samsung et autres), avec vos autres transferts. L’application ne se connecte jamais à un compte de calendrier. La ligne sous le titre indique **Désactivé**, ou combien de calendriers sont importés et combien de jours à l’avance. **Configurer** (ou **Modifier**) ouvre la page où cela se choisit :
+Affiché une fois jumelé. Envoie au Calendrier de l’ordinateur les calendriers que ce téléphone affiche déjà (Google, Outlook ou Exchange, Samsung et autres), avec vos autres transferts, et, si vous le choisissez, écrit les prochains éléments du ménage dans un calendrier. L’application ne se connecte jamais à un compte de calendrier. La ligne sous le titre indique **Désactivé**, ou combien de calendriers sont importés et combien de jours à l’avance, et avec **Dans les deux sens** où l’application écrit (**Écrit dans :**). **Configurer** (ou **Modifier**) ouvre la page où cela se choisit. En haut, choisissez l’un des trois :
 
-- **Envoyer les calendriers à l’ordinateur** : l’active ou le désactive. La première fois, l’application explique pourquoi elle a besoin d’accéder au calendrier, puis Android le demande. Si vous refusez, rien n’est lu ; autorisez Agenda pour l’application dans les paramètres d’Android pour changer d’idée. Tant que c’est désactivé, rien n’est lu, et les calendriers importés auparavant sont retirés de l’ordinateur au prochain transfert.
+- **Désactivé** : rien n’est lu dans vos calendriers ni écrit dedans. Les calendriers importés auparavant sont retirés de l’ordinateur au prochain transfert, et ce que l’application a écrit est retiré de votre calendrier.
+- **Importer seulement** (par défaut) : les calendriers que vous cochez vont à l’ordinateur ; rien n’est écrit dans vos calendriers.
+- **Dans les deux sens** : comme **Importer seulement**, et l’application écrit aussi les rendez-vous du ménage, les heures de travail et d’école et les factures à payer dans un calendrier de votre choix. Voir [Dans les deux sens](#calendar-both-ways).
+
+La première fois que vous importez des calendriers, la page affiche **Autoriser l’accès au calendrier** : l’application explique pourquoi elle doit lire vos calendriers, puis Android le demande. Si vous refusez, rien n’est lu ; autorisez Agenda pour l’application dans les paramètres d’Android pour changer d’idée. Une fois l’accès autorisé :
+
 - **Jours à l’avance** : 14, 30, 60 (par défaut), 90 ou 180 jours de chaque calendrier sont envoyés, à partir d’aujourd’hui.
 - **Calendriers à importer, et qui les voit sur l’ordinateur** : chaque calendrier qu’Android affiche, avec son compte. Cochez ceux à importer, et choisissez pour chacun **Privé** (par défaut : vous seul le voyez), **Occupé seulement** (les autres vous voient occupé à ces heures, sans détails) ou **Partagé** (les autres voient les éléments).
 - **Marquer des éléments** : les éléments à venir des calendriers cochés. Chacun peut être **Comme son calendrier**, **Privé**, **Occupé seulement** ou **Partagé** ; le choix vaut pour toutes les dates d’un élément qui se répète.
 - **Terminé** revient aux Réglages.
 
-Seuls les calendriers cochés sont lus, pour les jours choisis : le titre, le lieu, le début et la fin de chaque élément, jamais sa description, ses invités ou ses rappels. Ils ne vont qu’à votre ordinateur jumelé, chiffrés comme vos captures, par Wi-Fi, par le dossier de transfert ou dans un fichier partagé. Un calendrier est envoyé en entier quand il a changé depuis le dernier transfert ; rien n’est écrit dans vos calendriers. Si l’ordinateur n’a pas pu en enregistrer un, la raison paraît sous le titre et le téléphone réessaie au prochain transfert. Voir [Calendriers des téléphones et des fichiers](calendar-sync). Les calendriers cochés paraissent aussi dans [l’agenda](#agenda-phone-calendars), lus sur le téléphone seulement.
+Seuls les calendriers cochés sont lus, pour les jours choisis : le titre, le lieu, le début et la fin de chaque élément, jamais sa description, ses invités ou ses rappels. Ils ne vont qu’à votre ordinateur jumelé, chiffrés comme vos captures, par Wi-Fi, par le dossier de transfert ou dans un fichier partagé. Un calendrier est envoyé en entier quand il a changé depuis le dernier transfert ; rien n’est écrit dans vos calendriers, sauf si vous choisissez **Dans les deux sens**. Si l’ordinateur n’a pas pu en enregistrer un, la raison paraît sous le titre et le téléphone réessaie au prochain transfert. Voir [Calendriers des téléphones et des fichiers](calendar-sync). Les calendriers cochés paraissent aussi dans [l’agenda](#agenda-phone-calendars), lus sur le téléphone seulement.
+
+### Dans les deux sens {#calendar-both-ways}
+
+@index: écrire dans le calendrier; WRITE_CALENDAR; calendrier RANN's Roost; calendrier sur ce téléphone seulement; calendrier dans les deux sens
+
+Avec **Dans les deux sens**, l’application écrit dans un calendrier les rendez-vous et événements du ménage, les heures de travail et d’école de chaque personne et les factures à payer, pour les 60 prochains jours. Elle n’écrit que ce que votre utilisateur peut voir sur l’ordinateur, tel qu’envoyé à ce téléphone. La première fois que vous le choisissez, l’application explique pourquoi, puis Android demande d’autoriser l’écriture dans vos calendriers ; si vous refusez, le choix reste comme avant.
+
+- **Où RANN’s Roost écrit** : choisissez-en un.
+  - **Calendrier RANN’s Roost sur ce téléphone seulement** (choisi au départ) : un calendrier à l’application, gardé seulement sur ce téléphone. Il n’appartient à aucun compte, donc il n’est jamais synchronisé avec Google, Outlook ni ailleurs. Votre application de calendrier l’affiche parmi les autres.
+  - Un calendrier d’un de vos comptes : chaque calendrier où vous pouvez écrire, avec sa couleur et son compte. Ce calendrier se synchronise avec son fournisseur, donc ce que l’application y écrit est visible partout où ce compte est utilisé, et par les personnes avec qui le calendrier est partagé.
+
+Ce qui est écrit, dans l’un ou l’autre calendrier :
+
+- Les rendez-vous et événements à leur date et heure (d’une durée d’une heure), ou toute la journée, avec leur lieu et, dans les notes, pour qui ils sont et qui conduit à l’aller et au retour.
+- Les heures de travail et d’école, comme « Alex : travail » ou « Sam : école », avec le lieu ; un quart de nuit finit le lendemain matin.
+- Les factures à payer, toute la journée, comme « Facture à payer : Hydro ».
+
+La même règle de confidentialité vaut dans les deux calendriers, puisque d’autres applications du téléphone peuvent aussi lire le calendrier du téléphone : un rendez-vous médical est écrit seulement comme **Rendez-vous santé**, sans lieu, conducteurs ni détails, et une facture ne montre jamais son montant. Les notes de chaque élément finissent par « Écrit par RANN’s Roost : modifiez-le sur l’ordinateur. »
+
+L’application suit chaque élément écrit. Quand quelque chose change sur l’ordinateur, son élément est mis à jour au prochain transfert ; quand il est retiré ou payé, son élément est supprimé. Les éléments déjà passés restent comme ils étaient. Si vous modifiez ou supprimez un élément vous-même, l’application ne le change de nouveau que quand il change sur l’ordinateur. Les éléments écrits par l’application ne sont jamais renvoyés à l’ordinateur, même si vous cochez aussi ce calendrier pour l’importer.
+
+Désactiver **Dans les deux sens** (pour **Importer seulement** ou **Désactivé**), choisir un autre calendrier ou annuler le jumelage retire tous les éléments que l’application a écrits et supprime le calendrier du téléphone. Si l’accès au calendrier a été retiré dans les paramètres d’Android, ils sont retirés une fois l’accès autorisé de nouveau.
+
+### Redemander le NIP {#lock-time}
+
+@index: délai de verrouillage; verrouillage automatique; reverrouiller
+
+- **Redemander le NIP** : combien de temps l’application peut rester en arrière-plan avant de redemander le NIP (ou votre empreinte ou votre visage) : **Immédiatement**, **Après 1 minute** (par défaut), **Après 5 minutes** ou **Après 15 minutes**. Le retour d’un écran que l’application a ouvert elle-même, comme le numériseur de documents ou un sélecteur de fichiers, compte pour au moins une minute, pour qu’une numérisation ne vous verrouille pas en cours de route.
 
 ### Déplacements : adresses et stations {#trip-lookups}
 
