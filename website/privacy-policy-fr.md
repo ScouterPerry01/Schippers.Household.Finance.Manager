@@ -44,10 +44,12 @@ L'application mobile peut envoyer à votre ordinateur les calendriers que votre 
 
 ## La position sur le téléphone
 
-L'application mobile utilise votre position seulement si vous l'autorisez, et seulement pour les déplacements : elle prend une seule position au départ d'un déplacement, une à l'arrivée, et une quand vous enregistrez un lieu ou cherchez la station de carburant enregistrée la plus proche. Elle ne suit jamais votre téléphone en arrière-plan et ne demande jamais la position au démarrage.
+L'application mobile utilise votre position seulement si vous l'autorisez, et seulement pour les déplacements : elle prend une seule position au départ d'un déplacement, à chaque arrêt et pause que vous inscrivez, à l'arrivée, et quand vous enregistrez un lieu ou une station, cherchez la station de carburant enregistrée la plus proche ou demandez les stations à proximité. Elle ne suit jamais votre téléphone en arrière-plan et ne demande jamais la position au démarrage.
 
-- La position est comparée à vos lieux enregistrés sur le téléphone même. Aucun service de cartes, aucune recherche d'adresse ni aucune autre entreprise n'est consulté.
-- Ce qui va à votre ordinateur, chiffré de bout en bout comme tout le reste, c'est le nom du lieu, ou ses coordonnées quand vous le laissez sans nom, et les coordonnées d'un lieu que vous enregistrez pour que le prochain déplacement le reconnaisse.
+- La position est comparée à vos lieux enregistrés sur le téléphone même. Aucun service de cartes ni aucune autre entreprise n'est consulté, sauf si vous activez l'une des deux recherches ci-dessous.
+- Ce qui va à votre ordinateur, chiffré de bout en bout comme tout le reste, c'est le déplacement avec le nom, l'adresse et les coordonnées de son départ, de chaque arrêt et pause et de son arrivée, et le nom, l'adresse et les coordonnées d'un lieu que vous enregistrez pour que le prochain déplacement le reconnaisse. Les notes et photos prises pendant un déplacement suivent le même chemin.
+- **Recherche d'adresse (désactivée par défaut).** Si vous activez « Trouver les adresses » dans les Réglages de l'application, toucher « Trouver l'adresse » (ou ajouter une station à la main) envoie les coordonnées de cette position à Google, par le géocodeur d'Android, qui renvoie l'adresse. Seulement quand vous le touchez ; Google traite la demande selon sa propre politique de confidentialité. Rien d'autre n'est envoyé avec elle.
+- **Stations à proximité (désactivées par défaut).** Si vous activez « Stations à proximité », ouvrir cette liste envoie une position approximative (arrondie à environ un kilomètre) au service Overpass d'OpenStreetMap (overpass-api.de), qui renvoie les stations-service et les bornes de recharge autour. Aucun compte, rien d'autre sur vous ou votre déplacement ; les distances exactes sont calculées sur le téléphone. Le service voit l'adresse Internet de votre téléphone, comme pour toute page Web.
 - Sur votre ordinateur, les lieux et les déplacements sont gardés dans le groupe de comptes où votre téléphone envoie, comme vos autres captures : les personnes de votre ménage qui peuvent ouvrir ce groupe les voient, et leurs téléphones reçoivent les lieux enregistrés des groupes qu'elles peuvent ouvrir. Gardez-les dans votre propre groupe privé s'ils ne sont que pour vous.
 - Le déplacement en cours et les lieux enregistrés sur le téléphone sont gardés dans le stockage chiffré du téléphone.
 - Vous pouvez refuser ou retirer l'autorisation dans les réglages d'Android en tout temps ; les déplacements fonctionnent alors en choisissant les lieux ou en tapant leur nom.
@@ -81,6 +83,10 @@ Toutes les demandes utilisent HTTPS. Chaque service voit l'adresse Internet de v
 - Ce qu'il apprend : qu'une copie de l'application vérifie les mises à jour, et les mises à jour que vous choisissez de télécharger.
 
 Les versions du Microsoft Store et de Google Play ne consultent jamais GitHub : la boutique les met à jour.
+
+**Le géocodeur de Google** (par Android) et **le service Overpass d'OpenStreetMap** (overpass-api.de)
+- Quand : seulement depuis le téléphone, seulement si vous avez activé l'option, et seulement quand vous le demandez (voir La position sur le téléphone).
+- Ce qu'ils apprennent : les coordonnées d'une position (Google), ou une position arrondie à environ un kilomètre (OpenStreetMap).
 
 ## Fonctions facultatives qui utilisent vos propres comptes
 

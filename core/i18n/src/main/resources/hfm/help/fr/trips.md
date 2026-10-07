@@ -6,6 +6,10 @@ Le registre des déplacements garde les trajets faits en voiture pour le travail
 
 Choisissez Ajouter un déplacement et entrez la date, la destination, les kilomètres aller simple et s’il s’agit d’un aller-retour. Choisissez le motif (affaires, emploi, médical ou personnel), la personne et le véhicule. Cliquez sur un déplacement pour le modifier ou le supprimer.
 
+## Déplacements du téléphone
+
+Un déplacement commencé sur le téléphone peut avoir plusieurs arrêts et pauses. Chaque arrêt donne un trajet avec sa propre distance et son propre motif, montré sous le déplacement et sur sa propre ligne dans le carnet de route ; les pauses sont exclues du temps de conduite. Les photos et notes prises en route s’ouvrent dans Documents.
+
 ## La part de travail d’un véhicule
 
 Les cartes du haut additionnent les kilomètres de chaque personne par motif. Pour un véhicule, elles comparent aussi les kilomètres d’affaires et d’emploi à tous les kilomètres parcourus dans l’année. Ce total vient des lectures de l’odomètre de l’écran Véhicules : ajoutez-en une au début de l’année et une à la fin. La part de travail est ce que l’ARC demande pour déduire des frais de véhicule.

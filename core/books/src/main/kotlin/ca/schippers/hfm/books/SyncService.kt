@@ -87,6 +87,9 @@ class PairingRejectedException : Exception("Pairing was refused")
 interface CaptureConverter {
     fun pagesToPdf(pages: List<ByteArray>): ByteArray
     fun recognize(content: ByteArray): OcrResult?
+
+    /** How many pages a PDF shared from the phone has; null when it cannot be told (counted as one). */
+    fun pageCount(pdf: ByteArray): Int? = null
 }
 
 /**
@@ -356,7 +359,9 @@ class SyncService internal constructor(private val books: Books) {
             mime != "text/plain" -> converter.recognize(content)?.let { it to "desktop" }
             else -> null
         }
-        ocr?.let { (result, engine) -> books.documents.recordText(doc.id, maxOf(1, pages.size), result, engine, today) }
+        // A PDF shared from the phone has its own pages; photos are a page each.
+        val pageCount = if (pdf != null) runCatching { converter.pageCount(content) }.getOrNull() ?: 1 else pages.size
+        ocr?.let { (result, engine) -> books.documents.recordText(doc.id, maxOf(1, pageCount), result, engine, today) }
         // What the person typed on the phone wins over what was read.
         val read = books.documents.get(doc.id)
         val amount = f.amount?.let { a -> runCatching { Money.exact(phoneDecimal(a)!!, f.currency?.let(Currency::of) ?: read.amount?.currency ?: books.rates.baseCurrency) }.getOrNull() }

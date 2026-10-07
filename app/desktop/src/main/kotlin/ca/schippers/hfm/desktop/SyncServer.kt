@@ -41,6 +41,7 @@ class SyncServer(private val books: Books, private val today: () -> LocalDate, p
     private val converter = object : CaptureConverter {
         override fun pagesToPdf(pages: List<ByteArray>): ByteArray = PdfPages.fromJpegs(pages)
         override fun recognize(content: ByteArray): OcrResult? = runCatching { DesktopOcr.reader.read(content).result }.getOrNull()
+        override fun pageCount(pdf: ByteArray): Int? = runCatching { ca.schippers.hfm.ocr.desktop.DocumentReader.pageCount(pdf) }.getOrNull()?.takeIf { it > 0 }
     }
 
     /** @throws IOException when no port could be opened. */

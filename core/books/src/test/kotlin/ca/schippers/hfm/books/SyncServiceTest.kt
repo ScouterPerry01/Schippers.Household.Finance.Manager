@@ -53,6 +53,7 @@ class SyncServiceTest {
         var pdfCalls = 0
         override fun pagesToPdf(pages: List<ByteArray>): ByteArray { pdfCalls++; return "%PDF-1.7 ${pages.size} pages".encodeToByteArray() }
         override fun recognize(content: ByteArray): OcrResult? = null
+        override fun pageCount(pdf: ByteArray): Int? = 3
     }
 
     @BeforeEach
@@ -99,6 +100,17 @@ class SyncServiceTest {
         assertEquals("audio/wav", voice.mimeType)
         assertTrue(books.documents.content(voice.id).contentEquals(wav))
         assertEquals("Lunch with a client, split with Paul", doc.notes, "the dictated words are the note")
+    }
+
+    @Test
+    fun `a PDF shared from the phone keeps its own page count`() {
+        val key = pairAsPhone(books.sync.invitation("Bureau", "127.0.0.1", 47311, now))
+        val shared = CaptureItem(
+            "pdf-1", CaptureKind.BILL, now, pdf = SyncCrypto.b64("%PDF-1.7 three pages".encodeToByteArray()), fileName = "facture.pdf",
+            ocrLines = listOf(OcrText("Hydro-Québec", 0.99f)),
+        )
+        assertEquals(listOf("pdf-1"), send(key, SyncRequest(now, listOf(shared))).imported)
+        assertEquals(3, books.documents.inbox().single().pages)
     }
 
     @Test

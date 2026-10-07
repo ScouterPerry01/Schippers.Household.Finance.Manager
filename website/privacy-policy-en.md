@@ -44,10 +44,12 @@ Writing into a calendar is a separate choice, "Both ways", off unless you pick i
 
 ## Location on the phone
 
-The phone app uses your location only if you allow it, and only for trips: it takes one location fix when you start a trip, one when you arrive, and one when you save a place or look for the nearest saved fuel station. It never follows your phone in the background and never asks for location when it starts.
+The phone app uses your location only if you allow it, and only for trips: it takes one location fix when you start a trip, at each stop and rest break you record, when you arrive, and when you save a place or a station, look for the nearest saved fuel station or ask for stations nearby. It never follows your phone in the background and never asks for location when it starts.
 
-- The fix is compared with your saved places on the phone itself. No map service, address lookup or other company is asked.
-- What goes to your computer, encrypted end to end like everything else, is the name of the place, or its coordinates when you leave it unnamed, and the coordinates of a place you save so the next trip recognizes it.
+- The fix is compared with your saved places on the phone itself. No map service or other company is asked, unless you turn on one of the two lookups below.
+- What goes to your computer, encrypted end to end like everything else, is the trip with the name, address and coordinates of its start, each stop and break, and its arrival, and the name, address and coordinates of a place you save so the next trip recognizes it. Notes and photos you take during a trip go the same way.
+- **Address lookup (off by default).** If you turn on "Look up addresses" in the app's Settings, tapping "Look up the address" (or adding a station by hand) sends that fix's coordinates to Google, through Android's geocoder, which returns the address. Only when you tap it; Google handles the request under its own privacy policy. Nothing else is sent with it.
+- **Stations nearby (off by default).** If you turn on "Stations nearby", opening that list sends a rough position (rounded to about a kilometre) to OpenStreetMap's Overpass service (overpass-api.de), which returns the fuel stations and EV chargers around it. No account, nothing else about you or your trip; the exact distances are worked out on the phone. The service sees your phone's internet address, as for any web page.
 - On your computer, places and trips are kept in the account group your phone sends to, as your other captures are: the people of your household who can open that group see them, and their phones receive the saved places of the groups they can open. Keep them in your own private group if they are for you alone.
 - The trip in progress and the places saved on the phone are kept in the phone's encrypted storage.
 - You can refuse or withdraw the permission in Android's settings at any time; trips then work by choosing places or typing their names.
@@ -81,6 +83,10 @@ All requests use HTTPS. Each service sees your device's internet address, as for
 - What it learns: that a copy of the app is checking for updates, and the updates you choose to download.
 
 The Microsoft Store and Google Play versions never check GitHub: the store updates them.
+
+**Google's geocoder** (through Android) and **OpenStreetMap's Overpass service** (overpass-api.de)
+- When: only from the phone, only if you turned the option on, and only when you ask (see Location on the phone).
+- What they learn: the coordinates of a location fix (Google), or a position rounded to about a kilometre (OpenStreetMap).
 
 ## Optional features that use your own accounts
 
