@@ -121,7 +121,7 @@ Also in this first version:
 
 ### Search terms (7 terms, max 30 characters each)
 
-budget; personal finance; Quicken; income tax; family calendar; mileage log; Canada
+budget; personal finance; Quicken; income tax; RRSP TFSA; family calendar; mileage log
 
 ### Copyright and trademark info (max 200)
 
@@ -238,7 +238,7 @@ Aussi dans cette première version :
 
 ### Termes de recherche (7 termes, max 30 caractères chacun)
 
-budget; finances personnelles; Quicken; impôt sur le revenu; calendrier familial; registre de kilométrage; Canada
+budget; finances personnelles; Quicken; impôt sur le revenu; REER CELI; calendrier familial; registre de kilométrage
 
 ### Droits d'auteur et marques (max 200)
 
