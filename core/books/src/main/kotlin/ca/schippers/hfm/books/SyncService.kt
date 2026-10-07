@@ -32,6 +32,7 @@ import ca.schippers.hfm.sync.RefCategory
 import ca.schippers.hfm.sync.RefDue
 import ca.schippers.hfm.sync.RefEvent
 import ca.schippers.hfm.sync.RefRefill
+import ca.schippers.hfm.sync.RefRenewal
 import ca.schippers.hfm.sync.RefSchedule
 import ca.schippers.hfm.sync.RefSeasonal
 import ca.schippers.hfm.sync.RefSeasonalTask
@@ -432,8 +433,34 @@ class SyncService internal constructor(private val books: Books) {
             schedules = runCatching { schedules(today) }.getOrDefault(emptyList()),
             trackers = books.trackerSync.reference(today),
             seasonal = runCatching { seasonal(today) }.getOrNull(),
+            renewals = runCatching { renewals(today) }.getOrDefault(emptyList()),
+            maintenanceAhead = runCatching { maintenanceAhead(today) }.getOrDefault(emptyList()),
         )
     }
+
+    /**
+     * The agenda: what is to be renewed within [AGENDA_DAYS] days, as the computer's calendar shows it (card payments
+     * on every due date of the period), from the groups the signed-in user can see (HH-11). Policy numbers, plates and
+     * amounts stay on the computer.
+     */
+    private fun renewals(today: LocalDate): List<RefRenewal> {
+        val until = today.plus(DatePeriod(days = AGENDA_DAYS - 1))
+        return (books.renewals(today, AGENDA_DAYS - 1, cardPayments = false) + books.creditCards.paymentsDue(today, until, today))
+            .filter { it.date in today..until }.sortedBy { it.date }.take(MAX_EVENTS)
+            .map { RefRenewal(it.kind.name, it.subjectId, it.subjectName, it.date.toString()) }
+    }
+
+    /** The agenda: maintenance next due after this month and within [AGENDA_DAYS] days; [maintenance] sends the rest. */
+    private fun maintenanceAhead(today: LocalDate): List<RefDue> {
+        val from = endOfMonth(today).plus(DatePeriod(days = 1))
+        val until = today.plus(DatePeriod(days = AGENDA_DAYS - 1))
+        if (from > until) return emptyList()
+        return books.upkeepBetween(from, until, today).take(MAX_DUE).map { u ->
+            RefDue(u.taskId, u.subjectName, u.taskName, u.status.state.name, u.status.nextDate?.toString(), u.status.dueUsage, u.unit?.name)
+        }
+    }
+
+    private fun endOfMonth(today: LocalDate) = LocalDate(today.year, today.month, 1).plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
 
     /** SEA-04: the current season's checklist, without the tasks of vehicles and assets the user may only view. */
     private fun seasonal(today: LocalDate): RefSeasonal {
@@ -467,10 +494,13 @@ class SyncService internal constructor(private val books: Books) {
         }
     }
 
-    /** CAL-10: each person's work and school hours today and tomorrow, from the groups the signed-in user can see. */
+    /**
+     * CAL-10: each person's work and school hours for the agenda's [AGENDA_DAYS] days (older phones show today's and
+     * tomorrow's), from the groups the signed-in user can see.
+     */
     private fun schedules(today: LocalDate): List<RefSchedule> {
         val who = names()
-        return books.schedules.days(today, today.plus(DatePeriod(days = 1))).mapNotNull { d ->
+        return books.schedules.days(today, today.plus(DatePeriod(days = AGENDA_DAYS - 1))).take(MAX_SCHEDULES).mapNotNull { d ->
             val person = who[d.memberId] ?: return@mapNotNull null
             RefSchedule(person, d.schedule.kind.name, d.date.toString(), hhmm(d.start), hhmm(d.end), d.schedule.label)
         }
@@ -490,8 +520,7 @@ class SyncService internal constructor(private val books: Books) {
 
     /** MNT-05: overdue and soon due, and anything else next due by the end of the month. */
     private fun maintenance(today: LocalDate): List<RefDue> {
-        val endOfMonth = LocalDate(today.year, today.month, 1).plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
-        return (books.upkeepDue(today) + books.upkeepBetween(today, endOfMonth, today)).distinctBy { it.taskId }.take(MAX_DUE).map { u ->
+        return (books.upkeepDue(today) + books.upkeepBetween(today, endOfMonth(today), today)).distinctBy { it.taskId }.take(MAX_DUE).map { u ->
             RefDue(u.taskId, u.subjectName, u.taskName, u.status.state.name, u.status.nextDate?.toString(), u.status.dueUsage, u.unit?.name)
         }
     }
@@ -529,6 +558,10 @@ class SyncService internal constructor(private val books: Books) {
         /** Events and refills up to two months ahead: the longest reminder lead time the computer allows. */
         private const val EVENT_DAYS = 61
         private const val MAX_EVENTS = 150
+
+        /** The phone's agenda: today and the 59 days after it (events and refills are sent a day further, for reminders). */
+        private const val AGENDA_DAYS = 60
+        private const val MAX_SCHEDULES = 600
 
         /** CAP-05: a shared text longer than this (a very long email thread) is cut. */
         private const val MAX_SHARED_TEXT = 200_000

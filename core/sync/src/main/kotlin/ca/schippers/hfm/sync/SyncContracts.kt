@@ -221,7 +221,10 @@ data class ReferenceData(
     val seasonal: RefSeasonal? = null,
     /** UTL-01, UTL-02, HRS-01, CHO-01, VOL-01: the meters, tanks, clients, chores and organizations the log forms pick from. */
     val trackers: RefTrackers = RefTrackers(),
-    /** CAL-10 on the phone: each person's work and school hours today and tomorrow, from the groups the phone's user can see. */
+    /**
+     * CAL-10 on the phone: each person's work and school hours, from the groups the phone's user can see: today and
+     * tomorrow up to format 6, the coming 60 days since format 7 (the agenda). Older phones show only today's and tomorrow's.
+     */
     val schedules: List<RefSchedule> = emptyList(),
     /** TRP-02: the saved places of the groups the phone's user can see. They stay on the user's devices. */
     val places: List<RefPlace> = emptyList(),
@@ -229,16 +232,21 @@ data class ReferenceData(
     val trailers: List<RefTrailer> = emptyList(),
     /** TRP-01: the household member the phone's user is, proposed as the driver. */
     val userMemberId: String? = null,
+    /** The agenda (format 7): licences, policies, registrations, warranties, card payments, fuel orders and the like coming up within 60 days. */
+    val renewals: List<RefRenewal> = emptyList(),
+    /** The agenda (format 7): maintenance next due after this month and within 60 days ([maintenance] has the rest). */
+    val maintenanceAhead: List<RefDue> = emptyList(),
 ) {
     companion object {
         /**
          * What a phone app understands of the reference data: 1 up to maintenance and budgets, 2
          * with contacts, 3 with events and refills, 4 with the seasonal checklist, what the log forms pick from, schedules, places, trailers and the vehicles' fuel type and use, 5 with
          * the drivers of children's activities, 6 with tank order dates, unusual meter months, chores done several times a day and
-         * when a done checklist task falls due again. A phone that kept its copy with an older app asks for all of it again
+         * when a done checklist task falls due again, 7 with the agenda's renewals, maintenance further ahead and 60 days of
+         * schedules. A phone that kept its copy with an older app asks for all of it again
          * ([knownVersion]), since that app dropped what it did not know.
          */
-        const val FORMAT = 6
+        const val FORMAT = 7
 
         /** The version a phone sends: none when its copy was kept by an app reading an older [FORMAT]. */
         fun knownVersion(version: String?, storedFormat: Int): String? = version?.takeIf { storedFormat >= FORMAT }
@@ -360,6 +368,14 @@ data class RefSchedule(
     val end: String,
     val label: String? = null,
 )
+
+/**
+ * The agenda (format 7): something to renew on [date]. [kind] is the computer's (PET_LICENCE, REGISTRATION,
+ * CARD_PAYMENT_DUE, FUEL_ORDER...); [subjectId] and [subject] name the pet, vehicle, account, policy or tank.
+ * Policy numbers, plates and amounts are not sent.
+ */
+@Serializable
+data class RefRenewal(val kind: String, val subjectId: String, val subject: String, val date: String)
 
 /**
  * SEA-04: the current season's checklist. [season] is SPRING, SUMMER, FALL or WINTER; it runs from

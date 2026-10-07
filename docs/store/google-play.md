@@ -130,13 +130,20 @@ never see it. That covers:
   maintenance checklist (task and vehicle or asset names, due and done dates), what the log
   forms pick from (utility meters and fuel tanks with their last reading, side-income clients and
   their tasks, the children's chores with what each is worth, organizations volunteered for), calendar
-  events (appointments), each person's work and school hours today and tomorrow, the saved places
+  events (appointments), each person's work and school hours for the coming 60 days (for the
+  agenda, since 2026-10-07; before, today and tomorrow), the saved places
   (name, category, address and coordinates) and trailers of the groups the user may see,
   medication refills and the contacts the user may see (names, kinds, phone numbers, emails,
-  addresses, hours; never account or client numbers). Calendar items brought in from phones never
+  addresses, hours; never account or client numbers). For the agenda also: renewal dates in the
+  coming 60 days (what is renewed and the name of the pet, vehicle, account, policy holder or tank;
+  never policy numbers, plates or amounts) and maintenance next due within 60 days. All of it
+  from the groups the user may see, like the events. Calendar items brought in from phones never
   go back to any phone.
 - On the phone only: event, refill, bill, maintenance and budget reminders are scheduled and shown
-  by the app itself (local notifications); nothing is sent to raise them.
+  by the app itself (local notifications); nothing is sent to raise them. The agenda reads the
+  phone's own calendars the user ticked (with the same `READ_CALENDAR` permission, only while
+  "Calendars on this phone" is on) to show them beside the computer's items; that reading stays on
+  the phone and sends nothing new.
 
 The answers:
 

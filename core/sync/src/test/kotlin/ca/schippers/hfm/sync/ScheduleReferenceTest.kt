@@ -28,6 +28,6 @@ class ScheduleReferenceTest {
         assertTrue("schedules" !in SyncJson.encodeToString(ReferenceData.serializer(), ReferenceData("H", "en", "CAD")))
         // A copy kept before schedules existed is fetched again in full.
         assertNull(ReferenceData.knownVersion("v", storedFormat = 3))
-        assertEquals(6, ReferenceData.FORMAT)
+        assertEquals(7, ReferenceData.FORMAT)
     }
 }

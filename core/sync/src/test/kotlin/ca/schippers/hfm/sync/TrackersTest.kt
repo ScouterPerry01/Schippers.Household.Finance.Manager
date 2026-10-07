@@ -70,7 +70,7 @@ class TrackersTest {
             ),
         )
         assertEquals(withTrackers, SyncJson.decodeFromString(ReferenceData.serializer(), SyncJson.encodeToString(ReferenceData.serializer(), withTrackers)))
-        assertEquals(6, ReferenceData.FORMAT)
+        assertTrue(ReferenceData.FORMAT >= 6)
         assertNull(ReferenceData.knownVersion("abc", storedFormat = 3), "a phone that kept format 3 asks for everything again")
     }
 }

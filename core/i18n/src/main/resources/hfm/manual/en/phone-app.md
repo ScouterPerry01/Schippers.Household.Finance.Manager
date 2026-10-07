@@ -24,7 +24,7 @@ RANN's Roost Mobile comes in two editions that work the same way:
 - Everything the app keeps (its settings, the captures and new contacts waiting to be sent, the summary and the contacts) is encrypted with a key kept in the phone's secure key store. The key never leaves the phone.
 - The app is excluded from Android's cloud backups, so none of it is copied to Google.
 - Captures go only to your computer, encrypted with the key made when you paired. Away from home, they may go through a folder of your own cloud storage, still encrypted.
-- Calendars are read only if you turn on [Calendars on this phone](phone-app#phone-calendars), only those you tick, and they go only to your computer, encrypted the same way.
+- Calendars are read only if you turn on [Calendars on this phone](phone-app#phone-calendars), only those you tick, and they go only to your computer, encrypted the same way. [The agenda](#agenda) also shows them, read on the phone while it is open; that sends nothing more.
 - The only other connection is the daily update check of the GitHub edition, if you allow it. It sends nothing about you or your household.
 - Location: only if you allow it, the app takes one location fix when you start a trip, when you arrive, and when you save a place or look for the nearest station, never in the background and never at other times. The fix is matched to your saved places on the phone itself; no map service is asked. What travels to your computer, encrypted like the rest, is the place's name, or the coordinates when you leave a place unnamed, and the coordinates of a place you save. See [Location](#location).
 - Once your computer confirms it received a capture, the phone deletes its copy of the pictures and details.
@@ -80,7 +80,7 @@ Five tabs run along the bottom of the screen:
 
 - **Capture**: photograph or record something new. See [The Capture tab](#capture-tab).
 - **Sent**: what you captured and how far it got. See [The Sent tab](#sent-tab).
-- **Summary**: balances, bills, maintenance and budgets from your computer. See [The Summary tab](#summary-tab).
+- **Summary**: balances, bills, maintenance and budgets from your computer, and the agenda of the coming 60 days. See [The Summary tab](#summary-tab) and [The agenda](#agenda).
 - **Contacts**: the household's contacts from your computer, and new contacts to send. See [The Contacts tab](#contacts-tab).
 - **Settings**: pairing, the transfer folder, the lock and updates. See [The Settings tab](#settings-tab).
 
@@ -431,13 +431,54 @@ The Summary shows figures from your computer, as of the last transfer: the house
 
 - **Accounts**: each account and its balance.
 - **Bills due**: the bills due in the next 60 days that are not yet paid, up to 15, with the due date and the amount, or **about** an amount when it is estimated.
-- **Coming up**: first each person's work and school hours today and tomorrow, such as "Alex · Work · Office" with the date and "08:00–16:30"; then the appointments and events from the computer's calendar in the coming weeks, up to 12, each with who it is for, its date and its time, or **All day**; for a child's activity, who drives there and who drives back that day, carpool turns included. Only events from accounts your user can see on the computer are sent, so another user's private appointments never reach your phone. Events marked done or cancelled are left out.
+- **Coming up**: the **See the agenda** button opens [the agenda](#agenda), the coming 60 days day by day or by month. Below it, first each person's work and school hours today and tomorrow, such as "Alex · Work · Office" with the date and "08:00–16:30"; then the appointments and events from the computer's calendar in the coming weeks, up to 12, each with who it is for, its date and its time, or **All day**; for a child's activity, who drives there and who drives back that day, carpool turns included. Only events from accounts your user can see on the computer are sent, so another user's private appointments never reach your phone. Events marked done or cancelled are left out.
 - **Medication refills**: the active medications whose supply runs out in the next two months, or has already run out, with the date, and **renew** when no refills are left. Like the calendar, only medications your user can see are sent.
 - **Maintenance this month**: shown when something is due: each task, such as "Civic: Oil change", with **due now**, **due soon** or its date.
 - **Utilities**: shown when a fuel tank is to be ordered soon, with "order by" a date, or a meter used more than usual last month, with "unusual use in" the month and the change on last year. See [Utilities](utilities).
 - **Budgets this month**: each spending category with a budget: what was spent of the budget, such as "$412.30 of $600.00".
 
 The figures do not change until the next transfer. Tap **Send now** on the Sent tab to refresh them.
+
+## The agenda {#agenda}
+
+@index: agenda; month view; calendar on the phone; what is coming up; due dates
+
+**See the agenda**, under **Coming up** on the Summary tab, opens everything coming up in the next 60 days, today included, in one place. It only shows: nothing can be changed here. **Back**, Android's back gesture or the **Summary** tab again returns to the Summary. Under the title, **From your computer** gives the date and time of the last transfer, as on the Summary.
+
+Two chips at the top choose the view: **Agenda**, day by day, or **Month**.
+
+### Day by day {#agenda-days}
+
+Each day that has something on it gets a heading: **Today**, **Tomorrow**, then the date, such as "Friday, October 9". Days with nothing are skipped; when the 60 days are empty, the agenda says **Nothing in the next 60 days.**
+
+In each day, the items without a time come first (bills, refills, renewals and other due dates), then the others by time. A coloured bar in front of each item tells its kind, the same colours as the dots of the month view. The agenda shows:
+
+- **Events**: the appointments and events of the computer's calendar, with the time or **All day**, the place, who it is for, and for a child's activity who drives there and who drives back. Events marked done or cancelled are left out.
+- **Work and school**: each person's hours that day, such as "08:00–16:30", with **Work**, **School** or **Schedule** and the place when given.
+- **Bills**: the bills due that day that are not yet paid, with the amount, or **about** an amount when it is estimated.
+- **Refills**: a medication to refill, with who it is for, and **renew the prescription** when no refills are left.
+- **Maintenance**: a task on a vehicle or another asset, such as "Civic: Oil change", on its next due date.
+- **Seasonal tasks**: the season's checklist tasks on their due date, and a repeating task already done on the date it falls due again.
+- **Renewals**: licences, policies, registrations, warranties, loan terms, card annual fees and payment due dates, claims to send, tax instalments, maturities and inspections, each with what is to be done, such as "registration" or "payment due". Policy numbers and plates are not sent to the phone.
+- **Fuel orders**: the date to order fuel for a tank, from its expected level.
+- **Your phone's calendars**: the items of the calendars you bring in (see below), with their calendar's name and the bar in that calendar's colour.
+
+What is overdue (a refill, a maintenance task, a seasonal task or a fuel order whose date has passed) shows under **Today**, marked **overdue**; a maintenance task due by distance or hours rather than a date shows there too, with **due now** or **due soon**. Bills and events of past days are left out.
+
+Like the Summary, the agenda shows only what your user can see on the computer: another user's private appointments, hours, vehicles and bills never reach your phone. It changes at the next transfer.
+
+### The month view {#agenda-month}
+
+**Month** shows the current month as a calendar, the weeks starting on the usual day for the language and region. Each day of the 60 days shows up to four coloured dots, one for each kind of item it has; the colours are explained under the calendar. Today is circled. Days before today and after the 60th day are greyed.
+
+- **‹** and **›**: the previous and the next month, from the current month to the month of the 60th day.
+- Tap a day to go to it in the day-by-day view; a day with nothing on it goes to the next day that has something.
+
+### Your phone's calendars in the agenda {#agenda-phone-calendars}
+
+@index: phone calendar in agenda; Google Calendar in agenda
+
+While [Calendars on this phone](#phone-calendars) is on and calendar access is allowed, the agenda also shows the items of the calendars you ticked there, for the next 60 days whatever the number of days you chose to send. They are read from the phone's calendars each time the agenda opens, only to show them here: the agenda sends nothing to the computer and writes nothing to your calendars. An all-day item spanning several days shows on each of them; an item that began yesterday and is still going shows under **Today** as **continued**.
 
 ## The Contacts tab {#contacts-tab}
 
@@ -552,7 +593,7 @@ Shown when paired. Brings the calendars this phone already shows (Google, Outloo
 - **Mark single items**: the coming items of the ticked calendars. Each can be **As its calendar**, **Private**, **Busy only** or **Shared**; the choice applies to every date of a repeating item.
 - **Done** goes back to Settings.
 
-Only the ticked calendars are read, for the days chosen: each item's title, place, start and end, never its description, guests or reminders. They go only to your paired computer, encrypted like your captures, over Wi-Fi, through the transfer folder or in a shared file. A calendar is sent whole when it changed since the last transfer; nothing is written to your calendars. If the computer could not store one, the reason shows under the title and the phone tries again at the next transfer. See [Calendars from phones and files](calendar-sync).
+Only the ticked calendars are read, for the days chosen: each item's title, place, start and end, never its description, guests or reminders. They go only to your paired computer, encrypted like your captures, over Wi-Fi, through the transfer folder or in a shared file. A calendar is sent whole when it changed since the last transfer; nothing is written to your calendars. If the computer could not store one, the reason shows under the title and the phone tries again at the next transfer. See [Calendars from phones and files](calendar-sync). The ticked calendars also show in [the agenda](#agenda-phone-calendars), read on the phone only.
 
 ### Change PIN {#change-pin}
 
