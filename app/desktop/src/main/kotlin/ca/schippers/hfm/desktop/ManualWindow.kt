@@ -417,13 +417,15 @@ private fun BlockView(state: AppState, block: Manual.Block, linkColor: Color, on
 
 /**
  * A picture of the app with its caption below. It fills the page's width but never grows past its
- * own size (one picture pixel per screen pixel), and a thin outline sets the light picture apart in
- * dark mode. Screen readers read the caption once, as the picture's description.
+ * own size (one picture pixel per screen pixel), and a thin outline sets it apart from the page.
+ * In dark colours it shows the picture taken in dark colours when there is one (the phone's are
+ * light only). Screen readers read the caption once, as the picture's description.
  */
 @Composable
 private fun ManualPicture(state: AppState, block: Manual.Block.Image) {
-    val bitmap = remember(state.language, block.path) {
-        Manual.image(state.language, block.path)?.let { bytes -> runCatching { org.jetbrains.skia.Image.makeFromEncoded(bytes).toComposeImageBitmap() }.getOrNull() }
+    val dark = LocalDarkTheme.current
+    val bitmap = remember(state.language, block.path, dark) {
+        Manual.image(state.language, block.path, dark)?.let { bytes -> runCatching { org.jetbrains.skia.Image.makeFromEncoded(bytes).toComposeImageBitmap() }.getOrNull() }
     }
     val density = LocalDensity.current
     Column(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
