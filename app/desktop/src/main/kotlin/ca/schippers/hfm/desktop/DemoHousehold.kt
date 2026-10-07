@@ -331,7 +331,7 @@ object DemoHousehold {
                 mandateLocation = l("Mandat de protection, chez la notaire", "Power of attorney for personal care, filing cabinet"),
                 safeDepositBox = l("Desjardins Sainte-Foy, coffret 214", "TD Bank Sparks St., box 214"),
                 safeDepositKeys = l("Tiroir du bureau, enveloppe bleue", "Desk drawer, blue envelope"),
-                digitalAccounts = l("Trousse d'urgence du gestionnaire de mots de passe, dans le coffret", "Password manager's emergency kit, in the safe deposit box"),
+                digitalAccounts = l("Trousse d’urgence du gestionnaire de mots de passe, dans le coffret", "Password manager's emergency kit, in the safe deposit box"),
                 organDonor = true,
                 contacts = listOf(
                     EstateContact(if (english) ContactRole.EXECUTOR else ContactRole.LIQUIDATOR, "Sam"),
@@ -391,9 +391,9 @@ object DemoHousehold {
         // GOAL-01 to GOAL-04: three goals sharing the savings account.
         val goals = books.goals
         goals.save(SavingsGoal("", savings.id, l("Voyage en Gaspésie", "Trip to Newfoundland"), cad("4000"), LocalDate(today.year + 1, 7, 1), cad("250"), Recurrence.MONTHLY, start.plus(DatePeriod(days = 15))))
-        val car = goals.save(SavingsGoal("", savings.id, l("Remplacement de l'auto", "Replacement car"), cad("15000"), LocalDate(today.year + 3, 6, 1), cad("200"), Recurrence(Frequency.SEMI_MONTHLY, secondDay = 0), LocalDate(start.year, start.month, 15)))
+        val car = goals.save(SavingsGoal("", savings.id, l("Remplacement de l’auto", "Replacement car"), cad("15000"), LocalDate(today.year + 3, 6, 1), cad("200"), Recurrence(Frequency.SEMI_MONTHLY, secondDay = 0), LocalDate(start.year, start.month, 15)))
         goals.setAside(car.id, start, cad("3000"), l("Départ", "Starting amount"))
-        val emergency = goals.save(SavingsGoal("", savings.id, l("Fonds d'urgence", "Emergency fund"), cad("6000")))
+        val emergency = goals.save(SavingsGoal("", savings.id, l("Fonds d’urgence", "Emergency fund"), cad("6000")))
         goals.setAside(emergency.id, start, cad("2500"))
         goals.postScheduled(today)
         val firstMonth = LocalDate(start.year, start.month, 1)
@@ -534,11 +534,11 @@ object DemoHousehold {
         }
         val safe = books.accounts.create(AccountDraft(group, l("Métaux précieux", "Precious metals"), AccountType.PRECIOUS_METALS, Currency.CAD, cad("0"), LocalDate(2024, 1, 1), institution.id, ownerMemberIds = setOf(alex.id, sam.id)))
         books.metals.save(
-            MetalItem("", safe.id, Metal.GOLD, MetalForm.COIN, l("Feuille d'érable 1 oz", "Maple Leaf 1 oz"), BigDecimal.ONE, WeightUnit.OZT, BigDecimal("0.9999"), 3, "", l("Monnaie royale canadienne", "Royal Canadian Mint"),
+            MetalItem("", safe.id, Metal.GOLD, MetalForm.COIN, l("Feuille d’érable 1 oz", "Maple Leaf 1 oz"), BigDecimal.ONE, WeightUnit.OZT, BigDecimal("0.9999"), 3, "", l("Monnaie royale canadienne", "Royal Canadian Mint"),
                 LocalDate(2024, 5, 14), cad("9480"), BigDecimal("3"), MetalStorage.BANK_BOX, l("Desjardins, coffret 112", "TD, safe deposit box 112"), true, l("Assurance habitation, avenant de 15 000 $", "Home insurance rider, $15,000")),
         )
         books.metals.save(
-            MetalItem("", safe.id, Metal.SILVER, MetalForm.ROUND, l("Rondelles d'argent 1 oz", "Silver rounds 1 oz"), BigDecimal.ONE, WeightUnit.OZT, BigDecimal("0.999"), 25, dealer = "Silver Gold Bull",
+            MetalItem("", safe.id, Metal.SILVER, MetalForm.ROUND, l("Rondelles d’argent 1 oz", "Silver rounds 1 oz"), BigDecimal.ONE, WeightUnit.OZT, BigDecimal("0.999"), 25, dealer = "Silver Gold Bull",
                 purchaseDate = LocalDate(2025, 2, 3), cost = cad("1060"), storage = MetalStorage.HOME_SAFE, storageDetail = l("Coffre du sous-sol", "Basement safe")),
         )
     }
@@ -666,7 +666,7 @@ object DemoHousehold {
         val monday = today.minus(DatePeriod(days = today.dayOfWeek.ordinal))
         books.schedules.save(
             ca.schippers.hfm.books.PersonSchedule(
-                "", shared, sam.id, ca.schippers.hfm.books.ScheduleKind.WORK, l("Hôpital de l'Enfant-Jésus", "Civic Hospital"), monday.minus(DatePeriod(days = 28)), null, 2, false, null,
+                "", shared, sam.id, ca.schippers.hfm.books.ScheduleKind.WORK, l("Hôpital de l’Enfant-Jésus", "Civic Hospital"), monday.minus(DatePeriod(days = 28)), null, 2, false, null,
                 listOf(1, 2, 5).map { ca.schippers.hfm.books.ScheduleShift(0, dow(it), t(7), t(19)) } +
                     listOf(3, 4).map { ca.schippers.hfm.books.ScheduleShift(1, dow(it), t(19), t(7)) } +
                     ca.schippers.hfm.books.ScheduleShift(1, dow(6), t(7), t(19)),
@@ -702,7 +702,7 @@ object DemoHousehold {
                 listOf(
                     item("101", 2, "10:00", "11:30", l("Planification trimestrielle", "Quarterly planning"), l("Salle 4", "Room 4")),
                     item("102", 3, "14:00", "15:00", l("Appel client", "Client call")),
-                    item("103", 4, "12:00", "13:00", l("Dîner d'équipe", "Team lunch"), l("Café du Monde", "The Wellington"), CalendarVisibility.SHARED),
+                    item("103", 4, "12:00", "13:00", l("Dîner d’équipe", "Team lunch"), l("Café du Monde", "The Wellington"), CalendarVisibility.SHARED),
                     item("104", 5, "07:30", "08:15", l("Physiothérapie", "Physio"), vis = CalendarVisibility.PRIVATE),
                     item("105", 10, "09:00", "16:00", l("Formation", "Training day")),
                 ),
@@ -732,7 +732,7 @@ object DemoHousehold {
         val dentist = health.saveProvider(HealthProvider("", shared, l("Clinique dentaire Saint-Roch", "Elgin Street Dental"), ProviderKind.DENTIST, l(l("418-555-0177", "613-555-0177"), "613-555-0177"), null, null, false))
 
         val calendar = books.calendar
-        calendar.create(EventDraft(shared, l("Pose des pneus d'hiver", "Winter tires on"), EventCategory.VEHICLE, day(1), LocalTime(9, 30), 60, l("Garage Tremblay", "Main Street Auto"), reminderMinutes = listOf(1440, 60)))
+        calendar.create(EventDraft(shared, l("Pose des pneus d’hiver", "Winter tires on"), EventCategory.VEHICLE, day(1), LocalTime(9, 30), 60, l("Garage Tremblay", "Main Street Auto"), reminderMinutes = listOf(1440, 60)))
         calendar.create(EventDraft(shared, l("Rencontre conseillère Desjardins", "Meeting with the TD advisor"), EventCategory.FINANCIAL, day(6), LocalTime(14, 0), 45, l("Caisse Desjardins", "TD branch, Bank St"), accountId = chequing.id))
         calendar.create(EventDraft(shared, l("Nettoyage dentaire", "Dental cleaning"), EventCategory.MEDICAL, day(9), LocalTime(10, 15), 60, memberId = lea.id, providerId = dentist.id))
         calendar.create(EventDraft(private, l("Bilan annuel", "Annual physical"), EventCategory.MEDICAL, day(14), LocalTime(8, 40), 30, memberId = alex.id, providerId = doctor.id))
@@ -767,7 +767,7 @@ object DemoHousehold {
         health.saveMedication(Medication("", shared, sam.id, l("Salbutamol (inhalateur)", "Salbutamol (inhaler)"), "100 mcg", l("Au besoin", "As needed"), doctor.id, pharmacy.id, "RX-310077", day(-700), null, 90, 0, day(-60), 7, true, null))
         health.saveCondition(HealthCondition("", private, alex.id, l("Hypercholestérolémie", "High cholesterol"), day(-420), ConditionStatus.MANAGED, doctor.id, null))
         health.saveCondition(HealthCondition("", shared, sam.id, l("Asthme", "Asthma"), LocalDate(2009, 4, 1), ConditionStatus.MANAGED, doctor.id, null))
-        health.saveAllergy(Allergy("", shared, lea.id, l("Arachides", "Peanuts"), l("Urticaire", "Hives"), Severity.SEVERE, l("Épipen dans le sac d'école", "EpiPen in the school bag")))
+        health.saveAllergy(Allergy("", shared, lea.id, l("Arachides", "Peanuts"), l("Urticaire", "Hives"), Severity.SEVERE, l("Épipen dans le sac d’école", "EpiPen in the school bag")))
         health.saveTest(HealthTest("", private, alex.id, l("Bilan lipidique (LDL)", "Lipid panel (LDL)"), day(-35), l("2,4", "2.4"), "mmol/L", l("< 3,5", "< 3.5"), doctor.id, day(150), null))
         health.saveImmunization(Immunization("", shared, lea.id, "Influenza", day(-340), pharmacy.id, day(25), null))
 
@@ -782,7 +782,7 @@ object DemoHousehold {
             ),
         )
         val samPlan = med.savePlan(
-            MedPlan("", shared, MedPlanKind.GROUP_HEALTH, l("Régime d'employeur (Sam)", "Employer plan (Sam)"), l("Beneva", "Canada Life"), "77105", "S-2231", sam.id, people = listOf(PlanPerson(sam.id, 1), PlanPerson(alex.id, 2), PlanPerson(lea.id, 2))),
+            MedPlan("", shared, MedPlanKind.GROUP_HEALTH, l("Régime d’employeur (Sam)", "Employer plan (Sam)"), l("Beneva", "Canada Life"), "77105", "S-2231", sam.id, people = listOf(PlanPerson(sam.id, 1), PlanPerson(alex.id, 2), PlanPerson(lea.id, 2))),
         )
         listOf(
             MedCoverage("", alexPlan.id, MedService.PRESCRIPTION, pct("80")),
@@ -829,7 +829,7 @@ object DemoHousehold {
         books.contractors.saveJob(roofer, ContractorJob("", day(-120), l("Nouveau toit", "New roof"), cad("14200.00"), 5))
         val plumber = books.contractors.save(Contractor("", group, l("Plomberie Roy", "Rideau Plumbing"), l("Plombier", "Plumber"), l("418-555-0177", "613-555-0177")))
         books.contractors.saveJob(plumber, ContractorJob("", day(-300), l("Chauffe-eau", "Water heater"), cad("1850.00"), 4))
-        books.contractors.saveJob(plumber, ContractorJob("", day(-40), l("Fuite sous l'évier", "Leak under the sink"), cad("240.00"), 3))
+        books.contractors.saveJob(plumber, ContractorJob("", day(-40), l("Fuite sous l’évier", "Leak under the sink"), cad("240.00"), 3))
         val house = books.assets.list().first { it.kind == AssetKind.HOME }
         val roof = books.homeProjects.save(HomeProject("", group, l("Nouveau toit", "New roof"), ProjectStatus.DONE, Currency.CAD, house.id, day(-130), day(-118), cad("15000.00")))
         books.homeProjects.addCost(roof, day(-130), l("Dépôt", "Deposit"), cad("4000.00"), roofer.id)
@@ -924,7 +924,7 @@ object DemoHousehold {
             books.workHours.save(WorkEntry("", lavoie.id, day(n), minutes, website.id, l("Pages du site", "Site pages"), startTime = start))
         }
         books.workHours.save(WorkEntry("", lavoie.id, day(-3), 120, design.id, l("Logo, retouches", "Logo touch-ups")))
-        books.workHours.save(WorkEntry("", cafe.id, day(-4), 180, cafe.tasks.single().id, l("Menu d'automne", "Fall menu"), startTime = "10:00"))
+        books.workHours.save(WorkEntry("", cafe.id, day(-4), 180, cafe.tasks.single().id, l("Menu d’automne", "Fall menu"), startTime = "10:00"))
 
         // CHO-01: the child's chores; those done before the last allowance day were paid with it.
         fun chore(name: String, amount: String?, points: Int?) = books.chores.save(Chore("", group, lea.id, name, Currency.CAD, amount?.let(::cad), points))
@@ -979,7 +979,7 @@ object DemoHousehold {
                 valueMethod = ValueMethod.DEPRECIATION, depreciationYears = 12,
             ),
         )
-        assets.saveWarranty(AssetWarranty("", group, fridge.id, AssetWarrantyKind.MANUFACTURER, "LG Canada", l("Pièces et main-d'oeuvre", "Parts and labour"), day(-45), day(320), phone = "1-888-542-2623"))
+        assets.saveWarranty(AssetWarranty("", group, fridge.id, AssetWarrantyKind.MANUFACTURER, "LG Canada", l("Pièces et main-d’oeuvre", "Parts and labour"), day(-45), day(320), phone = "1-888-542-2623"))
         assets.saveWarranty(AssetWarranty("", group, fridge.id, AssetWarrantyKind.CARD_EXTENDED, l("Visa Desjardins", "TD Visa"), cardAccountId = visa.id))
         val tv = assets.save(Asset("", group, AssetKind.ELECTRONICS, l("Téléviseur 65 po", "65-inch TV"), house.id, "Samsung", "QN65Q80", purchaseDate = day(-700), purchasePrice = cad("1499.99"), location = l("Salon", "Living room")))
         assets.saveWarranty(AssetWarranty("", group, tv.id, AssetWarrantyKind.EXTENDED, l("Best Buy (plan de protection)", "Best Buy (protection plan)"), startDate = day(-700), endDate = day(30)))

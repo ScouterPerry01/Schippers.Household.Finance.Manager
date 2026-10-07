@@ -112,7 +112,9 @@ object Agenda {
                 val d = date(r.dueDate) ?: continue
                 if (!d.isAfter(last)) out += AgendaItem.Refill(maxOf(d, today), r, d.isBefore(today))
             }
-            for (m in (reference.maintenance + reference.maintenanceAhead).distinctBy { it.taskId }) {
+            // A task in this season's checklist is shown once, as a seasonal task.
+            val seasonalIds = reference.seasonal?.tasks.orEmpty().map { it.taskId }.toSet()
+            for (m in (reference.maintenance + reference.maintenanceAhead).distinctBy { it.taskId }.filter { it.taskId !in seasonalIds }) {
                 val d = date(m.dueDate)
                 when {
                     d == null -> if (m.state == "DUE" || m.state == "SOON") out += AgendaItem.Maintenance(today, m, true)
