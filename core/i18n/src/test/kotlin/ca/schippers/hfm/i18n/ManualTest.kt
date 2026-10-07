@@ -180,7 +180,8 @@ class ManualTest {
     private companion object {
         /** The pictures with no dark twin besides the phone's: the one of the dark colours, dark already. */
         val LIGHT_ONLY = setOf("display-dark.png")
-        const val MAX_BYTES = 8L * 1024 * 1024
+        // Light and dark together are about 4 MB each per language; 12 MB leaves room for new screens (raised from 8 MB on 2026-10-07).
+        const val MAX_BYTES = 12L * 1024 * 1024
     }
 
     private fun blockText(b: Manual.Block): String = when (b) {
