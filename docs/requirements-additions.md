@@ -242,3 +242,14 @@ Source: `docs/Bill-Modifications.md` (the owner's list).
 | BILL-18 | A captured document of kind Bill that matches no bill offers to create one, prefilled from what was read (payee, account number, amount, due date, a classification guessed from the payee), or to attach it to an existing bill; the statement is recorded either way. | Should |
 | BILL-19 | Reading a bill (on the device and with AI reading) fills the account number, statement number, issued date, due date, amount and, for utilities, the meter readings and their dates when the bill shows them. | Should |
 | BILL-20 | A Business bill names the person it belongs to; its payments count as that person's business expenses, with the sales taxes paid on them, in the year-end package. | Should |
+
+## Bills: amounts paid, instalments, column headings (owner's request, 2026-10-07)
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| BILL-21 | The To pay and All bills lists have a heading row: due date, bill, amount due, to pay, outstanding, actions. To pay starts at the amount still due and can be changed; outstanding is the amount due less what has been paid. | Should |
+| BILL-22 | A bill can be paid in part: the rest stays due on the same occurrence, shown as outstanding, with reminders, until paid in full; each payment is recorded and linked. | Should |
+| BILL-23 | A statement can list instalments on set dates (date and amount each), for a yearly tax bill or any bill paid in instalments; each instalment is a due date of the bill with reminders. Home and Business alike. | Should |
+| BILL-24 | Instalments roll over: until next year's statement is entered, next year's instalments are proposed on the same dates (adjusted to business days) with this year's amounts, marked as estimated. | Should |
+| BILL-25 | Reading a tax bill (on the device and with AI reading) finds its instalment dates and amounts when printed. | Should |
+| NAV-04 | Every list or table with columns has a heading row naming each column; the column of buttons is headed Actions. | Should |
