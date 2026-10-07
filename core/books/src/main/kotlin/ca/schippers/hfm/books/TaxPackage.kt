@@ -141,16 +141,19 @@ class TaxPackageService internal constructor(private val books: Books) {
         val accounts = books.accounts.all(includeClosed = true).associateBy { it.id }
         for (g in books.groups()) {
             val rows = splits[g.id].orEmpty()
+            // BILL-20: payments of Business bills are their person's business expenses, however they were categorized.
+            val billPayments = books.ledger(g).ledgerQueries.businessBillPayments().executeAsList().associate { it.txn_id to it.member_id }
             for (r in rows) {
                 val account = accounts[r.account_id] ?: continue
                 if (account.type.isRegistered) continue
-                val member = r.member_id ?: account.ownerMemberIds.singleOrNull()
+                val billPayment = r.txn_id in billPayments && r.amount_minor < 0
+                val member = (if (billPayment) billPayments[r.txn_id] else null) ?: r.member_id ?: account.ownerMemberIds.singleOrNull()
                 val amount = toCad(Money.ofMinor(r.amount_minor, account.currency), LocalDate.parse(r.date))
                 val payee = r.payee_text
                 val payroll = r.txn_amount_minor > 0
                 val key = r.category_id?.let(keyOf::get)
                 val flag = r.tax_flag?.let(TaxFlag::valueOf) ?: r.category_id?.let(flagOf::get)
-                val item = when (key) {
+                val found = when (key) {
                     "income.employment", "income.employment.salary", "income.employment.bonus" -> PackageItem.EMPLOYMENT_INCOME
                     "income.pension.oas" -> PackageItem.OAS_PENSION
                     "income.pension.qpp_cpp" -> PackageItem.CPP_QPP_BENEFITS
@@ -173,7 +176,8 @@ class TaxPackageService internal constructor(private val books: Books) {
                         TaxFlag.BUSINESS -> if (amount.isPositive) PackageItem.BUSINESS_INCOME else PackageItem.BUSINESS_EXPENSES
                         else -> null
                     }
-                } ?: continue
+                }
+                val item = (if (billPayment && (found == null || found == PackageItem.BUSINESS_EXPENSES)) PackageItem.BUSINESS_EXPENSES else found) ?: continue
                 // Income is positive in the books, money paid out negative; the package shows both as positive amounts.
                 val shown = if (item.section == PackageSection.EMPLOYMENT && item != PackageItem.EMPLOYMENT_INCOME ||
                     item.section == PackageSection.DEDUCTIONS || item.section == PackageSection.CREDITS || item.section == PackageSection.PAYMENTS ||
@@ -183,7 +187,7 @@ class TaxPackageService internal constructor(private val books: Books) {
             }
             // TX-04: sales taxes paid on self-employment expenses, for input tax credits when registered.
             val business = rows.filter { r -> (r.tax_flag?.let(TaxFlag::valueOf) ?: r.category_id?.let(flagOf::get)) == TaxFlag.BUSINESS && r.amount_minor < 0 }
-                .associate { it.txn_id to it.member_id }
+                .associate { it.txn_id to it.member_id } + billPayments
             for (t in books.ledger(g).salesTaxQueries.salesTaxesBetween(LocalDate(year, 1, 1).toString(), LocalDate(year, 12, 31).toString()).executeAsList()) {
                 if (t.id !in business) continue
                 val account = accounts[t.account_id] ?: continue

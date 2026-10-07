@@ -7,8 +7,10 @@ import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.AccountKind
 import ca.schippers.hfm.domain.Ids
 import ca.schippers.hfm.domain.PermissionLevel
+import ca.schippers.hfm.domain.TaxFlag
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
+import ca.schippers.hfm.ocr.MeterReadings
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
@@ -30,7 +32,8 @@ data class Bill(
     val kind: BillKind,
     val name: String,
     val payeeName: String?,
-    val payeeAccountNumber: String?,
+    /** BILL-15: the account number with the company, masked ("•••• 6789"); the full one through [BillService.revealAccountNumber]. */
+    val payeeAccountMasked: String?,
     val amount: Money,
     val amountKind: AmountKind,
     val accountId: String,
@@ -46,6 +49,12 @@ data class Bill(
     val cancelBy: LocalDate?,
     val notes: String?,
     val active: Boolean,
+    /** BILL-13: home or business, and the category and subcategory keys of the bill lists. */
+    val type: BillType? = null,
+    val categoryKey: String? = null,
+    val subcategoryKey: String? = null,
+    /** BILL-20: the person a Business bill belongs to. */
+    val memberId: String? = null,
 )
 
 data class BillDraft(
@@ -66,6 +75,38 @@ data class BillDraft(
     val isSubscription: Boolean = false,
     val renewalDate: LocalDate? = null,
     val cancelBy: LocalDate? = null,
+    val notes: String? = null,
+    val type: BillType? = null,
+    val categoryKey: String? = null,
+    val subcategoryKey: String? = null,
+    val memberId: String? = null,
+)
+
+/** BILL-16, BILL-17: a statement received for a bill, with a utility's meter readings. */
+data class BillStatement(
+    val id: String,
+    val billId: String,
+    val statementNumber: String?,
+    val issuedDate: LocalDate?,
+    val dueDate: LocalDate,
+    val amount: Money?,
+    val documentId: String?,
+    val readings: MeterReadings,
+    /** The meter its readings were added to. */
+    val meterId: String?,
+    val notes: String?,
+)
+
+/** What is recorded for a statement (BILL-16, BILL-17). */
+data class StatementDraft(
+    val dueDate: LocalDate,
+    val amount: Money? = null,
+    val statementNumber: String? = null,
+    val issuedDate: LocalDate? = null,
+    val documentId: String? = null,
+    val readings: MeterReadings = MeterReadings(),
+    /** The meter to add the readings to; by default the meter linked to the bill. */
+    val meterId: String? = null,
     val notes: String? = null,
 )
 
@@ -146,38 +187,61 @@ class BillService internal constructor(private val books: Books) {
         validate(draft, account)
         val id = Ids.newId()
         val now = books.now()
+        // BILL-13: a subcategory's spending category, when none was chosen.
+        val category = draft.categoryId ?: draft.subcategoryKey?.takeIf { draft.kind == BillKind.BILL }?.let { books.billLists.spendingCategory(it) }
         with(draft) {
             books.ledger(group).ledgerQueries.insertBill(
                 id, kind.name, name.trim(), payeeName?.trim()?.ifEmpty { null }, payeeAccountNumber?.trim()?.ifEmpty { null },
-                amount.minorUnits, amountKind.name, accountId, transferAccountId, paymentMethod.name, categoryId,
+                amount.minorUnits, amountKind.name, accountId, transferAccountId, paymentMethod.name, category,
                 recurrence.encode(), startDate.toString(), endDate?.toString(), reminderDays.sorted().joinToString(","),
                 if (isSubscription) 1 else 0, renewalDate?.toString(), cancelBy?.toString(), notes, 1, now, now,
+                type?.name, categoryKey, subcategoryKey, memberId.takeIf { type == BillType.BUSINESS },
             )
         }
         books.session.audit("CREATE", "bill", id)
         return get(id)
     }
 
-    fun update(bill: Bill) {
+    /**
+     * Saves a bill. BILL-15: the account number with the company is kept unless [newAccountNumber]
+     * is given (blank removes it), since [Bill] only holds it masked.
+     */
+    fun update(bill: Bill, newAccountNumber: String? = null) {
         val (group, existing) = locate(bill.id)
         books.require(group, PermissionLevel.EDIT)
         validate(bill.accountId == existing.accountId, "error.billAccountFixed")
+        val q = books.ledger(group).ledgerQueries
+        val number = if (newAccountNumber != null) newAccountNumber.trim().ifEmpty { null } else q.billById(bill.id).executeAsOne().payee_account_number
         val draft = BillDraft(
-            bill.kind, bill.name, bill.amount, bill.accountId, bill.recurrence, bill.startDate, bill.payeeName, bill.payeeAccountNumber,
+            bill.kind, bill.name, bill.amount, bill.accountId, bill.recurrence, bill.startDate, bill.payeeName, number,
             bill.amountKind, bill.transferAccountId, bill.paymentMethod, bill.categoryId, bill.endDate, bill.reminderDays,
-            bill.isSubscription, bill.renewalDate, bill.cancelBy, bill.notes,
+            bill.isSubscription, bill.renewalDate, bill.cancelBy, bill.notes, bill.type, bill.categoryKey, bill.subcategoryKey, bill.memberId,
         )
         validate(draft, books.accounts.get(bill.accountId))
         with(bill) {
-            books.ledger(group).ledgerQueries.updateBill(
-                kind.name, name.trim(), payeeName?.trim()?.ifEmpty { null }, payeeAccountNumber?.trim()?.ifEmpty { null },
+            q.updateBill(
+                kind.name, name.trim(), payeeName?.trim()?.ifEmpty { null }, number,
                 amount.minorUnits, amountKind.name, accountId, transferAccountId, paymentMethod.name, categoryId,
                 recurrence.encode(), startDate.toString(), endDate?.toString(), reminderDays.sorted().joinToString(","),
-                if (isSubscription) 1 else 0, renewalDate?.toString(), cancelBy?.toString(), notes, if (active) 1 else 0, books.now(), id,
+                if (isSubscription) 1 else 0, renewalDate?.toString(), cancelBy?.toString(), notes, if (active) 1 else 0, books.now(),
+                type?.name, categoryKey, subcategoryKey, memberId.takeIf { type == BillType.BUSINESS }, id,
             )
         }
         books.session.audit("UPDATE", "bill", bill.id)
     }
+
+    /** BILL-15: the full account number with the company, only after the user re-enters their password (SEC-04). */
+    fun revealAccountNumber(billId: String, password: CharArray): String? {
+        val (group, _) = locate(billId)
+        books.revealGuard.check(password, "bill", billId)
+        books.session.audit("REVEAL", "bill", billId)
+        return books.ledger(group).ledgerQueries.billById(billId).executeAsOne().payee_account_number
+    }
+
+    /** BILL-03: the bills' full account numbers, for matching a captured bill; never shown. */
+    internal fun accountNumbers(): Map<String, String> = books.groups().flatMap { g ->
+        books.ledger(g).ledgerQueries.bills().executeAsList().mapNotNull { r -> r.payee_account_number?.let { r.id to it } }
+    }.toMap()
 
     fun delete(billId: String) {
         val (group, _) = locate(billId)
@@ -194,6 +258,17 @@ class BillService internal constructor(private val books: Books) {
         validate(draft.reminderDays.all { it in 0..365 }, "error.reminderDays")
         if (draft.kind == BillKind.TRANSFER) {
             validate(draft.transferAccountId != null && draft.transferAccountId != draft.accountId, "error.transferSameAccount")
+        }
+        // BILL-13: a category of the bill's type, and a subcategory of that category.
+        if (draft.categoryKey != null || draft.subcategoryKey != null) {
+            val lists = books.billLists.lists()
+            val category = lists.category(draft.categoryKey)
+            validate(category != null && category.type == draft.type, "error.billClassification")
+            validate(draft.subcategoryKey == null || lists.subcategory(draft.subcategoryKey)?.categoryKey == draft.categoryKey, "error.billClassification")
+        }
+        // BILL-20: a Business bill names the person whose business it is.
+        if (draft.type == BillType.BUSINESS) {
+            validate(draft.memberId != null && books.members.list(includeArchived = true).any { it.id == draft.memberId }, "error.billPerson")
         }
     }
 
@@ -213,7 +288,9 @@ class BillService internal constructor(private val books: Books) {
     private fun occurrencesOf(bill: Bill, stored: List<OccurrenceRow>, from: LocalDate, to: LocalDate): List<Occurrence> {
         val byDate = stored.associateBy { LocalDate.parse(it.due_date) }
         val expected = expectedAmount(bill, stored)
-        val dates = (bill.recurrence.occurrences(bill.startDate, from, to, bill.endDate) + byDate.keys.filter { it in from..to }).toSortedSet()
+        // BILL-16: a scheduled due date a statement moved is due on the statement's date instead.
+        val moved = stored.mapNotNull { it.scheduled_date?.let(LocalDate::parse) }.filter { it !in byDate }.toSet()
+        val dates = (bill.recurrence.occurrences(bill.startDate, from, to, bill.endDate).filter { it !in moved } + byDate.keys.filter { it in from..to }).toSortedSet()
         return dates.map { date ->
             val row = byDate[date]
             Occurrence(
@@ -281,12 +358,19 @@ class BillService internal constructor(private val books: Books) {
             ).first.id
             else -> {
                 val signed = if (bill.kind == BillKind.INCOME) paid else -paid
-                books.transactions.create(
-                    TransactionDraft(
-                        bill.accountId, paidDate, signed, bill.payeeName ?: bill.name,
-                        listOfNotNull(bill.categoryId?.let { SplitDraft(it, signed) }), memo = bill.name,
-                    ),
-                ).id
+                // BILL-13: the subcategory's spending category when the bill has none of its own.
+                val category = bill.categoryId ?: bill.subcategoryKey?.let { books.billLists.spendingCategory(it) }
+                // BILL-20: a Business bill's payment is that person's business expense.
+                val business = bill.type == BillType.BUSINESS && bill.kind == BillKind.BILL
+                val splits = when {
+                    business -> listOf(SplitDraft(category, signed, memberId = bill.memberId, taxFlag = TaxFlag.BUSINESS))
+                    else -> listOfNotNull(category?.let { SplitDraft(it, signed) })
+                }
+                val txn = books.transactions.create(
+                    TransactionDraft(bill.accountId, paidDate, signed, bill.payeeName ?: bill.name, splits, memo = bill.name, memberId = bill.memberId),
+                )
+                if (business) businessSalesTaxes(txn, stored?.document_id)
+                txn.id
             }
         }
         upsert(group, billId, dueDate, paid, OccurrenceStatus.PAID, txnId, paidDate.toString())
@@ -326,6 +410,107 @@ class BillService internal constructor(private val books: Books) {
         val existing = storedOccurrence(group, billId, dueDate)?.takeIf { it.status == OccurrenceStatus.SKIPPED.name } ?: return
         upsert(group, billId, dueDate, existing.amount_minor?.let { Money.ofMinor(it, bill.amount.currency) }, OccurrenceStatus.DUE, null, null)
     }
+
+    // --- Statements (BILL-16, BILL-17) ---------------------------------------------------------------
+
+    /** The statements received for a bill, the latest due date first. */
+    fun statements(billId: String): List<BillStatement> {
+        val (group, bill) = locate(billId)
+        return books.ledger(group).ledgerQueries.billStatements(billId).executeAsList().map { it.toStatement(bill.amount.currency) }
+    }
+
+    /**
+     * BILL-16: records a statement (or saves [statementId] again). Its due date becomes the due date
+     * of the bill's nearest unpaid due date (within the bill match window of Rates and rules), with
+     * its amount; when none is near, it is a due date of its own. BILL-17: a utility's readings are
+     * added to the bill's meter (or [StatementDraft.meterId]) unless the meter already has a reading
+     * on that date.
+     */
+    fun recordStatement(billId: String, draft: StatementDraft, statementId: String? = null): BillStatement {
+        val (group, bill) = locate(billId)
+        books.require(group, PermissionLevel.EDIT)
+        draft.amount?.let { validate(it.currency == bill.amount.currency && !it.isNegative, "error.billAmountPositive") }
+        val q = books.ledger(group).ledgerQueries
+        val before = statementId?.let { id -> q.billStatements(billId).executeAsList().firstOrNull { it.id == id } }
+        placeDueDate(group, bill, draft.dueDate, draft.amount, draft.documentId, before?.due_date?.let(LocalDate::parse))
+        val meter = draft.meterId?.let { id -> books.utilities.meters(true).firstOrNull { it.id == id } }
+            ?: books.utilities.meters().firstOrNull { it.billId == billId }
+        val r = draft.readings
+        if (meter != null) {
+            val label = listOfNotNull(bill.name, draft.statementNumber).joinToString(" ")
+            for ((value, date) in listOf(r.previous to r.previousDate, r.current to r.currentDate)) {
+                if (value == null || date == null) continue
+                if (books.utilities.meter(meter.id).readings.none { it.date == date }) books.utilities.addReading(meter.id, date, value, notes = label)
+            }
+        }
+        val id = statementId ?: Ids.newId()
+        q.upsertBillStatement(
+            id, billId, draft.statementNumber?.trim()?.ifEmpty { null }, draft.issuedDate?.toString(), draft.dueDate.toString(), draft.amount?.minorUnits,
+            draft.documentId ?: before?.document_id, r.previous?.toPlainString(), r.previousDate?.toString(), r.current?.toPlainString(), r.currentDate?.toString(),
+            (r.used ?: r.usedOrComputed)?.toPlainString(), meter?.id, draft.notes?.trim()?.ifEmpty { null }, before?.created_at ?: books.now(),
+        )
+        draft.documentId?.let { books.ledger(group).ledgerQueries.linkDocument(it, DocumentEntity.BILL, billId) }
+        books.session.audit(if (before == null) "CREATE" else "UPDATE", "billStatement", id)
+        return statements(billId).first { it.id == id }
+    }
+
+    /** Deletes a statement; the due date and amount it set stay, as do readings added to a meter. */
+    fun deleteStatement(billId: String, statementId: String) {
+        val (group, _) = locate(billId)
+        books.require(group, PermissionLevel.EDIT)
+        books.ledger(group).ledgerQueries.deleteBillStatement(statementId)
+        books.session.audit("DELETE", "billStatement", statementId)
+    }
+
+    /** The due date of [statement], to mark it paid with [markPaid]; null when it no longer exists. */
+    fun occurrenceOf(statement: BillStatement): Occurrence? = occurrences(statement.dueDate, statement.dueDate, setOf(statement.billId)).firstOrNull()
+
+    /** BILL-16: puts a statement's due date in the bill's schedule (see [recordStatement]). [previous] is the date it set before. */
+    private fun placeDueDate(group: GroupInfo, bill: Bill, due: LocalDate, amount: Money?, documentId: String?, previous: LocalDate?) {
+        val q = books.ledger(group).ledgerQueries
+        val stored = q.occurrencesForBill(bill.id).executeAsList()
+        val at = stored.firstOrNull { it.due_date == due.toString() }
+        if (at != null) {
+            if (at.status != OccurrenceStatus.PAID.name) {
+                upsert(group, bill.id, due, amount ?: at.amount_minor?.let { Money.ofMinor(it, bill.amount.currency) }, OccurrenceStatus.valueOf(at.status), at.txn_id, at.paid_date, documentId)
+            }
+            return
+        }
+        val window = LeadTimes.billMatch(due)
+        val near = occurrencesOf(bill, stored, due.minus(DatePeriod(days = window)), due.plus(DatePeriod(days = window)))
+        val nearest = previous?.let { p -> near.firstOrNull { it.dueDate == p && it.status == OccurrenceStatus.DUE } }
+            ?: near.filter { it.status != OccurrenceStatus.SKIPPED }.minByOrNull { kotlin.math.abs(it.dueDate.toEpochDays() - due.toEpochDays()) }
+        // The nearest due date was already paid: the statement belongs to it, and nothing more is due.
+        if (nearest?.status == OccurrenceStatus.PAID) return
+        val moving = nearest ?: run {
+            upsert(group, bill.id, due, amount, OccurrenceStatus.DUE, null, null, documentId)
+            return
+        }
+        val row = stored.firstOrNull { it.due_date == moving.dueDate.toString() }
+        if (row != null) q.deleteOccurrence(bill.id, row.due_date)
+        val kept = amount ?: row?.amount_minor?.let { Money.ofMinor(it, bill.amount.currency) }
+        // A one-off due date (no schedule behind it) moves without leaving a scheduled date behind.
+        val scheduled = row?.scheduled_date ?: moving.dueDate.toString().takeIf { row == null || bill.recurrence.occurrences(bill.startDate, moving.dueDate, moving.dueDate, bill.endDate).isNotEmpty() }
+        upsert(group, bill.id, due, kept, OccurrenceStatus.DUE, null, null, documentId ?: row?.document_id, scheduled)
+    }
+
+    /** BILL-20: the sales taxes the bill's document shows, on its payment, when they fit in it. */
+    private fun businessSalesTaxes(txn: Transaction, documentId: String?) {
+        val doc = documentId?.let { runCatching { books.documents.get(it) }.getOrNull() } ?: return
+        val taxes = doc.draft?.taxes.orEmpty().filter { (_, v) -> v.value.currency == txn.amount.currency && !v.value.isNegative }
+            .groupBy({ it.first }, { it.second.value }).mapValues { (_, v) -> v.reduce(Money::plus) }
+        if (taxes.isEmpty() || taxes.values.fold(Money.zero(txn.amount.currency), Money::plus).minorUnits > kotlin.math.abs(txn.amount.minorUnits)) return
+        books.transactions.setSalesTaxes(txn.id, taxes)
+    }
+
+    private fun ca.schippers.hfm.data.ledger.Bill_statement.toStatement(currency: Currency) = BillStatement(
+        id, bill_id, statement_number, issued_date?.let(LocalDate::parse), LocalDate.parse(due_date), amount_minor?.let { Money.ofMinor(it, currency) }, document_id,
+        MeterReadings(
+            previous_reading?.toBigDecimalOrNull(), previous_reading_date?.let(LocalDate::parse), current_reading?.toBigDecimalOrNull(),
+            current_reading_date?.let(LocalDate::parse), used?.toBigDecimalOrNull(),
+        ),
+        meter_id, notes,
+    )
 
     // --- Reminders, history, subscriptions --------------------------------------------------------
 
@@ -471,17 +656,22 @@ class BillService internal constructor(private val books: Books) {
     private fun storedOccurrence(group: GroupInfo, billId: String, dueDate: LocalDate): OccurrenceRow? =
         books.ledger(group).ledgerQueries.occurrencesForBill(billId).executeAsList().firstOrNull { it.due_date == dueDate.toString() }
 
-    private fun upsert(group: GroupInfo, billId: String, dueDate: LocalDate, amount: Money?, status: OccurrenceStatus, txnId: String?, paidDate: String?, documentId: String? = null) {
+    private fun upsert(
+        group: GroupInfo, billId: String, dueDate: LocalDate, amount: Money?, status: OccurrenceStatus, txnId: String?, paidDate: String?, documentId: String? = null,
+        scheduledDate: String? = null,
+    ) {
         val existing = storedOccurrence(group, billId, dueDate)
         books.ledger(group).ledgerQueries.upsertOccurrence(
             existing?.id ?: Ids.newId(), billId, dueDate.toString(), amount?.minorUnits, status.name, txnId, paidDate, documentId ?: existing?.document_id,
+            scheduledDate ?: existing?.scheduled_date,
         )
     }
 
     private fun BillRow.toBill(currency: Currency) = Bill(
-        id, BillKind.valueOf(kind), name, payee_name, payee_account_number, Money.ofMinor(amount_minor, currency), AmountKind.valueOf(amount_kind),
+        id, BillKind.valueOf(kind), name, payee_name, AccountService.mask(payee_account_number), Money.ofMinor(amount_minor, currency), AmountKind.valueOf(amount_kind),
         account_id, transfer_account_id, PaymentMethod.valueOf(payment_method), category_id, Recurrence.decode(recurrence),
         LocalDate.parse(start_date), end_date?.let(LocalDate::parse), reminder_days.split(',').mapNotNull { it.trim().toIntOrNull() },
         is_subscription == 1L, renewal_date?.let(LocalDate::parse), cancel_by?.let(LocalDate::parse), notes, active == 1L,
+        bill_type?.let { runCatching { BillType.valueOf(it) }.getOrNull() }, bill_category, bill_subcategory, member_id,
     )
 }

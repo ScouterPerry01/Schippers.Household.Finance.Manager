@@ -3,6 +3,7 @@ package ca.schippers.hfm.ocr
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import kotlinx.datetime.LocalDate
+import java.math.BigDecimal
 
 /**
  * Text recognition on the user's own device (OCR-01). Android uses ML Kit; the desktop uses
@@ -55,4 +56,24 @@ data class DocumentDraft(
     val invoiceNumber: Extracted<String>? = null,
     val dueDate: Extracted<LocalDate>? = null,
     val accountNumber: Extracted<String>? = null,
+    /** BILL-17, BILL-19: a utility bill's meter readings, when it shows them. */
+    val meter: Extracted<MeterReadings>? = null,
 )
+
+/**
+ * BILL-17: the meter readings a utility bill shows: the previous and current readings with their
+ * dates, and the amount used, in [unit] ("KWH" or "M3") when the bill says. Any part may be missing.
+ */
+data class MeterReadings(
+    val previous: BigDecimal? = null,
+    val previousDate: LocalDate? = null,
+    val current: BigDecimal? = null,
+    val currentDate: LocalDate? = null,
+    val used: BigDecimal? = null,
+    val unit: String? = null,
+) {
+    val isEmpty: Boolean get() = previous == null && current == null && used == null
+
+    /** The amount used: as printed, else the current reading less the previous one. */
+    val usedOrComputed: BigDecimal? get() = used ?: if (previous != null && current != null && current >= previous) current - previous else null
+}

@@ -1,5 +1,5 @@
 {
-  "$id": "hfm/bill/v1",
+  "$id": "hfm/bill/v2",
   "title": "bill",
   "type": "object",
   "properties": {
@@ -10,9 +10,14 @@
     "account_number": {
       "type": "string"
     },
+    "statement_number": {
+      "type": "string",
+      "description": "Statement, bill or invoice number, as printed"
+    },
     "bill_date": {
       "type": "string",
-      "format": "date"
+      "format": "date",
+      "description": "Date the bill was issued"
     },
     "period_start": {
       "type": "string",
@@ -97,6 +102,39 @@
         ],
         "additionalProperties": false
       }
+    },
+    "meter_readings": {
+      "type": "object",
+      "description": "Utility bills only (electricity, gas, water): the meter readings the bill shows",
+      "properties": {
+        "previous_reading": {
+          "type": "number"
+        },
+        "previous_reading_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "current_reading": {
+          "type": "number"
+        },
+        "current_reading_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "amount_used": {
+          "type": "number",
+          "description": "Consumption for the period, in the unit"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kWh",
+            "m3",
+            "other"
+          ]
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": [

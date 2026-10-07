@@ -126,7 +126,20 @@
   { "key": "business", "en": "Self-employment expenses", "fr": "Dépenses de travail autonome", "kind": "EXPENSE", "tax": "BUSINESS", "children": [
     { "key": "business.supplies", "en": "Office supplies", "fr": "Fournitures de bureau", "tax": "BUSINESS" },
     { "key": "business.home_office", "en": "Home office", "fr": "Bureau à domicile", "tax": "BUSINESS" },
-    { "key": "business.vehicle", "en": "Business use of vehicle", "fr": "Usage commercial du véhicule", "tax": "BUSINESS" }
+    { "key": "business.vehicle", "en": "Business use of vehicle", "fr": "Usage commercial du véhicule", "tax": "BUSINESS" },
+    { "key": "business.advertising", "en": "Advertising", "fr": "Publicité", "tax": "BUSINESS" },
+    { "key": "business.meals", "en": "Meals and entertainment", "fr": "Frais de repas et de représentation", "tax": "BUSINESS" },
+    { "key": "business.insurance", "en": "Business insurance", "fr": "Assurances d’entreprise", "tax": "BUSINESS" },
+    { "key": "business.interest_bank", "en": "Business interest and bank charges", "fr": "Intérêts et frais bancaires d’entreprise", "tax": "BUSINESS" },
+    { "key": "business.professional_fees", "en": "Legal, accounting and other professional fees", "fr": "Honoraires juridiques, comptables et autres honoraires professionnels", "tax": "BUSINESS" },
+    { "key": "business.rent", "en": "Business rent", "fr": "Loyer d’entreprise", "tax": "BUSINESS" },
+    { "key": "business.maintenance", "en": "Business repairs and maintenance", "fr": "Entretien et réparations d’entreprise", "tax": "BUSINESS" },
+    { "key": "business.property_tax", "en": "Business property taxes", "fr": "Impôts fonciers d’entreprise", "tax": "BUSINESS" },
+    { "key": "business.travel", "en": "Business travel", "fr": "Frais de déplacement d’affaires", "tax": "BUSINESS" },
+    { "key": "business.telephone_utilities", "en": "Telephone and utilities", "fr": "Téléphone et services publics", "tax": "BUSINESS" },
+    { "key": "business.software", "en": "Software and subscriptions", "fr": "Logiciels et abonnements", "tax": "BUSINESS" },
+    { "key": "business.delivery", "en": "Delivery, freight and postage", "fr": "Livraison, transport et frais postaux", "tax": "BUSINESS" },
+    { "key": "business.purchases", "en": "Purchases and cost of goods sold", "fr": "Achats et coût des marchandises vendues", "tax": "BUSINESS" }
   ]},
   { "key": "misc", "en": "Miscellaneous", "fr": "Divers", "kind": "EXPENSE" },
 

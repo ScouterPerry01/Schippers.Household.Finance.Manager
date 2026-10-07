@@ -6,6 +6,7 @@ import ca.schippers.hfm.ocr.DocumentDraft
 import ca.schippers.hfm.ocr.DocumentKind
 import ca.schippers.hfm.ocr.Extracted
 import ca.schippers.hfm.ocr.FieldSource
+import ca.schippers.hfm.ocr.MeterReadings
 import ca.schippers.hfm.ocr.TaxName
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.JsonArray
@@ -156,7 +157,8 @@ object AiFields {
             )
             "bill" -> DocumentDraft(
                 kind, ai(answer.str("biller")), ai(date("bill_date")), ai(money(answer.num("amount_due"))), null, taxes, currency,
-                dueDate = ai(date("due_date")), accountNumber = ai(answer.str("account_number")),
+                invoiceNumber = ai(answer.str("statement_number")), dueDate = ai(date("due_date")), accountNumber = ai(answer.str("account_number")),
+                meter = ai(meterReadings(answer["meter_readings"])),
             )
             "invoice" -> DocumentDraft(
                 kind, ai(answer.str("issuer")), ai(date("invoice_date")), ai(money(answer.num("total"))), ai(money(answer.num("subtotal"))), taxes, currency,
@@ -191,6 +193,19 @@ object AiFields {
                 DocumentDraft(DocumentKind.OTHER, ai(nameKey?.let { answer.str(it) }), ai(dateKey?.let(::date)), ai(money(amountKey?.let { answer.num(it) })), currency = currency)
             }
         }
+    }
+
+    /** BILL-17, BILL-19: a bill's meter readings (schema hfm/bill/v2), or null when it gave none. */
+    private fun meterReadings(e: JsonElement?): MeterReadings? {
+        val o = e as? JsonObject ?: return null
+        fun date(key: String) = o.str(key)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        val unit = when (o.str("unit")?.lowercase()) {
+            "kwh" -> "KWH"
+            "m3" -> "M3"
+            else -> null
+        }
+        return MeterReadings(o.num("previous_reading"), date("previous_reading_date"), o.num("current_reading"), date("current_reading_date"), o.num("amount_used"), unit)
+            .takeUnless { it.isEmpty }
     }
 
     private val NAME_KEYS = listOf("merchant", "issuer", "institution", "biller", "vendor", "payee", "employer", "insurer", "company", "provider", "sender", "name", "title")

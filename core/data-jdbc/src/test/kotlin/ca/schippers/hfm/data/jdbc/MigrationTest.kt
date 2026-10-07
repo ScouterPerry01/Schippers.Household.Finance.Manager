@@ -637,7 +637,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(33L, LedgerDatabase.Schema.version)
+            assertEquals(34L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val db = LedgerDatabase(driver)
             assertEquals("Garage", db.calendarQueries.eventById("e").executeAsOne().title, "events stay")
@@ -726,7 +726,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(33L, LedgerDatabase.Schema.version)
+            assertEquals(34L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).medicalQueries
             assertEquals("AFTER_SERVICE", q.planById("m").executeAsOne().claim_rule, "existing plans keep counting from the service")
@@ -771,7 +771,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(33L, LedgerDatabase.Schema.version)
+            assertEquals(34L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val tq = LedgerDatabase(driver).trackersQueries
             assertEquals(0L, tq.chores().executeAsOne().several_a_day, "existing chores are ticked once a day")
@@ -790,7 +790,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(33L, LedgerDatabase.Schema.version)
+            assertEquals(34L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).extrasQueries
             val trip = q.tripById("t").executeAsOne()
@@ -808,6 +808,38 @@ class MigrationTest {
             assertEquals("2 Elm St", q.tripById("t").executeAsOne().start_address)
             q.deleteTrip("t")
             assertEquals(0, q.tripStops("t").executeAsList().size, "deleting the trip removes its stops")
+        }
+    }
+
+    @Test
+    fun `version 33 ledgers keep their bills and gain a classification, moved due dates and statements`() {
+        val file = temp.resolve("ledger33.db")
+        older("../data/src/main/sqldelight/ledger/schemas/33.db", file, 33).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('a', 'Chequing', 'CHEQUING', 'CAD', '2026-01-01', 0, 0)", 0)
+            driver.execute(
+                null,
+                "INSERT INTO bill(id, name, payee_account_number, amount_minor, account_id, recurrence, start_date, created_at, updated_at) " +
+                    "VALUES ('b', 'Hydro', '6 1234 5678 9', 13000, 'a', 'M1', '2026-01-12', 0, 0)",
+                0,
+            )
+            driver.execute(null, "INSERT INTO bill_occurrence(id, bill_id, due_date, amount_minor, status) VALUES ('o', 'b', '2026-09-12', 14000, 'PAID')", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(34L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).ledgerQueries
+            val bill = q.billById("b").executeAsOne()
+            assertEquals("6 1234 5678 9", bill.payee_account_number)
+            assertEquals(null, bill.bill_type, "an old bill is not classified")
+            assertEquals(null, q.occurrencesForBill("b").executeAsOne().scheduled_date)
+            driver.execute(null, "PRAGMA foreign_keys = ON", 0)
+            q.upsertOccurrence("o2", "b", "2026-10-15", 14237, "DUE", null, null, null, "2026-10-12")
+            q.upsertBillStatement("s", "b", "2026-0914", "2026-09-24", "2026-10-15", 14237, null, "45678", "2026-08-12", "46321", "2026-09-11", "643", null, null, 0)
+            q.upsertBillStatement("s", "b", "2026-0914", "2026-09-24", "2026-10-16", 14237, null, "45678", "2026-08-12", "46321", "2026-09-11", "643", null, null, 0)
+            assertEquals("2026-10-16", q.billStatements("b").executeAsOne().due_date)
+            q.deleteBill("b")
+            assertEquals(0, q.billStatements("b").executeAsList().size, "deleting the bill removes its statements")
         }
     }
 }

@@ -1,0 +1,36 @@
+-- Version 33 to 34. Only additions: new columns and a new table.
+
+-- BILL-13, BILL-20 (version 34): a bill's classification, by the keys of the household's bill lists
+-- (core setting "bills.classification" and the built-in lists): its type (HOME or BUSINESS), its
+-- category and its subcategory. [member_id] is the person a Business bill belongs to.
+ALTER TABLE bill ADD COLUMN bill_type TEXT;
+ALTER TABLE bill ADD COLUMN bill_category TEXT;
+ALTER TABLE bill ADD COLUMN bill_subcategory TEXT;
+ALTER TABLE bill ADD COLUMN member_id TEXT;
+
+-- BILL-16 (version 34): a due date that a statement moved: [scheduled_date] is the date the
+-- schedule gave, which is then no longer due on its own.
+ALTER TABLE bill_occurrence ADD COLUMN scheduled_date TEXT;
+
+-- BILL-16, BILL-17 (version 34): each statement received for a bill: its number, issue and due
+-- dates, amount and scanned document, and for a utility the meter readings it shows (decimal text),
+-- with their dates and the amount used. [meter_id] is the meter the readings were added to.
+CREATE TABLE bill_statement (
+    id TEXT NOT NULL PRIMARY KEY,
+    bill_id TEXT NOT NULL REFERENCES bill(id) ON DELETE CASCADE,
+    statement_number TEXT,
+    issued_date TEXT,
+    due_date TEXT NOT NULL,
+    amount_minor INTEGER,
+    document_id TEXT,
+    previous_reading TEXT,
+    previous_reading_date TEXT,
+    current_reading TEXT,
+    current_reading_date TEXT,
+    used TEXT,
+    meter_id TEXT,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX bill_statement_bill ON bill_statement(bill_id, due_date);

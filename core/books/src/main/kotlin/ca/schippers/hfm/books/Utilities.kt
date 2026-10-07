@@ -134,6 +134,19 @@ class UtilityService internal constructor(private val books: Books) {
         return meter(id)
     }
 
+    /**
+     * BILL-17: links [billId] to the meter [meterId] (its statements' readings go there and its
+     * amounts give the meter's cost), or to none; another meter linked to the bill is unlinked.
+     */
+    fun linkBill(billId: String, meterId: String?) {
+        for (m in meters(true).filter { (it.billId == billId && it.id != meterId) || (it.id == meterId && it.billId != billId) }) {
+            saveMeter(m.copy(billId = if (m.id == meterId) billId else null))
+        }
+    }
+
+    /** BILL-17: the meter a bill is linked to, if any. */
+    fun meterFor(billId: String): UtilityMeter? = meters(true).firstOrNull { it.billId == billId }
+
     /** Deletes the meter and its readings. */
     fun deleteMeter(m: UtilityMeter) = books.ledger(group(m.groupId)).trackersQueries.deleteUtilityMeter(m.id)
 

@@ -39,6 +39,31 @@ class AiTypesTest {
     }
 
     @Test
+    fun `a bill (version 2) gives its statement number and a utility's meter readings (BILL-19)`() {
+        val type = types.get("bill")!!
+        assertEquals("hfm/bill/v2", type.version)
+        assertTrue(SchemaCheck.schemaProblems(type.schema).isEmpty())
+        val answer = obj(
+            """{"biller":"Hydro Ottawa","account_number":"6 1234 5678 9","statement_number":"2026-0914","bill_date":"2026-09-14","due_date":"2026-10-06",
+                "amount_due":138.91,"currency":"CAD","meter_readings":{"previous_reading":45678,"previous_reading_date":"2026-08-12",
+                "current_reading":46321,"current_reading_date":"2026-09-11","amount_used":643,"unit":"kWh"}}""",
+        )
+        assertTrue(SchemaCheck.validate(answer, type.schema).isEmpty())
+        val draft = AiFields.draft("bill", answer, checked = true)
+        assertEquals("2026-0914", draft.invoiceNumber?.value)
+        assertEquals("6 1234 5678 9", draft.accountNumber?.value)
+        assertEquals(LocalDate(2026, 9, 14), draft.date?.value)
+        val m = draft.meter!!
+        assertEquals(FieldSource.CLOUD_AI, m.source)
+        assertEquals(java.math.BigDecimal(45678), m.value.previous)
+        assertEquals(LocalDate(2026, 9, 11), m.value.currentDate)
+        assertEquals(java.math.BigDecimal(643), m.value.used)
+        assertEquals("KWH", m.value.unit)
+        // A phone bill has no readings.
+        assertEquals(null, AiFields.draft("bill", obj("""{"biller":"Bell","amount_due":95.00,"currency":"CAD"}"""), checked = true).meter)
+    }
+
+    @Test
     fun `a trade's units, price, fees and net amount must agree`() {
         val answer = obj(confirmation)
         assertTrue(AiFields.hasSums("trade_confirmation", answer))

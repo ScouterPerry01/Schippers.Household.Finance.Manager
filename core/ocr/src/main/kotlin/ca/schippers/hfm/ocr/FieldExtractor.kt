@@ -37,7 +37,10 @@ object FieldExtractor {
         }
 
         val dueDate = labelledDate(rows, DUE_LABELS, french)
-        val docDate = labelledDate(rows, DATE_LABELS, french) ?: firstDate(rows, french, except = dueDate?.value)
+        // BILL-19: a meter's reading dates are not the bill's date.
+        val readingRows = rows.filter { r -> (PREVIOUS_READING + CURRENT_READING).any { r.folded.contains(it) } }.toSet()
+        val docDate = labelledDate(rows.filter { r -> DUE_LABELS.none { r.folded.contains(it) } }, DATE_LABELS, french)
+            ?: firstDate(rows.filter { it !in readingRows }, french, except = dueDate?.value)
         val kind = kind(rows, dueDate != null, taxes.isNotEmpty())
 
         return DocumentDraft(
@@ -52,9 +55,125 @@ object FieldExtractor {
             cardLast4 = cardLast4(rows),
             invoiceNumber = labelledToken(rows, INVOICE_LABELS, Regex("""[A-Z0-9][A-Z0-9-]{2,24}""")),
             dueDate = dueDate,
-            accountNumber = labelledToken(rows, ACCOUNT_LABELS, Regex("""\d[\d -]{4,24}\d"""))?.let { it.copy(value = it.value.replace(Regex("\\s+"), " ")) },
+            accountNumber = labelledToken(rows, ACCOUNT_LABELS, Regex("""\d[\d -]{4,24}\d"""))?.let { it.copy(value = it.value.replace(Regex("\\s+"), " ").trim()) },
+            meter = meter(rows, french, docDate?.value ?: dueDate?.value ?: today),
         )
     }
+
+    // --- Meter readings (BILL-17, BILL-19) ---------------------------------------------------------
+
+    /**
+     * A utility bill's previous and current meter readings, each with its date, and the amount
+     * used, in English or French ("Previous reading", "Relevé précédent", "Lecture actuelle",
+     * "Consommation 1 214 kWh"...). [yearHint] dates a reading printed without its year ("Aug 10").
+     */
+    private fun meter(rows: List<Row>, french: Boolean, yearHint: LocalDate?): Extracted<MeterReadings>? {
+        val previous = reading(rows, PREVIOUS_READING, french, yearHint)
+        val current = reading(rows, CURRENT_READING, french, yearHint)
+        val used = used(rows)
+        if (previous == null && current == null && used == null) return null
+        val all = " " + rows.joinToString(" ") { it.folded } + " "
+        val unit = when {
+            Regex("""\d\s?kwh\b|[^a-z]kwh[^a-z]""").containsMatchIn(all) -> "KWH"
+            Regex("""[^a-z]m3[^a-z0-9]|m³|metres? cubes?|cubic met""").containsMatchIn(all) -> "M3"
+            else -> null
+        }
+        var confidence = listOfNotNull(previous?.third, current?.third, used?.second).min() * 0.9f
+        // A current reading below the previous one was probably misread.
+        if (previous != null && current != null && current.first < previous.first) confidence *= 0.6f
+        return Extracted(MeterReadings(previous?.first, previous?.second, current?.first, current?.second, used?.first, unit), confidence)
+    }
+
+    /** The reading after one of [labels]: its value and date, on the same row or the next. */
+    private fun reading(rows: List<Row>, labels: List<String>, french: Boolean, yearHint: LocalDate?): Triple<BigDecimal, LocalDate?, Float>? {
+        for ((i, row) in rows.withIndex()) {
+            val label = labels.filter { row.folded.contains(it) }.maxByOrNull { it.length } ?: continue
+            val start = row.folded.indexOf(label) + label.length
+            // Up to the next reading label on the same row ("Previous 45 678 Current 46 321").
+            val others = (PREVIOUS_READING + CURRENT_READING + USED_LABELS).filter { it != label }
+                .mapNotNull { l -> row.folded.indexOf(l, start).takeIf { it >= 0 } }
+            val end = others.minOrNull() ?: row.text.length
+            var found = readingIn(row.text.substring(start, end), french, yearHint)
+            val next = rows.getOrNull(i + 1)
+            if ((found == null || found.first == null) && next != null && (PREVIOUS_READING + CURRENT_READING + USED_LABELS).none { next.folded.contains(it) }) {
+                val more = readingIn(next.text, french, yearHint)
+                found = if (found == null) more else Pair(more?.first, found.second ?: more?.second)
+            }
+            val value = found?.first ?: continue
+            return Triple(value, found.second, row.confidence * 0.95f)
+        }
+        return null
+    }
+
+    /** A reading's value and date in a piece of text: the date is taken out before the number is read. */
+    private fun readingIn(text: String, french: Boolean, yearHint: LocalDate?): Pair<BigDecimal?, LocalDate?>? {
+        val spans = dateSpans(text, french, yearHint)
+        val blanked = StringBuilder(text)
+        for ((range, _) in spans) for (k in range) blanked.setCharAt(k, ' ')
+        val number = READING.find(blanked)?.let { reading(it) }
+        val date = spans.firstNotNullOfOrNull { it.second }
+        return if (number == null && date == null) null else number to date
+    }
+
+    private fun reading(m: MatchResult): BigDecimal = BigDecimal(m.groupValues[1].filter(Char::isDigit) + (m.groupValues[2].takeIf { it.isNotEmpty() }?.let { ".$it" } ?: ""))
+
+    /** The amount used: a number followed by its unit, or after a strong label ("Consommation"). */
+    private fun used(rows: List<Row>): Pair<BigDecimal, Float>? {
+        for ((i, row) in rows.withIndex()) {
+            val label = USED_LABELS.firstOrNull { Regex("""(^|[^a-z])$it([^a-z]|$)""").containsMatchIn(row.folded) } ?: continue
+            if (NOT_USED.any { row.folded.contains(it) }) continue
+            val start = row.folded.indexOf(label) + label.length
+            val after = row.text.substring(start)
+            val withUnit = Regex("""(\d{1,3}(?:[ \u00a0\u202f,]\d{3})+|\d+)(?:[.,](\d{1,3}))?\s?(?:kWh|KWH|kwh|m3|M3|m³)""").find(after)
+            if (withUnit != null) return reading(withUnit) to row.confidence
+            if (label in STRONG_USED) {
+                val plain = READING.find(after) ?: rows.getOrNull(i + 1)?.let { READING.find(it.text) }
+                if (plain != null && amounts(after).isEmpty()) return reading(plain) to row.confidence * 0.85f
+            }
+        }
+        return null
+    }
+
+    /** The dates in [text] with where they are: with a year, and for readings also "Aug 10" or "10 août" dated by [yearHint]. */
+    private fun dateSpans(text: String, french: Boolean, yearHint: LocalDate?): List<Pair<IntRange, LocalDate?>> {
+        val out = ArrayList<Pair<IntRange, LocalDate?>>()
+        val folded = fold(text)
+        fun free(r: IntRange) = out.none { (o, _) -> r.first <= o.last && o.first <= r.last }
+        Regex("""(?<!\d)(20\d{2})[-/.](\d{1,2})[-/.](\d{1,2})(?!\d)""").findAll(text).forEach { m ->
+            out += m.range to date(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt())
+        }
+        Regex("""(?<!\d)(\d{1,2})[-/.](\d{1,2})[-/.](20\d{2}|\d{2})(?!\d)""").findAll(text).forEach { m ->
+            if (!free(m.range)) return@forEach
+            val found = dates(m.value, french).firstOrNull()?.first
+            out += m.range to found
+        }
+        Regex("""(?<![a-z])(\d{1,2})(?:er)?[ -]([a-z]{3,9})\.?(?:[ -,]*(20\d{2}))?(?![\da-z])""").findAll(folded).forEach { m ->
+            if (!free(m.range)) return@forEach
+            val month = monthWord(m.groupValues[2]) ?: return@forEach
+            out += m.range to (m.groupValues[3].toIntOrNull() ?: yearFor(month, yearHint))?.let { date(it, month, m.groupValues[1].toInt()) }
+        }
+        Regex("""(?<![a-z])([a-z]{3,9})\.? (\d{1,2})(?!\d)(?:,? (20\d{2}))?""").findAll(folded).forEach { m ->
+            if (!free(m.range)) return@forEach
+            val month = monthWord(m.groupValues[1]) ?: return@forEach
+            out += m.range to (m.groupValues[3].toIntOrNull() ?: yearFor(month, yearHint))?.let { date(it, month, m.groupValues[2].toInt()) }
+        }
+        return out
+    }
+
+    /** A month's full name or usual abbreviation in English or French, never any word starting like one ("maison"). */
+    private fun monthWord(word: String): Int? = month(word)?.takeIf { word in MONTH_WORDS }
+
+    private val MONTH_WORDS = setOf(
+        "jan", "janv", "january", "janvier", "feb", "february", "fev", "fevr", "fevrier", "mar", "march", "mars", "apr", "april", "avr", "avril",
+        "may", "mai", "jun", "june", "juin", "jul", "july", "juil", "juillet", "aug", "august", "aou", "aout", "sep", "sept", "september", "septembre",
+        "oct", "october", "octobre", "nov", "november", "novembre", "dec", "december", "decembre",
+    )
+
+    /** The year of a reading printed without one: the bill's year, or the year before for a later month. */
+    private fun yearFor(month: Int, hint: LocalDate?): Int? = hint?.let { if (month > it.month.ordinal + 1) it.year - 1 else it.year }
+
+    /** A meter reading: digits with spaces or commas between thousands, and up to three decimals. */
+    private val READING = Regex("""(?<![\d.,])(\d{1,3}(?:[ \u00a0\u202f,]\d{3})+|\d+)(?:[.,](\d{1,3}))?(?![\d])""")
 
     // --- Amounts ---------------------------------------------------------------------------------
 
@@ -267,9 +386,32 @@ object FieldExtractor {
         TaxName.QST to listOf("qst", "tvq"),
         TaxName.PST to listOf("pst", "tvp", "rst"),
     )
-    private val DUE_LABELS = listOf("date d'echeance", "date d echeance", "echeance", "due date", "payment due", "payable avant", "a payer avant", "payable by", "please pay by", "date limite", "pay by")
-    private val DATE_LABELS = listOf("date de facturation", "date de la facture", "date de facture", "bill date", "invoice date", "statement date", "date du releve", "billing date", "date:", "date :")
-    private val INVOICE_LABELS = listOf("invoice number", "invoice no", "invoice #", "numero de facture", "no de facture", "n de facture", "facture no", "facture #", "no facture", "no. de facture", "receipt #", "recu no", "transaction #", "trans #", "no de transaction", "numero de transaction", "order #", "commande no")
+    private val DUE_LABELS = listOf(
+        "date d'echeance", "date d’echeance", "date d echeance", "echeance", "due date", "payment due", "payable avant", "a payer avant", "payable by", "please pay by",
+        "date limite", "pay by", "au plus tard le", "due on",
+    )
+    private val DATE_LABELS = listOf(
+        "date de facturation", "date de la facture", "date de facture", "bill date", "invoice date", "statement date", "date du releve", "billing date",
+        "issue date", "date of issue", "issued on", "date d'emission", "date d’emission", "date d emission", "date:", "date :",
+    )
+    private val INVOICE_LABELS = listOf(
+        "statement number", "statement no", "statement #", "bill number", "bill no", "numero de releve", "no de releve", "numero de la facture",
+        "invoice number", "invoice no", "invoice #", "numero de facture", "no de facture", "n de facture", "facture no", "facture #", "no facture", "no. de facture",
+        "receipt #", "recu no", "transaction #", "trans #", "no de transaction", "numero de transaction", "order #", "commande no",
+    )
+
+    /** BILL-19: a meter's previous and current readings, and the amount used, in English and French. */
+    private val PREVIOUS_READING = listOf(
+        "previous meter reading", "previous reading", "previous read", "prior reading", "last reading", "lecture precedente", "releve precedent",
+        "index precedent", "ancien index", "ancienne lecture", "lecture anterieure",
+    )
+    private val CURRENT_READING = listOf(
+        "current meter reading", "current reading", "current read", "present reading", "new reading", "lecture actuelle", "releve actuel",
+        "nouvelle lecture", "index actuel", "nouvel index", "lecture courante",
+    )
+    private val USED_LABELS = listOf("consommation", "consumption", "energy used", "electricity used", "gas used", "water used", "usage", "used", "utilisation")
+    private val STRONG_USED = setOf("consommation", "consumption", "energy used", "electricity used", "gas used", "water used")
+    private val NOT_USED = listOf("average", "moyenne", "per day", "par jour", "daily", "quotidien", "last year", "l'an dernier", "annee derniere")
     private val ACCOUNT_LABELS = listOf("account number", "account no", "account #", "acct", "numero de compte", "no de compte", "n de compte", "compte no", "numero de client", "no de client", "customer number", "client no", "numero de reference", "reference number")
     private val GREETINGS = listOf("bienvenue", "welcome", "merci", "thank you", "recu", "receipt", "facture", "invoice", "copie", "copy", "client", "customer")
     private val PAYMENT = linkedMapOf(

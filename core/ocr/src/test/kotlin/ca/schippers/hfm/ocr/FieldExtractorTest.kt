@@ -132,6 +132,133 @@ class FieldExtractorTest {
     }
 
     @Test
+    fun `an Ontario electricity bill with statement number, issue date and meter readings (BILL-19)`() {
+        val draft = FieldExtractor.extract(
+            lines(
+                """
+                Hydro Ottawa
+                Your electricity bill
+                Account number: 6 1234 5678 9
+                Statement number: 2026-0914-1187
+                Issue date: Sep 14, 2026
+                Previous reading (Aug 12, 2026): 45 678
+                Current reading (Sep 11, 2026): 46 321
+                Electricity used 643 kWh
+                Amount due $138.91
+                Due date: Oct 6, 2026
+                """,
+            ),
+            today,
+        )
+        assertEquals(DocumentKind.BILL, draft.kind)
+        assertEquals("6 1234 5678 9", draft.accountNumber?.value)
+        assertEquals("2026-0914-1187", draft.invoiceNumber?.value)
+        assertEquals(LocalDate(2026, 9, 14), draft.date?.value, "the issue date, not a reading's date")
+        assertEquals(LocalDate(2026, 10, 6), draft.dueDate?.value)
+        assertEquals(cad("138.91"), draft.total?.value)
+        val m = draft.meter!!.value
+        assertEquals(BigDecimal(45678), m.previous)
+        assertEquals(LocalDate(2026, 8, 12), m.previousDate)
+        assertEquals(BigDecimal(46321), m.current)
+        assertEquals(LocalDate(2026, 9, 11), m.currentDate)
+        assertEquals(BigDecimal(643), m.used)
+        assertEquals("KWH", m.unit)
+    }
+
+    @Test
+    fun `a Hydro-Quebec bill in French with readings, issue date and bill number (BILL-19)`() {
+        val draft = FieldExtractor.extract(
+            lines(
+                """
+                Hydro-Québec
+                Votre facture d'électricité
+                Numéro de compte : 2992 0471 6553
+                Numéro de la facture : 630122448
+                Date d'émission : 15 septembre 2026
+                Relevé précédent : 2026-07-13  45 678
+                Relevé actuel : 2026-09-11  47 520
+                Consommation 1 842 kWh
+                Montant à payer 142,37 $
+                Date d'échéance : 2026-10-06
+                """,
+            ),
+            today,
+        )
+        assertEquals("2992 0471 6553", draft.accountNumber?.value)
+        assertEquals("630122448", draft.invoiceNumber?.value)
+        assertEquals(LocalDate(2026, 9, 15), draft.date?.value)
+        assertEquals(LocalDate(2026, 10, 6), draft.dueDate?.value)
+        val m = draft.meter!!.value
+        assertEquals(BigDecimal(45678), m.previous)
+        assertEquals(LocalDate(2026, 7, 13), m.previousDate)
+        assertEquals(BigDecimal(47520), m.current)
+        assertEquals(LocalDate(2026, 9, 11), m.currentDate)
+        assertEquals(BigDecimal(1842), m.used)
+        assertEquals(m.used, m.usedOrComputed)
+    }
+
+    @Test
+    fun `a gas bill with readings dated without their year, in cubic metres (BILL-19)`() {
+        val draft = FieldExtractor.extract(
+            lines(
+                """
+                Enbridge Gas
+                Account Number 9100 2233 4455
+                Bill Date Sep 18, 2026
+                Meter Reading
+                Previous Reading Jul 17 ACTUAL 12,345
+                Current Reading Aug 18 ACTUAL 12,456
+                Gas Used 111 m³
+                Amount Due $86.40
+                Due Date Oct 9, 2026
+                """,
+            ),
+            today,
+        )
+        assertEquals("9100 2233 4455", draft.accountNumber?.value)
+        assertEquals(LocalDate(2026, 9, 18), draft.date?.value)
+        val m = draft.meter!!.value
+        assertEquals(BigDecimal(12345), m.previous)
+        assertEquals(LocalDate(2026, 7, 17), m.previousDate)
+        assertEquals(BigDecimal(12456), m.current)
+        assertEquals(LocalDate(2026, 8, 18), m.currentDate)
+        assertEquals(BigDecimal(111), m.used)
+        assertEquals("M3", m.unit)
+    }
+
+    @Test
+    fun `a French telecom bill has a statement number and no meter (BILL-19)`() {
+        val draft = FieldExtractor.extract(
+            lines(
+                """
+                Vidéotron
+                Votre facture
+                Numéro de compte : 000 123 456
+                Numéro de relevé : R-88213
+                Date de facturation : 20 septembre 2026
+                Montant à payer 95,00 $
+                À payer au plus tard le 11 octobre 2026
+                """,
+            ),
+            today,
+        )
+        assertEquals(DocumentKind.BILL, draft.kind)
+        assertEquals("000 123 456", draft.accountNumber?.value)
+        assertEquals("R-88213", draft.invoiceNumber?.value)
+        assertEquals(LocalDate(2026, 9, 20), draft.date?.value)
+        assertEquals(LocalDate(2026, 10, 11), draft.dueDate?.value)
+        assertEquals(cad("95.00"), draft.total?.value)
+        assertNull(draft.meter)
+    }
+
+    @Test
+    fun `readings without a printed amount used give it as the difference`() {
+        val m = MeterReadings(BigDecimal(100), null, BigDecimal(160), null)
+        assertEquals(BigDecimal(60), m.usedOrComputed)
+        assertNull(MeterReadings(BigDecimal(160), null, BigDecimal(100), null).usedOrComputed, "a reading lower than the previous one is not a use")
+    }
+
+    @Test
     fun `amounts, rates and separators`() {
         assertEquals(listOf(BigDecimal("1234.56")), FieldExtractor.amounts("TOTAL 1 234,56 \$"))
         assertEquals(listOf(BigDecimal("1234.56")), FieldExtractor.amounts("TOTAL \$1,234.56"))

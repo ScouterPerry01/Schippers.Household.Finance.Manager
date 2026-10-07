@@ -1,1 +1,1 @@
-This is a bill, such as electricity, phone, internet, insurance or property tax. amount_due is the total to pay by the due date.
+This is a bill, such as electricity, gas, water, phone, internet, insurance or property tax. amount_due is the total to pay by the due date. statement_number is the bill or statement number, not the account number. For a utility bill that shows meter readings, give them in meter_readings with their dates, as printed; leave meter_readings out otherwise.

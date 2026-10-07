@@ -11,6 +11,7 @@ import ca.schippers.hfm.ocr.DocumentKind
 import ca.schippers.hfm.ocr.Extracted
 import ca.schippers.hfm.ocr.FieldExtractor
 import ca.schippers.hfm.ocr.FieldSource
+import ca.schippers.hfm.ocr.MeterReadings
 import ca.schippers.hfm.ocr.OcrResult
 import ca.schippers.hfm.ocr.TaxName
 import kotlinx.datetime.DatePeriod
@@ -114,6 +115,9 @@ data class DocumentDetails(
     val keepForever: Boolean,
     val notes: String?,
 )
+
+/** BILL-18: a bill to create from a captured bill, and its first statement; [bill] is null when no account can pay it. */
+data class BillProposal(val bill: BillDraft?, val statement: StatementDraft)
 
 /** A transaction that may be the one a receipt or bill belongs to. */
 data class TransactionMatch(val transaction: Transaction, val accountName: String, val daysApart: Int)
@@ -446,27 +450,78 @@ class DocumentService internal constructor(private val books: Books) {
         val account = doc.draft?.accountNumber?.value?.filter(Char::isDigit)
         val bills = books.bills.list()
         account?.takeIf { it.length >= 4 }?.let { digits ->
-            bills.firstOrNull { b -> b.payeeAccountNumber?.filter(Char::isDigit)?.let { it.isNotEmpty() && (it.endsWith(digits.takeLast(4)) || digits.endsWith(it.takeLast(4))) } == true }?.let { return it }
+            val numbers = books.bills.accountNumbers()
+            bills.firstOrNull { b -> numbers[b.id]?.filter(Char::isDigit)?.let { it.isNotEmpty() && (it.endsWith(digits.takeLast(4)) || digits.endsWith(it.takeLast(4))) } == true }?.let { return it }
         }
         val merchant = doc.merchant ?: return null
         return bills.firstOrNull { similarNames(merchant, it.payeeName) || similarNames(merchant, it.name) }
     }
 
     /**
-     * BILL-03: records the captured bill's amount on the bill's due date nearest to the
-     * document's due date (or date), attaches it, and files it. Returns the due date used.
+     * BILL-03, BILL-16: records the captured bill as a statement of the bill: its amount on the due
+     * date nearest to the document's due date (or date), which becomes the statement's due date when
+     * the document gives one; with its number, issue date and meter readings. It is attached and
+     * filed. [statement] replaces what was read, when the user corrected it. Returns the due date used.
      */
-    fun fileWithBill(documentId: String, billId: String): LocalDate {
+    fun fileWithBill(documentId: String, billId: String, statement: StatementDraft? = null): LocalDate {
         val doc = get(documentId)
-        val amount = doc.amount ?: throw ValidationException("error.amountRequired")
-        val target = doc.draft?.dueDate?.value ?: doc.date ?: dateOf(doc.capturedAt)
-        val window = LeadTimes.billMatch(target)
-        val occurrences = books.bills.occurrences(target.minus(DatePeriod(days = window)), target.plus(DatePeriod(days = window)), setOf(billId))
-        val due = occurrences.minByOrNull { kotlin.math.abs(it.dueDate.toEpochDays() - target.toEpochDays()) }?.dueDate ?: throw ValidationException("error.noBillDate")
-        books.bills.setAmount(billId, due, amount, documentId)
+        val draft = statement ?: statementFrom(doc, books.bills.get(billId))
+        books.bills.recordStatement(billId, draft.copy(documentId = documentId))
         link(documentId, DocumentEntity.BILL, billId)
         setStatus(documentId, DocumentStatus.FILED)
-        return due
+        return draft.dueDate
+    }
+
+    /**
+     * BILL-16: what a captured bill says about its statement. Without a due date on it, the bill's
+     * due date nearest to its date is used.
+     */
+    fun statementFrom(doc: VaultDocument, bill: Bill): StatementDraft {
+        val amount = doc.amount ?: throw ValidationException("error.amountRequired")
+        val read = doc.draft
+        val due = read?.dueDate?.value ?: run {
+            val target = doc.date ?: dateOf(doc.capturedAt)
+            val window = LeadTimes.billMatch(target)
+            books.bills.occurrences(target.minus(DatePeriod(days = window)), target.plus(DatePeriod(days = window)), setOf(bill.id))
+                .minByOrNull { kotlin.math.abs(it.dueDate.toEpochDays() - target.toEpochDays()) }?.dueDate ?: throw ValidationException("error.noBillDate")
+        }
+        return StatementDraft(
+            due, amount.takeIf { it.currency == bill.amount.currency }, read?.invoiceNumber?.value, doc.date, documentId = doc.id,
+            readings = read?.meter?.value ?: MeterReadings(),
+        )
+    }
+
+    /**
+     * BILL-18: a new bill proposed from a captured bill that matches none: named after the company,
+     * with the account number, amount, due date (the start of its schedule), statement number, issue
+     * date and readings read, and a classification guessed from earlier bills, the payee or the
+     * company's name. [accountId] is the account to pay it from (the first bank account by default).
+     */
+    fun billProposal(documentId: String, accountId: String? = null): BillProposal {
+        val doc = get(documentId)
+        val read = doc.draft
+        val payee = doc.merchant ?: doc.title
+        val learned = runCatching { learnedCategory(documentId) }.getOrNull()
+        val sub = books.billLists.guess(payee, learned)
+        val accounts = books.accounts.list().map { it.account }.filter { doc.amount == null || it.currency == doc.amount.currency }
+        val account = accounts.firstOrNull { it.id == accountId } ?: accounts.firstOrNull { it.type.kind == ca.schippers.hfm.domain.AccountKind.BANK } ?: accounts.firstOrNull()
+        val due = read?.dueDate?.value ?: doc.date ?: dateOf(doc.capturedAt)
+        val bill = account?.let {
+            BillDraft(
+                BillKind.BILL, payee ?: doc.label, doc.amount ?: Money.zero(it.currency), it.id, ca.schippers.hfm.calc.schedule.Recurrence.MONTHLY, due,
+                payeeName = payee, payeeAccountNumber = read?.accountNumber?.value, amountKind = AmountKind.VARIABLE,
+                categoryId = sub?.spendingCategoryId ?: learned, type = sub?.type, categoryKey = sub?.categoryKey, subcategoryKey = sub?.key,
+            )
+        }
+        val statement = StatementDraft(due, doc.amount, read?.invoiceNumber?.value, doc.date, documentId = documentId, readings = read?.meter?.value ?: MeterReadings())
+        return BillProposal(bill, statement)
+    }
+
+    /** BILL-18: creates the bill the user confirmed, records the captured bill as its first statement, attaches and files it. */
+    fun createBillFrom(documentId: String, bill: BillDraft, statement: StatementDraft): Bill {
+        val created = books.bills.create(bill)
+        fileWithBill(documentId, created.id, statement)
+        return books.bills.get(created.id)
     }
 
     // --- Retention (section 4.4) ----------------------------------------------------------------
@@ -572,6 +627,8 @@ internal data class StoredDraft(
     val readKey: String? = null,
     /** CAP-07: what was chosen on the phone. */
     val chosen: StoredChoices? = null,
+    /** BILL-17: a utility bill's meter readings. */
+    val meter: StoredMeter? = null,
 ) {
     fun toDraft(): DocumentDraft {
         val c = Currency.of(currency)
@@ -581,6 +638,15 @@ internal data class StoredDraft(
             DocumentKind.valueOf(kind), merchant?.to { it }, date?.to(LocalDate::parse), total?.to(::money), subtotal?.to(::money),
             taxes.map { (k, f) -> TaxName.valueOf(k) to f.to(::money) }, c, paymentMethod?.to { it }, cardLast4?.to { it }, invoiceNumber?.to { it },
             dueDate?.to(LocalDate::parse), accountNumber?.to { it },
+            meter?.let { m ->
+                Extracted(
+                    MeterReadings(
+                        m.previous?.toBigDecimalOrNull(), m.previousDate?.let(LocalDate::parse), m.current?.toBigDecimalOrNull(), m.currentDate?.let(LocalDate::parse),
+                        m.used?.toBigDecimalOrNull(), m.unit,
+                    ),
+                    m.c, FieldSource.valueOf(m.s),
+                )
+            },
         )
     }
 
@@ -592,10 +658,30 @@ internal data class StoredDraft(
                 d.kind.name, d.currency.code, d.merchant?.stored(), d.date?.stored(), d.total?.amount(), d.subtotal?.amount(),
                 d.taxes.associate { (name, value) -> name.name to value.amount() }, d.paymentMethod?.stored(), d.cardLast4?.stored(),
                 d.invoiceNumber?.stored(), d.dueDate?.stored(), d.accountNumber?.stored(),
+                meter = d.meter?.let { e ->
+                    val m = e.value
+                    StoredMeter(
+                        m.previous?.toPlainString(), m.previousDate?.toString(), m.current?.toPlainString(), m.currentDate?.toString(), m.used?.toPlainString(), m.unit,
+                        e.confidence, e.source.name,
+                    )
+                },
             )
         }
     }
 }
+
+/** BILL-17: the meter readings read from a bill, as stored with the document; numbers as decimal text. */
+@Serializable
+internal data class StoredMeter(
+    val previous: String? = null,
+    val previousDate: String? = null,
+    val current: String? = null,
+    val currentDate: String? = null,
+    val used: String? = null,
+    val unit: String? = null,
+    val c: Float = 0f,
+    val s: String = FieldSource.ON_DEVICE.name,
+)
 
 /** CAP-07: the account, category and person chosen on the phone, by id. */
 @Serializable

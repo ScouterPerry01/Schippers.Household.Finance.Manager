@@ -1,0 +1,844 @@
+[
+ {
+  "key": "home.essential",
+  "type": "HOME",
+  "en": "Essential Housing & Utilities",
+  "fr": "Logement et services essentiels",
+  "groups": [
+   {
+    "key": "home.essential.utilities",
+    "en": "Utilities",
+    "fr": "Services publics",
+    "items": [
+     {
+      "key": "home.essential.electricity",
+      "en": "Electricity",
+      "fr": "Électricité",
+      "category": "utilities.electricity",
+      "meter": "ELECTRICITY"
+     },
+     {
+      "key": "home.essential.natural_gas",
+      "en": "Natural Gas / Heating Oil",
+      "fr": "Gaz naturel / mazout",
+      "category": "utilities.heating",
+      "meter": "GAS"
+     },
+     {
+      "key": "home.essential.water",
+      "en": "Water / Sewer",
+      "fr": "Eau / égouts",
+      "category": "utilities.water",
+      "meter": "WATER"
+     },
+     {
+      "key": "home.essential.trash",
+      "en": "Trash / Recycling",
+      "fr": "Ordures / recyclage",
+      "category": "utilities"
+     }
+    ]
+   },
+   {
+    "key": "home.essential.housing",
+    "en": "Housing Payments",
+    "fr": "Paiements de logement",
+    "items": [
+     {
+      "key": "home.essential.rent",
+      "en": "Rent",
+      "fr": "Loyer",
+      "category": "housing.rent"
+     },
+     {
+      "key": "home.essential.mortgage",
+      "en": "Mortgage",
+      "fr": "Hypothèque",
+      "category": "housing.mortgage_interest"
+     },
+     {
+      "key": "home.essential.property_taxes",
+      "en": "Property Taxes",
+      "fr": "Taxes foncières",
+      "category": "housing.municipal_tax"
+     },
+     {
+      "key": "home.essential.condo_fees",
+      "en": "Condo fees",
+      "fr": "Frais de copropriété",
+      "category": "housing.condo_fees"
+     }
+    ]
+   },
+   {
+    "key": "home.essential.communication",
+    "en": "Communication",
+    "fr": "Communications",
+    "items": [
+     {
+      "key": "home.essential.home_internet",
+      "en": "Home Internet",
+      "fr": "Internet résidentiel",
+      "category": "utilities.internet"
+     },
+     {
+      "key": "home.essential.cell_phone",
+      "en": "Cell Phone plans",
+      "fr": "Forfaits de cellulaire",
+      "category": "utilities.mobile"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "key": "home.transportation",
+  "type": "HOME",
+  "en": "Transportation & Mobility",
+  "fr": "Transport et mobilité",
+  "groups": [
+   {
+    "key": "home.transportation.auto_payments",
+    "en": "Auto Payments",
+    "fr": "Paiements automobiles",
+    "items": [
+     {
+      "key": "home.transportation.car_loan",
+      "en": "Car Loans / Lease payments",
+      "fr": "Prêts auto / paiements de location",
+      "category": "transport.lease"
+     }
+    ]
+   },
+   {
+    "key": "home.transportation.vehicle_services",
+    "en": "Vehicle Services",
+    "fr": "Services liés aux véhicules",
+    "items": [
+     {
+      "key": "home.transportation.auto_insurance",
+      "en": "Auto Insurance",
+      "fr": "Assurance automobile",
+      "category": "transport.insurance"
+     },
+     {
+      "key": "home.transportation.parking",
+      "en": "Parking passes",
+      "fr": "Permis de stationnement",
+      "category": "transport.parking_tolls"
+     },
+     {
+      "key": "home.transportation.tolls",
+      "en": "Toll accounts",
+      "fr": "Comptes de péage",
+      "category": "transport.parking_tolls"
+     },
+     {
+      "key": "home.transportation.transit",
+      "en": "Transit passes",
+      "fr": "Laissez-passer de transport en commun",
+      "category": "transport.transit.pass"
+     }
+    ]
+   },
+   {
+    "key": "home.transportation.fuel_fleet",
+    "en": "Fuel & Fleet",
+    "fr": "Carburant et parc automobile",
+    "items": [
+     {
+      "key": "home.transportation.fuel",
+      "en": "Gas / Charging subscriptions",
+      "fr": "Essence / abonnements de recharge",
+      "category": "transport.fuel"
+     },
+     {
+      "key": "home.transportation.vehicle_maintenance",
+      "en": "Routine Maintenance & Repairs",
+      "fr": "Entretien courant et réparations",
+      "category": "transport.maintenance"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "key": "home.protection",
+  "type": "HOME",
+  "en": "Protection & Health",
+  "fr": "Protection et santé",
+  "groups": [
+   {
+    "key": "home.protection.insurance",
+    "en": "Insurance",
+    "fr": "Assurances",
+    "items": [
+     {
+      "key": "home.protection.home_insurance",
+      "en": "Homeowners / Renters",
+      "fr": "Propriétaire / locataire",
+      "category": "housing.insurance"
+     },
+     {
+      "key": "home.protection.health_insurance",
+      "en": "Health",
+      "fr": "Santé",
+      "category": "health.premiums"
+     },
+     {
+      "key": "home.protection.dental_insurance",
+      "en": "Dental",
+      "fr": "Dentaire",
+      "category": "health.premiums"
+     },
+     {
+      "key": "home.protection.vision_insurance",
+      "en": "Vision",
+      "fr": "Soins de la vue",
+      "category": "health.premiums"
+     },
+     {
+      "key": "home.protection.life_insurance",
+      "en": "Life",
+      "fr": "Vie",
+      "category": "insurance.life"
+     },
+     {
+      "key": "home.protection.disability_insurance",
+      "en": "Disability",
+      "fr": "Invalidité",
+      "category": "insurance.disability"
+     },
+     {
+      "key": "home.protection.umbrella_insurance",
+      "en": "Umbrella",
+      "fr": "Responsabilité civile complémentaire",
+      "category": "insurance"
+     }
+    ]
+   },
+   {
+    "key": "home.protection.medical",
+    "en": "Medical Bills",
+    "fr": "Frais médicaux",
+    "items": [
+     {
+      "key": "home.protection.out_of_pocket",
+      "en": "Out-of-pocket medical",
+      "fr": "Frais médicaux à votre charge",
+      "category": "health.medical"
+     },
+     {
+      "key": "home.protection.prescriptions",
+      "en": "Prescription subscriptions",
+      "fr": "Abonnements de médicaments d’ordonnance",
+      "category": "health.pharmacy"
+     },
+     {
+      "key": "home.protection.lab_work",
+      "en": "Lab work",
+      "fr": "Analyses de laboratoire",
+      "category": "health.medical"
+     },
+     {
+      "key": "home.protection.therapy",
+      "en": "Therapy",
+      "fr": "Thérapie",
+      "category": "health.paramedical"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "key": "home.lifestyle",
+  "type": "HOME",
+  "en": "Lifestyle & Discretionary",
+  "fr": "Mode de vie et dépenses discrétionnaires",
+  "groups": [
+   {
+    "key": "home.lifestyle.home_maintenance",
+    "en": "Maintenance & Repair",
+    "fr": "Entretien et réparations",
+    "items": [
+     {
+      "key": "home.lifestyle.home_repairs",
+      "en": "Home repairs",
+      "fr": "Réparations à la maison",
+      "category": "housing.maintenance"
+     },
+     {
+      "key": "home.lifestyle.appliances",
+      "en": "Appliance maintenance",
+      "fr": "Entretien des électroménagers",
+      "category": "housing.maintenance"
+     },
+     {
+      "key": "home.lifestyle.lawn_care",
+      "en": "Lawn care",
+      "fr": "Entretien de la pelouse",
+      "category": "housing.garden"
+     },
+     {
+      "key": "home.lifestyle.pest_control",
+      "en": "Pest control",
+      "fr": "Extermination",
+      "category": "housing.maintenance"
+     }
+    ]
+   },
+   {
+    "key": "home.lifestyle.travel",
+    "en": "Vacation & Travel",
+    "fr": "Vacances et voyages",
+    "items": [
+     {
+      "key": "home.lifestyle.trip_accounts",
+      "en": "Pre-funded trip accounts",
+      "fr": "Comptes de voyage prépayés",
+      "category": "travel"
+     },
+     {
+      "key": "home.lifestyle.travel_installments",
+      "en": "Hotel / Flight installment plans",
+      "fr": "Versements pour hôtel / vol",
+      "category": "travel"
+     },
+     {
+      "key": "home.lifestyle.timeshare",
+      "en": "Timeshare fees",
+      "fr": "Frais de multipropriété",
+      "category": "travel.lodging"
+     }
+    ]
+   },
+   {
+    "key": "home.lifestyle.subscriptions",
+    "en": "Subscriptions & Services",
+    "fr": "Abonnements et services",
+    "items": [
+     {
+      "key": "home.lifestyle.streaming",
+      "en": "Streaming platforms",
+      "fr": "Plateformes de diffusion en continu",
+      "category": "utilities.tv_streaming"
+     },
+     {
+      "key": "home.lifestyle.gym",
+      "en": "Gym memberships",
+      "fr": "Abonnements au centre sportif",
+      "category": "personal.fitness"
+     },
+     {
+      "key": "home.lifestyle.cloud_storage",
+      "en": "Cloud storage",
+      "fr": "Stockage infonuagique",
+      "category": "personal.electronics"
+     },
+     {
+      "key": "home.lifestyle.news",
+      "en": "News/Magazines",
+      "fr": "Journaux / magazines",
+      "category": "leisure.subscriptions"
+     }
+    ]
+   },
+   {
+    "key": "home.lifestyle.education_family",
+    "en": "Education & Family",
+    "fr": "Éducation et famille",
+    "items": [
+     {
+      "key": "home.lifestyle.childcare",
+      "en": "Childcare / Daycare",
+      "fr": "Garde d’enfants / garderie",
+      "category": "children.childcare"
+     },
+     {
+      "key": "home.lifestyle.school_tuition",
+      "en": "School tuition",
+      "fr": "Droits de scolarité",
+      "category": "children.school"
+     },
+     {
+      "key": "home.lifestyle.extracurricular",
+      "en": "Extracurricular activity fees",
+      "fr": "Frais d’activités parascolaires",
+      "category": "children.activities"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "key": "home.other",
+  "type": "HOME",
+  "en": "Other",
+  "fr": "Autre",
+  "groups": [
+   {
+    "key": "home.other.other",
+    "en": "Other",
+    "fr": "Autre",
+    "items": [
+     {
+      "key": "home.other.other",
+      "en": "Other",
+      "fr": "Autre",
+      "category": "misc"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "key": "business.facilities",
+  "type": "BUSINESS",
+  "en": "Facilities & Premises",
+  "fr": "Installations et locaux",
+  "groups": [
+   {
+    "key": "business.facilities.occupancy",
+    "en": "Occupancy",
+    "fr": "Occupation",
+    "items": [
+     {
+      "key": "business.facilities.commercial_rent",
+      "en": "Commercial Rent / Lease",
+      "fr": "Loyer / bail commercial",
+      "category": "business.rent"
+     },
+     {
+      "key": "business.facilities.mortgage",
+      "en": "Mortgage",
+      "fr": "Hypothèque",
+      "category": "business.interest_bank"
+     },
+     {
+      "key": "business.facilities.property_taxes",
+      "en": "Property Taxes",
+      "fr": "Taxes foncières",
+      "category": "business.property_tax"
+     }
+    ]
+   },
+   {
+    "key": "business.facilities.utilities",
+    "en": "Utilities",
+    "fr": "Services publics",
+    "items": [
+     {
+      "key": "business.facilities.power",
+      "en": "Commercial Power",
+      "fr": "Électricité commerciale",
+      "category": "business.telephone_utilities",
+      "meter": "ELECTRICITY"
+     },
+     {
+      "key": "business.facilities.water_waste",
+      "en": "Water / Waste",
+      "fr": "Eau / déchets",
+      "category": "business.telephone_utilities",
+      "meter": "WATER"
+     },
+     {
+      "key": "business.facilities.gas",
+      "en": "Gas",
+      "fr": "Gaz",
+      "category": "business.telephone_utilities",
+      "meter": "GAS"
+     },
+     {
+      "key": "business.facilities.security",
+      "en": "Building Security / Monitoring",
+      "fr": "Sécurité / surveillance de l’immeuble",
+      "category": "business.maintenance"
+     }
+    ]
+   },
+   {
+    "key": "business.facilities.facilities_maintenance",
+    "en": "Facilities Maintenance",
+    "fr": "Entretien des installations",
+    "items": [
+     {
+      "key": "business.facilities.janitorial",
+      "en": "Janitorial services",
+      "fr": "Services d’entretien ménager",
+      "category": "business.maintenance"
+     },
+     {
+      "key": "business.facilities.hvac",
+      "en": "HVAC maintenance",
+      "fr": "Entretien du chauffage, de la ventilation et de la climatisation",
+      "category": "business.maintenance"
+     },
+     {
+      "key": "business.facilities.repairs",
+      "en": "Repairs",
+      "fr": "Réparations",
+      "category": "business.maintenance"
+     },
+     {
+      "key": "business.facilities.landscaping",
+      "en": "Landscaping",
+      "fr": "Aménagement paysager",
+      "category": "business.maintenance"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "key": "business.technology",
+  "type": "BUSINESS",
+  "en": "Technology & Infrastructure",
+  "fr": "Technologie et infrastructure",
+  "groups": [
+   {
+    "key": "business.technology.software",
+    "en": "Software & SaaS",
+    "fr": "Logiciels et logiciels-services",
+    "items": [
+     {
+      "key": "business.technology.software_licenses",
+      "en": "Business software licenses",
+      "fr": "Licences de logiciels d’entreprise",
+      "category": "business.software"
+     },
+     {
+      "key": "business.technology.crm",
+      "en": "CRM",
+      "fr": "Gestion de la relation client (GRC)",
+      "category": "business.software"
+     },
+     {
+      "key": "business.technology.erp",
+      "en": "ERP",
+      "fr": "Progiciel de gestion intégré (PGI)",
+      "category": "business.software"
+     },
+     {
+      "key": "business.technology.cloud_hosting",
+      "en": "Cloud hosting (AWS, Azure)",
+      "fr": "Hébergement infonuagique (AWS, Azure)",
+      "category": "business.software"
+     }
+    ]
+   },
+   {
+    "key": "business.technology.telecom",
+    "en": "Telecommunications",
+    "fr": "Télécommunications",
+    "items": [
+     {
+      "key": "business.technology.business_internet",
+      "en": "Business Fiber / Internet",
+      "fr": "Fibre / Internet d’affaires",
+      "category": "business.telephone_utilities"
+     },
+     {
+      "key": "business.technology.voip",
+      "en": "Dedicated VoIP lines",
+      "fr": "Lignes de voix sur IP dédiées",
+      "category": "business.telephone_utilities"
+     },
+     {
+      "key": "business.technology.mobile_devices",
+      "en": "Mobile devices",
+      "fr": "Appareils mobiles",
+      "category": "business.telephone_utilities"
+     }
+    ]
+   },
+   {
+    "key": "business.technology.it_services",
+    "en": "IT Services",
+    "fr": "Services informatiques",
+    "items": [
+     {
+      "key": "business.technology.msp",
+      "en": "Managed Service Provider (MSP) contracts",
+      "fr": "Contrats de fournisseur de services gérés",
+      "category": "business.professional_fees"
+     },
+     {
+      "key": "business.technology.domains",
+      "en": "Domain registration",
+      "fr": "Enregistrement de noms de domaine",
+      "category": "business.software"
+     },
+     {
+      "key": "business.technology.cyber_insurance",
+      "en": "Cyber insurance",
+      "fr": "Cyberassurance",
+      "category": "business.insurance"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "key": "business.operations",
+  "type": "BUSINESS",
+  "en": "Operations & Supply Chain",
+  "fr": "Opérations et chaîne d’approvisionnement",
+  "groups": [
+   {
+    "key": "business.operations.inventory",
+    "en": "Inventory & Supplies",
+    "fr": "Stocks et fournitures",
+    "items": [
+     {
+      "key": "business.operations.raw_materials",
+      "en": "Raw materials",
+      "fr": "Matières premières",
+      "category": "business.purchases"
+     },
+     {
+      "key": "business.operations.cogs",
+      "en": "Cost of Goods Sold (COGS)",
+      "fr": "Coût des marchandises vendues (CMV)",
+      "category": "business.purchases"
+     },
+     {
+      "key": "business.operations.packaging",
+      "en": "Packaging",
+      "fr": "Emballage",
+      "category": "business.purchases"
+     }
+    ]
+   },
+   {
+    "key": "business.operations.office",
+    "en": "Office & Overhead",
+    "fr": "Bureau et frais généraux",
+    "items": [
+     {
+      "key": "business.operations.office_supplies",
+      "en": "General office supplies",
+      "fr": "Fournitures de bureau",
+      "category": "business.supplies"
+     },
+     {
+      "key": "business.operations.postage",
+      "en": "Postage / Shipping",
+      "fr": "Frais postaux / expédition",
+      "category": "business.delivery"
+     },
+     {
+      "key": "business.operations.equipment_leases",
+      "en": "Equipment leases",
+      "fr": "Location d’équipement",
+      "category": "business.rent"
+     }
+    ]
+   },
+   {
+    "key": "business.operations.merchant",
+    "en": "Merchant & Bank Services",
+    "fr": "Services marchands et bancaires",
+    "items": [
+     {
+      "key": "business.operations.payment_processing",
+      "en": "Payment processing fees",
+      "fr": "Frais de traitement des paiements",
+      "category": "business.interest_bank"
+     },
+     {
+      "key": "business.operations.pos_rentals",
+      "en": "POS equipment rentals",
+      "fr": "Location de terminaux de point de vente",
+      "category": "business.rent"
+     },
+     {
+      "key": "business.operations.account_maintenance",
+      "en": "Account maintenance",
+      "fr": "Frais de tenue de compte",
+      "category": "business.interest_bank"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "key": "business.professional",
+  "type": "BUSINESS",
+  "en": "Professional & Administrative Services",
+  "fr": "Services professionnels et administratifs",
+  "groups": [
+   {
+    "key": "business.professional.professional_fees",
+    "en": "Professional Fees",
+    "fr": "Honoraires professionnels",
+    "items": [
+     {
+      "key": "business.professional.legal",
+      "en": "Legal retainers",
+      "fr": "Provisions pour honoraires juridiques",
+      "category": "business.professional_fees"
+     },
+     {
+      "key": "business.professional.accounting",
+      "en": "Accounting / CPA fees",
+      "fr": "Honoraires comptables / CPA",
+      "category": "business.professional_fees"
+     },
+     {
+      "key": "business.professional.consulting",
+      "en": "Business Consulting",
+      "fr": "Services-conseils aux entreprises",
+      "category": "business.professional_fees"
+     }
+    ]
+   },
+   {
+    "key": "business.professional.insurance",
+    "en": "Insurance",
+    "fr": "Assurances",
+    "items": [
+     {
+      "key": "business.professional.general_liability",
+      "en": "Commercial General Liability",
+      "fr": "Responsabilité civile générale des entreprises",
+      "category": "business.insurance"
+     },
+     {
+      "key": "business.professional.cyber_risk",
+      "en": "Cyber Risk",
+      "fr": "Cyberrisques",
+      "category": "business.insurance"
+     },
+     {
+      "key": "business.professional.errors_omissions",
+      "en": "Errors & Omissions",
+      "fr": "Erreurs et omissions",
+      "category": "business.insurance"
+     },
+     {
+      "key": "business.professional.workers_comp",
+      "en": "Workers’ Comp",
+      "fr": "Indemnisation des accidents du travail",
+      "category": "business.insurance"
+     }
+    ]
+   },
+   {
+    "key": "business.professional.marketing",
+    "en": "Marketing & Advertising",
+    "fr": "Marketing et publicité",
+    "items": [
+     {
+      "key": "business.professional.digital_ads",
+      "en": "Digital ad spend",
+      "fr": "Publicité numérique",
+      "category": "business.advertising"
+     },
+     {
+      "key": "business.professional.agency_retainers",
+      "en": "Agency retainers",
+      "fr": "Honoraires d’agence",
+      "category": "business.advertising"
+     },
+     {
+      "key": "business.professional.print_collateral",
+      "en": "Print collateral",
+      "fr": "Imprimés promotionnels",
+      "category": "business.advertising"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "key": "business.employee_travel",
+  "type": "BUSINESS",
+  "en": "Employee & Travel",
+  "fr": "Employés et déplacements",
+  "groups": [
+   {
+    "key": "business.employee_travel.travel_entertainment",
+    "en": "Travel & Entertainment",
+    "fr": "Déplacements et frais de représentation",
+    "items": [
+     {
+      "key": "business.employee_travel.client_dinners",
+      "en": "Client dinners",
+      "fr": "Repas avec des clients",
+      "category": "business.meals"
+     },
+     {
+      "key": "business.employee_travel.flights",
+      "en": "Flights",
+      "fr": "Vols",
+      "category": "business.travel"
+     },
+     {
+      "key": "business.employee_travel.hotels",
+      "en": "Hotels",
+      "fr": "Hôtels",
+      "category": "business.travel"
+     },
+     {
+      "key": "business.employee_travel.car_rentals",
+      "en": "Car rentals",
+      "fr": "Location de voitures",
+      "category": "business.travel"
+     },
+     {
+      "key": "business.employee_travel.conferences",
+      "en": "Conference registrations",
+      "fr": "Inscriptions à des congrès",
+      "category": "business.travel"
+     }
+    ]
+   },
+   {
+    "key": "business.employee_travel.staff",
+    "en": "Staff Amenities",
+    "fr": "Avantages pour le personnel",
+    "items": [
+     {
+      "key": "business.employee_travel.catered_meals",
+      "en": "Catered meals",
+      "fr": "Repas de traiteur",
+      "category": "business.meals"
+     },
+     {
+      "key": "business.employee_travel.team_building",
+      "en": "Team building expenses",
+      "fr": "Activités de consolidation d’équipe",
+      "category": "business"
+     },
+     {
+      "key": "business.employee_travel.wellness",
+      "en": "Employee wellness programs",
+      "fr": "Programmes de mieux-être des employés",
+      "category": "business"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "key": "business.other",
+  "type": "BUSINESS",
+  "en": "Other",
+  "fr": "Autre",
+  "groups": [
+   {
+    "key": "business.other.other",
+    "en": "Other",
+    "fr": "Autre",
+    "items": [
+     {
+      "key": "business.other.other",
+      "en": "Other",
+      "fr": "Autre",
+      "category": "business"
+     }
+    ]
+   }
+  ]
+ }
+]

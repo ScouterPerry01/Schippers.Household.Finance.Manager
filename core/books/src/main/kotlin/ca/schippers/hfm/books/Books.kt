@@ -50,6 +50,7 @@ class Books(val session: HouseholdSession, internal val clock: () -> Long = Syst
     val accountAlerts = AccountAlertService(this)
     val statements = StatementService(this)
     val bills = BillService(this)
+    val billLists = BillListService(this)
     val rates = RateService(this)
     val reports = ReportService(this)
     val budgets = BudgetService(this)
