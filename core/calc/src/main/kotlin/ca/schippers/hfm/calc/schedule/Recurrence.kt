@@ -4,8 +4,11 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
-/** BILL-02 recurrence patterns. Quarterly, semi-annual and annual are monthly with an interval of 3, 6 and 12. */
-enum class Frequency { ONCE, DAILY, WEEKLY, SEMI_MONTHLY, MONTHLY }
+/**
+ * BILL-02 recurrence patterns. Quarterly, semi-annual and annual are monthly with an interval of 3, 6 and 12.
+ * BILL-23: INSTALMENTS has no dates of its own: they are the instalments listed on the bill's statements.
+ */
+enum class Frequency { ONCE, DAILY, WEEKLY, SEMI_MONTHLY, MONTHLY, INSTALMENTS }
 
 /** What happens when a due date falls on a weekend or bank holiday. */
 enum class BusinessDayAdjust { NONE, PREVIOUS, NEXT }
@@ -55,7 +58,7 @@ data class Recurrence(
     /** Average number of occurrences per year, for annual cost of subscriptions (BILL-10). */
     val perYear: Double
         get() = when (frequency) {
-            Frequency.ONCE -> 0.0
+            Frequency.ONCE, Frequency.INSTALMENTS -> 0.0
             Frequency.DAILY -> 365.25 / interval
             Frequency.WEEKLY -> 365.25 / 7 / interval
             Frequency.SEMI_MONTHLY -> 24.0
@@ -70,6 +73,7 @@ data class Recurrence(
 
     private fun rawDates(start: LocalDate): Sequence<LocalDate> = when (frequency) {
         Frequency.ONCE -> sequenceOf(start)
+        Frequency.INSTALMENTS -> emptySequence()
         Frequency.DAILY -> generateSequence(start) { it.plus(DatePeriod(days = interval)) }
         Frequency.WEEKLY -> generateSequence(start) { it.plus(DatePeriod(days = 7 * interval)) }
         Frequency.MONTHLY -> generateSequence(0) { it + interval }.map { months -> monthDate(start, months) }
@@ -128,5 +132,8 @@ data class Recurrence(
         val QUARTERLY = Recurrence(Frequency.MONTHLY, interval = 3)
         val SEMI_ANNUAL = Recurrence(Frequency.MONTHLY, interval = 6)
         val ANNUAL = Recurrence(Frequency.MONTHLY, interval = 12)
+
+        /** BILL-23: instalments on set dates, listed on each statement (property taxes). */
+        val INSTALMENTS = Recurrence(Frequency.INSTALMENTS)
     }
 }

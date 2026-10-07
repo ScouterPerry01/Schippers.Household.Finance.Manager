@@ -491,7 +491,7 @@ internal fun itemTitle(model: BooksModel, item: CalendarItem): String = when (it
 }
 
 private fun itemDetail(model: BooksModel, item: CalendarItem, names: Lookups): String? = when (item) {
-    is CalendarItem.Bill -> (if (item.occurrence.amountKnown) "" else "≈ ") + model.money(item.occurrence.amount) + " · " + model.t("occurrenceStatus.${item.occurrence.status}")
+    is CalendarItem.Bill -> (if (item.occurrence.amountKnown) "" else "≈ ") + model.money(item.occurrence.shownAmount) + " · " + model.t("occurrenceStatus.${item.occurrence.status}")
     is CalendarItem.Health -> names.people[item.due.memberId].orEmpty()
     is CalendarItem.Renewal -> item.renewal.subjectName
     is CalendarItem.Maintenance -> item.due.subjectName

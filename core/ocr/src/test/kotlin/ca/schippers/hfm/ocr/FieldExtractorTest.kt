@@ -311,4 +311,103 @@ class FieldExtractorTest {
         // A receipt that mentions a balance stays a receipt.
         assertEquals(DocumentKind.RECEIPT, kind("Starbucks", "CARD BALANCE 12.50", "New balance 7.90", "SUBTOTAL 4.60", "GST 0.23", "TOTAL 4.83"))
     }
+
+    @Test
+    fun `an Ottawa final tax bill lists its two instalments (BILL-25)`() {
+        val draft = FieldExtractor.extract(
+            lines(
+                """
+                City of Ottawa
+                2026 Final Property Tax Bill
+                Roll Number: 0614 123 4567 8900
+                Bill date: May 14, 2026
+                Total 2026 Taxes 4,812.00
+                Less Interim Billing 2,380.00
+                Balance of Taxes 2,432.00
+                1st Instalment Due June 18, 2026 1,216.00
+                2nd Instalment Due September 17, 2026 1,216.00
+                Late payment charges of 1.25% are added on the first day of default.
+                """,
+            ),
+            today,
+        )
+        val read = draft.instalments!!
+        assertEquals(listOf(LocalDate(2026, 6, 18), LocalDate(2026, 9, 17)), read.value.map { it.dueDate })
+        assertEquals(listOf(cad("1216.00"), cad("1216.00")), read.value.map { it.amount })
+        assertTrue(read.confidence >= 0.95f, "they add up to the balance shown")
+        assertEquals(LocalDate(2026, 6, 18), draft.dueDate?.value)
+    }
+
+    @Test
+    fun `a Quebec City tax bill in French lists its three versements (BILL-25)`() {
+        val draft = FieldExtractor.extract(
+            lines(
+                """
+                Ville de Québec
+                Compte de taxes municipales 2026
+                Date du compte : 2026-02-02
+                Total des taxes 4 207,00 $
+                1er versement   échéance 2026-03-05   1 402,33 $
+                2e versement    échéance 2026-06-04   1 402,33 $
+                3e versement    échéance 2026-09-03   1 402,34 $
+                Des intérêts et une pénalité s'appliquent à tout versement en retard.
+                """,
+            ),
+            today,
+        )
+        val read = draft.instalments!!.value
+        assertEquals(listOf(LocalDate(2026, 3, 5), LocalDate(2026, 6, 4), LocalDate(2026, 9, 3)), read.map { it.dueDate })
+        assertEquals(listOf(cad("1402.33"), cad("1402.33"), cad("1402.34")), read.map { it.amount })
+        assertTrue(draft.instalments.confidence >= 0.95f)
+    }
+
+    @Test
+    fun `instalments printed as a row of due dates over a row of amounts, and on two rows each (BILL-25)`() {
+        val table = FieldExtractor.extract(
+            lines(
+                """
+                City of Toronto
+                2026 Final Tax Bill
+                Instalment Due Dates   Jul 2, 2026   Aug 4, 2026   Sep 1, 2026
+                Amount Due             1,105.20      1,105.20      1,105.19
+                """,
+            ),
+            today,
+        ).instalments!!.value
+        assertEquals(listOf(LocalDate(2026, 7, 2), LocalDate(2026, 8, 4), LocalDate(2026, 9, 1)), table.map { it.dueDate })
+        assertEquals(cad("1105.19"), table.last().amount)
+
+        val split = FieldExtractor.extract(
+            lines(
+                """
+                Municipalité de Saint-Augustin
+                Premier versement
+                1 250,00 $
+                Date d'échéance : 15 mars 2026
+                Deuxième versement 1 250,00 $
+                15 juin 2026
+                """,
+            ),
+            today,
+        ).instalments!!.value
+        assertEquals(listOf(LocalDate(2026, 3, 15), LocalDate(2026, 6, 15)), split.map { it.dueDate })
+        assertEquals(listOf(cad("1250.00"), cad("1250.00")), split.map { it.amount })
+    }
+
+    @Test
+    fun `a bill with one due date, or equal payments, lists no instalments (BILL-25)`() {
+        val hydro = FieldExtractor.extract(
+            lines(
+                """
+                Hydro-Québec
+                Mode de versements égaux
+                Montant à payer 142,37 $
+                Date d'échéance : 2026-10-06 142,37 $
+                """,
+            ),
+            today,
+        )
+        assertNull(hydro.instalments)
+        assertEquals(LocalDate(2026, 10, 6), hydro.dueDate?.value)
+    }
 }

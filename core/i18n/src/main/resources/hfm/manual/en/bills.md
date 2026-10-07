@@ -16,8 +16,8 @@ The title bar has two buttons:
 
 Under it are five tabs:
 
-- **To pay**: what is overdue, due today and due in the next 30 days (the default window, set in [Rates and rules](rates-rules)), with the buttons to pay, skip or enter an amount, and each amount beside the usual one.
-- **All bills**: every bill, income and transfer you set up.
+- **To pay**: what is overdue, due today and due in the next 30 days (the default window, set in [Rates and rules](rates-rules)), with the amount due, the amount to pay, what is still outstanding, and the buttons to pay, skip or set the bill's amount.
+- **All bills**: every bill, income and transfer you set up, each with its next due date.
 - **Calendar**: a month view of due dates.
 - **Subscriptions**: what each subscription costs a year.
 - **Cash flow forecast**: each account's projected balance over 30, 60 or 90 days; 30 by default ([Rates and rules](rates-rules)).
@@ -71,7 +71,7 @@ Shown for a bill or income, not for a transfer.
   - **Variable**: changes every time, such as hydro or a credit card. Until you enter the actual amount of a due date, the app expects the average of the last three amounts paid (or the amount you entered, before any payment). The amount is shown with "≈".
   - **Estimated**: an amount you guess, such as a yearly property tax bill not yet received. Shown with "≈" until you enter the actual amount.
 
-For Variable and Estimated bills, the **To pay** tab offers **Enter amount** to record the actual amount when the bill arrives. See [Enter amount](bills#enter-amount).
+For Variable and Estimated bills, the **To pay** tab offers **Set the bill's amount** to record the actual amount when the bill arrives. See [Set the bill's amount](bills#set-amount).
 
 ### Payment method {#payment-method}
 
@@ -86,6 +86,7 @@ For Variable and Estimated bills, the **To pay** tab offers **Enter amount** to 
   - **Twice a month**: on the first due date's day and on a second day each month, such as the 1st and the 15th.
   - **Monthly**, **Quarterly**, **Twice a year**, **Yearly**: every 1, 3, 6 or 12 months.
   - **Every … days**, **Every … weeks**, **Every … months**: any other interval; enter the number under **Every**.
+  - **Instalments on set dates**: no schedule of its own; the due dates and amounts are the instalments listed on each statement, such as a property tax bill's. Choosing a Property Taxes subcategory (Home or Business) selects it for you. See [Property taxes and other instalments](bills#instalments).
 - **Every**: shown for the "Every …" choices. The number of days, weeks or months between due dates, 1 or more.
 - **Second day**: shown for Twice a month. The second day of the month, 1 to 31; enter 0 for the last day of the month. The first day is the day of the first due date.
 - **Day of the month**: shown for monthly, quarterly, twice-a-year, yearly and every-… -months bills.
@@ -138,11 +139,14 @@ When you edit an existing bill, **Statements** lists the statements received for
 The statement form:
 
 - **Statement number**: the bill or statement number printed on it. Optional.
-- **Amount**: the amount of this statement. It becomes the actual amount of its due date, as **Enter amount** would.
+- **Amount**: the amount of this statement. It becomes the actual amount of its due date, as **Set the bill's amount** would.
 - **Issued on**: the date the statement was issued. Optional.
 - **Due date**: the date it must be paid. Required. It becomes the bill's due date for that period: the bill's nearest unpaid due date (less than half a period away) moves to this date, so reminders, the calendar and the forecast follow the statement. When no due date is near, it is added as a due date of its own; when the nearest one is already paid, the statement is kept with it and nothing more is due.
 - **Previous reading**, **Previous reading date**, **Current reading**, **Current reading date** (utility bills, or bills with a meter): the meter readings printed on the statement, in kWh or cubic metres as on the bill.
 - **Amount used**: the consumption printed on the statement. Leave it empty to use the current reading less the previous one.
+- **Instalments**: for a bill paid in instalments on set dates, such as property taxes. **Add an instalment** adds a line with its **Due date** and **Amount**; the button beside a line removes it. Each instalment becomes a due date of the bill, with its amount and its reminders. With instalments, **Due date** is the first instalment's date and cannot be typed, and **Amount**, when left empty, is their total. Leave none for a bill paid at once. A line with only a date or only an amount is refused. See [Property taxes and other instalments](bills#instalments).
+
+A statement with instalments lists each one under it, such as "instalment 2 of 3 · due 2026-06-30 · $1,402.33", with "paid ..." once paid or "Still due: ..." when paid in part, and **Mark paid** while it is due.
 
 Readings with a date are added to the bill's meter, unless the meter already has a reading on that day, so the same reading is never entered twice. **Delete** in the form removes the statement; the due date and amount it set stay, and so do readings added to the meter.
 
@@ -164,6 +168,19 @@ When you edit an existing bill, **Payment history** at the bottom of the form li
 
 "No payments recorded yet." means the bill was never marked paid. The history comes from the due dates marked paid, so it starts with the first payment you mark.
 
+## Property taxes and other instalments {#instalments}
+@index: property tax; property taxes; municipal tax; school tax; instalment; instalments; interim tax bill; final tax bill; versement; roll-over; estimated instalment
+
+Some bills come once a year and are paid in instalments on dates printed on the bill: property taxes (Home or Business) are the usual example. Ottawa, for instance, sends an interim bill with two instalments early in the year and a final bill with two more in the spring; Quebec City sends one bill with two or three versements.
+
+1. Add the bill with **Repeats** set to **Instalments on set dates**. Choosing the Property Taxes subcategory selects it for you. Leave **Amount** at the year's total, or a typical amount: it is only shown when nothing else is known.
+2. When the tax bill arrives, add it under **Statements** (or capture it on the Documents screen), with each instalment's due date and amount under **Instalments**. Ottawa's interim and final bills are two statements, each with its instalments.
+3. Each instalment is then a due date of the bill, shown as "instalment 2 of 3", with the reminders of **Remind me (days before)** like any bill. Pay each one with **Mark paid**, in full or in part.
+
+Until next year's tax bill is entered, next year's instalments are proposed on the same dates, moved to the next business day (or the business day before, when **On weekends and holidays** says so) with the province's holidays, with this year's amounts. They are marked "estimated from last year's" and shown with "≈", so the reminders, the calendar and the forecast already count them. When you add next year's statement, its instalments replace the proposed ones: a payment already made toward a proposed instalment moves to the actual one nearest to it. Instalments later than the ones listed keep being proposed the same way, one year at a time.
+
+> Tip: A statement's instalments can be corrected later with **Edit** on the statement: a changed date moves that due date.
+
 ## The To pay tab {#to-pay-tab}
 @index: overdue bills; upcoming bills; agenda
 
@@ -177,7 +194,16 @@ When you edit an existing bill, **Payment history** at the bottom of the form li
 
 "Nothing due in the next 30 days." means nothing is overdue, due today or due in the next 30 days.
 
-Each line shows the due date, the name, the payment method, the account (and "→ account" for a transfer), the date it was paid if it was, and the amount ("≈" in front means the amount is expected, not known). The buttons on the line are described below. **Edit** opens the bill's form.
+A heading row names the columns:
+
+- **Due date**: in red when it is past and something is still to pay.
+- **Bill**: the name; "instalment 2 of 3" for an instalment of a statement (see [Property taxes and other instalments](bills#instalments)), with "estimated from last year's" when it is proposed from last year's; the payment method, the account (and "→ account" for a transfer) and the date it was paid if it was; and each payment made so far toward a due date paid in part ("$600.00 paid 2026-10-04").
+- **Amount due**: the amount of this due date ("≈" in front means the amount is expected, not known).
+- **To pay**: the amount **Mark paid** will propose. It starts at what is still outstanding; type another amount to pay part of it, or more. It is shown only for due dates still to pay.
+- **Outstanding**: the amount due less what has been paid toward it; zero once paid or skipped. Reminders, the calendar, the Dashboard total, the forecast and the phone use this amount.
+- **Actions**: the buttons described below. **Edit** opens the bill's form.
+
+The columns keep their places from line to line and grow with the text size (Display and accessibility); when the window is too narrow for them, the list scrolls sideways.
 
 Once a bill has been paid before, its line also compares the amount with its history:
 
@@ -190,27 +216,40 @@ The whole history of a bill is in its form. See [Payment history](bills#payment-
 ### Mark paid or Mark received {#mark-paid}
 @index: record payment; pay a bill
 
-**Mark paid** (for a bill or transfer) or **Mark received** (for income) opens a small form. It says when the bill was due, and that a transaction will be added to the account and matched with the bank statement when you import it.
+**Mark paid** (for a bill or transfer) or **Mark received** (for income) opens a small form. It says when the bill was due, and that a transaction will be added to the account and matched with the bank statement when you import it. When the amount due is known, it also shows "Still due: ...".
 
 - **Date paid**: the date of the payment, as YYYY-MM-DD. Default: today.
-- **Amount**: the amount actually paid or received. Default: the expected amount. It must be more than zero.
+- **Amount**: the amount actually paid or received. Default: the line's **To pay** amount, which starts at what is still outstanding. It must be more than zero.
 
 **Save** then:
 
 - for a bill: records money out of the paying account, with the bill's payee (or name) as payee, its category, and its name as memo;
 - for income: records money into the account the same way;
 - for a transfer: records a transfer from the paying account to the other account;
-- marks that due date paid. It moves to **Paid recently** and the next due date takes its place.
+- marks that due date paid once its payments reach the amount due. It moves to **Paid recently** and the next due date takes its place.
 
 When you later import the bank statement, the import matches the statement line with this transaction instead of adding it twice. The amounts you pay on a variable bill also set its expected amount (the average of the last three).
 
-### Enter amount {#enter-amount}
+### Paying a bill in part {#pay-in-part}
+@index: partial payment; part payment; pay in part; balance owing; outstanding amount; overpay
 
-**Enter amount** appears for Variable and Estimated bills. When the actual bill arrives, enter its amount:
+You can pay less than the amount due, for example half of a large bill now and the rest on payday. Type the amount under **To pay** (or in the form) and **Mark paid**:
 
-- **Amount**: the amount of this due date only. Required.
+- The payment is recorded as its own transaction, linked to that due date.
+- The due date stays in the list with the rest under **Outstanding**, and the payments made so far under its name. It is still reminded about, shown on the calendar and counted in the forecast and the Dashboard for what is still due.
+- **Mark paid** again proposes what is left. The due date is paid once its payments reach the amount due; a difference of one cent is ignored.
+- Paying more than is still due asks "Pay more than is due?" first: **Record it** records the whole amount and marks the due date paid; **Cancel** goes back to the form.
 
-The line then shows the amount without "≈", and the forecast and reminders use it. Nothing is recorded in the account until you mark it paid.
+A variable or estimated bill whose amount was not set is paid in full by the amount you pay, which becomes its amount. To pay part of one, first **Set the bill's amount**.
+
+### Set the bill's amount {#set-amount}
+@index: Enter amount; actual amount; variable bill amount
+
+**Set the bill's amount** appears for Variable and Estimated bills. It is the amount printed on the bill itself, not a payment: when the actual bill arrives, enter its amount:
+
+- **Amount of the bill**: the amount of this due date only. Required.
+
+The line then shows the amount without "≈" under **Amount due**, and the forecast and reminders use it. Nothing is recorded in the account until you mark it paid. To record what you pay, use **Mark paid**.
 
 > Tip: When you scan or import a paper or e-bill on the Documents screen, Record the amount on this bill does the same thing and keeps the bill with it. See [Record the amount on a bill](documents#record-on-bill).
 
@@ -224,7 +263,7 @@ Under **Skipped**, **Unskip** brings a skipped due date back: it is due again, i
 
 ### Undo a payment {#undo-payment}
 
-Under **Paid recently**, **Undo** reverses a payment marked by mistake: the transaction that was recorded for it is deleted from the account, and the due date goes back to the list as not paid. The amount paid stays as the amount of that due date. If the transaction was already deleted in the register, only the due date goes back.
+Under **Paid recently**, **Undo** reverses a payment marked by mistake, and on a due date paid in part, **Undo last payment** does the same for its latest payment. One payment is undone at a time: its transaction is deleted from the account, and the due date is due again for what that payment covered; earlier payments stay. The amount due stays as it was. If the transaction was already deleted in the register, only the payment is removed.
 
 If that transaction is part of a completed reconciliation, the app first asks "Change a reconciled transaction?": deleting it means the account no longer agrees with that statement, and the change is recorded in the history. **Change it** deletes it and undoes the payment; **Cancel** changes nothing.
 
@@ -235,7 +274,14 @@ A red line "The paying account would go below zero." appears on a bill whose pay
 
 ## The All bills tab {#all-bills-tab}
 
-**All bills** lists every bill, income and transfer, including inactive ones (marked "(inactive)"). Each line shows the name, the type, how it repeats, the next due date ("next ..."), and the amount ("≈" for variable or estimated amounts). A classified bill also shows Home or Business, its category and subcategory, and the account number masked ("account •••• 6789"). **Edit** opens the bill's form.
+**All bills** lists every bill, income and transfer, including inactive ones (marked "(inactive)"), by name, under the same column headings as **To pay**.
+
+![The All bills tab: each bill with its next due date](images/bills-all.png)
+
+- **Due date**: the bill's next due date still to pay, an overdue one first; "—" when nothing is due (the line then says "nothing due").
+- **Bill**: the name, the type and how it repeats ("Instalments on set dates" for a property tax bill, with "instalment 1 of 2" for its next one). A classified bill also shows Home or Business, its category and subcategory, and the account number masked ("account •••• 6789").
+- **Amount due**, **To pay** and **Outstanding**: as on the To pay tab, for that next due date.
+- **Actions**: **Mark paid** (or **Mark received**) pays the **To pay** amount, as on the To pay tab; **Edit** opens the bill's form.
 
 "No bills yet. Add rent, utilities, insurance, subscriptions, pay and regular transfers." means none are set up.
 
@@ -245,7 +291,7 @@ A red line "The paying account would go below zero." appears on a bill whose pay
 
 ![The Calendar tab: the month's bills by due date](images/bills-calendar.png)
 
-- Due dates still to pay are in normal text; overdue ones in red.
+- Due dates still to pay are in normal text, with what is still outstanding (less any part payments); overdue ones in red. "≈" marks an expected amount, such as next year's instalments proposed from this year's.
 - Paid due dates are greyed; skipped ones are paler still.
 - A day shows up to three bills, then "+n" for the others.
 
@@ -282,6 +328,8 @@ How it is counted:
 - Today's balance is the account's current balance in the books, so import or enter recent transactions first.
 - Overdue items not yet paid are counted today.
 - Variable bills count their expected amount; amounts you entered count as entered.
+- A due date paid in part counts only what is still outstanding; the payments made are already in the account's balance.
+- Next year's instalments proposed from this year's count at this year's amounts.
 - A transfer counts on both accounts. A transfer into an account in another currency is not counted on that account, since the amount it will arrive in is not known.
 - Overdraft warnings are given for bank accounts only, not for credit cards or loans.
 - Spending you did not schedule as a bill (groceries, gas) is not in the forecast.
@@ -300,7 +348,7 @@ How it is counted:
 
 Reminders about bills appear in two places:
 
-- A coloured banner at the top of every other screen, such as "3 reminders  Hydro: due in 7 days (≈ 142.00 $) · Rent: due today (1,450.00 $)". Click it to open the screen of the first reminder. The banner also carries reminders for appointments, medication refills, renewals and maintenance.
+- A coloured banner at the top of every other screen, such as "3 reminders  Hydro: due in 7 days (≈ 142.00 $) · Rent: due today (1,450.00 $)". The amount is what is still outstanding. Click it to open the screen of the first reminder. The banner also carries reminders for appointments, medication refills, renewals and maintenance.
 - A system notification from RANN's Roost, checked every few minutes while the household is open. Each reminder is announced once a day for each household: this computer remembers what it has announced, so closing and opening the app again the same day does not repeat it. The banner still shows every reminder.
 
 A bill is in the reminders:
@@ -321,18 +369,20 @@ A paper bill or e-bill imported on the [Documents](documents) screen is recorded
 - When the app recognizes the bill, by your account number with the payee or by the payee's name, **Record it as this bill's statement** records it and keeps the document with it.
 - When it matches none of your bills, **Create a bill from this** opens the bill form filled in from the document: the company's name, your account number, the amount (as a variable amount), the due date as the first due date, monthly, and a home or business classification guessed from your earlier bills from the same company, the payee's category or the company's name (Hydro, Énergir, Bell, Rogers...). Check it, choose the account it is paid from, and save: the bill is created and the document becomes its first statement, under **First statement (the captured bill)**.
 - **Attach to a bill** records it on a bill you choose instead, with the statement's fields to correct if need be.
+- A tax bill's instalments, when printed ("1st Instalment Due June 18, 2026 $1,216.00", "2e versement échéance 2026-06-04", or a row of due dates over a row of amounts), are read too, on this computer and by AI reading. They fill in the statement's **Instalments**, and **Create a bill from this** then proposes **Instalments on set dates**. Check each date and amount before saving.
 
 Fill in **Payee** and **Your account number with the payee** on your bills so they are recognized. See [Documents](documents#record-on-bill).
 
 ## Where bills appear elsewhere {#elsewhere}
 
-- The [Dashboard](dashboard) shows the bills overdue or due in the next 7 days and their total.
+- The [Dashboard](dashboard) shows the bills overdue or due in the next 7 days and their total, counting what is still outstanding on those paid in part.
+- The phone's list of bills due shows what is still outstanding.
 - The [Calendar](calendar) shows every due date with appointments and other dates.
 - Payments recorded from bills are ordinary transactions: they count in [Budgets](budgets), [Reports](reports) and tax figures under the bill's category.
 
 ## Who can do what {#permissions}
 
-- Adding, editing, deleting, skipping and unskipping, entering an amount and undoing a payment need **Edit** permission on the account group of the paying account.
+- Adding, editing, deleting, skipping and unskipping, setting the bill's amount, adding statements and undoing a payment need **Edit** permission on the account group of the paying account.
 - Marking a due date paid or received needs at least **Capture only** permission.
 - A bill is visible to everyone who can open the account group of its paying account. See [Users](users).
 

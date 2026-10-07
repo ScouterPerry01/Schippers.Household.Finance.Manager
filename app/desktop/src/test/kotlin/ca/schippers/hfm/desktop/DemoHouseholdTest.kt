@@ -9,6 +9,8 @@ import ca.schippers.hfm.data.HouseholdStore
 import ca.schippers.hfm.data.jdbc.SqlCipherJdbcDriverFactory
 import ca.schippers.hfm.i18n.Language
 import ca.schippers.hfm.security.KdfParams
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -62,6 +64,13 @@ class DemoHouseholdTest {
             val statements = books.bills.statements(hydro.id)
             assertEquals(2, statements.size)
             assertTrue(statements.all { s -> s.meterId != null && s.readings.current != null })
+            // BILL-22 to BILL-24: the property taxes in instalments, the earlier ones paid, the next one paid in part, next year's proposed.
+            val taxes = bills.first { b -> b.subcategoryKey == "home.essential.property_taxes" }
+            val instalments = books.bills.occurrences(today.minus(kotlinx.datetime.DatePeriod(days = 200)), today.plus(kotlinx.datetime.DatePeriod(days = 400)), setOf(taxes.id))
+            assertTrue(instalments.all { o -> o.instalment != null }, "every due date is an instalment: $instalments")
+            assertTrue(instalments.any { o -> o.status == ca.schippers.hfm.books.OccurrenceStatus.PAID })
+            assertTrue(instalments.any { o -> o.status == ca.schippers.hfm.books.OccurrenceStatus.DUE && o.payments.isNotEmpty() && o.outstanding < o.amount })
+            assertTrue(instalments.any { o -> o.estimated })
             val waiting = books.documents.inbox().filter { d -> d.kind == ca.schippers.hfm.ocr.DocumentKind.BILL && books.documents.billFor(d.id) == null }
             assertEquals(1, waiting.size, "the gas bill waits for a bill to be created")
             assertEquals("home.essential.natural_gas", books.documents.billProposal(waiting.single().id).bill?.subcategoryKey)

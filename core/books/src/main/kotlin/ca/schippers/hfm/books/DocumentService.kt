@@ -13,6 +13,7 @@ import ca.schippers.hfm.ocr.FieldExtractor
 import ca.schippers.hfm.ocr.FieldSource
 import ca.schippers.hfm.ocr.MeterReadings
 import ca.schippers.hfm.ocr.OcrResult
+import ca.schippers.hfm.ocr.ReadInstalment
 import ca.schippers.hfm.ocr.TaxName
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -472,6 +473,10 @@ class DocumentService internal constructor(private val books: Books) {
         return draft.dueDate
     }
 
+    /** BILL-25: the instalments read on a captured bill, in the bill's currency. */
+    fun instalmentsRead(doc: VaultDocument, currency: ca.schippers.hfm.money.Currency): List<BillInstalment> =
+        doc.draft?.instalments?.value.orEmpty().filter { it.amount.currency == currency }.map { BillInstalment(it.dueDate, it.amount) }
+
     /**
      * BILL-16: what a captured bill says about its statement. Without a due date on it, the bill's
      * due date nearest to its date is used.
@@ -487,7 +492,7 @@ class DocumentService internal constructor(private val books: Books) {
         }
         return StatementDraft(
             due, amount.takeIf { it.currency == bill.amount.currency }, read?.invoiceNumber?.value, doc.date, documentId = doc.id,
-            readings = read?.meter?.value ?: MeterReadings(),
+            readings = read?.meter?.value ?: MeterReadings(), instalments = instalmentsRead(doc, bill.amount.currency),
         )
     }
 
@@ -505,15 +510,21 @@ class DocumentService internal constructor(private val books: Books) {
         val sub = books.billLists.guess(payee, learned)
         val accounts = books.accounts.list().map { it.account }.filter { doc.amount == null || it.currency == doc.amount.currency }
         val account = accounts.firstOrNull { it.id == accountId } ?: accounts.firstOrNull { it.type.kind == ca.schippers.hfm.domain.AccountKind.BANK } ?: accounts.firstOrNull()
-        val due = read?.dueDate?.value ?: doc.date ?: dateOf(doc.capturedAt)
+        val instalments = account?.let { instalmentsRead(doc, it.currency) }.orEmpty()
+        val due = instalments.firstOrNull()?.dueDate ?: read?.dueDate?.value ?: doc.date ?: dateOf(doc.capturedAt)
+        // BILL-23: a bill listing instalments (or a property tax) is paid in instalments on set dates.
+        val byInstalments = instalments.isNotEmpty() || books.billLists.lists().suggestsInstalments(sub?.key)
         val bill = account?.let {
             BillDraft(
-                BillKind.BILL, payee ?: doc.label, doc.amount ?: Money.zero(it.currency), it.id, ca.schippers.hfm.calc.schedule.Recurrence.MONTHLY, due,
-                payeeName = payee, payeeAccountNumber = read?.accountNumber?.value, amountKind = AmountKind.VARIABLE,
+                BillKind.BILL, payee ?: doc.label, doc.amount ?: Money.zero(it.currency), it.id,
+                if (byInstalments) ca.schippers.hfm.calc.schedule.Recurrence.INSTALMENTS else ca.schippers.hfm.calc.schedule.Recurrence.MONTHLY, due,
+                payeeName = payee, payeeAccountNumber = read?.accountNumber?.value, amountKind = if (byInstalments) AmountKind.FIXED else AmountKind.VARIABLE,
                 categoryId = sub?.spendingCategoryId ?: learned, type = sub?.type, categoryKey = sub?.categoryKey, subcategoryKey = sub?.key,
             )
         }
-        val statement = StatementDraft(due, doc.amount, read?.invoiceNumber?.value, doc.date, documentId = documentId, readings = read?.meter?.value ?: MeterReadings())
+        val statement = StatementDraft(
+            due, doc.amount, read?.invoiceNumber?.value, doc.date, documentId = documentId, readings = read?.meter?.value ?: MeterReadings(), instalments = instalments,
+        )
         return BillProposal(bill, statement)
     }
 
@@ -629,6 +640,8 @@ internal data class StoredDraft(
     val chosen: StoredChoices? = null,
     /** BILL-17: a utility bill's meter readings. */
     val meter: StoredMeter? = null,
+    /** BILL-25: the instalments a tax bill lists. */
+    val instalments: StoredInstalments? = null,
 ) {
     fun toDraft(): DocumentDraft {
         val c = Currency.of(currency)
@@ -645,6 +658,12 @@ internal data class StoredDraft(
                         m.used?.toBigDecimalOrNull(), m.unit,
                     ),
                     m.c, FieldSource.valueOf(m.s),
+                )
+            },
+            instalments?.let { i ->
+                Extracted(
+                    i.dates.zip(i.amounts).mapNotNull { (d, a) -> runCatching { ReadInstalment(LocalDate.parse(d), money(a)) }.getOrNull() },
+                    i.c, FieldSource.valueOf(i.s),
                 )
             },
         )
@@ -665,6 +684,9 @@ internal data class StoredDraft(
                         e.confidence, e.source.name,
                     )
                 },
+                instalments = d.instalments?.let { e ->
+                    StoredInstalments(e.value.map { it.dueDate.toString() }, e.value.map { it.amount.toBigDecimal().toPlainString() }, e.confidence, e.source.name)
+                },
             )
         }
     }
@@ -679,6 +701,15 @@ internal data class StoredMeter(
     val currentDate: String? = null,
     val used: String? = null,
     val unit: String? = null,
+    val c: Float = 0f,
+    val s: String = FieldSource.ON_DEVICE.name,
+)
+
+/** BILL-25: the instalments read from a tax bill, as stored with the document: dates and amounts (decimal text) in order. */
+@Serializable
+internal data class StoredInstalments(
+    val dates: List<String> = emptyList(),
+    val amounts: List<String> = emptyList(),
     val c: Float = 0f,
     val s: String = FieldSource.ON_DEVICE.name,
 )

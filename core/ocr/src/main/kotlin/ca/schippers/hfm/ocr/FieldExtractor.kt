@@ -36,7 +36,9 @@ object FieldExtractor {
             total = if (sum == total.value) total.copy(confidence = maxOf(total.confidence, 0.95f)) else total.copy(confidence = total.confidence * 0.8f)
         }
 
-        val dueDate = labelledDate(rows, DUE_LABELS, french)
+        // BILL-25: a tax bill's instalments; the first is its due date when no other is printed.
+        val instalments = instalments(rows, french, currency, total?.value)
+        val dueDate = labelledDate(rows, DUE_LABELS, french) ?: instalments?.let { Extracted(it.value.first().dueDate, it.confidence) }
         // BILL-19: a meter's reading dates are not the bill's date.
         val readingRows = rows.filter { r -> (PREVIOUS_READING + CURRENT_READING).any { r.folded.contains(it) } }.toSet()
         val docDate = labelledDate(rows.filter { r -> DUE_LABELS.none { r.folded.contains(it) } }, DATE_LABELS, french)
@@ -57,7 +59,73 @@ object FieldExtractor {
             dueDate = dueDate,
             accountNumber = labelledToken(rows, ACCOUNT_LABELS, Regex("""\d[\d -]{4,24}\d"""))?.let { it.copy(value = it.value.replace(Regex("\\s+"), " ").trim()) },
             meter = meter(rows, french, docDate?.value ?: dueDate?.value ?: today),
+            instalments = instalments,
         )
+    }
+
+    // --- Instalments (BILL-25) -------------------------------------------------------------------
+
+    /**
+     * The instalments a tax bill lists, in English or French: one per row ("1st Instalment Due June
+     * 18, 2026 1,216.00", "2e versement échéance 2026-06-04 1 402,33 $", with the amount or the date
+     * on the next row when the row has none), or a row of due dates over (or under) a row of
+     * amounts ("Due Dates Jul 2, 2026 Aug 4, 2026"). At least two are needed: a single due date is
+     * the bill's own. They are trusted more when they add up to an amount the bill shows.
+     */
+    private fun instalments(rows: List<Row>, french: Boolean, currency: Currency, total: Money?): Extracted<List<ReadInstalment>>? {
+        val found = LinkedHashMap<LocalDate, Pair<BigDecimal, Float>>()
+        fun add(date: LocalDate, amount: BigDecimal, confidence: Float) {
+            if (amount.signum() > 0 && date !in found) found[date] = amount to confidence
+        }
+        // A tax bill names its instalments somewhere; then a due date with an amount on one row is one too.
+        val named = rows.any { r -> INSTALMENT_WORDS.any { r.folded.contains(it) } }
+        for ((i, row) in rows.withIndex()) {
+            val instalmentRow = INSTALMENT_WORDS.any { row.folded.contains(it) }
+            val dueRow = DUE_LABELS.any { row.folded.contains(it) } || INSTALMENT_DATE_LABELS.any { row.folded.contains(it) }
+            if (!instalmentRow && !(named && dueRow)) continue
+            if (NOT_INSTALMENT.any { row.folded.contains(it) }) continue
+            val (dates, amounts) = datesAndAmounts(row.text, french)
+            when {
+                // A row of due dates: the amounts on the row, or on a row of amounts close by.
+                dates.size >= 2 -> {
+                    val values = amounts.takeIf { it.size == dates.size }
+                        ?: listOf(i + 1, i + 2, i + 3, i - 1).mapNotNull { rows.getOrNull(it) }.firstNotNullOfOrNull { r ->
+                            datesAndAmounts(r.text, french).takeIf { (d, a) -> d.isEmpty() && a.size == dates.size }?.second
+                        }
+                        ?: continue
+                    dates.zip(values).forEach { (d, a) -> add(d.first, a, row.confidence * d.second * 0.9f) }
+                }
+                dates.size == 1 && amounts.isNotEmpty() -> add(dates.single().first, amounts.last(), row.confidence * dates.single().second)
+                dates.size == 1 && instalmentRow -> rows.getOrNull(i + 1)?.let { datesAndAmounts(it.text, french) }
+                    ?.takeIf { (d, a) -> d.isEmpty() && a.size == 1 }
+                    ?.let { (_, a) -> add(dates.single().first, a.single(), row.confidence * dates.single().second * 0.9f) }
+                dates.isEmpty() && amounts.isNotEmpty() && instalmentRow -> rows.getOrNull(i + 1)?.let { datesAndAmounts(it.text, french) }
+                    ?.takeIf { (d, _) -> d.size == 1 }
+                    ?.let { (d, _) -> add(d.single().first, amounts.last(), row.confidence * d.single().second * 0.9f) }
+                // A heading ("Premier versement") with its amount and date on the next rows.
+                dates.isEmpty() && instalmentRow -> {
+                    val next = listOf(i + 1, i + 2).mapNotNull { rows.getOrNull(it) }.takeWhile { r -> INSTALMENT_WORDS.none { r.folded.contains(it) } }
+                        .map { datesAndAmounts(it.text, french) }
+                    val date = next.firstNotNullOfOrNull { it.first.singleOrNull() }
+                    val amount = next.firstNotNullOfOrNull { it.second.singleOrNull() }
+                    if (date != null && amount != null) add(date.first, amount, row.confidence * date.second * 0.85f)
+                }
+            }
+        }
+        if (found.size < 2) return null
+        val list = found.entries.sortedBy { it.key }.map { (date, v) -> ReadInstalment(date, Money.exact(v.first, currency)) }
+        var confidence = found.values.minOf { it.second } * 0.95f
+        val sum = list.fold(Money.zero(currency)) { a, r -> a + r.amount }
+        val shown = rows.flatMap { amounts(it.text) }.map { Money.exact(it, currency) }
+        if (sum == total || sum in shown) confidence = maxOf(confidence, 0.95f)
+        return Extracted(list, confidence)
+    }
+
+    /** The dates on a row, and its amounts once the dates are taken out ("2026.03.05" is not an amount). */
+    private fun datesAndAmounts(text: String, french: Boolean): Pair<List<Pair<LocalDate, Float>>, List<BigDecimal>> {
+        val blanked = StringBuilder(text)
+        for ((range, _) in dateSpans(text, french, null)) for (k in range) blanked.setCharAt(k, ' ')
+        return dates(text, french) to amounts(blanked.toString())
     }
 
     // --- Meter readings (BILL-17, BILL-19) ---------------------------------------------------------
@@ -390,6 +458,11 @@ object FieldExtractor {
         "date d'echeance", "date d’echeance", "date d echeance", "echeance", "due date", "payment due", "payable avant", "a payer avant", "payable by", "please pay by",
         "date limite", "pay by", "au plus tard le", "due on",
     )
+    /** BILL-25: words of a tax bill's instalments, in English and French. */
+    private val INSTALMENT_WORDS = listOf("instalment", "installment", "versement")
+    private val INSTALMENT_DATE_LABELS = listOf("due dates", "dates d'echeance", "dates d’echeance", "dates d echeance", "dates limites")
+    /** Rows about instalments that are not one: totals, penalties and interest. */
+    private val NOT_INSTALMENT = listOf("total", "penalt", "penalite", "interet", "interest", "late payment", "retard", "frais")
     private val DATE_LABELS = listOf(
         "date de facturation", "date de la facture", "date de facture", "bill date", "invoice date", "statement date", "date du releve", "billing date",
         "issue date", "date of issue", "issued on", "date d'emission", "date d’emission", "date d emission", "date:", "date :",

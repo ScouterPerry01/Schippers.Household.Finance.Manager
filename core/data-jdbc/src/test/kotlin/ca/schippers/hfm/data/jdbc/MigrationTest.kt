@@ -637,7 +637,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(34L, LedgerDatabase.Schema.version)
+            assertEquals(35L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val db = LedgerDatabase(driver)
             assertEquals("Garage", db.calendarQueries.eventById("e").executeAsOne().title, "events stay")
@@ -726,7 +726,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(34L, LedgerDatabase.Schema.version)
+            assertEquals(35L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).medicalQueries
             assertEquals("AFTER_SERVICE", q.planById("m").executeAsOne().claim_rule, "existing plans keep counting from the service")
@@ -771,7 +771,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(34L, LedgerDatabase.Schema.version)
+            assertEquals(35L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val tq = LedgerDatabase(driver).trackersQueries
             assertEquals(0L, tq.chores().executeAsOne().several_a_day, "existing chores are ticked once a day")
@@ -790,7 +790,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(34L, LedgerDatabase.Schema.version)
+            assertEquals(35L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).extrasQueries
             val trip = q.tripById("t").executeAsOne()
@@ -826,7 +826,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(34L, LedgerDatabase.Schema.version)
+            assertEquals(35L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).ledgerQueries
             val bill = q.billById("b").executeAsOne()
@@ -835,11 +835,47 @@ class MigrationTest {
             assertEquals(null, q.occurrencesForBill("b").executeAsOne().scheduled_date)
             driver.execute(null, "PRAGMA foreign_keys = ON", 0)
             q.upsertOccurrence("o2", "b", "2026-10-15", 14237, "DUE", null, null, null, "2026-10-12")
-            q.upsertBillStatement("s", "b", "2026-0914", "2026-09-24", "2026-10-15", 14237, null, "45678", "2026-08-12", "46321", "2026-09-11", "643", null, null, 0)
-            q.upsertBillStatement("s", "b", "2026-0914", "2026-09-24", "2026-10-16", 14237, null, "45678", "2026-08-12", "46321", "2026-09-11", "643", null, null, 0)
+            q.upsertBillStatement("s", "b", "2026-0914", "2026-09-24", "2026-10-15", 14237, null, "45678", "2026-08-12", "46321", "2026-09-11", "643", null, null, 0, null)
+            q.upsertBillStatement("s", "b", "2026-0914", "2026-09-24", "2026-10-16", 14237, null, "45678", "2026-08-12", "46321", "2026-09-11", "643", null, null, 0, null)
             assertEquals("2026-10-16", q.billStatements("b").executeAsOne().due_date)
             q.deleteBill("b")
             assertEquals(0, q.billStatements("b").executeAsList().size, "deleting the bill removes its statements")
+        }
+    }
+
+    @Test
+    fun `version 34 ledgers keep their paid bills as payments and gain instalments`() {
+        val file = temp.resolve("ledger34.db")
+        older("../data/src/main/sqldelight/ledger/schemas/34.db", file, 34).use { driver ->
+            driver.execute(null, "INSERT INTO account(id, name, type, currency, opening_date, created_at, updated_at) VALUES ('a', 'Chequing', 'CHEQUING', 'CAD', '2026-01-01', 0, 0)", 0)
+            driver.execute(
+                null,
+                "INSERT INTO bill(id, name, amount_minor, account_id, recurrence, start_date, created_at, updated_at) VALUES ('b', 'Rent', 145000, 'a', 'MONTHLY', '2026-01-01', 0, 0)",
+                0,
+            )
+            driver.execute(null, "INSERT INTO bill_occurrence(id, bill_id, due_date, amount_minor, status, txn_id, paid_date) VALUES ('o', 'b', '2026-09-01', 145000, 'PAID', 't', '2026-08-30')", 0)
+            driver.execute(null, "INSERT INTO bill_occurrence(id, bill_id, due_date, amount_minor, status) VALUES ('o2', 'b', '2026-10-01', 145000, 'DUE')", 0)
+            driver.execute(null, "INSERT INTO bill_statement(id, bill_id, due_date, created_at) VALUES ('s', 'b', '2026-09-01', 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(35L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).ledgerQueries
+            val payment = q.billPayments("b").executeAsOne()
+            assertEquals("2026-09-01", payment.due_date, "a due date paid before is one payment")
+            assertEquals(145000L, payment.amount_minor)
+            assertEquals("2026-08-30", payment.paid_date)
+            assertEquals("t", payment.txn_id)
+            assertEquals(null, q.billStatements("b").executeAsOne().instalments)
+            driver.execute(null, "PRAGMA foreign_keys = ON", 0)
+            q.upsertBillStatement("s", "b", null, null, "2026-09-01", 290000, null, null, null, null, null, null, null, null, 0, "2026-09-01=145000;2026-10-01=145000")
+            assertEquals("2026-09-01=145000;2026-10-01=145000", q.instalmentStatements().executeAsOne().instalments)
+            q.insertBillPayment("p2", "b", "2026-10-01", 50000, "2026-09-28", null, 0)
+            q.moveBillPayments("2026-10-03", "b", "2026-10-01")
+            assertEquals(listOf("2026-09-01", "2026-10-03"), q.billPayments("b").executeAsList().map { it.due_date })
+            q.deleteBill("b")
+            assertEquals(0, q.allBillPayments().executeAsList().size, "deleting the bill removes its payments")
         }
     }
 }

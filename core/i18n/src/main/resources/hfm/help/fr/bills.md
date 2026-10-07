@@ -12,10 +12,11 @@ Choisissez Ajouter une facture. Choisissez le type : Facture, Revenu ou Virement
 
 À payer montre ce qui est en retard, à payer aujourd’hui et prévu dans les 30 prochains jours.
 
-- Marquer payée, ou Marquer reçu pour un revenu, ajoute l’opération au compte.
-- Entrer le montant fixe le montant de cette fois-ci pour une facture variable ou estimée.
+- Les colonnes sont Échéance, Facture, Montant dû, À payer, Reste dû et Actions.
+- Marquer payée, ou Marquer reçu pour un revenu, paie le montant À payer et ajoute l’opération au compte. Tapez moins sous À payer pour en payer une partie : le reste demeure dû sous Reste dû, avec ses rappels.
+- Indiquer le montant de la facture inscrit le montant imprimé sur une facture variable ou estimée ; ce n’est pas un paiement.
 - Sauter passe une échéance.
-- Annuler, sous Payées récemment, défait un paiement marqué par erreur.
+- Annuler, sous Payées récemment, ou Annuler le dernier paiement défait un paiement marqué par erreur.
 
 Un avertissement s’affiche quand le compte de paiement passerait sous zéro.
 
@@ -34,3 +35,7 @@ Sous Maison ou entreprise, choisissez Maison ou Entreprise, puis la catégorie d
 ## États de compte et relevés du compteur
 
 Votre numéro de compte chez le fournisseur est masqué ; Afficher le numéro redemande votre mot de passe. Quand vous modifiez une facture, États de compte énumère ceux reçus : Ajouter un état de compte inscrit son numéro, son montant, sa date d’émission et sa date d’échéance, qui devient l’échéance de cette période. Pour les services publics, entrez les relevés précédent et actuel avec leurs dates : ils sont ajoutés au compteur choisi sous Compteur (Services publics). Une facture saisie dans Documents est inscrite comme état de compte, ou crée la facture avec Créer une facture à partir de ceci.
+
+## Taxes foncières et versements
+
+Pour une facture payée en versements à dates fixes, comme les taxes foncières, choisissez Versements à dates fixes sous Répétition. Ajoutez le compte de taxes de chaque année comme état de compte avec ses versements : chacun devient une échéance, affichée versement 2 de 3. En attendant le compte de l’an prochain, ses versements sont proposés aux mêmes dates avec les montants de cette année, marqués estimés.

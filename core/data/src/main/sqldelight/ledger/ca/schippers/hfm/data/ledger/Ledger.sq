@@ -211,10 +211,25 @@ CREATE TABLE bill_statement (
     used TEXT,
     meter_id TEXT,
     notes TEXT,
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    -- BILL-23 (version 35): the instalments it lists, "2027-02-19=119000;2027-04-16=119000".
+    instalments TEXT
 );
 
 CREATE INDEX bill_statement_bill ON bill_statement(bill_id, due_date);
+
+-- BILL-22 (version 35): each payment made toward one due date of a bill, with its transaction.
+CREATE TABLE bill_payment (
+    id TEXT NOT NULL PRIMARY KEY,
+    bill_id TEXT NOT NULL REFERENCES bill(id) ON DELETE CASCADE,
+    due_date TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    paid_date TEXT NOT NULL,
+    txn_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX bill_payment_bill ON bill_payment(bill_id, due_date);
 
 -- CC-01: credit card terms. Rates are decimal fractions stored as text (e.g. "0.1999").
 CREATE TABLE credit_card (
@@ -627,25 +642,50 @@ SELECT * FROM bill_occurrence WHERE bill_id = ? ORDER BY due_date;
 deleteOccurrence:
 DELETE FROM bill_occurrence WHERE bill_id = ? AND due_date = ?;
 
--- BILL-20: the payments of Business bills, for the year-end package.
+-- BILL-20: the payments of Business bills, for the year-end package (BILL-22: each part payment too).
 businessBillPayments:
 SELECT o.txn_id, b.member_id FROM bill_occurrence o JOIN bill b ON b.id = o.bill_id
-WHERE b.bill_type = 'BUSINESS' AND o.status = 'PAID' AND o.txn_id IS NOT NULL;
+WHERE b.bill_type = 'BUSINESS' AND o.status = 'PAID' AND o.txn_id IS NOT NULL
+UNION
+SELECT p.txn_id, b.member_id FROM bill_payment p JOIN bill b ON b.id = p.bill_id
+WHERE b.bill_type = 'BUSINESS' AND p.txn_id IS NOT NULL;
+
+-- BILL-22: payments toward the due dates of bills ----------------------------------------------
+
+billPayments:
+SELECT * FROM bill_payment WHERE bill_id = ? ORDER BY due_date, paid_date, created_at;
+
+allBillPayments:
+SELECT * FROM bill_payment ORDER BY bill_id, due_date, paid_date, created_at;
+
+insertBillPayment:
+INSERT INTO bill_payment(id, bill_id, due_date, amount_minor, paid_date, txn_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteBillPayment:
+DELETE FROM bill_payment WHERE id = ?;
+
+-- A due date a statement moved takes its payments along.
+moveBillPayments:
+UPDATE bill_payment SET due_date = :newDate WHERE bill_id = :billId AND due_date = :oldDate;
 
 -- Bill statements (BILL-16, BILL-17) ------------------------------------------------------------
 
 billStatements:
 SELECT * FROM bill_statement WHERE bill_id = ? ORDER BY due_date DESC, created_at DESC;
 
+-- BILL-23: the statements that list instalments, for every bill of the ledger.
+instalmentStatements:
+SELECT * FROM bill_statement WHERE instalments IS NOT NULL ORDER BY bill_id, due_date;
+
 upsertBillStatement:
 INSERT INTO bill_statement(id, bill_id, statement_number, issued_date, due_date, amount_minor, document_id, previous_reading,
-    previous_reading_date, current_reading, current_reading_date, used, meter_id, notes, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    previous_reading_date, current_reading, current_reading_date, used, meter_id, notes, created_at, instalments)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET statement_number = excluded.statement_number, issued_date = excluded.issued_date,
     due_date = excluded.due_date, amount_minor = excluded.amount_minor, document_id = excluded.document_id,
     previous_reading = excluded.previous_reading, previous_reading_date = excluded.previous_reading_date,
     current_reading = excluded.current_reading, current_reading_date = excluded.current_reading_date, used = excluded.used,
-    meter_id = excluded.meter_id, notes = excluded.notes;
+    meter_id = excluded.meter_id, notes = excluded.notes, instalments = excluded.instalments;
 
 deleteBillStatement:
 DELETE FROM bill_statement WHERE id = ?;
