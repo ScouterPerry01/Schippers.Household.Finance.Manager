@@ -27,11 +27,41 @@ CREATE TABLE trip (
     trailer_id TEXT,
     passengers TEXT,
     province TEXT,
-    device_id TEXT
+    device_id TEXT,
+    -- TRP-11 (version 33): the position and address at each end.
+    start_latitude REAL,
+    start_longitude REAL,
+    start_address TEXT,
+    end_latitude REAL,
+    end_longitude REAL,
+    end_address TEXT
 );
 
 CREATE INDEX trip_date ON trip(date);
 CREATE INDEX trip_vehicle ON trip(vehicle_id, date);
+
+-- TRP-12, TRP-15 (version 33): the stops made during a trip and its rest breaks, in order
+-- ([position]). [kind] is STOP or BREAK. A stop has its arrival time ([start_at]), the odometer, the
+-- place and the purpose of the leg that ends there; a break its start and end, left out of the
+-- driving time. Times are "yyyy-MM-ddTHH:mm".
+CREATE TABLE trip_stop (
+    id TEXT NOT NULL PRIMARY KEY,
+    trip_id TEXT NOT NULL REFERENCES trip(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL,
+    kind TEXT NOT NULL DEFAULT 'STOP',
+    start_at TEXT NOT NULL,
+    end_at TEXT,
+    odometer INTEGER,
+    place_id TEXT,
+    place TEXT,
+    address TEXT,
+    latitude REAL,
+    longitude REAL,
+    purpose TEXT,
+    notes TEXT
+);
+
+CREATE INDEX trip_stop_trip ON trip_stop(trip_id, position);
 
 -- MNT-08: contractors and service providers, with ratings and past jobs.
 CREATE TABLE contractor (
@@ -143,13 +173,33 @@ SELECT * FROM trip WHERE date >= ? AND date <= ? ORDER BY date DESC, rowid DESC;
 
 upsertTrip:
 INSERT INTO trip(id, date, vehicle_id, member_id, origin, destination, km_tenths, round_trip, purpose, notes,
-    start_at, end_at, start_odometer, end_odometer, start_place_id, end_place_id, load_kind, trailer_id, passengers, province, device_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    start_at, end_at, start_odometer, end_odometer, start_place_id, end_place_id, load_kind, trailer_id, passengers, province, device_id,
+    start_latitude, start_longitude, start_address, end_latitude, end_longitude, end_address)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET date = excluded.date, vehicle_id = excluded.vehicle_id, member_id = excluded.member_id, origin = excluded.origin,
     destination = excluded.destination, km_tenths = excluded.km_tenths, round_trip = excluded.round_trip, purpose = excluded.purpose, notes = excluded.notes,
     start_at = excluded.start_at, end_at = excluded.end_at, start_odometer = excluded.start_odometer, end_odometer = excluded.end_odometer,
     start_place_id = excluded.start_place_id, end_place_id = excluded.end_place_id, load_kind = excluded.load_kind, trailer_id = excluded.trailer_id,
-    passengers = excluded.passengers, province = excluded.province, device_id = excluded.device_id;
+    passengers = excluded.passengers, province = excluded.province, device_id = excluded.device_id,
+    start_latitude = excluded.start_latitude, start_longitude = excluded.start_longitude, start_address = excluded.start_address,
+    end_latitude = excluded.end_latitude, end_longitude = excluded.end_longitude, end_address = excluded.end_address;
+
+-- TRP-12, TRP-15: a trip's stops and breaks, in order; those of the trips in a date range, for the trip log.
+tripStops:
+SELECT * FROM trip_stop WHERE trip_id = ? ORDER BY position;
+
+tripStopsBetween:
+SELECT s.* FROM trip_stop s JOIN trip t ON t.id = s.trip_id WHERE t.date >= ? AND t.date <= ? ORDER BY s.trip_id, s.position;
+
+tripStopsForVehicle:
+SELECT s.* FROM trip_stop s JOIN trip t ON t.id = s.trip_id WHERE t.vehicle_id = ? ORDER BY s.trip_id, s.position;
+
+insertTripStop:
+INSERT INTO trip_stop(id, trip_id, position, kind, start_at, end_at, odometer, place_id, place, address, latitude, longitude, purpose, notes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteTripStops:
+DELETE FROM trip_stop WHERE trip_id = ?;
 
 tripsForVehicle:
 SELECT * FROM trip WHERE vehicle_id = ? ORDER BY date, start_at, rowid;

@@ -15,7 +15,11 @@ import kotlin.math.sqrt
 object TripRules {
 
     /** The place categories, in the order they are offered. */
-    val CATEGORIES = listOf("HOME", "WORK", "CLIENT", "STORE", "FUEL", "GARAGE", "MEDICAL", "OTHER")
+    val CATEGORIES = listOf("HOME", "WORK", "CLIENT", "STORE", "FUEL", "CHARGING", "GARAGE", "MEDICAL", "OTHER")
+
+    /** TRP-12, TRP-15: what a point on the way is: a stop (a place visited) or a rest break. */
+    const val STOP = "STOP"
+    const val BREAK = "BREAK"
 
     /** The purposes a trip can have, as the desktop's trip log names them. */
     val PURPOSES = listOf("BUSINESS", "EMPLOYMENT", "MEDICAL", "PERSONAL")
@@ -66,4 +70,39 @@ object TripRules {
         vehicleUse == "COMMERCIAL" -> "BUSINESS"
         else -> "PERSONAL"
     }
+
+    /** TRP-15: the break under way: the last point, a break not yet ended; null when driving. */
+    fun openBreak(stops: List<PhoneTripStop>): PhoneTripStop? = stops.lastOrNull()?.takeIf { it.kind == BREAK && it.endAt == null }
+
+    /**
+     * TRP-15: the minutes spent on breaks, each from its start to its end (one not ended counts
+     * until [until]); times are "yyyy-MM-ddTHH:mm". Left out of the driving time.
+     */
+    fun breakMinutes(stops: List<PhoneTripStop>, until: String): Long = stops.filter { it.kind == BREAK }.sumOf { b ->
+        val from = minuteOf(b.at) ?: return@sumOf 0L
+        val to = minuteOf(b.endAt ?: until) ?: return@sumOf 0L
+        (to - from).coerceAtLeast(0)
+    }
+
+    /** TRP-15: the time driven, in minutes, from [start] to [end] less the breaks; null when a time cannot be read. */
+    fun drivingMinutes(start: String, end: String, stops: List<PhoneTripStop>): Long? {
+        val from = minuteOf(start) ?: return null
+        val to = minuteOf(end) ?: return null
+        return (to - from - breakMinutes(stops, end)).coerceAtLeast(0)
+    }
+
+    /** TRP-12: the reading the next leg starts from: the last stop's, else the trip's start. */
+    fun lastReading(startOdometer: Int, stops: List<PhoneTripStop>): Int =
+        stops.lastOrNull { it.kind == STOP && it.odometer != null }?.odometer ?: startOdometer
+
+    /** TRP-12: a reading at a stop or at arrival follows [last]: higher, and less than 10,000 km on. */
+    fun follows(last: Int, reading: Int?): Boolean = reading != null && reading > last && reading - last < 10_000
+
+    /** TRP-14: where "back to the previous stop" goes: the last stop made, else null (the start is offered as itself). */
+    fun previousStop(stops: List<PhoneTripStop>): PhoneTripStop? = stops.lastOrNull { it.kind == STOP }
+
+    /** Minutes since the epoch day of a "yyyy-MM-ddTHH:mm" time, for differences; null when it cannot be read. */
+    private fun minuteOf(text: String): Long? = runCatching {
+        java.time.LocalDateTime.parse(text.take(16)).let { it.toLocalDate().toEpochDay() * 1_440 + it.hour * 60 + it.minute }
+    }.getOrNull()
 }

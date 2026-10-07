@@ -360,9 +360,10 @@ class SyncService internal constructor(private val books: Books) {
         // What the person typed on the phone wins over what was read.
         val read = books.documents.get(doc.id)
         val amount = f.amount?.let { a -> runCatching { Money.exact(phoneDecimal(a)!!, f.currency?.let(Currency::of) ?: read.amount?.currency ?: books.rates.baseCurrency) }.getOrNull() }
-        val kind = when (item.kind) {
-            CaptureKind.BILL -> DocumentKind.BILL
-            CaptureKind.RECEIPT, CaptureKind.QUICK_EXPENSE -> DocumentKind.RECEIPT
+        val kind = when {
+            f.tripId != null -> DocumentKind.OTHER
+            item.kind == CaptureKind.BILL -> DocumentKind.BILL
+            item.kind == CaptureKind.RECEIPT || item.kind == CaptureKind.QUICK_EXPENSE -> DocumentKind.RECEIPT
             else -> read.kind
         }
         books.documents.update(
@@ -374,6 +375,13 @@ class SyncService internal constructor(private val books: Books) {
         )
         // CAP-07: Paid with, Category and For, offered first when the document is filed.
         books.documents.recordChoices(doc.id, CaptureChoices(f.accountId, f.categoryId, f.memberId))
+        // TRP-16: a photo or note taken during a trip is kept with it: filed at once when the trip is here,
+        // else waiting in the inbox until the trip comes (it is sent on arrival).
+        f.tripId?.takeIf { it.length <= MAX_ID }?.let { tripId ->
+            books.documents.link(doc.id, DocumentEntity.TRIP, tripId)
+            f.stopId?.takeIf { it.length <= MAX_ID }?.let { books.documents.link(doc.id, DocumentEntity.TRIP_STOP, it) }
+            if (books.trips.exists(tripId)) books.documents.setStatus(doc.id, DocumentStatus.FILED)
+        }
         return doc.id
     }
 

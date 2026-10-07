@@ -17,6 +17,8 @@ import ca.schippers.hfm.books.Transmission
 import ca.schippers.hfm.books.Trip
 import ca.schippers.hfm.books.TripLoad
 import ca.schippers.hfm.books.TripPurpose
+import ca.schippers.hfm.books.TripStop
+import ca.schippers.hfm.books.TripStopKind
 import ca.schippers.hfm.books.Vehicle
 import ca.schippers.hfm.books.VehicleDetails
 import ca.schippers.hfm.books.VehicleUsage
@@ -54,7 +56,10 @@ internal class DemoTrips(private val books: Books, private val english: Boolean)
         place(l("Institut de cardiologie de Montréal", "Kingston Health Sciences Centre"), PlaceCategory.MEDICAL, l("45.57450", "44.22460").toDouble(), l("-73.57950", "-76.49340").toDouble())
         val station = place(l("Petro-Canada (ch. Sainte-Foy)", "Petro-Canada (Bank Street)"), PlaceCategory.FUEL, l("46.78800", "45.40150").toDouble(), l("-71.26200", "-75.68930").toDouble())
         place(l("Garage Tremblay", "Main Street Auto"), PlaceCategory.GARAGE, l("46.81000", "45.41080").toDouble(), l("-71.23000", "-75.67410").toDouble())
-        place(l("Client à Lévis", "Client in Kanata"), PlaceCategory.CLIENT, l("46.80300", "45.30880").toDouble(), l("-71.17800", "-75.89870").toDouble())
+        val client = place(
+            l("Client à Lévis", "Client in Kanata"), PlaceCategory.CLIENT, l("46.80300", "45.30880").toDouble(), l("-71.17800", "-75.89870").toDouble(),
+            l("5500, boul. Guillaume-Couture, Lévis", "300 Terry Fox Drive, Kanata"),
+        )
         // The phone's user is Alex, proposed as the driver on the phone.
         runCatching { books.users.list().firstOrNull { it.isMe }?.let { books.users.update(it.id, it.displayName, alex.id) } }
 
@@ -125,6 +130,23 @@ internal class DemoTrips(private val books: Books, private val english: Boolean)
                 trip(day, cottage, home, toCottage, 14 to 45, 140, TripPurpose.PERSONAL, TripLoad.TOWING, l("Sam, Léa", "Sam, Maya"))
                 fill(day)
                 lastFill = day
+            } else if (day == commuteDays.maxOrNull()) {
+                // TRP-12, TRP-15: on the way home, a stop at the client (business) and a coffee break.
+                trip(day, home, work, 22, 7 to 50, 28, TripPurpose.PERSONAL)
+                books.trips.save(
+                    Trip(
+                        "", group, day, home.name, BigDecimal.ZERO, false, TripPurpose.PERSONAL, rav4.id, alex.id, work.name, null,
+                        at(day, 15, 30), at(day, 17, 50), odo, odo + 39, work.id, home.id, province = province, deviceId = null,
+                        startAddress = work.address, endAddress = home.address, startLatitude = work.latitude, startLongitude = work.longitude,
+                        endLatitude = home.latitude, endLongitude = home.longitude,
+                        stops = listOf(
+                            TripStop("", TripStopKind.STOP, at(day, 15, 58), odometer = odo + 18, placeId = client.id, place = client.name, address = client.address, purpose = TripPurpose.BUSINESS),
+                            TripStop("", TripStopKind.BREAK, at(day, 17, 5), at(day, 17, 20)),
+                        ),
+                    ),
+                )
+                odo += 39
+                sinceFill += 39 * 3.4 / 100.0
             } else if (day in commuteDays) {
                 trip(day, home, work, 22, 7 to 50, 28, TripPurpose.PERSONAL)
                 trip(day, work, home, 22, 16 to 55, 34, TripPurpose.PERSONAL)

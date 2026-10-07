@@ -36,6 +36,10 @@ object DocumentEntity {
     const val PET = "pet"
     const val MEDICATION = "medication"
     const val WARRANTY = "warranty"
+
+    /** TRP-16: a photo or note taken on the phone during a trip, and the stop it was taken at. */
+    const val TRIP = "trip"
+    const val TRIP_STOP = "tripStop"
 }
 
 data class DocumentLink(val entity: String, val entityId: String)

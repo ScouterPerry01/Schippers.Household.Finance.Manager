@@ -497,7 +497,7 @@ class MigrationTest {
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).extrasQueries
-            q.upsertTrip("t", "2026-10-01", null, null, "Home", "Client", 425, 1, "BUSINESS", null, null, null, null, null, null, null, "NONE", null, null, null, null)
+            q.upsertTrip("t", "2026-10-01", null, null, "Home", "Client", 425, 1, "BUSINESS", null, null, null, null, null, null, null, "NONE", null, null, null, null, null, null, null, null, null, null)
             assertEquals(1, q.trips("2026-01-01", "2026-12-31").executeAsList().size)
             q.upsertContractor("c", "Plombier", "Plumbing", null, null, null, null, 0)
             q.upsertContractorJob("j", "c", "2026-05-01", "Water heater", 180000, "CAD", 5, null, null)
@@ -637,7 +637,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(32L, LedgerDatabase.Schema.version)
+            assertEquals(33L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val db = LedgerDatabase(driver)
             assertEquals("Garage", db.calendarQueries.eventById("e").executeAsOne().title, "events stay")
@@ -726,7 +726,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(32L, LedgerDatabase.Schema.version)
+            assertEquals(33L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).medicalQueries
             assertEquals("AFTER_SERVICE", q.planById("m").executeAsOne().claim_rule, "existing plans keep counting from the service")
@@ -771,7 +771,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(32L, LedgerDatabase.Schema.version)
+            assertEquals(33L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val tq = LedgerDatabase(driver).trackersQueries
             assertEquals(0L, tq.chores().executeAsOne().several_a_day, "existing chores are ticked once a day")
@@ -779,6 +779,35 @@ class MigrationTest {
             tq.upsertChore("ch", "kid", "Feed the dog", 100, "CAD", null, 0, 0, 1)
             assertEquals(1L, tq.chores().executeAsOne().several_a_day)
             assertEquals(1, tq.choreTicks("ch").executeAsList().size, "saving the chore again keeps its ticks")
+        }
+    }
+
+    @Test
+    fun `version 32 ledgers keep their trips and gain positions, addresses, stops and breaks`() {
+        val file = temp.resolve("ledger32.db")
+        older("../data/src/main/sqldelight/ledger/schemas/32.db", file, 32).use { driver ->
+            driver.execute(null, "INSERT INTO trip(id, date, origin, destination, km_tenths, purpose, start_odometer, end_odometer) VALUES ('t', '2026-10-01', 'Home', 'Client', 425, 'BUSINESS', 1000, 1042)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(33L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val q = LedgerDatabase(driver).extrasQueries
+            val trip = q.tripById("t").executeAsOne()
+            assertEquals(null, trip.start_latitude, "an old trip has no position")
+            assertEquals(null, trip.end_address)
+            assertEquals(0, q.tripStops("t").executeAsList().size)
+            driver.execute(null, "PRAGMA foreign_keys = ON", 0)
+            q.insertTripStop("s", "t", 0, "STOP", "2026-10-01T09:00", null, 1020, null, "Bank", "1 Main St", 45.4, -75.7, "BUSINESS", null)
+            q.insertTripStop("b", "t", 1, "BREAK", "2026-10-01T09:30", "2026-10-01T09:45", null, null, null, null, null, null, null, null)
+            q.upsertTrip(
+                "t", "2026-10-01", null, null, "Home", "Client", 425, 0, "BUSINESS", null, null, null, 1000, 1042, null, null, "NONE", null, null, null, null,
+                45.3, -75.8, "2 Elm St", 45.5, -75.6, null,
+            )
+            assertEquals(2, q.tripStops("t").executeAsList().size, "saving the trip again keeps its stops")
+            assertEquals("2 Elm St", q.tripById("t").executeAsOne().start_address)
+            q.deleteTrip("t")
+            assertEquals(0, q.tripStops("t").executeAsList().size, "deleting the trip removes its stops")
         }
     }
 }

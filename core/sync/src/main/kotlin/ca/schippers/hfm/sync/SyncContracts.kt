@@ -105,6 +105,10 @@ data class CaptureFields(
     val note: String? = null,
     val vehicleId: String? = null,
     val odometer: Int? = null,
+    /** TRP-16: a photo or spoken note taken during a trip, kept with that trip (its id from the phone) on the computer. */
+    val tripId: String? = null,
+    /** TRP-16: the stop of [tripId] it was taken at, if any. */
+    val stopId: String? = null,
 )
 
 /**
@@ -445,6 +449,8 @@ data class PhonePlace(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val radiusM: Int = 150,
+    /** TRP-11, TRP-19: the address, typed or looked up on the phone. */
+    val address: String? = null,
 )
 
 /**
@@ -471,6 +477,36 @@ data class PhoneTrip(
     val load: String = "NONE",
     val trailerId: String? = null,
     val passengers: List<String> = emptyList(),
+    val notes: String? = null,
+    /** TRP-11: the position (one fix) and address at each end, when known. */
+    val startLatitude: Double? = null,
+    val startLongitude: Double? = null,
+    val startAddress: String? = null,
+    val endLatitude: Double? = null,
+    val endLongitude: Double? = null,
+    val endAddress: String? = null,
+    /** TRP-12, TRP-15: the stops made and the breaks taken on the way, in order. */
+    val stops: List<PhoneTripStop> = emptyList(),
+)
+
+/**
+ * TRP-12, TRP-15: a stop on the way ([kind] STOP: arrival [at], [odometer], the place, and the
+ * [purpose] of the leg ending there) or a rest break ([kind] BREAK: from [at] to [endAt], where it was
+ * taken). Times as on [PhoneTrip].
+ */
+@Serializable
+data class PhoneTripStop(
+    val id: String,
+    val kind: String = "STOP",
+    val at: String,
+    val endAt: String? = null,
+    val odometer: Int? = null,
+    val placeId: String? = null,
+    val place: String? = null,
+    val address: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val purpose: String? = null,
     val notes: String? = null,
 )
 

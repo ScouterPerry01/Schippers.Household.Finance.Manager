@@ -1,0 +1,33 @@
+-- Version 32 to 33. Only additions: new columns and a new table.
+
+-- TRP-11 (version 33): the position (one fix, kept on the user's own devices) and the address at each
+-- end of a trip: a saved place's address, one typed, or one looked up when the user turned that on.
+ALTER TABLE trip ADD COLUMN start_latitude REAL;
+ALTER TABLE trip ADD COLUMN start_longitude REAL;
+ALTER TABLE trip ADD COLUMN start_address TEXT;
+ALTER TABLE trip ADD COLUMN end_latitude REAL;
+ALTER TABLE trip ADD COLUMN end_longitude REAL;
+ALTER TABLE trip ADD COLUMN end_address TEXT;
+
+-- TRP-12, TRP-15 (version 33): the stops made during a trip and its rest breaks, in order
+-- ([position]). [kind] is STOP or BREAK. A stop has its arrival time ([start_at]), the odometer, the
+-- place and the purpose of the leg that ends there; a break its start and end, left out of the
+-- driving time. Times are "yyyy-MM-ddTHH:mm".
+CREATE TABLE trip_stop (
+    id TEXT NOT NULL PRIMARY KEY,
+    trip_id TEXT NOT NULL REFERENCES trip(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL,
+    kind TEXT NOT NULL DEFAULT 'STOP',
+    start_at TEXT NOT NULL,
+    end_at TEXT,
+    odometer INTEGER,
+    place_id TEXT,
+    place TEXT,
+    address TEXT,
+    latitude REAL,
+    longitude REAL,
+    purpose TEXT,
+    notes TEXT
+);
+
+CREATE INDEX trip_stop_trip ON trip_stop(trip_id, position);

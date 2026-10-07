@@ -54,6 +54,8 @@ import ca.schippers.hfm.books.Trip
 import ca.schippers.hfm.books.TripLoad
 import ca.schippers.hfm.books.TripPurpose
 import ca.schippers.hfm.books.TripService
+import ca.schippers.hfm.books.TripStopKind
+import ca.schippers.hfm.books.VaultDocument
 import ca.schippers.hfm.books.ValidationException
 import ca.schippers.hfm.books.VehicleStatus
 import ca.schippers.hfm.calc.salestax.SalesTaxes
@@ -100,6 +102,10 @@ fun TripsScreen(model: BooksModel) {
     val totals = remember(trips) { books.trips.totals(year) }
     // MED-11: the medical trips already added as a medical expense.
     val inMedical = remember(model.revision, trips) { trips.filter { books.trips.qualifiesForMedical(it) && books.trips.medicalExpense(it) != null }.map { it.id }.toSet() }
+    // TRP-16: the photos and notes taken on the phone during each trip, with the stop each was taken at.
+    val attached = remember(model.revision, trips) {
+        trips.filter { it.deviceId != null }.associate { t -> t.id to (books.trips.attachments(t) to books.trips.attachmentStops(t)) }
+    }
     fun km(v: BigDecimal) = model.t("trips.km", java.text.NumberFormat.getNumberInstance(model.language.locale).apply { maximumFractionDigits = 1 }.format(v))
     val access = rememberAccess(model)
     Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -170,6 +176,7 @@ fun TripsScreen(model: BooksModel) {
                         t.deviceId?.let { model.t("trips.fromPhone", phones[it] ?: model.t("trips.aPhone")) },
                     )
                     if (more.isNotEmpty()) Text(more.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    TripDetails(model, t, attached[t.id], ::km)
                 }
                 if (t.id in inMedical) {
                     TextButton(onClick = {}, enabled = false) { Text(model.t("trips.addedToMedical")) }
@@ -187,11 +194,53 @@ fun TripsScreen(model: BooksModel) {
     if (showLogbook) LogbookDialog(model, year) { showLogbook = false }
 }
 
-/** "08:05 to 08:31 (26 min)": a trip's times, when it has them. */
+/** "08:05 to 08:31 (26 min)": a trip's times, when it has them; with breaks, the time driven too (TRP-15). */
 private fun tripTimes(model: BooksModel, t: Trip): String? {
     val start = t.startAt ?: return null
     val end = t.endAt ?: return model.t("trips.startedAt", hhmm(start))
+    if (t.breakMinutes > 0) return model.t("trips.timesDriving", hhmm(start), hhmm(end), duration(model, t.minutes ?: 0), duration(model, t.drivingMinutes ?: 0))
     return model.t("trips.times", hhmm(start), hhmm(end), duration(model, t.minutes ?: 0))
+}
+
+/**
+ * TRP-11, TRP-12, TRP-15, TRP-16: under a trip from the phone, the addresses at each end, each leg
+ * (from one stop to the next, with its distance and purpose), the breaks, and the photos and notes
+ * taken on the way (each opens in Documents).
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TripDetails(model: BooksModel, t: Trip, attached: Pair<List<VaultDocument>, Map<String, String>>?, km: (BigDecimal) -> String) {
+    val small = MaterialTheme.typography.bodySmall
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    val addresses = listOfNotNull(t.startAddress?.let { model.t("trips.addressFrom", it) }, t.endAddress?.let { model.t("trips.addressTo", it) })
+    if (addresses.isNotEmpty()) Text(addresses.joinToString(" · "), style = small, color = muted)
+    if (t.stops.any { it.kind == TripStopKind.STOP }) {
+        for (leg in model.books.trips.legs(t)) {
+            val line = model.t("trips.leg", leg.from ?: "—", leg.to, km(leg.km), model.t("tripPurpose.${leg.purpose}"))
+            Text("· " + listOfNotNull(line, leg.arrivedAt?.let { model.t("trips.legArrived", hhmm(it)) }).joinToString(" · "), style = small, color = muted)
+        }
+    }
+    for (b in t.stops.filter { it.kind == TripStopKind.BREAK }) {
+        val end = b.endAt
+        Text(
+            "· " + if (end != null) model.t("trips.break", hhmm(b.at), hhmm(end), duration(model, b.minutes)) else model.t("trips.breakOpen", hhmm(b.at)),
+            style = small, color = muted,
+        )
+    }
+    val (docs, stops) = attached ?: return
+    if (docs.isEmpty()) return
+    val stopNames = t.stops.associate { it.id to (it.place ?: it.address ?: hhmm(it.at)) }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(model.t("trips.attachments"), style = small, color = muted, modifier = Modifier.align(Alignment.CenterVertically))
+        for (d in docs) {
+            val what = model.t(if (d.mimeType.startsWith("image/") || d.mimeType == "application/pdf") "trips.attachmentPhoto" else "trips.attachmentNote")
+            val label = stops[d.id]?.let { stopNames[it] }?.let { model.t("trips.attachmentAt", what, it) } ?: what
+            TextButton(onClick = {
+                model.focusDocumentId = d.id
+                model.section = Section.DOCUMENTS
+            }) { Text(label, style = small) }
+        }
+    }
 }
 
 internal fun hhmm(t: LocalDateTime): String = "%02d:%02d".format(t.hour, t.minute)
@@ -312,6 +361,8 @@ private fun TripDialog(model: BooksModel, t: Trip, onClose: () -> Unit) {
             }
             if (lowStart) Text(model.t("trips.odometerLower", odometer(model, lastBefore)), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             if (byOdometer) Text(model.t("trips.byOdometerHint"), style = MaterialTheme.typography.bodySmall)
+            // TRP-12, TRP-15: stops and breaks come from the phone; the dialog keeps them as they are.
+            if (t.stops.isNotEmpty()) Text(model.t("trips.stopsKept", t.stops.size), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Picker(model.t("report.person"), listOf(null) + members, member, { it?.displayName ?: model.t("taxes.household") }, Modifier.weight(1f)) { member = it }
                 Picker(model.t("trips.vehicle"), listOf(null) + vehicles, vehicle, { it?.name ?: model.t("trips.noVehicle") }, Modifier.weight(1f)) { vehicle = it }

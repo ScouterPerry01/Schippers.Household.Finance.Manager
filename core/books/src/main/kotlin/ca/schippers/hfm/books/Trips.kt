@@ -7,6 +7,8 @@ import ca.schippers.hfm.domain.PermissionLevel
 import ca.schippers.hfm.money.Currency
 import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.sync.PhoneTrip
+import ca.schippers.hfm.sync.PhoneTripStop
+import ca.schippers.hfm.sync.TripRules
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -14,6 +16,7 @@ import kotlinx.datetime.toInstant
 import java.math.BigDecimal
 import java.math.RoundingMode
 import ca.schippers.hfm.data.ledger.Trip as TripRow
+import ca.schippers.hfm.data.ledger.Trip_stop as StopRow
 
 /** OTH-02, MED-11: why a trip was made, for the claims it supports. */
 enum class TripPurpose { BUSINESS, EMPLOYMENT, MEDICAL, PERSONAL }
@@ -51,6 +54,15 @@ data class Trip(
     val province: String? = null,
     /** The phone the trip came from. */
     val deviceId: String? = null,
+    /** TRP-11: the position (one fix) and the address at each end, when known. */
+    val startLatitude: Double? = null,
+    val startLongitude: Double? = null,
+    val startAddress: String? = null,
+    val endLatitude: Double? = null,
+    val endLongitude: Double? = null,
+    val endAddress: String? = null,
+    /** TRP-12, TRP-15: the stops made and the breaks taken on the way, in order. */
+    val stops: List<TripStop> = emptyList(),
 ) {
     val km: BigDecimal get() = if (roundTrip) kmOneWay * BigDecimal(2) else kmOneWay
 
@@ -60,7 +72,59 @@ data class Trip(
     } else {
         null
     }
+
+    /** TRP-15: the minutes spent on rest breaks. */
+    val breakMinutes: Long get() = endAt?.let { end -> TripRules.breakMinutes(stops.map { it.toPhone() }, end.toString()) } ?: 0
+
+    /** TRP-15: the time driven, breaks left out, when both times are known. */
+    val drivingMinutes: Long? get() = minutes?.let { (it - breakMinutes).coerceAtLeast(0) }
 }
+
+/** TRP-12, TRP-15: a stop on the way, or a rest break. */
+enum class TripStopKind { STOP, BREAK }
+
+/**
+ * TRP-12, TRP-15: a stop on the way (arrived at [at], with the [odometer] then, the place, and the
+ * [purpose] of the leg ending there: the trip's own when none) or a rest break (from [at] to [endAt],
+ * where it was taken, left out of the driving time).
+ */
+data class TripStop(
+    val id: String,
+    val kind: TripStopKind,
+    val at: LocalDateTime,
+    val endAt: LocalDateTime? = null,
+    val odometer: Int? = null,
+    val placeId: String? = null,
+    val place: String? = null,
+    val address: String? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val purpose: TripPurpose? = null,
+    val notes: String? = null,
+) {
+    internal fun toPhone() = PhoneTripStop(id, kind.name, at.toString(), endAt?.toString(), odometer, placeId, place, address, latitude, longitude, purpose?.name, notes)
+
+    /** TRP-15: the break's length in minutes (0 for a stop or a break not ended). */
+    val minutes: Long get() = if (kind == TripStopKind.BREAK && endAt != null) {
+        (endAt.toInstant(TimeZone.UTC) - at.toInstant(TimeZone.UTC)).inWholeMinutes.coerceAtLeast(0)
+    } else {
+        0
+    }
+}
+
+/**
+ * TRP-12: one leg of a trip, from one place to the next (the start, each stop, the end), with the
+ * odometers at both ends and the leg's purpose. A trip with no stops is one leg.
+ */
+data class TripLeg(
+    val from: String?,
+    val to: String,
+    val startOdometer: Int?,
+    val endOdometer: Int?,
+    val km: BigDecimal,
+    val purpose: TripPurpose,
+    val arrivedAt: LocalDateTime?,
+)
 
 /**
  * TRP-09: one line of a vehicle's logbook as the CRA asks for it: the date, the places at each end,
@@ -97,13 +161,54 @@ data class MedicalTravelRate(val rate: BigDecimal, val province: Province, val f
 class TripService internal constructor(private val books: Books) {
 
     fun list(year: Int): List<Trip> = books.groups().flatMap { g ->
-        books.ledger(g).extrasQueries.trips(LocalDate(year, 1, 1).toString(), LocalDate(year, 12, 31).toString()).executeAsList().map { it.toTrip(g.id) }
+        val from = LocalDate(year, 1, 1).toString()
+        val to = LocalDate(year, 12, 31).toString()
+        val q = books.ledger(g).extrasQueries
+        // The stops of the year's trips in one query, not one per trip.
+        val stops = q.tripStopsBetween(from, to).executeAsList().groupBy { it.trip_id }
+        q.trips(from, to).executeAsList().map { it.toTrip(g.id, stops[it.id].orEmpty()) }
     }.sortedWith(compareByDescending<Trip> { it.date }.thenByDescending { it.startAt })
 
     /** TRP-06: every trip made with [vehicleId], in every group the user can see, oldest first. */
     fun forVehicle(vehicleId: String): List<Trip> = books.groups().flatMap { g ->
-        books.ledger(g).extrasQueries.tripsForVehicle(vehicleId).executeAsList().map { it.toTrip(g.id) }
+        val q = books.ledger(g).extrasQueries
+        val stops = q.tripStopsForVehicle(vehicleId).executeAsList().groupBy { it.trip_id }
+        q.tripsForVehicle(vehicleId).executeAsList().map { it.toTrip(g.id, stops[it.id].orEmpty()) }
     }.sortedWith(compareBy<Trip> { it.date }.thenBy { it.startAt }.thenBy { it.startOdometer })
+
+    /**
+     * TRP-12: the legs of [t], from the start to each stop and on to the end, each with its distance
+     * from the odometers and its purpose (the stop's, else the trip's; the last leg has the trip's).
+     * A trip with no stops is one leg: the trip itself.
+     */
+    fun legs(t: Trip): List<TripLeg> {
+        val stops = t.stops.filter { it.kind == TripStopKind.STOP }
+        if (stops.isEmpty()) return listOf(TripLeg(t.origin, t.destination, t.startOdometer, t.endOdometer, t.km, t.purpose, t.endAt))
+        val legs = ArrayList<TripLeg>()
+        var from = t.origin
+        var odometer = t.startOdometer
+        for (s in stops) {
+            val to = s.place ?: s.address ?: t.destination
+            legs += TripLeg(from, to, odometer, s.odometer, distance(odometer, s.odometer), s.purpose ?: t.purpose, s.at)
+            from = to
+            odometer = s.odometer ?: odometer
+        }
+        legs += TripLeg(from, t.destination, odometer, t.endOdometer, distance(odometer, t.endOdometer), t.purpose, t.endAt)
+        return legs
+    }
+
+    private fun distance(from: Int?, to: Int?): BigDecimal = if (from != null && to != null && to > from) BigDecimal(to - from) else BigDecimal.ZERO
+
+    /** TRP-16: the photos and notes taken on the phone during [t], with the stop each was taken at (if any). */
+    fun attachments(t: Trip): List<VaultDocument> = books.documents.documentsFor(DocumentEntity.TRIP, t.id)
+
+    /** TRP-16: the stop each of the trip's documents was taken at, by document id. */
+    fun attachmentStops(t: Trip): Map<String, String> = t.stops.flatMap { s ->
+        books.documents.documentsFor(DocumentEntity.TRIP_STOP, s.id).map { it.id to s.id }
+    }.toMap()
+
+    /** Whether a trip with [id] is kept, in any group the user can see. */
+    fun exists(id: String): Boolean = groupOf(id) != null
 
     fun save(t: Trip): Trip = store(t, PermissionLevel.EDIT)
 
@@ -119,6 +224,10 @@ class TripService internal constructor(private val books: Books) {
         validate(destination.isNotBlank(), "error.tripDestination")
         val byOdometer = t.startOdometer != null && t.endOdometer != null
         if (byOdometer) validate(t.endOdometer > t.startOdometer && t.endOdometer - t.startOdometer < 10_000, "error.tripOdometers")
+        // TRP-12: each stop's reading follows the one before, and comes before the arrival's.
+        val readings = listOfNotNull(t.startOdometer) + t.stops.mapNotNull { it.odometer } + listOfNotNull(t.endOdometer)
+        validate(readings.zipWithNext().all { (a, b) -> b > a }, "error.tripStops")
+        validate(t.stops.all { s -> s.endAt == null || s.endAt >= s.at }, "error.tripTimes")
         validate(t.startOdometer == null || t.startOdometer >= 0, "error.invalidNumber")
         validate(t.startAt == null || t.endAt == null || t.endAt >= t.startAt, "error.tripTimes")
         val km = if (byOdometer) BigDecimal(t.endOdometer - t.startOdometer) else t.kmOneWay
@@ -142,7 +251,17 @@ class TripService internal constructor(private val books: Books) {
                 kmOneWay.movePointRight(1).setScale(0, RoundingMode.HALF_UP).toLong(), if (roundTrip) 1 else 0, purpose.name, notes?.trim()?.ifEmpty { null },
                 startAt?.let(::minuteText), endAt?.let(::minuteText), startOdometer?.toLong(), endOdometer?.toLong(), startPlaceId, endPlaceId,
                 load.name, trailerId, passengers?.trim()?.ifEmpty { null }, province, deviceId,
+                startLatitude, startLongitude, startAddress.blankToNull(), endLatitude, endLongitude, endAddress.blankToNull(),
             )
+            // TRP-12, TRP-15: the stops and breaks, kept in their order.
+            val q = books.ledger(group).extrasQueries
+            q.deleteTripStops(id)
+            stops.forEachIndexed { i, s ->
+                q.insertTripStop(
+                    s.id.ifBlank { Ids.newId() }, id, i.toLong(), s.kind.name, minuteText(s.at), s.endAt?.let(::minuteText), s.odometer?.toLong(), s.placeId,
+                    s.place.blankToNull(), s.address.blankToNull(), s.latitude, s.longitude, s.purpose?.name, s.notes.blankToNull(),
+                )
+            }
         }
         return saved
     }
@@ -169,7 +288,22 @@ class TripService internal constructor(private val books: Books) {
         // What the phone names must be the household's: a driver among the members, a trailer among the assets.
         validate(p.driverId == null || books.members.list(includeArchived = true).any { it.id == p.driverId }, "error.memberRequired")
         validate(p.trailerId == null || books.assets.list().any { it.id == p.trailerId && it.kind == AssetKind.TRAILER }, "error.notFound")
-        return store(
+        validate(p.stops.size <= MAX_STOPS, "error.tripStops")
+        val stops = p.stops.map { s ->
+            val place = s.placeId?.let { books.places.find(it) }
+            TripStop(
+                s.id.takeIf { it.isNotBlank() && it.length <= MAX_ID } ?: Ids.newId(),
+                TripStopKind.entries.firstOrNull { it.name == s.kind } ?: TripStopKind.STOP,
+                runCatching { LocalDateTime.parse(s.at) }.getOrElse { throw ValidationException("error.invalidDate") },
+                s.endAt?.let { e -> runCatching { LocalDateTime.parse(e) }.getOrElse { throw ValidationException("error.invalidDate") } },
+                s.odometer, place?.id, place?.name ?: phoneText(s.place, MAX_PLACE), phoneText(s.address, MAX_ADDRESS) ?: place?.address,
+                s.latitude?.takeIf { lat -> lat in -90.0..90.0 && s.longitude != null }, s.longitude?.takeIf { lon -> lon in -180.0..180.0 && s.latitude != null },
+                s.purpose?.let { c -> TripPurpose.entries.firstOrNull { it.name == c } }, phoneText(s.notes, MAX_TEXT),
+            )
+        }
+        fun lat(v: Double?, other: Double?) = v?.takeIf { it in -90.0..90.0 && other != null }
+        fun lon(v: Double?, other: Double?) = v?.takeIf { it in -180.0..180.0 && other != null }
+        val trip = store(
             Trip(
                 p.id, groupId, start.date, endPlace?.name ?: phoneText(p.endPlace, MAX_PLACE) ?: vehicle.name, BigDecimal.ZERO, false,
                 TripPurpose.entries.firstOrNull { it.name == p.purpose } ?: TripPurpose.PERSONAL, vehicle.id, p.driverId,
@@ -177,16 +311,24 @@ class TripService internal constructor(private val books: Books) {
                 start, end, p.startOdometer, p.endOdometer, startPlace?.id, endPlace?.id,
                 TripLoad.entries.firstOrNull { it.name == p.load } ?: TripLoad.NONE, p.trailerId,
                 p.passengers.map { it.trim() }.filter { it.isNotEmpty() }.joinToString(", ").take(MAX_TEXT).ifEmpty { null }, null, deviceId,
+                lat(p.startLatitude, p.startLongitude), lon(p.startLongitude, p.startLatitude), phoneText(p.startAddress, MAX_ADDRESS) ?: startPlace?.address,
+                lat(p.endLatitude, p.endLongitude), lon(p.endLongitude, p.endLatitude), phoneText(p.endAddress, MAX_ADDRESS) ?: endPlace?.address,
+                stops,
             ),
             PermissionLevel.CAPTURE_ONLY,
         )
+        // TRP-16: the photos and notes taken on the way came first and waited in the inbox; they are filed with the trip now.
+        for (d in attachments(trip)) if (d.status == DocumentStatus.INBOX) books.documents.setStatus(d.id, DocumentStatus.FILED)
+        return trip
     }
 
     /** TRP-09: the logbook of [vehicleId] for [year], oldest first, as the CRA asks for it. */
     fun logbook(vehicleId: String, year: Int): Logbook {
         val vehicle = books.vehicles.get(vehicleId)
-        val lines = forVehicle(vehicleId).filter { it.date.year == year }.map { t ->
-            LogbookLine(t.date, t.origin, t.destination, t.purpose, t.startOdometer, t.endOdometer, t.km, t.memberId, t.province ?: books.provinceOf(t.memberId).name)
+        // TRP-12: a trip with stops gives one line per leg, as the CRA asks for each destination and its purpose.
+        val lines = forVehicle(vehicleId).filter { it.date.year == year }.flatMap { t ->
+            val province = t.province ?: books.provinceOf(t.memberId).name
+            legs(t).map { l -> LogbookLine(t.date, l.from, l.to, l.purpose, l.startOdometer, l.endOdometer, l.km, t.memberId, province) }
         }
         return Logbook(vehicle, year, lines, vehicleUse(year).firstOrNull { it.vehicleId == vehicleId })
     }
@@ -202,12 +344,20 @@ class TripService internal constructor(private val books: Books) {
             .mapValues { (_, l) -> l.fold(BigDecimal.ZERO) { a, t -> a + t.km } }
             .toSortedMap()
 
-    private fun TripRow.toTrip(groupId: String) = Trip(
+    private fun StopRow.toStop() = TripStop(
+        id, TripStopKind.entries.firstOrNull { it.name == kind } ?: TripStopKind.STOP, LocalDateTime.parse(start_at),
+        end_at?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() }, odometer?.toInt(), place_id, place, address, latitude, longitude,
+        purpose?.let { p -> TripPurpose.entries.firstOrNull { it.name == p } }, notes,
+    )
+
+    private fun TripRow.toTrip(groupId: String, stops: List<StopRow>) = Trip(
         id, groupId, LocalDate.parse(date), destination, BigDecimal(km_tenths).movePointLeft(1), round_trip == 1L,
         TripPurpose.valueOf(purpose), vehicle_id, member_id, origin, notes,
         start_at?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() }, end_at?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() },
         start_odometer?.toInt(), end_odometer?.toInt(), start_place_id, end_place_id,
         TripLoad.entries.firstOrNull { it.name == load_kind } ?: TripLoad.NONE, trailer_id, passengers, province, device_id,
+        start_latitude, start_longitude, start_address, end_latitude, end_longitude, end_address,
+        stops.mapNotNull { runCatching { it.toStop() }.getOrNull() },
     )
 
     /** "2026-10-06T08:05": kept to the minute. */
@@ -215,16 +365,18 @@ class TripService internal constructor(private val books: Books) {
 
     /** Kilometres per person (null for no one in particular) and purpose in [year]. */
     fun totals(year: Int): Map<Pair<String?, TripPurpose>, BigDecimal> =
-        list(year).groupBy { it.memberId to it.purpose }.mapValues { (_, l) -> l.fold(BigDecimal.ZERO) { a, t -> a + t.km } }
+        list(year).flatMap { t -> legs(t).map { (t.memberId to it.purpose) to it.km } }
+            .groupBy({ it.first }, { it.second }).mapValues { (_, l) -> l.fold(BigDecimal.ZERO, BigDecimal::add) }
 
     /**
      * OTH-02: each vehicle's kilometres in [year] from its odometer readings (the first and last of the
      * year), against the business and employment kilometres logged for it.
      */
     fun vehicleUse(year: Int): List<VehicleUse> {
-        val trips = list(year).filter { it.purpose == TripPurpose.BUSINESS || it.purpose == TripPurpose.EMPLOYMENT }
+        // TRP-12: counted leg by leg, so a business stop on a personal trip counts, and the reverse.
+        val work = list(year).flatMap { t -> legs(t).filter { it.purpose == TripPurpose.BUSINESS || it.purpose == TripPurpose.EMPLOYMENT }.map { t.vehicleId to it.km } }
         return books.vehicles.list(includeInactive = true).mapNotNull { v ->
-            val work = trips.filter { it.vehicleId == v.id }.fold(BigDecimal.ZERO) { a, t -> a + t.km }
+            val work = work.filter { it.first == v.id }.fold(BigDecimal.ZERO) { a, (_, km) -> a + km }
             val readings = books.vehicles.readings(v.id).filter { it.date.year == year }
             val total = if (readings.size >= 2) readings.maxOf { it.odometer } - readings.minOf { it.odometer } else null
             if (work.signum() == 0 && total == null) null else VehicleUse(v.id, total, work)
@@ -304,5 +456,14 @@ class TripService internal constructor(private val books: Books) {
 
         /** A place typed on the phone, as long as a saved place's name. */
         private const val MAX_PLACE = 120
+
+        /** An address typed or looked up on the phone. */
+        private const val MAX_ADDRESS = 200
+
+        /** The most stops and breaks a trip from the phone may have. */
+        private const val MAX_STOPS = 100
+
+        /** The longest stop id taken from the phone. */
+        private const val MAX_ID = 64
     }
 }

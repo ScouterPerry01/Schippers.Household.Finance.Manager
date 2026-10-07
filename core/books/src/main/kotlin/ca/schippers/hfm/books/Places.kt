@@ -8,7 +8,7 @@ import ca.schippers.hfm.sync.TripRules
 import ca.schippers.hfm.data.ledger.Trip_place as PlaceRow
 
 /** TRP-02: what a saved place is, for the purpose a trip there suggests. */
-enum class PlaceCategory { HOME, WORK, CLIENT, STORE, FUEL, GARAGE, MEDICAL, OTHER }
+enum class PlaceCategory { HOME, WORK, CLIENT, STORE, FUEL, CHARGING, GARAGE, MEDICAL, OTHER }
 
 /**
  * TRP-02: a saved place. A location fix within [radiusM] metres of [latitude], [longitude] is this
@@ -87,8 +87,10 @@ class PlaceService internal constructor(private val books: Books) {
             latitude = existing.latitude ?: p.latitude,
             longitude = existing.longitude ?: p.longitude,
             category = if (existing.category == PlaceCategory.OTHER) category else existing.category,
+            // TRP-11, TRP-19: an address typed or looked up on the phone fills one the place did not have.
+            address = existing.address ?: phoneText(p.address, MAX_ADDRESS),
         ) ?: Place(
-            p.id, groupId, p.name, category, latitude = p.latitude, longitude = p.longitude,
+            p.id, groupId, p.name, category, address = phoneText(p.address, MAX_ADDRESS), latitude = p.latitude, longitude = p.longitude,
             radiusM = p.radiusM.coerceIn(10, 5_000), province = books.province.name, deviceId = deviceId,
         )
         return store(place, if (existing == null) PermissionLevel.CAPTURE_ONLY else PermissionLevel.EDIT)
@@ -106,6 +108,7 @@ class PlaceService internal constructor(private val books: Books) {
 
     private companion object {
         const val MAX_NAME = 120
+        const val MAX_ADDRESS = 200
 
         /** `place.deleted.<id>`: a place deleted on the computer, which a phone may not make again. */
         const val DELETED_KEY = "place.deleted."
