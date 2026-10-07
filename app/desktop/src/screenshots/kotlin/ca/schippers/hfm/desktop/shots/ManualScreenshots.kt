@@ -290,6 +290,9 @@ private val SHOTS: List<Shot> = buildList {
     add(Shot("create-household") { app.screen = Screen.Create })
 }
 
+/** The pictures with no dark twin: the one of the dark colours, which looks the same either way. */
+private val LIGHT_ONLY = setOf("display-dark")
+
 /** A store picture (DIST-07): its file name in English and in French, and the screen it shows. */
 private class StoreShot(val en: String, val fr: String, val prepare: ShotScope.() -> Unit)
 
@@ -358,6 +361,9 @@ fun main() {
     } else {
         SHOTS
     }
+    // -Ptheme=dark: the same pictures in the app's dark colours, for the manual in dark mode. The
+    // picture of the dark colours themselves is dark already and serves both.
+    val dark = System.getProperty("hfm.shots.theme") == "dark"
     val app = AppState(prefs = MemoryPreferences())
     app.switchLanguage(language, remember = false)
     val model = BooksModel(DemoHousehold.create(app.store, language), app)
@@ -371,9 +377,10 @@ fun main() {
         val scope = ShotScope(app, model, this)
         for (shot in shots) {
             if (only != null && shot.name !in only) continue
-            // A fresh start for each picture: light colours, menu on the left, nothing open, and
-            // another screen first so the screen's tabs start from their first one.
-            app.chooseTheme(ThemeChoice.LIGHT)
+            if (dark && shot.name in LIGHT_ONLY) continue
+            // A fresh start for each picture: light (or dark) colours, menu on the left, nothing open,
+            // and another screen first so the screen's tabs start from their first one.
+            app.chooseTheme(if (dark) ThemeChoice.DARK else ThemeChoice.LIGHT)
             app.setMenuOnTop(model.books.userId, false)
             app.helpTopic = null
             model.search = null

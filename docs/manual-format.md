@@ -29,8 +29,9 @@ The manual is the complete book about RANN's Roost: every screen, every field an
 - A picture line stands alone, with a blank line before and after. The caption says what the picture shows in a few words (The Bills screen, To pay tab), in the chapter's language; it is shown under the picture and read by screen readers in its place.
 - Place one near the top of each screen chapter, after the introduction, and others at the start of the section about a tab, dialog or view where a picture helps. Other chapters may show the same files.
 - The manual window shows a picture as wide as the page, never larger than its own size, with a thin outline.
-- `ManualTest` checks that every picture line is read as one, that each picture exists and is a PNG, that a picture shown in one language exists in the other, that every file in `images` is shown somewhere, and that each language's pictures stay under 8 MB.
-- The desktop pictures are taken by `./gradlew :app:desktop:manualScreenshots -Plang=en` (then `fr`), which draws the sample household offscreen; retake them after a screen changes. The phone pictures come from the emulator. See `tools/dev/README.md`.
+- Dark twins: each desktop picture also exists in the app's dark colours as `images/dark/<name>.png`, same name, same language. When the app's colours are dark (Display and accessibility: as the system in dark mode, or always dark), the manual window shows the dark twin, and the light picture when there is none. The Markdown names only the light picture; the dark one is found by its place. The phone pictures (`phone-*.png`) and `display-dark.png` (dark already) have no twin.
+- `ManualTest` checks that every picture line is read as one, that each picture exists and is a PNG, that a picture shown in one language exists in the other, that every file in `images` is shown somewhere, that every desktop picture has its dark twin and every dark picture a light one of the same name, and that each language's pictures, light and dark together, stay under 8 MB.
+- The desktop pictures are taken by `./gradlew :app:desktop:manualScreenshots -Plang=en` (then `fr`), and their dark twins by the same with `-Ptheme=dark`; it draws the sample household offscreen. Retake both after a screen changes. The phone pictures come from the emulator. See `tools/dev/README.md`.
 
 ## Writing rules
 

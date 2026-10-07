@@ -188,9 +188,18 @@ object Manual {
     private fun resource(language: Language, name: String): String? =
         Manual::class.java.getResourceAsStream("/hfm/manual/${language.tag}/$name")?.use { it.readBytes().decodeToString() }
 
-    /** The bytes of an [Block.Image]'s picture in [language], or null when it is missing. */
-    fun image(language: Language, path: String): ByteArray? =
-        if (IMAGE_PATH.matches(path)) Manual::class.java.getResourceAsStream("/hfm/manual/${language.tag}/$path")?.use { it.readBytes() } else null
+    /**
+     * The bytes of an [Block.Image]'s picture in [language], or null when it is missing. With [dark], its
+     * dark twin (`images/dark/name.png`, taken in the app's dark colours) when there is one, else the light one.
+     */
+    fun image(language: Language, path: String, dark: Boolean = false): ByteArray? {
+        if (!IMAGE_PATH.matches(path)) return null
+        fun read(p: String) = Manual::class.java.getResourceAsStream("/hfm/manual/${language.tag}/$p")?.use { it.readBytes() }
+        return (if (dark) read(darkPath(path)) else null) ?: read(path)
+    }
+
+    /** Where a picture's dark twin is: `images/name.png` becomes `images/dark/name.png`. */
+    fun darkPath(path: String): String = path.replaceFirst("images/", "images/dark/")
 
     private val HEADING_ID = Regex("""\s*\{#([a-z0-9-]+)}\s*$""")
     private val STEP = Regex("""^(\d+)\.\s+(.*)$""")

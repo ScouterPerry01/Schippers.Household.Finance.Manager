@@ -140,7 +140,7 @@ class ManualTest {
             }
             used[language] = pictures.map { it.second.path }.toSet()
             val folder = java.io.File(assertNotNull(javaClass.getResource("/hfm/manual/${language.tag}/images"), "the $language images folder").toURI())
-            val files = folder.list().orEmpty().map { "images/$it" }.toSet()
+            val files = folder.listFiles().orEmpty().filter { it.isFile }.map { "images/${it.name}" }.toSet()
             assertEquals(emptySet(), files - used.getValue(language), "picture files no chapter shows ($language)")
         }
         // Pictures the other language shows must be there too, so both manuals stay alike.
@@ -148,8 +148,39 @@ class ManualTest {
             val missing = used.getValue(other).filter { Manual.image(language, it) == null }
             assertEquals(emptyList(), missing, "pictures shown in $other but missing in $language")
         }
-        val total = Language.entries.associateWith { l -> used.getValue(l).sumOf { Manual.image(l, it)!!.size.toLong() } }
-        for ((language, bytes) in total) assertTrue(bytes < 8L * 1024 * 1024, "the $language pictures stay under 8 MB: $bytes bytes")
+        // Light and dark pictures together: they all ship inside the app.
+        val total = Language.entries.associateWith { l ->
+            used.getValue(l).sumOf { (Manual.image(l, it)?.size ?: 0) + (dark(l, it)?.size ?: 0).toLong() }
+        }
+        for ((language, bytes) in total) assertTrue(bytes < MAX_BYTES, "the $language pictures stay under ${MAX_BYTES / 1024 / 1024} MB: $bytes bytes")
+    }
+
+    @Test
+    fun `every desktop picture has its dark twin, and every dark picture a light one`() {
+        for (language in Language.entries) {
+            val folder = java.io.File(assertNotNull(javaClass.getResource("/hfm/manual/${language.tag}/images"), "the $language images folder").toURI())
+            val light = folder.listFiles().orEmpty().filter { it.isFile }.map { it.name }.toSet()
+            val dark = java.io.File(folder, "dark").listFiles().orEmpty().map { it.name }.toSet()
+            assertEquals(emptySet(), dark - light, "dark pictures with no light one of the same name ($language)")
+            // The phone's pictures come from the emulator in light colours only; the one of the dark colours is dark already.
+            val desktop = light.filter { !it.startsWith("phone-") && it !in LIGHT_ONLY }.toSet()
+            assertEquals(emptySet(), desktop - dark, "desktop pictures with no dark twin ($language)")
+            for (name in dark) {
+                val bytes = assertNotNull(dark(language, "images/$name"))
+                assertTrue(bytes.size > 8 && bytes[1] == 'P'.code.toByte() && bytes[2] == 'N'.code.toByte(), "dark/$name ($language) is a PNG")
+                assertTrue(Manual.image(language, "images/$name", dark = true).contentEquals(bytes), "dark/$name ($language) is shown in dark mode")
+            }
+        }
+        assertTrue(Manual.image(Language.ENGLISH, "images/phone-capture.png", dark = true).contentEquals(Manual.image(Language.ENGLISH, "images/phone-capture.png")), "a picture with no dark twin shows the light one")
+    }
+
+    private fun dark(language: Language, path: String): ByteArray? =
+        javaClass.getResourceAsStream("/hfm/manual/${language.tag}/${Manual.darkPath(path)}")?.use { it.readBytes() }
+
+    private companion object {
+        /** The pictures with no dark twin besides the phone's: the one of the dark colours, dark already. */
+        val LIGHT_ONLY = setOf("display-dark.png")
+        const val MAX_BYTES = 8L * 1024 * 1024
     }
 
     private fun blockText(b: Manual.Block): String = when (b) {

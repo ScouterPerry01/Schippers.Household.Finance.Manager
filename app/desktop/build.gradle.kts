@@ -181,8 +181,8 @@ tasks.register<JavaExec>("runDemo") {
 }
 
 // The manual's pictures (docs/manual-format.md): the sample household's screens drawn offscreen,
-// with no window and nothing else from the desktop, at a fixed size in light colours:
-// ./gradlew :app:desktop:manualScreenshots -Plang=en|fr [-Pshot=accounts]
+// with no window and nothing else from the desktop, at a fixed size in light (or -Ptheme=dark) colours:
+// ./gradlew :app:desktop:manualScreenshots -Plang=en|fr [-Ptheme=dark] [-Pshot=accounts]
 // A source set of its own, so the picture taker and the test library never ship with the app.
 val screenshots: SourceSet = sourceSets.create("screenshots")
 kotlin.target.compilations.getByName("screenshots").associateWith(kotlin.target.compilations.getByName("main"))
@@ -201,7 +201,10 @@ tasks.register<JavaExec>("manualScreenshots") {
     classpath = screenshots.runtimeClasspath
     val lang = providers.gradleProperty("lang").getOrElse("en")
     systemProperty("hfm.shots.lang", lang)
-    systemProperty("hfm.shots.out", rootProject.file("core/i18n/src/main/resources/hfm/manual/$lang/images").absolutePath)
+    // -Ptheme=dark: the same pictures in the app's dark colours, into images/dark, which the manual shows in dark mode.
+    val dark = providers.gradleProperty("theme").orNull == "dark"
+    if (dark) systemProperty("hfm.shots.theme", "dark")
+    systemProperty("hfm.shots.out", rootProject.file("core/i18n/src/main/resources/hfm/manual/$lang/images" + if (dark) "/dark" else "").absolutePath)
     providers.gradleProperty("shot").orNull?.let { systemProperty("hfm.shots.only", it) }
     // Skia draws offscreen without a window; no AWT window is ever opened.
     systemProperty("java.awt.headless", "true")
