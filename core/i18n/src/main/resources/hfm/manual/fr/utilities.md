@@ -12,7 +12,7 @@ L’écran compte deux onglets : [Compteurs](#meters) et [Réservoirs](#tanks). 
 
 - **Montrer les archivés** : montre aussi les compteurs ou réservoirs marqués archivés, comme le compteur d’une maison vendue.
 
-Les nouveaux compteurs et réservoirs sont gardés dans le premier groupe de comptes partagé que vous pouvez modifier ; si vous pouvez en modifier plusieurs, la boîte demande où (**Enregistrer dans**). Leurs relevés et livraisons restent avec eux. Ajouter ou modifier un compteur ou un réservoir exige la permission de modifier les données de son groupe ; ajouter un relevé exige seulement la permission d’ajouter des données, de sorte qu’une personne qui capture des reçus peut aussi envoyer des relevés du téléphone.
+Les nouveaux compteurs et réservoirs sont gardés dans le premier groupe de comptes partagé que vous pouvez modifier ; si vous pouvez en modifier plusieurs, la boîte demande où (**Enregistrer dans**). Leurs relevés et livraisons restent avec eux. Ajouter ou modifier un compteur ou un réservoir exige la permission de modifier les données de son groupe ; ajouter un relevé exige seulement la permission d’ajouter des données, de sorte qu’une personne qui capture des reçus peut aussi envoyer des relevés du téléphone. Les boutons que les livres refuseraient sont grisés ou cachés : **Ajouter un compteur** et **Ajouter un réservoir** pour qui ne peut modifier aucun groupe, **Modifier** sur un compteur ou un réservoir d’un groupe qu’on peut seulement consulter, et le ✕ des relevés et des livraisons pour qui ne peut pas les modifier.
 
 ## Compteurs {#meters}
 
@@ -25,6 +25,8 @@ Dessous, une ligne par mois, du plus récent au plus ancien, pour les treize der
 - **l’an dernier** : le même mois un an plus tôt, s’il était complet, et la variation en pourcentage ;
 - **environ** : le coût du mois au coût unitaire, s’il y en a un ;
 - **Inhabituel**, en rouge, pour un mois complet qui a consommé plus de 130 % du même mois l’an dernier ou, sans ce mois, de la moyenne des trois mois complets précédents (au moins deux). Le pourcentage est **Consommation inhabituelle (pourcentage)** dans [Taux et règles](rates-rules).
+
+Le dernier mois complet, s’il est inhabituel et qu’il est le mois dernier ou celui d’avant, paraît aussi avec les autres rappels, au [Tableau de bord](dashboard#needs-attention) sous **À vérifier**, dans la notification de l’ordinateur et dans le Résumé du téléphone, par exemple « Chalet électricité : consommation inhabituelle en septembre 2026 (+35 % par rapport au même mois l’an dernier) », ou « au-dessus des mois précédents » quand il n’y a pas de mois de l’an dernier à comparer. Un clic ouvre Services publics. Un mois inhabituel plus ancien ne paraît qu’ici.
 
 @index: consommation inhabituelle; même mois l’an dernier
 
@@ -82,7 +84,7 @@ Deux relevés de niveau sont nécessaires avant de montrer une consommation ou u
 
 La consommation entre deux relevés de niveau est le niveau au premier, plus ce qui a été livré après lui jusqu’au second, moins le niveau au second. Un relevé fait le jour d’une livraison est pris comme fait après la livraison. Si la jauge indique plus que ce calcul donnerait, la période ne compte rien.
 
-Le niveau d’aujourd’hui est le dernier relevé plus les livraisons depuis, moins la consommation par jour pour chaque jour depuis, jamais sous vide ni au-dessus de la capacité. La date de commande est celle où il devrait atteindre le niveau de commande ; quatorze jours avant (**Rappel de commande de combustible (jours d’avance)** dans [Taux et règles](rates-rules)), un rappel « commander du combustible » paraît avec les autres rappels au [tableau de bord](dashboard) et parmi les renouvellements dans le [calendrier](calendar). Tant que deux relevés ne donnent pas une consommation par jour, il n’y a pas de date de commande, sauf qu’un relevé au niveau de commande ou en dessous rappelle aussitôt. La consommation change avec les saisons ; la date est donc une estimation : relevez la jauge toutes les quelques semaines.
+Le niveau d’aujourd’hui est le dernier relevé plus les livraisons depuis, moins la consommation par jour pour chaque jour depuis, jamais sous vide ni au-dessus de la capacité. La date de commande est celle où il devrait atteindre le niveau de commande ; quatorze jours avant (**Rappel de commande de combustible (jours d’avance)** dans [Taux et règles](rates-rules)), un rappel « commander du combustible » paraît avec les autres rappels au [tableau de bord](dashboard) et parmi les renouvellements dans le [calendrier](calendar), et le téléphone affiche une notification et le réservoir sous **Services publics** dans son Résumé. Tant que deux relevés ne donnent pas une consommation par jour, il n’y a pas de date de commande, sauf qu’un relevé au niveau de commande ou en dessous rappelle aussitôt. La consommation change avec les saisons ; la date est donc une estimation : relevez la jauge toutes les quelques semaines.
 
 ### Boîte Ajouter un réservoir {#tank-dialog}
 
@@ -112,3 +114,5 @@ Supprimer une livraison demande d’abord et offre de supprimer aussi le paiemen
 ## Sur le téléphone {#phone}
 
 **Relevé de compteur ou de réservoir** à l’onglet Capturer du téléphone envoie un relevé de compteur (avec les registres selon l’heure) ou un niveau de réservoir, en pourcentage ou en litres ; voyez [RANN's Roost Mobile](phone-app#log-forms). Les relevés venus du téléphone affichent **du téléphone**.
+
+Le téléphone est aussi averti des réservoirs à commander : une notification « Commander du combustible » qui nomme le réservoir (sans niveau ni montant, puisqu’un téléphone verrouillé peut l’afficher), une fois quand la date de commande arrive dans les jours du rappel et une fois le jour même, et le réservoir avec « à commander d’ici le » une date sous **Services publics** dans son Résumé. Les compteurs qui ont un mois inhabituel y sont aussi. Voir [Notifications](phone-app#notifications).

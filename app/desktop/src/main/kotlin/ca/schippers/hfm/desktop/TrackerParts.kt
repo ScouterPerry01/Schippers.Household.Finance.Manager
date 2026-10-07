@@ -3,6 +3,7 @@ package ca.schippers.hfm.desktop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import ca.schippers.hfm.books.ValidationException
+import ca.schippers.hfm.domain.PermissionLevel
 import kotlinx.datetime.LocalDate
 import java.math.BigDecimal
 import java.text.NumberFormat
@@ -35,3 +36,21 @@ internal fun StoreInPicker(model: BooksModel, groupId: String, onPick: (String) 
 
 /** The group new tracker records go in by default: the first shared group the user may edit. */
 internal fun BooksModel.trackerGroup(): String = defaultGroupForContacts()?.id ?: defaultDocumentGroup() ?: books.groups().first().id
+
+/**
+ * What the signed-in user may do in each account group, so a screen greys out or hides the buttons
+ * the books would refuse (a viewer, or a member with view-only access to a group): [canCreate] new
+ * records (an editor somewhere), [mayEdit] a record kept in a group, [mayAdd] to one (a tick, a
+ * reading, hours: capture is enough).
+ */
+internal class GroupAccess(private val levels: Map<String, PermissionLevel>) {
+    val canCreate: Boolean get() = levels.values.any { it == PermissionLevel.EDIT }
+    val canAdd: Boolean get() = levels.values.any { it.allows(PermissionLevel.CAPTURE_ONLY) }
+    fun mayEdit(groupId: String): Boolean = levels[groupId] == PermissionLevel.EDIT
+    fun mayAdd(groupId: String): Boolean = levels[groupId]?.allows(PermissionLevel.CAPTURE_ONLY) == true
+}
+
+/** [GroupAccess] read once per change of the books. */
+@Composable
+internal fun rememberAccess(model: BooksModel): GroupAccess =
+    remember(model.revision) { GroupAccess(model.books.groups().associate { it.id to it.level }) }

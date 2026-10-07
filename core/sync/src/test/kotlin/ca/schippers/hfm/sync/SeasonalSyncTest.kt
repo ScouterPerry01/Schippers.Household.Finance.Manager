@@ -37,4 +37,23 @@ class SeasonalSyncTest {
     /** What a desktop before the checklist reads of a request. */
     @kotlinx.serialization.Serializable
     private data class OldRequest(val sentAtMillis: Long, val items: List<CaptureItem>, val referenceVersion: String? = null)
+
+    @Test
+    fun `a repeating task shows due again from its date, and only a newer tick waits`() {
+        val weekly = RefSeasonalTask("t", "p", "Pool", "Test the water", false, "DONE", "2027-07-02", "2027-06-25", again = "2027-07-02")
+        assertEquals("DONE", weekly.stateOn("2027-06-30"))
+        assertEquals("DUE", weekly.stateOn("2027-07-02"))
+        assertEquals("TO_DO", weekly.copy(state = "TO_DO", again = null).stateOn("2027-07-09"))
+        // A tick of June 25 the computer already shows is not waiting; one of July 3 is.
+        assertTrue(!weekly.waitingFor("2027-06-25"))
+        assertTrue(weekly.waitingFor("2027-07-03"))
+        assertTrue(weekly.copy(doneOn = null).waitingFor("2027-06-25"))
+        // From an older computer (no date): the state it sent stands.
+        val old = SyncJson.decodeFromString(
+            RefSeasonalTask.serializer(),
+            """{"taskId":"t","subjectId":"p","subject":"Pool","task":"Test","vehicle":false,"state":"DONE","doneOn":"2027-06-25"}""",
+        )
+        assertNull(old.again)
+        assertEquals("DONE", old.stateOn("2027-09-01"))
+    }
 }

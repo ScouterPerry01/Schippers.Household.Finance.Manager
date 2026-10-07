@@ -41,7 +41,11 @@ internal class TrackerSync(private val books: Books) {
 
     private fun number(text: String?): BigDecimal? = phoneDecimal(text)
 
-    /** Stores one entry from the phone [deviceId]; volunteer hours go in [groupId], the rest where their meter, tank, client or chore is. */
+    /**
+     * Stores one entry from the phone [deviceId]. Volunteer hours go where the computer puts them
+     * ([VolunteerService.defaultGroup]), or in the phone's group [groupId] when the user may not add
+     * there; the rest go where their meter, tank, client or chore is.
+     */
     fun receive(t: PhoneTracker, groupId: String?, deviceId: String) {
         t.meter?.let { m ->
             books.utilities.addReading(m.meterId, date(m.date), number(m.value), number(m.onPeak), number(m.midPeak), number(m.offPeak), phoneText(m.note), deviceId)
@@ -64,7 +68,7 @@ internal class TrackerSync(private val books: Books) {
             val kind = VolunteerKind.entries.firstOrNull { it.name == v.kind } ?: VolunteerKind.OTHER
             books.volunteer.save(
                 VolunteerEntry(
-                    "", groupId ?: throw ValidationException("error.noEditableGroup"), v.memberId, phoneText(v.organization, MAX_NAME).orEmpty(), kind, date(v.date), v.minutes, v.contactId,
+                    "", books.volunteer.defaultGroup(v.memberId) ?: groupId ?: throw ValidationException("error.noEditableGroup"), v.memberId, phoneText(v.organization, MAX_NAME).orEmpty(), kind, date(v.date), v.minutes, v.contactId,
                     phoneText(v.activity),
                 ),
                 deviceId,
@@ -79,13 +83,21 @@ internal class TrackerSync(private val books: Books) {
         val places = runCatching { books.assets.list().associate { it.id to it.name } }.getOrDefault(emptyMap())
         val people = runCatching { books.members.list(includeArchived = true).associate { it.id to it.displayName } }.getOrDefault(emptyMap())
         val week = today.minus(DatePeriod(days = 7))
+        // UTL-01: an unusual month of last month or the one before, as on the computer's reminders.
+        val unusual = runCatching { books.utilities.unusual(today) }.getOrDefault(emptyList()).associateBy { it.meter.id }
         return RefTrackers(
             meters = runCatching { books.utilities.meters() }.getOrDefault(emptyList()).map { m ->
                 val last = m.readings.lastOrNull()
-                RefMeter(m.id, m.name, m.kind.name, m.assetId?.let(places::get), m.timeOfUse, last?.value?.toPlainString(), last?.date?.toString())
+                val flagged = unusual[m.id]?.month
+                RefMeter(
+                    m.id, m.name, m.kind.name, m.assetId?.let(places::get), m.timeOfUse, last?.value?.toPlainString(), last?.date?.toString(),
+                    flagged?.let { "%04d-%02d".format(it.use.year, it.use.month) }, flagged?.changePercent?.let { (if (it.signum() > 0) "+" else "") + it.toPlainString() },
+                )
             },
             tanks = runCatching { books.utilities.tanks() }.getOrDefault(emptyList()).map { t ->
-                RefTank(t.id, t.name, t.fuel.name, t.capacityLitres.toPlainString(), t.assetId?.let(places::get), t.readings.lastOrNull()?.percent?.toPlainString())
+                // UTL-02: the order reminder, as on the computer.
+                val order = runCatching { books.utilities.order(t, today) }.getOrNull()
+                RefTank(t.id, t.name, t.fuel.name, t.capacityLitres.toPlainString(), t.assetId?.let(places::get), t.readings.lastOrNull()?.percent?.toPlainString(), order?.date?.toString())
             },
             clients = runCatching { books.workHours.clients() }.getOrDefault(emptyList()).map { c ->
                 RefWorkClient(c.id, c.name, c.tasks.filter { !it.archived }.map { RefWorkTask(it.id, it.name) })
@@ -93,7 +105,7 @@ internal class TrackerSync(private val books: Books) {
             chores = runCatching { books.chores.list() }.getOrDefault(emptyList()).map { c ->
                 RefChore(
                     c.id, c.name, c.memberId, people[c.memberId].orEmpty(), c.amount?.toBigDecimal()?.toPlainString(), c.currency.code, c.points,
-                    c.ticks.filter { it.date >= week }.map { it.date.toString() }.distinct(),
+                    c.ticks.filter { it.date >= week }.map { it.date.toString() }.distinct(), c.severalADay,
                 )
             },
             organizations = runCatching { books.volunteer.organizations() }.getOrDefault(emptyList()).take(MAX_ORGANIZATIONS).map {

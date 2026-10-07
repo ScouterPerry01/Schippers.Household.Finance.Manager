@@ -191,4 +191,44 @@ class TrackersTest {
         assertEquals("Fire department", books.volunteer.year(sam.id, 2026).byOrganization.first().first)
         assertFailsWith<ValidationException> { books.volunteer.save(VolunteerEntry("", group, sam.id, " ", VolunteerKind.OTHER, today, 60)) }
     }
+
+    @Test
+    fun `a chore is ticked once a day unless it may be done several times a day`() {
+        val kid = books.members.create("Emma", MemberKind.CHILD)
+        val dishes = books.chores.save(Chore("", group, kid.id, "Dishes", Currency.CAD, cad("1.00")))
+        books.chores.tick(dishes.id, LocalDate(2026, 10, 5))
+        assertFailsWith<ValidationException>("a second tick the same day would earn twice") { books.chores.tick(dishes.id, LocalDate(2026, 10, 5)) }
+        books.chores.tick(dishes.id, LocalDate(2026, 10, 6))
+        val dog = books.chores.save(Chore("", group, kid.id, "Feed the dog", Currency.CAD, cad("0.50"), severalADay = true))
+        books.chores.tick(dog.id, LocalDate(2026, 10, 5))
+        books.chores.tick(dog.id, LocalDate(2026, 10, 5))
+        assertEquals(cad("3.00"), books.chores.earnings(kid.id, Currency.CAD, today).unpaid)
+        assertTrue(books.chores.get(dog.id).severalADay)
+        // Saving the chore again keeps the choice and its ticks.
+        val saved = books.chores.save(books.chores.get(dog.id).copy(name = "Feed Rex"))
+        assertTrue(saved.severalADay)
+        assertEquals(2, saved.ticks.size)
+    }
+
+    @Test
+    fun `last month's unusual use is reminded about, an older one stays on the Utilities screen`() {
+        val meter = books.utilities.saveMeter(UtilityMeter("", group, "Cottage hydro", MeterKind.ELECTRICITY))
+        var total = BigDecimal.ZERO
+        var date = LocalDate(2025, 1, 1)
+        books.utilities.addReading(meter.id, date, total)
+        while (date < LocalDate(2026, 10, 1)) {
+            total += BigDecimal(if (date == LocalDate(2026, 9, 1)) 1350 else 1000)
+            date = date.plus(DatePeriod(months = 1))
+            books.utilities.addReading(meter.id, date, total)
+        }
+        val unusual = books.utilities.unusual(today).single()
+        assertEquals("Cottage hydro", unusual.meter.name)
+        assertEquals(2026 to 9, unusual.month.use.year to unusual.month.use.month)
+        assertEquals(BigDecimal("35"), unusual.month.changePercent)
+        assertTrue(books.utilities.unusual(LocalDate(2026, 11, 20)).isNotEmpty(), "the month before last still counts")
+        assertTrue(books.utilities.unusual(LocalDate(2027, 1, 15)).isEmpty(), "older: only on the Utilities screen")
+        // A usual month is not reminded about.
+        books.utilities.addReading(meter.id, LocalDate(2026, 11, 1), total + BigDecimal(1000))
+        assertTrue(books.utilities.unusual(LocalDate(2026, 11, 5)).isEmpty())
+    }
 }

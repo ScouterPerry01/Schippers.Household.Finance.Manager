@@ -173,7 +173,21 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
             .map { w -> ReminderLine("plan:${w.key}:${w.subjectId}", t(w.key, *w.args.map { a -> if (a is Money) money(a) else a }.toTypedArray()), Section.PLANS) }
         // ACC-06: low balances, card limits and unusual activity, on the accounts that ask for them.
         val alerts = runCatching { books.accountAlerts.alerts(today()) }.getOrDefault(emptyList()).map { ReminderLine(it.key, describe(it), Section.ACCOUNTS) }
-        return events + bills + refills + renewals + maintenance + plans + alerts
+        // UTL-01: a meter that used more than usual last month (or the month before).
+        val utilities = runCatching { books.utilities.unusual(today()) }.getOrDefault(emptyList())
+            .map { ReminderLine("utility:${it.meter.id}:${it.month.use.year}-${it.month.use.month}", describe(it), Section.UTILITIES) }
+        return events + bills + refills + renewals + maintenance + plans + alerts + utilities
+    }
+
+    /** UTL-01: "Cottage hydro: unusual use in September 2026 (+35 % on the same month last year)". */
+    fun describe(u: ca.schippers.hfm.books.UnusualUse): String {
+        val month = monthName(u.month.use)
+        val change = u.month.changePercent
+        return if (change != null) {
+            t("utilities.unusualReminder", u.meter.name, month, (if (change.signum() > 0) "+" else "") + MoneyFormat.formatDecimal(change, language.locale))
+        } else {
+            t("utilities.unusualReminder.recent", u.meter.name, month)
+        }
     }
 
     /** ACC-06: "Chequing: balance $412.00, below $500.00". */

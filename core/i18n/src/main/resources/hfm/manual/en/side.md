@@ -159,7 +159,7 @@ Changing hours already on an invoice does not change the invoice.
 
 ### Make an invoice {#hours-invoice}
 
-**Make an invoice** lists the client's hours not billed yet, all ticked; untick those to leave for later. Choose the **Issued** date and click **Make an invoice**. RANN's Roost makes a draft invoice to the client, numbered as the next of that year, with one line per task and rate: the task (or the description) with the dates, the hours as the quantity (to two decimals) and the rate as the price. Its sales taxes follow the person's last invoice. The hours are marked billed on it. Open the invoice on the [Invoices](#invoices) tab to check it, change its taxes and send it.
+**Make an invoice** lists the client's hours not billed yet, all ticked; untick those to leave for later. Choose the **Issued** date and click **Make an invoice**. RANN's Roost makes a draft invoice to the client, numbered as the next of that year, with one line per task and rate: the task (or the description) with the dates, the hours as the quantity (to two decimals) and the rate as the price. Its sales taxes follow the person's last invoice. The hours are marked billed on it at the same time: the invoice and the marks are saved together, so if anything goes wrong neither is kept and the hours stay to bill. **Make an invoice** and **Edit the client** are greyed out for someone who may not change the client's group; **Add hours** offers only the clients of groups you may add to. Open the invoice on the [Invoices](#invoices) tab to check it, change its taxes and send it.
 
 ## Rental properties {#rentals}
 

@@ -10,7 +10,7 @@ PDF enregistre la facture à envoyer. Quand le client paie, Marquer payée peut 
 
 ## Heures travaillées
 
-Ajoutez un client avec un taux horaire et, si vous voulez, des tâches avec leur propre taux. Ajoutez des heures, ou chronométrez-les sur le téléphone (Heures travaillées à l’onglet Capturer, avec Démarrer et Arrêter). Chaque client montre les heures pas encore facturées et ce qu’elles donnent. Faire une facture transforme les heures choisies en une facture brouillon, une ligne par tâche et par taux, et les marque facturées ; ouvrez-la à l’onglet Factures pour ajouter les taxes de vente et l’envoyer.
+Ajoutez un client avec un taux horaire et, si vous voulez, des tâches avec leur propre taux. Ajoutez des heures, ou chronométrez-les sur le téléphone (Heures travaillées à l’onglet Capturer, avec Démarrer et Arrêter). Chaque client montre les heures pas encore facturées et ce qu’elles donnent. Faire une facture transforme les heures choisies en une facture brouillon, une ligne par tâche et par taux, et les marque facturées du même coup ; ouvrez-la à l’onglet Factures pour ajouter les taxes de vente et l’envoyer.
 
 ## Immeubles locatifs
 

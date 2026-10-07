@@ -75,7 +75,11 @@ data class RefTrackers(
     val organizations: List<RefVolunteerOrg> = emptyList(),
 )
 
-/** A utility meter: [kind] ELECTRICITY, GAS or WATER; [place] the home it is at; its last reading. */
+/**
+ * A utility meter: [kind] ELECTRICITY, GAS or WATER; [place] the home it is at; its last reading.
+ * UTL-01 (format 6): [unusualMonth] (yyyy-MM) when last month or the one before used more than
+ * usual, with [unusualChange], the change from the same month last year in percent ("+35"), when known.
+ */
 @Serializable
 data class RefMeter(
     val id: String,
@@ -85,11 +89,25 @@ data class RefMeter(
     val timeOfUse: Boolean = false,
     val lastValue: String? = null,
     val lastDate: String? = null,
+    val unusualMonth: String? = null,
+    val unusualChange: String? = null,
 )
 
-/** A fuel tank: [fuel] PROPANE or HEATING_OIL, its capacity in litres and its last level in percent. */
+/**
+ * A fuel tank: [fuel] PROPANE or HEATING_OIL, its capacity in litres and its last level in percent.
+ * UTL-02 (format 6): [orderDate], when the level is expected to reach the order level within the
+ * reminder's lead time (or already has), for the phone's reminder.
+ */
 @Serializable
-data class RefTank(val id: String, val name: String, val fuel: String, val capacityLitres: String, val place: String? = null, val lastPercent: String? = null)
+data class RefTank(
+    val id: String,
+    val name: String,
+    val fuel: String,
+    val capacityLitres: String,
+    val place: String? = null,
+    val lastPercent: String? = null,
+    val orderDate: String? = null,
+)
 
 @Serializable
 data class RefWorkClient(val id: String, val name: String, val tasks: List<RefWorkTask> = emptyList())
@@ -97,7 +115,11 @@ data class RefWorkClient(val id: String, val name: String, val tasks: List<RefWo
 @Serializable
 data class RefWorkTask(val id: String, val name: String)
 
-/** A child's chore, worth [amount] (decimal, in [currency]) or [points]; [doneDates] its recent ticks. */
+/**
+ * A child's chore, worth [amount] (decimal, in [currency]) or [points]; [doneDates] its recent ticks.
+ * [severalADay] (format 6): whether it may be ticked again on a day it was done; null from an older
+ * computer, which accepts a second tick.
+ */
 @Serializable
 data class RefChore(
     val id: String,
@@ -108,6 +130,7 @@ data class RefChore(
     val currency: String? = null,
     val points: Int? = null,
     val doneDates: List<String> = emptyList(),
+    val severalADay: Boolean? = null,
 )
 
 /** An organization volunteer hours were given to before, to pick again. */

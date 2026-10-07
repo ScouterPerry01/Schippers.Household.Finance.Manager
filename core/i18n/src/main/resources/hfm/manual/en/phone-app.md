@@ -229,7 +229,7 @@ On the computer, the reading is added straight to the vehicle on the Vehicles sc
 
 The current season's checklist from the computer (see [Seasonal checklist tab](assets#seasonal-tab)): every task of the season on the vehicles, home, cottage, pool, yard and other assets your phone's user can see. It comes with the other information from the computer, so it is filled after the first transfer and brought up to date at each one. "The checklist comes from the computer: send once to get it." until then.
 
-At the top, the season and its dates ("Fall 2026, 2026-09-22 to 2026-12-20"), "7 of 12 done" with a bar. The tasks follow, grouped by vehicle or asset, each with a box and a line: "Due date", "Overdue since date" in red, "Done date", or "Done, waiting to be sent" for a tick not yet received by the computer.
+At the top, the season and its dates ("Fall 2026, 2026-09-22 to 2026-12-20"), "7 of 12 done" with a bar. The tasks follow, grouped by vehicle or asset, each with a box and a line: "Due date", "Overdue since date" in red, "Done date", or "Done, waiting to be sent" for a tick not yet received by the computer. A task that comes back within the season, such as a weekly pool test, reads "Done date · due again date" and is due again from that date, even before the next transfer; only a tick newer than the one the computer shows waits to be sent.
 
 Tap a task's box to record it as done. A dialog with the task's name asks for:
 
@@ -263,7 +263,7 @@ Under the capture buttons, four buttons open forms that log facts for the comput
 
 ### Chores {#log-chores}
 
-Lists each child's chores from the [Family money](family#chores) screen, with what each is worth and **already ticked that day** when it was. Choose the **Date** (today by default), tick the chores done and **Save**: each one is sent as done that day. A parent can tick them, or the child on their own phone when they are a user of the household.
+Lists each child's chores from the [Family money](family#chores) screen, with what each is worth and **already ticked that day** when it was. A chore done once a day that was already ticked on the date chosen shows **done that day (once a day)** and cannot be ticked again; one that may be done several times a day can. Choose the **Date** (today by default), tick the chores done and **Save**: each one is sent as done that day. A parent can tick them, or the child on their own phone when they are a user of the household.
 
 ### Volunteer hours {#log-volunteer}
 
@@ -434,6 +434,7 @@ The Summary shows figures from your computer, as of the last transfer: the house
 - **Coming up**: first each person's work and school hours today and tomorrow, such as "Alex · Work · Office" with the date and "08:00–16:30"; then the appointments and events from the computer's calendar in the coming weeks, up to 12, each with who it is for, its date and its time, or **All day**; for a child's activity, who drives there and who drives back that day, carpool turns included. Only events from accounts your user can see on the computer are sent, so another user's private appointments never reach your phone. Events marked done or cancelled are left out.
 - **Medication refills**: the active medications whose supply runs out in the next two months, or has already run out, with the date, and **renew** when no refills are left. Like the calendar, only medications your user can see are sent.
 - **Maintenance this month**: shown when something is due: each task, such as "Civic: Oil change", with **due now**, **due soon** or its date.
+- **Utilities**: shown when a fuel tank is to be ordered soon, with "order by" a date, or a meter used more than usual last month, with "unusual use in" the month and the change on last year. See [Utilities](utilities).
 - **Budgets this month**: each spending category with a budget: what was spent of the budget, such as "$412.30 of $600.00".
 
 The figures do not change until the next transfer. Tap **Send now** on the Sent tab to refresh them.
@@ -505,6 +506,7 @@ From the latest summary, the phone shows notifications, each once. Appointment r
 - **Bill reminders**: when a bill is due within its reminder days, as set on the computer ("Hydro is due in 3 days", "due tomorrow", "due today").
 - **Budget alerts**: when a category's spending this month reaches 80 % of its budget, and again when the budget is used up. They use only figures from a transfer made this month. The notification names the category but not the amounts, which are in the Summary, behind the PIN.
 - **Maintenance reminders**: when a task becomes due soon, and when it is due.
+- **Fuel orders**: when a propane or heating oil tank is expected to reach its order level within the reminder's days ("Cottage propane: order within 5 days"), and on the day ("order now"). Only the tank's name: no level or amount.
 
 They appear only if you allowed notifications. Each kind has its own channel in Android's notification settings, where you can turn it off.
 

@@ -54,6 +54,12 @@ data class MeterSummary(val meter: UtilityMeter, val months: List<MonthCompariso
     val unusual: List<MonthComparison> get() = months.filter { it.unusual }
 }
 
+/**
+ * UTL-01: a meter whose latest complete month (last month or the one before) used more than usual:
+ * shown in the reminders, on the dashboard and on the phone, not only on the Utilities screen.
+ */
+data class UnusualUse(val meter: UtilityMeter, val month: MonthComparison)
+
 /** UTL-02: what a tank holds. */
 enum class FuelKind { PROPANE, HEATING_OIL }
 
@@ -157,6 +163,22 @@ class UtilityService internal constructor(private val books: Books) {
     fun summary(m: UtilityMeter, today: LocalDate = books.today()): MeterSummary {
         val months = Usage.monthly(Usage.meterSpans(m.readings.map { it.date to it.value }))
         return MeterSummary(m, Usage.compare(months, Thresholds.unusualUtility(today)), cost(m, months, today))
+    }
+
+    /**
+     * UTL-01: the meters whose latest complete month is unusual, when that month is last month or
+     * the one before (readings often come a few days after a month ends). An older unusual month
+     * stays on the Utilities screen only.
+     */
+    fun unusual(today: LocalDate = books.today()): List<UnusualUse> {
+        val threshold = Thresholds.unusualUtility(today)
+        val now = today.year * 12 + today.month.ordinal
+        return meters().mapNotNull { m ->
+            val latest = Usage.compare(Usage.monthly(Usage.meterSpans(m.readings.map { it.date to it.value })), threshold).firstOrNull { it.use.complete }
+                ?: return@mapNotNull null
+            val age = now - (latest.use.year * 12 + latest.use.month - 1)
+            if (latest.unusual && age in 1..UNUSUAL_MONTHS) UnusualUse(m, latest) else null
+        }
     }
 
     /**
@@ -285,9 +307,17 @@ class UtilityService internal constructor(private val books: Books) {
      * UTL-02: tanks expected to fall to their order level within [withinDays] of [today] (or already
      * there), as renewals for the reminders and the calendar: dated when the level is reached.
      */
-    fun orders(today: LocalDate, withinDays: Int = Thresholds.tankOrderDays(today)): List<Renewal> = tanks().mapNotNull { t ->
-        val date = status(t, today).projection?.orderDate ?: return@mapNotNull null
+    fun orders(today: LocalDate, withinDays: Int = Thresholds.tankOrderDays(today)): List<Renewal> = tanks().mapNotNull { t -> order(t, today, withinDays) }
+
+    /** [orders] for one tank: its order reminder, or null when the order level is further off than [withinDays]. */
+    fun order(t: FuelTank, today: LocalDate, withinDays: Int = Thresholds.tankOrderDays(today)): Renewal? {
+        val date = status(t, today).projection?.orderDate ?: return null
         val days = today.daysUntil(date)
-        if (days > withinDays) null else Renewal(RenewalKind.FUEL_ORDER, t.id, t.name, date, days, t.supplier)
+        return if (days > withinDays) null else Renewal(RenewalKind.FUEL_ORDER, t.id, t.name, date, days, t.supplier)
+    }
+
+    private companion object {
+        /** An unusual month is reminded about while it is last month or the one before. */
+        const val UNUSUAL_MONTHS = 2
     }
 }

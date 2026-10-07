@@ -120,7 +120,8 @@ CREATE TABLE work_hours (
 
 CREATE INDEX work_hours_client ON work_hours(client_id, date);
 
--- CHO-01: a child's chore, worth an amount (in [currency]) or points, or both.
+-- CHO-01: a child's chore, worth an amount (in [currency]) or points, or both. [several_a_day]: it
+-- may be ticked more than once on the same day (version 32); otherwise one tick a day.
 CREATE TABLE chore (
     id TEXT NOT NULL PRIMARY KEY,
     member_id TEXT NOT NULL,
@@ -129,7 +130,8 @@ CREATE TABLE chore (
     currency TEXT NOT NULL,
     points INTEGER,
     archived INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    several_a_day INTEGER NOT NULL DEFAULT 0
 );
 
 -- A chore done on a date, with what it earned then. Paid with the allowance: [allowance_entry_id] is
@@ -255,9 +257,9 @@ chores:
 SELECT * FROM chore ORDER BY archived, member_id, name COLLATE NOCASE;
 
 upsertChore:
-INSERT INTO chore(id, member_id, name, amount_minor, currency, points, archived, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO chore(id, member_id, name, amount_minor, currency, points, archived, created_at, several_a_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET member_id = excluded.member_id, name = excluded.name, amount_minor = excluded.amount_minor, currency = excluded.currency,
-    points = excluded.points, archived = excluded.archived;
+    points = excluded.points, archived = excluded.archived, several_a_day = excluded.several_a_day;
 
 deleteChore:
 DELETE FROM chore WHERE id = ?;

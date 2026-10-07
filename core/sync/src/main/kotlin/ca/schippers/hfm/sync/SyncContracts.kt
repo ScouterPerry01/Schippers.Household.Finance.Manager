@@ -234,10 +234,11 @@ data class ReferenceData(
         /**
          * What a phone app understands of the reference data: 1 up to maintenance and budgets, 2
          * with contacts, 3 with events and refills, 4 with the seasonal checklist, what the log forms pick from, schedules, places, trailers and the vehicles' fuel type and use, 5 with
-         * the drivers of children's activities. A phone that kept its copy with an older app asks for all of it again
+         * the drivers of children's activities, 6 with tank order dates, unusual meter months, chores done several times a day and
+         * when a done checklist task falls due again. A phone that kept its copy with an older app asks for all of it again
          * ([knownVersion]), since that app dropped what it did not know.
          */
-        const val FORMAT = 5
+        const val FORMAT = 6
 
         /** The version a phone sends: none when its copy was kept by an app reading an older [FORMAT]. */
         fun knownVersion(version: String?, storedFormat: Int): String? = version?.takeIf { storedFormat >= FORMAT }
@@ -369,7 +370,9 @@ data class RefSeasonal(val season: String, val start: String, val end: String, v
 
 /**
  * SEA-04: one task of the checklist. [state] is DONE, DUE, SOON or TO_DO; [unit] (KM or HOURS) is
- * set when a reading may be given with the tick; [currency] is that of a cost.
+ * set when a reading may be given with the tick; [currency] is that of a cost. SEA-02 (format 6):
+ * [again], for a done task that repeats in the season (a weekly one), when it falls due again: from
+ * that day the phone shows it as due, not done.
  */
 @Serializable
 data class RefSeasonalTask(
@@ -383,7 +386,14 @@ data class RefSeasonalTask(
     val doneOn: String? = null,
     val unit: String? = null,
     val currency: String = "CAD",
-)
+    val again: String? = null,
+) {
+    /** SEA-02: the state on [today] (ISO date): a done task that repeats is DUE again from its [again] date, even before the next transfer. */
+    fun stateOn(today: String): String = if (state == "DONE" && again != null && today >= again) "DUE" else state
+
+    /** SEA-04: whether a tick still on its way, made on [tickDate], is newer than what the computer's list shows: the task then shows as done, waiting to be sent. */
+    fun waitingFor(tickDate: String): Boolean = doneOn == null || tickDate > doneOn
+}
 
 /**
  * TRP-02: a saved place. [category] is HOME, WORK, CLIENT, STORE, FUEL, GARAGE, MEDICAL or OTHER;

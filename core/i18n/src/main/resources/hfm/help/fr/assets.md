@@ -12,7 +12,7 @@ Dans la fiche d’un bien, ajoutez des tâches avec Ajouter les tâches habituel
 
 ## Liste saisonnière
 
-L’onglet Liste saisonnière montre toutes les tâches d’une saison sur les véhicules, la maison, le chalet, la piscine, le terrain et les autres biens, la saison en cours d’abord, avec combien sont faites. Cochez une tâche pour l’inscrire comme faite dans son carnet d’entretien, avec la date et, au besoin, le coût et un relevé. Imprimer ou Enregistrer en PDF donne une liste à apporter dehors. Les dates des saisons sont dans Taux et règles.
+L’onglet Liste saisonnière montre toutes les tâches d’une saison sur les véhicules, la maison, le chalet, la piscine, le terrain et les autres biens, la saison en cours d’abord, avec combien sont faites. Cochez une tâche pour l’inscrire comme faite dans son carnet d’entretien, avec la date et, au besoin, le coût et un relevé. Une tâche qui revient pendant la saison, comme un test hebdomadaire de la piscine, n’est faite que jusqu’à sa prochaine date (« à refaire »), puis redevient à faire. Imprimer ou Enregistrer en PDF donne une liste à apporter dehors. Les dates des saisons sont dans Taux et règles.
 
 ## Est-ce couvert?
 

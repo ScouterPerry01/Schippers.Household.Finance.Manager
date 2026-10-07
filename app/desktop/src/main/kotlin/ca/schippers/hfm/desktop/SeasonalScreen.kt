@@ -59,6 +59,10 @@ internal fun SeasonalTab(model: BooksModel) {
     val window = seasons[chosen.coerceIn(seasons.indices)]
     val list = remember(model.revision, window) { books.seasonal.checklist(window, today) }
     var ticking by remember { mutableStateOf<ChecklistItem?>(null) }
+    // A vehicle or asset whose group the user may only view cannot be ticked: the books would refuse the service.
+    val tickable = remember(list) {
+        list.items.map { it.vehicle to it.subjectId }.distinct().filter { (v, id) -> runCatching { books.seasonal.mayTick(v, id) }.getOrDefault(false) }.toSet()
+    }
     Column {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             seasons.forEachIndexed { i, w ->
@@ -89,7 +93,7 @@ internal fun SeasonalTab(model: BooksModel) {
                         style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
                     )
                 }
-                items(items, key = { it.taskId }) { item -> ChecklistRow(model, item, current = chosen == 0) { ticking = item } }
+                items(items, key = { it.taskId }) { item -> ChecklistRow(model, item, current = chosen == 0, mayTick = (item.vehicle to item.subjectId) in tickable) { ticking = item } }
             }
         }
     }
@@ -97,20 +101,13 @@ internal fun SeasonalTab(model: BooksModel) {
 }
 
 @Composable
-private fun ChecklistRow(model: BooksModel, item: ChecklistItem, current: Boolean, onTick: () -> Unit) {
+private fun ChecklistRow(model: BooksModel, item: ChecklistItem, current: Boolean, mayTick: Boolean, onTick: () -> Unit) {
     val done = item.state == ChecklistState.DONE
     Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
         // A season still to come can be ticked early too: the task is then done ahead of time.
-        Checkbox(checked = done, onCheckedChange = { if (!done) onTick() }, enabled = !done)
+        Checkbox(checked = done, onCheckedChange = { if (!done) onTick() }, enabled = !done && mayTick)
         Text(item.taskName, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = if (done) FontWeight.Normal else FontWeight.Medium)
-        Text(
-            when {
-                done -> model.t("seasonal.doneOn", model.date(item.doneOn ?: today()))
-                item.dueDate != null -> model.t("seasonal.due", model.date(item.dueDate!!))
-                else -> ""
-            },
-            Modifier.width(220.dp),
-        )
+        Text(model.checklistWhen(item), Modifier.width(280.dp))
         val color = when (item.state) {
             ChecklistState.DUE -> MaterialTheme.colorScheme.error
             ChecklistState.SOON -> MaterialTheme.colorScheme.tertiary
@@ -152,6 +149,17 @@ private fun TickDialog(model: BooksModel, item: ChecklistItem, onClose: () -> Un
     }
 }
 
+/**
+ * "done 2026-06-01", "done 2026-06-01 · due again 2026-06-08" for a task that repeats in the season
+ * (SEA-02: done for this occurrence only), or "due 2026-06-08".
+ */
+private fun BooksModel.checklistWhen(item: ChecklistItem): String = when {
+    item.state == ChecklistState.DONE && item.again != null -> t("seasonal.doneAgain", date(item.doneOn ?: today()), date(item.again!!))
+    item.state == ChecklistState.DONE -> t("seasonal.doneOn", date(item.doneOn ?: today()))
+    item.dueDate != null -> t("seasonal.due", date(item.dueDate!!))
+    else -> ""
+}
+
 /** The checklist as printed: a box to tick by hand for each task, by vehicle or asset. */
 internal fun checklistPdf(model: BooksModel, list: SeasonalChecklist, file: File) {
     val groups = list.items.groupBy { it.subjectId }.values.map { items ->
@@ -159,12 +167,7 @@ internal fun checklistPdf(model: BooksModel, list: SeasonalChecklist, file: File
             items.first().subjectName,
             items.map { i ->
                 ChecklistPdf.Line(
-                    i.state == ChecklistState.DONE, i.taskName,
-                    when {
-                        i.state == ChecklistState.DONE -> model.t("seasonal.doneOn", model.date(i.doneOn ?: today()))
-                        i.dueDate != null -> model.t("seasonal.due", model.date(i.dueDate!!))
-                        else -> ""
-                    },
+                    i.state == ChecklistState.DONE, i.taskName, model.checklistWhen(i),
                 )
             },
         )

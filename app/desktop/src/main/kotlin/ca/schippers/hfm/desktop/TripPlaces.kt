@@ -40,19 +40,22 @@ internal fun PlacesDialog(model: BooksModel, onClose: () -> Unit) {
     var showArchived by remember { mutableStateOf(false) }
     val places = remember(model.revision, showArchived) { books.places.list(includeArchived = showArchived) }
     var editing by remember { mutableStateOf<Place?>(null) }
+    val access = rememberAccess(model)
     WideDialog(model.t("places.title"), model.t("common.close"), onClose) {
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(model.t("places.hint"), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Button(onClick = {
-                    val group = model.editableGroups().let { g -> g.firstOrNull { !it.isPrivate } ?: g.firstOrNull() }
-                    if (group == null) model.error = model.t("error.noEditableGroup") else editing = Place("", group.id, "", province = books.province.name)
-                }) { Text(model.t("places.add")) }
+                if (access.canCreate) {
+                    Button(onClick = {
+                        val group = model.editableGroups().let { g -> g.firstOrNull { !it.isPrivate } ?: g.firstOrNull() }
+                        if (group == null) model.error = model.t("error.noEditableGroup") else editing = Place("", group.id, "", province = books.province.name)
+                    }) { Text(model.t("places.add")) }
+                }
                 LabeledCheckbox(model.t("places.showArchived"), showArchived) { showArchived = it }
             }
             if (places.isEmpty()) Text(model.t("places.none"))
             for (p in places) {
-                Row(Modifier.fillMaxWidth().clickable { editing = p }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().clickable(enabled = access.mayEdit(p.groupId)) { editing = p }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(p.name + if (p.archived) " (${model.t("places.archived")})" else "", fontWeight = FontWeight.Medium)
                         Text(
@@ -64,7 +67,7 @@ internal fun PlacesDialog(model: BooksModel, onClose: () -> Unit) {
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
-                    TextButton(onClick = { editing = p }) { Text(model.t("common.edit")) }
+                    TextButton(onClick = { editing = p }, enabled = access.mayEdit(p.groupId)) { Text(model.t("common.edit")) }
                 }
                 HorizontalDivider()
             }

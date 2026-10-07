@@ -20,4 +20,4 @@ Set up an allowance… for a child: the amount, how often and the first day. Eac
 
 ## Chores
 
-Add a chore for a child, worth an amount, points, or both. Done today ticks it; the child or a parent can also tick it on the phone (Chores on the Capture tab). Each child shows what is still to pay; Pay with the allowance adds it to the child's money as earned, and the points add up.
+Add a chore for a child, worth an amount, points, or both. Done today ticks it; the child or a parent can also tick it on the phone (Chores on the Capture tab). A chore is ticked once a day, so it cannot earn twice the same day, unless Can be done several times a day is ticked in the chore. Each child shows what is still to pay; Pay with the allowance adds it to the child's money as earned, and the points add up.

@@ -10,7 +10,7 @@ PDF saves the invoice to send. When the customer pays, Mark as paid can also rec
 
 ## Hours worked
 
-Add a client with an hourly rate and, if you like, tasks with their own rate. Add hours, or time them on the phone (Hours worked on the Capture tab, with Start and Stop). Each client shows the hours not billed yet and what they come to. Make an invoice turns the hours you choose into a draft invoice, one line per task and rate, and marks them billed; open it on the Invoices tab to add the sales taxes and send it.
+Add a client with an hourly rate and, if you like, tasks with their own rate. Add hours, or time them on the phone (Hours worked on the Capture tab, with Start and Stop). Each client shows the hours not billed yet and what they come to. Make an invoice turns the hours you choose into a draft invoice, one line per task and rate, and marks them billed in the same step; open it on the Invoices tab to add the sales taxes and send it.
 
 ## Rental properties
 

@@ -29,6 +29,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /** SEA-01 to SEA-05: starter tasks for pools and yards, the seasonal checklist, its phone round trip, and rebates. */
@@ -178,7 +179,7 @@ class SeasonalChecklistTest {
         assertTrue("t-2" in reply.imported)
         assertEquals(listOf("t-3"), reply.failed.map { it.id })
         assertEquals(1, books.assetMaintenance.services(yard.id).size)
-        assertEquals(5, ReferenceData.FORMAT)
+        assertEquals(6, ReferenceData.FORMAT)
     }
 
     @Test
@@ -212,5 +213,43 @@ class SeasonalChecklistTest {
         // Deleting the project deletes its rebates.
         books.homeProjects.delete(p)
         assertEquals(cad("0"), books.homeProjects.costBase(house.id).improvements)
+    }
+
+    @Test
+    fun `a weekly task is done for the week it was ticked, then due again`() {
+        val chemistry = task(pool, "pool_chemistry")
+        // Summer 2027: the pool water tested on June 25.
+        val june = d("2027-06-27")
+        books.seasonal.record(false, pool.id, chemistry.id, d("2027-06-25"), null, null, null)
+        val done = books.seasonal.checklist(Season.SUMMER, june).items.single { it.taskId == chemistry.id }
+        assertEquals(ChecklistState.DONE, done.state)
+        assertEquals(d("2027-06-25"), done.doneOn)
+        assertEquals(d("2027-07-02"), done.again, "due again a week later")
+        // A week later it is due again, not done for the whole summer.
+        val later = books.seasonal.checklist(Season.SUMMER, d("2027-07-02")).items.single { it.taskId == chemistry.id }
+        assertEquals(ChecklistState.DUE, later.state)
+        assertEquals(d("2027-06-25"), later.doneOn)
+        // A yearly task done in the season is not due again in it.
+        val opening = task(pool, "pool_open")
+        books.seasonal.record(false, pool.id, opening.id, d("2027-06-22"), null, null, null)
+        assertNull(books.seasonal.checklist(Season.SUMMER, june).items.single { it.taskId == opening.id }.again)
+        // The phone gets the date, and shows the task due from it even before its next transfer.
+        val ref = ca.schippers.hfm.sync.RefSeasonalTask(chemistry.id, pool.id, "Pool", "pool_chemistry", false, "DONE", "2027-07-02", "2027-06-25", again = "2027-07-02")
+        assertEquals("DONE", ref.stateOn("2027-07-01"))
+        assertEquals("DUE", ref.stateOn("2027-07-02"))
+    }
+
+    @Test
+    fun `yards get lawn care and vehicles summer wiper blades in spring`() {
+        val yardKeys = books.assetMaintenance.tasks(yard.id).mapNotNull { it.templateKey }.toSet()
+        assertTrue(yardKeys.containsAll(listOf("lawn_fertilize", "lawn_aerate", "lawn_overseed")), yardKeys.toString())
+        val carKeys = books.vehicles.tasks(car.id).mapNotNull { it.templateKey }.toSet()
+        assertTrue(carKeys.containsAll(listOf("wiper_blades", "wiper_blades_summer")))
+        val spring = books.seasonal.checklist(Season.SPRING, today).items.map { it.taskName }.toSet()
+        assertTrue(spring.containsAll(listOf("wiper_blades_summer", "lawn_fertilize")), spring.toString())
+        assertFalse("wiper_blades" in spring, "winter blades go on in the fall")
+        val fall2027 = books.seasonal.checklist(Season.FALL, d("2027-09-01")).items.map { it.taskName }.toSet()
+        assertTrue(fall2027.containsAll(listOf("wiper_blades")), fall2027.toString())
+        assertEquals(d("2027-09-05"), books.assetMaintenance.taskStatuses(yard.id, today).first { it.task.templateKey == "lawn_aerate" }.due.dueDate)
     }
 }

@@ -160,6 +160,7 @@ Les tâches sont triées par prochaine date. Les tâches en pause suivent, marqu
 - **Filtre à air du moteur** : aux 24 mois ou aux 30 000 km (pas pour un véhicule électrique).
 - **Inspection annuelle** : aux 12 mois.
 - **Essuie-glaces d’hiver** : chaque année, le 15 octobre.
+- **Essuie-glaces d’été** : chaque année, le 15 avril, quand on enlève ceux d’hiver.
 - **Vérifier le chauffe-moteur et son cordon** : chaque année, le 1er novembre (pas pour un véhicule électrique).
 - **Trousse d’urgence d’hiver dans la voiture** : chaque année, le 1er novembre : une couverture, une pelle, un grattoir et une brosse, du sable ou de la litière, des câbles de démarrage, une lampe de poche, de l’eau et des collations.
 - **Vérification d’été : liquide de refroidissement et climatisation** : chaque année, le 15 mai.

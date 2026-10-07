@@ -101,13 +101,16 @@ fun TripsScreen(model: BooksModel) {
     // MED-11: the medical trips already added as a medical expense.
     val inMedical = remember(model.revision, trips) { trips.filter { books.trips.qualifiesForMedical(it) && books.trips.medicalExpense(it) != null }.map { it.id }.toSet() }
     fun km(v: BigDecimal) = model.t("trips.km", java.text.NumberFormat.getNumberInstance(model.language.locale).apply { maximumFractionDigits = 1 }.format(v))
+    val access = rememberAccess(model)
     Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(model.t("nav.trips"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("trips.hint"), style = MaterialTheme.typography.bodySmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Picker(model.t("taxes.year"), (thisYear downTo thisYear - 6).toList(), year, { it.toString() }, Modifier.width(190.dp)) { year = it }
-            Button(onClick = { editing = Trip("", model.workGroup(), today(), "", BigDecimal.ZERO, true, TripPurpose.BUSINESS) }, modifier = Modifier.padding(top = 8.dp)) {
-                Text(model.t("trips.add"))
+            if (access.canCreate) {
+                Button(onClick = { editing = Trip("", model.workGroup(), today(), "", BigDecimal.ZERO, true, TripPurpose.BUSINESS) }, modifier = Modifier.padding(top = 8.dp)) {
+                    Text(model.t("trips.add"))
+                }
             }
             // TRP-02: the saved places the phone matches its location to; TRP-09: the CRA logbook.
             OutlinedButton(onClick = { showPlaces = true }, modifier = Modifier.padding(top = 8.dp)) { Text(model.t("places.title")) }
@@ -146,7 +149,7 @@ fun TripsScreen(model: BooksModel) {
         }
         if (trips.isEmpty()) Text(model.t("trips.none"))
         for (t in trips) {
-            Row(Modifier.fillMaxWidth().clickable { editing = t }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().clickable(enabled = access.mayEdit(t.groupId)) { editing = t }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(t.date), Modifier.width(100.dp))
                 Column(Modifier.weight(1f)) {
                     Text(listOfNotNull(t.origin, t.destination).joinToString(" → ") + if (t.roundTrip) " ↺" else "")
@@ -171,7 +174,7 @@ fun TripsScreen(model: BooksModel) {
                 if (t.id in inMedical) {
                     TextButton(onClick = {}, enabled = false) { Text(model.t("trips.addedToMedical")) }
                 } else if (books.trips.qualifiesForMedical(t)) {
-                    TextButton(onClick = { toMedical = t }) { Text(model.t("trips.toMedical")) }
+                    TextButton(onClick = { toMedical = t }, enabled = access.canCreate) { Text(model.t("trips.toMedical")) }
                 }
                 Text(km(t.km), Modifier.width(110.dp))
             }

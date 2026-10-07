@@ -71,6 +71,19 @@ class VolunteerService internal constructor(private val books: Books) {
         return list().first { it.id == id }
     }
 
+    /**
+     * Where new hours of [memberId] go, on the computer and from the phone alike: where that
+     * person's latest hours are, so a person's year stays together; for their first hours, the
+     * signed-in user's own private group if they have one, otherwise the first shared group. Only
+     * groups the user may add to; null when there is none.
+     */
+    fun defaultGroup(memberId: String?): String? {
+        val groups = books.groups().filter { it.level.allows(PermissionLevel.CAPTURE_ONLY) }
+        val ids = groups.map { it.id }.toSet()
+        list().firstOrNull { it.memberId == memberId && it.groupId in ids }?.let { return it.groupId }
+        return (groups.firstOrNull { it.ownerUserId == books.userId } ?: groups.firstOrNull { !it.isPrivate } ?: groups.firstOrNull())?.id
+    }
+
     fun delete(e: VolunteerEntry) = books.ledger(books.group(e.groupId).also { books.require(it, PermissionLevel.EDIT) }).trackersQueries.deleteVolunteerHours(e.id)
 
     /** [memberId]'s volunteer [year]. */

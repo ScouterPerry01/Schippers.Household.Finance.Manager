@@ -31,6 +31,12 @@ data class ChecklistItem(
     val doneOn: LocalDate?,
     val currency: Currency,
     val unit: MeterUnit?,
+    /**
+     * SEA-02: for a done task that repeats within the season (weekly pool water, a monthly filter),
+     * when it falls due again; it is DONE until then, and DUE from that day. Null when it is not
+     * due again this season.
+     */
+    val again: LocalDate? = null,
 )
 
 /** SEA-02: a season's checklist and how far along it is ("7 of 12 done"). */
@@ -64,8 +70,8 @@ class SeasonalChecklistService internal constructor(private val books: Books) {
             for (s in books.vehicles.taskStatuses(g, v, today)) {
                 val t = s.task
                 val state = DueState.valueOf(s.state.name)
-                item(window, current, s.nextDate, state, t.intervalMonths, null, null, done[t.id].orEmpty())?.let { (due, st, on) ->
-                    items += ChecklistItem(v.id, v.name, true, t.id, t.name, due, st, on, v.currency, MeterUnit.KM)
+                item(window, current, s.nextDate, state, t.intervalMonths, null, null, done[t.id].orEmpty())?.let { i ->
+                    items += ChecklistItem(v.id, v.name, true, t.id, t.name, i.due, i.state, i.doneOn, v.currency, MeterUnit.KM, i.again)
                 }
             }
         }
@@ -74,8 +80,8 @@ class SeasonalChecklistService internal constructor(private val books: Books) {
             val done = doneDates(books.assetMaintenance.services(g, a).map { it.date to it.taskIds })
             for (s in books.assetMaintenance.taskStatuses(g, a, today)) {
                 val t = s.task
-                item(window, current, s.due.nextDate, s.due.state, t.intervalMonths, t.intervalWeeks, t.part, done[t.id].orEmpty())?.let { (due, st, on) ->
-                    items += ChecklistItem(a.id, a.name, false, t.id, t.name, due, st, on, a.currency, a.meter)
+                item(window, current, s.due.nextDate, s.due.state, t.intervalMonths, t.intervalWeeks, t.part, done[t.id].orEmpty())?.let { i ->
+                    items += ChecklistItem(a.id, a.name, false, t.id, t.name, i.due, i.state, i.doneOn, a.currency, a.meter, i.again)
                 }
             }
         }
@@ -127,9 +133,14 @@ class SeasonalChecklistService internal constructor(private val books: Books) {
     private fun doneDates(log: List<Pair<LocalDate, Set<String>>>): Map<String, List<LocalDate>> =
         log.flatMap { (date, tasks) -> tasks.map { it to date } }.groupBy({ it.first }, { it.second })
 
+    /** Where a task stands in a season: see [ChecklistItem]. */
+    private data class Placed(val due: LocalDate?, val state: ChecklistState, val doneOn: LocalDate?, val again: LocalDate?)
+
     /**
      * Whether a task is in the season and how it stands there: its due date (moved on by its
-     * interval into a season still to come), its state, and when it was done in the season.
+     * interval into a season still to come), its state, and when it was done in the season. A task
+     * that repeats within the season is done for its current occurrence only: once its next date
+     * comes, it is due again (SEA-02), so a weekly task is not done for the whole season after one tick.
      */
     private fun item(
         window: SeasonWindow,
@@ -140,7 +151,7 @@ class SeasonalChecklistService internal constructor(private val books: Books) {
         weeks: Int?,
         part: Pair<Pair<Int, Int>, Pair<Int, Int>>?,
         done: List<LocalDate>,
-    ): Triple<LocalDate?, ChecklistState, LocalDate?>? {
+    ): Placed? {
         val doneOn = done.filter { it in window }.maxOrNull()
         var due = next
         if (next != null && !current && (months != null || weeks != null)) {
@@ -161,7 +172,9 @@ class SeasonalChecklistService internal constructor(private val books: Books) {
             state == DueState.SOON -> ChecklistState.SOON
             else -> ChecklistState.TO_DO
         }
-        return Triple(due.takeIf { dueInSeason }, st, doneOn)
+        // Done, and due again before the season ends: the next occurrence's date.
+        val again = due.takeIf { st == ChecklistState.DONE && current && dueInSeason && doneOn != null && it != null && it > doneOn }
+        return Placed(due.takeIf { dueInSeason }, st, doneOn, again)
     }
 
     companion object {

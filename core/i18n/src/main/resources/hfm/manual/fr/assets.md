@@ -173,7 +173,7 @@ Les règles qui décident quand une tâche est due sont les mêmes que pour les 
 - Maison, chalet, et chauffage et climatisation : **Remplacer le tampon de l’humidificateur de la fournaise** (1er octobre).
 - Chalet : **Installer le quai** (15 mai), **Sortir le quai** (1er octobre).
 - Piscine : **Ouvrir la piscine** (20 mai, vers la fête de la Reine ou la Journée nationale des patriotes), **Analyser et équilibrer l’eau de la piscine** (chaque semaine du 20 mai au 15 septembre), **Nettoyer le panier de la pompe et le filtre** (chaque mois du 20 mai au 15 septembre), **Fermer et hiverner la piscine** (15 septembre, après la fête du Travail), **Vérifier la toile d’hiver (eau, feuilles, neige)** (chaque mois du 1er novembre au 30 avril).
-- Terrain et jardin : **Entretien de la tondeuse** (1er avril), **Nettoyage printanier du terrain** (20 avril), **Mettre en marche l’arrosage automatique** (10 mai), **Purger les conduites d’arrosage** (10 octobre), **Ramasser les feuilles mortes** (1er novembre), **Entretien de la souffleuse** (1er novembre).
+- Terrain et jardin : **Entretien de la tondeuse** (1er avril), **Nettoyage printanier du terrain** (20 avril), **Mettre en marche l’arrosage automatique** (10 mai), **Purger les conduites d’arrosage** (10 octobre), **Ramasser les feuilles mortes** (1er novembre), **Entretien de la souffleuse** (1er novembre), et l’entretien de la pelouse : **Fertiliser la pelouse** (15 mai), **Aérer la pelouse** (5 septembre) et **Sursemer la pelouse** (10 septembre), quand le sol est encore chaud et les nuits fraîches.
 
 Ces dates conviennent à la plus grande partie du sud du Canada ; ajustez-les à votre région en modifiant la tâche (sa date **Faite la dernière fois le** fixe quand elle revient). Un intervalle en heures ou en kilomètres n’est ajouté que si le **Compteur** du bien compte cette unité ; sinon la tâche revient seulement aux quelques mois.
 
@@ -247,7 +247,7 @@ En haut, un bouton par saison, la saison en cours d’abord et marquée « en co
 
 Les tâches sont regroupées par véhicule ou par bien (un véhicule est marqué « véhicule »). Chaque ligne montre une case à cocher, la tâche, son échéance (« prévue le 2026-10-15 ») ou la date où elle a été faite (« faite le 2026-10-08 »), et son état :
 
-- **Faite** : faite pendant cette saison. Elle reste dans la liste, cochée.
+- **Faite** : faite pendant cette saison. Elle reste dans la liste, cochée. Une tâche qui revient pendant la saison (un test hebdomadaire de la piscine, un filtre mensuel) n’est faite que pour cette fois : sa ligne indique « faite le 2026-06-25 · à refaire le 2026-07-02 », et à partir de cette date elle est de nouveau à faire, décochée, jusqu’à ce qu’on la coche de nouveau. Une tâche hebdomadaire n’est donc jamais faite pour toute la saison après une seule coche.
 - **En retard** : sa date d’échéance est passée et elle n’a pas été faite depuis ; dans la saison en cours, une tâche en retard d’avant le début de la saison est aussi listée.
 - **Bientôt** : à faire d’ici son délai de rappel.
 - **À faire** : prévue plus tard dans la saison, ou dans une saison à venir.
@@ -265,7 +265,7 @@ Cochez la case d’une tâche pour l’inscrire comme faite. Une fenêtre au nom
 - Le relevé, facultatif : **Kilomètres** pour un véhicule (son odomètre), ou **Heures d’utilisation** ou **Kilomètres** pour un bien qui a un compteur.
 - **Notes** : facultatif, par exemple qui l’a faite.
 
-**Inscrire comme faite** ajoute un entretien au carnet d’entretien du véhicule ou du bien avec cette tâche cochée, tout comme **Inscrire comme faite** sur la tâche, et le calendrier de la tâche repart de cette date. Pour lier un paiement, ajouter des détails ou annuler une coche, ouvrez l’entretien dans le carnet ([Carnet d’entretien](assets#service-log), ou l’onglet **Carnet d’entretien** du véhicule) et modifiez-le ou supprimez-le. Les coches faites sur le téléphone arrivent de la même façon : voir [Liste saisonnière sur le téléphone](phone-app#seasonal-form). Une tâche déjà inscrite comme faite à la même date (cochée ici et sur un téléphone) n’est pas inscrite deux fois.
+**Inscrire comme faite** ajoute un entretien au carnet d’entretien du véhicule ou du bien avec cette tâche cochée, tout comme **Inscrire comme faite** sur la tâche, et le calendrier de la tâche repart de cette date. Pour lier un paiement, ajouter des détails ou annuler une coche, ouvrez l’entretien dans le carnet ([Carnet d’entretien](assets#service-log), ou l’onglet **Carnet d’entretien** du véhicule) et modifiez-le ou supprimez-le. Les coches faites sur le téléphone arrivent de la même façon : voir [Liste saisonnière sur le téléphone](phone-app#seasonal-form). Une tâche déjà inscrite comme faite à la même date (cochée ici et sur un téléphone) n’est pas inscrite deux fois. La case est grisée pour un véhicule ou un bien d’un groupe que vous pouvez seulement consulter, puisque l’entretien ne pourrait pas être inscrit.
 
 Il faut la permission **Modification** ou **Saisie seulement** sur le groupe du véhicule ou du bien.
 

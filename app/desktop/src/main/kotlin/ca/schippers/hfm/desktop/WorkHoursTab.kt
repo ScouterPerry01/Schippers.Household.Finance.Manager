@@ -46,9 +46,12 @@ internal fun HoursTab(model: BooksModel) {
     var editingHours by remember { mutableStateOf<WorkEntry?>(null) }
     var billing by remember { mutableStateOf<WorkClient?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
+    val access = rememberAccess(model)
+    // New hours can go to the clients of the groups the user may add to.
+    val open = clients.filter { access.mayAdd(it.groupId) && !it.archived }
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-        Button(onClick = { editingClient = WorkClient("", model.trackerGroup(), "", books.reports.base) }) { Text(model.t("hours.addClient")) }
-        if (clients.isNotEmpty()) OutlinedButton(onClick = { editingHours = WorkEntry("", clients.first().id, today(), 60) }) { Text(model.t("hours.add")) }
+        if (access.canCreate) Button(onClick = { editingClient = WorkClient("", model.trackerGroup(), "", books.reports.base) }) { Text(model.t("hours.addClient")) }
+        if (open.isNotEmpty()) OutlinedButton(onClick = { editingHours = WorkEntry("", open.first().id, today(), 60) }) { Text(model.t("hours.add")) }
         LabeledCheckbox(model.t("utilities.showArchived"), showArchived) { showArchived = it }
     }
     Text(model.t("hours.hint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
@@ -57,8 +60,8 @@ internal fun HoursTab(model: BooksModel) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
         for (c in clients) {
             val mine = hours.filter { it.clientId == c.id }
-            val open = mine.filter { it.id in unbilled }
-            val amount = open.mapNotNull { books.workHours.amount(it, c) }.fold(Money.zero(c.currency)) { a, m -> a + m }
+            val unbilledHours = mine.filter { it.id in unbilled }
+            val amount = unbilledHours.mapNotNull { books.workHours.amount(it, c) }.fold(Money.zero(c.currency)) { a, m -> a + m }
             Card(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -70,15 +73,15 @@ internal fun HoursTab(model: BooksModel) {
                                 style = MaterialTheme.typography.bodySmall,
                             )
                         }
-                        if (open.isNotEmpty()) OutlinedButton(onClick = { billing = c }) { Text(model.t("hours.makeInvoice")) }
-                        TextButton(onClick = { editingClient = c }) { Text(model.t("hours.editClient")) }
+                        if (unbilledHours.isNotEmpty()) OutlinedButton(onClick = { billing = c }, enabled = access.mayEdit(c.groupId)) { Text(model.t("hours.makeInvoice")) }
+                        TextButton(onClick = { editingClient = c }, enabled = access.mayEdit(c.groupId)) { Text(model.t("hours.editClient")) }
                     }
                     Text(
-                        if (open.isEmpty()) model.t("hours.allBilled") else model.t("hours.unbilled", model.duration(open.sumOf { it.minutes }), model.money(amount)),
+                        if (unbilledHours.isEmpty()) model.t("hours.allBilled") else model.t("hours.unbilled", model.duration(unbilledHours.sumOf { it.minutes }), model.money(amount)),
                         fontWeight = FontWeight.Medium,
                     )
                     for (h in mine.reversed().take(HOURS_SHOWN)) {
-                        Row(Modifier.fillMaxWidth().clickable { editingHours = h }.padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().clickable(enabled = access.mayEdit(c.groupId)) { editingHours = h }.padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(model.date(h.date), Modifier.width(100.dp))
                             Text(
                                 listOfNotNull(c.tasks.firstOrNull { it.id == h.taskId }?.name, h.description, h.startTime, model.t("tracker.fromPhone").takeIf { h.fromPhone }).joinToString(" · "),
@@ -98,7 +101,7 @@ internal fun HoursTab(model: BooksModel) {
         }
     }
     editingClient?.let { c -> WorkClientDialog(model, c) { editingClient = null } }
-    editingHours?.let { h -> WorkHoursDialog(model, h, clients) { editingHours = null } }
+    editingHours?.let { h -> WorkHoursDialog(model, h, if (h.id.isBlank()) open else clients) { editingHours = null } }
     billing?.let { c -> WorkInvoiceDialog(model, c, hours.filter { it.clientId == c.id && it.id in unbilled }, onDone = { message = it }) { billing = null } }
 }
 

@@ -47,6 +47,7 @@ internal fun SchedulesDialog(model: BooksModel, memberId: String?, onClose: () -
     val people = remember(model.revision) { CalendarPeople.of(model) }
     var editing by remember { mutableStateOf<PersonSchedule?>(null) }
     var deleting by remember { mutableStateOf<PersonSchedule?>(null) }
+    val access = rememberAccess(model)
 
     WideDialog(model.t("schedule.title"), model.t("common.close"), onClose) {
         Text(model.t("schedule.intro"), style = MaterialTheme.typography.bodySmall)
@@ -71,13 +72,15 @@ internal fun SchedulesDialog(model: BooksModel, memberId: String?, onClose: () -
                                 style = MaterialTheme.typography.bodySmall,
                             )
                         }
-                        TextButton(onClick = { editing = s }) { Text(model.t("common.edit")) }
-                        TextButton(onClick = { deleting = s }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+                        TextButton(onClick = { editing = s }, enabled = access.mayEdit(s.groupId)) { Text(model.t("common.edit")) }
+                        TextButton(onClick = { deleting = s }, enabled = access.mayEdit(s.groupId)) {
+                            Text(model.t("common.delete"), color = if (access.mayEdit(s.groupId)) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline)
+                        }
                     }
                 }
             }
         }
-        Button(onClick = { editing = newSchedule(model, memberId) }) { Text(model.t("schedule.add")) }
+        if (access.canCreate) Button(onClick = { editing = newSchedule(model, memberId) }) { Text(model.t("schedule.add")) }
     }
     editing?.let { s -> ScheduleEditor(model, s) { editing = null } }
     deleting?.let { s ->

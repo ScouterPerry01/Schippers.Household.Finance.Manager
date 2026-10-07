@@ -13,7 +13,7 @@ Bénévolat garde le temps que chaque personne donne à un organisme et l’addi
 - **Année d’imposition** : l’année civile montrée, de cette année à six ans en arrière.
 - **Ajouter des heures de bénévolat** : ouvre la [boîte](#dialog) pour de nouvelles heures.
 
-Les nouvelles heures sont gardées dans le premier groupe de comptes partagé que vous pouvez modifier ; si vous pouvez en modifier plusieurs, la boîte demande où (**Enregistrer dans**). Ajouter des heures exige la permission d’ajouter des données dans ce groupe ; les modifier ou les supprimer exige la permission de modifier les données.
+Les nouvelles heures sont gardées avec les heures de bénévolat déjà inscrites pour la personne, pour que son année reste dans un même groupe de comptes ; les premières heures d’une personne vont dans votre groupe privé si vous en avez un, sinon dans le premier groupe partagé. Les heures envoyées du téléphone suivent la même règle, quel que soit le groupe où le téléphone envoie. Si vous pouvez modifier plusieurs groupes, la boîte permet toujours de choisir (**Enregistrer dans**). Ajouter des heures exige la permission d’ajouter des données dans ce groupe ; les modifier ou les supprimer exige la permission de modifier les données. **Ajouter des heures de bénévolat** est caché pour qui ne peut ajouter dans aucun groupe, et une ligne ne s’ouvre pas pour qui peut seulement consulter son groupe.
 
 ### Les cartes {#cards}
 

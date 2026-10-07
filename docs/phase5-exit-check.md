@@ -21,7 +21,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - AI-07 (other providers): Met as architecture only (`AiProvider` interface); Claude is the only provider. Accepted for a Could item.
 - OCR-03 (line items to split a receipt): Met through AI reading (Split by items). On-device reading does not extract line items: owner's decision (2026-10-05), AI-only is accepted.
 - OCR-06 (optional cloud AI): Met.
-- OCR-07 (learns from corrections): Met for store name, kind and category. Fixed: Learned stores… on the Documents screen lists what was learned and forgets a store (the forget query existed but nothing called it). Gap: no learning of a store's layout (which field sits where). Large.
+- OCR-07 (learns from corrections): Met for store name, kind and category. Fixed: Learned stores… on the Documents screen lists what was learned and forgets a store (the forget query existed but nothing called it). Gap: no learning of a store's layout (which field sits where). Left for after 1.0 (re-checked 2026-10-06): large (a per-store model of field positions on the page, learned from corrections and applied before the generic reading), and AI reading already reads any layout.
 - OCR-08 (document type detection): Met, desktop and phone.
 - OCR-09 (statements parsed into transactions): Met through AI reading for bank, card and investment statements and trade confirmations. Owner's decision (2026-10-05): line items and statement reading stay AI-only, no local parsing of text PDFs.
 
@@ -45,7 +45,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 ## Phase 5d: budgets
 
 - BUD-04 (phone alerts at 80 % and 100 %): Met. Fixed: amounts in the notification used a decimal point in French, and alerts were marked as shown even when Android refused notifications, so they were lost.
-- BUD-05 (budget from the last 12 months): Met in function. Gap (privacy and access, listed with the security observations): budgets live in the household-wide database, so suggestions built from private spending are visible to other users, and setting or removing a budget has no role check. Medium.
+- BUD-05 (budget from the last 12 months): Met in function. Fixed afterwards (Phase 5 security follow-ups, `docs/security-review-phase5.md` 2a to 2c): setting or removing a budget needs an editor, suggestions count only the accounts of shared groups, and the Privacy and data chapter says budgets are kept in the household-wide database, readable by every user. Budgets stay household-wide by design.
 
 ## Phase 5e: reports
 
@@ -73,7 +73,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 
 ## Phase 5h: Could items
 
-- CAP-06 (e-receipts from saved .eml files): Met. Fixed: logos and tracking pixels shown inside an HTML receipt were imported as receipts and kept the email's own text from being saved; small inline pictures are now left out, larger ones (a photo mailed from a phone) kept. Gap: the email PDF uses a standard font, so non-Latin characters are lost; the watched folder moves an unreadable file to Imported without saying so. Small.
+- CAP-06 (e-receipts from saved .eml files): Met. Fixed: logos and tracking pixels shown inside an HTML receipt were imported as receipts and kept the email's own text from being saved; small inline pictures are now left out, larger ones (a photo mailed from a phone) kept. Fixed afterwards (gaps before 1.0): the email PDF used a standard font, so non-Latin characters were lost; an email with characters outside it is now written with a font of the computer that has them (Windows, Linux and macOS font paths, embedded as a subset), and falls back to the standard font when none is found (EmailPdfTest). The watched folder moved an unreadable file to Imported without saying so; it still moves it (so it is not retried every 20 seconds) and the import message now names it and says where it went. Manual (documents).
 - CAP-08 (voice notes): Met. Fixed: at the 60-second limit the recording stopped and the minute was lost; it is now kept as if Stop had been tapped.
 - CC-03 (card rewards): Met.
 - LN-07 (family loans): Met. The rate shows a decimal point in French.
@@ -121,7 +121,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 ## SRS Should items re-checked
 
 - ARC-04 (importers as plug-ins): Fixed afterwards: every importer is listed once in `ImporterRegistry` behind one interface, `FileImporter<T>` (id, kind, canRead, read), with a typed kind per result (statements, brokerage statements, crypto exchange history, QIF); the statement and brokerage importers are wrapped, and the crypto exchange and QIF readers implement it directly. `Importers` and `InvestmentImporters` are now views of the registry, so the screens behave as before (ImporterRegistryTest). An explicit list, not ServiceLoader: there are no outside plug-ins to discover.
-- NFR-13 (modular design): Gap in part: account types and report kinds are closed lists. Accepted as is for 1.0.
+- NFR-13 (modular design): Gap in part: account types and report kinds are closed lists. Accepted as is for 1.0 (re-checked 2026-10-06: opening them would be a large change with no user-facing gain before 1.0).
 - SYNC-06, SYNC-07: Met.
 - SYNC-09 (status on both devices): Met. Fixed: the reason under a refused item was the desktop's English exception text; it now comes in the phone's language. The desktop lists counts per phone but not the failed items.
 - CAP-04: Met.
@@ -162,7 +162,7 @@ Full build: 646 tests, 0 failures, 1 skipped (632 before this check).
 - Section 12 Should reports: investment income and gains, assets and warranties: Met. Cash flow forecast: Fixed afterwards: a Cash flow forecast report and a chart on the Bills Forecast tab, the bank accounts day by day and together, with a line at zero and the first day they would go below it (BillServiceTest); the threshold is zero, not a chosen amount. Debt summary: Fixed afterwards: a line per loan to payoff and the interest of each year, with drill-down and a table (LoanServiceTest); cards have no set payoff and are not drawn. Maintenance: Met with tables (no timeline chart).
 - RPT-06: Met.
 - BUD-02, BUD-03: Met as GOAL-01 to GOAL-06.
-- HH-02 (administrator approves imports): Gap: members file their own captures; the administrator sees only those that went to shared groups. Partly in tension with HH-12; owner's decision.
+- HH-02 (administrator approves imports): Gap: members file their own captures; the administrator sees only those that went to shared groups. Partly in tension with HH-12. Owner's decision (decisions log, 2026-10-06): members' imports need no administrator approval; left as is.
 - HH-08 (permissions per group or account): Met per group; not per account (an account in its own group is the workaround).
 - HH-11, HH-12, HH-13: Met.
 - BAK-04: Met.

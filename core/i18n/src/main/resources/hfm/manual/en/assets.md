@@ -173,7 +173,7 @@ The rules for when a task is due are the same as for vehicles: see [When a task 
 - Home, cottage, and heating and cooling: **Replace the furnace humidifier pad** (October 1).
 - Cottage: **Put the dock in** (May 15), **Take the dock out** (October 1).
 - Pool: **Open the pool** (May 20, around Victoria Day), **Test and balance the pool water** (every week from May 20 to September 15), **Clean the pump basket and filter** (every month from May 20 to September 15), **Close and winterize the pool** (September 15, after Labour Day), **Check the winter cover (water, leaves, snow)** (every month from November 1 to April 30).
-- Yard and garden: **Service the lawn mower** (April 1), **Spring cleanup of the yard** (April 20), **Start up the irrigation system** (May 10), **Blow out the irrigation lines** (October 10), **Rake and bag the fall leaves** (November 1), **Service the snow blower** (November 1).
+- Yard and garden: **Service the lawn mower** (April 1), **Spring cleanup of the yard** (April 20), **Start up the irrigation system** (May 10), **Blow out the irrigation lines** (October 10), **Rake and bag the fall leaves** (November 1), **Service the snow blower** (November 1), and lawn care: **Fertilize the lawn** (May 15), **Aerate the lawn** (September 5) and **Overseed the lawn** (September 10), when the soil is still warm and the nights cool.
 
 The dates suit most of southern Canada; move them to suit your region by editing the task (its **Last done on** date sets when it comes back). An interval by hours or kilometres is only added when the asset's **Meter** counts that unit; otherwise the task repeats by months only.
 
@@ -247,7 +247,7 @@ At the top, a button for each season, the current one first and marked "now", su
 
 The tasks are grouped by vehicle or asset (a vehicle is marked "vehicle"). Each line shows a box to tick, the task, when it falls due ("due 2026-10-15") or when it was done ("done 2026-10-08"), and its state:
 
-- **Done**: done during this season. It stays on the list, ticked.
+- **Done**: done during this season. It stays on the list, ticked. A task that comes back within the season (a weekly pool test, a monthly filter) is done only for this time: its line reads "done 2026-06-25 · due again 2026-07-02", and from that date it is due again, unticked, until it is ticked again. A weekly task is therefore never done for the whole season after one tick.
 - **Overdue**: its due date has passed and it was not done since; in the current season, a task overdue from before the season started is listed too.
 - **Due soon**: due within its reminder lead time.
 - **To do**: due later in the season, or in a season still to come.
@@ -265,7 +265,7 @@ Tick a task's box to record it as done. A dialog titled with the task and the ve
 - The reading, optional: **Kilometres** for a vehicle (its odometer), or **Hours of use** or **Kilometres** for an asset with a meter.
 - **Notes**: optional, such as who did it.
 
-**Record as done** adds a service to the vehicle's or asset's service log with this task ticked, just as **Record as done** on the task does, and the task's schedule starts over from that date. To link a payment, add details or undo a tick, open the service in the service log ([Service log](assets#service-log), or the vehicle's **Service log** tab) and edit or delete it. Ticks made on the phone arrive the same way: see [Seasonal checklist on the phone](phone-app#seasonal-form). A task already recorded as done on the same date (ticked here and on a phone) is not recorded twice.
+**Record as done** adds a service to the vehicle's or asset's service log with this task ticked, just as **Record as done** on the task does, and the task's schedule starts over from that date. To link a payment, add details or undo a tick, open the service in the service log ([Service log](assets#service-log), or the vehicle's **Service log** tab) and edit or delete it. Ticks made on the phone arrive the same way: see [Seasonal checklist on the phone](phone-app#seasonal-form). A task already recorded as done on the same date (ticked here and on a phone) is not recorded twice. The box is greyed out for a vehicle or asset of a group you may only view, since the service could not be recorded.
 
 You need the **Edit** or **Capture only** permission on the group of the vehicle or asset.
 

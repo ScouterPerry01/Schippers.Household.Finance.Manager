@@ -160,6 +160,7 @@ Tasks are sorted by their next date. Paused tasks follow, marked "(paused)", wit
 - **Engine air filter**: every 24 months or 30,000 km (not for an electric vehicle).
 - **Yearly inspection**: every 12 months.
 - **Winter wiper blades**: every year, due October 15.
+- **Summer wiper blades**: every year, due April 15, when the winter blades come off.
 - **Check the block heater and cord**: every year, due November 1 (not for an electric vehicle).
 - **Winter emergency kit in the car**: every year, due November 1: a blanket, a shovel, a scraper and brush, sand or kitty litter, booster cables, a flashlight, water and snacks.
 - **Summer check: coolant and air conditioning**: every year, due May 15.

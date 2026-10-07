@@ -20,4 +20,4 @@ Prévoir une allocation… pour un enfant : le montant, la fréquence et le prem
 
 ## Tâches ménagères
 
-Ajoutez une tâche pour un enfant, qui vaut un montant, des points, ou les deux. Faite aujourd’hui la coche ; l’enfant ou un parent peut aussi la cocher sur le téléphone (Tâches ménagères à l’onglet Capturer). Chaque enfant montre ce qui reste à payer ; Payer avec l’allocation l’ajoute à l’argent de l’enfant comme gagné, et les points s’additionnent.
+Ajoutez une tâche pour un enfant, qui vaut un montant, des points, ou les deux. Faite aujourd’hui la coche ; l’enfant ou un parent peut aussi la cocher sur le téléphone (Tâches ménagères à l’onglet Capturer). Une tâche se coche une fois par jour, pour qu’elle ne rapporte pas deux fois le même jour, sauf si Peut être faite plusieurs fois par jour est coché dans la tâche. Chaque enfant montre ce qui reste à payer ; Payer avec l’allocation l’ajoute à l’argent de l’enfant comme gagné, et les points s’additionnent.

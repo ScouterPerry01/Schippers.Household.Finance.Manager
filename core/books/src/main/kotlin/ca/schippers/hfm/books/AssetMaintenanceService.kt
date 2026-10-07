@@ -395,6 +395,11 @@ class AssetMaintenanceService internal constructor(private val books: Books) {
             Template("irrigation_start", YARD, 12, season = 5 to 10),
             Template("irrigation_blowout", YARD, 12, season = 10 to 10),
             Template("fall_leaves", YARD, 12, season = 11 to 1),
+            // Lawn care: fertilize once the grass grows in spring; aerate and overseed in early fall,
+            // when the soil is still warm and the nights cool.
+            Template("lawn_fertilize", YARD, 12, season = 5 to 15),
+            Template("lawn_aerate", YARD, 12, season = 9 to 5),
+            Template("lawn_overseed", YARD, 12, season = 9 to 10),
             Template("snow_blower", YARD, 12, season = 11 to 1),
             // RV
             Template("rv_dewinterize", setOf(AssetKind.RV), 12, season = 4 to 15),

@@ -54,7 +54,7 @@ Fonctionnement du dossier surveillé :
 - L’application examine le dossier environ toutes les 20 secondes tant que le ménage est ouvert.
 - Seuls les fichiers des types acceptés sont pris. Les fichiers cachés (dont le nom commence par un point) sont ignorés.
 - Un fichier modifié dans les dernières secondes est laissé pour le tour suivant, pour qu’une numérisation en cours d’écriture ne soit pas lue à moitié.
-- Après l’importation, chaque fichier est déplacé dans un dossier nommé « Imported » à l’intérieur du dossier surveillé, pour que rien ne soit importé deux fois. Si un fichier du même nom s’y trouve déjà, un numéro est ajouté, comme « recu (2).pdf ».
+- Après l’importation, chaque fichier est déplacé dans un dossier nommé « Imported » à l’intérieur du dossier surveillé, pour que rien ne soit importé deux fois. Si un fichier du même nom s’y trouve déjà, un numéro est ajouté, comme « recu (2).pdf ». Un fichier illisible y est aussi déplacé, pour qu’il ne soit pas réessayé toutes les 20 secondes, et le message en haut de l’écran le nomme et dit où il est allé.
 - Les sous-dossiers ne sont pas examinés.
 
 > Conseil : Le dossier surveillé est idéal avec un numériseur de documents : réglez le numériseur pour qu’il enregistre ses PDF dans ce dossier, et vos numérisations apparaissent dans À vérifier un instant plus tard.
@@ -65,7 +65,7 @@ Fonctionnement du dossier surveillé :
 RANN's Roost ne se connecte jamais à votre boîte de courriel. Pour garder un reçu ou une facture reçus par courriel, enregistrez le courriel comme fichier (un fichier .eml) à partir de votre logiciel de courriel, puis importez-le, déposez-le sur l’écran ou enregistrez-le dans le dossier surveillé.
 
 - Si le courriel contient des pièces jointes PDF ou images, chaque pièce jointe devient un document et est lue. Les petites images affichées dans le courriel lui-même, comme le logo du commerce, ne sont pas des pièces jointes et sont laissées de côté.
-- S’il n’en contient pas, le courriel lui-même est conservé sous forme de PDF de son objet, de son expéditeur, de sa date et de son texte, et le commerce, la date et le total sont lus dans ce texte.
+- S’il n’en contient pas, le courriel lui-même est conservé sous forme de PDF de son objet, de son expéditeur, de sa date et de son texte, et le commerce, la date et le total sont lus dans ce texte. Quand le courriel contient des lettres que la police PDF standard n’a pas (grec, cyrillique, chinois, arabe, etc.), le PDF utilise une police de cet ordinateur qui les a, pour qu’elles soient gardées.
 
 ### Captures du téléphone {#phone-captures}
 @index: téléphone; mobile; RANN's Roost Mobile; capture; dépense rapide

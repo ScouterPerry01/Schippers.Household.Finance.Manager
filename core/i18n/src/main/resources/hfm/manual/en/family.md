@@ -210,7 +210,7 @@ The **Chores** tab keeps each child's chores, worth an amount, points, or both. 
 - **Add a chore**: opens the [chore dialog](#chore-dialog). It appears once the household has a member; it starts with the first child.
 - One card per child: **To pay** (the money earned by chores done up to today and not paid yet, and how many) and the points, in all and this month.
 - **Pay with the allowance**: when the child has an allowance in the same currency, adds one **Earned or received** entry for what is to pay, noted **Chores**, and marks those chores paid. **Mark paid** on the [list of allowances](#allowance-list) does the same when it pays the allowance. Without an allowance, **Mark as paid** marks them paid without adding anything.
-- Each chore: its name (click it to change it), what it is worth, how many times it was done in the last seven days, **History**, and **Done today** (or **Done again** once done today), which ticks it for today.
+- Each chore: its name (click it to change it), what it is worth, how many times it was done in the last seven days, **History**, and **Done today**, which ticks it for today. Once done today, a chore done once a day shows **Already done today**, greyed out, so it cannot earn twice the same day; a chore that may be done several times a day shows **Done again**. Buttons are greyed out for someone who may not tick or change the chore's group.
 
 ### Add a chore dialog {#chore-dialog}
 
@@ -218,10 +218,11 @@ The **Chores** tab keeps each child's chores, worth an amount, points, or both. 
 - **Chore**: the name, such as "Empty the dishwasher". Required.
 - **Amount**: what it earns each time, in the household's base currency; optional.
 - **Points**: whole points each time; optional.
+- **Can be done several times a day**: unticked by default. Unticked, the chore is ticked once a day, here and on the phone: a second tick the same day is refused here, and one from a phone (or from a second phone) is not counted again. Tick it for a chore done more than once a day, such as feeding the dog morning and evening.
 - **Store in**, **Archived** (it leaves the list and the phone; its history stays) and **Delete** (asks first; what was paid stays in the child's money).
 
 Each tick earns what the chore is worth when it is ticked; changing the amount later does not change past ticks.
 
 ### History window {#chore-history}
 
-**History** lists the times the chore was done, newest first: the date, what it earned, **paid** with the date when paid, and **from the phone**. ✕ removes a tick not paid yet, after asking. To tick it on another day, choose the **Date** and click **Tick on this date**.
+**History** lists the times the chore was done, newest first: the date, what it earned, **paid** with the date when paid, and **from the phone**. ✕ removes a tick not paid yet, after asking. To tick it on another day, choose the **Date** and click **Tick on this date**. A chore done once a day cannot be ticked twice on the same date: "This chore is already ticked for that day."

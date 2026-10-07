@@ -87,6 +87,7 @@ fun DashboardScreen(model: BooksModel) {
             missingRates = missing.map { it.code }.sorted(),
             backupReminder = books.backups.needsReminder(java.time.Instant.now()),
             alerts = runCatching { books.accountAlerts.alerts(today) }.getOrDefault(emptyList()),
+            unusualUse = runCatching { books.utilities.unusual(today) }.getOrDefault(emptyList()),
         )
     }
 
@@ -124,6 +125,8 @@ fun DashboardScreen(model: BooksModel) {
             data.behind.forEach { add(model.t("dashboard.review.behind", it, Thresholds.reconcileBehind(today())) to Section.ACCOUNTS) }
             if (data.backupReminder) add(model.t("dashboard.review.backup") to Section.BACKUPS)
             if (data.missingRates.isNotEmpty()) add(model.t("report.missingRates", data.missingRates.joinToString()) to Section.RATES)
+            // UTL-01: meters that used more than usual last month.
+            data.unusualUse.forEach { add(model.describe(it) to Section.UTILITIES) }
         }
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp)) {
@@ -192,6 +195,8 @@ private class DashboardData(
     val backupReminder: Boolean,
     /** ACC-06: the alerts standing on the accounts that ask for them. */
     val alerts: List<AccountAlert>,
+    /** UTL-01: meters whose last month was unusual. */
+    val unusualUse: List<ca.schippers.hfm.books.UnusualUse>,
 )
 
 private fun signed(model: BooksModel, m: Money) = (if (m.isPositive) "+" else "") + model.money(m)

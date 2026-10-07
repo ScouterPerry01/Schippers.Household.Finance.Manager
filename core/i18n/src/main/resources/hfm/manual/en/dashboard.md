@@ -106,6 +106,7 @@ The lines that can appear, in this order:
 - Accounts behind, such as Joint chequing has not been reconciled in more than 45 days: one line per account whose last reconciled statement is more than 45 days old (the default, set in [Rates and rules](rates-rules)). An account that was never reconciled is not listed here; the Accounts screen marks it Never reconciled instead. Opens Accounts.
 - No successful backup in the last 7 days: no backup has worked in the last week, or none was ever made. Opens Backups. See [Backups](backups).
 - Account alerts, in red, such as Chequing: balance $412.00, below $500.00: the alerts you set on accounts (low balance, card limit, unusual activity). Clicking one opens that account. An unusual transaction has a **Dismiss** button once you have looked at it. See [Account alerts](accounts#account-alerts).
+- Unusual utility use, such as Cottage hydro: unusual use in September 2026 (+35% on the same month last year): a meter whose last complete month, last month or the month before, used more than usual. Opens Utilities. See [Utilities](utilities#meters).
 - Missing rates, such as No exchange rate for USD: those amounts are left out: some balances, bills or spending are in a currency the app has no rate for, so they are not in the totals above. Opens Rates and prices, where you add the rate. See [Rates and prices](rates).
 
 ## Net worth chart {#net-worth-chart}

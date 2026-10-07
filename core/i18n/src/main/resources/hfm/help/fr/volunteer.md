@@ -4,7 +4,7 @@ Bénévolat garde le temps que chaque personne donne à un organisme, avec un to
 
 ## Ajouter des heures de bénévolat
 
-Choisissez la personne, l’organisme (ou un contact qui en est un), le genre, la date et la durée, comme 1:30 ou 1,5. Les genres sont pompier volontaire, recherche et sauvetage, heures communautaires pour l’école et autre bénévolat. Cliquez sur une ligne pour la modifier ou la supprimer. Les heures peuvent aussi être entrées sur le téléphone (Bénévolat à l’onglet Capturer).
+Choisissez la personne, l’organisme (ou un contact qui en est un), le genre, la date et la durée, comme 1:30 ou 1,5. Les genres sont pompier volontaire, recherche et sauvetage, heures communautaires pour l’école et autre bénévolat. Cliquez sur une ligne pour la modifier ou la supprimer. Les heures peuvent aussi être entrées sur le téléphone (Bénévolat à l’onglet Capturer). Les nouvelles heures vont là où sont les heures déjà inscrites pour la personne ; ses premières heures vont dans votre groupe privé si vous en avez un, sinon dans le groupe partagé, de l’ordinateur comme du téléphone.
 
 ## Totaux
 

@@ -21,6 +21,7 @@ import ca.schippers.hfm.sync.SyncCrypto
 import ca.schippers.hfm.sync.SyncRequest
 import ca.schippers.hfm.sync.SyncResponse
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
@@ -145,5 +146,70 @@ class TrackerSyncTest {
         assertEquals(500, books.utilities.meter(meter.id).readings.single().notes?.length)
         val entry = books.volunteer.list().single()
         assertEquals(120 to 500, entry.organization.length to entry.activity?.length)
+    }
+
+    @Test
+    fun `a once-a-day chore ticked on two phones earns once, and the phone hears of fuel orders and unusual use`() {
+        val kid = books.members.create("Emma", MemberKind.CHILD)
+        val dishes = books.chores.save(Chore("", group, kid.id, "Dishes", Currency.CAD, Money.parse("1", Currency.CAD)))
+        val dog = books.chores.save(Chore("", group, kid.id, "Feed the dog", Currency.CAD, Money.parse("0.50", Currency.CAD), severalADay = true))
+        // A tank already below its order level, and a meter whose September used 40 % more than last September.
+        val tank = books.utilities.saveTank(FuelTank("", group, "Cottage propane", FuelKind.PROPANE, BigDecimal(500)))
+        books.utilities.addTankReading(tank.id, LocalDate(2026, 10, 1), BigDecimal(20))
+        val meter = books.utilities.saveMeter(UtilityMeter("", group, "Hydro", MeterKind.ELECTRICITY))
+        var total = BigDecimal.ZERO
+        var date = LocalDate(2025, 1, 1)
+        books.utilities.addReading(meter.id, date, total)
+        while (date < LocalDate(2026, 10, 1)) {
+            total += BigDecimal(if (date == LocalDate(2026, 9, 1)) 1400 else 1000)
+            date = date.plus(kotlinx.datetime.DatePeriod(months = 1))
+            books.utilities.addReading(meter.id, date, total)
+        }
+        val key = pair()
+        val ticks = listOf(
+            PhoneTracker("p1", now, chore = PhoneChoreTick(dishes.id, "2026-10-05")),
+            PhoneTracker("p2", now, chore = PhoneChoreTick(dishes.id, "2026-10-05")),
+            PhoneTracker("d1", now, chore = PhoneChoreTick(dog.id, "2026-10-05")),
+            PhoneTracker("d2", now, chore = PhoneChoreTick(dog.id, "2026-10-05")),
+        )
+        val answer = send(key, SyncRequest(now, emptyList(), trackers = ticks))
+        assertEquals(listOf("p1", "p2", "d1", "d2"), answer.imported, "the second tick is acknowledged, so the phone stops sending it")
+        assertEquals(1, books.chores.get(dishes.id).ticks.size, "once a day: earns once")
+        assertEquals(2, books.chores.get(dog.id).ticks.size, "several a day")
+        assertEquals(Money.parse("2.00", Currency.CAD), books.chores.earnings(kid.id, Currency.CAD, today).unpaid)
+
+        val ref = answer.reference!!.trackers
+        assertEquals(listOf(false, true), ref.chores.sortedBy { it.name }.map { it.severalADay })
+        assertEquals("2026-10-01", ref.tanks.single().orderDate, "already at its order level: order now")
+        val hydro = ref.meters.single()
+        assertEquals("2026-09", hydro.unusualMonth)
+        assertEquals("+40", hydro.unusualChange)
+    }
+
+    @Test
+    fun `volunteer hours follow the same rule on the phone as on the computer`() {
+        val shared = group
+        val sam = books.members.create("Sam", MemberKind.ADULT)
+        val kid = books.members.create("Emma", MemberKind.CHILD)
+        // Emma's hours are already in the shared group; Sam has none yet.
+        books.volunteer.save(VolunteerEntry("", shared, kid.id, "Food bank", VolunteerKind.SCHOOL, LocalDate(2026, 9, 1), 120))
+        val private = books.session.createGroup("Perry - private", private = true)
+        assertEquals(private, books.volunteer.defaultGroup(sam.id), "a first entry goes to the user's own private group")
+        assertEquals(shared, books.volunteer.defaultGroup(kid.id), "then where the person's hours are")
+        val key = pair()
+        val answer = send(
+            key,
+            SyncRequest(
+                now, emptyList(),
+                trackers = listOf(
+                    PhoneTracker("s", now, volunteer = PhoneVolunteer(sam.id, "Fire department", "2026-10-04", 180, "FIREFIGHTER")),
+                    PhoneTracker("k", now, volunteer = PhoneVolunteer(kid.id, "Food bank", "2026-10-04", 60, "SCHOOL")),
+                ),
+            ),
+        )
+        assertEquals(listOf("s", "k"), answer.imported)
+        val entries = books.volunteer.list()
+        assertEquals(private, entries.single { it.memberId == sam.id }.groupId)
+        assertEquals(setOf(shared), entries.filter { it.memberId == kid.id }.map { it.groupId }.toSet())
     }
 }

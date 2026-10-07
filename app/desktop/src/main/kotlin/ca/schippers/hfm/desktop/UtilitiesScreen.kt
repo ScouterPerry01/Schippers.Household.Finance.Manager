@@ -55,7 +55,7 @@ private fun BooksModel.placeName(assetId: String?): String =
     assetId?.let { id -> runCatching { books.assets.get(id).name }.getOrNull() } ?: t("utilities.household")
 
 /** "January 2026" in the user's language. */
-private fun BooksModel.monthName(m: MonthUse): String =
+internal fun BooksModel.monthName(m: MonthUse): String =
     java.time.YearMonth.of(m.year, m.month).format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy", language.locale)).replaceFirstChar { it.uppercase(language.locale) }
 
 private fun BooksModel.unit(kind: MeterKind): String = t("meterUnit.${kind.unit}")
@@ -100,8 +100,9 @@ private fun MetersTab(model: BooksModel) {
     val meters = remember(model.revision, showArchived) { books.utilities.meters(showArchived) }
     var editing by remember { mutableStateOf<UtilityMeter?>(null) }
     var reading by remember { mutableStateOf<UtilityMeter?>(null) }
+    val access = rememberAccess(model)
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-        Button(onClick = { editing = UtilityMeter("", model.trackerGroup(), "", MeterKind.ELECTRICITY) }) { Text(model.t("meter.add")) }
+        if (access.canCreate) Button(onClick = { editing = UtilityMeter("", model.trackerGroup(), "", MeterKind.ELECTRICITY) }) { Text(model.t("meter.add")) }
         LabeledCheckbox(model.t("utilities.showArchived"), showArchived) { showArchived = it }
     }
     if (meters.isEmpty()) Text(model.t("meter.none"), Modifier.padding(vertical = 8.dp))
@@ -124,7 +125,7 @@ private fun MetersTab(model: BooksModel) {
                             )
                         }
                         OutlinedButton(onClick = { reading = m }) { Text(model.t("meter.readings")) }
-                        TextButton(onClick = { editing = m }) { Text(model.t("meter.edit")) }
+                        TextButton(onClick = { editing = m }, enabled = access.mayEdit(m.groupId)) { Text(model.t("meter.edit")) }
                     }
                     if (s.months.isEmpty()) Text(model.t("meter.noUse"), style = MaterialTheme.typography.bodySmall)
                     for (c in s.months.take(MONTHS_SHOWN)) {
@@ -145,7 +146,7 @@ private fun MetersTab(model: BooksModel) {
         }
     }
     editing?.let { m -> MeterDialog(model, m) { editing = null } }
-    reading?.let { m -> MeterReadingsDialog(model, books.utilities.meters(true).firstOrNull { it.id == m.id } ?: m) { reading = null } }
+    reading?.let { m -> MeterReadingsDialog(model, books.utilities.meters(true).firstOrNull { it.id == m.id } ?: m, access) { reading = null } }
 }
 
 @Composable
@@ -196,7 +197,7 @@ private fun MeterDialog(model: BooksModel, m: UtilityMeter, onClose: () -> Unit)
 
 /** A meter's readings, newest first, and a new one: the total, or each register with time of use. */
 @Composable
-private fun MeterReadingsDialog(model: BooksModel, m: UtilityMeter, onClose: () -> Unit) {
+private fun MeterReadingsDialog(model: BooksModel, m: UtilityMeter, access: GroupAccess, onClose: () -> Unit) {
     val unit = model.unit(m.kind)
     var day by remember { mutableStateOf(today().toString()) }
     var value by remember { mutableStateOf("") }
@@ -206,7 +207,7 @@ private fun MeterReadingsDialog(model: BooksModel, m: UtilityMeter, onClose: () 
     var notes by remember { mutableStateOf("") }
     var deleting by remember { mutableStateOf<UtilityReading?>(null) }
     val filled = value.isNotBlank() || (m.timeOfUse && listOf(on, mid, off).any { it.isNotBlank() })
-    FormDialog(m.name, model.t("meter.addReading"), model.t("common.close"), canSave = filled, onDismiss = onClose, onSave = {
+    FormDialog(m.name, model.t("meter.addReading"), model.t("common.close"), canSave = filled && access.mayAdd(m.groupId), onDismiss = onClose, onSave = {
         val ok = model.act {
             model.books.utilities.addReading(m.id, trackerDate(day), trackerNumber(value, "error.meterReading"), trackerNumber(on, "error.meterReading"), trackerNumber(mid, "error.meterReading"), trackerNumber(off, "error.meterReading"), notes)
         }
@@ -223,7 +224,7 @@ private fun MeterReadingsDialog(model: BooksModel, m: UtilityMeter, onClose: () 
                             (if (r.fromPhone) " · " + model.t("tracker.fromPhone") else "") + (r.notes?.let { " · $it" } ?: ""),
                         Modifier.weight(1f),
                     )
-                    RemoveButton(model.t("common.delete")) { deleting = r }
+                    RemoveButton(model.t("common.delete"), enabled = access.mayEdit(m.groupId)) { deleting = r }
                 }
             }
         }
@@ -259,8 +260,9 @@ private fun TanksTab(model: BooksModel) {
     var editing by remember { mutableStateOf<FuelTank?>(null) }
     var reading by remember { mutableStateOf<FuelTank?>(null) }
     var delivering by remember { mutableStateOf<FuelTank?>(null) }
+    val access = rememberAccess(model)
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-        Button(onClick = { editing = FuelTank("", model.trackerGroup(), "", FuelKind.PROPANE, BigDecimal.ZERO) }) { Text(model.t("tank.add")) }
+        if (access.canCreate) Button(onClick = { editing = FuelTank("", model.trackerGroup(), "", FuelKind.PROPANE, BigDecimal.ZERO) }) { Text(model.t("tank.add")) }
         LabeledCheckbox(model.t("utilities.showArchived"), showArchived) { showArchived = it }
     }
     if (tanks.isEmpty()) Text(model.t("tank.none"), Modifier.padding(vertical = 8.dp))
@@ -283,7 +285,7 @@ private fun TanksTab(model: BooksModel) {
                         }
                         OutlinedButton(onClick = { reading = t }) { Text(model.t("tank.readings")) }
                         OutlinedButton(onClick = { delivering = t }, modifier = Modifier.padding(start = 8.dp)) { Text(model.t("tank.deliveries")) }
-                        TextButton(onClick = { editing = t }) { Text(model.t("tank.edit")) }
+                        TextButton(onClick = { editing = t }, enabled = access.mayEdit(t.groupId)) { Text(model.t("tank.edit")) }
                     }
                     val p = s.projection
                     if (p == null) {
@@ -318,8 +320,8 @@ private fun TanksTab(model: BooksModel) {
         }
     }
     editing?.let { t -> TankDialog(model, t) { editing = null } }
-    reading?.let { t -> TankReadingsDialog(model, books.utilities.tanks(true).firstOrNull { it.id == t.id } ?: t) { reading = null } }
-    delivering?.let { t -> TankDeliveriesDialog(model, books.utilities.tanks(true).firstOrNull { it.id == t.id } ?: t) { delivering = null } }
+    reading?.let { t -> TankReadingsDialog(model, books.utilities.tanks(true).firstOrNull { it.id == t.id } ?: t, access) { reading = null } }
+    delivering?.let { t -> TankDeliveriesDialog(model, books.utilities.tanks(true).firstOrNull { it.id == t.id } ?: t, access) { delivering = null } }
 }
 
 @Composable
@@ -373,13 +375,13 @@ private fun TankDialog(model: BooksModel, t: FuelTank, onClose: () -> Unit) {
 
 /** A tank's gauge readings, newest first, and a new one in percent or in litres. */
 @Composable
-private fun TankReadingsDialog(model: BooksModel, t: FuelTank, onClose: () -> Unit) {
+private fun TankReadingsDialog(model: BooksModel, t: FuelTank, access: GroupAccess, onClose: () -> Unit) {
     var day by remember { mutableStateOf(today().toString()) }
     var percent by remember { mutableStateOf("") }
     var litres by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     var deleting by remember { mutableStateOf<ca.schippers.hfm.books.TankReading?>(null) }
-    FormDialog(t.name, model.t("tank.addReading"), model.t("common.close"), canSave = percent.isNotBlank() || litres.isNotBlank(), onDismiss = onClose, onSave = {
+    FormDialog(t.name, model.t("tank.addReading"), model.t("common.close"), canSave = (percent.isNotBlank() || litres.isNotBlank()) && access.mayAdd(t.groupId), onDismiss = onClose, onSave = {
         val ok = model.act { model.books.utilities.addTankReading(t.id, trackerDate(day), trackerNumber(percent, "error.tankLevel"), trackerNumber(litres, "error.tankLevel"), notes) }
         if (ok != null) onClose()
     }) {
@@ -393,7 +395,7 @@ private fun TankReadingsDialog(model: BooksModel, t: FuelTank, onClose: () -> Un
                             (if (r.fromPhone) " · " + model.t("tracker.fromPhone") else "") + (r.notes?.let { " · $it" } ?: ""),
                         Modifier.weight(1f),
                     )
-                    RemoveButton(model.t("common.delete")) { deleting = r }
+                    RemoveButton(model.t("common.delete"), enabled = access.mayEdit(t.groupId)) { deleting = r }
                 }
             }
         }
@@ -414,7 +416,7 @@ private fun TankReadingsDialog(model: BooksModel, t: FuelTank, onClose: () -> Un
 
 /** A tank's deliveries, newest first, and a new one, which can record its payment. */
 @Composable
-private fun TankDeliveriesDialog(model: BooksModel, t: FuelTank, onClose: () -> Unit) {
+private fun TankDeliveriesDialog(model: BooksModel, t: FuelTank, access: GroupAccess, onClose: () -> Unit) {
     val locale = model.language.locale
     val base = model.books.reports.base
     val accounts = remember { model.books.accounts.list().map { it.account }.filter { it.type.kind == AccountKind.BANK || it.type.kind == AccountKind.CREDIT } }
@@ -425,7 +427,7 @@ private fun TankDeliveriesDialog(model: BooksModel, t: FuelTank, onClose: () -> 
     var account by remember { mutableStateOf(accounts.firstOrNull()) }
     var notes by remember { mutableStateOf("") }
     var deleting by remember { mutableStateOf<TankDelivery?>(null) }
-    FormDialog(t.name, model.t("tank.addDelivery"), model.t("common.close"), canSave = litres.isNotBlank(), onDismiss = onClose, onSave = {
+    FormDialog(t.name, model.t("tank.addDelivery"), model.t("common.close"), canSave = litres.isNotBlank() && access.mayEdit(t.groupId), onDismiss = onClose, onSave = {
         val ok = model.act {
             val currency = account?.takeIf { record }?.currency ?: base
             val money = parseAmount(cost, currency, locale)?.abs()
@@ -443,7 +445,7 @@ private fun TankDeliveriesDialog(model: BooksModel, t: FuelTank, onClose: () -> 
                             (if (d.transactionId != null) " · " + model.t("tank.paymentRecorded") else "") + (d.notes?.let { " · $it" } ?: ""),
                         Modifier.weight(1f),
                     )
-                    RemoveButton(model.t("common.delete")) { deleting = d }
+                    RemoveButton(model.t("common.delete"), enabled = access.mayEdit(t.groupId)) { deleting = d }
                 }
             }
         }

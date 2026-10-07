@@ -116,20 +116,52 @@ suspend fun importFiles(model: BooksModel, files: List<Path>, groupId: String): 
     ImportSummary(added, existing, unreadable, needDecoder, transfers)
 }
 
-/** CAP-06: an email without attachments as a PDF of its header and text, to keep in the vault. */
-private fun emailPdf(header: List<String>, text: String): ByteArray {
+/**
+ * CAP-06: an email without attachments as a PDF of its header and text, to keep in the vault. The
+ * standard PDF font covers Western European letters only; an email with other characters (Greek,
+ * Cyrillic, Chinese, Arabic...) is written with a font of the computer that has them, embedded, so
+ * they are not lost ([unicodeFont]).
+ */
+internal fun emailPdf(header: List<String>, text: String, fonts: List<String> = SYSTEM_FONTS): ByteArray {
     val out = java.io.ByteArrayOutputStream()
     val document = org.openpdf.text.Document(org.openpdf.text.PageSize.LETTER, 42f, 42f, 42f, 42f)
     org.openpdf.text.pdf.PdfWriter.getInstance(document, out)
     document.open()
-    val bold = org.openpdf.text.FontFactory.getFont(org.openpdf.text.FontFactory.HELVETICA_BOLD, 10f)
-    val body = org.openpdf.text.FontFactory.getFont(org.openpdf.text.FontFactory.HELVETICA, 10f)
+    val all = (header + text).joinToString("\n")
+    val wide = if (java.nio.charset.Charset.forName("windows-1252").newEncoder().canEncode(all)) null else unicodeFont(all, fonts)
+    val bold = wide?.let { org.openpdf.text.Font(it, 10f, org.openpdf.text.Font.BOLD) } ?: org.openpdf.text.FontFactory.getFont(org.openpdf.text.FontFactory.HELVETICA_BOLD, 10f)
+    val body = wide?.let { org.openpdf.text.Font(it, 10f) } ?: org.openpdf.text.FontFactory.getFont(org.openpdf.text.FontFactory.HELVETICA, 10f)
     for (h in header) document.add(org.openpdf.text.Paragraph(h, bold))
     document.add(org.openpdf.text.Paragraph(" "))
     for (line in text.lines()) document.add(org.openpdf.text.Paragraph(line.ifBlank { " " }, body))
     document.close()
     return out.toByteArray()
 }
+
+/**
+ * The first of [fonts] (font files of the computer; "file.ttc,0" for one font of a collection) that
+ * has every character of [text], or else the first one that opens; null when none does.
+ */
+internal fun unicodeFont(text: String, fonts: List<String>): org.openpdf.text.pdf.BaseFont? {
+    var fallback: org.openpdf.text.pdf.BaseFont? = null
+    for (path in fonts) {
+        if (!java.io.File(if (".ttc," in path) path.substringBeforeLast(",") else path).isFile) continue
+        val font = runCatching { org.openpdf.text.pdf.BaseFont.createFont(path, org.openpdf.text.pdf.BaseFont.IDENTITY_H, org.openpdf.text.pdf.BaseFont.EMBEDDED) }.getOrNull() ?: continue
+        if (text.all { it.isWhitespace() || it.isSurrogate() || font.charExists(it.code) }) return font
+        if (fallback == null) fallback = font
+    }
+    return fallback
+}
+
+/** Fonts with many scripts on Windows, Linux and macOS, the widest first. */
+internal val SYSTEM_FONTS: List<String> = listOf(
+    "C:/Windows/Fonts/arialuni.ttf", "C:/Windows/Fonts/segoeui.ttf", "C:/Windows/Fonts/arial.ttf", "C:/Windows/Fonts/msyh.ttc,0", "C:/Windows/Fonts/malgun.ttf",
+    "C:/Windows/Fonts/YuGothR.ttc,0",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "/usr/share/fonts/dejavu/DejaVuSans.ttf", "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf",
+    "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf", "/usr/share/fonts/google-noto/NotoSans-Regular.ttf",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc,0", "/usr/share/fonts/google-noto-cjk/NotoSansCJK-Regular.ttc,0",
+    "/Library/Fonts/Arial Unicode.ttf", "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+)
 
 /** The group new documents go to: the shared group the user can add to, or else any. */
 fun BooksModel.defaultDocumentGroup(): String? =
@@ -155,8 +187,11 @@ suspend fun watchFolder(model: BooksModel) {
                     val done = Files.createDirectories(folder.resolve(IMPORTED_DIR))
                     for (f in files) runCatching { Files.move(f, uniqueTarget(done, f.name), StandardCopyOption.ATOMIC_MOVE) }
                 }
-                if (summary != null && (summary.added > 0 || summary.transfers.isNotEmpty())) {
-                    model.lastImportMessage = model.importMessage(summary)
+                // CAP-04, CAP-06: a file that could not be read is moved with the others (so it is not tried every
+                // 20 seconds), and the message says so, naming it.
+                if (summary != null && (summary.added > 0 || summary.transfers.isNotEmpty() || summary.unreadable.isNotEmpty())) {
+                    model.lastImportMessage = model.importMessage(summary) +
+                        (if (summary.unreadable.isNotEmpty()) " " + model.t("documents.watchUnreadable", IMPORTED_DIR) else "")
                     model.changed()
                 }
             }

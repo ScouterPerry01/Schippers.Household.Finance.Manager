@@ -31,6 +31,8 @@ data class Chore(
     val points: Int? = null,
     val archived: Boolean = false,
     val ticks: List<ChoreTick> = emptyList(),
+    /** It may be ticked more than once on the same day (feeding the dog morning and evening); otherwise once a day. */
+    val severalADay: Boolean = false,
 )
 
 /** What a child has earned with chores: the money not paid yet, and the points. */
@@ -54,6 +56,7 @@ class ChoreService internal constructor(private val books: Books) {
                 q.choreTicks(c.id).executeAsList().map { t ->
                     ChoreTick(t.id, LocalDate.parse(t.date), t.amount_minor?.let { Money.ofMinor(it, cur) }, t.points?.toInt(), t.allowance_entry_id, t.paid_date?.let(LocalDate::parse), t.device_id != null)
                 },
+                c.several_a_day == 1L,
             )
         }
     }.filter { includeArchived || !it.archived }
@@ -66,17 +69,27 @@ class ChoreService internal constructor(private val books: Books) {
         validate(c.points == null || c.points >= 0, "error.chorePoints")
         val group = group(list(true).firstOrNull { it.id == c.id }?.groupId ?: c.groupId)
         val id = c.id.ifBlank { Ids.newId() }
-        books.ledger(group).trackersQueries.upsertChore(id, c.memberId, c.name.trim(), c.amount?.minorUnits, c.currency.code, c.points?.toLong(), if (c.archived) 1 else 0, books.now())
+        books.ledger(group).trackersQueries.upsertChore(id, c.memberId, c.name.trim(), c.amount?.minorUnits, c.currency.code, c.points?.toLong(), if (c.archived) 1 else 0, books.now(), if (c.severalADay) 1 else 0)
         return get(id)
     }
 
     /** Deletes the chore and its ticks; what was already paid stays in the child's money. */
     fun delete(c: Chore) = books.ledger(group(c.groupId)).trackersQueries.deleteChore(c.id)
 
-    /** Ticks the chore as done on [date], earning what it is worth now. Anyone who may capture in its group can tick. */
+    /**
+     * Ticks the chore as done on [date], earning what it is worth now. Anyone who may capture in its
+     * group can tick. A chore done once a day earns once that day: ticking it again is refused on
+     * the computer, and from a phone ([deviceId]; a second phone, or a tick sent again) gives the
+     * tick already there.
+     */
     fun tick(choreId: String, date: LocalDate, deviceId: String? = null): ChoreTick {
         val c = get(choreId)
         validate(!c.archived, "error.choreArchived")
+        c.ticks.firstOrNull { it.date == date }?.takeIf { !c.severalADay }?.let { existing ->
+            group(c.groupId, PermissionLevel.CAPTURE_ONLY)
+            if (deviceId != null) return existing
+            throw ValidationException("error.choreTickedThatDay")
+        }
         val id = Ids.newId()
         books.ledger(group(c.groupId, PermissionLevel.CAPTURE_ONLY)).trackersQueries
             .insertChoreTick(id, c.id, date.toString(), c.amount?.minorUnits, c.points?.toLong(), null, null, deviceId, books.now())

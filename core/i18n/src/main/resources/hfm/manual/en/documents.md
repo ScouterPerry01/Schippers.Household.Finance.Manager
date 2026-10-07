@@ -54,7 +54,7 @@ How the watched folder works:
 - The app looks in the folder about every 20 seconds while the household is open.
 - Only files of the accepted types are taken. Hidden files (names starting with a dot) are left alone.
 - A file that changed in the last few seconds is left for the next round, so a scan still being written is not read half finished.
-- After import, each file is moved into a folder named "Imported" inside the watched folder, so nothing is imported twice. If a file of the same name is already there, a number is added, such as "receipt (2).pdf".
+- After import, each file is moved into a folder named "Imported" inside the watched folder, so nothing is imported twice. If a file of the same name is already there, a number is added, such as "receipt (2).pdf". A file that could not be read is moved there too, so it is not tried again every 20 seconds, and the message at the top of the screen names it and says where it went.
 - Subfolders are not searched.
 
 > Tip: The watched folder is ideal with a document scanner: set the scanner to save PDFs into the folder and your scans appear in To review a moment later.
@@ -65,7 +65,7 @@ How the watched folder works:
 RANN's Roost never signs in to your mailbox. To keep an emailed receipt or bill, save the email from your email program as a file (an .eml file), then import it, drop it on the screen, or save it in the watched folder.
 
 - If the email has PDF or picture attachments, each attachment becomes a document and is read. Small pictures shown inside the email itself, such as the store's logo, are not attachments and are left out.
-- If it has none, the email itself is kept as a PDF of its subject, sender, date and text, and the store, date and total are read from that text.
+- If it has none, the email itself is kept as a PDF of its subject, sender, date and text, and the store, date and total are read from that text. When the email has letters the standard PDF font lacks (Greek, Cyrillic, Chinese, Arabic and so on), the PDF uses a font of this computer that has them, so they are kept.
 
 ### Captures from the phone {#phone-captures}
 @index: phone; mobile; RANN's Roost Mobile; capture; quick expense

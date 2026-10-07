@@ -12,7 +12,7 @@ Inside an asset, add tasks with Add usual tasks or Add a task. A task repeats af
 
 ## Seasonal checklist
 
-The Seasonal checklist tab lists every task of a season on the vehicles, home, cottage, pool, yard and other assets, the current season first, with how many are done. Tick a task to record it as done in its service log, with the date and, if you like, the cost and a reading. Print or Save as PDF gives a checklist to take outside. Season dates are in Rates and rules.
+The Seasonal checklist tab lists every task of a season on the vehicles, home, cottage, pool, yard and other assets, the current season first, with how many are done. Tick a task to record it as done in its service log, with the date and, if you like, the cost and a reading. A task that comes back within the season, such as a weekly pool test, is done only until its next date ("due again"), then due again. Print or Save as PDF gives a checklist to take outside. Season dates are in Rates and rules.
 
 ## Is it covered?
 

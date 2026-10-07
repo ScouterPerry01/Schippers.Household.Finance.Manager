@@ -229,7 +229,7 @@ Sur l’ordinateur, la lecture est ajoutée directement au véhicule dans l’é
 
 La liste de la saison en cours, venue de l’ordinateur (voir [Onglet Liste saisonnière](assets#seasonal-tab)) : toutes les tâches de la saison sur les véhicules, la maison, le chalet, la piscine, le terrain et les autres biens que l’utilisateur du téléphone peut voir. Elle arrive avec les autres renseignements de l’ordinateur, donc elle se remplit après le premier transfert et se met à jour à chacun. D’ici là : « La liste vient de l’ordinateur : envoyez une fois pour la recevoir. »
 
-En haut, la saison et ses dates (« Automne 2026, du 2026-09-22 au 2026-12-20 »), « 7 sur 12 faites » avec une barre. Les tâches suivent, regroupées par véhicule ou par bien, chacune avec une case et une ligne : « Prévue le date », « En retard depuis le date » en rouge, « Faite le date », ou « Faite, en attente d’envoi » pour une coche que l’ordinateur n’a pas encore reçue.
+En haut, la saison et ses dates (« Automne 2026, du 2026-09-22 au 2026-12-20 »), « 7 sur 12 faites » avec une barre. Les tâches suivent, regroupées par véhicule ou par bien, chacune avec une case et une ligne : « Prévue le date », « En retard depuis le date » en rouge, « Faite le date », ou « Faite, en attente d’envoi » pour une coche que l’ordinateur n’a pas encore reçue. Une tâche qui revient pendant la saison, comme un test hebdomadaire de la piscine, indique « Faite le date · à refaire le date » et redevient à faire à partir de cette date, même avant le prochain transfert ; seule une coche plus récente que celle que montre l’ordinateur attend d’être envoyée.
 
 Touchez la case d’une tâche pour l’inscrire comme faite. Une fenêtre au nom de la tâche demande :
 
@@ -263,7 +263,7 @@ Sous les boutons de capture, quatre boutons ouvrent des formulaires qui inscrive
 
 ### Tâches ménagères {#log-chores}
 
-Liste les tâches de chaque enfant de l’écran [Argent en famille](family#chores), avec ce que chacune vaut et **déjà cochée ce jour-là** s’il y a lieu. Choisissez la **Date** (aujourd’hui par défaut), cochez les tâches faites et **Enregistrer** : chacune est envoyée comme faite ce jour-là. Un parent peut les cocher, ou l’enfant sur son propre téléphone s’il est un utilisateur du ménage.
+Liste les tâches de chaque enfant de l’écran [Argent en famille](family#chores), avec ce que chacune vaut et **déjà cochée ce jour-là** s’il y a lieu. Une tâche faite une fois par jour déjà cochée à la date choisie affiche **faite ce jour-là (une fois par jour)** et ne peut pas être cochée de nouveau ; une tâche qui peut être faite plusieurs fois par jour le peut. Choisissez la **Date** (aujourd’hui par défaut), cochez les tâches faites et **Enregistrer** : chacune est envoyée comme faite ce jour-là. Un parent peut les cocher, ou l’enfant sur son propre téléphone s’il est un utilisateur du ménage.
 
 ### Bénévolat {#log-volunteer}
 
@@ -434,6 +434,7 @@ Le Résumé affiche les chiffres de votre ordinateur au dernier transfert : le n
 - **À venir** : d’abord les heures de travail et d’école de chaque personne aujourd’hui et demain, comme « Alex · Travail · Bureau » avec la date et « 08:00–16:30 » ; puis les rendez-vous et événements du calendrier de l’ordinateur dans les prochaines semaines, jusqu’à 12, chacun avec la personne concernée, sa date et son heure, ou **Toute la journée** ; pour l’activité d’un enfant, qui conduit à l’aller et au retour ce jour-là, tours de covoiturage compris. Seuls les événements des comptes que votre utilisateur peut voir sur l’ordinateur sont envoyés : les rendez-vous privés d’un autre utilisateur n’arrivent jamais sur votre téléphone. Les événements marqués faits ou annulés sont laissés de côté.
 - **Renouvellements de médicaments** : les médicaments actifs dont la provision se termine dans les deux prochains mois, ou est déjà terminée, avec la date, et **à renouveler** quand il ne reste plus de renouvellements. Comme pour le calendrier, seuls les médicaments que votre utilisateur peut voir sont envoyés.
 - **Entretien du mois** : affiché quand quelque chose est prévu : chaque tâche, comme « Civic : Vidange d’huile », avec **à faire**, **bientôt** ou sa date.
+- **Services publics** : affiché quand un réservoir de combustible est à commander bientôt, avec « à commander d’ici le » une date, ou qu’un compteur a consommé plus que d’habitude le mois dernier, avec « consommation inhabituelle en » le mois et l’écart par rapport à l’an dernier. Voir [Services publics](utilities).
 - **Budgets du mois** : chaque catégorie de dépenses qui a un budget : ce qui a été dépensé sur le budget, par exemple « 412,30 $ sur 600,00 $ ».
 
 Les chiffres ne changent pas avant le prochain transfert. Touchez **Envoyer maintenant** dans l’onglet Envois pour les mettre à jour.
@@ -505,6 +506,7 @@ Un nouveau contact prend les mêmes chemins que les captures : par votre Wi-Fi, 
 - **Rappels de factures** : quand une facture est due dans ses jours de rappel, tels que réglés sur l’ordinateur (« Hydro est à payer dans 3 jours », « à payer demain », « à payer aujourd’hui »).
 - **Alertes de budget** : quand les dépenses du mois d’une catégorie atteignent 80 % de son budget, et de nouveau quand le budget est épuisé. Elles n’utilisent que les chiffres d’un transfert fait ce mois-ci. La notification nomme la catégorie, mais pas les montants, qui sont dans le Résumé, derrière le NIP.
 - **Rappels d’entretien** : quand une tâche sera bientôt à faire, et quand elle est à faire.
+- **Commandes de combustible** : quand un réservoir de propane ou de mazout devrait atteindre son niveau de commande dans les jours du rappel (« Chalet propane : à commander d’ici 5 jours »), et le jour même (« à commander maintenant »). Seulement le nom du réservoir : ni niveau ni montant.
 
 Elles n’apparaissent que si vous avez autorisé les notifications. Chaque genre a son propre canal dans les réglages de notification d’Android, où vous pouvez le désactiver.
 

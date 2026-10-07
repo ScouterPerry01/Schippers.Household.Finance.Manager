@@ -637,7 +637,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(31L, LedgerDatabase.Schema.version)
+            assertEquals(32L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val db = LedgerDatabase(driver)
             assertEquals("Garage", db.calendarQueries.eventById("e").executeAsOne().title, "events stay")
@@ -670,9 +670,9 @@ class MigrationTest {
             tq.upsertWorkHours("h", "c", "k", null, null, "2026-09-03", "16:00", 90, null, null, null, null, 0)
             tq.upsertWorkClient("c", "Lee family", null, 5000, "CAD", null, 0, null, 0)
             assertEquals(1, tq.workHours("c").executeAsList().size, "saving a client again keeps its hours")
-            tq.upsertChore("ch", "kid", "Dishes", 100, "CAD", null, 0, 0)
+            tq.upsertChore("ch", "kid", "Dishes", 100, "CAD", null, 0, 0, 0)
             tq.insertChoreTick("x", "ch", "2026-09-04", 100, null, null, null, null, 0)
-            tq.upsertChore("ch", "kid", "Dishes", 150, "CAD", null, 0, 0)
+            tq.upsertChore("ch", "kid", "Dishes", 150, "CAD", null, 0, 0, 0)
             assertEquals(1, tq.choreTicks("ch").executeAsList().size, "saving a chore again keeps its ticks")
             tq.upsertVolunteerHours("v", "kid", "Food bank", null, "SCHOOL", "2026-09-05", 180, null, null, null, 0)
             assertEquals(180L, tq.volunteerHours().executeAsOne().minutes)
@@ -726,7 +726,7 @@ class MigrationTest {
         }
         factory.open(file, key).use { driver ->
             SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
-            assertEquals(31L, LedgerDatabase.Schema.version)
+            assertEquals(32L, LedgerDatabase.Schema.version)
             assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
             val q = LedgerDatabase(driver).medicalQueries
             assertEquals("AFTER_SERVICE", q.planById("m").executeAsOne().claim_rule, "existing plans keep counting from the service")
@@ -759,6 +759,26 @@ class MigrationTest {
             matching.insertMatch("g", "s", "t1")
             matching.setLineGroup("g", "PROPOSED", null, "l")
             assertEquals("g", matching.linesInGroup("g").executeAsOne().match_group, "statement lines gain their group")
+        }
+    }
+
+    @Test
+    fun `version 31 ledgers keep their chores, ticked once a day, and gain several a day`() {
+        val file = temp.resolve("ledger31.db")
+        older("../data/src/main/sqldelight/ledger/schemas/31.db", file, 31).use { driver ->
+            driver.execute(null, "INSERT INTO chore(id, member_id, name, amount_minor, currency, created_at) VALUES ('ch', 'kid', 'Dishes', 100, 'CAD', 0)", 0)
+            driver.execute(null, "INSERT INTO chore_tick(id, chore_id, date, amount_minor, created_at) VALUES ('x', 'ch', '2026-09-04', 100, 0)", 0)
+        }
+        factory.open(file, key).use { driver ->
+            SchemaManager.prepare(driver, LedgerDatabase.Schema, file)
+            assertEquals(32L, LedgerDatabase.Schema.version)
+            assertEquals(LedgerDatabase.Schema.version, SchemaManager.userVersion(driver))
+            val tq = LedgerDatabase(driver).trackersQueries
+            assertEquals(0L, tq.chores().executeAsOne().several_a_day, "existing chores are ticked once a day")
+            driver.execute(null, "PRAGMA foreign_keys = ON", 0)
+            tq.upsertChore("ch", "kid", "Feed the dog", 100, "CAD", null, 0, 0, 1)
+            assertEquals(1L, tq.chores().executeAsOne().several_a_day)
+            assertEquals(1, tq.choreTicks("ch").executeAsList().size, "saving the chore again keeps its ticks")
         }
     }
 }

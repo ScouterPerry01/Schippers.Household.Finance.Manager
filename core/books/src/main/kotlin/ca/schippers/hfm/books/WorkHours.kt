@@ -145,14 +145,15 @@ class WorkHoursService internal constructor(private val books: Books) {
     /**
      * SAL-04: a draft invoice to the client for [entryIds] (hours not billed yet), one line per task
      * and rate with its hours as the quantity, numbered as the next of [issueDate]'s year. The hours
-     * are marked billed on it. Sales taxes follow the person's last invoice, if any.
+     * are marked billed on it in the same database transaction (the invoice and the hours are in the
+     * client's group), so either both happen or neither. Sales taxes follow the person's last invoice, if any.
      */
     fun invoice(clientId: String, entryIds: Collection<String>, issueDate: LocalDate): Invoice {
         val c = client(clientId)
         val chosen = unbilled(clientId).filter { it.id in entryIds }
         validate(chosen.isNotEmpty(), "error.workNothingToBill")
         validate(chosen.all { rate(it, c) != null }, "error.workNoRate")
-        group(c.groupId)
+        val group = group(c.groupId)
         val lines = chosen.groupBy { (c.tasks.firstOrNull { t -> t.id == it.taskId }?.name ?: it.description ?: Messages.get(books.language, "hours.line")) to rate(it, c)!! }
             .map { (key, l) ->
                 val (name, rate) = key
@@ -162,15 +163,17 @@ class WorkHoursService internal constructor(private val books: Books) {
                 InvoiceLine("$name ($period)", hoursOf(l.sumOf { it.minutes }).toPlainString(), rate.toBigDecimal().toPlainString())
             }
         val previous = books.invoices.list().filter { it.memberId == c.memberId }.maxByOrNull { it.issueDate }
-        val invoice = books.invoices.save(
-            Invoice(
-                "", c.groupId, books.invoices.nextNumber(issueDate.year), c.name, issueDate, c.currency, lines,
-                customerDetails = c.details, memberId = c.memberId, taxes = previous?.taxes.orEmpty(),
-            ),
-        )
-        val q = books.ledger(group(c.groupId)).trackersQueries
-        books.ledger(group(c.groupId)).transaction { chosen.forEach { q.billWorkHours(invoice.id, issueDate.toString(), it.id) } }
-        return invoice
+        val ledger = books.ledger(group)
+        return ledger.transactionWithResult {
+            val invoice = books.invoices.save(
+                Invoice(
+                    "", c.groupId, books.invoices.nextNumber(issueDate.year), c.name, issueDate, c.currency, lines,
+                    customerDetails = c.details, memberId = c.memberId, taxes = previous?.taxes.orEmpty(),
+                ),
+            )
+            chosen.forEach { ledger.trackersQueries.billWorkHours(invoice.id, issueDate.toString(), it.id) }
+            invoice
+        }
     }
 
     companion object {

@@ -48,14 +48,17 @@ fun VolunteerScreen(model: BooksModel) {
     val years = remember(model.revision, year) { books.volunteer.years(year) }
     val names = remember(model.revision) { books.members.list(includeArchived = true).associate { it.id to it.displayName } }
     var editing by remember { mutableStateOf<VolunteerEntry?>(null) }
+    val access = rememberAccess(model)
     Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(model.t("nav.volunteer"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("volunteer.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Picker(model.t("taxes.year"), (thisYear downTo thisYear - 6).toList(), year, { it.toString() }, Modifier.width(190.dp)) { year = it }
             val first = books.members.list().firstOrNull()
-            if (first != null) {
-                Button(onClick = { editing = VolunteerEntry("", model.trackerGroup(), first.id, "", VolunteerKind.OTHER, today(), 60) }, modifier = Modifier.padding(top = 8.dp)) {
+            if (first != null && access.canAdd) {
+                // The same rule as hours from the phone: where the person's hours are, else the user's private group, else the shared one.
+                val group = books.volunteer.defaultGroup(first.id) ?: model.trackerGroup()
+                Button(onClick = { editing = VolunteerEntry("", group, first.id, "", VolunteerKind.OTHER, today(), 60) }, modifier = Modifier.padding(top = 8.dp)) {
                     Text(model.t("volunteer.add"))
                 }
             }
@@ -67,7 +70,7 @@ fun VolunteerScreen(model: BooksModel) {
         }
         if (entries.isEmpty()) Text(model.t("volunteer.none"))
         for (e in entries) {
-            Row(Modifier.fillMaxWidth().clickable { editing = e }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().clickable(enabled = access.mayEdit(e.groupId)) { editing = e }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(e.date), Modifier.width(100.dp))
                 Column(Modifier.weight(1f)) {
                     Text("${names[e.memberId].orEmpty()} · ${e.organization}")
@@ -132,7 +135,11 @@ private fun VolunteerDialog(model: BooksModel, e: VolunteerEntry, onClose: () ->
         }
         if (ok != null) onClose()
     }) {
-        Picker(model.t("report.person"), members, member, { it.displayName }) { member = it }
+        Picker(model.t("report.person"), members, member, { it.displayName }) { m ->
+            member = m
+            // New hours follow the person: where their hours are kept.
+            if (e.id.isBlank()) books.volunteer.defaultGroup(m.id)?.let { groupId = it }
+        }
         SuggestInput(model.t("volunteer.organization"), organization, past.map { it.organization }.distinct(), onChange = { organization = it }, onPick = { name ->
             organization = name
             past.firstOrNull { it.organization == name }?.let { p -> kind = p.kind; contact = contacts.firstOrNull { it.id == p.contactId } }

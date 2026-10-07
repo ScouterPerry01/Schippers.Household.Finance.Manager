@@ -13,7 +13,7 @@ Volunteer hours keeps the time each person gives to an organization, and adds it
 - **Tax year**: the calendar year shown, from this year back six years.
 - **Add volunteer hours**: opens the [dialog](#dialog) for new hours.
 
-New hours are kept in the first shared account group you may change; when you may change more than one, the dialog asks where (**Store in**). Adding hours needs permission to add records in that group; changing or deleting them needs permission to change records.
+New hours are kept with the person's earlier volunteer hours, so a person's year stays together in one account group; a person's first hours go to your own private group if you have one, otherwise to the first shared group. Hours sent from the phone follow the same rule, whichever group the phone sends to. When you may change more than one group, the dialog still lets you choose (**Store in**). Adding hours needs permission to add records in that group; changing or deleting them needs permission to change records. **Add volunteer hours** is hidden for someone who may add to no group, and a line cannot be opened by someone who may only view its group.
 
 ### The cards {#cards}
 

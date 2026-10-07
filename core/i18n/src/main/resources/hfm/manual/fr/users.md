@@ -60,6 +60,8 @@ Dans chaque case, un niveau :
 - Saisie seulement : l'utilisateur peut ajouter des reçus et des opérations, par exemple à partir du téléphone, mais ne peut rien changer d'autre.
 - Modification : tout, dans le groupe.
 
+À l'écran, les boutons que les livres refuseraient sont grisés ou cachés : par exemple, ajouter un compteur, un client, une tâche, un déplacement, un lieu ou un horaire exige Modification dans un groupe, cocher une tâche ménagère ou saisonnière exige au moins Saisie seulement dans son groupe, et les données d'un groupe que vous pouvez seulement consulter ne s'ouvrent pas pour modification.
+
 Certaines cases ne sont pas des listes :
 
 - propriétaire : le propriétaire d'un groupe privé l'a toujours, en Modification.

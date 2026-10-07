@@ -12,7 +12,7 @@ The screen has two tabs: [Meters](#meters) and [Fuel tanks](#tanks). On each:
 
 - **Show archived**: also lists the meters or tanks marked archived, such as the meter of a house you sold.
 
-New meters and tanks are kept in the first shared account group you may change; when you may change more than one, the dialog asks where (**Store in**). Their readings and deliveries stay with them. Adding or changing a meter or tank needs permission to change records in its group; adding a reading needs only permission to add records, so someone who captures receipts can also send readings from the phone.
+New meters and tanks are kept in the first shared account group you may change; when you may change more than one, the dialog asks where (**Store in**). Their readings and deliveries stay with them. Adding or changing a meter or tank needs permission to change records in its group; adding a reading needs only permission to add records, so someone who captures receipts can also send readings from the phone. Buttons the books would refuse are greyed out or hidden: **Add a meter** and **Add a tank** for someone who may change no group, **Edit** on a meter or tank of a group they may only view, and the ✕ on readings and deliveries for someone who may not change them.
 
 ## Meters {#meters}
 
@@ -26,7 +26,9 @@ Under it, one line per month, newest first, for the last thirteen months that ha
 - **about**: the cost of the month at the cost per unit, when there is one;
 - **Unusual**, in red, for a complete month that used more than 130% of the same month last year or, when there is no such month, of the average of the three complete months before (at least two of them). The percentage is **Unusual utility use (percent)** in [Rates and rules](rates-rules).
 
-@index: unusual use; same month last year; month over month
+The latest complete month, when it is unusual and is last month or the month before, also appears with the other reminders, on the [Dashboard](dashboard#needs-attention) under **Needs your attention**, in the computer's notification and on the phone's Summary, such as "Cottage hydro: unusual use in September 2026 (+35% on the same month last year)", or "above the months before" when there is no month last year to compare with. Clicking it opens Utilities. An older unusual month shows only here.
+
+@index: unusual use; same month last year; month over month; unusual use reminder
 
 ### How the use is worked out {#use}
 
@@ -82,7 +84,7 @@ Two level readings are needed before any use or date can be shown.
 
 The use between two level readings is the level at the first, plus what was delivered after it up to the second, less the level at the second. A reading on the day of a delivery is taken as made after the delivery. When the gauge reads more than that would give, the period counts nothing.
 
-The level today is the last reading plus the deliveries since, less the use per day for each day since, never below empty or above the capacity. The order date is when it is expected to reach the order level; fourteen days before (**Fuel order reminder (days ahead)** in [Rates and rules](rates-rules)), a reminder "time to order fuel" appears with the other reminders on the [dashboard](dashboard) and among the renewals in the [calendar](calendar). Until two readings show a use per day, there is no order date, except that a reading at or below the order level reminds at once. Use changes with the seasons, so the date is an estimate: read the gauge every few weeks.
+The level today is the last reading plus the deliveries since, less the use per day for each day since, never below empty or above the capacity. The order date is when it is expected to reach the order level; fourteen days before (**Fuel order reminder (days ahead)** in [Rates and rules](rates-rules)), a reminder "time to order fuel" appears with the other reminders on the [dashboard](dashboard) and among the renewals in the [calendar](calendar), and the phone shows a notification and the tank under **Utilities** on its Summary. Until two readings show a use per day, there is no order date, except that a reading at or below the order level reminds at once. Use changes with the seasons, so the date is an estimate: read the gauge every few weeks.
 
 ### Add a tank dialog {#tank-dialog}
 
@@ -112,3 +114,5 @@ Deleting a delivery asks first and offers to delete the payment recorded with it
 ## On the phone {#phone}
 
 **Meter or tank reading** on the phone's Capture tab sends a meter reading (with the registers for time of use) or a tank level, in percent or in litres; see [RANN's Roost Mobile](phone-app#log-forms). Readings from the phone show **from the phone**.
+
+The phone also hears of the tanks to order: a notification "Time to order fuel" naming the tank (no level or amount, since a locked phone may show it), once when the order date comes within the reminder's days and once on the day, and the tank with "order by" a date under **Utilities** on its Summary. Meters with an unusual month are listed there too. See [Notifications](phone-app#notifications).

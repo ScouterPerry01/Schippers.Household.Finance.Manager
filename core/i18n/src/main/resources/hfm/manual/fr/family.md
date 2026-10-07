@@ -210,7 +210,7 @@ L’onglet **Tâches ménagères** garde les tâches de chaque enfant, qui valen
 - **Ajouter une tâche** : ouvre la [boîte de la tâche](#chore-dialog). Le bouton paraît dès que le ménage compte un membre ; il propose le premier enfant.
 - Une carte par enfant : **À payer** (l’argent gagné par les tâches faites jusqu’à aujourd’hui et pas encore payées, et combien) et les points, au total et ce mois-ci.
 - **Payer avec l’allocation** : si l’enfant a une allocation dans la même devise, ajoute une inscription **Gagné ou reçu** pour ce qui est à payer, notée **Tâches**, et marque ces tâches payées. **Marquer payé** dans la [liste des allocations](#allowance-list) fait de même en payant l’allocation. Sans allocation, **Marquer comme payé** les marque payées sans rien ajouter.
-- Chaque tâche : son nom (cliquez dessus pour la modifier), ce qu’elle vaut, combien de fois elle a été faite dans les sept derniers jours, **Historique**, et **Faite aujourd’hui** (ou **Faite encore** une fois faite aujourd’hui), qui la coche pour aujourd’hui.
+- Chaque tâche : son nom (cliquez dessus pour la modifier), ce qu’elle vaut, combien de fois elle a été faite dans les sept derniers jours, **Historique**, et **Faite aujourd’hui**, qui la coche pour aujourd’hui. Une fois faite aujourd’hui, une tâche faite une fois par jour affiche **Déjà faite aujourd’hui**, grisé, pour qu’elle ne rapporte pas deux fois le même jour ; une tâche qui peut être faite plusieurs fois par jour affiche **Faite encore**. Les boutons sont grisés pour qui ne peut pas cocher ou modifier le groupe de la tâche.
 
 ### Boîte Ajouter une tâche {#chore-dialog}
 
@@ -218,10 +218,11 @@ L’onglet **Tâches ménagères** garde les tâches de chaque enfant, qui valen
 - **Tâche** : le nom, comme « Vider le lave-vaisselle ». Obligatoire.
 - **Montant** : ce qu’elle rapporte chaque fois, dans la devise de base du ménage ; facultatif.
 - **Points** : des points entiers chaque fois ; facultatif.
+- **Peut être faite plusieurs fois par jour** : décoché par défaut. Décoché, la tâche se coche une fois par jour, ici et sur le téléphone : une deuxième coche le même jour est refusée ici, et celle d’un téléphone (ou d’un deuxième téléphone) n’est pas comptée de nouveau. Cochez-le pour une tâche faite plus d’une fois par jour, comme nourrir le chien matin et soir.
 - **Enregistrer dans**, **Archivé** (elle quitte la liste et le téléphone ; son historique reste) et **Supprimer** (demande d’abord ; ce qui a été payé reste dans l’argent de l’enfant).
 
 Chaque coche rapporte ce que vaut la tâche au moment où elle est cochée ; changer le montant plus tard ne change pas les coches passées.
 
 ### Fenêtre Historique {#chore-history}
 
-**Historique** liste les fois où la tâche a été faite, de la plus récente à la plus ancienne : la date, ce qu’elle a rapporté, **payée le** avec la date de paiement, et **du téléphone**. ✕ retire une coche pas encore payée, après avoir demandé. Pour la cocher un autre jour, choisissez la **Date** et cliquez sur **Cocher à cette date**.
+**Historique** liste les fois où la tâche a été faite, de la plus récente à la plus ancienne : la date, ce qu’elle a rapporté, **payée le** avec la date de paiement, et **du téléphone**. ✕ retire une coche pas encore payée, après avoir demandé. Pour la cocher un autre jour, choisissez la **Date** et cliquez sur **Cocher à cette date**. Une tâche faite une fois par jour ne peut pas être cochée deux fois à la même date : « Cette tâche est déjà cochée pour ce jour-là. »

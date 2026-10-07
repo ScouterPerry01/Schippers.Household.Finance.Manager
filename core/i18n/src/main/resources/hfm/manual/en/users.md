@@ -60,6 +60,8 @@ In each cell, a level:
 - Capture only: the user can add receipts and transactions, for example from the phone, but cannot change anything else.
 - Edit: everything in the group.
 
+On the screens, buttons the books would refuse are greyed out or hidden: for example, adding a meter, a client, a chore, a trip, a place or a schedule needs Edit in some group, ticking a chore or a seasonal task needs at least Capture only in its group, and records of a group you may only view open read-only or not at all.
+
 Some cells are not pickers:
 
 - owner: the owner of a private group always has it, with Edit.

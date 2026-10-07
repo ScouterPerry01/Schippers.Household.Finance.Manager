@@ -4,7 +4,7 @@ Volunteer hours keeps the time each person gives to an organization, with a tota
 
 ## Add volunteer hours
 
-Choose the person, the organization (or a contact that is one), the kind, the date and the time, as 1:30 or 1.5. The kinds are volunteer firefighter, search and rescue, community hours for school, and other volunteering. Click a line to change or delete it. Hours can also be entered on the phone (Volunteer hours on the Capture tab).
+Choose the person, the organization (or a contact that is one), the kind, the date and the time, as 1:30 or 1.5. The kinds are volunteer firefighter, search and rescue, community hours for school, and other volunteering. Click a line to change or delete it. Hours can also be entered on the phone (Volunteer hours on the Capture tab). New hours go where the person's earlier hours are; a person's first hours go to your private group if you have one, otherwise to the shared group, from the computer and the phone alike.
 
 ## Totals
 

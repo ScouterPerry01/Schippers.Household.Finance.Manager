@@ -442,7 +442,7 @@ class SyncService internal constructor(private val books: Books) {
         return RefSeasonal(
             c.window.season.name, c.window.start.toString(), c.window.end.toString(),
             c.items.filter { may.getOrPut(it.vehicle to it.subjectId) { books.seasonal.mayTick(it.vehicle, it.subjectId) } }.take(MAX_SEASONAL).map {
-                RefSeasonalTask(it.taskId, it.subjectId, it.subjectName, it.taskName, it.vehicle, it.state.name, it.dueDate?.toString(), it.doneOn?.toString(), it.unit?.name, it.currency.code)
+                RefSeasonalTask(it.taskId, it.subjectId, it.subjectName, it.taskName, it.vehicle, it.state.name, it.dueDate?.toString(), it.doneOn?.toString(), it.unit?.name, it.currency.code, it.again?.toString())
             },
         )
     }
