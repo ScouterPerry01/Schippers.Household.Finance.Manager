@@ -556,6 +556,14 @@ Only the ticked calendars are read, for the days chosen: each item's title, plac
 
 ### Change PIN {#change-pin}
 
+### Language of the app {#language}
+
+@index: language; French; English; français
+
+- **Language of the app**: **As the phone** (the default) follows the phone's language; **English** or **Français** keeps the app in that language whatever the phone's is. The change applies at once, to the screens and to the app's notifications.
+
+> Note: On Android 13 and later the same choice is also in the phone's own settings, under the app's Language. Amounts and dates follow the language chosen (8,45 $ in French).
+
 **Change PIN** asks you to choose a new PIN, 4 to 8 digits, and to enter it again.
 
 ### Unlock with fingerprint or face {#biometric}

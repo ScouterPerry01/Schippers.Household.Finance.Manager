@@ -51,3 +51,5 @@ The MSIX and the Play bundle are kept as workflow artifacts for the owner to upl
 - An attacker who controls the network can withhold updates (serve an old signed manifest, or nothing), but cannot make a copy install anything RANN did not sign.
 - The update check is the only request the app makes on its own besides the Bank of Canada rates and the price feeds the user turned on (ADR 0007).
 - Tested: `ReleaseSignatureTest` (round trip, tampered file, tampered comment, wrong key), `UpdateCheckTest` (newer, older, wrong file signature, other key, plain HTTP, download hash and size). An independent implementation (Python's `cryptography` and `hashlib`) verified a signature from the tool. The release workflow checks signatures with `minisign` itself. The desktop screens were checked in the demo with a signed test release, including a tampered download, which was refused and deleted.
+
+**Update (2026-10-07):** the owner decided that the Linux builds stay free on GitHub Releases for good, with no storefront; the update check described here is therefore the permanent arrangement for Linux.
