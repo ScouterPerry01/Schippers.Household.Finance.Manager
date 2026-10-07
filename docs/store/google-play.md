@@ -17,7 +17,7 @@ RANN's Roost Mobile
 
 ### Short description (max 80)
 
-Snap receipts, see what's due and get reminders, for RANN's Roost. Encrypted.
+Snap receipts, log trips and hours, see what's due, for RANN's Roost. Encrypted.
 
 ### Full description (max 4,000)
 
@@ -30,6 +30,13 @@ CAPTURE ON THE SPOT
 • Dictate a note, or record a short voice note that goes with the capture.
 • Add a new contact on the spot: your computer shows it for review.
 
+LOG AS YOU GO
+• Start and end a trip with its vehicle, driver and odometer, and a trailer or heavy load if any. The phone takes one location fix at each end, never in the background, and matches it to your saved places on the phone.
+• Fill-ups and charges, utility meter readings and propane or oil tank levels.
+• Hours worked for a client, with a timer; children's chores ticked off; volunteer hours.
+• Tick off the season's maintenance checklist for the home, vehicles, pool and yard.
+• Bring in the calendars your phone already shows (Google, Outlook and others), each kept private, busy only or shared on the computer. The app never signs in to a calendar account.
+
 SENT TO YOUR COMPUTER, NOT TO OUR CLOUD
 • Pair the phone once by scanning a code shown on your computer.
 • Captures wait on the phone, encrypted, and go straight to your computer over your home Wi-Fi, encrypted end to end. Nothing goes through RANN or anyone else.
@@ -37,7 +44,7 @@ SENT TO YOUR COMPUTER, NOT TO OUR CLOUD
 • Each capture lands in your review inbox on the computer, ready to match with a statement line.
 
 AT A GLANCE
-• Your accounts, this month's budgets, bills coming due, appointments, medication refills and maintenance due, sent by your computer.
+• Your accounts, this month's budgets, bills coming due, appointments, medication refills, maintenance due and the season's checklist, and each person's work and school hours today and tomorrow, sent by your computer.
 • The household's contacts: the doctor, the dentist, the bank or the contractor, with their phone numbers and addresses.
 • Reminders for bills, maintenance, appointments and refills, and a notice when a budget reaches 80 % and 100 %.
 
@@ -56,7 +63,7 @@ RANN's Roost Mobile
 
 ### Brève description (max 80)
 
-Reçus, échéances et rappels pour RANN's Roost sur votre ordinateur. Chiffré.
+Reçus, trajets, heures et échéances pour RANN's Roost sur l'ordinateur. Chiffré.
 
 ### Description complète (max 4 000)
 
@@ -69,6 +76,13 @@ CAPTUREZ SUR LE MOMENT
 • Dictez une note, ou enregistrez une courte note vocale qui accompagne la capture.
 • Ajoutez un nouveau contact sur le moment : votre ordinateur vous le présente pour vérification.
 
+INSCRIVEZ AU FUR ET À MESURE
+• Commencez et terminez un trajet avec son véhicule, son conducteur et l'odomètre, et une remorque ou une charge lourde s'il y a lieu. Le téléphone prend une position à chaque bout, jamais en arrière-plan, et la jumelle à vos lieux enregistrés sur le téléphone.
+• Pleins et recharges, relevés des compteurs de services publics et niveaux des réservoirs de propane ou de mazout.
+• Heures travaillées pour un client, avec un chronomètre; tâches des enfants cochées; heures de bénévolat.
+• Cochez la liste d'entretien de la saison pour la maison, les véhicules, la piscine et le terrain.
+• Apportez les calendriers que votre téléphone affiche déjà (Google, Outlook et autres), chacun gardé privé, occupé seulement ou partagé sur l'ordinateur. L'application ne se connecte jamais à un compte de calendrier.
+
 ENVOYÉ À VOTRE ORDINATEUR, PAS À NOTRE NUAGE
 • Jumelez le téléphone une seule fois en numérisant un code affiché sur votre ordinateur.
 • Les captures attendent sur le téléphone, chiffrées, et vont directement à votre ordinateur par le Wi-Fi de la maison, chiffrées de bout en bout. Rien ne passe par RANN ni par qui que ce soit.
@@ -76,7 +90,7 @@ ENVOYÉ À VOTRE ORDINATEUR, PAS À NOTRE NUAGE
 • Chaque capture arrive dans votre boîte de révision sur l'ordinateur, prête à être jumelée à une ligne de relevé.
 
 EN UN COUP D'ŒIL
-• Vos comptes, les budgets du mois, les factures à payer, les rendez-vous, les renouvellements d'ordonnance et l'entretien à faire, envoyés par votre ordinateur.
+• Vos comptes, les budgets du mois, les factures à payer, les rendez-vous, les renouvellements d'ordonnance, l'entretien à faire et la liste de la saison, et les heures de travail et d'école de chacun aujourd'hui et demain, envoyés par votre ordinateur.
 • Les contacts du ménage : le médecin, le dentiste, la banque ou l'entrepreneur, avec leurs numéros de téléphone et leurs adresses.
 • Rappels de factures, d'entretien, de rendez-vous et de renouvellements, et un avis quand un budget atteint 80 % et 100 %.
 
