@@ -69,6 +69,9 @@ data class BillLists(val categories: List<BillListCategory>, val groups: List<Bi
         return if (heading == null || heading == sub.name(language)) sub.name(language) else if (language == Language.FRENCH) "$heading : ${sub.name(language)}" else "$heading: ${sub.name(language)}"
     }
 
+    /** BILL-23: property taxes (Home and Business) are usually paid in instalments on set dates. */
+    fun suggestsInstalments(subcategoryKey: String?): Boolean = subcategory(subcategoryKey)?.key?.endsWith(".property_taxes") == true
+
     /** BILL-17: a utility bill, whose statements may carry meter readings. */
     fun isUtility(subcategoryKey: String?): Boolean = subcategory(subcategoryKey)?.let { it.meterKind != null || it.groupKey?.endsWith(".utilities") == true } == true
 }

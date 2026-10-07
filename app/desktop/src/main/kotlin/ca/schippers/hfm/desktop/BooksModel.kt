@@ -149,7 +149,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
             reminder.daysBefore == 0 -> t("reminder.today")
             else -> t("reminder.inDays", reminder.daysBefore)
         }
-        return t("common.labelValue", o.bill.name, "$whenText (${if (o.amountKnown) "" else "≈ "}${money(o.amount)})")
+        return t("common.labelValue", o.bill.name, "$whenText (${if (o.amountKnown) "" else "≈ "}${money(o.shownAmount)})")
     }
 
     /** One line per reminder of any kind (bills, appointments, refills) and where it leads. */

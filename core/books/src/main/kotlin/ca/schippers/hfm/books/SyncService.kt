@@ -427,7 +427,8 @@ class SyncService internal constructor(private val books: Books) {
             vehicles = books.vehicles.list().map { RefVehicle(it.id, it.name, books.vehicles.latestOdometer(it.id)?.odometer, fuelType = it.fuelType.name, use = it.usage.name) } +
                 books.assets.list().mapNotNull { a -> a.meter?.let { RefVehicle(a.id, a.name, books.assetMaintenance.latestUsage(a.id), it.name) } },
             bills = books.bills.occurrences(today, today.plus(DatePeriod(days = 60))).filter { it.status == OccurrenceStatus.DUE && it.bill.kind == BillKind.BILL }.map {
-                RefBill(it.bill.name, it.dueDate.toString(), it.amount.toBigDecimal().toPlainString(), it.amount.currency.code, !it.amountKnown, it.bill.reminderDays)
+                // BILL-22: what is still due on a bill paid in part.
+                RefBill(it.bill.name, it.dueDate.toString(), it.shownAmount.toBigDecimal().toPlainString(), it.amount.currency.code, !it.amountKnown, it.bill.reminderDays)
             },
             budgets = budgets?.lines.orEmpty().filter { it.category.kind == CategoryKind.EXPENSE }.map {
                 RefBudget(

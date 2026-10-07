@@ -68,6 +68,7 @@ import ca.schippers.hfm.books.AllocationBy
 import ca.schippers.hfm.books.AllocationTarget
 import ca.schippers.hfm.books.AmountKind
 import ca.schippers.hfm.books.BillDraft
+import ca.schippers.hfm.books.BillInstalment
 import ca.schippers.hfm.books.BillKind
 import ca.schippers.hfm.books.BillType
 import ca.schippers.hfm.books.StatementDraft
@@ -108,6 +109,7 @@ import kotlinx.datetime.LocalTime
 import ca.schippers.hfm.ocr.OcrLine
 import ca.schippers.hfm.ocr.OcrResult
 import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
+import ca.schippers.hfm.calc.schedule.BusinessDays
 import ca.schippers.hfm.calc.schedule.Frequency
 import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.books.Books
@@ -1184,6 +1186,15 @@ object DemoHousehold {
                 type = BillType.BUSINESS, categoryKey = "business.technology", subcategoryKey = "business.technology.software_licenses", memberId = sam.id,
             ),
         )
+        // BILL-23: the house's property taxes, paid in instalments on the dates each year's tax bill lists.
+        bills.create(
+            BillDraft(
+                BillKind.BILL, l("Taxes municipales", "Property taxes"), cad(l("4207.00", "4812.00")), chequing.id, Recurrence(Frequency.INSTALMENTS, adjust = BusinessDayAdjust.NEXT),
+                today.minus(DatePeriod(days = 110)), l("Ville de Québec", "City of Ottawa"), l("Matricule 2245-7781-0093", "Roll 0614 123 4567 8900"),
+                paymentMethod = PaymentMethod.ONLINE, categoryId = cat("housing.municipal_tax"),
+                type = home, categoryKey = "home.essential", subcategoryKey = "home.essential.property_taxes",
+            ),
+        )
         bills.create(BillDraft(BillKind.INCOME, l("Paie", "Pay"), cad("3150.00"), chequing.id, Recurrence(Frequency.SEMI_MONTHLY, secondDay = 1), next(15), l("Employeur inc.", "Employer Inc."), categoryId = cat("income.employment.salary")))
         bills.create(BillDraft(BillKind.TRANSFER, l("Épargne mensuelle", "Monthly savings"), cad("500.00"), chequing.id, Recurrence.MONTHLY, next(16), transferAccountId = savings.id))
     }
@@ -1191,7 +1202,9 @@ object DemoHousehold {
     /**
      * BILL-16, BILL-17: statements received: the last two electricity bills, with the house meter's
      * readings and paid by the payments already in the books, and this month's phone bill, waiting
-     * to be paid.
+     * to be paid. BILL-22, BILL-23: the property tax bill's instalments (Ottawa: an interim and a
+     * final bill of two instalments each; Quebec City: three versements), the earlier ones paid and
+     * the next one paid in part.
      */
     private fun addBillStatements(books: Books, chequing: Account, today: LocalDate) {
         fun cad(s: String) = Money.parse(s, Currency.CAD)
@@ -1217,6 +1230,31 @@ object DemoHousehold {
         phone.recurrence.next(phone.startDate, today, phone.endDate)?.let { due ->
             books.bills.recordStatement(phone.id, StatementDraft(due, cad("71.35"), l("F-0938-2210", "K-7731-1009"), today.minus(DatePeriod(days = 6))))
         }
+        val taxes = bills.first { it.subcategoryKey == "home.essential.property_taxes" }
+        fun on(days: Int) = BusinessDays.nextOrSame(today.plus(DatePeriod(days = days)))
+        if (english) {
+            books.bills.recordStatement(
+                taxes.id,
+                StatementDraft(on(-110), statementNumber = "${today.year} Interim", issuedDate = on(-140), instalments = listOf(BillInstalment(on(-110), cad("1190.00")), BillInstalment(on(-50), cad("1190.00")))),
+            )
+            books.bills.recordStatement(
+                taxes.id,
+                StatementDraft(on(9), statementNumber = "${today.year} Final", issuedDate = on(-25), instalments = listOf(BillInstalment(on(9), cad("1216.00")), BillInstalment(on(100), cad("1216.00")))),
+            )
+            books.bills.markPaid(taxes.id, on(-110), on(-112))
+            books.bills.markPaid(taxes.id, on(-50), on(-52))
+        } else {
+            books.bills.recordStatement(
+                taxes.id,
+                StatementDraft(
+                    on(-50), statementNumber = "${today.year}-0412", issuedDate = on(-80),
+                    instalments = listOf(BillInstalment(on(-50), cad("1402.33")), BillInstalment(on(9), cad("1402.33")), BillInstalment(on(100), cad("1402.34"))),
+                ),
+            )
+            books.bills.markPaid(taxes.id, on(-50), on(-52))
+        }
+        // The next instalment paid in part: the rest is still due on its date.
+        books.bills.markPaid(taxes.id, on(9), today.minus(DatePeriod(days = 3)), cad(l("700.00", "600.00")))
     }
 
     /**

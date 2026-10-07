@@ -104,7 +104,7 @@ fun DashboardScreen(model: BooksModel) {
                 data.creditAvailable?.let { model.t("dashboard.creditAvailable", model.money(it), data.limitUsed ?: 0) },
                 alert = data.creditAvailable?.isNegative == true,
             ) { model.section = Section.ACCOUNTS }
-            val billsTotal = data.bills.fold(Money.zero(base)) { a, o -> a + (books.rates.convert(o.amount, base, today) ?: Money.zero(base)) }
+            val billsTotal = data.bills.fold(Money.zero(base)) { a, o -> a + (books.rates.convert(o.shownAmount, base, today) ?: Money.zero(base)) }
             Tile(model.t("dashboard.bills"), model.money(billsTotal), model.t("dashboard.billsCount", data.bills.size)) { model.section = Section.BILLS }
             if (data.budgetLines.isNotEmpty()) {
                 val budgeted = data.budgetLines.fold(Money.zero(base)) { a, l -> a + l.budgeted }

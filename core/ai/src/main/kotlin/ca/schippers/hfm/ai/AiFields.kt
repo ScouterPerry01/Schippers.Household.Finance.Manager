@@ -7,6 +7,7 @@ import ca.schippers.hfm.ocr.DocumentKind
 import ca.schippers.hfm.ocr.Extracted
 import ca.schippers.hfm.ocr.FieldSource
 import ca.schippers.hfm.ocr.MeterReadings
+import ca.schippers.hfm.ocr.ReadInstalment
 import ca.schippers.hfm.ocr.TaxName
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.JsonArray
@@ -159,6 +160,10 @@ object AiFields {
                 kind, ai(answer.str("biller")), ai(date("bill_date")), ai(money(answer.num("amount_due"))), null, taxes, currency,
                 invoiceNumber = ai(answer.str("statement_number")), dueDate = ai(date("due_date")), accountNumber = ai(answer.str("account_number")),
                 meter = ai(meterReadings(answer["meter_readings"])),
+                instalments = ai(
+                    answer.list("instalments").mapNotNull { i -> i.str("due_date")?.let { runCatching { LocalDate.parse(it) }.getOrNull() }?.let { d -> money(i.num("amount"))?.takeIf { it.isPositive }?.let { ReadInstalment(d, it) } } }
+                        .distinctBy { it.dueDate }.sortedBy { it.dueDate }.takeIf { it.isNotEmpty() },
+                ),
             )
             "invoice" -> DocumentDraft(
                 kind, ai(answer.str("issuer")), ai(date("invoice_date")), ai(money(answer.num("total"))), ai(money(answer.num("subtotal"))), taxes, currency,
@@ -195,7 +200,7 @@ object AiFields {
         }
     }
 
-    /** BILL-17, BILL-19: a bill's meter readings (schema hfm/bill/v2), or null when it gave none. */
+    /** BILL-17, BILL-19: a bill's meter readings (schema hfm/bill/v2 and later), or null when it gave none. */
     private fun meterReadings(e: JsonElement?): MeterReadings? {
         val o = e as? JsonObject ?: return null
         fun date(key: String) = o.str(key)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }

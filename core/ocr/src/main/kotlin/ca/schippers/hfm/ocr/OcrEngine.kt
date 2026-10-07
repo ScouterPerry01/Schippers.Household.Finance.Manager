@@ -58,7 +58,12 @@ data class DocumentDraft(
     val accountNumber: Extracted<String>? = null,
     /** BILL-17, BILL-19: a utility bill's meter readings, when it shows them. */
     val meter: Extracted<MeterReadings>? = null,
+    /** BILL-25: the instalments a bill lists (a property tax bill's due dates and amounts), in date order. */
+    val instalments: Extracted<List<ReadInstalment>>? = null,
 )
+
+/** BILL-23, BILL-25: one instalment printed on a bill: its due date and amount. */
+data class ReadInstalment(val dueDate: LocalDate, val amount: Money)
 
 /**
  * BILL-17: the meter readings a utility bill shows: the previous and current readings with their

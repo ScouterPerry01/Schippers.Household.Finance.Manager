@@ -39,9 +39,9 @@ class AiTypesTest {
     }
 
     @Test
-    fun `a bill (version 2) gives its statement number and a utility's meter readings (BILL-19)`() {
+    fun `a bill (version 3) gives its statement number and a utility's meter readings (BILL-19)`() {
         val type = types.get("bill")!!
-        assertEquals("hfm/bill/v2", type.version)
+        assertEquals("hfm/bill/v3", type.version)
         assertTrue(SchemaCheck.schemaProblems(type.schema).isEmpty())
         val answer = obj(
             """{"biller":"Hydro Ottawa","account_number":"6 1234 5678 9","statement_number":"2026-0914","bill_date":"2026-09-14","due_date":"2026-10-06",
@@ -61,6 +61,21 @@ class AiTypesTest {
         assertEquals("KWH", m.value.unit)
         // A phone bill has no readings.
         assertEquals(null, AiFields.draft("bill", obj("""{"biller":"Bell","amount_due":95.00,"currency":"CAD"}"""), checked = true).meter)
+    }
+
+    @Test
+    fun `a property tax bill gives its instalments (BILL-25)`() {
+        val type = types.get("bill")!!
+        val answer = obj(
+            """{"biller":"City of Ottawa","bill_date":"2026-05-14","due_date":"2026-06-18","amount_due":2432.00,"currency":"CAD",
+                "instalments":[{"due_date":"2026-09-17","amount":1216.00},{"due_date":"2026-06-18","amount":1216.00}]}""",
+        )
+        assertTrue(SchemaCheck.validate(answer, type.schema).isEmpty())
+        val read = AiFields.draft("bill", answer, checked = true).instalments!!
+        assertEquals(FieldSource.CLOUD_AI, read.source)
+        assertEquals(listOf(LocalDate(2026, 6, 18), LocalDate(2026, 9, 17)), read.value.map { it.dueDate }, "in date order")
+        assertEquals(Money.parse("1216.00", Currency.CAD), read.value.first().amount)
+        assertEquals(null, AiFields.draft("bill", obj("""{"biller":"Bell","amount_due":95.00,"currency":"CAD"}"""), checked = true).instalments)
     }
 
     @Test

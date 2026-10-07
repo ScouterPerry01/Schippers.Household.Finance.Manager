@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.AmountKind
 import ca.schippers.hfm.books.Bill
 import ca.schippers.hfm.books.BillDraft
+import ca.schippers.hfm.books.BillInstalment
 import ca.schippers.hfm.books.BillKind
 import ca.schippers.hfm.books.BillLists
 import ca.schippers.hfm.books.BillProposal
@@ -120,6 +122,12 @@ private fun ReadingInputs(model: BooksModel, f: ReadingFields) {
     TextInput(model.t("bills.used"), f.used, supporting = model.t("bills.used.hint")) { f.used = it }
 }
 
+/** BILL-23: one instalment of a statement, as typed. */
+private class InstalmentFields(date: String, amount: String) {
+    var date by mutableStateOf(date)
+    var amount by mutableStateOf(amount)
+}
+
 /** The fields of a statement other than its readings, as typed. */
 private class StatementFields(s: StatementDraft?, locale: java.util.Locale) {
     var number by mutableStateOf(s?.statementNumber.orEmpty())
@@ -127,6 +135,25 @@ private class StatementFields(s: StatementDraft?, locale: java.util.Locale) {
     var due by mutableStateOf(s?.dueDate?.toString().orEmpty())
     var amount by mutableStateOf(s?.amount?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty())
     val readings = ReadingFields(s?.readings ?: MeterReadings())
+    val instalments = mutableStateListOf<InstalmentFields>().apply {
+        s?.instalments.orEmpty().forEach { add(InstalmentFields(it.dueDate.toString(), MoneyFormat.formatAmount(it.amount, locale))) }
+    }
+
+    /** BILL-23: the instalments typed; a row left empty is ignored, a half-filled one refused. */
+    fun instalments(currency: Currency, locale: java.util.Locale): List<BillInstalment> = instalments.filter { it.date.isNotBlank() || it.amount.isNotBlank() }.map {
+        val date = dateOrNull(it.date) ?: throw ValidationException("error.instalment")
+        val amount = parseAmount(it.amount, currency, locale) ?: throw ValidationException("error.instalment")
+        BillInstalment(date, amount)
+    }
+
+    /** The statement as typed, for [bill] in [currency]; the due date may be left out when instalments are given. */
+    fun draft(currency: Currency, locale: java.util.Locale, language: Language, documentId: String?, meterId: String? = null, notes: String? = null): StatementDraft {
+        val instalments = instalments(currency, locale)
+        val due = dateOrNull(due) ?: instalments.firstOrNull()?.dueDate ?: throw ValidationException("error.invalidDate")
+        return StatementDraft(
+            due, parseAmount(amount, currency, locale), number.ifBlank { null }, dateOrNull(issued), documentId, readings.readings(language), meterId, notes, instalments,
+        )
+    }
 }
 
 /**
@@ -167,6 +194,8 @@ internal fun BillDialog(model: BooksModel, existing: Bill?, proposal: BillPropos
         mutableStateOf(meterBefore ?: lists.subcategory(subcategory)?.meterKind?.let { k -> meters.filter { it.kind == k }.singleOrNull()?.id })
     }
     var repeat by remember { mutableStateOf(existing?.let { Repeat.of(it.recurrence) } ?: Repeat.MONTHLY) }
+    // BILL-23: instalments on set dates, listed on each statement (property taxes).
+    var instalments by remember { mutableStateOf((existing?.recurrence ?: start0?.recurrence)?.frequency == Frequency.INSTALMENTS) }
     var interval by remember { mutableStateOf(existing?.recurrence?.interval?.toString() ?: "1") }
     var monthDay by remember { mutableStateOf(existing?.recurrence?.monthDay ?: MonthDay.SAME_DAY) }
     var secondDay by remember { mutableStateOf(existing?.recurrence?.secondDay?.toString() ?: "0") }
@@ -183,6 +212,7 @@ internal fun BillDialog(model: BooksModel, existing: Bill?, proposal: BillPropos
     val utility = lists.isUtility(subcategory) || meterId != null
 
     fun recurrence(): Recurrence {
+        if (instalments) return Recurrence(Frequency.INSTALMENTS, adjust = adjust)
         val n = interval.trim().toIntOrNull()?.takeIf { it >= 1 } ?: throw ValidationException("error.invalidNumber")
         val monthly = repeat in setOf(Repeat.MONTHLY, Repeat.QUARTERLY, Repeat.SEMI_ANNUAL, Repeat.ANNUAL, Repeat.EVERY_N_MONTHS)
         return when (repeat) {
@@ -227,9 +257,10 @@ internal fun BillDialog(model: BooksModel, existing: Bill?, proposal: BillPropos
                     }
                     proposal != null && documentId != null -> {
                         val s = statement!!
+                        val instalments = s.instalments(account.currency, locale)
                         val first = StatementDraft(
-                            dateOrNull(s.due) ?: draft.startDate, parseAmount(s.amount, account.currency, locale), s.number.ifBlank { null }, dateOrNull(s.issued),
-                            documentId, s.readings.readings(model.language), linkedMeter,
+                            dateOrNull(s.due) ?: instalments.firstOrNull()?.dueDate ?: draft.startDate, parseAmount(s.amount, account.currency, locale), s.number.ifBlank { null },
+                            dateOrNull(s.issued), documentId, s.readings.readings(model.language), linkedMeter, instalments = instalments,
                         )
                         books.documents.createBillFrom(documentId, draft, first).id
                     }
@@ -254,6 +285,8 @@ internal fun BillDialog(model: BooksModel, existing: Bill?, proposal: BillPropos
                     val after = lists.subcategory(s)?.spendingCategoryId
                     if (after != null && (categoryId == null || categoryId == before)) categoryId = after
                     if (s != subcategory && meterId == null) lists.subcategory(s)?.meterKind?.let { k -> meters.filter { it.kind == k }.singleOrNull()?.let { meterId = it.id } }
+                    // BILL-23: property taxes are usually paid in instalments on set dates.
+                    if (s != subcategory && lists.suggestsInstalments(s)) instalments = true
                     type = t
                     billCategory = c
                     subcategory = s
@@ -297,16 +330,23 @@ internal fun BillDialog(model: BooksModel, existing: Bill?, proposal: BillPropos
                 Picker(model.t("bills.method"), PaymentMethod.entries, method, { model.t("paymentMethod.$it") }, Modifier.weight(1f)) { method = it }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Picker(model.t("bills.repeat"), Repeat.entries, repeat, { model.t("repeat.$it") }, Modifier.weight(1f)) { repeat = it }
-                when (repeat) {
+                // null stands for instalments on set dates (BILL-23), which events do not offer.
+                Picker(
+                    model.t("bills.repeat"), Repeat.entries + listOf<Repeat?>(null), repeat.takeUnless { instalments }, { model.t("repeat.${it?.name ?: "INSTALMENTS"}") }, Modifier.weight(1f),
+                ) {
+                    instalments = it == null
+                    if (it != null) repeat = it
+                }
+                if (!instalments) when (repeat) {
                     Repeat.EVERY_N_DAYS, Repeat.EVERY_N_WEEKS, Repeat.EVERY_N_MONTHS -> TextInput(model.t("bills.interval"), interval, Modifier.weight(0.6f)) { interval = it }
                     Repeat.SEMI_MONTHLY -> TextInput(model.t("bills.secondDay"), secondDay, Modifier.weight(0.6f), supporting = model.t("bills.secondDay.hint")) { secondDay = it }
                     else -> Unit
                 }
-                if (repeat in setOf(Repeat.MONTHLY, Repeat.QUARTERLY, Repeat.SEMI_ANNUAL, Repeat.ANNUAL, Repeat.EVERY_N_MONTHS)) {
+                if (!instalments && repeat in setOf(Repeat.MONTHLY, Repeat.QUARTERLY, Repeat.SEMI_ANNUAL, Repeat.ANNUAL, Repeat.EVERY_N_MONTHS)) {
                     Picker(model.t("bills.monthDay"), MonthDay.entries, monthDay, { model.t("monthDay.$it") }, Modifier.weight(1f)) { monthDay = it }
                 }
             }
+            if (instalments) Text(model.t("bills.instalments.hint"), style = MaterialTheme.typography.bodySmall)
             Picker(model.t("bills.adjust"), BusinessDayAdjust.entries, adjust, { model.t("adjust.$it") }) { adjust = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DateInput(model.t("bills.start"), start, Modifier.weight(1f)) { start = it }
@@ -355,9 +395,30 @@ private fun StatementInputs(model: BooksModel, f: StatementFields, currency: Cur
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         DateInput(model.t("bills.issuedDate"), f.issued, Modifier.weight(1f)) { f.issued = it }
-        DateInput(model.t("bills.dueDate"), f.due, Modifier.weight(1f)) { f.due = it }
+        // BILL-23: with instalments, the first one's date is the statement's due date.
+        DateInput(model.t("bills.dueDate"), f.due, Modifier.weight(1f), enabled = f.instalments.isEmpty()) { f.due = it }
     }
     if (utility) ReadingInputs(model, f.readings)
+    InstalmentInputs(model, f, currency)
+}
+
+/** BILL-23: the instalments a statement lists, each a due date and an amount. */
+@Composable
+private fun InstalmentInputs(model: BooksModel, f: StatementFields, currency: Currency) {
+    val locale = model.language.locale
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+        Text(model.t("bills.instalments"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+        OutlinedButton(onClick = { f.instalments.add(InstalmentFields("", "")) }) { Text(model.t("bills.addInstalment")) }
+    }
+    Text(model.t("bills.instalments.explain"), style = MaterialTheme.typography.bodySmall)
+    f.instalments.forEachIndexed { i, row ->
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("${i + 1}.", Modifier.width(24.dp))
+            DateInput(model.t("bills.instalmentDate"), row.date, Modifier.weight(1f)) { row.date = it }
+            AmountInput(model.t("bills.instalmentAmount"), row.amount, currency, locale, Modifier.weight(1f), model::money) { row.amount = it }
+            RemoveButton(model.t("bills.removeInstalment")) { f.instalments.remove(row) }
+        }
+    }
 }
 
 /** BILL-16: the statements received for a bill, latest first, each with its document, readings and payment. */
@@ -376,6 +437,10 @@ private fun BillStatements(model: BooksModel, bill: Bill, utility: Boolean) {
     if (statements.isEmpty()) Text(model.t("bills.statements.none"), style = MaterialTheme.typography.bodySmall)
     for (s in statements.take(STATEMENTS_SHOWN)) {
         val occurrence = remember(model.revision, s.id) { books.bills.occurrenceOf(s) }
+        // BILL-23: the due dates of its instalments, each paid on its own.
+        val instalments = remember(model.revision, s.id) {
+            s.instalments.mapNotNull { i -> books.bills.occurrences(i.dueDate, i.dueDate, setOf(bill.id)).firstOrNull() }
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(
@@ -392,8 +457,21 @@ private fun BillStatements(model: BooksModel, bill: Bill, utility: Boolean) {
                 if (details.isNotEmpty()) Text(details.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
             }
             if (s.documentId != null) TextButton(onClick = { viewing = s.documentId }) { Text(model.t("bills.viewDocument")) }
-            if (occurrence != null && occurrence.status == OccurrenceStatus.DUE) TextButton(onClick = { paying = occurrence }) { Text(model.t("bills.markPaid")) }
+            if (s.instalments.isEmpty() && occurrence != null && occurrence.status == OccurrenceStatus.DUE) TextButton(onClick = { paying = occurrence }) { Text(model.t("bills.markPaid")) }
             TextButton(onClick = { editing = s }) { Text(model.t("common.edit")) }
+        }
+        for (o in instalments) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 16.dp)) {
+                Text(
+                    listOfNotNull(
+                        o.instalment?.let { model.t("bills.instalmentOf", it, o.instalments ?: it) }, model.t("bills.dueOn", model.date(o.dueDate)), model.money(o.amount),
+                        o.paidDate?.takeIf { o.status == OccurrenceStatus.PAID }?.let { model.t("bills.paidOn", model.date(it)) },
+                        model.t("bills.stillDue", model.money(o.outstanding)).takeIf { o.status == OccurrenceStatus.DUE && o.payments.isNotEmpty() },
+                    ).joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f),
+                )
+                if (o.status == OccurrenceStatus.DUE) TextButton(onClick = { paying = o }) { Text(model.t("bills.markPaid")) }
+            }
         }
     }
     if (adding || editing != null) StatementDialog(model, bill, editing, utility) { adding = false; editing = null }
@@ -417,7 +495,7 @@ private fun StatementDialog(model: BooksModel, bill: Bill, existing: BillStateme
     val locale = model.language.locale
     val fields = remember {
         StatementFields(
-            existing?.let { StatementDraft(it.dueDate, it.amount, it.statementNumber, it.issuedDate, it.documentId, it.readings, it.meterId, it.notes) }
+            existing?.let { StatementDraft(it.dueDate, it.amount, it.statementNumber, it.issuedDate, it.documentId, it.readings, it.meterId, it.notes, it.instalments) }
                 ?: StatementDraft(bill.recurrence.next(bill.startDate, today(), bill.endDate) ?: today()),
             locale,
         )
@@ -425,10 +503,7 @@ private fun StatementDialog(model: BooksModel, bill: Bill, existing: BillStateme
     var confirmDelete by remember { mutableStateOf(false) }
     FormDialog(model.t(if (existing == null) "bills.addStatement" else "bills.editStatement") + " · " + bill.name, model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
         val ok = model.act {
-            val draft = StatementDraft(
-                dateOrNull(fields.due) ?: throw ValidationException("error.invalidDate"), parseAmount(fields.amount, bill.amount.currency, locale), fields.number.ifBlank { null },
-                dateOrNull(fields.issued), existing?.documentId, fields.readings.readings(model.language), existing?.meterId, existing?.notes,
-            )
+            val draft = fields.draft(bill.amount.currency, locale, model.language, existing?.documentId, existing?.meterId, existing?.notes)
             model.books.bills.recordStatement(bill.id, draft, existing?.id)
         }
         if (ok != null) onClose()
@@ -463,18 +538,17 @@ internal fun AttachBillDialog(model: BooksModel, doc: ca.schippers.hfm.books.Vau
     val read = doc.draft
     val fields = remember {
         StatementFields(
-            StatementDraft(read?.dueDate?.value ?: doc.date ?: today(), doc.amount, read?.invoiceNumber?.value, doc.date, readings = read?.meter?.value ?: MeterReadings()),
+            StatementDraft(
+                read?.dueDate?.value ?: doc.date ?: today(), doc.amount, read?.invoiceNumber?.value, doc.date, readings = read?.meter?.value ?: MeterReadings(),
+                instalments = read?.instalments?.value.orEmpty().map { BillInstalment(it.dueDate, it.amount) },
+            ),
             locale,
         )
     }
     FormDialog(model.t("documents.attachToBill"), model.t("common.save"), model.t("common.cancel"), canSave = bill != null, onDismiss = { onClose(false) }, onSave = {
         val ok = model.act {
             val b = bill!!
-            val draft = StatementDraft(
-                dateOrNull(fields.due) ?: throw ValidationException("error.invalidDate"), parseAmount(fields.amount, b.amount.currency, locale), fields.number.ifBlank { null },
-                dateOrNull(fields.issued), doc.id, fields.readings.readings(model.language),
-            )
-            books.documents.fileWithBill(doc.id, b.id, draft)
+            books.documents.fileWithBill(doc.id, b.id, fields.draft(b.amount.currency, locale, model.language, doc.id))
         }
         if (ok != null) onClose(true)
     }) {

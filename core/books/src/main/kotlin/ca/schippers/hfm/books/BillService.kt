@@ -2,6 +2,9 @@ package ca.schippers.hfm.books
 
 import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.calc.rules.Thresholds
+import ca.schippers.hfm.calc.schedule.BusinessDayAdjust
+import ca.schippers.hfm.calc.schedule.BusinessDays
+import ca.schippers.hfm.calc.schedule.Frequency
 import ca.schippers.hfm.calc.schedule.Recurrence
 import ca.schippers.hfm.data.AccessDeniedException
 import ca.schippers.hfm.domain.AccountKind
@@ -20,6 +23,8 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import ca.schippers.hfm.data.ledger.Bill as BillRow
 import ca.schippers.hfm.data.ledger.Bill_occurrence as OccurrenceRow
+import ca.schippers.hfm.data.ledger.Bill_payment as PaymentRow
+import ca.schippers.hfm.data.ledger.Bill_statement as StatementRow
 
 enum class BillKind { BILL, INCOME, TRANSFER }
 enum class AmountKind { FIXED, VARIABLE, ESTIMATED }
@@ -95,7 +100,12 @@ data class BillStatement(
     /** The meter its readings were added to. */
     val meterId: String?,
     val notes: String?,
+    /** BILL-23: the instalments it lists, in date order; empty for a bill paid at once. */
+    val instalments: List<BillInstalment> = emptyList(),
 )
+
+/** BILL-23: one instalment a statement lists: a due date of the bill, with its amount. */
+data class BillInstalment(val dueDate: LocalDate, val amount: Money)
 
 /** What is recorded for a statement (BILL-16, BILL-17). */
 data class StatementDraft(
@@ -108,21 +118,49 @@ data class StatementDraft(
     /** The meter to add the readings to; by default the meter linked to the bill. */
     val meterId: String? = null,
     val notes: String? = null,
+    /** BILL-23: the instalments it lists; each becomes a due date of the bill (the first is its due date). */
+    val instalments: List<BillInstalment> = emptyList(),
 )
+
+/** BILL-22: one payment made toward a due date, with the transaction recorded for it. */
+data class BillPayment(val id: String, val billId: String, val dueDate: LocalDate, val amount: Money, val paidDate: LocalDate, val transactionId: String?)
 
 /** One due date of a bill, with the amount expected or actually billed. */
 data class Occurrence(
     val bill: Bill,
     val dueDate: LocalDate,
+    /** The amount due: the bill's, the statement's or the one set for this due date. */
     val amount: Money,
     /** True when the amount comes from the actual bill or payment, not an estimate. */
     val amountKnown: Boolean,
     val status: OccurrenceStatus,
     val transactionId: String?,
     val paidDate: LocalDate?,
+    /** BILL-22: the payments made toward it, oldest first. */
+    val payments: List<BillPayment> = emptyList(),
+    /** BILL-23: its number among the instalments of its statement ([instalment] of [instalments]). */
+    val instalment: Int? = null,
+    val instalments: Int? = null,
+    /** BILL-24: an instalment proposed from last year's, until the new statement is entered. */
+    val estimated: Boolean = false,
 ) {
-    /** Effect on the paying account: money out for bills and transfers, in for income. */
-    val signedAmount: Money get() = if (bill.kind == BillKind.INCOME) amount else -amount
+    /** BILL-22: paid so far. A due date paid before payments were recorded one by one counts as paid in full. */
+    val paidSoFar: Money
+        get() = when {
+            payments.isNotEmpty() -> payments.fold(Money.zero(amount.currency)) { a, p -> a + p.amount }
+            status == OccurrenceStatus.PAID -> amount
+            else -> Money.zero(amount.currency)
+        }
+
+    /** BILL-22: what is still due: the amount due less what was paid; nothing once paid or skipped. */
+    val outstanding: Money
+        get() = if (status != OccurrenceStatus.DUE) Money.zero(amount.currency) else (amount - paidSoFar).let { if (it.isNegative) Money.zero(amount.currency) else it }
+
+    /** What reminders, totals and calendars show: the outstanding amount while due, else the amount. */
+    val shownAmount: Money get() = if (status == OccurrenceStatus.DUE) outstanding else amount
+
+    /** Effect on the paying account still to come (the outstanding amount while due): money out for bills and transfers, in for income. */
+    val signedAmount: Money get() = if (bill.kind == BillKind.INCOME) shownAmount else -shownAmount
 }
 
 /** BILL-05: the bill list grouped as overdue, due today, upcoming, recently paid and skipped. */
@@ -278,30 +316,98 @@ class BillService internal constructor(private val books: Books) {
     fun occurrences(from: LocalDate, to: LocalDate, billIds: Set<String>? = null): List<Occurrence> = books.groups().flatMap { group ->
         val q = books.ledger(group).ledgerQueries
         val currencies = q.accounts().executeAsList().associate { it.id to Currency.of(it.currency) }
+        // BILL-22, BILL-23: the payments and the statements with instalments, read once per ledger.
+        val payments = q.allBillPayments().executeAsList().groupBy { it.bill_id }
+        val listing = q.instalmentStatements().executeAsList().groupBy({ it.bill_id }, { it.instalments })
         q.bills().executeAsList()
             .filter { billIds == null || it.id in billIds }
             .map { it.toBill(currencies.getValue(it.account_id)) }
             .filter { it.active }
-            .flatMap { bill -> occurrencesOf(bill, q.occurrencesForBill(bill.id).executeAsList(), from, to) }
+            .flatMap { bill -> occurrencesOf(bill, q.occurrencesForBill(bill.id).executeAsList(), payments[bill.id].orEmpty(), listing[bill.id].orEmpty(), from, to) }
     }.sortedWith(compareBy({ it.dueDate }, { it.bill.name }))
 
-    private fun occurrencesOf(bill: Bill, stored: List<OccurrenceRow>, from: LocalDate, to: LocalDate): List<Occurrence> {
+    /** The due dates of one bill between [from] and [to], read from its ledger. */
+    private fun occurrencesOf(group: GroupInfo, bill: Bill, from: LocalDate, to: LocalDate): List<Occurrence> {
+        val q = books.ledger(group).ledgerQueries
+        return occurrencesOf(
+            bill, q.occurrencesForBill(bill.id).executeAsList(), q.billPayments(bill.id).executeAsList(),
+            q.billStatements(bill.id).executeAsList().sortedBy { it.due_date }.mapNotNull { it.instalments }, from, to,
+        )
+    }
+
+    private fun occurrencesOf(bill: Bill, stored: List<OccurrenceRow>, payments: List<PaymentRow>, listings: List<String>, from: LocalDate, to: LocalDate): List<Occurrence> {
+        val currency = bill.amount.currency
         val byDate = stored.associateBy { LocalDate.parse(it.due_date) }
+        val paidToward = payments.groupBy { LocalDate.parse(it.due_date) }
         val expected = expectedAmount(bill, stored)
         // BILL-16: a scheduled due date a statement moved is due on the statement's date instead.
         val moved = stored.mapNotNull { it.scheduled_date?.let(LocalDate::parse) }.filter { it !in byDate }.toSet()
-        val dates = (bill.recurrence.occurrences(bill.startDate, from, to, bill.endDate).filter { it !in moved } + byDate.keys.filter { it in from..to }).toSortedSet()
+        // BILL-23: the instalments the statements list, numbered within their statement.
+        val listed = listings.map { decodeInstalments(it, currency) }.filter { it.isNotEmpty() }
+        val numbers = HashMap<LocalDate, Pair<Int, Int>>()
+        for (list in listed) list.forEachIndexed { i, it -> numbers.putIfAbsent(it.dueDate, i + 1 to list.size) }
+        // BILL-24: next years' instalments, proposed until their statement is entered.
+        val proposed = if (bill.recurrence.frequency == Frequency.INSTALMENTS) rollOver(bill, listed, to).filterKeys { it !in numbers } else emptyMap()
+        val dates = (
+            bill.recurrence.occurrences(bill.startDate, from, to, bill.endDate).filter { it !in moved } +
+                byDate.keys.filter { it in from..to } +
+                proposed.keys.filter { it in from..to && (bill.endDate == null || it <= bill.endDate) }
+            ).toSortedSet()
         return dates.map { date ->
             val row = byDate[date]
+            val estimate = proposed[date]
+            val number = numbers[date] ?: estimate?.let { it.number to it.of }
             Occurrence(
                 bill, date,
-                row?.amount_minor?.let { Money.ofMinor(it, bill.amount.currency) } ?: expected,
-                amountKnown = row?.amount_minor != null || bill.amountKind == AmountKind.FIXED,
+                row?.amount_minor?.let { Money.ofMinor(it, currency) } ?: estimate?.amount ?: expected,
+                amountKnown = row?.amount_minor != null || (estimate == null && bill.amountKind == AmountKind.FIXED),
                 status = row?.status?.let(OccurrenceStatus::valueOf) ?: OccurrenceStatus.DUE,
                 transactionId = row?.txn_id,
                 paidDate = row?.paid_date?.let(LocalDate::parse),
+                payments = paidToward[date].orEmpty().map { it.toPayment(currency) },
+                instalment = number?.first,
+                instalments = number?.second,
+                estimated = estimate != null,
             )
         }
+    }
+
+    /** BILL-24: an instalment proposed from last year's: its amount and its number on that statement. */
+    private data class Proposed(val amount: Money, val number: Int, val of: Int)
+
+    /**
+     * BILL-24: the instalments of the last year listed (those within a year of the latest), each
+     * proposed again a year later, and every year after, on the same date moved to a business day
+     * (the bill's choice for weekends and holidays, the next business day by default) with the same
+     * amount, up to [to]. Only dates after the latest instalment listed are proposed, and an
+     * instalment whose next year's one is already listed is not, so entering next year's statement
+     * replaces them.
+     */
+    private fun rollOver(bill: Bill, listed: List<List<BillInstalment>>, to: LocalDate): Map<LocalDate, Proposed> {
+        val all = listed.flatMap { list -> list.mapIndexed { i, it -> Triple(it, i + 1, list.size) } }
+        val latest = all.maxOfOrNull { it.first.dueDate } ?: return emptyMap()
+        val lastYear = all.filter { it.first.dueDate > latest.minus(DatePeriod(years = 1)) }
+        fun adjusted(raw: LocalDate) = if (bill.recurrence.adjust == BusinessDayAdjust.PREVIOUS) BusinessDays.previousOrSame(raw) else BusinessDays.nextOrSame(raw)
+        // An instalment listed this close to where one would be proposed is that one, already entered:
+        // at most 45 days, and less than half the time between two instalments (monthly plans).
+        val gaps = lastYear.map { it.first.dueDate.toEpochDays() }.sorted().zipWithNext { a, b -> b - a }
+        val tolerance = minOf(45L, (gaps.minOrNull() ?: 90L) / 2)
+        val actual = all.map { it.first.dueDate.toEpochDays() }
+        fun listedNear(date: LocalDate) = actual.any { kotlin.math.abs(it - date.toEpochDays()) < tolerance }
+        val template = lastYear.filterNot { listedNear(adjusted(it.first.dueDate.plus(DatePeriod(years = 1)))) }
+        val out = sortedMapOf<LocalDate, Proposed>()
+        for (years in 1..MAX_ROLL_OVER_YEARS) {
+            var any = false
+            for ((instalment, number, of) in template) {
+                val raw = instalment.dueDate.plus(DatePeriod(years = years))
+                if (raw > to) continue
+                any = true
+                val date = adjusted(raw)
+                if (date > latest) out.putIfAbsent(date, Proposed(instalment.amount, number, of))
+            }
+            if (!any) break
+        }
+        return out
     }
 
     /** Variable bills are expected to cost the average of their last three actual amounts (BILL-09). */
@@ -341,17 +447,37 @@ class BillService internal constructor(private val books: Books) {
     }
 
     /**
-     * BILL-06: marks a due date as paid and records the payment as a transaction in the paying
-     * account (or a transfer). When the bank statement arrives, the import links to this transaction.
-     * Pass [existingTransactionId] to link to a transaction already recorded instead.
+     * BILL-06: records a payment toward a due date as a transaction in the paying account (or a
+     * transfer). When the bank statement arrives, the import links to this transaction. Pass
+     * [existingTransactionId] to link to a transaction already recorded instead.
+     *
+     * BILL-22: [amount] is what is paid now, by default what is still due. Paying less leaves the
+     * rest due on the same due date; it is paid once its payments reach the amount due (within a
+     * cent). Paying more than is still due needs [confirmOverpay]. A due date whose amount is not
+     * known yet (a variable bill with no amount set) is paid in full by its first payment, which
+     * becomes its amount.
      */
-    fun markPaid(billId: String, dueDate: LocalDate, paidDate: LocalDate, amount: Money? = null, existingTransactionId: String? = null): Occurrence {
+    fun markPaid(
+        billId: String, dueDate: LocalDate, paidDate: LocalDate, amount: Money? = null, existingTransactionId: String? = null, confirmOverpay: Boolean = false,
+    ): Occurrence {
         val (group, bill) = locate(billId)
         books.require(group, PermissionLevel.CAPTURE_ONLY)
+        val q = books.ledger(group).ledgerQueries
         val stored = storedOccurrence(group, billId, dueDate)
         validate(stored?.status != OccurrenceStatus.PAID.name, "error.alreadyPaid")
-        val paid = amount ?: stored?.amount_minor?.let { Money.ofMinor(it, bill.amount.currency) } ?: expectedAmount(bill, books.ledger(group).ledgerQueries.occurrencesForBill(billId).executeAsList())
-        validate(paid.currency == bill.amount.currency && paid.isPositive, "error.billAmountPositive")
+        val currency = bill.amount.currency
+        val current = occurrencesOf(group, bill, dueDate, dueDate).firstOrNull { it.dueDate == dueDate }
+        val due = current?.amount ?: stored?.amount_minor?.let { Money.ofMinor(it, currency) } ?: expectedAmount(bill, q.occurrencesForBill(billId).executeAsList())
+        val before = current?.payments.orEmpty()
+        // An instalment proposed from last year's (BILL-24) is expected at last year's amount.
+        val known = current?.let { it.amountKnown || it.estimated } ?: (stored?.amount_minor != null || bill.amountKind == AmountKind.FIXED)
+        val paidBefore = before.fold(Money.zero(currency)) { a, p -> a + p.amount }
+        val paid = amount ?: if (known) due - paidBefore else due
+        validate(paid.currency == currency && paid.isPositive, "error.billAmountPositive")
+        val amountDue = if (known || before.isNotEmpty()) due else paid
+        val total = paidBefore + paid
+        val cent = Money.ofMinor(1, currency)
+        validate(confirmOverpay || total <= amountDue + cent, "error.billOverpaid", (amountDue - paidBefore).toBigDecimal().toPlainString())
         val txnId = existingTransactionId ?: when (bill.kind) {
             BillKind.TRANSFER -> books.transactions.transfer(
                 TransferDraft(bill.accountId, bill.transferAccountId!!, paidDate, paid, memo = bill.name),
@@ -373,25 +499,57 @@ class BillService internal constructor(private val books: Books) {
                 txn.id
             }
         }
-        upsert(group, billId, dueDate, paid, OccurrenceStatus.PAID, txnId, paidDate.toString())
+        q.insertBillPayment(Ids.newId(), billId, dueDate.toString(), paid.minorUnits, paidDate.toString(), txnId, books.now())
+        // Paid in full once the payments reach the amount due, within a cent.
+        val full = total + cent >= amountDue
+        upsert(
+            group, billId, dueDate, amountDue, if (full) OccurrenceStatus.PAID else OccurrenceStatus.DUE, txnId.takeIf { full }, paidDate.toString().takeIf { full },
+        )
         books.session.audit("PAID", "bill", billId, dueDate.toString())
-        return occurrencesOf(bill, books.ledger(group).ledgerQueries.occurrencesForBill(billId).executeAsList(), dueDate, dueDate).single()
+        return occurrencesOf(group, bill, dueDate, dueDate).first { it.dueDate == dueDate }
     }
 
     /**
-     * Reverses "paid"; optionally deletes the transaction that was created for it. A reconciled
+     * Undoes one payment of a due date ([paymentId], by default the latest), which is then due again
+     * for what is no longer paid; optionally deletes the transaction recorded for it. A reconciled
      * transaction is deleted only with [confirmReconciled]; otherwise [ReconciledChangeException]
      * is thrown so the user can be asked first, and nothing changes.
      */
-    fun unmarkPaid(billId: String, dueDate: LocalDate, deleteTransaction: Boolean, confirmReconciled: Boolean = false) {
-        val (group, _) = locate(billId)
+    fun unmarkPaid(billId: String, dueDate: LocalDate, deleteTransaction: Boolean, confirmReconciled: Boolean = false, paymentId: String? = null) {
+        val (group, bill) = locate(billId)
         books.require(group, PermissionLevel.EDIT)
+        val q = books.ledger(group).ledgerQueries
         val stored = storedOccurrence(group, billId, dueDate) ?: return
-        if (deleteTransaction) {
+        val currency = bill.amount.currency
+        fun deleteTransaction(id: String?) {
             // The payment may have been deleted in the register since; then there is nothing to delete.
-            stored.txn_id?.let { id -> if (runCatching { books.transactions.get(id) }.isSuccess) books.transactions.delete(id, confirmReconciled) }
+            if (deleteTransaction && id != null && runCatching { books.transactions.get(id) }.isSuccess) books.transactions.delete(id, confirmReconciled)
         }
-        upsert(group, billId, dueDate, stored.amount_minor?.let { Money.ofMinor(it, books.bills.get(billId).amount.currency) }, OccurrenceStatus.DUE, null, null)
+        val payments = q.billPayments(billId).executeAsList().filter { it.due_date == stored.due_date }
+        val payment = paymentId?.let { id -> payments.firstOrNull { it.id == id } } ?: payments.lastOrNull()
+        if (payment == null) {
+            // Paid before payments were recorded one by one.
+            deleteTransaction(stored.txn_id)
+            upsert(group, billId, dueDate, stored.amount_minor?.let { Money.ofMinor(it, currency) }, OccurrenceStatus.DUE, null, null)
+            return
+        }
+        deleteTransaction(payment.txn_id)
+        q.deleteBillPayment(payment.id)
+        val rest = payments.filter { it.id != payment.id }
+        val due = stored.amount_minor
+        val full = rest.isNotEmpty() && due != null && rest.sumOf { it.amount_minor } + 1 >= due
+        val last = rest.lastOrNull()
+        upsert(
+            group, billId, dueDate, due?.let { Money.ofMinor(it, currency) }, if (full) OccurrenceStatus.PAID else OccurrenceStatus.DUE,
+            last?.txn_id?.takeIf { full }, last?.paid_date?.takeIf { full },
+        )
+        books.session.audit("UPDATE", "bill", billId, dueDate.toString())
+    }
+
+    /** BILL-22: the payments made toward the due dates of a bill, oldest first. */
+    fun payments(billId: String): List<BillPayment> {
+        val (group, bill) = locate(billId)
+        return books.ledger(group).ledgerQueries.billPayments(billId).executeAsList().map { it.toPayment(bill.amount.currency) }
     }
 
     /** Skips one due date; an amount already entered for it is kept, in case the skip is undone. */
@@ -425,14 +583,31 @@ class BillService internal constructor(private val books: Books) {
      * its amount; when none is near, it is a due date of its own. BILL-17: a utility's readings are
      * added to the bill's meter (or [StatementDraft.meterId]) unless the meter already has a reading
      * on that date.
+     *
+     * BILL-23: a statement listing instalments puts each of them in the schedule the same way, with
+     * its amount (a proposed instalment of BILL-24 near it is replaced); the first one's date is the
+     * statement's due date, and their total its amount when none is given.
      */
     fun recordStatement(billId: String, draft: StatementDraft, statementId: String? = null): BillStatement {
         val (group, bill) = locate(billId)
         books.require(group, PermissionLevel.EDIT)
-        draft.amount?.let { validate(it.currency == bill.amount.currency && !it.isNegative, "error.billAmountPositive") }
+        val currency = bill.amount.currency
+        draft.amount?.let { validate(it.currency == currency && !it.isNegative, "error.billAmountPositive") }
+        val instalments = draft.instalments.distinctBy { it.dueDate }.sortedBy { it.dueDate }
+        instalments.forEach { validate(it.amount.currency == currency && it.amount.isPositive, "error.billAmountPositive") }
+        val dueDate = instalments.firstOrNull()?.dueDate ?: draft.dueDate
+        val amount = draft.amount ?: instalments.takeIf { it.isNotEmpty() }?.fold(Money.zero(currency)) { a, i -> a + i.amount }
         val q = books.ledger(group).ledgerQueries
         val before = statementId?.let { id -> q.billStatements(billId).executeAsList().firstOrNull { it.id == id } }
-        placeDueDate(group, bill, draft.dueDate, draft.amount, draft.documentId, before?.due_date?.let(LocalDate::parse))
+        if (instalments.isEmpty()) {
+            placeDueDate(group, bill, dueDate, amount, draft.documentId, before?.due_date?.let(LocalDate::parse))
+        } else {
+            val earlier = decodeInstalments(before?.instalments, currency)
+            instalments.forEachIndexed { i, it ->
+                val previous = earlier.getOrNull(i)?.dueDate ?: before?.due_date?.takeIf { i == 0 }?.let(LocalDate::parse)
+                placeDueDate(group, bill, it.dueDate, it.amount, draft.documentId, previous)
+            }
+        }
         val meter = draft.meterId?.let { id -> books.utilities.meters(true).firstOrNull { it.id == id } }
             ?: books.utilities.meters().firstOrNull { it.billId == billId }
         val r = draft.readings
@@ -445,9 +620,10 @@ class BillService internal constructor(private val books: Books) {
         }
         val id = statementId ?: Ids.newId()
         q.upsertBillStatement(
-            id, billId, draft.statementNumber?.trim()?.ifEmpty { null }, draft.issuedDate?.toString(), draft.dueDate.toString(), draft.amount?.minorUnits,
+            id, billId, draft.statementNumber?.trim()?.ifEmpty { null }, draft.issuedDate?.toString(), dueDate.toString(), amount?.minorUnits,
             draft.documentId ?: before?.document_id, r.previous?.toPlainString(), r.previousDate?.toString(), r.current?.toPlainString(), r.currentDate?.toString(),
             (r.used ?: r.usedOrComputed)?.toPlainString(), meter?.id, draft.notes?.trim()?.ifEmpty { null }, before?.created_at ?: books.now(),
+            encodeInstalments(instalments),
         )
         draft.documentId?.let { books.ledger(group).ledgerQueries.linkDocument(it, DocumentEntity.BILL, billId) }
         books.session.audit(if (before == null) "CREATE" else "UPDATE", "billStatement", id)
@@ -479,7 +655,7 @@ class BillService internal constructor(private val books: Books) {
         // Within the bill match window, and less than half a period away, so another period's due date never moves.
         val period = bill.recurrence.perYear.takeIf { it > 0 }?.let { (365.0 / it / 2).toInt() } ?: Int.MAX_VALUE
         val window = minOf(LeadTimes.billMatch(due), period)
-        val near = occurrencesOf(bill, stored, due.minus(DatePeriod(days = window)), due.plus(DatePeriod(days = window)))
+        val near = occurrencesOf(group, bill, due.minus(DatePeriod(days = window)), due.plus(DatePeriod(days = window)))
         val nearest = previous?.let { p -> near.firstOrNull { it.dueDate == p && it.status == OccurrenceStatus.DUE } }
             ?: near.filter { it.status != OccurrenceStatus.SKIPPED }.minByOrNull { kotlin.math.abs(it.dueDate.toEpochDays() - due.toEpochDays()) }
         // The nearest due date was already paid: the statement belongs to it, and nothing more is due.
@@ -489,10 +665,19 @@ class BillService internal constructor(private val books: Books) {
             return
         }
         val row = stored.firstOrNull { it.due_date == moving.dueDate.toString() }
-        if (row != null) q.deleteOccurrence(bill.id, row.due_date)
+        if (row != null) {
+            q.deleteOccurrence(bill.id, row.due_date)
+            // BILL-22: payments already made toward it move with it.
+            q.moveBillPayments(due.toString(), bill.id, row.due_date)
+        }
         val kept = amount ?: row?.amount_minor?.let { Money.ofMinor(it, bill.amount.currency) }
-        // A one-off due date (no schedule behind it) moves without leaving a scheduled date behind.
-        val scheduled = row?.scheduled_date ?: moving.dueDate.toString().takeIf { row == null || bill.recurrence.occurrences(bill.startDate, moving.dueDate, moving.dueDate, bill.endDate).isNotEmpty() }
+        // A one-off due date (no schedule behind it), or an instalment proposed from last year's,
+        // moves without leaving a scheduled date behind.
+        val scheduled = if (moving.estimated) {
+            null
+        } else {
+            row?.scheduled_date ?: moving.dueDate.toString().takeIf { row == null || bill.recurrence.occurrences(bill.startDate, moving.dueDate, moving.dueDate, bill.endDate).isNotEmpty() }
+        }
         upsert(group, bill.id, due, kept, OccurrenceStatus.DUE, null, null, documentId ?: row?.document_id, scheduled)
     }
 
@@ -505,14 +690,17 @@ class BillService internal constructor(private val books: Books) {
         books.transactions.setSalesTaxes(txn.id, taxes)
     }
 
-    private fun ca.schippers.hfm.data.ledger.Bill_statement.toStatement(currency: Currency) = BillStatement(
+    private fun StatementRow.toStatement(currency: Currency) = BillStatement(
         id, bill_id, statement_number, issued_date?.let(LocalDate::parse), LocalDate.parse(due_date), amount_minor?.let { Money.ofMinor(it, currency) }, document_id,
         MeterReadings(
             previous_reading?.toBigDecimalOrNull(), previous_reading_date?.let(LocalDate::parse), current_reading?.toBigDecimalOrNull(),
             current_reading_date?.let(LocalDate::parse), used?.toBigDecimalOrNull(),
         ),
-        meter_id, notes,
+        meter_id, notes, decodeInstalments(instalments, currency),
     )
+
+    private fun PaymentRow.toPayment(currency: Currency) =
+        BillPayment(id, bill_id, LocalDate.parse(due_date), Money.ofMinor(amount_minor, currency), LocalDate.parse(paid_date), txn_id)
 
     // --- Reminders, history, subscriptions --------------------------------------------------------
 
@@ -598,7 +786,7 @@ class BillService internal constructor(private val books: Books) {
                 val incoming = o.bill.kind == BillKind.TRANSFER && o.bill.transferAccountId == account.id
                 // A transfer into an account in another currency arrives in an amount not known yet.
                 if (incoming && o.amount.currency != account.currency) continue
-                val change = if (incoming) o.amount else o.signedAmount
+                val change = if (incoming) o.shownAmount else o.signedAmount
                 balance += change
                 val point = ForecastPoint(date, balance, o)
                 points += point
@@ -677,3 +865,17 @@ class BillService internal constructor(private val books: Books) {
         bill_type?.let { runCatching { BillType.valueOf(it) }.getOrNull() }, bill_category, bill_subcategory, member_id,
     )
 }
+
+/** BILL-24: how many years ahead instalments are proposed at most. */
+private const val MAX_ROLL_OVER_YEARS = 50
+
+/** BILL-23: instalments as stored with a statement: "2027-02-19=119000;2027-04-16=119000" (amounts in minor units). */
+internal fun encodeInstalments(list: List<BillInstalment>): String? =
+    list.sortedBy { it.dueDate }.joinToString(";") { "${it.dueDate}=${it.amount.minorUnits}" }.ifEmpty { null }
+
+internal fun decodeInstalments(text: String?, currency: Currency): List<BillInstalment> =
+    text?.split(';')?.mapNotNull { part ->
+        val date = runCatching { LocalDate.parse(part.substringBefore('=').trim()) }.getOrNull()
+        val minor = part.substringAfter('=', "").trim().toLongOrNull()
+        if (date == null || minor == null) null else BillInstalment(date, Money.ofMinor(minor, currency))
+    }?.sortedBy { it.dueDate }.orEmpty()

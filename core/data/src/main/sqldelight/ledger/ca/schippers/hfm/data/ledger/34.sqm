@@ -1,0 +1,24 @@
+-- Version 34 to 35. Only additions: a new column, a new table and its rows.
+
+-- BILL-23 (version 35): the instalments a statement lists, each a due date of the bill with its
+-- amount, as "2027-02-19=119000;2027-04-16=119000" (date = amount in minor units), in date order.
+ALTER TABLE bill_statement ADD COLUMN instalments TEXT;
+
+-- BILL-22 (version 35): each payment made toward one due date of a bill (bill_id, due_date), with
+-- the transaction recorded for it. A due date is paid when its payments reach its amount.
+CREATE TABLE bill_payment (
+    id TEXT NOT NULL PRIMARY KEY,
+    bill_id TEXT NOT NULL REFERENCES bill(id) ON DELETE CASCADE,
+    due_date TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    paid_date TEXT NOT NULL,
+    txn_id TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX bill_payment_bill ON bill_payment(bill_id, due_date);
+
+-- The due dates already paid become one payment each.
+INSERT INTO bill_payment(id, bill_id, due_date, amount_minor, paid_date, txn_id, created_at)
+SELECT 'p-' || id, bill_id, due_date, amount_minor, coalesce(paid_date, due_date), txn_id, 0
+FROM bill_occurrence WHERE status = 'PAID' AND amount_minor IS NOT NULL;

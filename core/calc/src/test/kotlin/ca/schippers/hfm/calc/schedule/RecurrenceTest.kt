@@ -118,4 +118,13 @@ class RecurrenceTest {
         assertEquals(4.0, Recurrence.QUARTERLY.perYear)
         assertEquals(26.0, Recurrence.BI_WEEKLY.perYear, 0.1)
     }
+
+    @Test
+    fun `instalments on set dates have no dates of their own (BILL-23)`() {
+        val rule = Recurrence.INSTALMENTS
+        assertEquals(emptyList(), rule.occurrences(d(2026, 1, 1), d(2026, 1, 1), d(2027, 12, 31)))
+        assertEquals(null, rule.next(d(2026, 1, 1), d(2026, 6, 1)))
+        assertEquals(0.0, rule.perYear)
+        assertEquals(rule, Recurrence.decode(rule.encode()))
+    }
 }

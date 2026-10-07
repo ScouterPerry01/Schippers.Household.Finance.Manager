@@ -1,5 +1,5 @@
 {
-  "$id": "hfm/bill/v2",
+  "$id": "hfm/bill/v3",
   "title": "bill",
   "type": "object",
   "properties": {
@@ -135,6 +135,27 @@
         }
       },
       "additionalProperties": false
+    },
+    "instalments": {
+      "type": "array",
+      "description": "Bills paid in instalments on set dates only (property taxes): each instalment, in date order",
+      "items": {
+        "type": "object",
+        "properties": {
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "amount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "due_date",
+          "amount"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "required": [
