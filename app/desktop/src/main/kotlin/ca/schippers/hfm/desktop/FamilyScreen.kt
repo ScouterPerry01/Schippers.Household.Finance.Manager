@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Allowance
 import ca.schippers.hfm.books.AllowanceFrequency
@@ -136,7 +137,12 @@ private fun SharedTab(model: BooksModel) {
                     }
                 }
             }
-            HorizontalDivider()
+            if (g.entries.isNotEmpty()) HeadingRow {
+                ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+                ColumnHeading(model.t("column.description"), Modifier.weight(1f))
+                ColumnHeading(model.t("register.amount"), Modifier.width(120.dp), TextAlign.End)
+                ColumnHeading(model.t("table.actions"), Modifier.width(ICON_ACTIONS_WIDTH), TextAlign.Center)
+            } else HorizontalDivider()
             for (e in g.entries.reversed()) {
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(e.date), Modifier.width(100.dp))
@@ -148,8 +154,8 @@ private fun SharedTab(model: BooksModel) {
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
-                    MoneyText(model, e.amount)
-                    RemoveButton(model.t("common.delete")) { deleting = e }
+                    MoneyText(model, e.amount, modifier = Modifier.width(120.dp), textAlign = TextAlign.End)
+                    RemoveButton(model.t("common.delete"), Modifier.width(ICON_ACTIONS_WIDTH)) { deleting = e }
                 }
             }
         }
@@ -246,6 +252,10 @@ private fun LoansTab(model: BooksModel) {
     Button(onClick = { editing = FamilyLoan("", model.editableGroup(), "", "", Money.zero(books.reports.base), today(), 0, null, false, emptyList()) }) { Text(model.t("loan.add")) }
     Text(model.t("loan.hint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
     if (loans.isEmpty()) Text(model.t("loan.none"))
+    else HeadingRow {
+        ColumnHeading(model.t("column.loan"), Modifier.weight(1f))
+        ColumnHeading(model.t("account.balance"), align = TextAlign.End)
+    }
     Column(Modifier.verticalScroll(rememberScrollState())) {
         for (l in loans) {
             val s = books.familyLoans.status(l, today())
@@ -329,11 +339,16 @@ private fun LoanPaymentsDialog(model: BooksModel, loan: FamilyLoan, onEdit: () -
         if (ok != null) onClose()
     }) {
         Text(model.t("loan.status", model.money(s.balance), model.money(s.interest), model.money(s.repaid)), fontWeight = FontWeight.Medium)
+        if (loan.payments.isNotEmpty()) HeadingRow {
+            ColumnHeading(model.t("register.date"), Modifier.width(110.dp))
+            ColumnHeading(model.t("loan.payment"), Modifier.weight(1f))
+            ColumnHeading(model.t("table.actions"), Modifier.width(ICON_ACTIONS_WIDTH), TextAlign.Center)
+        }
         for (p in loan.payments.reversed()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(p.date), Modifier.width(110.dp))
                 MoneyText(model, p.amount, modifier = Modifier.weight(1f))
-                RemoveButton(model.t("common.delete")) { deleting = p }
+                RemoveButton(model.t("common.delete"), Modifier.width(ICON_ACTIONS_WIDTH)) { deleting = p }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -454,12 +469,18 @@ private fun AllowanceEntriesDialog(model: BooksModel, a: Allowance, onEdit: () -
         if (ok != null) onClose()
     }) {
         Text(model.t("allowance.summary", model.money(s.due), model.money(s.owed), model.money(s.balance)), fontWeight = FontWeight.Medium)
+        if (a.entries.isNotEmpty()) HeadingRow {
+            ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+            ColumnHeading(model.t("allowance.kind"), Modifier.weight(1f))
+            ColumnHeading(model.t("register.amount"), Modifier.width(110.dp), TextAlign.End)
+            ColumnHeading(model.t("table.actions"), Modifier.width(ICON_ACTIONS_WIDTH), TextAlign.Center)
+        }
         for (e in a.entries.reversed().take(30)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(e.date), Modifier.width(100.dp))
                 Text(model.t("allowanceKind.${e.kind}") + (e.notes?.let { " · $it" } ?: ""), Modifier.weight(1f))
-                MoneyText(model, if (e.kind == AllowanceKind.SPENT) -e.amount else e.amount)
-                RemoveButton(model.t("common.delete")) { deleting = e }
+                MoneyText(model, if (e.kind == AllowanceKind.SPENT) -e.amount else e.amount, modifier = Modifier.width(110.dp), textAlign = TextAlign.End)
+                RemoveButton(model.t("common.delete"), Modifier.width(ICON_ACTIONS_WIDTH)) { deleting = e }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.ChecklistItem
@@ -83,6 +84,12 @@ internal fun SeasonalTab(model: BooksModel) {
         }
         Text(model.t("seasonal.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(vertical = 4.dp))
         val groups = list.items.groupBy { it.subjectId }
+        if (list.items.isNotEmpty()) HeadingRow {
+            ColumnHeading("✓", Modifier.width(48.dp), TextAlign.Center, spoken = model.t("column.done"))
+            ColumnHeading(model.t("vehicles.taskName"), Modifier.weight(1f))
+            ColumnHeading(model.t("column.when"), Modifier.width(280.dp))
+            ColumnHeading(model.t("goals.status"), Modifier.width(120.dp))
+        }
         LazyColumn {
             if (list.items.isEmpty()) item { Text(model.t("seasonal.none"), Modifier.padding(8.dp)) }
             for ((_, items) in groups) {
@@ -105,7 +112,7 @@ private fun ChecklistRow(model: BooksModel, item: ChecklistItem, current: Boolea
     val done = item.state == ChecklistState.DONE
     Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
         // A season still to come can be ticked early too: the task is then done ahead of time.
-        Checkbox(checked = done, onCheckedChange = { if (!done) onTick() }, enabled = !done && mayTick)
+        Checkbox(checked = done, onCheckedChange = { if (!done) onTick() }, Modifier.width(48.dp), enabled = !done && mayTick)
         Text(item.taskName, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = if (done) FontWeight.Normal else FontWeight.Medium)
         Text(model.checklistWhen(item), Modifier.width(280.dp))
         val color = when (item.state) {

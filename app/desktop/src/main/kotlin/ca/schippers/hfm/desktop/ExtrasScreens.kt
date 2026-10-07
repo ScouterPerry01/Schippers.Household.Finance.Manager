@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Account
 import ca.schippers.hfm.books.AssetKind
@@ -154,6 +155,12 @@ fun TripsScreen(model: BooksModel) {
             }
         }
         if (trips.isEmpty()) Text(model.t("trips.none"))
+        else HeadingRow {
+            ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+            ColumnHeading(model.t("column.trip"), Modifier.weight(1f))
+            ColumnHeading(model.t("forecast.distance"), Modifier.width(110.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(TRIP_ACTIONS_WIDTH))
+        }
         for (t in trips) {
             Row(Modifier.fillMaxWidth().clickable(enabled = access.mayEdit(t.groupId)) { editing = t }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(t.date), Modifier.width(100.dp))
@@ -178,12 +185,14 @@ fun TripsScreen(model: BooksModel) {
                     if (more.isNotEmpty()) Text(more.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     TripDetails(model, t, attached[t.id], ::km)
                 }
-                if (t.id in inMedical) {
-                    TextButton(onClick = {}, enabled = false) { Text(model.t("trips.addedToMedical")) }
-                } else if (books.trips.qualifiesForMedical(t)) {
-                    TextButton(onClick = { toMedical = t }, enabled = access.canCreate) { Text(model.t("trips.toMedical")) }
-                }
                 Text(km(t.km), Modifier.width(110.dp))
+                Box(Modifier.width(TRIP_ACTIONS_WIDTH)) {
+                    if (t.id in inMedical) {
+                        TextButton(onClick = {}, enabled = false) { Text(model.t("trips.addedToMedical")) }
+                    } else if (books.trips.qualifiesForMedical(t)) {
+                        TextButton(onClick = { toMedical = t }, enabled = access.canCreate) { Text(model.t("trips.toMedical")) }
+                    }
+                }
             }
             HorizontalDivider()
         }
@@ -193,6 +202,9 @@ fun TripsScreen(model: BooksModel) {
     if (showPlaces) PlacesDialog(model) { showPlaces = false }
     if (showLogbook) LogbookDialog(model, year) { showLogbook = false }
 }
+
+/** Wide enough for "Add to medical expenses" in both languages. */
+private val TRIP_ACTIONS_WIDTH = 240.dp
 
 /** "08:05 to 08:31 (26 min)": a trip's times, when it has them; with breaks, the time driven too (TRP-15). */
 private fun tripTimes(model: BooksModel, t: Trip): String? {
@@ -462,6 +474,12 @@ internal fun ContractorsTab(model: BooksModel) {
         LabeledCheckbox(model.t("contractor.showArchived"), showArchived) { showArchived = it }
     }
     if (list.isEmpty()) Text(model.t("contractor.none"), Modifier.padding(vertical = 8.dp))
+    else HeadingRow {
+        ColumnHeading(model.t("contractor.name"), Modifier.weight(1f))
+        ColumnHeading(model.t("contractor.rating"), Modifier.width(70.dp))
+        ColumnHeading(model.t("column.jobs"), Modifier.width(110.dp))
+        ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+    }
     Column(Modifier.verticalScroll(rememberScrollState())) {
         for (c in list) {
             Row(Modifier.fillMaxWidth().clickable { jobsOf = c.id }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -471,7 +489,7 @@ internal fun ContractorsTab(model: BooksModel) {
                 }
                 Text(c.rating?.let { "★ ${it.toPlainString()}" } ?: "", Modifier.width(70.dp))
                 Text(model.t("contractor.jobs", c.jobs.size), Modifier.width(110.dp))
-                TextButton(onClick = { editing = c }) { Text(model.t("contractor.edit")) }
+                TextButton(onClick = { editing = c }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("contractor.edit")) }
             }
             HorizontalDivider()
         }
@@ -525,12 +543,18 @@ private fun ContractorJobsDialog(model: BooksModel, c: Contractor, onClose: () -
         }
         if (ok != null) onClose()
     }) {
+        if (c.jobs.isNotEmpty()) HeadingRow {
+            ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+            ColumnHeading(model.t("contractor.job"), Modifier.weight(1f))
+            ColumnHeading(model.t("contractor.cost"), Modifier.width(110.dp), TextAlign.End)
+            ColumnHeading(model.t("table.actions"), Modifier.width(ICON_ACTIONS_WIDTH), TextAlign.Center)
+        }
         for (j in c.jobs) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(j.date), Modifier.width(100.dp))
                 Text(j.description + (j.rating?.let { " · " + "★".repeat(it) } ?: ""), Modifier.weight(1f))
-                j.cost?.let { MoneyText(model, it) }
-                RemoveButton(model.t("common.delete")) { deleting = j }
+                Box(Modifier.width(110.dp), contentAlignment = Alignment.CenterEnd) { j.cost?.let { MoneyText(model, it) } }
+                RemoveButton(model.t("common.delete"), Modifier.width(ICON_ACTIONS_WIDTH)) { deleting = j }
             }
             Column(Modifier.padding(start = 100.dp, bottom = 6.dp)) {
                 LinkedContacts(
@@ -579,6 +603,11 @@ internal fun ProjectsTab(model: BooksModel) {
             )
         }
         if (projects.isEmpty()) Text(model.t("project.none"))
+        else HeadingRow {
+            ColumnHeading(model.t("project.name"), Modifier.weight(1f))
+            ColumnHeading(model.t("budget.spent"), Modifier.width(120.dp), TextAlign.End)
+            ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+        }
         for (p in projects) {
             Row(Modifier.fillMaxWidth().clickable { costsOf = p.id }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -595,8 +624,8 @@ internal fun ProjectsTab(model: BooksModel) {
                 }
                 val budget = p.budget
                 val over = budget != null && p.spent.minorUnits > budget.minorUnits
-                Text(model.money(p.spent), color = if (over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
-                TextButton(onClick = { editing = p }) { Text(model.t("project.edit")) }
+                Text(model.money(p.spent), Modifier.width(120.dp), color = if (over) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.End)
+                TextButton(onClick = { editing = p }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("project.edit")) }
             }
             HorizontalDivider()
         }
@@ -665,12 +694,18 @@ private fun ProjectCostsDialog(model: BooksModel, p: HomeProject, onClose: () ->
     }) {
         Column(Modifier.heightIn(max = 600.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(model.t("project.spent", model.money(p.spent), p.budget?.let(model::money) ?: "—"), fontWeight = FontWeight.Medium)
+            if (p.costs.isNotEmpty()) HeadingRow {
+                ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+                ColumnHeading(model.t("column.description"), Modifier.weight(1f))
+                ColumnHeading(model.t("register.amount"), Modifier.width(110.dp), TextAlign.End)
+                ColumnHeading(model.t("table.actions"), Modifier.width(ICON_ACTIONS_WIDTH), TextAlign.Center)
+            }
             for (c in p.costs) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(c.date), Modifier.width(100.dp))
                     Text(c.description + (contractors.firstOrNull { it.id == c.contractorId }?.let { " · ${it.name}" } ?: ""), Modifier.weight(1f))
-                    MoneyText(model, c.amount)
-                    RemoveButton(model.t("common.delete")) { deleting = c }
+                    MoneyText(model, c.amount, modifier = Modifier.width(110.dp), textAlign = TextAlign.End)
+                    RemoveButton(model.t("common.delete"), Modifier.width(ICON_ACTIONS_WIDTH)) { deleting = c }
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -729,7 +764,14 @@ private fun InvoicesTab(model: BooksModel) {
         if (outstanding.isNotEmpty()) Text(model.t("invoice.outstanding", outstanding.size, waiting.joinToString(" + ") { model.money(it) }))
     }
     if (invoices.isEmpty()) Text(model.t("invoice.none"), Modifier.padding(vertical = 8.dp))
-    Column(Modifier.verticalScroll(rememberScrollState()).padding(top = 8.dp)) {
+    else HeadingRow(Modifier.padding(top = 8.dp)) {
+        ColumnHeading(model.t("invoice.number"), Modifier.width(100.dp))
+        ColumnHeading(model.t("invoice.customer"), Modifier.weight(1f))
+        ColumnHeading(model.t("invoice.status"), Modifier.width(110.dp))
+        ColumnHeading(model.t("documents.total"), Modifier.width(120.dp))
+        ColumnHeading(model.t("table.actions"), Modifier.width(INVOICE_ACTIONS_WIDTH))
+    }
+    Column(Modifier.verticalScroll(rememberScrollState())) {
         for (i in invoices) {
             Row(Modifier.fillMaxWidth().clickable { editing = i }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(i.number, Modifier.width(100.dp), fontWeight = FontWeight.Medium)
@@ -746,8 +788,8 @@ private fun InvoicesTab(model: BooksModel) {
                     color = if (i.overdue(today())) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                 )
                 MoneyText(model, i.total, modifier = Modifier.width(120.dp))
-                TextButton(onClick = { model.act { saveInvoicePdf(model, i) } }) { Text(model.t("invoice.pdf")) }
-                Box(Modifier.width(140.dp)) {
+                Row(Modifier.width(INVOICE_ACTIONS_WIDTH), verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = { model.act { saveInvoicePdf(model, i) } }) { Text(model.t("invoice.pdf")) }
                     if (i.status == InvoiceStatus.SENT || i.status == InvoiceStatus.DRAFT) TextButton(onClick = { paying = i }) { Text(model.t("invoice.markPaid")) }
                 }
             }
@@ -757,6 +799,9 @@ private fun InvoicesTab(model: BooksModel) {
     editing?.let { i -> InvoiceDialog(model, i) { editing = null } }
     paying?.let { i -> InvoicePaidDialog(model, i) { paying = null } }
 }
+
+/** The PDF button and the 140 dp the Mark paid button had. */
+private val INVOICE_ACTIONS_WIDTH = 220.dp
 
 private data class LineRow(val description: String, val quantity: String, val price: String)
 
@@ -1022,12 +1067,18 @@ fun RewardsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
                 ).joinToString(" · "),
                 fontWeight = FontWeight.Medium,
             )
+            if (entries.isNotEmpty()) HeadingRow {
+                ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+                ColumnHeading(model.t("allowance.kind"), Modifier.weight(1f))
+                ColumnHeading(model.t("rewards.units"), Modifier.width(100.dp), TextAlign.End)
+                ColumnHeading(model.t("table.actions"), Modifier.width(ICON_ACTIONS_WIDTH), TextAlign.Center)
+            }
             for (e in entries.take(12)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(e.date), Modifier.width(100.dp))
                     Text(model.t("rewardKind.${e.kind}") + (e.value?.let { " · ${model.money(it)}" } ?: "") + (e.notes?.let { " · $it" } ?: ""), Modifier.weight(1f))
-                    Text(n(if (e.kind == RewardKind.REDEEMED) -e.units else e.units))
-                    RemoveButton(model.t("common.delete")) { deleting = e }
+                    Text(n(if (e.kind == RewardKind.REDEEMED) -e.units else e.units), Modifier.width(100.dp), textAlign = TextAlign.End)
+                    RemoveButton(model.t("common.delete"), Modifier.width(ICON_ACTIONS_WIDTH)) { deleting = e }
                 }
             }
         }

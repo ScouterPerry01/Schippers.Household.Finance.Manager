@@ -71,6 +71,11 @@ fun AccountsScreen(model: BooksModel) {
             LabeledCheckbox(model.t("accounts.showClosed"), showClosed) { showClosed = it }
             // OTH-05: bring a Quicken history across.
             TextButton(onClick = { chooseQif(model)?.let { quicken = it } }) { Text(model.t("quicken.import")) }
+            // NAV-04: the two columns of the list.
+            HeadingRow(Modifier.padding(horizontal = 8.dp)) {
+                ColumnHeading(model.t("templates.account"), Modifier.weight(1f))
+                ColumnHeading(model.t("account.balance"), align = TextAlign.End)
+            }
             LazyColumn(Modifier.weight(1f)) {
                 if (summaries.isEmpty()) item { Text(model.t("accounts.none"), Modifier.padding(8.dp)) }
                 for ((kind, list) in shown.groupBy { it.account.type.kind }.toSortedMap()) {

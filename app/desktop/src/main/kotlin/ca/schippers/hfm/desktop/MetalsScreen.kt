@@ -26,6 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -77,7 +79,7 @@ fun MetalsView(model: BooksModel, account: Account) {
     Button(onClick = { adding = true }) { Text(model.t("metals.add")) }
     Row(Modifier.fillMaxWidth().padding(top = 12.dp)) {
         listOf("metals.item" to 2f, "metals.fine" to 1f, "investments.marketValue" to 1f, "investments.bookCost" to 1f, "investments.gain" to 1f).forEachIndexed { i, (key, w) ->
-            Text(model.t(key), Modifier.weight(w), fontWeight = FontWeight.Bold, textAlign = if (i == 0) TextAlign.Start else TextAlign.End, style = MaterialTheme.typography.bodySmall)
+            Text(model.t(key), Modifier.weight(w).semantics { heading() }, fontWeight = FontWeight.Bold, textAlign = if (i == 0) TextAlign.Start else TextAlign.End, style = MaterialTheme.typography.bodySmall)
         }
     }
     HorizontalDivider()
@@ -102,6 +104,13 @@ fun MetalsView(model: BooksModel, account: Account) {
         }
         if (sold.isNotEmpty()) {
             item { Text(model.t("metals.sold"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp)) }
+            item {
+                HeadingRow {
+                    ColumnHeading(model.t("metals.item"), Modifier.weight(2f))
+                    ColumnHeading(model.t("metals.soldOn"), Modifier.weight(1f))
+                    ColumnHeading(model.t("column.proceeds"), Modifier.weight(1f), TextAlign.End)
+                }
+            }
             items(sold, key = { "s" + it.id }) { i ->
                 Row(Modifier.fillMaxWidth().clickable { editing = i }.padding(vertical = 4.dp)) {
                     Text("${i.quantity} × ${i.description}", Modifier.weight(2f), style = MaterialTheme.typography.bodySmall)

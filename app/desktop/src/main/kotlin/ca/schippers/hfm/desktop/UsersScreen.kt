@@ -116,11 +116,10 @@ private fun AccessMatrix(model: BooksModel) {
     val access = remember(model.revision) { books.users.access() }
     Column(Modifier.verticalScroll(rememberScrollState()).horizontalScroll(rememberScrollState())) {
         Text(model.t("users.accessExplain"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.width(900.dp).padding(bottom = 8.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(model.t("users.group"), Modifier.width(240.dp), fontWeight = FontWeight.Medium)
-            for (u in users) Text(u.displayName, Modifier.width(190.dp), fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        HeadingRow(Modifier.width(240.dp + 190.dp * users.size)) {
+            ColumnHeading(model.t("users.group"), Modifier.width(240.dp))
+            for (u in users) ColumnHeading(u.displayName, Modifier.width(190.dp))
         }
-        HorizontalDivider()
         for (a in access) {
             Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.width(240.dp)) {
@@ -161,6 +160,12 @@ private fun Activity(model: BooksModel) {
             Picker(model.t("users.who"), listOf(null) + users, who, { it?.displayName ?: model.t("users.everyone") }, Modifier.width(320.dp)) { who = it }
         } else {
             Text(model.t("users.ownActivity"), style = MaterialTheme.typography.bodySmall)
+        }
+        if (entries.isNotEmpty()) HeadingRow(Modifier.padding(top = 8.dp)) {
+            ColumnHeading(model.t("column.when"), Modifier.width(150.dp))
+            ColumnHeading(model.t("users.who"), Modifier.width(160.dp))
+            ColumnHeading(model.t("column.action"), Modifier.weight(1f))
+            ColumnHeading(model.t("column.where"), Modifier.width(200.dp))
         }
         LazyColumn(Modifier.padding(top = 8.dp)) {
             if (entries.isEmpty()) item { Text(model.t("users.noActivity")) }

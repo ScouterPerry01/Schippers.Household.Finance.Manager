@@ -83,6 +83,13 @@ fun SearchResultsDialog(model: BooksModel) {
                 if (results.isEmpty) Text(model.t("search.none"))
                 if (results.transactions.isNotEmpty()) {
                     Group(model.t("search.transactions", results.transactions.size))
+                    HeadingRow {
+                        ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+                        ColumnHeading(model.t("templates.account"), Modifier.width(160.dp))
+                        ColumnHeading(model.t("register.payee"), Modifier.weight(1f))
+                        ColumnHeading(model.t("register.memo"), Modifier.weight(1f))
+                        ColumnHeading(model.t("register.amount"), Modifier.width(120.dp), TextAlign.End)
+                    }
                     for (hit in results.transactions) {
                         Row(
                             Modifier.fillMaxWidth().clickable {

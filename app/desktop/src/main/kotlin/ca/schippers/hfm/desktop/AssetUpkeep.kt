@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Asset
 import ca.schippers.hfm.books.AssetKind
@@ -85,6 +86,11 @@ internal fun UpkeepTab(model: BooksModel, onOpen: (Asset) -> Unit) {
                 if (a == ahead) Button(onClick = {}) { Text(label) } else OutlinedButton(onClick = { ahead = a }) { Text(label) }
             }
         }
+        if (items.isNotEmpty()) HeadingRow(Modifier.padding(top = 8.dp)) {
+            ColumnHeading(model.t("vehicles.taskName"), Modifier.weight(1f))
+            ColumnHeading(model.t("maintenanceReport.due"), Modifier.width(320.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+        }
         LazyColumn(Modifier.padding(top = 8.dp)) {
             if (items.isEmpty()) item { Text(model.t("upkeep.noneDue"), Modifier.padding(8.dp)) }
             items(items, key = { it.taskId }) { u -> UpkeepRow(model, u, onOpen) }
@@ -107,7 +113,7 @@ private fun UpkeepRow(model: BooksModel, u: UpkeepDue, onOpen: (Asset) -> Unit) 
         }
         TextButton(onClick = {
             if (u.vehicle) model.section = Section.VEHICLES else model.act { model.books.assets.get(u.subjectId) }?.let(onOpen)
-        }) { Text(model.t("upkeep.open")) }
+        }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("upkeep.open")) }
     }
     HorizontalDivider()
 }
@@ -143,6 +149,11 @@ internal fun AssetUpkeepBlock(model: BooksModel, a: Asset) {
     }
     if (statuses.isEmpty() && paused.isEmpty()) Text(model.t("upkeep.noTasks"), style = MaterialTheme.typography.bodySmall)
     val serviced = services.flatMap { it.taskIds }.toSet()
+    if (statuses.isNotEmpty()) HeadingRow {
+        ColumnHeading(model.t("vehicles.taskName"), Modifier.weight(1f))
+        ColumnHeading(model.t("maintenanceReport.due"), Modifier.width(250.dp))
+        ColumnHeading(model.t("table.actions"), Modifier.width(UPKEEP_ACTIONS_WIDTH))
+    }
     for (s in statuses) TaskLine(model, a, s, usage, s.task.id in serviced) { edit = it }
     for (t in paused) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -157,6 +168,12 @@ internal fun AssetUpkeepBlock(model: BooksModel, a: Asset) {
         OutlinedButton(onClick = { edit = UpkeepEdit.Service(AssetServiceRecord("", a.id, today, usage)) }) { Text(model.t("upkeep.addService")) }
     }
     if (services.isEmpty()) Text(model.t("upkeep.noServices"), style = MaterialTheme.typography.bodySmall)
+    else HeadingRow {
+        ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+        ColumnHeading(model.t("vehicles.service"), Modifier.weight(1f))
+        ColumnHeading(model.t("vehicles.cost"), Modifier.width(100.dp))
+        ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+    }
     for (s in services) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(model.date(s.date), Modifier.width(100.dp))
@@ -168,7 +185,7 @@ internal fun AssetUpkeepBlock(model: BooksModel, a: Asset) {
                 )
             }
             Text(s.cost?.let(model::money).orEmpty(), Modifier.width(100.dp))
-            TextButton(onClick = { edit = UpkeepEdit.Service(s) }) { Text(model.t("common.edit")) }
+            TextButton(onClick = { edit = UpkeepEdit.Service(s) }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.edit")) }
         }
     }
 
@@ -217,10 +234,15 @@ private fun TaskLine(model: BooksModel, a: Asset, s: AssetTaskStatus, usage: Int
             Text(model.t("taskState.${d.state}") + if (due.isNotEmpty()) " · $due" else "", color = stateColor(d.state), fontWeight = if (d.state == DueState.OK) FontWeight.Normal else FontWeight.Bold)
             d.forecastDate?.takeIf { d.dueUsage != null }?.let { Text(model.t("upkeep.forecast", model.date(it)), style = MaterialTheme.typography.bodySmall) }
         }
-        TextButton(onClick = { onEdit(UpkeepEdit.Service(AssetServiceRecord("", a.id, today(), usage, taskIds = setOf(t.id)))) }) { Text(model.t("vehicles.markDone")) }
-        TextButton(onClick = { onEdit(UpkeepEdit.Task(t)) }) { Text(model.t("common.edit")) }
+        Row(Modifier.width(UPKEEP_ACTIONS_WIDTH), verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = { onEdit(UpkeepEdit.Service(AssetServiceRecord("", a.id, today(), usage, taskIds = setOf(t.id)))) }) { Text(model.t("vehicles.markDone")) }
+            TextButton(onClick = { onEdit(UpkeepEdit.Task(t)) }) { Text(model.t("common.edit")) }
+        }
     }
 }
+
+/** Mark done and Edit as text buttons, in both languages. */
+private val UPKEEP_ACTIONS_WIDTH = 250.dp
 
 @Composable
 private fun ReadingDialog(model: BooksModel, a: Asset, onClose: () -> Unit) {

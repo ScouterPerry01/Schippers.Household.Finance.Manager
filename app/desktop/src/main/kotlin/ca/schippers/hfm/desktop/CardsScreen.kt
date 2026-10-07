@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Account
@@ -61,11 +62,17 @@ internal fun CardsDialog(model: BooksModel, account: Account, onClose: () -> Uni
         Column(Modifier.width(760.dp).heightIn(max = 600.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(model.t("cards.holders"), style = MaterialTheme.typography.titleSmall)
             Text(model.t("cards.holdersHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            if (holders.isNotEmpty()) HeadingRow {
+                ColumnHeading(model.t("cards.card"), Modifier.weight(1f))
+                ColumnHeading(model.t("table.actions"), Modifier.width(EDIT_DELETE_WIDTH))
+            }
             for (h in holders) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(cardLabel(h) + if (h.isPrimary) " · " + model.t("cards.main") else " · " + model.t("cards.supplementary"), Modifier.weight(1f))
-                    TextButton(onClick = { holder = h }) { Text(model.t("common.edit")) }
-                    TextButton(onClick = { model.act { books.creditCards.deleteHolder(account.id, h.id) } }) { Text(model.t("common.delete")) }
+                    Row(Modifier.width(EDIT_DELETE_WIDTH)) {
+                        TextButton(onClick = { holder = h }) { Text(model.t("common.edit")) }
+                        TextButton(onClick = { model.act { books.creditCards.deleteHolder(account.id, h.id) } }) { Text(model.t("common.delete")) }
+                    }
                 }
             }
             OutlinedButton(onClick = { holder = CardHolder("", account.id, "") }) { Text(model.t("cards.addHolder")) }
@@ -73,6 +80,10 @@ internal fun CardsDialog(model: BooksModel, account: Account, onClose: () -> Uni
             if (spending.isNotEmpty() && holders.size > 1) {
                 HorizontalDivider(Modifier.padding(vertical = 6.dp))
                 Text(model.t("cards.spending", today.year.toString()), style = MaterialTheme.typography.titleSmall)
+                HeadingRow {
+                    ColumnHeading(model.t("cards.card"), Modifier.weight(1f))
+                    ColumnHeading(model.t("budget.spent"), align = TextAlign.End)
+                }
                 for (s in spending) {
                     Row(Modifier.fillMaxWidth()) {
                         Text(s.holder?.let(::cardLabel) ?: model.t("cards.mainCard"), Modifier.weight(1f))
@@ -84,14 +95,20 @@ internal fun CardsDialog(model: BooksModel, account: Account, onClose: () -> Uni
             HorizontalDivider(Modifier.padding(vertical = 6.dp))
             Text(model.t("cards.benefits"), style = MaterialTheme.typography.titleSmall)
             Text(model.t("cards.benefitsHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            if (benefits.isNotEmpty()) HeadingRow {
+                ColumnHeading(model.t("column.benefit"), Modifier.weight(1f))
+                ColumnHeading(model.t("table.actions"), Modifier.width(EDIT_DELETE_WIDTH))
+            }
             for (b in benefits) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(model.t("benefit.${b.kind}") + (b.description?.let { " · $it" }.orEmpty()))
                         Text(benefitDetails(model, b), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                     }
-                    TextButton(onClick = { benefit = b }) { Text(model.t("common.edit")) }
-                    TextButton(onClick = { model.act { books.creditCards.deleteBenefit(account.id, b.id) } }) { Text(model.t("common.delete")) }
+                    Row(Modifier.width(EDIT_DELETE_WIDTH)) {
+                        TextButton(onClick = { benefit = b }) { Text(model.t("common.edit")) }
+                        TextButton(onClick = { model.act { books.creditCards.deleteBenefit(account.id, b.id) } }) { Text(model.t("common.delete")) }
+                    }
                 }
             }
             OutlinedButton(onClick = { benefit = CardBenefit("", account.id, BenefitKind.PURCHASE_PROTECTION) }) { Text(model.t("cards.addBenefit")) }
@@ -99,12 +116,18 @@ internal fun CardsDialog(model: BooksModel, account: Account, onClose: () -> Uni
             if (protected.isNotEmpty()) {
                 HorizontalDivider(Modifier.padding(vertical = 6.dp))
                 Text(model.t("cards.protected"), style = MaterialTheme.typography.titleSmall)
+                HeadingRow {
+                    ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+                    ColumnHeading(model.t("register.payee"), Modifier.weight(1f))
+                    ColumnHeading(model.t("column.coverage"), Modifier.weight(1.5f))
+                    ColumnHeading(model.t("register.amount"), Modifier.width(110.dp), TextAlign.End)
+                }
                 for ((t, coverage) in protected) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text(model.date(t.date), Modifier.width(100.dp), style = MaterialTheme.typography.bodySmall)
                         Text(t.payeeId?.let(payees::get) ?: t.payeeText.orEmpty(), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(coverage.joinToString(" · ") { coverageText(model, it) }, Modifier.weight(1.5f), style = MaterialTheme.typography.bodySmall)
-                        MoneyText(model, t.amount)
+                        MoneyText(model, t.amount, modifier = Modifier.width(110.dp), textAlign = TextAlign.End)
                     }
                 }
             }
@@ -113,6 +136,9 @@ internal fun CardsDialog(model: BooksModel, account: Account, onClose: () -> Uni
     holder?.let { h -> HolderDialog(model, h) { holder = null } }
     benefit?.let { b -> BenefitDialog(model, account, b) { benefit = null } }
 }
+
+/** Edit and Delete as text buttons, in both languages. */
+private val EDIT_DELETE_WIDTH = 200.dp
 
 private fun benefitDetails(model: BooksModel, b: CardBenefit): String = listOfNotNull(
     b.days?.let { model.t("cards.days", it) },

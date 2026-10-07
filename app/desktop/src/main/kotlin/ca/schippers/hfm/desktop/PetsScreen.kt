@@ -173,10 +173,18 @@ internal fun CostsDialog(model: BooksModel, title: String, costs: CostSummary, e
             extra?.invoke()
             Text(model.t("costs.byYear"), style = MaterialTheme.typography.titleSmall)
             if (costs.byYear.isEmpty()) Text(model.t("costs.none"))
+            else HeadingRow(Modifier.width(320.dp + 160.dp)) {
+                ColumnHeading(model.t("loans.year"), Modifier.width(120.dp))
+                ColumnHeading(model.t("register.amount"))
+            }
             for ((year, total) in costs.byYear) {
                 Row { Text(year.toString(), Modifier.width(120.dp)); Text(model.money(total)) }
             }
             Text(model.t("costs.byCategory"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+            if (costs.byCategory.isNotEmpty()) HeadingRow(Modifier.width(320.dp + 160.dp)) {
+                ColumnHeading(model.t("register.category"), Modifier.width(320.dp))
+                ColumnHeading(model.t("register.amount"))
+            }
             for ((id, total) in costs.byCategory) {
                 Row { Text(id?.let(categories::get) ?: model.t("register.uncategorized"), Modifier.width(320.dp)); Text(model.money(total)) }
             }

@@ -159,6 +159,15 @@ private fun UsagePart(model: BooksModel) {
     }
     if (entries.isEmpty()) Text(model.t("ai.noUsage"), style = MaterialTheme.typography.bodySmall)
     val format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    if (entries.isNotEmpty()) HeadingRow(spacing = 12.dp) {
+        ColumnHeading(model.t("column.when"), Modifier.width(130.dp))
+        ColumnHeading(model.t("column.document"), Modifier.weight(1f))
+        ColumnHeading(model.t("documents.kind"), Modifier.width(170.dp))
+        ColumnHeading(model.t("ai.model"), Modifier.width(130.dp))
+        ColumnHeading(model.t("column.tokens"), Modifier.width(150.dp))
+        ColumnHeading(model.t("vehicles.cost"), Modifier.width(80.dp))
+        ColumnHeading(model.t("column.result"), Modifier.width(90.dp))
+    }
     for (e in entries.take(200)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(format.format(Instant.ofEpochMilli(e.usedAt).atZone(zone)), Modifier.width(130.dp), style = MaterialTheme.typography.bodySmall)

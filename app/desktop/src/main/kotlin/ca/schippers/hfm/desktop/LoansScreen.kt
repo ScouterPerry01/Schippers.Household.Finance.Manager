@@ -33,6 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -83,6 +85,10 @@ fun LoansScreen(model: BooksModel) {
         Column(Modifier.width(300.dp).fillMaxHeight().padding(12.dp)) {
             Text(model.t("nav.loans"), style = MaterialTheme.typography.titleLarge)
             Text(model.t("loans.explain"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 8.dp))
+            if (loans.isNotEmpty()) HeadingRow(Modifier.padding(horizontal = 8.dp)) {
+                ColumnHeading(model.t("column.loan"), Modifier.weight(1f))
+                ColumnHeading(model.t("loans.balance"), align = TextAlign.End)
+            }
             LazyColumn(Modifier.weight(1f)) {
                 if (loans.isEmpty()) item { Text(model.t("loans.none"), Modifier.padding(8.dp)) }
                 items(loans, key = { it.first.account.id }) { (summary, details) ->
@@ -217,7 +223,7 @@ private fun ScheduleView(model: BooksModel, account: Account, status: LoanStatus
     }
     Row(Modifier.fillMaxWidth()) {
         columns.forEachIndexed { i, name ->
-            Text(name, Modifier.weight(1f), fontWeight = FontWeight.Bold, textAlign = if (i >= 2) TextAlign.End else TextAlign.Start, style = MaterialTheme.typography.bodySmall)
+            Text(name, Modifier.weight(1f).semantics { heading() }, fontWeight = FontWeight.Bold, textAlign = if (i >= 2) TextAlign.End else TextAlign.Start, style = MaterialTheme.typography.bodySmall)
         }
     }
     HorizontalDivider()
@@ -253,6 +259,13 @@ private fun ChangesView(model: BooksModel, account: Account) {
     val changes = remember(model.revision, account.id) { model.books.loans.changes(account.id) }
     Column(Modifier.padding(top = 8.dp)) {
         if (changes.isEmpty()) Text(model.t("loans.noChanges"), Modifier.padding(8.dp))
+        else HeadingRow {
+            ColumnHeading(model.t("register.date"), Modifier.width(110.dp))
+            ColumnHeading(model.t("column.change"), Modifier.width(200.dp))
+            ColumnHeading(model.t("column.details"), Modifier.weight(1f))
+            ColumnHeading(model.t("calendar.notes"), Modifier.weight(1f))
+            ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+        }
         for (ch in changes.asReversed()) {
             Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(ch.date), Modifier.width(110.dp))
@@ -266,7 +279,7 @@ private fun ChangesView(model: BooksModel, account: Account) {
                     Modifier.weight(1f),
                 )
                 Text(ch.notes.orEmpty(), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
-                TextButton(onClick = { model.act { model.books.loans.deleteChange(account.id, ch.id) } }) { Text(model.t("common.delete")) }
+                TextButton(onClick = { model.act { model.books.loans.deleteChange(account.id, ch.id) } }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.delete")) }
             }
             HorizontalDivider()
         }
@@ -548,7 +561,7 @@ private fun WhatIfDialog(model: BooksModel, account: Account, status: LoanStatus
                 listOf(model.t("loans.interestLeft"), model.money(cmp.base.totalInterest), model.money(cmp.alternative.totalInterest)),
             )
             Column(Modifier.padding(vertical = 8.dp)) {
-                Row { columns.forEach { Text(it, Modifier.weight(1f), fontWeight = FontWeight.Bold) } }
+                Row { columns.forEach { Text(it, Modifier.weight(1f).semantics { heading() }, fontWeight = FontWeight.Bold) } }
                 HorizontalDivider()
                 rows.forEach { r -> Row(Modifier.padding(vertical = 3.dp)) { r.forEach { Text(it, Modifier.weight(1f)) } } }
             }

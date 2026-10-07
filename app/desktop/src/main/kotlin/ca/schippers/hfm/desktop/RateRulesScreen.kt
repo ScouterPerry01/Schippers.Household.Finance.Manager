@@ -120,6 +120,11 @@ private fun RuleDetail(model: BooksModel, rule: Rule) {
 
         HorizontalDivider()
         Text(model.t("rateRules.today"), style = MaterialTheme.typography.titleMedium)
+        HeadingRow {
+            if (rule.perProvince) ColumnHeading(model.t("rateRules.province"), Modifier.width(260.dp))
+            ColumnHeading(model.t("rateRules.valueNumber"), Modifier.weight(1f))
+            ColumnHeading(model.t("column.since"), Modifier.width(300.dp))
+        }
         if (rule.perProvince) {
             val home = books.province
             val provinces = listOf(home) + Province.entries.filter { it != home }.sortedBy { model.t("province.$it") }
@@ -136,6 +141,12 @@ private fun RuleDetail(model: BooksModel, rule: Rule) {
         HorizontalDivider()
         Text(model.t("rateRules.history"), style = MaterialTheme.typography.titleMedium)
         if (values.isEmpty()) Text(model.t("rateRules.none"))
+        else HeadingRow {
+            ColumnHeading(model.t("rateRules.from"), Modifier.width(110.dp))
+            if (rule.perProvince) ColumnHeading(model.t("rateRules.province"), Modifier.width(200.dp))
+            ColumnHeading(model.t("rateRules.valueNumber"), Modifier.weight(1f))
+            if (books.users.isAdministrator) ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH))
+        }
         for (v in values.reversed()) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(v.from), Modifier.width(110.dp))
@@ -151,8 +162,10 @@ private fun RuleDetail(model: BooksModel, rule: Rule) {
                     Text(origin, style = MaterialTheme.typography.bodySmall)
                     if (!v.builtIn) v.source?.let { Text(model.t("rateRules.note", it), style = MaterialTheme.typography.bodySmall) }
                 }
-                if (!v.builtIn && books.users.isAdministrator) {
-                    TextButton(onClick = { deleting = v }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+                if (books.users.isAdministrator) {
+                    Box(Modifier.width(ACTIONS_WIDTH)) {
+                        if (!v.builtIn) TextButton(onClick = { deleting = v }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
+                    }
                 }
             }
         }

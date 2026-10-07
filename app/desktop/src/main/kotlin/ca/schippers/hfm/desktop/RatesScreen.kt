@@ -26,6 +26,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.RateService
 import ca.schippers.hfm.books.RateSource
@@ -105,6 +106,12 @@ fun RatesScreen(model: BooksModel) {
         Text(model.t("rates.explain", books.reports.base.code), style = MaterialTheme.typography.bodySmall)
         status?.let { Text(it) }
         if (currencies.isEmpty()) Text(model.t("rates.none"))
+        else HeadingRow {
+            ColumnHeading(model.t("rates.currency"), Modifier.width(80.dp))
+            ColumnHeading(model.t("column.rate"), Modifier.weight(1f))
+            ColumnHeading(model.t("column.dateSource"), Modifier.width(260.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(RATE_ACTIONS_WIDTH))
+        }
         for (c in currencies) {
             val latest = remember(model.revision, c) { books.rates.list(c, today.minus(DatePeriod(days = 30)), today).lastOrNull() }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -115,8 +122,10 @@ fun RatesScreen(model: BooksModel) {
                     Modifier.weight(1f),
                 )
                 Text(latest?.let { model.date(it.date) + " · " + sourceName(model, it.source) }.orEmpty(), Modifier.width(260.dp), style = MaterialTheme.typography.bodySmall)
-                if (c in followed) TextButton(enabled = canEdit, onClick = { model.act { books.rates.unfollow(c) } }) { Text(model.t("rates.unfollow")) }
-                TextButton(onClick = { selected = c }) { Text(model.t("rates.history")) }
+                Row(Modifier.width(RATE_ACTIONS_WIDTH), verticalAlignment = Alignment.CenterVertically) {
+                    if (c in followed) TextButton(enabled = canEdit, onClick = { model.act { books.rates.unfollow(c) } }) { Text(model.t("rates.unfollow")) }
+                    TextButton(onClick = { selected = c }) { Text(model.t("rates.history")) }
+                }
             }
         }
 
@@ -167,17 +176,26 @@ fun RatesScreen(model: BooksModel) {
             HorizontalDivider()
             Text(model.t("rates.historyOf", c.code), style = MaterialTheme.typography.titleMedium)
             val rows = remember(model.revision, c) { books.rates.list(c, today.minus(DatePeriod(days = 60)), today).reversed() }
+            if (rows.isNotEmpty()) HeadingRow(Modifier.width(120.dp + 120.dp + 220.dp + ACTIONS_WIDTH)) {
+                ColumnHeading(model.t("register.date"), Modifier.width(120.dp))
+                ColumnHeading(model.t("column.rate"), Modifier.width(120.dp))
+                ColumnHeading(model.t("column.source"), Modifier.width(220.dp))
+                ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+            }
             for (r in rows) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(r.date), Modifier.width(120.dp))
                     Text(shortRate(r.cadPerUnit), Modifier.width(120.dp))
                     Text(sourceName(model, r.source), Modifier.width(220.dp), style = MaterialTheme.typography.bodySmall)
-                    if (r.manual && canEdit) TextButton(onClick = { model.act { books.rates.deleteRate(c, r.date) } }) { Text(model.t("common.delete")) }
+                    if (r.manual && canEdit) TextButton(onClick = { model.act { books.rates.deleteRate(c, r.date) } }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.delete")) }
                 }
             }
         }
     }
 }
+
+/** Stop following and Recent rates, in both languages. */
+private val RATE_ACTIONS_WIDTH = 280.dp
 
 private fun sourceName(model: BooksModel, source: RateSource): String = model.t("rates.source.${source.name}")
 
@@ -223,6 +241,12 @@ private fun MarketPrices(model: BooksModel) {
 
     if (coins.isNotEmpty()) {
         Text(model.t("prices.coins"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+        HeadingRow(spacing = 8.dp) {
+            ColumnHeading(model.t("rates.currency"), Modifier.width(80.dp))
+            ColumnHeading(model.t("investments.price"), Modifier.weight(1f))
+            ColumnHeading(model.t("prices.coinId"), Modifier.width(260.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+        }
         for (c in coins) {
             val latest = remember(model.revision, c) { books.rates.list(c, today.minus(DatePeriod(days = 30)), today).lastOrNull() }
             var id by remember(model.revision, c) { mutableStateOf(books.prices.coinId(c).orEmpty()) }
@@ -230,13 +254,17 @@ private fun MarketPrices(model: BooksModel) {
                 Text(c.code, Modifier.width(80.dp))
                 Text(latest?.let { model.money(ca.schippers.hfm.money.Money.of(it.cadPerUnit, Currency.CAD)) + " · " + model.date(it.date) + " · " + sourceName(model, it.source) } ?: model.t("rates.missing"), Modifier.weight(1f))
                 TextInput(model.t("prices.coinId"), id, Modifier.width(260.dp), enabled = canEdit) { id = it }
-                TextButton(enabled = canEdit, onClick = { model.act { books.prices.setCoinId(c, id) } }) { Text(model.t("common.save")) }
+                TextButton(enabled = canEdit, onClick = { model.act { books.prices.setCoinId(c, id) } }, modifier = Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.save")) }
             }
         }
         Text(model.t("prices.coinsHint"), style = MaterialTheme.typography.bodySmall)
     }
 
     Text(model.t("prices.metals"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp))
+    HeadingRow {
+        ColumnHeading(model.t("prices.metal"), Modifier.width(140.dp))
+        ColumnHeading(model.t("column.spotPrice"), Modifier.weight(1f))
+    }
     for (m in Metal.entries) {
         val spot = remember(model.revision, m) { books.prices.spot(m, today) }
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

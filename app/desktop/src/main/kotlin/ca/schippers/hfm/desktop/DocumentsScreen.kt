@@ -43,6 +43,7 @@ import androidx.compose.ui.draganddrop.DragAndDropTarget
 import androidx.compose.ui.draganddrop.awtTransferable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.calc.rules.LeadTimes
 import ca.schippers.hfm.books.DocumentDetails
@@ -201,6 +202,7 @@ private fun chooseFiles(model: BooksModel): List<Path> {
 @Composable
 private fun InboxTab(model: BooksModel, onOpen: (VaultDocument) -> Unit) {
     val docs = remember(model.revision) { model.books.documents.inbox() }
+    if (docs.isNotEmpty()) DocumentHeadings(model)
     LazyColumn {
         if (docs.isEmpty()) item { Text(model.t("documents.inboxEmpty"), Modifier.padding(8.dp)) }
         items(docs, key = { it.id }) { doc -> DocumentRow(model, doc, highlight = true) { onOpen(doc) } }
@@ -227,7 +229,8 @@ private fun AllTab(model: BooksModel, onOpen: (VaultDocument) -> Unit) {
             TextInput(model.t("documents.minAmount"), min, Modifier.weight(0.8f)) { min = it }
             TextInput(model.t("documents.maxAmount"), max, Modifier.weight(0.8f)) { max = it }
         }
-        LazyColumn(Modifier.padding(top = 8.dp)) {
+        if (docs.isNotEmpty()) DocumentHeadings(model, Modifier.padding(top = 8.dp))
+        LazyColumn {
             if (docs.isEmpty()) item { Text(model.t("documents.none"), Modifier.padding(8.dp)) }
             items(docs, key = { it.id }) { doc -> DocumentRow(model, doc, highlight = false) { onOpen(doc) } }
         }
@@ -239,10 +242,22 @@ private fun RetentionTab(model: BooksModel, onOpen: (VaultDocument) -> Unit) {
     val docs = remember(model.revision) { model.books.documents.discardable(today()) }
     Column {
         Text(model.t("documents.retentionExplain", LeadTimes.documentRetention(today())), style = MaterialTheme.typography.bodySmall)
-        LazyColumn(Modifier.padding(top = 8.dp)) {
+        if (docs.isNotEmpty()) DocumentHeadings(model, Modifier.padding(top = 8.dp))
+        LazyColumn {
             if (docs.isEmpty()) item { Text(model.t("documents.nothingToDiscard"), Modifier.padding(8.dp)) }
             items(docs, key = { it.id }) { doc -> DocumentRow(model, doc, highlight = false) { onOpen(doc) } }
         }
+    }
+}
+
+/** NAV-04: the headings over [DocumentRow]s (the same widths, inside the card's padding). */
+@Composable
+private fun DocumentHeadings(model: BooksModel, modifier: Modifier = Modifier) {
+    HeadingRow(modifier.padding(horizontal = 12.dp)) {
+        ColumnHeading(model.t("register.date"), Modifier.width(110.dp))
+        ColumnHeading(model.t("column.document"), Modifier.weight(1f))
+        ColumnHeading(model.t("register.amount"), Modifier.width(120.dp))
+        ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
     }
 }
 
@@ -266,7 +281,7 @@ private fun DocumentRow(model: BooksModel, doc: VaultDocument, highlight: Boolea
                 if (duplicates.isNotEmpty()) Text(model.t("documents.possibleDuplicate"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             }
             Text(doc.amount?.let(model::money).orEmpty(), Modifier.width(120.dp), fontWeight = FontWeight.Bold)
-            Button(onClick = onOpen) { Text(model.t(if (highlight) "documents.review" else "documents.open")) }
+            Button(onClick = onOpen, Modifier.width(ACTIONS_WIDTH)) { Text(model.t(if (highlight) "documents.review" else "documents.open"), maxLines = 1) }
         }
     }
 }
@@ -815,6 +830,12 @@ private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: S
             LabeledCheckbox(model.t("documents.splitByItems", shares.size), byItems) { byItems = it }
             if (byItems) {
                 Text(model.t("documents.splitByItemsHint") + " " + model.t("documents.splitNote.${split?.note}"), style = MaterialTheme.typography.bodySmall)
+                HeadingRow(spacing = 8.dp) {
+                    ColumnHeading(model.t("itemize.item"), Modifier.weight(1f))
+                    ColumnHeading(model.t("column.taxes"), Modifier.width(70.dp))
+                    ColumnHeading(model.t("register.amount"), Modifier.width(80.dp))
+                    ColumnHeading(model.t("register.category"), Modifier.width(220.dp))
+                }
                 Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     shares.forEachIndexed { i, s ->
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

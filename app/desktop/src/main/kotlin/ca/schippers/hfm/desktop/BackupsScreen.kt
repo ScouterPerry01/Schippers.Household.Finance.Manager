@@ -23,6 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.BackupFrequency
 import ca.schippers.hfm.books.BackupSettings
@@ -103,6 +104,12 @@ fun BackupsScreen(model: BooksModel) {
 
         HorizontalDivider()
         Text(model.t("backup.list", list.size), style = MaterialTheme.typography.titleMedium)
+        if (list.isNotEmpty()) HeadingRow {
+            ColumnHeading(model.t("column.when"), Modifier.width(220.dp))
+            ColumnHeading(model.t("column.file"), Modifier.weight(1f))
+            ColumnHeading(model.t("column.size"), Modifier.width(100.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+        }
         for (b in list) {
             var result by remember(b.file) { mutableStateOf<String?>(null) }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -112,7 +119,7 @@ fun BackupsScreen(model: BooksModel) {
                 TextButton(onClick = {
                     val check = books.backups.verify(b.file, SqlCipherJdbcDriverFactory())
                     result = if (check.ok) model.t("backup.checkOk", check.checkedDatabases) else model.t("backup.checkFailed", check.issues.joinToString("; ") { model.t(it.key, *it.args.toTypedArray()) })
-                }) { Text(model.t("backup.check")) }
+                }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("backup.check")) }
             }
             result?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         }

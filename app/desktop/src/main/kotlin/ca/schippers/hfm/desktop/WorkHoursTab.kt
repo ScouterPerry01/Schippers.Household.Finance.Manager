@@ -80,6 +80,13 @@ internal fun HoursTab(model: BooksModel) {
                         if (unbilledHours.isEmpty()) model.t("hours.allBilled") else model.t("hours.unbilled", model.duration(unbilledHours.sumOf { it.minutes }), model.money(amount)),
                         fontWeight = FontWeight.Medium,
                     )
+                    if (mine.isNotEmpty()) HeadingRow {
+                        ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+                        ColumnHeading(model.t("hours.task"), Modifier.weight(1f))
+                        ColumnHeading(model.t("column.duration"), Modifier.width(80.dp))
+                        ColumnHeading(model.t("register.amount"), Modifier.width(110.dp))
+                        ColumnHeading(model.t("column.billed"), Modifier.width(150.dp))
+                    }
                     for (h in mine.reversed().take(HOURS_SHOWN)) {
                         Row(Modifier.fillMaxWidth().clickable(enabled = access.mayEdit(c.groupId)) { editingHours = h }.padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(model.date(h.date), Modifier.width(100.dp))

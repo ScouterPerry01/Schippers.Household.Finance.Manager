@@ -141,6 +141,11 @@ private fun MergeChoicesView(
 
     Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(model.t("contacts.mergeChoose"), style = MaterialTheme.typography.bodyMedium)
+        HeadingRow(spacing = 8.dp) {
+            ColumnHeading(model.t("column.field"), Modifier.width(150.dp))
+            ColumnHeading(keep.name, Modifier.weight(1f))
+            ColumnHeading(other.name, Modifier.weight(1f))
+        }
         // Only the fields the two contacts hold differently need a choice.
         for (f in MergeField.entries.filter { value(keep, it) != value(other, it) || (it == MergeField.GROUP && keep.groupId != other.groupId) }) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

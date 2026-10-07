@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.AccountGoals
 import ca.schippers.hfm.books.GoalEntry
@@ -316,6 +317,13 @@ private fun HistoryDialog(model: BooksModel, goal: SavingsGoal, onClose: () -> U
     var deleting by remember { mutableStateOf<GoalEntry?>(null) }
     WideDialog(model.t("goals.historyOf", goal.name), model.t("common.close"), onClose) {
         if (entries.isEmpty()) Text(model.t("goals.noHistory"))
+        else HeadingRow {
+            ColumnHeading(model.t("register.date"), Modifier.width(110.dp))
+            ColumnHeading(model.t("contacts.kind"), Modifier.width(180.dp))
+            ColumnHeading(model.t("register.memo"), Modifier.weight(1f))
+            ColumnHeading(model.t("register.amount"), Modifier.width(130.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+        }
         LazyColumn(Modifier.heightIn(max = 480.dp)) {
             items(entries, key = { it.id }) { e ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -326,7 +334,7 @@ private fun HistoryDialog(model: BooksModel, goal: SavingsGoal, onClose: () -> U
                         model.money(e.amount), Modifier.width(130.dp),
                         color = if (e.amount.isNegative) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                     )
-                    TextButton(onClick = { deleting = e }) { Text(model.t("common.delete")) }
+                    TextButton(onClick = { deleting = e }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.delete")) }
                 }
                 HorizontalDivider()
             }

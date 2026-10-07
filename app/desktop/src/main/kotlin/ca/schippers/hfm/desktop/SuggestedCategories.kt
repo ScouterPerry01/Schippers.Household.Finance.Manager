@@ -37,14 +37,23 @@ internal fun SuggestedCategoriesDialog(model: BooksModel, account: Account, cate
         Column(Modifier.width(760.dp).heightIn(max = 560.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(model.t("suggested.explain"), style = MaterialTheme.typography.bodySmall)
             if (rows.isEmpty()) Text(model.t("suggested.none"), Modifier.padding(vertical = 8.dp))
+            else HeadingRow {
+                ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+                ColumnHeading(model.t("register.payee"), Modifier.weight(1f))
+                ColumnHeading(model.t("register.category"), Modifier.weight(1f))
+                ColumnHeading(model.t("register.amount"), Modifier.width(110.dp), TextAlign.End)
+                ColumnHeading(model.t("table.actions"), Modifier.width(SUGGESTED_ACTIONS_WIDTH))
+            }
             for (t in rows) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(t.date), Modifier.width(100.dp))
                     Text(t.payeeId?.let(payees::get) ?: t.payeeText.orEmpty(), Modifier.weight(1f))
                     Text(t.splits.firstOrNull()?.categoryId?.let { categories[it]?.name(model.language) } ?: model.t("register.uncategorized"), Modifier.weight(1f))
                     MoneyText(model, t.amount, modifier = Modifier.width(110.dp), textAlign = TextAlign.End)
-                    TextButton(onClick = { model.act { books.transactions.acceptSuggestedCategory(t.id) } }) { Text(model.t("suggested.keep")) }
-                    TextButton(onClick = { onOpen(t) }) { Text(model.t("suggested.change")) }
+                    Row(Modifier.width(SUGGESTED_ACTIONS_WIDTH)) {
+                        TextButton(onClick = { model.act { books.transactions.acceptSuggestedCategory(t.id) } }) { Text(model.t("suggested.keep")) }
+                        TextButton(onClick = { onOpen(t) }) { Text(model.t("suggested.change")) }
+                    }
                 }
                 HorizontalDivider()
             }
@@ -56,3 +65,6 @@ internal fun SuggestedCategoriesDialog(model: BooksModel, account: Account, cate
         }
     }
 }
+
+/** Keep and Change, in both languages. */
+private val SUGGESTED_ACTIONS_WIDTH = 190.dp

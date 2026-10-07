@@ -36,6 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -103,6 +105,10 @@ fun InvestmentsScreen(model: BooksModel) {
     Row(Modifier.fillMaxSize()) {
         Column(Modifier.width(300.dp).fillMaxHeight().padding(12.dp)) {
             Text(model.t("nav.investments"), style = MaterialTheme.typography.titleLarge)
+            if (all.isNotEmpty()) HeadingRow(Modifier.padding(horizontal = 8.dp)) {
+                ColumnHeading(model.t("templates.account"), Modifier.weight(1f))
+                ColumnHeading(model.t("investments.marketValue"), align = TextAlign.End)
+            }
             LazyColumn(Modifier.weight(1f)) {
                 if (all.isEmpty()) item { Text(model.t("investments.none"), Modifier.padding(8.dp), style = MaterialTheme.typography.bodySmall) }
                 for ((registered, list) in all.groupBy { it.account.type.isRegistered }.toSortedMap()) {
@@ -223,7 +229,7 @@ private fun HoldingsTable(model: BooksModel, h: AccountHoldings) {
     val locale = model.language.locale
     val headers = listOf(model.t("investments.security"), model.t("investments.quantity"), model.t("investments.price"), model.t("investments.marketValue"), model.t("investments.bookCost"), model.t("investments.gain"))
     Column(Modifier.padding(top = 8.dp)) {
-        Row { headers.forEachIndexed { i, t -> Text(t, Modifier.weight(if (i == 0) 2.5f else 1f).padding(horizontal = 6.dp), fontWeight = FontWeight.Bold, textAlign = if (i == 0) TextAlign.Start else TextAlign.End, style = MaterialTheme.typography.bodySmall) } }
+        Row { headers.forEachIndexed { i, t -> Text(t, Modifier.weight(if (i == 0) 2.5f else 1f).padding(horizontal = 6.dp).semantics { heading() }, fontWeight = FontWeight.Bold, textAlign = if (i == 0) TextAlign.Start else TextAlign.End, style = MaterialTheme.typography.bodySmall) } }
         HorizontalDivider()
         if (h.holdings.isEmpty()) Text(model.t("investments.noHoldings"), Modifier.padding(8.dp))
         LazyColumn {
@@ -284,6 +290,13 @@ private fun TransactionsTable(model: BooksModel, account: Account, onEdit: (Inve
     val locale = model.language.locale
     Column(Modifier.padding(top = 8.dp)) {
         if (txns.isEmpty()) Text(model.t("investments.noTransactions"), Modifier.padding(8.dp))
+        else HeadingRow {
+            ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+            ColumnHeading(model.t("investments.kind"), Modifier.width(250.dp))
+            ColumnHeading(model.t("investments.security"), Modifier.weight(1f))
+            ColumnHeading(model.t("investments.quantity"), Modifier.width(170.dp))
+            ColumnHeading(model.t("register.amount"), Modifier.width(130.dp), TextAlign.End)
+        }
         LazyColumn {
             items(txns, key = { it.id }) { t ->
                 Row(Modifier.fillMaxWidth().clickable { onEdit(t) }.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -322,13 +335,19 @@ private fun StatementsList(model: BooksModel, account: Account, onOpen: (String)
     Column(Modifier.padding(top = 8.dp)) {
         Text(model.t("investments.statementsHint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 8.dp))
         if (statements.isEmpty()) Text(model.t("investments.noStatements"), Modifier.padding(8.dp))
+        else HeadingRow {
+            ColumnHeading(model.t("investments.statementDate"), Modifier.width(110.dp))
+            ColumnHeading(model.t("investments.cash"), Modifier.weight(1f))
+            ColumnHeading(model.t("investments.holdings"), Modifier.weight(1f))
+            ColumnHeading(model.t("goals.status"), Modifier.width(160.dp))
+        }
         for (s in statements) {
             Row(Modifier.fillMaxWidth().clickable { onOpen(s.id) }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(s.date), Modifier.width(110.dp))
                 Text(s.cash?.let { model.t("investments.cashOf", model.money(it)) }.orEmpty(), Modifier.weight(1f))
                 Text(model.t("investments.positionsCount", s.positions.size), Modifier.weight(1f))
                 Text(
-                    model.t(if (s.reconciled) "investments.reconciled" else "investments.toCheck"),
+                    model.t(if (s.reconciled) "investments.reconciled" else "investments.toCheck"), Modifier.width(160.dp),
                     color = if (s.reconciled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                 )
             }
@@ -402,6 +421,13 @@ private fun SecuritiesView(model: BooksModel, onAction: (InvAction) -> Unit) {
         Button(onClick = { onAction(InvAction.EditSecurity(null)) }) { Text(model.t("investments.addSecurity")) }
     }
     Text(model.t("investments.securitiesHint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 8.dp))
+    if (securities.isNotEmpty()) HeadingRow {
+        ColumnHeading(model.t("investments.symbol"), Modifier.width(110.dp))
+        ColumnHeading(model.t("investments.name"), Modifier.weight(1f))
+        ColumnHeading(model.t("investments.securityKind"), Modifier.width(150.dp))
+        ColumnHeading(model.t("investments.assetClass"), Modifier.width(150.dp))
+        ColumnHeading(model.t("investments.price"), Modifier.width(220.dp), TextAlign.End)
+    }
     LazyColumn {
         if (securities.isEmpty()) item { Text(model.t("investments.noSecurities"), Modifier.padding(8.dp)) }
         items(securities, key = { it.id }) { s ->
@@ -717,12 +743,11 @@ private fun StatementDialog(model: BooksModel, account: Account, statementId: St
     }
     WideDialog(model.t("investments.statementOf", model.date(check.statement.date)), model.t("common.close"), onClose) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Row {
-                Text("", Modifier.weight(2f))
-                Text(model.t("investments.onStatement"), Modifier.weight(1f), fontWeight = FontWeight.Bold, textAlign = TextAlign.End)
-                Text(model.t("investments.inBooks"), Modifier.weight(1f), fontWeight = FontWeight.Bold, textAlign = TextAlign.End)
+            HeadingRow {
+                ColumnHeading(model.t("investments.security"), Modifier.weight(2f))
+                ColumnHeading(model.t("investments.onStatement"), Modifier.weight(1f), TextAlign.End)
+                ColumnHeading(model.t("investments.inBooks"), Modifier.weight(1f), TextAlign.End)
             }
-            HorizontalDivider()
             check.statement.cash?.let { cash ->
                 CompareRow(model.t("investments.cash"), model.money(cash), model.money(check.booksCash), check.cashMatches)
             }

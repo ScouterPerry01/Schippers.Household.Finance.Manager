@@ -69,6 +69,11 @@ fun VolunteerScreen(model: BooksModel) {
             }
         }
         if (entries.isEmpty()) Text(model.t("volunteer.none"))
+        else HeadingRow {
+            ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+            ColumnHeading(model.t("volunteer.organization"), Modifier.weight(1f))
+            ColumnHeading(model.t("column.duration"), Modifier.width(90.dp))
+        }
         for (e in entries) {
             Row(Modifier.fillMaxWidth().clickable(enabled = access.mayEdit(e.groupId)) { editing = e }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(e.date), Modifier.width(100.dp))

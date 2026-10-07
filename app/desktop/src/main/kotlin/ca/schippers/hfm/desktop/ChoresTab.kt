@@ -86,6 +86,12 @@ internal fun ChoresTab(model: BooksModel) {
                             }
                         }
                     }
+                    HeadingRow {
+                        ColumnHeading(model.t("chores.name"), Modifier.weight(1f))
+                        ColumnHeading(model.t("column.worth"), Modifier.width(160.dp))
+                        ColumnHeading(model.t("column.thisWeek"), Modifier.width(130.dp))
+                        ColumnHeading(model.t("table.actions"), Modifier.width(CHORE_ACTIONS_WIDTH))
+                    }
                     for (c in mine) {
                         val recent = c.ticks.count { it.date >= week && it.date <= today() }
                         val doneToday = c.ticks.any { it.date == today() }
@@ -93,16 +99,18 @@ internal fun ChoresTab(model: BooksModel) {
                             Text(c.name, Modifier.weight(1f).clickable(enabled = access.mayEdit(c.groupId)) { editing = c })
                             Text(model.worth(c.amount, c.points), Modifier.width(160.dp), style = MaterialTheme.typography.bodySmall)
                             Text(model.t("chores.thisWeek", recent), Modifier.width(130.dp), style = MaterialTheme.typography.bodySmall)
-                            TextButton(onClick = { history = c }) { Text(model.t("chores.history")) }
-                            // Once a day unless the chore may be done several times a day: a second tick would earn twice.
-                            OutlinedButton(onClick = { model.act { books.chores.tick(c.id, today()) } }, enabled = access.mayAdd(c.groupId) && (!doneToday || c.severalADay)) {
-                                Text(
-                                    when {
-                                        doneToday && c.severalADay -> model.t("chores.doneAgain")
-                                        doneToday -> model.t("chores.doneTodayAlready")
-                                        else -> model.t("chores.doneToday")
-                                    },
-                                )
+                            Row(Modifier.width(CHORE_ACTIONS_WIDTH), verticalAlignment = Alignment.CenterVertically) {
+                                TextButton(onClick = { history = c }) { Text(model.t("chores.history")) }
+                                // Once a day unless the chore may be done several times a day: a second tick would earn twice.
+                                OutlinedButton(onClick = { model.act { books.chores.tick(c.id, today()) } }, enabled = access.mayAdd(c.groupId) && (!doneToday || c.severalADay)) {
+                                    Text(
+                                        when {
+                                            doneToday && c.severalADay -> model.t("chores.doneAgain")
+                                            doneToday -> model.t("chores.doneTodayAlready")
+                                            else -> model.t("chores.doneToday")
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
@@ -170,6 +178,7 @@ private fun ChoreHistoryDialog(model: BooksModel, c: Chore, access: GroupAccess,
     }) {
         Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState())) {
             if (c.ticks.isEmpty()) Text(model.t("chores.noTicks"), style = MaterialTheme.typography.bodySmall)
+            else DatedHeadings(model, "column.worth")
             for (t in c.ticks.reversed().take(TICKS_SHOWN)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(t.date), Modifier.width(100.dp))
@@ -179,7 +188,7 @@ private fun ChoreHistoryDialog(model: BooksModel, c: Chore, access: GroupAccess,
                         ).joinToString(" · "),
                         Modifier.weight(1f),
                     )
-                    RemoveButton(model.t("common.delete"), enabled = !t.paid && access.mayEdit(c.groupId)) { deleting = t }
+                    RemoveButton(model.t("common.delete"), Modifier.width(ICON_ACTIONS_WIDTH), enabled = !t.paid && access.mayEdit(c.groupId)) { deleting = t }
                 }
             }
         }
@@ -193,3 +202,6 @@ private fun ChoreHistoryDialog(model: BooksModel, c: Chore, access: GroupAccess,
 }
 
 private const val TICKS_SHOWN = 60
+
+/** History and the Done today button, in both languages. */
+private val CHORE_ACTIONS_WIDTH = 330.dp

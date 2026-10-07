@@ -311,18 +311,17 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
             HorizontalDivider()
         }
 
-        // Column headings.
-        Row(Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 4.dp)) {
+        // Column headings (NAV-04).
+        HeadingRow(Modifier.padding(horizontal = 4.dp)) {
             if (choosing) Box(Modifier.width(40.dp))
-            Heading(model.t("register.date"), Modifier.width(100.dp))
-            Heading(model.t("register.payee"), Modifier.weight(2f))
-            Heading(model.t("register.category"), Modifier.weight(2f))
-            Heading(model.t("register.memo"), Modifier.weight(2f))
-            Heading(model.t("register.amount"), Modifier.width(120.dp), TextAlign.End)
-            Heading("✓", Modifier.width(36.dp), TextAlign.Center)
-            Heading(model.t("register.balance"), Modifier.width(130.dp), TextAlign.End)
+            ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+            ColumnHeading(model.t("register.payee"), Modifier.weight(2f))
+            ColumnHeading(model.t("register.category"), Modifier.weight(2f))
+            ColumnHeading(model.t("register.memo"), Modifier.weight(2f))
+            ColumnHeading(model.t("register.amount"), Modifier.width(120.dp), TextAlign.End)
+            ColumnHeading("✓", Modifier.width(36.dp), TextAlign.Center, spoken = model.t("account.cleared"))
+            ColumnHeading(model.t("register.balance"), Modifier.width(130.dp), TextAlign.End)
         }
-        HorizontalDivider()
 
         LazyColumn(Modifier.weight(1f), state = listState) {
             if (rows.isEmpty()) item { Text(model.t("register.empty"), Modifier.padding(16.dp)) }
@@ -924,11 +923,6 @@ private fun HistoryDialog(model: BooksModel, txn: Transaction, categories: Map<S
             }
         }
     }
-}
-
-@Composable
-private fun Heading(text: String, modifier: Modifier, align: TextAlign = TextAlign.Start) {
-    Text(text, modifier = modifier, style = MaterialTheme.typography.labelLarge, textAlign = align, maxLines = 1, overflow = TextOverflow.Ellipsis)
 }
 
 @Composable

@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.ClaimDeadlineRule
@@ -118,7 +119,13 @@ private fun ExpensesTab(model: BooksModel) {
         LabeledCheckbox(model.t("medical.openOnly"), openOnly) { openOnly = it }
     }
     if (shown.isEmpty()) Text(model.t("medical.noExpenses"), Modifier.padding(vertical = 12.dp))
-    LazyColumn(Modifier.padding(top = 8.dp)) {
+    else HeadingRow(Modifier.padding(top = 8.dp)) {
+        ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+        ColumnHeading(model.t("report.person"), Modifier.width(110.dp))
+        ColumnHeading(model.t("medical.service"), Modifier.weight(1f))
+        ColumnHeading(model.t("register.amount"), align = TextAlign.End)
+    }
+    LazyColumn {
         items(shown, key = { it.id }) { e ->
             Row(Modifier.fillMaxWidth().clickable { editing = e }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(e.serviceDate), Modifier.width(100.dp))
@@ -337,6 +344,13 @@ private fun FromBooksDialog(model: BooksModel, groupId: String, onClose: () -> U
         Column(Modifier.width(820.dp).heightIn(max = 560.dp).verticalScroll(rememberScrollState())) {
             Text(model.t("medical.fromBooksHint"), style = MaterialTheme.typography.bodySmall)
             if (rows.isEmpty()) Text(model.t("medical.fromBooksNone"), Modifier.padding(vertical = 8.dp))
+            else HeadingRow(spacing = 8.dp) {
+                ColumnHeading(model.t("column.transaction"), Modifier.weight(1f))
+                ColumnHeading(model.t("register.amount"), Modifier.width(100.dp))
+                ColumnHeading(model.t("medical.patient"), Modifier.width(150.dp))
+                ColumnHeading(model.t("medical.service"), Modifier.width(200.dp))
+                ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+            }
             rows.forEachIndexed { i, r ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column(Modifier.weight(1f)) {
@@ -346,7 +360,7 @@ private fun FromBooksDialog(model: BooksModel, groupId: String, onClose: () -> U
                     MoneyText(model, -r.amount, modifier = Modifier.width(100.dp))
                     Picker(model.t("medical.patient"), members, members.firstOrNull { it.id == picks[i].first }, { it.displayName }, Modifier.width(150.dp)) { picks[i] = it.id to picks[i].second }
                     Picker(model.t("medical.service"), MedService.entries, picks[i].second, { model.t("medService.$it") }, Modifier.width(200.dp)) { picks[i] = picks[i].first to it }
-                    Button(onClick = { model.act { books.medical.fromTransaction(r.transactionId, picks[i].first, picks[i].second, groupId) } }) { Text(model.t("medical.add")) }
+                    Button(onClick = { model.act { books.medical.fromTransaction(r.transactionId, picks[i].first, picks[i].second, groupId) } }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("medical.add")) }
                 }
             }
         }
@@ -463,6 +477,10 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
                 HorizontalDivider(Modifier.padding(vertical = 6.dp))
                 Text(model.t("medical.coverage"), style = MaterialTheme.typography.titleSmall)
                 Text(model.t("medical.coverageHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                if (coverages.isNotEmpty()) HeadingRow {
+                    ColumnHeading(model.t("medical.service"), Modifier.weight(1f))
+                    ColumnHeading(model.t("medical.coverage"))
+                }
                 for (c in coverages) {
                     Row(Modifier.fillMaxWidth().clickable { coverage = c }.padding(vertical = 3.dp)) {
                         Text(model.t("medService.${c.service}"), Modifier.weight(1f))
@@ -551,6 +569,11 @@ private fun CoverageTab(model: BooksModel) {
             val left = remember(model.revision, m.id) { books.medical.coverageLeft(m.id, today()) }
             if (left.isEmpty()) continue
             Text(m.displayName, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp))
+            HeadingRow {
+                ColumnHeading(model.t("medical.plan"), Modifier.width(260.dp))
+                ColumnHeading(model.t("medical.service"), Modifier.weight(1f))
+                ColumnHeading(model.t("column.left"))
+            }
             for (l in left) {
                 Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                     Text(l.plan.name, Modifier.width(260.dp).padding(end = 12.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)

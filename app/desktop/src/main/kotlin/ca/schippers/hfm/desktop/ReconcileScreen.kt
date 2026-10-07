@@ -1,6 +1,7 @@
 package ca.schippers.hfm.desktop
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -31,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Account
@@ -108,12 +110,23 @@ fun ReconcileScreen(model: BooksModel, account: Account, statementId: String) {
                 items(view.unresolved.filter { it.matchGroup == null }, key = { it.id }) { line -> UnresolvedLine(model, line, view.outstanding, ::payeeOf, open) }
             }
             item { SectionTitle(model.t("reconcile.lines", view.lines.size)) }
+            item {
+                HeadingRow {
+                    LineHeadings(model)
+                    ColumnHeading(model.t("goals.status"), Modifier.width(150.dp))
+                    if (open) ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH))
+                }
+            }
             items(view.lines.filter { it !in view.unresolved }, key = { it.id }) { line ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                     LineCells(model, line)
                     Text(model.t(if (line.matchGroup != null && line.status == LineStatus.MATCHED) "reconcile.inGroup" else "lineStatus.${line.status}"), Modifier.width(150.dp), style = MaterialTheme.typography.bodySmall)
-                    if (open && (line.status == LineStatus.MATCHED || line.status == LineStatus.CREATED)) {
-                        TextButton(onClick = { model.act { books.statements.unlink(line.id) } }) { Text(model.t("reconcile.unlink")) }
+                    if (open) {
+                        Box(Modifier.width(ACTIONS_WIDTH)) {
+                            if (line.status == LineStatus.MATCHED || line.status == LineStatus.CREATED) {
+                                TextButton(onClick = { model.act { books.statements.unlink(line.id) } }) { Text(model.t("reconcile.unlink")) }
+                            }
+                        }
                     }
                 }
             }
@@ -121,10 +134,12 @@ fun ReconcileScreen(model: BooksModel, account: Account, statementId: String) {
             val notOnStatement = view.clearedByHand + view.outstanding
             if (notOnStatement.isNotEmpty()) {
                 item { SectionTitle(model.t("reconcile.notOnStatement", view.outstanding.size)) }
+                item { HeadingRow { TickedHeadings(model) } }
                 items(notOnStatement.sortedBy { it.date }, key = { "t" + it.id }) { txn ->
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = txn.cleared == ClearedStatus.CLEARED,
+                            modifier = Modifier.width(48.dp),
                             enabled = open,
                             onCheckedChange = { checked ->
                                 model.act { books.transactions.setCleared(txn.id, if (checked) ClearedStatus.CLEARED else ClearedStatus.UNCLEARED) }
@@ -221,17 +236,19 @@ private fun MatchSeveralDialog(model: BooksModel, view: ca.schippers.hfm.books.R
         Column(Modifier.width(640.dp).heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(model.t("reconcile.matchSeveral.explain"), style = MaterialTheme.typography.bodySmall)
             Text(model.t("reconcile.matchSeveral.lines"), style = MaterialTheme.typography.labelLarge)
+            if (lines.isNotEmpty()) HeadingRow { TickedHeadings(model) }
             for (l in lines) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(l.id in chosenLines, { on -> if (on) chosenLines.add(l.id) else chosenLines.remove(l.id) })
+                    Checkbox(l.id in chosenLines, { on -> if (on) chosenLines.add(l.id) else chosenLines.remove(l.id) }, Modifier.width(48.dp))
                     LineCells(model, l)
                 }
             }
             Text(model.t("reconcile.matchSeveral.txns"), style = MaterialTheme.typography.labelLarge)
             if (txns.isEmpty()) Text(model.t("reconcile.matchSeveral.noTxns"), style = MaterialTheme.typography.bodySmall)
+            else HeadingRow { TickedHeadings(model) }
             for (t in txns) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(t.id in chosenTxns, { on -> if (on) chosenTxns.add(t.id) else chosenTxns.remove(t.id) })
+                    Checkbox(t.id in chosenTxns, { on -> if (on) chosenTxns.add(t.id) else chosenTxns.remove(t.id) }, Modifier.width(48.dp))
                     Text(model.date(t.date), Modifier.width(100.dp))
                     Text(payeeOf(t), Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     MoneyText(model, t.amount, modifier = Modifier.width(130.dp))
@@ -249,6 +266,21 @@ private fun MatchSeveralDialog(model: BooksModel, view: ca.schippers.hfm.books.R
 @Composable
 private fun SectionTitle(text: String) {
     Text(text, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+}
+
+/** NAV-04: the headings over [LineCells]. */
+@Composable
+private fun RowScope.LineHeadings(model: BooksModel) {
+    ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+    ColumnHeading(model.t("register.payee"), Modifier.weight(1f))
+    ColumnHeading(model.t("register.amount"), Modifier.width(130.dp))
+}
+
+/** NAV-04: the headings over a ticked list: the box (48 dp), then the date, the payee and the amount. */
+@Composable
+private fun RowScope.TickedHeadings(model: BooksModel) {
+    ColumnHeading("✓", Modifier.width(48.dp), TextAlign.Center, spoken = model.t("column.chosen"))
+    LineHeadings(model)
 }
 
 @Composable

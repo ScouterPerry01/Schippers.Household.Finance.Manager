@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Charging
 import ca.schippers.hfm.books.DriveKind
@@ -204,12 +205,18 @@ private fun OverviewTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> 
         v.notes?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         HorizontalDivider(Modifier.padding(vertical = 6.dp))
         Text(model.t("vehicles.readings"), style = MaterialTheme.typography.titleSmall)
+        if (readings.isNotEmpty()) HeadingRow(Modifier.width(110.dp + 140.dp + 160.dp + ACTIONS_WIDTH)) {
+            ColumnHeading(model.t("register.date"), Modifier.width(110.dp))
+            ColumnHeading(model.t("column.odometer"), Modifier.width(140.dp))
+            ColumnHeading(model.t("column.source"), Modifier.width(160.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+        }
         for (r in readings.reversed().take(12)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(r.date), Modifier.width(110.dp))
                 Text(km(model, r.odometer), Modifier.width(140.dp))
                 Text(model.t("readingSource.${r.source}"), Modifier.width(160.dp), style = MaterialTheme.typography.bodySmall)
-                if (r.id != null) TextButton(onClick = { deleting = r }) { Text(model.t("common.delete")) }
+                if (r.id != null) TextButton(onClick = { deleting = r }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.delete")) }
             }
         }
     }
@@ -234,6 +241,11 @@ private fun MaintenanceTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) 
             Button(onClick = { onEdit(VehicleEdit.Task(MaintenanceTask("", v.id, "", intervalMonths = 12, startDate = today(), startOdometer = books.vehicles.latestOdometer(v.id)?.odometer))) }) {
                 Text(model.t("vehicles.addTask"))
             }
+        }
+        if (statuses.isNotEmpty()) HeadingRow(Modifier.padding(top = 8.dp).padding(horizontal = 12.dp)) {
+            ColumnHeading(model.t("vehicles.taskName"), Modifier.weight(1f))
+            ColumnHeading(model.t("maintenanceReport.due"), Modifier.width(360.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(TASK_ACTIONS_WIDTH))
         }
         LazyColumn(Modifier.padding(top = 8.dp)) {
             if (statuses.isEmpty() && inactive.isEmpty()) item { Text(model.t("vehicles.noTasks"), Modifier.padding(8.dp)) }
@@ -276,13 +288,18 @@ private fun TaskRow(model: BooksModel, v: Vehicle, s: TaskStatus, onEdit: (Vehic
                 )
                 s.forecastDate?.takeIf { s.dueOdometer != null }?.let { Text(model.t("vehicles.forecast", model.date(it)), style = MaterialTheme.typography.bodySmall) }
             }
-            OutlinedButton(onClick = {
-                onEdit(VehicleEdit.Service(v, ServiceRecord("", v.id, today(), model.books.vehicles.latestOdometer(v.id)?.odometer, taskIds = setOf(t.id))))
-            }) { Text(model.t("vehicles.markDone")) }
-            TextButton(onClick = { onEdit(VehicleEdit.Task(t)) }) { Text(model.t("common.edit")) }
+            Row(Modifier.width(TASK_ACTIONS_WIDTH), verticalAlignment = Alignment.CenterVertically) {
+                OutlinedButton(onClick = {
+                    onEdit(VehicleEdit.Service(v, ServiceRecord("", v.id, today(), model.books.vehicles.latestOdometer(v.id)?.odometer, taskIds = setOf(t.id))))
+                }) { Text(model.t("vehicles.markDone")) }
+                TextButton(onClick = { onEdit(VehicleEdit.Task(t)) }) { Text(model.t("common.edit")) }
+            }
         }
     }
 }
+
+/** Mark done and Edit, in both languages. */
+private val TASK_ACTIONS_WIDTH = 280.dp
 
 private fun intervalText(model: BooksModel, t: MaintenanceTask): String = listOfNotNull(
     t.intervalMonths?.let { model.t("vehicles.everyMonths", it) },
@@ -301,6 +318,13 @@ private fun ServiceTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> U
             Box(Modifier.weight(1f))
             Button(onClick = { onEdit(VehicleEdit.Service(v, ServiceRecord("", v.id, today(), books.vehicles.latestOdometer(v.id)?.odometer))) }) { Text(model.t("vehicles.addService")) }
         }
+        if (services.isNotEmpty()) HeadingRow(Modifier.padding(top = 8.dp)) {
+            ColumnHeading(model.t("register.date"), Modifier.width(110.dp))
+            ColumnHeading(model.t("column.odometer"), Modifier.width(120.dp))
+            ColumnHeading(model.t("vehicles.service"), Modifier.weight(1f))
+            ColumnHeading(model.t("vehicles.cost"), Modifier.width(120.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+        }
         LazyColumn(Modifier.padding(top = 8.dp)) {
             if (services.isEmpty()) item { Text(model.t("vehicles.noServices"), Modifier.padding(8.dp)) }
             items(services, key = { it.id }) { s ->
@@ -318,7 +342,7 @@ private fun ServiceTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> U
                         )
                     }
                     Text(s.cost?.let(model::money).orEmpty(), Modifier.width(120.dp))
-                    TextButton(onClick = { onEdit(VehicleEdit.Service(v, s)) }) { Text(model.t("common.edit")) }
+                    TextButton(onClick = { onEdit(VehicleEdit.Service(v, s)) }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.edit")) }
                 }
                 HorizontalDivider()
             }
@@ -370,6 +394,14 @@ private fun FuelTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> Unit
                 Text(model.t(if (v.electric) "vehicles.addCharge" else "vehicles.addFuel"))
             }
         }
+        if (entries.isNotEmpty()) HeadingRow(Modifier.padding(top = 8.dp)) {
+            ColumnHeading(model.t("register.date"), Modifier.width(110.dp))
+            ColumnHeading(model.t("column.odometer"), Modifier.width(120.dp))
+            ColumnHeading(model.t("column.quantity"), Modifier.width(180.dp))
+            ColumnHeading(model.t("column.details"), Modifier.weight(1f))
+            ColumnHeading(model.t("vehicles.cost"), Modifier.width(120.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+        }
         LazyColumn(Modifier.padding(top = 8.dp)) {
             if (entries.isEmpty()) item { Text(model.t("vehicles.noFuel"), Modifier.padding(8.dp)) }
             items(entries, key = { it.id }) { e ->
@@ -386,7 +418,7 @@ private fun FuelTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> Unit
                         Modifier.weight(1f), style = MaterialTheme.typography.bodySmall,
                     )
                     Text(e.cost?.let(model::money).orEmpty(), Modifier.width(120.dp))
-                    TextButton(onClick = { onEdit(VehicleEdit.Fuel(v, e)) }) { Text(model.t("common.edit")) }
+                    TextButton(onClick = { onEdit(VehicleEdit.Fuel(v, e)) }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.edit")) }
                 }
                 HorizontalDivider()
             }
@@ -406,6 +438,11 @@ private fun WarrantiesTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -
             Text(model.t("vehicles.warrantyExplain", LeadTimes.warranty(today())), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
             Button(onClick = { onEdit(VehicleEdit.WarrantyEdit(Warranty("", v.id, WarrantyKind.MANUFACTURER, v.make, v.purchaseDate))) }) { Text(model.t("vehicles.addWarranty")) }
         }
+        if (warranties.isNotEmpty()) HeadingRow(Modifier.padding(top = 8.dp)) {
+            ColumnHeading(model.t("assets.warranty"), Modifier.weight(1f))
+            ColumnHeading(model.t("column.coverage"), Modifier.width(160.dp))
+            ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+        }
         LazyColumn(Modifier.padding(top = 8.dp)) {
             if (warranties.isEmpty()) item { Text(model.t("vehicles.noWarranties"), Modifier.padding(8.dp)) }
             items(warranties, key = { it.id }) { w ->
@@ -422,7 +459,7 @@ private fun WarrantiesTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -
                         model.t(if (covered) "vehicles.covered" else "vehicles.notCovered"), Modifier.width(160.dp),
                         color = if (covered) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, fontWeight = FontWeight.Medium,
                     )
-                    TextButton(onClick = { onEdit(VehicleEdit.WarrantyEdit(w)) }) { Text(model.t("common.edit")) }
+                    TextButton(onClick = { onEdit(VehicleEdit.WarrantyEdit(w)) }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.edit")) }
                 }
                 HorizontalDivider()
             }
@@ -453,6 +490,10 @@ private fun CostsTab(model: BooksModel, v: Vehicle) {
         )
         HorizontalDivider(Modifier.padding(vertical = 6.dp))
         if (cost.costs.byCategory.isEmpty()) Text(model.t("costs.none"))
+        else HeadingRow(Modifier.width(320.dp + 160.dp)) {
+            ColumnHeading(model.t("register.category"), Modifier.width(320.dp))
+            ColumnHeading(model.t("register.amount"))
+        }
         for ((id, total) in cost.costs.byCategory) {
             Row { Text(id?.let(categories::get) ?: model.t("register.uncategorized"), Modifier.width(320.dp)); Text(model.money(total)) }
         }
@@ -943,6 +984,18 @@ private fun WarrantyDialog(model: BooksModel, existing: Warranty, onClose: () ->
     }
 }
 
+/** NAV-04: the headings over a warranty's claims (vehicles and other assets). */
+@Composable
+internal fun ClaimHeadings(model: BooksModel) {
+    HeadingRow {
+        ColumnHeading(model.t("column.claim"), Modifier.weight(1f))
+        ColumnHeading(model.t("column.amounts"), Modifier.width(CLAIM_AMOUNTS_WIDTH))
+        ColumnHeading(model.t("table.actions"), Modifier.width(ACTIONS_WIDTH), TextAlign.Center)
+    }
+}
+
+internal val CLAIM_AMOUNTS_WIDTH = 200.dp
+
 /** WAR-03: the claim log of a saved vehicle warranty: date, problem, outcome, cost covered, cost paid. */
 @Composable
 private fun WarrantyClaims(model: BooksModel, warranty: Warranty) {
@@ -957,14 +1010,15 @@ private fun WarrantyClaims(model: BooksModel, warranty: Warranty) {
     var paid by remember { mutableStateOf("") }
     var deleting by remember { mutableStateOf<WarrantyClaim?>(null) }
     Text(model.t("assets.claims"), style = MaterialTheme.typography.titleSmall)
+    if (claims.isNotEmpty()) ClaimHeadings(model)
     for (c in claims) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("${model.date(c.date)} · ${c.problem}" + (c.outcome?.let { " → $it" }.orEmpty()), Modifier.weight(1f))
             Text(
                 listOfNotNull(c.covered?.let { model.t("assets.coveredAmount", model.money(it)) }, c.paid?.let { model.t("vehicles.paidAmount", model.money(it)) }).joinToString(" · "),
-                style = MaterialTheme.typography.bodySmall,
+                Modifier.width(CLAIM_AMOUNTS_WIDTH), style = MaterialTheme.typography.bodySmall,
             )
-            TextButton(onClick = { deleting = c }) { Text(model.t("common.delete")) }
+            TextButton(onClick = { deleting = c }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.delete")) }
         }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

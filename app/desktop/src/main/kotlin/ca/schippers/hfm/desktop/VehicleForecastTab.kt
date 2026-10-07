@@ -116,6 +116,11 @@ private fun ForecastBudgetDialog(model: BooksModel, onClose: () -> Unit) {
     }) {
         Text(model.t("forecast.budgetHint"), style = MaterialTheme.typography.bodySmall)
         if (lines.isEmpty()) Text(model.t("forecast.budgetNone"))
+        else HeadingRow(spacing = 8.dp) {
+            ColumnHeading(model.t("register.category"), Modifier.width(260.dp))
+            ColumnHeading(model.t("column.monthly"), Modifier.width(160.dp))
+            ColumnHeading(model.t("column.currentBudget"))
+        }
         for (l in lines) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(names[l.categoryId].orEmpty(), Modifier.width(260.dp))

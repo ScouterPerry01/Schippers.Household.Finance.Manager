@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.ChecklistSlip
@@ -116,7 +117,13 @@ private fun DonationsTab(model: BooksModel) {
         }
     }
     if (gifts.isEmpty()) Text(model.t("taxes.noDonations"), Modifier.padding(vertical = 12.dp))
-    LazyColumn(Modifier.padding(top = 8.dp)) {
+    else HeadingRow(Modifier.padding(top = 8.dp)) {
+        ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+        ColumnHeading(model.t("report.person"), Modifier.width(110.dp))
+        ColumnHeading(model.t("column.donee"), Modifier.weight(1f))
+        ColumnHeading(model.t("register.amount"), align = TextAlign.End)
+    }
+    LazyColumn {
         items(gifts, key = { "${it.transactionId}/${it.memberId}/${it.kind}" }) { d ->
             Row(Modifier.fillMaxWidth().clickable { editing = d }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(model.date(d.date), Modifier.width(100.dp))
@@ -199,7 +206,12 @@ private fun SlipsTab(model: BooksModel) {
     }
     Text(model.t("slips.hint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
     if (slips.isEmpty()) Text(model.t("slips.none"), Modifier.padding(vertical = 12.dp))
-    LazyColumn(Modifier.padding(top = 8.dp)) {
+    else HeadingRow(Modifier.padding(top = 8.dp)) {
+        ColumnHeading(model.t("slips.type"), Modifier.width(270.dp))
+        ColumnHeading(model.t("column.issuer"), Modifier.weight(1f))
+        ColumnHeading(model.t("slips.status"), align = TextAlign.End)
+    }
+    LazyColumn {
         slips.groupBy { it.memberId }.forEach { (member, mine) ->
             item(key = "h/$member") {
                 val received = mine.count { it.status == SlipStatus.RECEIVED }
@@ -288,7 +300,12 @@ private fun InstalmentsTab(model: BooksModel) {
     }
     Text(model.t("instalments.hint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
     if (schedule.isEmpty()) Text(model.t("instalments.none"), Modifier.padding(vertical = 12.dp))
-    LazyColumn(Modifier.padding(top = 8.dp)) {
+    else HeadingRow(Modifier.padding(top = 8.dp)) {
+        ColumnHeading(model.t("column.dueDate"), Modifier.width(110.dp))
+        ColumnHeading(model.t("goals.status"), Modifier.weight(1f))
+        ColumnHeading(model.t("register.amount"), align = TextAlign.End)
+    }
+    LazyColumn {
         schedule.groupBy { Triple(it.accountId, it.memberId, it.authority) }.forEach { (key, rows) ->
             item(key = "h/$key") {
                 Row(Modifier.fillMaxWidth().clickable { editing = InstalmentPlan(key.first, key.second, key.third, rows) }.padding(top = 12.dp, bottom = 4.dp)) {
@@ -394,7 +411,13 @@ private fun PackageTab(model: BooksModel) {
     }
     Text(model.t("package.unencrypted"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
     message?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-    LazyColumn(Modifier.padding(top = 8.dp)) {
+    if (person.lines.isNotEmpty()) HeadingRow(Modifier.padding(top = 8.dp)) {
+        ColumnHeading(model.t("package.column.item"), Modifier.weight(1f))
+        ColumnHeading(model.t("package.column.detail"), Modifier.weight(1f))
+        ColumnHeading(model.t("package.column.line"), Modifier.width(110.dp))
+        ColumnHeading(model.t("package.column.amount"), Modifier.width(140.dp), TextAlign.End)
+    }
+    LazyColumn {
         person.lines.groupBy { it.item.section }.forEach { (section, lines) ->
             item(key = "s/$section") {
                 Text(model.t("packageSection.$section"), fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))

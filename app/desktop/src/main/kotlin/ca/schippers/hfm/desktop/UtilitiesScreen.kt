@@ -129,6 +129,13 @@ private fun MetersTab(model: BooksModel) {
                         TextButton(onClick = { editing = m }, enabled = access.mayEdit(m.groupId)) { Text(model.t("meter.edit")) }
                     }
                     if (s.months.isEmpty()) Text(model.t("meter.noUse"), style = MaterialTheme.typography.bodySmall)
+                    else HeadingRow {
+                        ColumnHeading(model.t("custom.dimension.MONTH"), Modifier.width(270.dp))
+                        ColumnHeading(model.t("column.used"), Modifier.width(130.dp))
+                        ColumnHeading(model.t("column.lastYear"), Modifier.width(220.dp))
+                        ColumnHeading(model.t("column.variation"), Modifier.width(80.dp))
+                        ColumnHeading(model.t("vehicles.cost"), Modifier.width(120.dp))
+                    }
                     for (c in s.months.take(MONTHS_SHOWN)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(model.monthName(c.use) + if (!c.use.complete) " " + model.t("utilities.partial") else "", Modifier.width(270.dp))
@@ -216,6 +223,7 @@ private fun MeterReadingsDialog(model: BooksModel, m: UtilityMeter, access: Grou
     }) {
         Column(Modifier.heightIn(max = 260.dp).verticalScroll(rememberScrollState())) {
             if (m.readings.isEmpty()) Text(model.t("meter.noReadings"), style = MaterialTheme.typography.bodySmall)
+            else DatedHeadings(model, "column.reading")
             for (r in m.readings.reversed().take(READINGS_SHOWN)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(r.date), Modifier.width(100.dp))
@@ -225,7 +233,7 @@ private fun MeterReadingsDialog(model: BooksModel, m: UtilityMeter, access: Grou
                             (if (r.fromPhone) " · " + model.t("tracker.fromPhone") else "") + (r.notes?.let { " · $it" } ?: ""),
                         Modifier.weight(1f),
                     )
-                    RemoveButton(model.t("common.delete"), enabled = access.mayEdit(m.groupId)) { deleting = r }
+                    RemoveButton(model.t("common.delete"), Modifier.width(ICON_ACTIONS_WIDTH), enabled = access.mayEdit(m.groupId)) { deleting = r }
                 }
             }
         }
@@ -309,6 +317,11 @@ private fun TanksTab(model: BooksModel) {
                             )
                         }
                     }
+                    if (s.months.isNotEmpty()) HeadingRow {
+                        ColumnHeading(model.t("custom.dimension.MONTH"), Modifier.width(270.dp))
+                        ColumnHeading(model.t("column.used"), Modifier.width(130.dp))
+                        if (s.pricePerLitre != null) ColumnHeading(model.t("vehicles.cost"))
+                    }
                     for (u in s.months.take(MONTHS_SHOWN)) {
                         Row {
                             Text(model.monthName(u) + if (!u.complete) " " + model.t("utilities.partial") else "", Modifier.width(270.dp))
@@ -388,6 +401,7 @@ private fun TankReadingsDialog(model: BooksModel, t: FuelTank, access: GroupAcce
     }) {
         Column(Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())) {
             if (t.readings.isEmpty()) Text(model.t("tank.noReadings"), style = MaterialTheme.typography.bodySmall)
+            else DatedHeadings(model, "column.level")
             for (r in t.readings.reversed().take(READINGS_SHOWN)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(r.date), Modifier.width(100.dp))
@@ -396,7 +410,7 @@ private fun TankReadingsDialog(model: BooksModel, t: FuelTank, access: GroupAcce
                             (if (r.fromPhone) " · " + model.t("tracker.fromPhone") else "") + (r.notes?.let { " · $it" } ?: ""),
                         Modifier.weight(1f),
                     )
-                    RemoveButton(model.t("common.delete"), enabled = access.mayEdit(t.groupId)) { deleting = r }
+                    RemoveButton(model.t("common.delete"), Modifier.width(ICON_ACTIONS_WIDTH), enabled = access.mayEdit(t.groupId)) { deleting = r }
                 }
             }
         }
@@ -438,6 +452,7 @@ private fun TankDeliveriesDialog(model: BooksModel, t: FuelTank, access: GroupAc
     }) {
         Column(Modifier.heightIn(max = 220.dp).verticalScroll(rememberScrollState())) {
             if (t.deliveries.isEmpty()) Text(model.t("tank.noDeliveries"), style = MaterialTheme.typography.bodySmall)
+            else DatedHeadings(model, "column.delivery")
             for (d in t.deliveries.reversed().take(READINGS_SHOWN)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(model.date(d.date), Modifier.width(100.dp))
@@ -446,7 +461,7 @@ private fun TankDeliveriesDialog(model: BooksModel, t: FuelTank, access: GroupAc
                             (if (d.transactionId != null) " · " + model.t("tank.paymentRecorded") else "") + (d.notes?.let { " · $it" } ?: ""),
                         Modifier.weight(1f),
                     )
-                    RemoveButton(model.t("common.delete"), enabled = access.mayEdit(t.groupId)) { deleting = d }
+                    RemoveButton(model.t("common.delete"), Modifier.width(ICON_ACTIONS_WIDTH), enabled = access.mayEdit(t.groupId)) { deleting = d }
                 }
             }
         }

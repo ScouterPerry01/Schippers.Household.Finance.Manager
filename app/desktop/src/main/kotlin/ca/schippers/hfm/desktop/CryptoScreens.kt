@@ -115,7 +115,12 @@ fun WalletView(model: BooksModel, account: Account) {
             TextButton(onClick = { model.act { books.crypto.linkTransfers() }?.let { status = model.t("wallet.linked", it) } }) { Text(model.t("wallet.link")) }
         }
     }
-    HorizontalDivider(Modifier.padding(top = 8.dp))
+    if (lines.isEmpty()) HorizontalDivider(Modifier.padding(top = 8.dp))
+    else HeadingRow(Modifier.padding(top = 8.dp)) {
+        ColumnHeading(model.t("register.date"), Modifier.width(110.dp))
+        ColumnHeading(model.t("column.description"), Modifier.weight(1f))
+        ColumnHeading(model.t("register.amount"), Modifier.width(170.dp), TextAlign.End)
+    }
     LazyColumn {
         if (lines.isEmpty()) item { Text(model.t("wallet.noLines"), Modifier.padding(8.dp)) }
         items(lines, key = { it.id }) { t ->

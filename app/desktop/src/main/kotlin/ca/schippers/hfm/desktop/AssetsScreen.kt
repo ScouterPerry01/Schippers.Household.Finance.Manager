@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.books.Asset
@@ -122,7 +123,11 @@ private fun AssetsTabView(model: BooksModel) {
         LabeledCheckbox(model.t("assets.showDisposed"), showDisposed) { showDisposed = it }
     }
     if (rows.isEmpty()) Text(model.t("assets.none"), Modifier.padding(vertical = 12.dp))
-    LazyColumn(Modifier.padding(top = 8.dp)) {
+    else HeadingRow(Modifier.padding(top = 8.dp)) {
+        ColumnHeading(model.t("assets.name"), Modifier.weight(1f))
+        ColumnHeading(model.t("portfolio.value"), align = TextAlign.End)
+    }
+    LazyColumn {
         items(rows, key = { it.first.id }) { (a, depth) ->
             Row(Modifier.fillMaxWidth().clickable { editing = a }.padding(start = (depth * 24).dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -276,6 +281,10 @@ private fun AssetDialog(model: BooksModel, existing: Asset, onClose: () -> Unit)
                 Text(model.t("assets.coverage"), style = MaterialTheme.typography.titleSmall)
                 val coverage = remember(model.revision, s.id) { books.assets.coverage(s.id, today()) }
                 if (coverage.isEmpty()) Text(model.t("assets.noCoverage"), style = MaterialTheme.typography.bodySmall)
+                else HeadingRow {
+                    ColumnHeading(model.t("column.coverage"), Modifier.weight(1f))
+                    ColumnHeading(model.t("column.ends"), align = TextAlign.End)
+                }
                 for (c in coverage) {
                     Row(Modifier.fillMaxWidth().let { m -> c.warranty?.let { w -> m.clickable { warranty = w } } ?: m }.padding(vertical = 3.dp)) {
                         Text(listOf(model.t(c.kindKey), c.label).filter { it.isNotBlank() }.joinToString(" · "), Modifier.weight(1f))
@@ -358,11 +367,12 @@ private fun WarrantyDialog(model: BooksModel, existing: AssetWarranty, onClose: 
             if (existing.id.isNotBlank()) {
                 HorizontalDivider(Modifier.padding(vertical = 6.dp))
                 Text(model.t("assets.claims"), style = MaterialTheme.typography.titleSmall)
+                if (claims.isNotEmpty()) ClaimHeadings(model)
                 for (c in claims) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("${model.date(c.date)} · ${c.problem}" + (c.outcome?.let { " → $it" }.orEmpty()), Modifier.weight(1f))
-                        c.covered?.let { Text(model.t("assets.coveredAmount", model.money(it)), style = MaterialTheme.typography.bodySmall) }
-                        TextButton(onClick = { deletingClaim = c }) { Text(model.t("common.delete")) }
+                        Text(c.covered?.let { model.t("assets.coveredAmount", model.money(it)) }.orEmpty(), Modifier.width(CLAIM_AMOUNTS_WIDTH), style = MaterialTheme.typography.bodySmall)
+                        TextButton(onClick = { deletingClaim = c }, Modifier.width(ACTIONS_WIDTH)) { Text(model.t("common.delete")) }
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -431,6 +441,10 @@ private fun InsuranceTab(model: BooksModel) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
         Button(onClick = { editing = InsurancePolicy("", group, PolicyKind.HOME, "") }) { Text(model.t("insurance.add")) }
         if (policies.isEmpty()) Text(model.t("insurance.none"), Modifier.padding(vertical = 12.dp))
+        else HeadingRow(Modifier.padding(top = 8.dp)) {
+            ColumnHeading(model.t("column.policy"), Modifier.weight(1f))
+            ColumnHeading(model.t("insurance.premium"), align = TextAlign.End)
+        }
         for (p in policies) {
             Row(Modifier.fillMaxWidth().clickable { editing = p }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -448,6 +462,10 @@ private fun InsuranceTab(model: BooksModel) {
         if (uninsured.isNotEmpty()) {
             Text(model.t("insurance.uninsured"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp))
             Text(model.t("insurance.uninsuredHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            HeadingRow {
+                ColumnHeading(model.t("insurance.item"), Modifier.weight(1f))
+                ColumnHeading(model.t("portfolio.value"), align = TextAlign.End)
+            }
             for (u in uninsured) {
                 Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                     Text(u.name + if (u.isVehicle) " · " + model.t("assets.vehicle") else "", Modifier.weight(1f), color = MaterialTheme.colorScheme.error)
@@ -600,6 +618,10 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
                 HorizontalDivider(Modifier.padding(vertical = 6.dp))
                 Text(model.t("insurance.claims"), style = MaterialTheme.typography.titleSmall)
                 val claims = remember(model.revision, s.id) { books.insurance.claims(s.id) }
+                if (claims.isNotEmpty()) HeadingRow {
+                    ColumnHeading(model.t("column.claim"), Modifier.weight(1f))
+                    ColumnHeading(model.t("invoice.status"), align = TextAlign.End)
+                }
                 for (c in claims) {
                     Row(Modifier.fillMaxWidth().clickable { claim = c }.padding(vertical = 3.dp)) {
                         Text("${model.date(c.date)} · ${c.description}", Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)

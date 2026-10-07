@@ -30,6 +30,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -717,7 +719,7 @@ fun TableView(model: BooksModel, shown: ReportTable, startOpen: Boolean = false)
         Column(Modifier.padding(top = 8.dp)) {
             Row(Modifier.fillMaxWidth()) {
                 table.columns.forEachIndexed { c, name ->
-                    Text(name, Modifier.weight(1f).padding(horizontal = 6.dp), fontWeight = FontWeight.Bold, textAlign = if (table.isNumeric(c)) TextAlign.End else TextAlign.Start, style = MaterialTheme.typography.bodySmall)
+                    Text(name, Modifier.weight(1f).padding(horizontal = 6.dp).semantics { heading() }, fontWeight = FontWeight.Bold, textAlign = if (table.isNumeric(c)) TextAlign.End else TextAlign.Start, style = MaterialTheme.typography.bodySmall)
                 }
             }
             HorizontalDivider()
@@ -746,6 +748,13 @@ fun DrillDialog(model: BooksModel, title: String, rows: List<DrillRow>, onClose:
     WideDialog(title, model.t("common.close"), onClose) {
             Column(Modifier.width(820.dp)) {
                 Text(model.t("report.drillSummary", rows.size, model.money(total)), style = MaterialTheme.typography.bodySmall)
+                HeadingRow(Modifier.padding(top = 8.dp)) {
+                    ColumnHeading(model.t("register.date"), Modifier.width(100.dp))
+                    ColumnHeading(model.t("templates.account"), Modifier.width(150.dp))
+                    ColumnHeading(model.t("register.payee"), Modifier.weight(1f))
+                    ColumnHeading(model.t("register.category"), Modifier.width(180.dp))
+                    ColumnHeading(model.t("register.amount"), Modifier.width(120.dp), TextAlign.End)
+                }
                 LazyColumn(Modifier.heightIn(max = 460.dp).padding(top = 8.dp)) {
                     items(rows) { r ->
                         Row(

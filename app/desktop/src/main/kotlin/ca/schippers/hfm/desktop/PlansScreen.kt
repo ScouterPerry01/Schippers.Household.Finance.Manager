@@ -158,6 +158,11 @@ private fun RoomCard(model: BooksModel, r: RoomStatus, onAction: (PlanAction) ->
             if (r.plan == RoomPlan.TFSA && r.withdrawals.isPositive) Text(model.t("plans.tfsaWithdrawals"), style = MaterialTheme.typography.bodySmall)
             TextButton(onClick = { open = !open }) { Text(model.t(if (open) "plans.hideLines" else "plans.showLines", r.flows.size)) }
             if (open) {
+                if (r.flows.isNotEmpty()) HeadingRow {
+                    ColumnHeading(model.t("register.date"), Modifier.width(110.dp))
+                    ColumnHeading(model.t("templates.account"), Modifier.weight(1f))
+                    ColumnHeading(model.t("register.amount"), Modifier.width(130.dp), TextAlign.End)
+                }
                 for (f in r.flows) {
                     Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                         Text(model.date(f.date), Modifier.width(110.dp), style = MaterialTheme.typography.bodySmall)
@@ -297,6 +302,11 @@ private fun BeneficiariesTab(model: BooksModel, onAction: (PlanAction) -> Unit) 
                     TextButton(onClick = { onAction(PlanAction.EditBeneficiary(a, null)) }) { Text(model.t("plans.addBeneficiary")) }
                 }
                 if (list.isEmpty()) Text(model.t("plans.noBeneficiary"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                else HeadingRow {
+                    ColumnHeading(model.t("calendar.category"), Modifier.width(200.dp))
+                    ColumnHeading(model.t("plans.beneficiary"), Modifier.weight(1f))
+                    ColumnHeading(model.t("plans.share"), Modifier.width(80.dp), TextAlign.End)
+                }
                 for (b in list) {
                     Row(Modifier.fillMaxWidth().clickable { onAction(PlanAction.EditBeneficiary(a, b)) }.padding(vertical = 4.dp)) {
                         Text(model.t("beneficiaryKind.${b.kind}"), Modifier.width(200.dp), style = MaterialTheme.typography.bodySmall)
