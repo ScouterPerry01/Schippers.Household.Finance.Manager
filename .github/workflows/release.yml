@@ -238,5 +238,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           v="${{ needs.version.outputs.version }}"
+          # English first, then the French notes under a "Français" heading (their own title line dropped).
           notes=docs/releases/$v.en.md; [ -f "$notes" ] || notes=/dev/null
+          if [ -f "docs/releases/$v.en.md" ] && [ -f "docs/releases/$v.fr.md" ]; then
+            notes="$RUNNER_TEMP/notes.md"
+            { cat "docs/releases/$v.en.md"; printf '\n---\n\n# Français\n'; sed '1{/^# /d}' "docs/releases/$v.fr.md"; } > "$notes"
+          fi
           gh release create "v$v" release/* --draft --title "RANN's Roost $v" --notes-file "$notes"

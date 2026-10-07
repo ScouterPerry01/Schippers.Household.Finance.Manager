@@ -23,8 +23,8 @@ Background: [ADR 0008](adr/0008-signed-releases-and-updates.md) (signed releases
 - [ ] The Windows package opens normally when installed (not only the self-check): see
       [section 6](#6-check-the-msix-on-this-computer).
 - [ ] The real-phone test of the companion is done (sideload the GitHub APK over USB with `adb install`).
-- [ ] The release notes read well in both languages. The GitHub release body is the English file;
-      `update.json` carries both.
+- [ ] The release notes read well in both languages. The GitHub release body is the English file
+      followed by the French one (assembled by the workflow); `update.json` carries both.
 
 ## 1. The release key (once, ever)
 
@@ -118,7 +118,8 @@ If a job fails, nothing is published. Fix on `main`, delete the tag (`git push o
       # with minisign installed (winget install jedisct1.minisign):
       minisign -Vm "$env:TEMP\rel100\ranns-roost_1.0.0_amd64.deb" -p core\update\src\main\resources\hfm\update\release-key.pub
 
-- [ ] Optionally add the French notes under the English ones in the release text (GitHub shows one text).
+- [ ] Read the release text: the workflow puts the English notes first, then a line and the French
+      notes under a "Français" heading (from `docs/releases/1.0.0.en.md` and `.fr.md`).
 - [ ] Publish: `gh release edit v1.0.0 --draft=false --latest`. From now on, Linux copies and the GitHub
       APK that agreed to check will see later releases through `releases/latest`.
 
