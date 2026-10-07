@@ -208,3 +208,22 @@ Owner's request (2026-10-06), before 1.0.
 | HRS-01 | Hours worked for side income, per client and task, started and stopped on the phone or entered on the desktop; unbilled hours become invoice lines (SAL-04). | Should |
 | CHO-01 | Chores per child, ticked on the phone, earning amounts that feed the child's allowance and money (HH-03). | Could |
 | VOL-01 | Volunteer hours per person and organization (volunteer firefighter and search and rescue tax credits need 200 hours; students' community service hours), with a yearly total. | Could |
+
+## From the owner's real-phone test (2026-10-07)
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| TRP-11 | A trip keeps the GPS position of its departure, each stop and its arrival, and an address for each: from a saved place, typed, or looked up from the position (opt-in, see TRP-17). | Should |
+| TRP-12 | A trip can have several stops: each stop records its arrival time, odometer and place, then the trip continues to the next; a single-destination trip stays one tap. | Should |
+| TRP-13 | An optional planned destination at the start (a saved place, a typed address, home or the previous stop), which can be changed or cancelled during the trip. | Should |
+| TRP-14 | Arriving offers: back home, back to the previous stop, or a new place. | Should |
+| TRP-15 | Rest breaks during a trip, started and ended with one tap (time and position), left out of driving time and shown in the trip log. | Should |
+| TRP-16 | A note dictated or recorded (voice) and photos of the location can be added to a trip or a stop; they reach the computer with the trip. | Should |
+| TRP-17 | Address lookup from a GPS position through Android's geocoder (Google's service), off by default and turned on in Settings; the privacy policy says what is sent. | Should |
+| TRP-18 | Nearby fuel stations and EV chargers, closest first, from OpenStreetMap (no account), at any time (before or during a trip, from the fuel form); off by default, sends the rough position to OpenStreetMap only when asked; a station picked fills the form and can be saved as a place. | Should |
+| TRP-19 | A station can be added by hand on the phone (name, address, kind), with the current position filled in. | Should |
+| SEC-09 | The phone app's lock time is chosen in Settings: immediately, after 1, 5 or 15 minutes. | Should |
+| CSY-06 | Calendar sync on the phone is chosen in Settings: off, bring in only (default), or both ways. Both ways also writes the household's appointments, schedules and bills the user may see into a calendar the user chooses: a RANN's Roost calendar kept only on the phone, or a calendar of one of the phone's accounts. Items written are removed when the option is turned off or the phone is unpaired. | Should |
+| CAL-12 | The phone's agenda is reached from a calendar icon at the top of the Capture and Summary tabs. | Should |
+| DOC-01 | The document viewer on the computer shows every page of a document (page by page) and can zoom in, out and back to fit. | Should |
+| DOC-02 | A receipt or invoice can be itemized by hand in the review dialog (item, amount, category, sales tax), creating the transaction's split lines without AI reading. | Should |
