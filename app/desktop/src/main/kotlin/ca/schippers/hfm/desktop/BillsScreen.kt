@@ -206,7 +206,7 @@ private fun comparisonText(model: BooksModel, c: BillHistoryEntry): String? = li
 
 /** BILL-09: the amounts paid for a bill, newest first, each beside the usual and last year's. */
 @Composable
-private fun BillHistory(model: BooksModel, bill: Bill) {
+internal fun BillHistory(model: BooksModel, bill: Bill) {
     val history = remember(model.revision, bill.id) { runCatching { model.books.bills.history(bill.id) }.getOrDefault(emptyList()) }
     Text(model.t("bills.history"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 8.dp))
     if (history.isEmpty()) Text(model.t("bills.history.none"), style = MaterialTheme.typography.bodySmall)
@@ -228,6 +228,7 @@ private const val HISTORY_SHOWN = 12
 @Composable
 private fun AllBillsTab(model: BooksModel, onEdit: (Bill) -> Unit) {
     val bills = remember(model.revision) { model.books.bills.list(includeInactive = true) }
+    val lists = remember(model.revision) { model.books.billLists.lists() }
     LazyColumn {
         if (bills.isEmpty()) item { Text(model.t("bills.none"), Modifier.padding(8.dp)) }
         items(bills, key = { it.id }) { bill ->
@@ -239,6 +240,9 @@ private fun AllBillsTab(model: BooksModel, onEdit: (Bill) -> Unit) {
                         listOfNotNull(model.t("billKind.${bill.kind}"), describeRecurrence(model, bill), next?.let { model.t("bills.next", model.date(it)) }).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                     )
+                    // BILL-13, BILL-15: what the bill is for, and the account number, masked.
+                    val about = listOfNotNull(classificationText(model, lists, bill), bill.payeeAccountMasked?.let { model.t("bills.accountNo", it) })
+                    if (about.isNotEmpty()) Text(about.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                 }
                 Text((if (bill.amountKind == AmountKind.FIXED) "" else "≈ ") + model.money(bill.amount), Modifier.width(130.dp))
                 TextButton(onClick = { onEdit(bill) }) { Text(model.t("common.edit")) }
@@ -399,7 +403,7 @@ private fun ForecastTab(model: BooksModel) {
 
 /** BILL-06: confirm the payment date and amount; the transaction is created in the paying account. */
 @Composable
-private fun PayDialog(model: BooksModel, o: Occurrence, onClose: () -> Unit) {
+internal fun PayDialog(model: BooksModel, o: Occurrence, onClose: () -> Unit) {
     val locale = model.language.locale
     var date by remember { mutableStateOf(today().toString()) }
     var amount by remember { mutableStateOf(MoneyFormat.formatAmount(o.amount, locale)) }
@@ -473,145 +477,6 @@ internal fun describeRecurrence(model: BooksModel, r: Recurrence): String {
         else -> model.t("repeat.${repeat.name}")
     }
     return if (r.monthDay != MonthDay.SAME_DAY) "$base (${model.t("monthDay.${r.monthDay}")})" else base
-}
-
-/** Add or edit a bill, income or scheduled transfer (BILL-01, BILL-02, BILL-04, BILL-10). */
-@Composable
-private fun BillDialog(model: BooksModel, existing: Bill?, onClose: () -> Unit) {
-    val books = model.books
-    val locale = model.language.locale
-    val accounts = remember { books.accounts.list().map { it.account } }
-    val tree = remember { books.categories.tree() }
-    var kind by remember { mutableStateOf(existing?.kind ?: BillKind.BILL) }
-    var name by remember { mutableStateOf(existing?.name.orEmpty()) }
-    var payee by remember { mutableStateOf(existing?.payeeName.orEmpty()) }
-    var payeeAccount by remember { mutableStateOf(existing?.payeeAccountNumber.orEmpty()) }
-    var accountId by remember { mutableStateOf(existing?.accountId ?: accounts.firstOrNull()?.id) }
-    var transferId by remember { mutableStateOf(existing?.transferAccountId) }
-    var amount by remember { mutableStateOf(existing?.let { MoneyFormat.formatAmount(it.amount, locale) }.orEmpty()) }
-    var amountKind by remember { mutableStateOf(existing?.amountKind ?: AmountKind.FIXED) }
-    var method by remember { mutableStateOf(existing?.paymentMethod ?: PaymentMethod.ONLINE) }
-    var categoryId by remember { mutableStateOf(existing?.categoryId) }
-    var repeat by remember { mutableStateOf(existing?.let { Repeat.of(it.recurrence) } ?: Repeat.MONTHLY) }
-    var interval by remember { mutableStateOf(existing?.recurrence?.interval?.toString() ?: "1") }
-    var monthDay by remember { mutableStateOf(existing?.recurrence?.monthDay ?: MonthDay.SAME_DAY) }
-    var secondDay by remember { mutableStateOf(existing?.recurrence?.secondDay?.toString() ?: "0") }
-    var adjust by remember { mutableStateOf(existing?.recurrence?.adjust ?: BusinessDayAdjust.NONE) }
-    var start by remember { mutableStateOf(existing?.startDate?.toString() ?: today().toString()) }
-    var end by remember { mutableStateOf(existing?.endDate?.toString().orEmpty()) }
-    var reminders by remember { mutableStateOf((existing?.reminderDays ?: LeadTimes.newBill()).joinToString(", ")) }
-    var subscription by remember { mutableStateOf(existing?.isSubscription ?: false) }
-    var cancelBy by remember { mutableStateOf(existing?.cancelBy?.toString().orEmpty()) }
-    var active by remember { mutableStateOf(existing?.active ?: true) }
-    var confirmDelete by remember { mutableStateOf(false) }
-    val account = accounts.firstOrNull { it.id == accountId }
-
-    fun recurrence(): Recurrence {
-        val n = interval.trim().toIntOrNull()?.takeIf { it >= 1 } ?: throw ValidationException("error.invalidNumber")
-        val monthly = repeat in setOf(Repeat.MONTHLY, Repeat.QUARTERLY, Repeat.SEMI_ANNUAL, Repeat.ANNUAL, Repeat.EVERY_N_MONTHS)
-        return when (repeat) {
-            Repeat.SEMI_MONTHLY -> Recurrence(Frequency.SEMI_MONTHLY, secondDay = secondDay.trim().toIntOrNull()?.takeIf { it in 0..31 } ?: throw ValidationException("error.dayOfMonth"), adjust = adjust)
-            Repeat.EVERY_N_DAYS -> Recurrence(Frequency.DAILY, n, adjust = adjust)
-            Repeat.EVERY_N_WEEKS -> Recurrence(Frequency.WEEKLY, n, adjust = adjust)
-            Repeat.EVERY_N_MONTHS -> Recurrence(Frequency.MONTHLY, n, monthDay, adjust = adjust)
-            else -> repeat.recurrence!!.copy(monthDay = if (monthly) monthDay else MonthDay.SAME_DAY, adjust = adjust)
-        }
-    }
-
-    FormDialog(
-        model.t(if (existing == null) "bills.add" else "bills.edit"), model.t("common.save"), model.t("common.cancel"),
-        canSave = name.isNotBlank() && account != null,
-        onDismiss = onClose,
-        onSave = {
-            val ok = model.act {
-                fun date(text: String) = text.trim().ifEmpty { null }?.let { runCatching { LocalDate.parse(it) }.getOrElse { throw ValidationException("error.invalidDate") } }
-                val value = parseAmount(amount, account!!.currency, locale) ?: Money.zero(account.currency)
-                val days = reminders.split(',', ' ').mapNotNull { it.trim().ifEmpty { null } }.map { it.toIntOrNull() ?: throw ValidationException("error.reminderDays") }
-                val draft = BillDraft(
-                    kind, name, value, account.id, recurrence(), date(start) ?: throw ValidationException("error.invalidDate"),
-                    payee.ifBlank { null }, payeeAccount.ifBlank { null }, amountKind, if (kind == BillKind.TRANSFER) transferId else null,
-                    method, if (kind == BillKind.TRANSFER) null else categoryId, date(end), days, subscription, null, date(cancelBy), null,
-                )
-                if (existing == null) {
-                    books.bills.create(draft)
-                } else {
-                    books.bills.update(
-                        existing.copy(
-                            kind = draft.kind, name = draft.name, amount = draft.amount, recurrence = draft.recurrence, startDate = draft.startDate,
-                            payeeName = draft.payeeName, payeeAccountNumber = draft.payeeAccountNumber, amountKind = draft.amountKind,
-                            transferAccountId = draft.transferAccountId, paymentMethod = draft.paymentMethod, categoryId = draft.categoryId,
-                            endDate = draft.endDate, reminderDays = draft.reminderDays, isSubscription = draft.isSubscription,
-                            cancelBy = draft.cancelBy, active = active,
-                        ),
-                    )
-                }
-            }
-            if (ok != null) onClose()
-        },
-    ) {
-        Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Picker(model.t("bills.kind"), BillKind.entries, kind, { model.t("billKind.$it") }, Modifier.weight(1f)) { kind = it }
-                TextInput(model.t("bills.name"), name, Modifier.weight(2f)) { name = it }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Picker(model.t(if (kind == BillKind.INCOME) "bills.depositAccount" else "bills.payingAccount"), accounts, account, { it.name }, Modifier.weight(1f), enabled = existing == null) { accountId = it.id }
-                if (kind == BillKind.TRANSFER) {
-                    Picker(model.t("bills.toAccount"), accounts.filter { it.id != accountId }, accounts.firstOrNull { it.id == transferId }, { it.name }, Modifier.weight(1f)) { transferId = it.id }
-                } else {
-                    Picker(
-                        model.t("register.category"), listOf<Pair<Category, Int>?>(null) + tree, tree.firstOrNull { it.first.id == categoryId },
-                        { it?.first?.name(model.language) ?: model.t("common.none") }, Modifier.weight(1f), indent = { it?.second ?: 0 },
-                    ) { categoryId = it?.first?.id }
-                }
-            }
-            if (kind != BillKind.TRANSFER) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextInput(model.t("register.payee"), payee, Modifier.weight(1f)) { payee = it }
-                    TextInput(model.t("bills.payeeAccount"), payeeAccount, Modifier.weight(1f)) { payeeAccount = it }
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (account != null) AmountInput(model.t("register.amount"), amount, account.currency, locale, Modifier.weight(1f), model::money) { amount = it }
-                Picker(model.t("bills.amountKind"), AmountKind.entries, amountKind, { model.t("amountKind.$it") }, Modifier.weight(1f)) { amountKind = it }
-                Picker(model.t("bills.method"), PaymentMethod.entries, method, { model.t("paymentMethod.$it") }, Modifier.weight(1f)) { method = it }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Picker(model.t("bills.repeat"), Repeat.entries, repeat, { model.t("repeat.$it") }, Modifier.weight(1f)) { repeat = it }
-                when (repeat) {
-                    Repeat.EVERY_N_DAYS, Repeat.EVERY_N_WEEKS, Repeat.EVERY_N_MONTHS -> TextInput(model.t("bills.interval"), interval, Modifier.weight(0.6f)) { interval = it }
-                    Repeat.SEMI_MONTHLY -> TextInput(model.t("bills.secondDay"), secondDay, Modifier.weight(0.6f), supporting = model.t("bills.secondDay.hint")) { secondDay = it }
-                    else -> Unit
-                }
-                if (repeat in setOf(Repeat.MONTHLY, Repeat.QUARTERLY, Repeat.SEMI_ANNUAL, Repeat.ANNUAL, Repeat.EVERY_N_MONTHS)) {
-                    Picker(model.t("bills.monthDay"), MonthDay.entries, monthDay, { model.t("monthDay.$it") }, Modifier.weight(1f)) { monthDay = it }
-                }
-            }
-            Picker(model.t("bills.adjust"), BusinessDayAdjust.entries, adjust, { model.t("adjust.$it") }) { adjust = it }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DateInput(model.t("bills.start"), start, Modifier.weight(1f)) { start = it }
-                DateInput(model.t("bills.end"), end, Modifier.weight(1f)) { end = it }
-            }
-            TextInput(model.t("bills.reminders"), reminders, supporting = model.t("bills.reminders.hint")) { reminders = it }
-            LabeledCheckbox(model.t("bills.subscription"), subscription) { subscription = it }
-            if (subscription) DateInput(model.t("bills.cancelByDate"), cancelBy, Modifier.fillMaxWidth()) { cancelBy = it }
-            if (existing != null) {
-                LabeledCheckbox(model.t("bills.active"), active) { active = it }
-                TextButton(onClick = { confirmDelete = true }) { Text(model.t("common.delete"), color = MaterialTheme.colorScheme.error) }
-                // CON-04: the company that sends the bill, as a contact.
-                LinkedContacts(model, LinkTarget.BILL, existing.id, suggestedName = existing.payeeName ?: existing.name)
-                BillHistory(model, existing)
-            }
-        }
-    }
-    if (confirmDelete && existing != null) {
-        FormDialog(model.t("bills.delete.title"), model.t("common.delete"), model.t("common.cancel"), onDismiss = { confirmDelete = false }, onSave = {
-            if (model.act { books.bills.delete(existing.id) } != null) {
-                confirmDelete = false
-                onClose()
-            }
-        }) { Text(model.t("bills.delete.body", existing.name)) }
-    }
 }
 
 /** BILL-12: saves the next twelve months of due dates as an iCalendar file. */

@@ -476,7 +476,9 @@ class BillService internal constructor(private val books: Books) {
             }
             return
         }
-        val window = LeadTimes.billMatch(due)
+        // Within the bill match window, and less than half a period away, so another period's due date never moves.
+        val period = bill.recurrence.perYear.takeIf { it > 0 }?.let { (365.0 / it / 2).toInt() } ?: Int.MAX_VALUE
+        val window = minOf(LeadTimes.billMatch(due), period)
         val near = occurrencesOf(bill, stored, due.minus(DatePeriod(days = window)), due.plus(DatePeriod(days = window)))
         val nearest = previous?.let { p -> near.firstOrNull { it.dueDate == p && it.status == OccurrenceStatus.DUE } }
             ?: near.filter { it.status != OccurrenceStatus.SKIPPED }.minByOrNull { kotlin.math.abs(it.dueDate.toEpochDays() - due.toEpochDays()) }

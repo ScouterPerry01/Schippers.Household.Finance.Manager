@@ -54,6 +54,17 @@ class DemoHouseholdTest {
             assertTrue(contacts.count { ContactKind.PHARMACY in it.kinds && it.purpose != null } >= 2, "two pharmacies, each with its what-for line")
             assertTrue(contacts.any { c -> c.person && c.organizationId != null && books.contacts.links(c.id).any { it.link.role == LinkRole.ADVISOR } }, "the advisor at the bank")
             assertTrue(contacts.any { c -> books.contacts.links(c.id).any { it.link.role == LinkRole.LENDER } }, "the bank lends the mortgage")
+            // BILL-13 to BILL-20: bills classified, statements with readings, a business bill, and a captured bill to create one from.
+            val bills = books.bills.list().filter { b -> b.kind == ca.schippers.hfm.books.BillKind.BILL }
+            assertTrue(bills.all { b -> b.subcategoryKey != null }, "every bill is classified")
+            assertTrue(bills.any { b -> b.type == ca.schippers.hfm.books.BillType.BUSINESS && b.memberId != null })
+            val hydro = bills.first { b -> b.subcategoryKey == "home.essential.electricity" }
+            val statements = books.bills.statements(hydro.id)
+            assertEquals(2, statements.size)
+            assertTrue(statements.all { s -> s.meterId != null && s.readings.current != null })
+            val waiting = books.documents.inbox().filter { d -> d.kind == ca.schippers.hfm.ocr.DocumentKind.BILL && books.documents.billFor(d.id) == null }
+            assertEquals(1, waiting.size, "the gas bill waits for a bill to be created")
+            assertEquals("home.essential.natural_gas", books.documents.billProposal(waiting.single().id).bill?.subcategoryKey)
             more(books)
         }
     }

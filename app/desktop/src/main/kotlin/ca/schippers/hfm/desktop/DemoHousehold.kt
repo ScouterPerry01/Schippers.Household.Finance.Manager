@@ -69,6 +69,9 @@ import ca.schippers.hfm.books.AllocationTarget
 import ca.schippers.hfm.books.AmountKind
 import ca.schippers.hfm.books.BillDraft
 import ca.schippers.hfm.books.BillKind
+import ca.schippers.hfm.books.BillType
+import ca.schippers.hfm.books.StatementDraft
+import ca.schippers.hfm.ocr.MeterReadings
 import ca.schippers.hfm.books.BenefitKind
 import ca.schippers.hfm.books.BudgetPeriod
 import ca.schippers.hfm.books.PaymentMethod
@@ -371,13 +374,14 @@ object DemoHousehold {
         )
         books.transactions.transfer(TransferDraft(chequing.id, usd.id, today, cad("274.50"), Money.parse("200.00", Currency.USD), l("Achat de dollars US", "US dollar purchase")))
         importStatement(books, chequing, today)
-        addBills(books, chequing, savings, visa, today)
+        addBills(books, chequing, savings, visa, sam, today)
         addCalendarAndHealth(books, group, chequing, alex, sam, lea, today)
         addBroughtInCalendars(books, today)
         addPetAndCarRecords(books, group, visa, rex, civic, today)
         addAssets(books, group, visa, alex, sam, lea, civic, today)
         addExtras(books, group, chequing, visa, alex, sam, civic, today)
         addTrackers(books, group, chequing, alex, sam, lea, allowance, today)
+        addBillStatements(books, chequing, today)
         DemoTrips(books, english).add(group, visa, alex, sam, lea, civic, today)
         addInvestments(books, group, alex, sam, desjardins, today)
         addPlans(books, group, chequing, savings, alex, sam, lea, desjardins, today)
@@ -405,8 +409,9 @@ object DemoHousehold {
     }
 
     /**
-     * Three documents waiting in the inbox (SYNC-05): a grocery receipt that matches a card
-     * purchase, this month's electricity bill (BILL-03), and a receipt with no transaction yet.
+     * Four documents waiting in the inbox (SYNC-05): a grocery receipt that matches a card
+     * purchase, this month's electricity bill (BILL-03), a gas bill that matches no bill yet
+     * (BILL-18), and a receipt with no transaction yet.
      * Their text is given directly so the demo starts quickly; real imports are read by OCR.
      */
     private fun addDocuments(books: Books, group: String, today: LocalDate) {
@@ -423,6 +428,12 @@ object DemoHousehold {
                 "Hydro Ottawa", "Your electricity bill", "Bill date: ${due.minus(DatePeriod(days = 21))}", "Account number: 6 1234 5678 9",
                 "Amount due \$138.91", "Due date: $due",
             ),
+            // BILL-18: a gas bill that matches no bill yet, for "Create a bill from this".
+            "Enbridge-bill.jpg" to listOf(
+                "Enbridge Gas", "Your natural gas bill", "Account Number 9100 2233 4455", "Statement number 2026-778812",
+                "Bill Date ${today.minus(DatePeriod(days = 4))}", "Previous reading ${today.minus(DatePeriod(days = 36))} 12,345",
+                "Current reading ${today.minus(DatePeriod(days = 5))} 12,456", "Gas used 111 m3", "Amount Due \$86.40", "Due Date ${today.plus(DatePeriod(days = 17))}",
+            ),
             "scan-0031.jpg" to listOf(
                 "Canadian Tire #412", "Receipt # 412-88213", "WASHER FLUID -40     5.99", "H11 BULB           24.99", "SUBTOTAL           30.98",
                 "HST                 4.03", "TOTAL              35.01", "INTERAC", "${today.minus(DatePeriod(days = 1))} 10:12",
@@ -436,6 +447,12 @@ object DemoHousehold {
             "Hydro-Quebec-facture.jpg" to listOf(
                 "Hydro-Québec", "Votre facture d'électricité", "Date de facturation : ${due.minus(DatePeriod(days = 21))}", "Numéro de compte : 6 1234 5678 9",
                 "Montant à payer 138,91 \$", "Date d'échéance : $due",
+            ),
+            // BILL-18 : une facture de gaz qui ne correspond encore à aucune facture, pour « Créer une facture à partir de ceci ».
+            "Energir-facture.jpg" to listOf(
+                "Énergir", "Votre facture de gaz naturel", "Numéro de compte : 9100 2233 4455", "Numéro de relevé : 2026-778812",
+                "Date de facturation : ${today.minus(DatePeriod(days = 4))}", "Relevé précédent : ${today.minus(DatePeriod(days = 36))}  12 345",
+                "Relevé actuel : ${today.minus(DatePeriod(days = 5))}  12 456", "Consommation 111 m³", "Montant à payer 86,40 \$", "Date d'échéance : ${today.plus(DatePeriod(days = 17))}",
             ),
             "scan-0031.jpg" to listOf(
                 "Canadian Tire #412", "Receipt # 412-88213", "LAVE-GLACE -40       5,99", "AMPOULE H11         24,99", "SUBTOTAL            30,98",
@@ -1105,8 +1122,12 @@ object DemoHousehold {
         )
     }
 
-    /** Bills from next month on (this month's are already entered), plus a few due within days. */
-    private fun addBills(books: Books, chequing: Account, savings: Account, visa: Account, today: LocalDate) {
+    /**
+     * Bills from next month on (this month's are already entered), plus a few due within days. Each
+     * bill is classified (BILL-13) and has its account number with the company (BILL-15); Sam's
+     * accounting software is a Business bill of his side business (BILL-20).
+     */
+    private fun addBills(books: Books, chequing: Account, savings: Account, visa: Account, sam: Member, today: LocalDate) {
         fun cad(s: String) = Money.parse(s, Currency.CAD)
         fun cat(key: String) = books.categories.list().first { it.systemKey == key }.id
         fun next(day: Int): LocalDate {
@@ -1114,25 +1135,88 @@ object DemoHousehold {
             return if (thisMonth > today) thisMonth else thisMonth.plus(DatePeriod(months = 1))
         }
         val bills = books.bills
-        bills.create(BillDraft(BillKind.BILL, l("Loyer", "Rent"), cad("1450.00"), chequing.id, Recurrence.MONTHLY, next(1), l("Propriétaire", "Landlord"), categoryId = cat("housing.rent"), paymentMethod = PaymentMethod.CHEQUE))
+        val home = BillType.HOME
+        bills.create(
+            BillDraft(
+                BillKind.BILL, l("Loyer", "Rent"), cad("1450.00"), chequing.id, Recurrence.MONTHLY, next(1), l("Propriétaire", "Landlord"), categoryId = cat("housing.rent"),
+                paymentMethod = PaymentMethod.CHEQUE, type = home, categoryKey = "home.essential", subcategoryKey = "home.essential.rent",
+            ),
+        )
         bills.create(
             BillDraft(
                 BillKind.BILL, l("Hydro-Québec", "Hydro Ottawa"), cad("132.48"), chequing.id, Recurrence(Frequency.MONTHLY, adjust = BusinessDayAdjust.NEXT), next(12),
                 l("Hydro-Québec", "Hydro Ottawa"), "6 1234 5678 9", AmountKind.VARIABLE, paymentMethod = PaymentMethod.PAD, categoryId = cat("utilities.electricity"),
+                type = home, categoryKey = "home.essential", subcategoryKey = "home.essential.electricity",
             ),
         )
-        bills.create(BillDraft(BillKind.BILL, l("Vidéotron", "Rogers"), cad("95.00"), chequing.id, Recurrence.MONTHLY, next(18), l("Vidéotron", "Rogers"), paymentMethod = PaymentMethod.PAD, categoryId = cat("utilities.internet")))
         bills.create(
-            BillDraft(BillKind.BILL, l("Assurance habitation", "Home insurance"), cad("1184.00"), chequing.id, Recurrence.ANNUAL, today.plus(DatePeriod(days = 5)), l("Desjardins Assurances", "Intact Insurance"), categoryId = cat("housing.insurance")),
+            BillDraft(
+                BillKind.BILL, l("Vidéotron", "Rogers"), cad("95.00"), chequing.id, Recurrence.MONTHLY, next(18), l("Vidéotron", "Rogers"), l("000 482 917", "8 2600 1734 5512"),
+                paymentMethod = PaymentMethod.PAD, categoryId = cat("utilities.internet"), type = home, categoryKey = "home.essential", subcategoryKey = "home.essential.home_internet",
+            ),
+        )
+        bills.create(
+            BillDraft(
+                BillKind.BILL, l("Cellulaire", "Cell phone"), cad("65.00"), visa.id, Recurrence.MONTHLY, next(22), l("Fizz", "Koodo"), l("FZ-4471 0938", "7731 0482 19"),
+                AmountKind.VARIABLE, paymentMethod = PaymentMethod.CARD, categoryId = cat("utilities.mobile"),
+                type = home, categoryKey = "home.essential", subcategoryKey = "home.essential.cell_phone",
+            ),
+        )
+        bills.create(
+            BillDraft(
+                BillKind.BILL, l("Assurance habitation", "Home insurance"), cad("1184.00"), chequing.id, Recurrence.ANNUAL, today.plus(DatePeriod(days = 5)),
+                l("Desjardins Assurances", "Intact Insurance"), l("H-55 210 384", "HP 4471-2209"), categoryId = cat("housing.insurance"),
+                type = home, categoryKey = "home.protection", subcategoryKey = "home.protection.home_insurance",
+            ),
         )
         bills.create(
             BillDraft(
                 BillKind.BILL, l("Diffusion en continu", "Streaming"), cad("18.99"), visa.id, Recurrence.MONTHLY, today.plus(DatePeriod(days = 3)), "StreamCo",
                 paymentMethod = PaymentMethod.CARD, categoryId = cat("utilities.tv_streaming"), isSubscription = true, cancelBy = today.plus(DatePeriod(days = 3)),
+                type = home, categoryKey = "home.lifestyle", subcategoryKey = "home.lifestyle.streaming",
+            ),
+        )
+        // BILL-20: Sam's accounting software for the freelance work, with its sales taxes.
+        bills.create(
+            BillDraft(
+                BillKind.BILL, l("Logiciel comptable", "Accounting software"), cad(l("34.49", "33.90")), visa.id, Recurrence.MONTHLY,
+                next(5), l("ComptaNuage", "LedgerCloud"), l("CN-20931", "LC-20931"), paymentMethod = PaymentMethod.CARD, isSubscription = true,
+                type = BillType.BUSINESS, categoryKey = "business.technology", subcategoryKey = "business.technology.software_licenses", memberId = sam.id,
             ),
         )
         bills.create(BillDraft(BillKind.INCOME, l("Paie", "Pay"), cad("3150.00"), chequing.id, Recurrence(Frequency.SEMI_MONTHLY, secondDay = 1), next(15), l("Employeur inc.", "Employer Inc."), categoryId = cat("income.employment.salary")))
         bills.create(BillDraft(BillKind.TRANSFER, l("Épargne mensuelle", "Monthly savings"), cad("500.00"), chequing.id, Recurrence.MONTHLY, next(16), transferAccountId = savings.id))
+    }
+
+    /**
+     * BILL-16, BILL-17: statements received: the last two electricity bills, with the house meter's
+     * readings and paid by the payments already in the books, and this month's phone bill, waiting
+     * to be paid.
+     */
+    private fun addBillStatements(books: Books, chequing: Account, today: LocalDate) {
+        fun cad(s: String) = Money.parse(s, Currency.CAD)
+        val bills = books.bills.list()
+        val hydro = bills.first { it.name == l("Hydro-Québec", "Hydro Ottawa") }
+        val meter = books.utilities.meterFor(hydro.id)
+        val paid = books.transactions.register(chequing.id).map { it.transaction }
+        for (back in listOf(2, 1)) {
+            val due = LocalDate(today.year, today.month, 12).minus(DatePeriod(months = back))
+            val current = LocalDate(today.year, today.month, 3).minus(DatePeriod(months = back))
+            val previous = current.minus(DatePeriod(months = 1))
+            fun reading(on: LocalDate) = meter?.readings?.firstOrNull { it.date == on }?.value
+            books.bills.recordStatement(
+                hydro.id,
+                StatementDraft(
+                    due, cad("132.48"), "${due.year}-${due.month.ordinal + 1}-4471", due.minus(DatePeriod(days = 21)),
+                    readings = MeterReadings(reading(previous), previous, reading(current), current),
+                ),
+            )
+            paid.firstOrNull { it.date == due && it.payeeText == hydro.payeeName }?.let { books.bills.markPaid(hydro.id, due, due, existingTransactionId = it.id) }
+        }
+        val phone = bills.first { it.name == l("Cellulaire", "Cell phone") }
+        phone.recurrence.next(phone.startDate, today, phone.endDate)?.let { due ->
+            books.bills.recordStatement(phone.id, StatementDraft(due, cad("71.35"), l("F-0938-2210", "K-7731-1009"), today.minus(DatePeriod(days = 6))))
+        }
     }
 
     /**

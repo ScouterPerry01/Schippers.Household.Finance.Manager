@@ -296,6 +296,9 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
     var itemizeState by remember(documentId) { mutableStateOf<ItemizeState?>(null) }
     var itemized by remember { mutableStateOf<ca.schippers.hfm.books.Itemized?>(null) }
     var confirmDelete by remember { mutableStateOf(false) }
+    // BILL-18: a bill created from this document, or the bill it is attached to.
+    var creatingBill by remember { mutableStateOf(false) }
+    var attachingBill by remember { mutableStateOf(false) }
 
     /** Saves what the user corrected before any filing action. */
     fun saveDetails(): Boolean = model.act {
@@ -338,7 +341,7 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                 LabeledCheckbox(model.t("documents.keepForever"), keep) { keep = it }
                 TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
                 HorizontalDivider(Modifier.padding(vertical = 4.dp))
-                FilingActions(model, doc, kind, ::saveDetails, onCreate = { creating = true }, onDone = onClose, onItemize = {
+                FilingActions(model, doc, kind, ::saveDetails, onCreate = { creating = true }, onDone = onClose, onCreateBill = { creatingBill = true }, onAttachBill = { attachingBill = true }, onItemize = {
                     if (itemizeState == null) {
                         val printed = doc.draft?.taxes.orEmpty().filter { it.first != ca.schippers.hfm.ocr.TaxName.OTHER }
                             .groupBy({ it.first.name }, { it.second.value }).mapValues { (_, v) -> v.reduce(Money::plus) }
@@ -381,6 +384,18 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
         }
     }
     if (creating) NewTransactionDialog(model, doc, title, date, amount, itemized) { done -> creating = false; itemized = null; if (done) onClose() }
+    if (creatingBill) {
+        val proposal = remember(doc) { runCatching { books.documents.billProposal(doc.id) }.getOrNull() }
+        if (proposal == null) {
+            creatingBill = false
+        } else {
+            BillDialog(model, null, proposal, doc.id) {
+                creatingBill = false
+                if (runCatching { books.documents.get(documentId).status }.getOrNull() == DocumentStatus.FILED) onClose()
+            }
+        }
+    }
+    if (attachingBill) AttachBillDialog(model, doc) { done -> attachingBill = false; if (done) onClose() }
     if (confirmDelete) {
         FormDialog(model.t("documents.delete.title"), model.t("common.delete"), model.t("common.cancel"), onDismiss = { confirmDelete = false }, onSave = {
             if (model.act { books.documents.delete(documentId) } != null) {
@@ -630,6 +645,14 @@ private fun ExtractedDetails(model: BooksModel, doc: VaultDocument) {
         draft.invoiceNumber?.let { model.t("documents.invoiceNo", it.value) },
         draft.dueDate?.let { model.t("documents.dueOn", model.date(it.value)) },
         draft.accountNumber?.let { model.t("documents.accountNo", it.value) },
+        // BILL-17: a utility's meter readings.
+        draft.meter?.value?.let { m ->
+            listOfNotNull(
+                m.previous?.let { model.t("documents.previousReading", it.toPlainString(), m.previousDate?.let(model::date).orEmpty()) },
+                m.current?.let { model.t("documents.currentReading", it.toPlainString(), m.currentDate?.let(model::date).orEmpty()) },
+                m.usedOrComputed?.let { model.t("bills.usedShort", it.toPlainString()) },
+            ).joinToString(" · ").ifEmpty { null }
+        },
     )
     if (parts.isNotEmpty()) Text(parts.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
 }
@@ -651,7 +674,10 @@ private fun Duplicates(model: BooksModel, doc: VaultDocument) {
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun FilingActions(model: BooksModel, doc: VaultDocument, kind: DocumentKind, saveDetails: () -> Boolean, onCreate: () -> Unit, onDone: () -> Unit, onItemize: () -> Unit) {
+private fun FilingActions(
+    model: BooksModel, doc: VaultDocument, kind: DocumentKind, saveDetails: () -> Boolean, onCreate: () -> Unit, onDone: () -> Unit,
+    onCreateBill: () -> Unit, onAttachBill: () -> Unit, onItemize: () -> Unit,
+) {
     val books = model.books
     val matches = remember(model.revision, doc.id) { books.documents.matches(doc.id) }
     val bill = remember(model.revision, doc.id, kind) { if (kind == DocumentKind.BILL || kind == DocumentKind.INVOICE) books.documents.billFor(doc.id) else null }
@@ -670,6 +696,15 @@ private fun FilingActions(model: BooksModel, doc: VaultDocument, kind: DocumentK
             Button(onClick = {
                 if (saveDetails()) model.act { books.documents.fileWithBill(doc.id, bill.id) }?.let { onDone() }
             }) { Text(model.t("documents.recordOnBill")) }
+        }
+    }
+    // BILL-18: a bill that matches none of the household's bills creates one, or is attached to one chosen.
+    if (kind == DocumentKind.BILL || kind == DocumentKind.INVOICE) {
+        val anyBill = remember(model.revision) { books.bills.list().any { it.kind == ca.schippers.hfm.books.BillKind.BILL } }
+        if (bill == null) Text(model.t("documents.noBill"), style = MaterialTheme.typography.bodySmall)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (bill == null && kind == DocumentKind.BILL) Button(onClick = { if (saveDetails()) onCreateBill() }) { Text(model.t("documents.createBill")) }
+            if (anyBill) OutlinedButton(onClick = { if (saveDetails()) onAttachBill() }) { Text(model.t(if (bill == null) "documents.attachToBill" else "documents.attachToOtherBill")) }
         }
     }
     for (m in matches.take(4)) {

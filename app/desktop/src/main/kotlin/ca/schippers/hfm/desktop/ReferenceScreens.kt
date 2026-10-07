@@ -89,8 +89,21 @@ private fun <T> ListEditor(
 
 // --- Categories (CAT-01, CAT-05) ---------------------------------------------------------------
 
+/** CAT-01 and BILL-14: the spending categories, and the bill lists beside them. */
 @Composable
 fun CategoriesScreen(model: BooksModel) {
+    var bills by remember { mutableStateOf(false) }
+    Column(Modifier.fillMaxSize()) {
+        androidx.compose.material3.PrimaryTabRow(selectedTabIndex = if (bills) 1 else 0, modifier = Modifier.padding(horizontal = 12.dp)) {
+            androidx.compose.material3.Tab(selected = !bills, onClick = { bills = false }, text = { Text(model.t("category.tab.spending")) })
+            androidx.compose.material3.Tab(selected = bills, onClick = { bills = true }, text = { Text(model.t("category.tab.bills")) })
+        }
+        Box(Modifier.weight(1f)) { if (bills) BillListsEditor(model) else SpendingCategories(model) }
+    }
+}
+
+@Composable
+private fun SpendingCategories(model: BooksModel) {
     val books = model.books
     val tree = remember(model.revision) { books.categories.tree(includeArchived = true) }
     var selectedId by remember { mutableStateOf<String?>(null) }
@@ -176,6 +189,137 @@ private fun CategoryForm(model: BooksModel, existing: Category?, parent: Categor
         }) { Text(model.t("common.save")) }
     } else {
         Text(model.t("common.readOnlyViewer"), style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+// --- Bill lists (BILL-13, BILL-14) -------------------------------------------------------------
+
+/** One line of the bill lists: a category or a subcategory. */
+private data class BillListLine(val key: String, val category: ca.schippers.hfm.books.BillListCategory?, val sub: ca.schippers.hfm.books.BillSubcategory?)
+
+@Composable
+private fun BillListsEditor(model: BooksModel) {
+    val books = model.books
+    val lists = remember(model.revision) { books.billLists.lists() }
+    val tree = remember(model.revision) { books.categories.tree() }
+    val lines = remember(lists) {
+        ca.schippers.hfm.books.BillType.entries.flatMap { type ->
+            lists.categories(type, includeHidden = true).flatMap { c ->
+                listOf(BillListLine(c.key, c, null)) + lists.subcategories(c.key, includeHidden = true).map { BillListLine(it.key, null, it) }
+            }
+        }
+    }
+    var selected by remember { mutableStateOf<String?>(null) }
+    /** A new category of this type, or a new subcategory of this category. */
+    var newCategory by remember { mutableStateOf<ca.schippers.hfm.books.BillType?>(null) }
+    var newSubOf by remember { mutableStateOf<String?>(null) }
+    var confirmRestore by remember { mutableStateOf(false) }
+    val line = lines.firstOrNull { it.key == selected }
+    val editable = books.canEdit
+
+    ListEditor(
+        model.t("billLists.title"), lines, key = { it.key },
+        label = { l ->
+            l.category?.let { "${model.t("billType.${it.type}")} · ${it.name(model.language)}" } ?: l.sub?.let { lists.label(it, model.language) }.orEmpty()
+        },
+        indent = { if (it.sub != null) 1 else 0 },
+        dimmed = { it.category?.hidden == true || it.sub?.hidden == true },
+        addLabel = null, onAdd = {}, selectedKey = selected,
+        onSelect = { selected = it.key; newCategory = null; newSubOf = null },
+    ) {
+        Text(model.t("billLists.explain"), style = MaterialTheme.typography.bodySmall)
+        if (editable) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (t in ca.schippers.hfm.books.BillType.entries) {
+                    OutlinedButton(onClick = { newCategory = t; newSubOf = null; selected = null }) { Text(model.t("billLists.addCategory.$t")) }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val categoryKey = line?.category?.key ?: line?.sub?.categoryKey
+                if (categoryKey != null) OutlinedButton(onClick = { newSubOf = categoryKey; newCategory = null; selected = null }) { Text(model.t("billLists.addSubcategory")) }
+                TextButton(onClick = { confirmRestore = true }) { Text(model.t("billLists.restoreAll")) }
+            }
+        }
+        HorizontalDivider()
+        val forType = newCategory
+        val forCategory = newSubOf
+        when {
+            forType != null -> BillListNameForm(model, model.t("billLists.newCategory.$forType"), "", "", null, null, false, null, tree) { en, fr, _, _ ->
+                model.act { books.billLists.addCategory(forType, en, fr) }?.let { selected = it.key; newCategory = null }
+            }
+            forCategory != null -> {
+                val groups = lists.groups.filter { it.categoryKey == forCategory }
+                BillListNameForm(model, model.t("billLists.newSubcategory", lists.category(forCategory)?.name(model.language).orEmpty()), "", "", null, groups, false, null, tree) { en, fr, group, category ->
+                    model.act { books.billLists.addSubcategory(forCategory, group, en, fr, category) }?.let { selected = it.key; newSubOf = null }
+                }
+            }
+            line?.category != null -> {
+                val c = line.category
+                BillListNameForm(model, c.name(model.language), c.nameEn, c.nameFr, null, null, c.hidden, null, tree, builtIn = c.builtIn && (c.changed || c.hidden), onRestore = {
+                    model.act { books.billLists.restore(c.key) }
+                }, onHidden = { model.act { books.billLists.setHidden(c.key, it) } }) { en, fr, _, _ ->
+                    model.act { books.billLists.rename(c.key, en, fr) }
+                }
+            }
+            line?.sub != null -> {
+                val sub = line.sub
+                BillListNameForm(
+                    model, lists.label(sub, model.language), sub.nameEn, sub.nameFr, null, null, sub.hidden, sub.spendingCategoryId, tree, spending = true,
+                    builtIn = sub.builtIn && (sub.changed || sub.hidden), onRestore = { model.act { books.billLists.restore(sub.key) } },
+                    onHidden = { model.act { books.billLists.setHidden(sub.key, it) } },
+                ) { en, fr, _, category ->
+                    model.act {
+                        books.billLists.rename(sub.key, en, fr)
+                        if (category != sub.spendingCategoryId) books.billLists.setSpendingCategory(sub.key, category)
+                    }
+                }
+            }
+            else -> Text(model.t("billLists.select"))
+        }
+        if (!editable) Text(model.t("common.readOnlyViewer"), style = MaterialTheme.typography.bodySmall)
+    }
+    if (confirmRestore) {
+        FormDialog(model.t("billLists.restoreAll"), model.t("billLists.restore"), model.t("common.cancel"), onDismiss = { confirmRestore = false }, onSave = {
+            model.act { books.billLists.restoreAll() }
+            confirmRestore = false
+        }) { Text(model.t("billLists.restoreAll.body")) }
+    }
+}
+
+/**
+ * The names of a bill list entry in both languages and, for a subcategory, its spending category
+ * and (when new) its heading. [onSave] gets the names, the heading and the spending category.
+ */
+@Composable
+private fun BillListNameForm(
+    model: BooksModel, title: String, en0: String, fr0: String, group0: String?, groups: List<ca.schippers.hfm.books.BillListGroup>?, hidden0: Boolean,
+    spending0: String?, tree: List<Pair<Category, Int>>, spending: Boolean = groups != null, builtIn: Boolean = false, onRestore: (() -> Unit)? = null,
+    onHidden: ((Boolean) -> Unit)? = null, onSave: (String, String, String?, String?) -> Unit,
+) {
+    val editable = model.books.canEdit
+    var en by remember(title, en0) { mutableStateOf(en0) }
+    var fr by remember(title, fr0) { mutableStateOf(fr0) }
+    var group by remember(title) { mutableStateOf(group0 ?: groups?.firstOrNull()?.key) }
+    var category by remember(title, spending0) { mutableStateOf(spending0) }
+    Text(title, style = MaterialTheme.typography.titleMedium)
+    TextInput(model.t("category.nameEn"), en, enabled = editable) { en = it }
+    TextInput(model.t("category.nameFr"), fr, enabled = editable) { fr = it }
+    if (!groups.isNullOrEmpty()) {
+        Picker(model.t("billLists.heading"), listOf(null) + groups, groups.firstOrNull { it.key == group }, { it?.name(model.language) ?: model.t("common.none") }, enabled = editable) { group = it?.key }
+    }
+    if (spending) {
+        Picker(
+            model.t("billLists.spendingCategory"), listOf<Pair<Category, Int>?>(null) + tree, tree.firstOrNull { it.first.id == category },
+            { it?.first?.name(model.language) ?: model.t("common.none") }, indent = { it?.second ?: 0 }, enabled = editable,
+        ) { category = it?.first?.id }
+        Text(model.t("billLists.spendingCategory.hint"), style = MaterialTheme.typography.bodySmall)
+    }
+    if (onHidden != null) LabeledCheckbox(model.t("billLists.hidden"), hidden0, enabled = editable) { onHidden(it) }
+    if (editable) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(enabled = en.isNotBlank() || fr.isNotBlank(), onClick = { onSave(en, fr, group, category) }) { Text(model.t("common.save")) }
+            if (builtIn && onRestore != null) OutlinedButton(onClick = onRestore) { Text(model.t("billLists.restore")) }
+        }
     }
 }
 

@@ -541,7 +541,7 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
     if (editingCard) CardTermsDialog(model, account) { editingCard = false }
     if (editingCards) CardsDialog(model, account) { editingCards = false }
     if (editingRewards) RewardsDialog(model, account) { editingRewards = false }
-    if (revealing) RevealNumberDialog(model, account) { revealing = false }
+    if (revealing) RevealNumberDialog(model, { model.books.accounts.revealNumber(account.id, it) }) { revealing = false }
     historyOf?.let { txn -> HistoryDialog(model, txn, categories) { historyOf = null } }
     confirmDelete?.let { txn ->
         val what = listOfNotNull(model.date(txn.date), txn.payeeId?.let(payeeNames::get) ?: txn.payeeText, model.money(txn.amount)).joinToString(" · ")
@@ -832,9 +832,9 @@ private fun CardTermsDialog(model: BooksModel, account: Account, onClose: () -> 
     }
 }
 
-/** Shows the full account number after the password is entered again (SEC-04). */
+/** Shows a full account number after the password is entered again (SEC-04, BILL-15). */
 @Composable
-private fun RevealNumberDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
+internal fun RevealNumberDialog(model: BooksModel, reveal: (CharArray) -> String?, onClose: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var revealed by remember { mutableStateOf<String?>(null) }
     var wrong by remember { mutableStateOf(false) }
@@ -856,7 +856,7 @@ private fun RevealNumberDialog(model: BooksModel, account: Account, onClose: () 
             if (revealed == null) {
                 TextButton(onClick = {
                     try {
-                        revealed = model.books.accounts.revealNumber(account.id, password.toCharArray()).orEmpty()
+                        revealed = reveal(password.toCharArray()).orEmpty()
                         waitSeconds = null
                     } catch (_: AccessDeniedException) {
                         wrong = true
