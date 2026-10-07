@@ -119,11 +119,14 @@ fun BillsScreen(model: BooksModel) {
  * (Display and accessibility); the Bill column takes the rest, at least [BILL_MIN].
  */
 private const val DATE_W = 100
-private const val AMOUNT_W = 118
-private const val TO_PAY_W = 138
-private const val OUTSTANDING_W = 118
-private const val ACTIONS_W = 300
-private const val BILL_MIN = 200
+private const val AMOUNT_W = 116
+private const val TO_PAY_W = 124
+private const val OUTSTANDING_W = 116
+private const val BILL_MIN = 160
+
+/** The Actions column: wider on To pay, which has more buttons. */
+private const val AGENDA_ACTIONS_W = 360
+private const val ALL_ACTIONS_W = 260
 
 @Composable
 private fun col(width: Int): Dp = with(LocalDensity.current) { width.sp.toDp() }
@@ -133,19 +136,19 @@ private fun col(width: Int): Dp = with(LocalDensity.current) { width.sp.toDp() }
  * is too narrow for the text size, the whole table scrolls sideways instead of squeezing the columns.
  */
 @Composable
-private fun BillTable(model: BooksModel, content: LazyListScope.() -> Unit) {
+private fun BillTable(model: BooksModel, actionsWidth: Int, content: LazyListScope.() -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val needed = col(DATE_W + BILL_MIN + AMOUNT_W + TO_PAY_W + OUTSTANDING_W + ACTIONS_W) + 40.dp
+        val needed = col(DATE_W + BILL_MIN + AMOUNT_W + TO_PAY_W + OUTSTANDING_W + actionsWidth) + 40.dp
         val width = if (maxWidth > needed) maxWidth else needed
         Column(Modifier.horizontalScroll(rememberScrollState()).width(width)) {
-            BillHeadings(model)
+            BillHeadings(model, actionsWidth)
             LazyColumn(Modifier.fillMaxWidth().weight(1f), content = content)
         }
     }
 }
 
 @Composable
-private fun BillHeadings(model: BooksModel) {
+private fun BillHeadings(model: BooksModel, actionsWidth: Int) {
     @Composable
     fun Heading(key: String, modifier: Modifier, end: Boolean = false) = Text(
         model.t(key), modifier, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold,
@@ -157,7 +160,7 @@ private fun BillHeadings(model: BooksModel) {
         Heading("bills.col.amountDue", Modifier.width(col(AMOUNT_W)), end = true)
         Heading("bills.col.toPay", Modifier.width(col(TO_PAY_W)).padding(start = 12.dp))
         Heading("bills.col.outstanding", Modifier.width(col(OUTSTANDING_W)), end = true)
-        Heading("bills.col.actions", Modifier.width(col(ACTIONS_W)).padding(start = 12.dp))
+        Heading("bills.col.actions", Modifier.width(col(actionsWidth)).padding(start = 12.dp))
     }
     HorizontalDivider()
 }
@@ -181,7 +184,7 @@ private fun AgendaTab(model: BooksModel, onPay: (Occurrence, String) -> Unit, on
         books.bills.unmarkPaid(o.bill.id, o.dueDate, deleteTransaction = true)
     }
 
-    BillTable(model) {
+    BillTable(model, AGENDA_ACTIONS_W) {
         if (agenda.overdue.isEmpty() && agenda.dueToday.isEmpty() && agenda.upcoming.isEmpty()) {
             item { Text(model.t("bills.nothingDue", LeadTimes.billsAgenda(today)), Modifier.padding(8.dp)) }
         }
@@ -193,7 +196,7 @@ private fun AgendaTab(model: BooksModel, onPay: (Occurrence, String) -> Unit, on
             item { GroupTitle(model.t(title, list.size, LeadTimes.billsAgenda(today))) }
             items(list, key = { "${it.bill.id}-${it.dueDate}" }) { o ->
                 OccurrenceRow(model, o, accounts, (o.bill.id to o.dueDate) in shortfalls, comparisons[o.bill.id to o.dueDate], onPay) {
-                    if (o.bill.amountKind != AmountKind.FIXED) OutlinedButton(onClick = { onAmount(o) }) { Text(model.t("bills.setAmount")) }
+                    if (o.bill.amountKind != AmountKind.FIXED) TextButton(onClick = { onAmount(o) }) { Text(model.t("bills.setAmount")) }
                     if (o.payments.isNotEmpty()) TextButton(onClick = { undo(o) }) { Text(model.t("bills.undoPayment")) }
                     TextButton(onClick = { model.act { books.bills.skip(o.bill.id, o.dueDate) } }) { Text(model.t("bills.skip")) }
                     TextButton(onClick = { onEdit(o.bill) }) { Text(model.t("common.edit")) }
@@ -260,7 +263,7 @@ private fun OccurrenceRow(
                 if (comparison?.unusual == true) Text(model.t("bills.unusual", Thresholds.unusualBill(today()).movePointRight(2).stripTrailingZeros().toPlainString()), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 if (shortfall) Text(model.t("bills.shortfall"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
-            AmountsAndPay(model, o, onPay, actions)
+            AmountsAndPay(model, o, AGENDA_ACTIONS_W, onPay, actions)
         }
     }
 }
@@ -268,7 +271,7 @@ private fun OccurrenceRow(
 /** BILL-21: the amount due, the To pay field (starting at what is still due), the outstanding amount and the actions, with Pay first. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AmountsAndPay(model: BooksModel, o: Occurrence?, onPay: (Occurrence, String) -> Unit, actions: @Composable () -> Unit) {
+private fun AmountsAndPay(model: BooksModel, o: Occurrence?, actionsWidth: Int, onPay: (Occurrence, String) -> Unit, actions: @Composable () -> Unit) {
     val locale = model.language.locale
     Text(
         o?.let { (if (it.amountKnown) "" else "≈ ") + model.money(it.amount) } ?: "—",
@@ -292,7 +295,7 @@ private fun AmountsAndPay(model: BooksModel, o: Occurrence?, onPay: (Occurrence,
         color = if (o != null && o.outstanding.isPositive && o.dueDate < today()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
     )
     FlowRow(
-        Modifier.width(col(ACTIONS_W)).padding(start = 12.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp),
+        Modifier.width(col(actionsWidth)).padding(start = 12.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         if (due != null) Button(onClick = { onPay(due, toPay) }) { Text(model.t(if (due.bill.kind == BillKind.INCOME) "bills.markReceived" else "bills.markPaid")) }
         actions()
@@ -336,7 +339,7 @@ private fun AllBillsTab(model: BooksModel, onPay: (Occurrence, String) -> Unit, 
         model.books.bills.occurrences(today.minus(DatePeriod(days = 365)), today.plus(DatePeriod(days = 400)))
             .filter { it.status == OccurrenceStatus.DUE }.groupBy { it.bill.id }.mapValues { (_, list) -> list.first() }
     }
-    BillTable(model) {
+    BillTable(model, ALL_ACTIONS_W) {
         if (bills.isEmpty()) item { Text(model.t("bills.none"), Modifier.padding(8.dp)) }
         items(bills, key = { it.id }) { bill ->
             val o = next[bill.id]
@@ -356,7 +359,7 @@ private fun AllBillsTab(model: BooksModel, onPay: (Occurrence, String) -> Unit, 
                     val about = listOfNotNull(classificationText(model, lists, bill), bill.payeeAccountMasked?.let { model.t("bills.accountNo", it) })
                     if (about.isNotEmpty()) Text(about.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                 }
-                AmountsAndPay(model, o, onPay) {
+                AmountsAndPay(model, o, ALL_ACTIONS_W, onPay) {
                     TextButton(onClick = { onEdit(bill) }) { Text(model.t("common.edit")) }
                 }
             }

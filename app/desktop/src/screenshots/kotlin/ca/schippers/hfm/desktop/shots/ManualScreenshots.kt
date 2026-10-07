@@ -215,6 +215,8 @@ private val SHOTS: List<Shot> = buildList {
         },
     )
     add(Shot("documents-all") { section(Section.DOCUMENTS); click(t("documents.tab.ALL")) })
+    // BILL-21: every bill with its next due date in the bill columns.
+    add(Shot("bills-all") { section(Section.BILLS); click(t("bills.tab.ALL")) })
     add(Shot("bills-calendar") { section(Section.BILLS); click(t("bills.tab.CALENDAR")) })
     add(Shot("bills-forecast") { section(Section.BILLS); click(t("bills.tab.FORECAST")) })
     add(Shot("calendar-month") { model.calendarView = "AGENDA"; model.calendarDate = ca.schippers.hfm.desktop.today(); section(Section.CALENDAR); click(t("calendar.tab.MONTH")) })

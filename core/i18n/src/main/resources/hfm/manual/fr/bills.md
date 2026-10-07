@@ -16,8 +16,8 @@ La barre de titre a deux boutons :
 
 En dessous se trouvent cinq onglets :
 
-- **À payer** : ce qui est en retard, à payer aujourd’hui et à payer dans les 30 prochains jours (par défaut, réglable dans [Taux et règles](rates-rules)), avec les boutons pour payer, sauter ou entrer un montant, et chaque montant à côté du montant habituel.
-- **Toutes les factures** : chaque facture, revenu et virement que vous avez créé.
+- **À payer** : ce qui est en retard, à payer aujourd’hui et à payer dans les 30 prochains jours (par défaut, réglable dans [Taux et règles](rates-rules)), avec le montant dû, le montant à payer, ce qui reste dû, et les boutons pour payer, sauter ou indiquer le montant de la facture.
+- **Toutes les factures** : chaque facture, revenu et virement que vous avez créé, chacun avec sa prochaine échéance.
 - **Calendrier** : les échéances sur une vue du mois.
 - **Abonnements** : ce que coûte chaque abonnement par année.
 - **Prévision de trésorerie** : le solde prévu de chaque compte sur 30, 60 ou 90 jours ; 30 par défaut ([Taux et règles](rates-rules)).
@@ -71,7 +71,7 @@ Affiché pour une facture ou un revenu, pas pour un virement.
   - **Variable** : change chaque fois, comme l’électricité ou une carte de crédit. Tant que vous n’avez pas entré le montant réel d’une échéance, l’application prévoit la moyenne des trois derniers montants payés (ou le montant que vous avez entré, avant tout paiement). Le montant est précédé de « ≈ ».
   - **Estimé** : un montant que vous estimez, comme un compte de taxes foncières annuel pas encore reçu. Précédé de « ≈ » jusqu’à ce que vous entriez le montant réel.
 
-Pour les factures variables et estimées, l’onglet **À payer** offre **Entrer le montant** pour inscrire le montant réel quand la facture arrive. Voir [Entrer le montant](bills#enter-amount).
+Pour les factures variables et estimées, l’onglet **À payer** offre **Indiquer le montant de la facture** pour inscrire le montant réel quand la facture arrive. Voir [Indiquer le montant de la facture](bills#set-amount).
 
 ### Mode de paiement {#payment-method}
 
@@ -86,6 +86,7 @@ Pour les factures variables et estimées, l’onglet **À payer** offre **Entrer
   - **Deux fois par mois** : le jour de la première échéance et un deuxième jour chaque mois, comme le 1er et le 15.
   - **Chaque mois**, **Chaque trimestre**, **Deux fois par année**, **Chaque année** : tous les 1, 3, 6 ou 12 mois.
   - **Tous les … jours**, **Toutes les … semaines**, **Tous les … mois** : tout autre intervalle ; entrez le nombre sous **Tous les**.
+  - **Versements à dates fixes** : aucun calendrier propre ; les échéances et les montants sont les versements inscrits sur chaque état de compte, comme ceux d’un compte de taxes foncières. Choisir une sous-catégorie Taxes foncières (Maison ou Entreprise) le sélectionne pour vous. Voir [Taxes foncières et autres versements](bills#instalments).
 - **Tous les** : affiché pour les choix « Tous les … ». Le nombre de jours, de semaines ou de mois entre deux échéances, 1 ou plus.
 - **Deuxième jour** : affiché pour Deux fois par mois. Le deuxième jour du mois, de 1 à 31 ; entrez 0 pour le dernier jour du mois. Le premier jour est celui de la première échéance.
 - **Jour du mois** : affiché pour les factures mensuelles, trimestrielles, semestrielles, annuelles et « tous les … mois ».
@@ -138,11 +139,14 @@ Quand vous modifiez une facture existante, **États de compte** énumère les é
 Le formulaire de l’état de compte :
 
 - **Numéro de l’état de compte** : le numéro de facture ou d’état de compte imprimé dessus. Facultatif.
-- **Montant** : le montant de cet état de compte. Il devient le montant réel de son échéance, comme le ferait **Entrer le montant**.
+- **Montant** : le montant de cet état de compte. Il devient le montant réel de son échéance, comme le ferait **Indiquer le montant de la facture**.
 - **Émis le** : la date d’émission de l’état de compte. Facultatif.
 - **Date d’échéance** : la date où il doit être payé. Obligatoire. Elle devient l’échéance de la facture pour cette période : l’échéance non payée la plus proche de la facture (à moins d’une demi-période) passe à cette date, de sorte que les rappels, le calendrier et la prévision suivent l’état de compte. Quand aucune échéance n’est proche, elle est ajoutée comme échéance à part ; quand la plus proche est déjà payée, l’état de compte est gardé avec elle et rien de plus n’est dû.
 - **Relevé précédent**, **Date du relevé précédent**, **Relevé actuel**, **Date du relevé actuel** (factures de services publics, ou factures avec un compteur) : les relevés du compteur imprimés sur l’état de compte, en kWh ou en mètres cubes comme sur la facture.
 - **Consommation** : la consommation imprimée sur l’état de compte. Laissez vide pour utiliser le relevé actuel moins le précédent.
+- **Versements** : pour une facture payée en versements à dates fixes, comme les taxes foncières. **Ajouter un versement** ajoute une ligne avec son **Échéance** et son **Montant** ; le bouton à côté d’une ligne la retire. Chaque versement devient une échéance de la facture, avec son montant et ses rappels. Avec des versements, la **Date d’échéance** est celle du premier versement et ne peut pas être tapée, et le **Montant**, s’il est laissé vide, est leur total. N’en mettez aucun pour une facture payée en une fois. Une ligne avec seulement une date ou seulement un montant est refusée. Voir [Taxes foncières et autres versements](bills#instalments).
+
+Un état de compte avec des versements énumère chacun sous lui, comme « versement 2 de 3 · échéance le 2026-06-30 · 1 402,33 $ », avec « payée le … » une fois payé ou « Reste à payer : … » quand il est payé en partie, et **Marquer payée** tant qu’il est dû.
 
 Les relevés datés sont ajoutés au compteur de la facture, sauf s’il a déjà un relevé ce jour-là : le même relevé n’est donc jamais inscrit deux fois. **Supprimer** dans le formulaire retire l’état de compte ; la date d’échéance et le montant qu’il a fixés restent, tout comme les relevés ajoutés au compteur.
 
@@ -164,6 +168,19 @@ Quand vous modifiez une facture existante, **Historique des paiements**, au bas 
 
 « Aucun paiement inscrit pour l’instant. » signifie que la facture n’a jamais été marquée payée. L’historique vient des échéances marquées payées : il commence au premier paiement que vous marquez.
 
+## Taxes foncières et autres versements {#instalments}
+@index: taxes foncières; taxes municipales; taxe scolaire; versement; versements; compte de taxes; compte de taxes provisoire; compte de taxes final; échéance; report à l’an prochain; versement estimé
+
+Certaines factures arrivent une fois par année et se paient en versements à des dates imprimées sur la facture : les taxes foncières (Maison ou Entreprise) en sont l’exemple habituel. La Ville de Québec, par exemple, envoie un compte de taxes avec deux ou trois versements ; Ottawa envoie un compte provisoire de deux versements en début d’année, puis un compte final de deux autres au printemps.
+
+1. Ajoutez la facture avec **Répétition** à **Versements à dates fixes**. Choisir la sous-catégorie Taxes foncières le sélectionne pour vous. Laissez le **Montant** au total de l’année, ou à un montant typique : il n’est affiché que lorsque rien d’autre n’est connu.
+2. Quand le compte de taxes arrive, ajoutez-le sous **États de compte** (ou saisissez-le dans l’écran Documents), avec l’échéance et le montant de chaque versement sous **Versements**. Les comptes provisoire et final d’Ottawa sont deux états de compte, chacun avec ses versements.
+3. Chaque versement est alors une échéance de la facture, affichée « versement 2 de 3 », avec les rappels de **Me le rappeler (jours avant)** comme toute facture. Payez chacun avec **Marquer payée**, en entier ou en partie.
+
+En attendant que le compte de taxes de l’an prochain soit inscrit, les versements de l’an prochain sont proposés aux mêmes dates, reportées au jour ouvrable suivant (ou avancées au jour ouvrable précédent, quand **Les fins de semaine et jours fériés** le demande) selon les jours fériés de la province, avec les montants de cette année. Ils sont marqués « estimé d’après l’an dernier » et précédés de « ≈ », de sorte que les rappels, le calendrier et la prévision les comptent déjà. Quand vous ajoutez l’état de compte de l’an prochain, ses versements remplacent ceux proposés : un paiement déjà fait sur un versement proposé passe au versement réel le plus proche. Les versements postérieurs à ceux inscrits continuent d’être proposés de la même façon, une année à la fois.
+
+> Conseil : Les versements d’un état de compte peuvent être corrigés plus tard avec **Modifier** sur l’état de compte : une date changée déplace cette échéance.
+
 ## L’onglet À payer {#to-pay-tab}
 @index: factures en retard; factures à venir; agenda
 
@@ -177,7 +194,16 @@ Quand vous modifiez une facture existante, **Historique des paiements**, au bas 
 
 « Rien à payer dans les 30 prochains jours. » signifie que rien n’est en retard, à payer aujourd’hui ou à payer dans les 30 prochains jours.
 
-Chaque ligne montre l’échéance, le nom, le mode de paiement, le compte (et « → compte » pour un virement), la date du paiement s’il a eu lieu, et le montant (« ≈ » devant signifie que le montant est prévu, pas connu). Les boutons de la ligne sont décrits ci-dessous. **Modifier** ouvre le formulaire de la facture.
+Une ligne d’en-tête nomme les colonnes :
+
+- **Échéance** : en rouge quand elle est passée et qu’il reste quelque chose à payer.
+- **Facture** : le nom ; « versement 2 de 3 » pour un versement d’un état de compte (voir [Taxes foncières et autres versements](bills#instalments)), avec « estimé d’après l’an dernier » quand il est proposé d’après celui de l’an dernier ; le mode de paiement, le compte (et « → compte » pour un virement) et la date du paiement s’il a eu lieu ; et chaque paiement déjà fait sur une échéance payée en partie (« 700,00 $ payé le 2026-10-04 »).
+- **Montant dû** : le montant de cette échéance (« ≈ » devant signifie que le montant est prévu, pas connu).
+- **À payer** : le montant que **Marquer payée** proposera. Il commence à ce qui reste dû ; tapez un autre montant pour en payer une partie, ou plus. Il n’est affiché que pour les échéances encore à payer.
+- **Reste dû** : le montant dû moins ce qui a été payé ; zéro une fois payée ou sautée. Les rappels, le calendrier, le total du Tableau de bord, la prévision et le téléphone utilisent ce montant.
+- **Actions** : les boutons décrits ci-dessous. **Modifier** ouvre le formulaire de la facture.
+
+Les colonnes gardent leur place d’une ligne à l’autre et grandissent avec la taille du texte (Affichage et accessibilité) ; quand la fenêtre est trop étroite pour elles, la liste défile de côté.
 
 Dès qu’une facture a déjà été payée, sa ligne compare aussi le montant avec son historique :
 
@@ -190,27 +216,40 @@ L’historique complet d’une facture est dans son formulaire. Voir [Historique
 ### Marquer payée ou Marquer reçu {#mark-paid}
 @index: inscrire un paiement; payer une facture
 
-**Marquer payée** (pour une facture ou un virement) ou **Marquer reçu** (pour un revenu) ouvre un petit formulaire. Il indique l’échéance, et qu’une opération sera ajoutée au compte et jumelée au relevé bancaire lors de son importation.
+**Marquer payée** (pour une facture ou un virement) ou **Marquer reçu** (pour un revenu) ouvre un petit formulaire. Il indique l’échéance, et qu’une opération sera ajoutée au compte et jumelée au relevé bancaire lors de son importation. Quand le montant dû est connu, il montre aussi « Reste à payer : … ».
 
 - **Date du paiement** : la date du paiement, au format AAAA-MM-JJ. Par défaut : aujourd’hui.
-- **Montant** : le montant réellement payé ou reçu. Par défaut : le montant prévu. Il doit être supérieur à zéro.
+- **Montant** : le montant réellement payé ou reçu. Par défaut : le montant **À payer** de la ligne, qui commence à ce qui reste dû. Il doit être supérieur à zéro.
 
 **Enregistrer** alors :
 
 - pour une facture : inscrit une sortie d’argent du compte de paiement, avec le bénéficiaire (ou le nom) de la facture comme bénéficiaire, sa catégorie et son nom en note ;
 - pour un revenu : inscrit une entrée d’argent dans le compte de la même façon ;
 - pour un virement : inscrit un virement du compte de paiement vers l’autre compte ;
-- marque cette échéance payée. Elle passe dans **Payées récemment** et l’échéance suivante prend sa place.
+- marque cette échéance payée une fois que ses paiements atteignent le montant dû. Elle passe dans **Payées récemment** et l’échéance suivante prend sa place.
 
 Quand vous importez plus tard le relevé bancaire, l’importation jumelle la ligne du relevé avec cette opération au lieu de l’ajouter deux fois. Les montants payés sur une facture variable établissent aussi son montant prévu (la moyenne des trois derniers).
 
-### Entrer le montant {#enter-amount}
+### Payer une facture en partie {#pay-in-part}
+@index: paiement partiel; payer en partie; solde dû; reste dû; trop-payé
 
-**Entrer le montant** apparaît pour les factures variables et estimées. Quand la facture réelle arrive, entrez son montant :
+Vous pouvez payer moins que le montant dû, par exemple la moitié d’une grosse facture maintenant et le reste le jour de paie. Tapez le montant sous **À payer** (ou dans le formulaire) puis **Marquer payée** :
 
-- **Montant** : le montant de cette échéance seulement. Obligatoire.
+- Le paiement est inscrit comme une opération à part, liée à cette échéance.
+- L’échéance reste dans la liste avec le reste sous **Reste dû**, et les paiements déjà faits sous son nom. Elle fait toujours l’objet de rappels, paraît au calendrier et compte dans la prévision et le Tableau de bord pour ce qui reste dû.
+- **Marquer payée** propose de nouveau ce qui reste. L’échéance est payée une fois que ses paiements atteignent le montant dû ; un écart d’un cent est ignoré.
+- Payer plus que ce qui reste dû demande d’abord « Payer plus que le montant dû? » : **L’inscrire** inscrit le montant entier et marque l’échéance payée ; **Annuler** revient au formulaire.
 
-La ligne montre alors le montant sans « ≈ », et la prévision et les rappels l’utilisent. Rien n’est inscrit dans le compte avant que vous la marquiez payée.
+Une facture variable ou estimée dont le montant n’a pas été indiqué est payée en entier par le montant que vous payez, qui devient son montant. Pour en payer une partie, utilisez d’abord **Indiquer le montant de la facture**.
+
+### Indiquer le montant de la facture {#set-amount}
+@index: Entrer le montant; montant réel; montant d’une facture variable
+
+**Indiquer le montant de la facture** apparaît pour les factures variables et estimées. C’est le montant imprimé sur la facture elle-même, pas un paiement : quand la facture réelle arrive, entrez son montant :
+
+- **Montant de la facture** : le montant de cette échéance seulement. Obligatoire.
+
+La ligne montre alors le montant sans « ≈ » sous **Montant dû**, et la prévision et les rappels l’utilisent. Rien n’est inscrit dans le compte avant que vous la marquiez payée. Pour inscrire ce que vous payez, utilisez **Marquer payée**.
 
 > Conseil : Quand vous numérisez ou importez une facture papier ou électronique dans l’écran Documents, Inscrire le montant sur cette facture fait la même chose et garde la facture avec l’échéance. Voir [Inscrire le montant sur une facture](documents#record-on-bill).
 
@@ -224,7 +263,7 @@ Sous **Sautées**, **Rétablir** fait revenir une échéance sautée : elle est 
 
 ### Annuler un paiement {#undo-payment}
 
-Sous **Payées récemment**, **Annuler** défait un paiement marqué par erreur : l’opération inscrite pour ce paiement est supprimée du compte, et l’échéance revient dans la liste comme non payée. Le montant payé reste le montant de cette échéance. Si l’opération a déjà été supprimée dans le registre, seule l’échéance revient.
+Sous **Payées récemment**, **Annuler** défait un paiement marqué par erreur, et sur une échéance payée en partie, **Annuler le dernier paiement** fait de même pour son paiement le plus récent. Un seul paiement est défait à la fois : son opération est supprimée du compte, et l’échéance redevient due pour ce que ce paiement couvrait ; les paiements précédents restent. Le montant dû ne change pas. Si l’opération a déjà été supprimée dans le registre, seul le paiement est retiré.
 
 Si cette opération fait partie d’un rapprochement terminé, l’application demande d’abord « Modifier une opération rapprochée? » : la supprimer fait en sorte que le compte ne concorde plus avec ce relevé, et la modification est inscrite dans l’historique. **Modifier** la supprime et annule le paiement ; **Annuler** ne change rien.
 
@@ -235,7 +274,14 @@ Une ligne rouge « Le compte de paiement passerait sous zéro. » apparaît sur 
 
 ## L’onglet Toutes les factures {#all-bills-tab}
 
-**Toutes les factures** énumère chaque facture, revenu et virement, y compris les inactifs (marqués « (inactive) »). Chaque ligne montre le nom, le type, la répétition, la prochaine échéance (« prochaine le … ») et le montant (« ≈ » pour un montant variable ou estimé). Une facture classée montre aussi Maison ou Entreprise, sa catégorie et sa sous-catégorie, et le numéro de compte masqué (« compte •••• 6789 »). **Modifier** ouvre le formulaire de la facture.
+**Toutes les factures** énumère chaque facture, revenu et virement, y compris les inactifs (marqués « (inactive) »), par nom, sous les mêmes en-têtes de colonnes que **À payer**.
+
+![L’onglet Toutes les factures : chaque facture avec sa prochaine échéance](images/bills-all.png)
+
+- **Échéance** : la prochaine échéance de la facture encore à payer, une échéance en retard d’abord ; « — » quand rien n’est dû (la ligne dit alors « rien à payer »).
+- **Facture** : le nom, le type et la répétition (« Versements à dates fixes » pour un compte de taxes foncières, avec « versement 1 de 2 » pour le prochain). Une facture classée montre aussi Maison ou Entreprise, sa catégorie et sa sous-catégorie, et le numéro de compte masqué (« compte •••• 6789 »).
+- **Montant dû**, **À payer** et **Reste dû** : comme dans l’onglet À payer, pour cette prochaine échéance.
+- **Actions** : **Marquer payée** (ou **Marquer reçu**) paie le montant **À payer**, comme dans l’onglet À payer ; **Modifier** ouvre le formulaire de la facture.
 
 « Aucune facture pour l’instant. Ajoutez le loyer, les services publics, les assurances, les abonnements, la paie et les virements réguliers. » signifie qu’aucune n’a été créée.
 
@@ -245,7 +291,7 @@ Une ligne rouge « Le compte de paiement passerait sous zéro. » apparaît sur 
 
 ![L’onglet Calendrier : les factures du mois par date d’échéance](images/bills-calendar.png)
 
-- Les échéances à payer sont en texte normal ; celles en retard, en rouge.
+- Les échéances à payer sont en texte normal, avec ce qui reste dû (moins les paiements partiels) ; celles en retard, en rouge. « ≈ » marque un montant prévu, comme les versements de l’an prochain proposés d’après ceux de cette année.
 - Les échéances payées sont grisées ; les échéances sautées, plus pâles encore.
 - Un jour montre jusqu’à trois factures, puis « +n » pour les autres.
 
@@ -282,6 +328,8 @@ Comment le calcul est fait :
 - Le solde d’aujourd’hui est le solde actuel du compte dans les livres ; importez ou inscrivez donc d’abord les opérations récentes.
 - Les éléments en retard pas encore payés sont comptés aujourd’hui.
 - Les factures variables comptent leur montant prévu ; les montants que vous avez entrés comptent tels quels.
+- Une échéance payée en partie ne compte que ce qui reste dû ; les paiements faits sont déjà dans le solde du compte.
+- Les versements de l’an prochain proposés d’après ceux de cette année comptent aux montants de cette année.
 - Un virement compte dans les deux comptes. Un virement vers un compte d’une autre devise n’est pas compté dans ce compte, puisque le montant qui y arrivera n’est pas connu.
 - Les avertissements de découvert ne sont donnés que pour les comptes bancaires, pas pour les cartes de crédit ni les prêts.
 - Les dépenses que vous n’avez pas prévues comme facture (épicerie, essence) ne sont pas dans la prévision.
@@ -300,7 +348,7 @@ Comment le calcul est fait :
 
 Les rappels de factures apparaissent à deux endroits :
 
-- Un bandeau de couleur en haut de tous les autres écrans, comme « 3 rappels  Hydro : à payer dans 7 jours (≈ 142,00 $) · Loyer : à payer aujourd’hui (1 450,00 $) ». Cliquez dessus pour ouvrir l’écran du premier rappel. Le bandeau porte aussi les rappels de rendez-vous, de renouvellements de médicaments, de renouvellements et d’entretien.
+- Un bandeau de couleur en haut de tous les autres écrans, comme « 3 rappels  Hydro : à payer dans 7 jours (≈ 142,00 $) · Loyer : à payer aujourd’hui (1 450,00 $) ». Le montant est ce qui reste dû. Cliquez dessus pour ouvrir l’écran du premier rappel. Le bandeau porte aussi les rappels de rendez-vous, de renouvellements de médicaments, de renouvellements et d’entretien.
 - Une notification du système de RANN's Roost, vérifiée toutes les quelques minutes tant que le ménage est ouvert. Chaque rappel est annoncé une fois par jour pour chaque ménage : cet ordinateur retient ce qu’il a annoncé, et fermer puis rouvrir l’application le même jour ne le répète pas. Le bandeau, lui, montre toujours tous les rappels.
 
 Une facture figure dans les rappels :
@@ -321,18 +369,20 @@ Une facture papier ou électronique importée dans l’écran [Documents](docume
 - Quand l’application reconnaît la facture, par votre numéro de compte chez le fournisseur ou par le nom du bénéficiaire, **L’inscrire comme état de compte de cette facture** l’inscrit et garde le document avec elle.
 - Quand elle ne correspond à aucune de vos factures, **Créer une facture à partir de ceci** ouvre le formulaire de facture rempli à partir du document : le nom de l’entreprise, votre numéro de compte, le montant (montant variable), la date d’échéance comme première échéance, chaque mois, et un classement Maison ou Entreprise deviné d’après vos factures précédentes de la même entreprise, la catégorie du bénéficiaire ou le nom de l’entreprise (Hydro, Énergir, Bell, Vidéotron…). Vérifiez-le, choisissez le compte de paiement et enregistrez : la facture est créée et le document devient son premier état de compte, sous **Premier état de compte (la facture saisie)**.
 - **Joindre à une facture** l’inscrit plutôt sur une facture que vous choisissez, avec les champs de l’état de compte à corriger au besoin.
+- Les versements d’un compte de taxes, quand ils sont imprimés (« 2e versement échéance 2026-06-04 1 402,33 $ », « 1st Instalment Due June 18, 2026 », ou une ligne d’échéances au-dessus d’une ligne de montants), sont lus aussi, sur cet ordinateur et par la lecture par IA. Ils remplissent les **Versements** de l’état de compte, et **Créer une facture à partir de ceci** propose alors **Versements à dates fixes**. Vérifiez chaque date et chaque montant avant d’enregistrer.
 
 Remplissez **Bénéficiaire** et **Votre numéro de compte chez le fournisseur** sur vos factures pour qu’elles soient reconnues. Voir [Documents](documents#record-on-bill).
 
 ## Où les factures apparaissent ailleurs {#elsewhere}
 
-- Le [Tableau de bord](dashboard) montre les factures en retard ou dues dans les 7 prochains jours et leur total.
+- Le [Tableau de bord](dashboard) montre les factures en retard ou dues dans les 7 prochains jours et leur total, en comptant ce qui reste dû sur celles payées en partie.
+- La liste des factures à payer du téléphone montre ce qui reste dû.
 - Le [Calendrier](calendar) montre chaque échéance avec les rendez-vous et les autres dates.
 - Les paiements inscrits à partir des factures sont des opérations ordinaires : ils comptent dans les [Budgets](budgets), les [Rapports](reports) et les chiffres d’impôt sous la catégorie de la facture.
 
 ## Qui peut faire quoi {#permissions}
 
-- Ajouter, modifier, supprimer, sauter et rétablir, entrer un montant et annuler un paiement demandent la permission **Modification** sur le groupe de comptes du compte de paiement.
+- Ajouter, modifier, supprimer, sauter et rétablir, indiquer le montant de la facture, ajouter des états de compte et annuler un paiement demandent la permission **Modification** sur le groupe de comptes du compte de paiement.
 - Marquer une échéance payée ou reçue demande au moins la permission **Saisie seulement**.
 - Une facture est visible par tous ceux qui peuvent ouvrir le groupe de comptes de son compte de paiement. Voir [Utilisateurs](users).
 

@@ -12,10 +12,11 @@ Choose Add a bill. Pick the type: Bill, Income or Transfer. Enter the name, the 
 
 To pay lists what is overdue, due today and due in the next 30 days.
 
-- Mark paid, or Mark received for income, adds the transaction to the account.
-- Enter amount sets this time's amount for a variable or estimated bill.
+- The columns are Due date, Bill, Amount due, To pay, Outstanding and Actions.
+- Mark paid, or Mark received for income, pays the To pay amount and adds the transaction to the account. Type less under To pay to pay part of it: the rest stays due under Outstanding, with its reminders.
+- Set the bill's amount records the amount printed on a variable or estimated bill; it is not a payment.
 - Skip passes over one occurrence.
-- Undo, under Paid recently, reverses a payment you marked by mistake.
+- Undo, under Paid recently, or Undo last payment reverses one payment marked by mistake.
 
 A warning appears when the paying account would go below zero.
 
@@ -34,3 +35,7 @@ Under Home or business, choose Home or Business, then the bill category and the 
 ## Statements and meter readings
 
 Your account number with the payee is shown masked; Show number asks for your password. When you edit a bill, Statements lists those received: Add a statement records its number, amount, issue date and due date, which becomes that period's due date. For a utility, enter the previous and current readings with their dates: they are added to the meter chosen under Meter (Utilities). A captured bill from Documents is recorded as a statement, or creates the bill with Create a bill from this.
+
+## Property taxes and instalments
+
+For a bill paid in instalments on set dates, such as property taxes, choose Instalments on set dates under Repeats. Add each year's tax bill as a statement with its instalments: each one becomes a due date, shown as instalment 2 of 3. Until next year's bill is entered, its instalments are proposed on the same dates with this year's amounts, marked estimated.
