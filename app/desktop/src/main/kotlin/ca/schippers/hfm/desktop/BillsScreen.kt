@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -151,7 +152,8 @@ private fun BillTable(model: BooksModel, actionsWidth: Int, content: LazyListSco
 private fun BillHeadings(model: BooksModel, actionsWidth: Int) {
     @Composable
     fun Heading(key: String, modifier: Modifier, end: Boolean = false) = Text(
-        model.t(key), modifier, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold,
+        // Announced as headings by screen readers, as the shared ColumnHeading does (NAV-04).
+        model.t(key), modifier.semantics { heading() }, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold,
         textAlign = if (end) TextAlign.End else TextAlign.Start, maxLines = 2,
     )
     Row(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 6.dp), verticalAlignment = Alignment.Bottom) {
@@ -160,7 +162,7 @@ private fun BillHeadings(model: BooksModel, actionsWidth: Int) {
         Heading("bills.col.amountDue", Modifier.width(col(AMOUNT_W)), end = true)
         Heading("bills.col.toPay", Modifier.width(col(TO_PAY_W)).padding(start = 12.dp))
         Heading("bills.col.outstanding", Modifier.width(col(OUTSTANDING_W)), end = true)
-        Heading("bills.col.actions", Modifier.width(col(actionsWidth)).padding(start = 12.dp))
+        Heading("table.actions", Modifier.width(col(actionsWidth)).padding(start = 12.dp))
     }
     HorizontalDivider()
 }
