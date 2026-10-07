@@ -373,6 +373,10 @@ private fun ChapterView(state: AppState, book: Manual.Book, page: String, onOpen
     }
 }
 
+/** A manual block as the manual shows it, for other places that show the manual's Markdown (Walk-Me, What's new). */
+@Composable
+internal fun ManualBlock(state: AppState, block: Manual.Block, onOpen: (String) -> Unit) = BlockView(state, block, MaterialTheme.colorScheme.primary, onOpen)
+
 @Composable
 private fun BlockView(state: AppState, block: Manual.Block, linkColor: Color, onOpen: (String) -> Unit) {
     val body = MaterialTheme.typography.bodyLarge

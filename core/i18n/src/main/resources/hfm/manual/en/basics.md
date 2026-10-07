@@ -166,7 +166,8 @@ Counts in parentheses show what waits for you. Documents shows the number of doc
 - Investing and borrowing: [Investments](investments), [Registered plans](plans) and [Loans and mortgages](loans).
 - Reports and taxes: [Reports](reports) and [Taxes](taxes).
 - Home and family: [Health](health), [Medical claims](medical), [Emergency and estate](estate), [Pets](pets), [Vehicles](vehicles), [Trip log](trips) and [Home and assets](assets).
-- Settings: [Household members](members), [Users](users), [Categories](categories), [Payees](payees), [Category rules](rules), [Institutions](institutions), [Rates and prices](rates), [Phones](phones), [AI reading](ai), [Backups](backups), [Security](security), [Display and accessibility](display) and [About](about).
+- Settings: [Household members](members), [Users](users), [Categories](categories), [Payees](payees), [Category rules](rules), [Institutions](institutions), [Rates and prices](rates), [Phones](phones), [AI reading](ai), [Backups](backups), [Security](security) and [Display and accessibility](display).
+- Help, the last group (at the right of the bar at the top): Manual (Shift+F1), Help (F1), [Walk-Me guides](walkme) and [About](about). See [The Help menu](walkme#help-menu).
 
 What each user sees inside these screens depends on their role and on the account groups they may open; see [Users](users).
 

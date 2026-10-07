@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -111,25 +112,40 @@ private fun AppContent(state: AppState) {
                 delay(60 * 60_000L)
             }
         }
-        Column(Modifier.fillMaxSize()) {
-            TopBar(state)
-            when (val screen = state.screen) {
-                is Screen.Main -> MainScreen(screen.model, state)
-                else -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp), contentAlignment = Alignment.TopCenter) {
-                    Column(Modifier.widthIn(max = 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        when (screen) {
-                            Screen.Welcome -> WelcomeScreen(state)
-                            Screen.About -> {
-                                TextButton(onClick = { state.screen = Screen.Welcome }) { Text(state.t("common.back")) }
-                                AboutContent(state)
-                            }
-                            Screen.Create -> CreateScreen(state)
-                            is Screen.Unlock -> UnlockScreen(state, screen.dir)
-                            is Screen.Reset -> ResetScreen(state, screen.dir)
-                            is Screen.ShowRecoveryKey -> RecoveryKeyScreen(state, screen)
-                            is Screen.Main -> Unit
-                        }
+        // HLP-03: the controls a Walk-Me guide points at register here, in dialogs too.
+        androidx.compose.runtime.CompositionLocalProvider(LocalWalkMe provides state.walkMe) {
+            Column(Modifier.fillMaxSize()) {
+                TopBar(state)
+                Row(Modifier.fillMaxSize()) {
+                    Box(Modifier.weight(1f).fillMaxHeight()) { ScreenContent(state) }
+                    WalkMePanel(state)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScreenContent(state: AppState) {
+    when (val screen = state.screen) {
+        is Screen.Main -> MainScreen(screen.model, state)
+        else -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(32.dp), contentAlignment = Alignment.TopCenter) {
+            Column(Modifier.widthIn(max = if (screen == Screen.Guides) 760.dp else 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                when (screen) {
+                    Screen.Welcome -> WelcomeScreen(state)
+                    Screen.About -> {
+                        TextButton(onClick = { state.screen = Screen.Welcome }) { Text(state.t("common.back")) }
+                        AboutContent(state)
                     }
+                    Screen.Guides -> {
+                        TextButton(onClick = { state.screen = Screen.Welcome }) { Text(state.t("common.back")) }
+                        WalkMeList(state)
+                    }
+                    Screen.Create -> CreateScreen(state)
+                    is Screen.Unlock -> UnlockScreen(state, screen.dir)
+                    is Screen.Reset -> ResetScreen(state, screen.dir)
+                    is Screen.ShowRecoveryKey -> RecoveryKeyScreen(state, screen)
+                    is Screen.Main -> Unit
                 }
             }
         }
@@ -160,12 +176,15 @@ private fun TopBar(state: AppState) {
 private fun WelcomeScreen(state: AppState) {
     Text(state.t("welcome.title"), style = MaterialTheme.typography.headlineMedium)
     Text(state.t("app.tagline"))
-    Button(onClick = { state.screen = Screen.Create }, modifier = Modifier.fillMaxWidth()) { Text(state.t("welcome.create")) }
+    Button(onClick = { state.screen = Screen.Create }, modifier = Modifier.fillMaxWidth().walkTarget("welcome.create")) { Text(state.t("welcome.create")) }
     OutlinedButton(
         onClick = { chooseFolder(state.t("welcome.open"))?.let { state.screen = Screen.Unlock(it) } },
         modifier = Modifier.fillMaxWidth(),
     ) { Text(state.t("welcome.open")) }
     RestoreButton(state)
+    // HLP-03: the guides, the first of which walks through creating a household.
+    Text(state.t("welcome.walkme"), style = MaterialTheme.typography.bodyMedium)
+    OutlinedButton(onClick = { state.screen = Screen.Guides }, modifier = Modifier.fillMaxWidth()) { Text(state.t("nav.walkme")) }
     TextButton(onClick = { state.screen = Screen.About }) { Text(state.t("about.link")) }
     val recent = state.recentHouseholds
     if (recent.isNotEmpty()) {
@@ -225,17 +244,17 @@ private fun CreateScreen(state: AppState) {
 
     Text(state.t("create.title"), style = MaterialTheme.typography.headlineMedium)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        OutlinedButton(onClick = { chooseFolder(state.t("create.folder"))?.let { parent = it } }) { Text(state.t("create.folder.choose")) }
+        OutlinedButton(onClick = { chooseFolder(state.t("create.folder"))?.let { parent = it } }, modifier = Modifier.walkTarget("create.folder")) { Text(state.t("create.folder.choose")) }
         Text(parent?.toString() ?: "", style = MaterialTheme.typography.bodySmall)
     }
-    Field(state.t("create.name"), name) { name = it }
+    Field(state.t("create.name"), name, walkId = "create.name") { name = it }
     // PROV-01: the province or territory whose rules apply; it can be changed later.
-    Picker(state.t("household.province"), Province.entries.sortedBy { state.t("province.$it") }, province, { state.t("province.$it") }, Modifier.width(400.dp)) { province = it }
-    Field(state.t("create.adminName"), adminName) { adminName = it }
-    Field(state.t("create.login"), login) { login = it }
+    Picker(state.t("household.province"), Province.entries.sortedBy { state.t("province.$it") }, province, { state.t("province.$it") }, Modifier.width(400.dp).walkTarget("create.province")) { province = it }
+    Field(state.t("create.adminName"), adminName, walkId = "create.adminName") { adminName = it }
+    Field(state.t("create.login"), login, walkId = "create.login") { login = it }
     // No household exists yet, so the built-in password rules apply (Rates and rules, security.password.*).
     val rules = remember { PasswordRules.builtIn(today()) }
-    Field(state.t("create.password"), password, secret = true) { password = it }
+    Field(state.t("create.password"), password, secret = true, walkId = "create.password") { password = it }
     Text(passwordRulesText(state.language, rules), style = MaterialTheme.typography.bodySmall)
     Field(state.t("create.password.confirm"), confirm, secret = true) { confirm = it }
     error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -243,6 +262,7 @@ private fun CreateScreen(state: AppState) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         OutlinedButton(onClick = { state.screen = Screen.Welcome }, enabled = !busy) { Text(state.t("common.back")) }
         Button(
+            modifier = Modifier.walkTarget("create.submit"),
             enabled = !busy && parent != null && name.isNotBlank() && province != null && adminName.isNotBlank() && login.isNotBlank(),
             onClick = {
                 error = passwordProblem(state.language, rules, password, login.trim()) ?: if (password != confirm) state.t("create.password.mismatch") else null
@@ -276,7 +296,7 @@ private fun RecoveryKeyScreen(state: AppState, screen: Screen.ShowRecoveryKey) {
     val text = remember(screen) { screen.key.display() }
     Text(state.t("recovery.title"), style = MaterialTheme.typography.headlineMedium)
     Text(state.t("recovery.explain"))
-    Card(Modifier.fillMaxWidth()) {
+    Card(Modifier.fillMaxWidth().walkTarget("recovery.key")) {
         SelectionContainer {
             Text(text, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(24.dp))
         }
@@ -288,7 +308,7 @@ private fun RecoveryKeyScreen(state: AppState, screen: Screen.ShowRecoveryKey) {
         OutlinedButton(onClick = { Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(text), null) }) {
             Text(state.t("recovery.copy"))
         }
-        Button(onClick = { state.opened(screen.session) }) { Text(state.t("recovery.confirm")) }
+        Button(onClick = { state.opened(screen.session) }, modifier = Modifier.walkTarget("recovery.confirm")) { Text(state.t("recovery.confirm")) }
     }
 }
 
@@ -419,14 +439,14 @@ private fun ResetScreen(state: AppState, dir: Path) {
 }
 
 @Composable
-private fun Field(label: String, value: String, secret: Boolean = false, onChange: (String) -> Unit) {
+private fun Field(label: String, value: String, secret: Boolean = false, walkId: String? = null, onChange: (String) -> Unit) {
     OutlinedTextField(
         value = value,
         onValueChange = onChange,
         label = { Text(label) },
         singleLine = true,
         visualTransformation = if (secret) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(walkId?.let { Modifier.walkTarget(it) } ?: Modifier),
     )
 }
 

@@ -82,7 +82,7 @@ fun AiReadDialog(model: BooksModel, doc: VaultDocument, kind: ca.schippers.hfm.o
         pages = loaded
     }
 
-    WideDialog(model.t("ai.read.title", doc.label), model.t("common.cancel"), { if (!sending) onClose(false) }) {
+    WideDialog(model.t("ai.read.title", doc.label), model.t("common.cancel"), { if (!sending) onClose(false) }, walkId = "ai.read") {
         val all = pages
         when {
             all == null -> Text(model.t("documents.loadingPreview"))
@@ -114,7 +114,7 @@ fun AiReadDialog(model: BooksModel, doc: VaultDocument, kind: ca.schippers.hfm.o
                     Text(model.t("ai.read.what", sentPages.size, aiModel.label, model.usd(aiModel.estimate(sizes, type.id))), style = MaterialTheme.typography.bodySmall)
                     Text(model.t("ai.read.privacy"), style = MaterialTheme.typography.bodySmall)
                     failure?.let { ErrorText(it) }
-                    Button(enabled = !sending && sentPages.isNotEmpty(), onClick = {
+                    Button(enabled = !sending && sentPages.isNotEmpty(), modifier = Modifier.walkTarget("ai.send"), onClick = {
                         sending = true
                         failure = null
                         scope.launch {

@@ -105,7 +105,7 @@ fun HealthScreen(model: BooksModel) {
         Text(model.t("health.disclaimer"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
         PrimaryScrollableTabRow(selectedTabIndex = tab.ordinal, edgePadding = 0.dp, modifier = Modifier.padding(vertical = 8.dp)) {
             for (t in HealthTab.entries) {
-                Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("health.tab.${t.name}")) })
+                Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("health.tab.${t.name}")) })
             }
         }
         Box(Modifier.weight(1f)) {

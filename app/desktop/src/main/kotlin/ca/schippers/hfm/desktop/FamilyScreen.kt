@@ -61,7 +61,7 @@ fun FamilyScreen(model: BooksModel) {
         Text(model.t("nav.family"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("family.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
-            for (t in FamilyTab.entries) Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("family.tab.$t")) })
+            for (t in FamilyTab.entries) Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("family.tab.$t")) })
         }
         when (tab) {
             FamilyTab.SHARED -> SharedTab(model)
@@ -91,7 +91,7 @@ private fun SharedTab(model: BooksModel) {
     val g = groups.firstOrNull { it.id == selected } ?: groups.firstOrNull()
     Row(Modifier.fillMaxSize()) {
         Column(Modifier.width(240.dp).fillMaxHeight()) {
-            Button(onClick = { creating = true }) { Text(model.t("share.newGroup")) }
+            Button(onClick = { creating = true }, modifier = Modifier.walkTarget("family.newGroup")) { Text(model.t("share.newGroup")) }
             Column(Modifier.verticalScroll(rememberScrollState()).padding(top = 8.dp)) {
                 if (groups.isEmpty()) Text(model.t("share.none"), style = MaterialTheme.typography.bodySmall)
                 for (x in groups) NavigationDrawerItem(label = { Text(x.name + if (x.archived) " (${model.t("share.archived")})" else "") }, selected = x.id == g?.id, onClick = { selected = x.id })
@@ -105,7 +105,7 @@ private fun SharedTab(model: BooksModel) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(g.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Button(onClick = { adding = true }) { Text(model.t("share.addExpense")) }
+                Button(onClick = { adding = true }, modifier = Modifier.walkTarget("family.addExpense")) { Text(model.t("share.addExpense")) }
                 OutlinedButton(onClick = { editing = g }) { Text(model.t("share.editGroup")) }
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -249,7 +249,9 @@ private fun LoansTab(model: BooksModel) {
     val loans = remember(model.revision) { books.familyLoans.list() }
     var editing by remember { mutableStateOf<FamilyLoan?>(null) }
     var open by remember { mutableStateOf<String?>(null) }
-    Button(onClick = { editing = FamilyLoan("", model.editableGroup(), "", "", Money.zero(books.reports.base), today(), 0, null, false, emptyList()) }) { Text(model.t("loan.add")) }
+    Button(onClick = { editing = FamilyLoan("", model.editableGroup(), "", "", Money.zero(books.reports.base), today(), 0, null, false, emptyList()) }, modifier = Modifier.walkTarget("family.addLoan")) {
+        Text(model.t("loan.add"))
+    }
     Text(model.t("loan.hint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
     if (loans.isEmpty()) Text(model.t("loan.none"))
     else HeadingRow {
@@ -375,7 +377,7 @@ private fun AllowancesTab(model: BooksModel) {
     var open by remember { mutableStateOf<String?>(null) }
     val child = members.firstOrNull { it.kind == MemberKind.CHILD } ?: members.firstOrNull()
     if (child != null) {
-        Button(onClick = { editing = Allowance("", model.editableGroup(), child.id, Money.zero(books.reports.base), AllowanceFrequency.WEEKLY, today(), null, null, emptyList()) }) {
+        Button(onClick = { editing = Allowance("", model.editableGroup(), child.id, Money.zero(books.reports.base), AllowanceFrequency.WEEKLY, today(), null, null, emptyList()) }, modifier = Modifier.walkTarget("family.addAllowance")) {
             Text(model.t("allowance.add"))
         }
     }
@@ -401,7 +403,7 @@ private fun AllowancesTab(model: BooksModel) {
                 if (s.owed.isPositive) Text(model.t("allowance.owed", model.money(s.owed)), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(end = 8.dp))
                 if (chores.isPositive) Text(model.t("allowance.choresOwed", model.money(chores)), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(end = 8.dp))
                 if (s.owed.isPositive || chores.isPositive) {
-                    OutlinedButton(onClick = {
+                    OutlinedButton(modifier = Modifier.walkTarget("family.payAllowance"), onClick = {
                         model.act {
                             if (s.owed.isPositive) books.allowances.addEntry(a, today(), s.owed, AllowanceKind.PAID)
                             books.chores.pay(a, today())
@@ -427,7 +429,7 @@ private fun AllowanceDialog(model: BooksModel, a: Allowance, onClose: () -> Unit
     var end by remember { mutableStateOf(a.end?.toString().orEmpty()) }
     var notes by remember { mutableStateOf(a.notes.orEmpty()) }
     var asking by remember { mutableStateOf(false) }
-    FormDialog(model.t(if (a.id.isBlank()) "allowance.add" else "allowance.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
+    FormDialog(model.t(if (a.id.isBlank()) "allowance.add" else "allowance.edit"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, walkId = "allowance.dialog", onSave = {
         val ok = model.act {
             val value = parseAmount(amount, a.amount.currency, locale)?.abs() ?: throw ValidationException("error.allowanceAmount")
             model.books.allowances.save(

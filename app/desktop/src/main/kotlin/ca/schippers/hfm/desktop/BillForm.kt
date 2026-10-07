@@ -228,6 +228,7 @@ internal fun BillDialog(model: BooksModel, existing: Bill?, proposal: BillPropos
         model.t(if (existing == null) (if (proposal != null) "bills.createFromDocument" else "bills.add") else "bills.edit"), model.t("common.save"), model.t("common.cancel"),
         canSave = name.isNotBlank() && account != null,
         onDismiss = onClose,
+        walkId = "bill.dialog",
         onSave = {
             val ok = model.act {
                 val value = parseAmount(amount, account!!.currency, locale) ?: Money.zero(account.currency)
@@ -408,7 +409,7 @@ private fun InstalmentInputs(model: BooksModel, f: StatementFields, currency: Cu
     val locale = model.language.locale
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
         Text(model.t("bills.instalments"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-        OutlinedButton(onClick = { f.instalments.add(InstalmentFields("", "")) }) { Text(model.t("bills.addInstalment")) }
+        OutlinedButton(onClick = { f.instalments.add(InstalmentFields("", "")) }, modifier = Modifier.walkTarget("bills.addInstalment")) { Text(model.t("bills.addInstalment")) }
     }
     Text(model.t("bills.instalments.explain"), style = MaterialTheme.typography.bodySmall)
     f.instalments.forEachIndexed { i, row ->
@@ -432,7 +433,7 @@ private fun BillStatements(model: BooksModel, bill: Bill, utility: Boolean) {
     var viewing by remember { mutableStateOf<String?>(null) }
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
         Text(model.t("bills.statements"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-        OutlinedButton(onClick = { adding = true }) { Text(model.t("bills.addStatement")) }
+        OutlinedButton(onClick = { adding = true }, modifier = Modifier.walkTarget("bills.addStatement")) { Text(model.t("bills.addStatement")) }
     }
     if (statements.isEmpty()) Text(model.t("bills.statements.none"), style = MaterialTheme.typography.bodySmall)
     for (s in statements.take(STATEMENTS_SHOWN)) {
@@ -501,7 +502,7 @@ private fun StatementDialog(model: BooksModel, bill: Bill, existing: BillStateme
         )
     }
     var confirmDelete by remember { mutableStateOf(false) }
-    FormDialog(model.t(if (existing == null) "bills.addStatement" else "bills.editStatement") + " · " + bill.name, model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
+    FormDialog(model.t(if (existing == null) "bills.addStatement" else "bills.editStatement") + " · " + bill.name, model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, walkId = "bills.statement", onSave = {
         val ok = model.act {
             val draft = fields.draft(bill.amount.currency, locale, model.language, existing?.documentId, existing?.meterId, existing?.notes)
             model.books.bills.recordStatement(bill.id, draft, existing?.id)

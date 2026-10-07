@@ -65,7 +65,7 @@ fun ReconcileScreen(model: BooksModel, account: Account, statementId: String) {
     Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(model.t("reconcile.title", account.name), style = MaterialTheme.typography.headlineSmall)
+                Text(model.t("reconcile.title", account.name), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.walkTarget("reconcile.screen"))
                 Text(
                     listOfNotNull(statement.sourceName, statement.periodStart?.let { "${model.date(it)} – ${model.date(statement.periodEnd)}" } ?: model.date(statement.periodEnd))
                         .joinToString(" · "),
@@ -166,7 +166,7 @@ fun ReconcileScreen(model: BooksModel, account: Account, statementId: String) {
                 )
             }
             if (open) {
-                Button(enabled = view.canFinish, onClick = { report = model.act { books.statements.finish(statementId) } }) {
+                Button(enabled = view.canFinish, onClick = { report = model.act { books.statements.finish(statementId) } }, modifier = Modifier.walkTarget("reconcile.finish")) {
                     Text(model.t("reconcile.finish"))
                 }
             }
@@ -336,7 +336,7 @@ private fun RowScope.BalanceEditor(model: BooksModel, account: Account, statemen
     var closing by remember(statement) { mutableStateOf(statement.closingBalance?.let { MoneyFormat.formatAmount(it, locale) }.orEmpty()) }
     Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         DateInput(model.t("reconcile.periodEnd"), end, Modifier.width(170.dp)) { end = it }
-        AmountInput(model.t("reconcile.closing"), closing, account.currency, locale, Modifier.width(200.dp), model::money) { closing = it }
+        AmountInput(model.t("reconcile.closing"), closing, account.currency, locale, Modifier.width(200.dp).walkTarget("reconcile.closing"), model::money) { closing = it }
         OutlinedButton(onClick = {
             model.act {
                 val date = runCatching { LocalDate.parse(end.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
@@ -386,7 +386,7 @@ fun StatementsDialog(model: BooksModel, account: Account, onClose: () -> Unit) {
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { newStatement = true }) { Text(model.t("statements.manual")) } },
+        confirmButton = { TextButton(onClick = { newStatement = true }, modifier = Modifier.walkTarget("statements.paper")) { Text(model.t("statements.manual")) } },
         dismissButton = { TextButton(onClick = onClose) { Text(model.t("common.close")) } },
     )
 

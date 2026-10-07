@@ -123,10 +123,11 @@ Le manuel utilise la même taille de texte que l'application, choisie sous [Affi
 
 @index: aide; F1; panneau d'aide; guide
 
-L'application offre deux sortes d'aide :
+L'application offre trois sortes d'aide, toutes dans le groupe **Aide** du menu :
 
 - **Aide (F1)** ouvre un court guide à côté de l'écran, au sujet de l'écran affiché. Il répond à la question rapide : à quoi sert cet écran et comment faire la tâche habituelle.
 - Le **Manuel** est ce livre : chaque champ et chaque option, ce que chacun change, et les règles canadiennes que l'application applique.
+- Les **Guides Walk-Me** vous accompagnent pas à pas dans une tâche courante, dans un panneau à côté de l'application, en ouvrant les bons écrans et en montrant les commandes à utiliser. Voir [Guides Walk-Me](walkme).
 
 ### Le panneau d'aide {#help-panel}
 

@@ -275,12 +275,12 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
             }
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(vertical = 8.dp)) {
-            Button(onClick = { pendingImport = startImport(model, account) }) { Text(model.t("import.button")) }
+            Button(onClick = { pendingImport = startImport(model, account) }, modifier = Modifier.walkTarget("register.import")) { Text(model.t("import.button")) }
             OutlinedButton(onClick = {
                 val open = books.statements.statements(account.id).firstOrNull { it.status == StatementStatus.OPEN }
                 if (open != null) model.reconcilingStatementId = open.id else showStatements = true
-            }) { Text(model.t("reconcile.button")) }
-            OutlinedButton(onClick = { showStatements = true }) { Text(model.t("statements.button")) }
+            }, modifier = Modifier.walkTarget("register.reconcile")) { Text(model.t("reconcile.button")) }
+            OutlinedButton(onClick = { showStatements = true }, modifier = Modifier.walkTarget("register.statements")) { Text(model.t("statements.button")) }
             OutlinedButton(onClick = { managingTemplates = true }) { Text(model.t("templates.button")) }
             if (suggested.isNotEmpty()) Button(onClick = { reviewing = true }) { Text(model.t("suggested.button", suggested.size)) }
             if (!choosing && rows.isNotEmpty()) OutlinedButton(onClick = { choosing = true; entry.clear() }) { Text(model.t("bulk.choose")) }
@@ -289,11 +289,11 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                 OutlinedButton(onClick = { editingAlerts = true }) { Text(model.t("alert.button")) }
             }
             if (account.numberMasked != null) OutlinedButton(onClick = { revealing = true }) { Text(model.t("account.show")) }
-            if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCard = true }) { Text(model.t("account.cardDetails")) }
+            if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCard = true }, modifier = Modifier.walkTarget("register.cardDetails")) { Text(model.t("account.cardDetails")) }
             if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingCards = true }) { Text(model.t("cards.button")) }
             if (account.type.kind == AccountKind.CREDIT) OutlinedButton(onClick = { editingRewards = true }) { Text(model.t("rewards.button")) }
-            if (account.type.kind == AccountKind.LOAN) OutlinedButton(onClick = { model.section = Section.LOANS }) { Text(model.t("account.loanDetails")) }
-            if (account.type.kind == AccountKind.INVESTMENT) OutlinedButton(onClick = { model.section = Section.INVESTMENTS }) { Text(model.t("account.holdings")) }
+            if (account.type.kind == AccountKind.LOAN) OutlinedButton(onClick = { model.section = Section.LOANS }, modifier = Modifier.walkTarget("register.loanDetails")) { Text(model.t("account.loanDetails")) }
+            if (account.type.kind == AccountKind.INVESTMENT) OutlinedButton(onClick = { model.section = Section.INVESTMENTS }, modifier = Modifier.walkTarget("register.holdings")) { Text(model.t("account.holdings")) }
             if (account.status != AccountStatus.CLOSED) {
                 OutlinedButton(onClick = { confirmClose = true }) { Text(model.t("account.close")) }
             } else {
@@ -477,7 +477,9 @@ fun RegisterScreen(model: BooksModel, summary: AccountSummary) {
                     FlowRow(Modifier.weight(1f).padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
                         if (entry.choice !is CategoryChoice.TransferWith) {
                             OutlinedButton(onClick = { splitting = true }) { Text(model.t("register.splitButton")) }
-                            OutlinedButton(onClick = { itemizing = ItemizeState.start(null, emptyMap(), model.language.locale, account.currency) }) { Text(model.t("register.itemizeButton")) }
+                            OutlinedButton(onClick = { itemizing = ItemizeState.start(null, emptyMap(), model.language.locale, account.currency) }, modifier = Modifier.walkTarget("register.itemize")) {
+                                Text(model.t("register.itemizeButton"))
+                            }
                         }
                         // SAL-02: pay entered from its stub, gross pay less each deduction.
                         if (entry.editing == null && account.type.kind == AccountKind.BANK) {
@@ -792,7 +794,7 @@ private fun CardTermsDialog(model: BooksModel, account: Account, onClose: () -> 
 
     fun rate(text: String): BigDecimal? = text.trim().ifEmpty { null }?.let { MoneyFormat.parseDecimal(it, locale).movePointLeft(2) }
 
-    FormDialog(model.t("card.title"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
+    FormDialog(model.t("card.title"), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, walkId = "card.dialog", onSave = {
         val ok = model.act {
             val terms = runCatching {
                 existing.copy(

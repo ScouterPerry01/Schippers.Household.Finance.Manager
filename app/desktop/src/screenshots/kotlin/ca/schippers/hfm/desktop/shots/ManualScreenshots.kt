@@ -192,7 +192,7 @@ private var manualShown by mutableStateOf(false)
 /** Every picture in the manual, in the order taken. Each file name is the same in English and French. */
 private val SHOTS: List<Shot> = buildList {
     // One picture per screen, named after the screen's chapter.
-    for (s in Section.entries) {
+    for (s in Section.entries - Section.WALKME) { // Walk-Me's picture is a guide beside a screen (below).
         add(
             Shot(s.helpId) {
                 if (s == Section.ACCOUNTS) model.selectedAccountId = creditCard()
@@ -265,6 +265,8 @@ private val SHOTS: List<Shot> = buildList {
         },
     )
     add(Shot("help") { section(Section.BILLS); app.openHelp() })
+    // HLP-03: a Walk-Me guide beside the Bills screen, its step's control outlined.
+    add(Shot("walkme") { section(Section.BILLS); app.walkMe.start("pay-part", 1) })
     add(Shot("menu-top") { app.setMenuOnTop(model.books.userId, true); section(Section.BUDGETS) })
     add(Shot("display-dark") { app.chooseTheme(ThemeChoice.DARK); section(Section.DASHBOARD) })
     // Dialogs added before 1.0. These change the sample household (templates, a card statement,
@@ -443,6 +445,7 @@ fun main() {
             app.chooseTheme(if (dark) ThemeChoice.DARK else ThemeChoice.LIGHT)
             app.setMenuOnTop(model.books.userId, false)
             app.helpTopic = null
+            app.walkMe.close()
             model.search = null
             model.selectedAccountId = null
             model.reconcilingStatementId = null

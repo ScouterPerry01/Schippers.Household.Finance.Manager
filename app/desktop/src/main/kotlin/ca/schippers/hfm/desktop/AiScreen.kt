@@ -62,7 +62,7 @@ fun AiScreen(model: BooksModel) {
         // M-77: a viewer cannot turn AI reading on, since its readings are saved with documents.
         val canEdit = books.canEdit
         if (!canEdit) Text(model.t("ai.viewerNote"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
-        LabeledCheckbox(model.t("ai.enabled"), settings.enabled, enabled = canEdit) { save(settings.copy(enabled = it)) }
+        LabeledCheckbox(model.t("ai.enabled"), settings.enabled, enabled = canEdit, modifier = Modifier.walkTarget("ai.enabled")) { save(settings.copy(enabled = it)) }
         LabeledCheckbox(model.t("ai.confirmEach"), settings.confirmEach, enabled = canEdit) { save(settings.copy(confirmEach = it)) }
         Picker(
             model.t("ai.model"), AiModel.CLAUDE, AiModel.byId(settings.model),
@@ -82,7 +82,7 @@ fun AiScreen(model: BooksModel) {
             Text(model.t(note), color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.bodySmall)
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextInput(model.t("ai.keyField"), keyText, Modifier.width(420.dp), secret = true, supporting = model.t("ai.keyWhere")) { keyText = it }
+            TextInput(model.t("ai.keyField"), keyText, Modifier.width(420.dp).walkTarget("ai.key"), secret = true, supporting = model.t("ai.keyWhere")) { keyText = it }
             Button(enabled = keyText.isNotBlank(), onClick = {
                 try {
                     DesktopAi.saveKey(model, keyText)

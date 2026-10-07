@@ -79,7 +79,7 @@ internal fun SeasonalTab(model: BooksModel) {
                 )
                 if (list.total > 0) LinearProgressIndicator(progress = { list.done.toFloat() / list.total }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))
             }
-            OutlinedButton(onClick = { model.act { printChecklist(model, list) } }, enabled = list.total > 0) { Text(model.t("seasonal.print")) }
+            OutlinedButton(onClick = { model.act { printChecklist(model, list) } }, enabled = list.total > 0, modifier = Modifier.walkTarget("seasonal.print")) { Text(model.t("seasonal.print")) }
             OutlinedButton(onClick = { saveChecklist(model, list) }, enabled = list.total > 0) { Text(model.t("seasonal.savePdf")) }
         }
         Text(model.t("seasonal.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(vertical = 4.dp))
@@ -112,7 +112,7 @@ private fun ChecklistRow(model: BooksModel, item: ChecklistItem, current: Boolea
     val done = item.state == ChecklistState.DONE
     Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
         // A season still to come can be ticked early too: the task is then done ahead of time.
-        Checkbox(checked = done, onCheckedChange = { if (!done) onTick() }, Modifier.width(48.dp), enabled = !done && mayTick)
+        Checkbox(checked = done, onCheckedChange = { if (!done) onTick() }, Modifier.width(48.dp).walkTarget("seasonal.tick"), enabled = !done && mayTick)
         Text(item.taskName, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = if (done) FontWeight.Normal else FontWeight.Medium)
         Text(model.checklistWhen(item), Modifier.width(280.dp))
         val color = when (item.state) {

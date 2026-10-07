@@ -74,7 +74,7 @@ fun AssetsScreen(model: BooksModel) {
         Text(model.t("assets.title"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("assets.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
-            for (t in AssetsTab.entries) Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("assets.tab.$t")) })
+            for (t in AssetsTab.entries) Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("assets.tab.$t")) })
         }
         when (tab) {
             AssetsTab.ASSETS -> AssetsTabView(model)
@@ -439,7 +439,7 @@ private fun InsuranceTab(model: BooksModel) {
     var editing by remember { mutableStateOf<InsurancePolicy?>(null) }
     val group = remember(model.revision) { model.defaultDocumentGroup() ?: books.groups().first().id }
     Column(Modifier.verticalScroll(rememberScrollState())) {
-        Button(onClick = { editing = InsurancePolicy("", group, PolicyKind.HOME, "") }) { Text(model.t("insurance.add")) }
+        Button(onClick = { editing = InsurancePolicy("", group, PolicyKind.HOME, "") }, modifier = Modifier.walkTarget("insurance.add")) { Text(model.t("insurance.add")) }
         if (policies.isEmpty()) Text(model.t("insurance.none"), Modifier.padding(vertical = 12.dp))
         else HeadingRow(Modifier.padding(top = 8.dp)) {
             ColumnHeading(model.t("column.policy"), Modifier.weight(1f))
@@ -460,7 +460,7 @@ private fun InsuranceTab(model: BooksModel) {
         }
         // INS-02: what no policy covers.
         if (uninsured.isNotEmpty()) {
-            Text(model.t("insurance.uninsured"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp))
+            Text(model.t("insurance.uninsured"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp).walkTarget("insurance.uninsured"))
             Text(model.t("insurance.uninsuredHint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
             HeadingRow {
                 ColumnHeading(model.t("insurance.item"), Modifier.weight(1f))
@@ -528,7 +528,7 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
     var deletingBeneficiary by remember { mutableStateOf<PolicyBeneficiary?>(null) }
     val lifeKinds = setOf(PolicyKind.LIFE, PolicyKind.DISABILITY, PolicyKind.CRITICAL_ILLNESS, PolicyKind.LONG_TERM_CARE)
 
-    WideDialog(model.t(if (existing.id.isBlank()) "insurance.add" else "insurance.policy"), model.t("common.close"), onClose) {
+    WideDialog(model.t(if (existing.id.isBlank()) "insurance.add" else "insurance.policy"), model.t("common.close"), onClose, walkId = "insurance.dialog") {
         Column(Modifier.width(780.dp).heightIn(max = 640.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Picker(model.t("insurance.kind"), PolicyKind.entries, kind, { model.t("policyKind.$it") }, Modifier.weight(1f)) { kind = it }
@@ -590,7 +590,7 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
                         model.act { books.insurance.renew(s.id, dateOrNull(renewTo) ?: throw ValidationException("error.invalidDate"), parseAmount(renewPremium, cad, locale)) }?.let { r ->
                             saved = r; start = r.startDate?.toString().orEmpty(); renewal = r.renewalDate?.toString().orEmpty(); premium = amt(r.premium); renewTo = ""; renewPremium = ""
                         }
-                    }) { Text(model.t("insurance.renew")) }
+                    }, modifier = Modifier.walkTarget("insurance.renew")) { Text(model.t("insurance.renew")) }
                 }
                 // INS-05: beneficiaries.
                 if (kind in lifeKinds) {
@@ -628,7 +628,7 @@ private fun PolicyDialog(model: BooksModel, existing: InsurancePolicy, onClose: 
                         Text(model.t("insuranceClaim.${c.status}") + (c.paid?.let { " · " + model.money(it) }.orEmpty()), style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                OutlinedButton(onClick = { claim = InsuranceClaim("", s.id, today(), "") }) { Text(model.t("insurance.addClaim")) }
+                OutlinedButton(onClick = { claim = InsuranceClaim("", s.id, today(), "") }, modifier = Modifier.walkTarget("insurance.addClaim")) { Text(model.t("insurance.addClaim")) }
                 DocumentsBlock(model, InsuranceService.POLICY, s.id, s.groupId, "insurance.documents")
             }
         }

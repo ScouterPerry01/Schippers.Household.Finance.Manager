@@ -61,10 +61,10 @@ fun UsersScreen(model: BooksModel) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(model.t("nav.users"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
             OutlinedButton(onClick = { changingPassword = true }) { Text(model.t("users.changePassword")) }
-            if (admin) Button(onClick = { adding = true }, modifier = Modifier.padding(start = 8.dp)) { Text(model.t("users.add")) }
+            if (admin) Button(onClick = { adding = true }, modifier = Modifier.padding(start = 8.dp).walkTarget("users.add")) { Text(model.t("users.add")) }
         }
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
-            for (t in UsersTab.entries) Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("users.tab.${t.name}")) })
+            for (t in UsersTab.entries) Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("users.tab.${t.name}")) })
         }
         Box(Modifier.weight(1f)) {
             when (tab) {
@@ -195,7 +195,7 @@ private fun AddUserDialog(model: BooksModel, onClose: () -> Unit, onAdded: (Stri
     var confirm by remember { mutableStateOf("") }
     FormDialog(
         model.t("users.add"), model.t("common.save"), model.t("common.cancel"),
-        canSave = login.isNotBlank() && name.isNotBlank() && password.isNotEmpty() && password == confirm, onDismiss = onClose,
+        canSave = login.isNotBlank() && name.isNotBlank() && password.isNotEmpty() && password == confirm, onDismiss = onClose, walkId = "user.dialog",
         onSave = {
             model.act { model.books.users.add(login, name, role, password.toCharArray(), memberId) }?.let { onAdded(name, it.recoveryKey) }
         },
@@ -251,7 +251,7 @@ private fun EditUserDialog(model: BooksModel, user: HouseholdUser, onClose: () -
 @Composable
 private fun RecoveryKeyDialog(model: BooksModel, name: String, key: RecoveryKey, onClose: () -> Unit) {
     val text = remember(key) { key.display() }
-    WideDialog(model.t("users.recoveryTitle", name), model.t("users.recoverySaved"), onClose) {
+    WideDialog(model.t("users.recoveryTitle", name), model.t("users.recoverySaved"), onClose, walkId = "user.recovery") {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(model.t("users.recoveryExplain", name))
             Card(Modifier.fillMaxWidth()) {

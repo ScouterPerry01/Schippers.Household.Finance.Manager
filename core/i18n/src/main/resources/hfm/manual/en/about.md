@@ -1,6 +1,6 @@
 # About
 
-The About screen shows which version of RANN's Roost you have, checks for updates on the copies that do, and gathers the privacy summary, the notices, the licence, support and the third-party software notices. It is the last item of the **Settings** group of the menu, under **About**. Before any household is open, the start screen's **About and privacy** shows the same content, with **Back** to return.
+The About screen shows which version of RANN's Roost you have, checks for updates on the copies that do, says what is new in this version, and gathers the privacy summary, the notices, the licence, support and the third-party software notices. It is the last item of the **Help** group of the menu, under **About** (see [The Help menu](walkme#help-menu)). Before any household is open, the start screen's **About and privacy** shows the same content, with **Back** to return.
 
 ![The About screen](images/about.png)
 
@@ -9,6 +9,14 @@ The About screen shows which version of RANN's Roost you have, checks for update
 @index: version number; which version; release
 
 At the top: "About RANN's Roost", "Version" and the version number of this copy, and "Published by RANN." Give the version number when you ask for help.
+
+### Copy details for support {#copy-details}
+
+@index: support details; system information; diagnostic
+
+- **Copy details for support**: copies to the clipboard the few facts a support request needs, so you can paste them into an email or a GitHub issue: the version, the operating system and its version, the Java runtime, the versions of the household's database that this copy writes (ledger and core), the text size, the colours and the language. Beside the button: "Copied. Paste them into your message: they name no person, folder or amount."
+
+Nothing about your household is copied: no names, no folders (which can contain your user name), no accounts and no amounts.
 
 ## Updates {#updates}
 
@@ -58,6 +66,16 @@ What happens next depends on the package:
 
 Your household is not touched by an update. A new version may update the household's files the first time it opens them; making a backup first is always wise.
 
+## What's new {#whats-new}
+
+@index: release notes; what's new; changes; new features
+
+The What's new card shows the release notes of this version, in the language in use, as they are published with each release.
+
+- **Show the release notes**: shows them below the button, with their headings and lists. **Hide the release notes** hides them again.
+
+The notes come with the app, so they show without the internet. When this copy has no notes of its own, such as a copy built between releases, the card shows the notes of the closest earlier version (or else the latest), and a line says "This copy is version" with its number and which version's notes are shown.
+
 ## Privacy {#privacy}
 
 The Privacy card sums up what happens to your information: it stays on your computer and your phone, encrypted. RANN does not receive or collect it: there is no RANN account, no advertising and no analytics. The app goes on the internet only for:
@@ -93,6 +111,9 @@ RANN's Roost is free software under the GNU General Public License, version 3 or
 Questions and problems: info-rann-apps@NorthMail.ca, or an issue on GitHub.
 
 - **GitHub Issues**: opens the project's issue list in your web browser, where you can report a problem or suggest an improvement.
+- **Write to support**: opens a new email to info-rann-apps@NorthMail.ca in your email program.
+
+Paste the details from **Copy details for support** into your message: they help find the cause without any personal data.
 
 > Important: Never send passwords, recovery keys, backups or financial details, by email or on GitHub. Describe the problem, the version number and the steps that lead to it.
 

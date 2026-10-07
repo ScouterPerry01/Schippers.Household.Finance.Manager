@@ -42,9 +42,12 @@ enum class NavGroup(val sections: List<Section>) {
     SETTINGS(
         listOf(
             Section.MEMBERS, Section.USERS, Section.CATEGORIES, Section.PAYEES, Section.RULES, Section.INSTITUTIONS,
-            Section.RATES, Section.RATE_RULES, Section.PHONES, Section.AI, Section.BACKUPS, Section.SECURITY, Section.DISPLAY, Section.ABOUT,
+            Section.RATES, Section.RATE_RULES, Section.PHONES, Section.AI, Section.BACKUPS, Section.SECURITY, Section.DISPLAY,
         ),
     ),
+
+    /** HLP-01: last, as on most programs; the manual and the short help come first, as actions. */
+    HELP(listOf(Section.WALKME, Section.ABOUT)),
     ;
 
     companion object {
@@ -89,6 +92,11 @@ fun SideMenu(model: BooksModel, app: AppState, counts: Map<Section, Int>) {
                 Text(if (open) "▾" else "▸", color = MaterialTheme.colorScheme.primary)
             }
             if (open) {
+                // HLP-01: the manual and the short help for the screen shown, before the Help group's screens.
+                if (group == NavGroup.HELP) {
+                    NavigationDrawerItem(label = { Text(model.t("manual.button")) }, selected = false, onClick = { app.openManual() })
+                    NavigationDrawerItem(label = { Text(model.t("help.button")) }, selected = false, onClick = { app.openHelp() })
+                }
                 for (section in group.sections) {
                     NavigationDrawerItem(
                         label = { Text(model.navLabel(section, counts)) },
@@ -117,6 +125,8 @@ fun TopMenu(model: BooksModel, app: AppState, counts: Map<Section, Int>) {
             for (group in NavGroup.entries) {
                 val total = group.sections.sumOf { counts[it] ?: 0 }
                 val current = NavGroup.of(model.section) == group
+                // HLP-01: the Help menu stands at the right of the bar, as on most programs.
+                if (group == NavGroup.HELP) Box(Modifier.weight(1f))
                 Box {
                     TextButton(
                         onClick = { open = group },
@@ -133,6 +143,10 @@ fun TopMenu(model: BooksModel, app: AppState, counts: Map<Section, Int>) {
                         )
                     }
                     DropdownMenu(expanded = open == group, onDismissRequest = { open = null }) {
+                        if (group == NavGroup.HELP) {
+                            DropdownMenuItem(text = { Text(model.t("manual.button")) }, onClick = { app.openManual(); open = null })
+                            DropdownMenuItem(text = { Text(model.t("help.button")) }, onClick = { app.openHelp(); open = null })
+                        }
                         for (section in group.sections) {
                             DropdownMenuItem(
                                 text = { Text(model.navLabel(section, counts), fontWeight = if (model.section == section) FontWeight.Bold else FontWeight.Normal) },
@@ -142,7 +156,6 @@ fun TopMenu(model: BooksModel, app: AppState, counts: Map<Section, Int>) {
                     }
                 }
             }
-            Box(Modifier.weight(1f))
             TextButton(onClick = { app.setMenuOnTop(model.books.userId, false) }) { Text(model.t("nav.menuOnLeft"), style = MaterialTheme.typography.bodySmall) }
         }
     }

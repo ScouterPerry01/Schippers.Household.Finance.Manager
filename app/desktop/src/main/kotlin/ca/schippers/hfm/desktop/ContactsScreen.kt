@@ -92,10 +92,10 @@ fun ContactsScreen(model: BooksModel) {
             TextInput(model.t("contacts.search"), text, Modifier.width(280.dp)) { text = it }
             Box(Modifier.weight(1f))
             // CON-07: contacts made on a phone, waiting for review.
-            if (phoneCount > 0) Button(onClick = { fromPhone = true }) { Text(model.t("contacts.fromPhone", phoneCount)) }
+            if (phoneCount > 0) Button(onClick = { fromPhone = true }, modifier = Modifier.walkTarget("contacts.fromPhone")) { Text(model.t("contacts.fromPhone", phoneCount)) }
             if (canAdd) {
-                OutlinedButton(onClick = { gathering = true }) { Text(model.t("contacts.gather")) }
-                Button(onClick = { editing = newContact(model) }) { Text(model.t("contacts.add")) }
+                OutlinedButton(onClick = { gathering = true }, modifier = Modifier.walkTarget("contacts.gather")) { Text(model.t("contacts.gather")) }
+                Button(onClick = { editing = newContact(model) }, modifier = Modifier.walkTarget("contacts.add")) { Text(model.t("contacts.add")) }
             }
         }
         Row(Modifier.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -233,7 +233,7 @@ private fun ContactPage(model: BooksModel, c: Contact, all: List<Contact>, peopl
         HorizontalDivider()
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(model.t("contacts.links"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-            if (editable) TextButton(onClick = { linking = true }) { Text(model.t("contacts.linkRecord")) }
+            if (editable) TextButton(onClick = { linking = true }, modifier = Modifier.walkTarget("contacts.linkRecord")) { Text(model.t("contacts.linkRecord")) }
         }
         if (links.isEmpty()) Text(model.t("contacts.noLinks"), style = MaterialTheme.typography.bodySmall)
         for ((role, inRole) in links.groupBy { it.link.role }.toSortedMap()) {
@@ -355,7 +355,7 @@ internal fun ContactDialog(model: BooksModel, existing: Contact, save: (Contact)
 
     FormDialog(
         model.t(if (isNew) "contacts.add" else "contacts.edit"), model.t("common.save"), model.t("common.cancel"),
-        canSave = name.isNotBlank(), onDismiss = { onClose(null) },
+        canSave = name.isNotBlank(), onDismiss = { onClose(null) }, walkId = "contact.dialog",
         onSave = {
             val saved = model.act {
                 save(

@@ -1,12 +1,16 @@
 # About
 
-About shows which version of RANN's Roost you are using, how your information is handled, and where to get help. You find it in the Settings group of the menu.
+About shows which version of RANN's Roost you are using, how your information is handled, and where to get help. You find it in the Help group of the menu, the last one.
 
 ## Version and updates
 
 The version number is at the top. Depending on how the app was installed, the Updates part lets you turn on Check for updates once a day, or click Check now. When a new version is found, click Download and check. Every update is checked against RANN's signature before it can be installed; if the check fails, nothing is installed.
 
 Copies from the Microsoft Store or Flathub are updated by those stores, so the app does not check for them itself. When an update is ready, a banner at the top of the window points you here.
+
+## What's new and support details
+
+Show the release notes, under What's new, lists what changed in this version. Copy details for support copies the version, the operating system, Java, the database versions, the text size, colours and language, to paste into a message to support; it names no person, folder or amount. Write to support opens an email to info-rann-apps@NorthMail.ca.
 
 ## Privacy
 

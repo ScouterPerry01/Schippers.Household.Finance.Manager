@@ -123,10 +123,11 @@ The manual uses the same text size as the app, chosen under [Display and accessi
 
 @index: Help; F1; help panel; guide
 
-The app has two kinds of help:
+The app has three kinds of help, all in the **Help** group of the menu:
 
 - **Help (F1)** opens a short guide beside the screen, on the topic for the screen shown. It answers the quick question: what is this screen for and how do I do the usual thing.
 - The **Manual** is this book: every field and option, what each changes, and the Canadian rules the app applies.
+- The **Walk-Me guides** take you through a common task step by step, in a panel beside the app, opening the right screens and pointing at the controls to use. See [Walk-Me guides](walkme).
 
 ### The Help panel {#help-panel}
 

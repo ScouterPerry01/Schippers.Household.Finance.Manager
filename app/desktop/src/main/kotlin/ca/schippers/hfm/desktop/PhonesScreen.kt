@@ -59,7 +59,7 @@ fun PhonesScreen(model: BooksModel) {
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(model.t("nav.phones"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-            Button(enabled = server.running && address != null, onClick = {
+            Button(enabled = server.running && address != null, modifier = Modifier.walkTarget("phones.pair"), onClick = {
                 pairing = books.sync.invitation(model.desktopName(), address!!, server.port, System.currentTimeMillis())
             }) { Text(model.t("phones.pair")) }
         }
@@ -136,7 +136,7 @@ private fun PairingDialog(model: BooksModel, invitation: PairingInvitation, devi
             onClose()
         }
     }
-    WideDialog(model.t("phones.pair"), model.t("common.close"), onClose) {
+    WideDialog(model.t("phones.pair"), model.t("common.close"), onClose, walkId = "phones.pairing") {
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
             Image(qr, model.t("phones.pair"), Modifier.size(320.dp))
             Column(Modifier.width(380.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

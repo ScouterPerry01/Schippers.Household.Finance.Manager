@@ -111,7 +111,7 @@ fun TripsScreen(model: BooksModel) {
     val access = rememberAccess(model)
     Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(model.t("nav.trips"), style = MaterialTheme.typography.titleLarge)
-        Text(model.t("trips.hint"), style = MaterialTheme.typography.bodySmall)
+        Text(model.t("trips.hint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.walkTarget("trips.list"))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Picker(model.t("taxes.year"), (thisYear downTo thisYear - 6).toList(), year, { it.toString() }, Modifier.width(190.dp)) { year = it }
             if (access.canCreate) {
@@ -120,8 +120,8 @@ fun TripsScreen(model: BooksModel) {
                 }
             }
             // TRP-02: the saved places the phone matches its location to; TRP-09: the CRA logbook.
-            OutlinedButton(onClick = { showPlaces = true }, modifier = Modifier.padding(top = 8.dp)) { Text(model.t("places.title")) }
-            OutlinedButton(onClick = { showLogbook = true }, modifier = Modifier.padding(top = 8.dp)) { Text(model.t("trips.logbook")) }
+            OutlinedButton(onClick = { showPlaces = true }, modifier = Modifier.padding(top = 8.dp).walkTarget("trips.places")) { Text(model.t("places.title")) }
+            OutlinedButton(onClick = { showLogbook = true }, modifier = Modifier.padding(top = 8.dp).walkTarget("trips.logbook")) { Text(model.t("trips.logbook")) }
         }
         if (totals.isNotEmpty() || use.isNotEmpty()) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -738,7 +738,7 @@ fun SideIncomeScreen(model: BooksModel) {
         Text(model.t("nav.side"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("side.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
-            for (t in SideTab.entries) Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("side.tab.$t")) })
+            for (t in SideTab.entries) Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("side.tab.$t")) })
         }
         when (tab) {
             SideTab.INVOICES -> InvoicesTab(model)

@@ -58,6 +58,8 @@ ai
 backups
 security
 display
+= help Help
+walkme
 about
 = appendices Appendices
 phone-app

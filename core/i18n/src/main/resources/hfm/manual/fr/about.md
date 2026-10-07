@@ -1,6 +1,6 @@
 # À propos
 
-L'écran À propos montre la version de RANN's Roost que vous avez, vérifie les mises à jour sur les copies qui le font, et rassemble le résumé de confidentialité, les avis, la licence, le soutien et les avis des logiciels de tiers. C'est le dernier élément du groupe **Réglages** du menu, sous **À propos**. Avant qu'un ménage soit ouvert, **À propos et confidentialité** à l'écran de départ montre le même contenu, avec **Retour** pour revenir.
+L'écran À propos montre la version de RANN's Roost que vous avez, vérifie les mises à jour sur les copies qui le font, et rassemble le résumé de confidentialité, les avis, la licence, le soutien et les avis des logiciels de tiers. Il dit aussi ce qui est nouveau dans cette version. C'est le dernier élément du groupe **Aide** du menu, sous **À propos** (voir [Le menu Aide](walkme#help-menu)). Avant qu'un ménage soit ouvert, **À propos et confidentialité** à l'écran de départ montre le même contenu, avec **Retour** pour revenir.
 
 ![L’écran À propos](images/about.png)
 
@@ -9,6 +9,14 @@ L'écran À propos montre la version de RANN's Roost que vous avez, vérifie les
 @index: numéro de version; quelle version; parution
 
 En haut : « À propos de RANN's Roost », « Version » et le numéro de version de cette copie, et « Publié par RANN. » Donnez le numéro de version quand vous demandez de l'aide.
+
+### Copier les détails pour le soutien {#copy-details}
+
+@index: détails pour le soutien; renseignements sur le système; diagnostic
+
+- **Copier les détails pour le soutien** : copie dans le presse-papiers les quelques renseignements dont une demande de soutien a besoin, à coller dans un courriel ou un billet GitHub : la version, le système d'exploitation et sa version, l'environnement Java, les versions de la base de données du ménage que cette copie écrit (registre et base commune), la taille du texte, les couleurs et la langue. À côté du bouton : « Copié. Collez-les dans votre message : ils ne nomment aucune personne, aucun dossier ni aucun montant. »
+
+Rien de votre ménage n'est copié : aucun nom, aucun dossier (qui peut contenir votre nom d'utilisateur), aucun compte et aucun montant.
 
 ## Mises à jour {#updates}
 
@@ -58,6 +66,16 @@ La suite dépend du paquet :
 
 Votre ménage n'est pas touché par une mise à jour. Une nouvelle version peut mettre à jour les fichiers du ménage la première fois qu'elle les ouvre ; faire une sauvegarde avant est toujours sage.
 
+## Quoi de neuf {#whats-new}
+
+@index: notes de version; nouveautés; changements; nouvelles fonctions
+
+La carte Quoi de neuf montre les notes de version de cette version, dans la langue utilisée, telles qu'elles sont publiées avec chaque version.
+
+- **Afficher les notes de version** : les affiche sous le bouton, avec leurs titres et leurs listes. **Masquer les notes de version** les cache de nouveau.
+
+Les notes viennent avec l'application : elles s'affichent sans Internet. Quand cette copie n'a pas de notes à elle, comme une copie construite entre deux versions, la carte montre les notes de la version antérieure la plus proche (sinon la plus récente), et une ligne dit « Cette copie est la version » avec son numéro et de quelle version les notes sont montrées.
+
 ## Confidentialité {#privacy}
 
 La carte Confidentialité résume ce qui arrive à vos renseignements : ils restent sur votre ordinateur et votre téléphone, chiffrés. RANN ne les reçoit pas et ne les recueille pas : il n'y a ni compte RANN, ni publicité, ni outil d'analyse. L'application ne va sur Internet que pour :
@@ -93,6 +111,9 @@ RANN's Roost est un logiciel libre distribué sous la licence publique général
 Questions et problèmes : info-rann-apps@NorthMail.ca, ou un billet sur GitHub.
 
 - **Billets GitHub** : ouvre la liste des billets du projet dans votre navigateur Web, où vous pouvez signaler un problème ou suggérer une amélioration.
+- **Écrire au soutien** : ouvre un nouveau courriel à info-rann-apps@NorthMail.ca dans votre programme de courriel.
+
+Collez dans votre message les détails de **Copier les détails pour le soutien** : ils aident à trouver la cause sans aucune donnée personnelle.
 
 > Important : N'envoyez jamais de mots de passe, de clés de récupération, de sauvegardes ni de détails financiers, ni par courriel ni sur GitHub. Décrivez le problème, le numéro de version et les étapes qui y mènent.
 

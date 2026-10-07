@@ -89,11 +89,11 @@ fun BillsScreen(model: BooksModel) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(model.t("nav.bills"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
             OutlinedButton(onClick = { exportCalendar(model) }) { Text(model.t("bills.exportCalendar")) }
-            Button(onClick = { creating = true }, modifier = Modifier.padding(start = 8.dp)) { Text(model.t("bills.add")) }
+            Button(onClick = { creating = true }, modifier = Modifier.padding(start = 8.dp).walkTarget("bills.add")) { Text(model.t("bills.add")) }
         }
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
             for (t in BillsTab.entries) {
-                Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("bills.tab.${t.name}")) })
+                Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("bills.tab.${t.name}")) })
             }
         }
         Box(Modifier.weight(1f)) {
@@ -286,7 +286,7 @@ private fun AmountsAndPay(model: BooksModel, o: Occurrence?, actionsWidth: Int, 
         if (due != null) {
             OutlinedTextField(
                 toPay, { toPay = it }, singleLine = true, textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End),
-                modifier = Modifier.fillMaxWidth().semantics { contentDescription = model.t("bills.toPayOf", due.bill.name) },
+                modifier = Modifier.fillMaxWidth().walkTarget("bills.toPay").semantics { contentDescription = model.t("bills.toPayOf", due.bill.name) },
             )
         } else {
             Text("—", Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
@@ -299,7 +299,7 @@ private fun AmountsAndPay(model: BooksModel, o: Occurrence?, actionsWidth: Int, 
     FlowRow(
         Modifier.width(col(actionsWidth)).padding(start = 12.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        if (due != null) Button(onClick = { onPay(due, toPay) }) { Text(model.t(if (due.bill.kind == BillKind.INCOME) "bills.markReceived" else "bills.markPaid")) }
+        if (due != null) Button(onClick = { onPay(due, toPay) }, modifier = Modifier.walkTarget("bills.markPaid")) { Text(model.t(if (due.bill.kind == BillKind.INCOME) "bills.markReceived" else "bills.markPaid")) }
         actions()
     }
 }
@@ -362,7 +362,7 @@ private fun AllBillsTab(model: BooksModel, onPay: (Occurrence, String) -> Unit, 
                     if (about.isNotEmpty()) Text(about.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                 }
                 AmountsAndPay(model, o, ALL_ACTIONS_W, onPay) {
-                    TextButton(onClick = { onEdit(bill) }) { Text(model.t("common.edit")) }
+                    TextButton(onClick = { onEdit(bill) }, modifier = Modifier.walkTarget("bills.edit")) { Text(model.t("common.edit")) }
                 }
             }
             HorizontalDivider()
@@ -542,7 +542,7 @@ internal fun PayDialog(model: BooksModel, o: Occurrence, initial: String? = null
         if (ok != null) onClose()
     }
     val title = model.t(if (o.bill.kind == BillKind.INCOME) "bills.markReceived" else "bills.markPaid") + " · " + o.bill.name
-    FormDialog(title, model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
+    FormDialog(title, model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, walkId = "bills.pay", onSave = {
         val value = runCatching { parseAmount(amount, currency, locale) }.getOrNull()
         if (value != null && partial && value > o.outstanding + Money.ofMinor(1, currency)) overpaying = value else pay(value, false)
     }) {

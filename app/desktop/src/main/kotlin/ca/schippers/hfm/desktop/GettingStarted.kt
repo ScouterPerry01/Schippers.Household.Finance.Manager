@@ -74,6 +74,11 @@ fun GettingStarted(model: BooksModel) {
                 TextButton(onClick = { model.act { model.books.putSetting(model.gettingStartedKey(), "1") }; hidden = true }) { Text(model.t("setup.hide")) }
             }
             Text(model.t("setup.intro"), style = MaterialTheme.typography.bodySmall)
+            // HLP-03: each step has its Walk-Me guide.
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(model.t("setup.walkme"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                TextButton(onClick = { model.section = Section.WALKME }) { Text(model.t("nav.walkme")) }
+            }
             for (step in SetupStep.entries) {
                 val isDone = step in done
                 Row(

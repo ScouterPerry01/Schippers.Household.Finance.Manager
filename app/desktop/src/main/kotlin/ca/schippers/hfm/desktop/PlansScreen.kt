@@ -63,6 +63,9 @@ private sealed interface PlanAction {
     data class EditBeneficiary(val account: Account, val beneficiary: Beneficiary?) : PlanAction
 }
 
+/** The screen's tabs, in order; their names are the Walk-Me ids of the tabs (HLP-03). */
+private enum class PlansTab { ROOM, WITHDRAWALS, RESP, PENSIONS, BENEFICIARIES }
+
 /** INV-09 to INV-11 and pensions: room, withdrawals, RESP grants, pensions and beneficiaries. */
 @Composable
 fun PlansScreen(model: BooksModel) {
@@ -78,7 +81,7 @@ fun PlansScreen(model: BooksModel) {
         Text(model.t("plans.taxNotice"), style = MaterialTheme.typography.bodySmall)
         PrimaryTabRow(selectedTabIndex = tab, modifier = Modifier.padding(vertical = 8.dp)) {
             listOf("plans.room", "plans.withdrawals", "plans.resp", "plans.pensions", "plans.beneficiaries").forEachIndexed { i, key ->
-                Tab(tab == i, { tab = i }, text = { Text(model.t(key)) })
+                Tab(tab == i, { tab = i }, modifier = Modifier.walkTab(PlansTab.entries[i], tab == i) { tab = i }, text = { Text(model.t(key)) })
             }
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
@@ -113,7 +116,7 @@ private fun RoomTab(model: BooksModel, year: Int, onAction: (PlanAction) -> Unit
     }
     Text(model.t("plans.roomHint"), style = MaterialTheme.typography.bodySmall)
     Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Button(onClick = { onAction(PlanAction.Room(RoomPlan.RRSP, null, year)) }) { Text(model.t("plans.enterRoom")) }
+        Button(onClick = { onAction(PlanAction.Room(RoomPlan.RRSP, null, year)) }, modifier = Modifier.walkTarget("plans.enterRoom")) { Text(model.t("plans.enterRoom")) }
         OutlinedButton(onClick = { onAction(PlanAction.Adjust(RoomPlan.RRSP, null)) }) { Text(model.t("plans.addOutside")) }
     }
     // M-28: a spousal RRSP counts against its contributor's room, so it needs one.
@@ -219,7 +222,7 @@ private fun WithdrawalsTab(model: BooksModel, year: Int, onAction: (PlanAction) 
 private fun RespTab(model: BooksModel, year: Int, onAction: (PlanAction) -> Unit) {
     val rows = remember(model.revision, year) { model.books.plans.respBeneficiaries(year) }
     Text(model.t("plans.respHint"), style = MaterialTheme.typography.bodySmall)
-    Button(onClick = { onAction(PlanAction.Grant(null)) }, modifier = Modifier.padding(vertical = 8.dp)) { Text(model.t("plans.recordGrant")) }
+    Button(onClick = { onAction(PlanAction.Grant(null)) }, modifier = Modifier.padding(vertical = 8.dp).walkTarget("plans.recordGrant")) { Text(model.t("plans.recordGrant")) }
     if (rows.isEmpty()) Text(model.t("plans.noResp"), Modifier.padding(8.dp))
     TableView(
         model,
@@ -299,7 +302,7 @@ private fun BeneficiariesTab(model: BooksModel, onAction: (PlanAction) -> Unit) 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(a.name + " · " + model.t("accountType.${a.type}"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                     if (a.type in WITH_DETAILS) TextButton(onClick = { onAction(PlanAction.Details(a, today().year)) }) { Text(model.t("plans.details")) }
-                    TextButton(onClick = { onAction(PlanAction.EditBeneficiary(a, null)) }) { Text(model.t("plans.addBeneficiary")) }
+                    TextButton(onClick = { onAction(PlanAction.EditBeneficiary(a, null)) }, modifier = Modifier.walkTarget("plans.addBeneficiary")) { Text(model.t("plans.addBeneficiary")) }
                 }
                 if (list.isEmpty()) Text(model.t("plans.noBeneficiary"), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 else HeadingRow {

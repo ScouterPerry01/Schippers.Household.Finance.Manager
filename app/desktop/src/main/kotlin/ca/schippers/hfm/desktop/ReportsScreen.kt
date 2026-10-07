@@ -141,6 +141,8 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                     label = { Text(model.t("report.${kind.name}")) },
                     selected = state.kind == kind && state.savedId == null,
                     onClick = { state.kind = kind; state.parent = null; state.savedId = null },
+                    // HLP-03: each report is a "tab" Walk-Me can open.
+                    modifier = Modifier.walkTab(kind, state.kind == kind && state.savedId == null) { state.kind = kind; state.parent = null; state.savedId = null },
                 )
             }
             // RPT-03: the reports this user saved.
@@ -234,7 +236,7 @@ fun ReportsScreen(model: BooksModel, state: ReportState) {
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
-                TextButton(onClick = { saving = true }) { Text(model.t("report.save")) }
+                TextButton(onClick = { saving = true }, modifier = Modifier.walkTarget("reports.save")) { Text(model.t("report.save")) }
                 model.reportMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
             }
             HorizontalDivider(Modifier.padding(vertical = 8.dp))

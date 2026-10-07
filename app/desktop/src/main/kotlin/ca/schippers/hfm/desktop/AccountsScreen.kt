@@ -66,11 +66,11 @@ fun AccountsScreen(model: BooksModel) {
         Column(Modifier.width(320.dp).fillMaxHeight().padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(model.t("nav.accounts"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-                Button(onClick = { adding = true }) { Text(model.t("accounts.add")) }
+                Button(onClick = { adding = true }, modifier = Modifier.walkTarget("accounts.add")) { Text(model.t("accounts.add")) }
             }
             LabeledCheckbox(model.t("accounts.showClosed"), showClosed) { showClosed = it }
             // OTH-05: bring a Quicken history across.
-            TextButton(onClick = { chooseQif(model)?.let { quicken = it } }) { Text(model.t("quicken.import")) }
+            TextButton(onClick = { chooseQif(model)?.let { quicken = it } }, modifier = Modifier.walkTarget("accounts.quicken")) { Text(model.t("quicken.import")) }
             // NAV-04: the two columns of the list.
             HeadingRow(Modifier.padding(horizontal = 8.dp)) {
                 ColumnHeading(model.t("templates.account"), Modifier.weight(1f))
@@ -109,7 +109,7 @@ private fun AccountRow(model: BooksModel, summary: AccountSummary, lastReconcile
     // REC-09: accounts more than the Rates and rules days behind (45 built in) are highlighted.
     val behind = lastReconciled != null && lastReconciled.daysUntil(today()) > Thresholds.reconcileBehind(today())
     Row(
-        Modifier.fillMaxWidth().clickable {
+        Modifier.fillMaxWidth().walkTarget("accounts.row").clickable {
             if (model.selectedAccountId != summary.account.id) model.reconcilingStatementId = null
             model.selectedAccountId = summary.account.id
         }.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -191,6 +191,7 @@ fun AccountDialog(model: BooksModel, existing: Account?, onClose: () -> Unit) {
         cancelLabel = model.t("common.cancel"),
         canSave = canSave,
         onDismiss = onClose,
+        walkId = "account.dialog",
         onSave = {
             val result = if (existing == null) {
                 model.act {

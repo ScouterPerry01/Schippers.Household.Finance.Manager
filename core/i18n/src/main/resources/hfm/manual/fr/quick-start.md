@@ -61,7 +61,7 @@ L'écran suivant, **Votre clé de récupération**, présente une longue clé fa
 
 Le tableau de bord présente une carte **Premiers pas** de six étapes : les personnes, les comptes, les factures et la paie, un premier reçu, un premier relevé rapproché et le téléphone. Chaque étape a un bouton qui ouvre le bon écran, et la prochaine étape à faire est en gras. La carte compte ce qui est fait et disparaît une fois les cinq premières étapes faites. **Masquer ce guide** la retire pour vous ; **Afficher de nouveau le guide Premiers pas**, dans Affichage et accessibilité, la fait revenir.
 
-Les étapes ci-dessous suivent le même ordre.
+Les étapes ci-dessous suivent le même ordre. La carte mène aussi aux **Guides Walk-Me**, qui vous accompagnent dans chacune de ces étapes sur l'écran même ; voir [Guides Walk-Me](walkme). Avant que le ménage existe, le bouton **Guides Walk-Me** de l'écran d'accueil propose le premier, Créer votre ménage.
 
 ## Étape 5 : Ajouter les personnes {#people}
 

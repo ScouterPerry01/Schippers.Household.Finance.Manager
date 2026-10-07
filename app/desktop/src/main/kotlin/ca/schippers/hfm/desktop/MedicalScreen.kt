@@ -72,7 +72,7 @@ fun MedicalScreen(model: BooksModel) {
         Text(model.t("medical.title"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("medical.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
-            for (t in MedicalTab.entries) Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("medical.tab.$t")) })
+            for (t in MedicalTab.entries) Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("medical.tab.$t")) })
         }
         when (tab) {
             MedicalTab.EXPENSES -> ExpensesTab(model)
@@ -114,7 +114,9 @@ private fun ExpensesTab(model: BooksModel) {
 
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Picker(model.t("report.person"), listOf(null) + members, members.firstOrNull { it.id == who }, { it?.displayName ?: model.t("report.everyone") }, Modifier.width(200.dp)) { who = it?.id }
-        Button(onClick = { editing = MedExpense("", group, who ?: members.firstOrNull()?.id.orEmpty(), MedService.OTHER, today(), Money.zero(Currency.CAD)) }) { Text(model.t("medical.addExpense")) }
+        Button(onClick = { editing = MedExpense("", group, who ?: members.firstOrNull()?.id.orEmpty(), MedService.OTHER, today(), Money.zero(Currency.CAD)) }, modifier = Modifier.walkTarget("medical.addExpense")) {
+            Text(model.t("medical.addExpense"))
+        }
         if (unrecorded.isNotEmpty()) OutlinedButton(onClick = { fromBooks = true }) { Text(model.t("medical.fromBooks", unrecorded.size)) }
         LabeledCheckbox(model.t("medical.openOnly"), openOnly) { openOnly = it }
     }
@@ -206,7 +208,7 @@ private fun ExpenseDialog(model: BooksModel, existing: MedExpense, onClose: () -
             GroupPicker(model, saved?.groupId ?: groupId, enabled = saved == null) { groupId = it.id }
             if (saved == null) PrivateGroupHint(model) { groupId = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { model.act { books.medical.saveExpense(draft()) }?.let { saved = it } }) { Text(model.t("common.save")) }
+                Button(onClick = { model.act { books.medical.saveExpense(draft()) }?.let { saved = it } }, modifier = Modifier.walkTarget("medical.saveExpense")) { Text(model.t("common.save")) }
                 if (current != null) {
                     OutlinedButton(onClick = { model.act { books.medical.close(current.id, !current.closed) } }) { Text(model.t(if (current.closed) "medical.reopen" else "medical.close")) }
                     TextButton(onClick = { asking = true }) { Text(model.t("common.delete")) }
@@ -231,7 +233,7 @@ private fun ExpenseDialog(model: BooksModel, existing: MedExpense, onClose: () -
                             )
                         }
                         if (c.status == ClaimStatus.SUBMITTED) {
-                            TextButton(onClick = { paying = c }) { Text(model.t("medical.recordPayment")) }
+                            TextButton(onClick = { paying = c }, modifier = Modifier.walkTarget("medical.recordPayment")) { Text(model.t("medical.recordPayment")) }
                             TextButton(onClick = { model.act { books.medical.deny(c.id, today()) } }) { Text(model.t("medical.deny")) }
                         }
                         TextButton(onClick = { deletingClaim = c }) { Text(model.t("common.delete")) }
@@ -240,7 +242,9 @@ private fun ExpenseDialog(model: BooksModel, existing: MedExpense, onClose: () -
                 Text(model.t("medical.outOfPocket", model.money(current.outOfPocket), model.money(current.reimbursed)), fontWeight = FontWeight.Bold)
                 val status = books.medical.status(current)
                 Text(stageText(model, current), style = MaterialTheme.typography.bodySmall)
-                if (status.stage == ExpenseStage.TO_SUBMIT) OutlinedButton(onClick = { submitting = true }) { Text(model.t("medical.submitTo", status.nextPlan!!.name)) }
+                if (status.stage == ExpenseStage.TO_SUBMIT) {
+                    OutlinedButton(onClick = { submitting = true }, modifier = Modifier.walkTarget("medical.submit")) { Text(model.t("medical.submitTo", status.nextPlan!!.name)) }
+                }
 
                 HorizontalDivider(Modifier.padding(vertical = 6.dp))
                 DocumentsBlock(model, MedicalService.EXPENSE, current.id, current.groupId, "medical.receipts")
@@ -375,7 +379,7 @@ private fun PlansTab(model: BooksModel) {
     val plans = remember(model.revision) { books.medical.plans() }
     var editing by remember { mutableStateOf<MedPlan?>(null) }
     val group = remember(model.revision) { model.defaultDocumentGroup() ?: books.groups().first().id }
-    Button(onClick = { editing = MedPlan("", group, MedPlanKind.GROUP_HEALTH, "") }) { Text(model.t("medical.addPlan")) }
+    Button(onClick = { editing = MedPlan("", group, MedPlanKind.GROUP_HEALTH, "") }, modifier = Modifier.walkTarget("medical.addPlan")) { Text(model.t("medical.addPlan")) }
     if (plans.isEmpty()) Text(model.t("medical.noPlans"), Modifier.padding(vertical = 12.dp))
     LazyColumn(Modifier.padding(top = 8.dp)) {
         items(plans, key = { it.id }) { p ->
@@ -487,7 +491,7 @@ private fun PlanDialog(model: BooksModel, existing: MedPlan, onClose: () -> Unit
                         Text(coverageText(model, c), style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                OutlinedButton(onClick = { coverage = MedCoverage("", saved!!.id, MedService.PRESCRIPTION, BigDecimal(80)) }) { Text(model.t("medical.addCoverage")) }
+                OutlinedButton(onClick = { coverage = MedCoverage("", saved!!.id, MedService.PRESCRIPTION, BigDecimal(80)) }, modifier = Modifier.walkTarget("medical.addCoverage")) { Text(model.t("medical.addCoverage")) }
             }
             saved?.let { s -> DocumentsBlock(model, MedicalService.PLAN, s.id, s.groupId, "medical.booklets") }
             // CON-04, CON-06: the insurer or the firm that runs the plan, as contacts.

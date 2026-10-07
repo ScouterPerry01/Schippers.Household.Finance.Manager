@@ -93,7 +93,7 @@ fun LoansScreen(model: BooksModel) {
                 if (loans.isEmpty()) item { Text(model.t("loans.none"), Modifier.padding(8.dp)) }
                 items(loans, key = { it.first.account.id }) { (summary, details) ->
                     val isSelected = summary.account.id == selected?.first?.account?.id
-                    Row(Modifier.fillMaxWidth().clickable { selectedId = summary.account.id }.padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth().walkTarget("loans.row").clickable { selectedId = summary.account.id }.padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             Text(summary.account.name, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
                             Text(
@@ -139,7 +139,7 @@ private fun LoanDetail(model: BooksModel, summary: AccountSummary, details: Loan
                 )
                 LinkedContacts(model, LinkTarget.ACCOUNT, account.id, accountRoles(account.type), memberIds = account.ownerMemberIds, groupId = account.groupId, compact = true)
             }
-            OutlinedButton(onClick = { action = LoanAction.Terms }) { Text(model.t(if (details == null) "loans.enterTerms" else "loans.editTerms")) }
+            OutlinedButton(onClick = { action = LoanAction.Terms }, modifier = Modifier.walkTarget("loans.terms")) { Text(model.t(if (details == null) "loans.enterTerms" else "loans.editTerms")) }
         }
         if (details == null || status == null) {
             Text(model.t("loans.termsNeeded"), Modifier.padding(vertical = 16.dp))
@@ -157,12 +157,12 @@ private fun LoanDetail(model: BooksModel, summary: AccountSummary, details: Loan
                 status.termEnd?.let { end -> Stat(model.t("loans.renewal"), "${model.date(end)} (${daysText(model, status.daysToRenewal ?: 0)})") }
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Button(onClick = { action = LoanAction.Payment }, enabled = status.owed.isPositive) { Text(model.t("loans.recordPayment")) }
+                Button(onClick = { action = LoanAction.Payment }, enabled = status.owed.isPositive, modifier = Modifier.walkTarget("loans.recordPayment")) { Text(model.t("loans.recordPayment")) }
                 OutlinedButton(onClick = { action = LoanAction.Prepayment }) { Text(model.t("loans.prepayment")) }
-                if (details.termEnd != null) OutlinedButton(onClick = { action = LoanAction.Rate(renewal = true) }) { Text(model.t("loans.renew")) }
+                if (details.termEnd != null) OutlinedButton(onClick = { action = LoanAction.Rate(renewal = true) }, modifier = Modifier.walkTarget("loans.renew")) { Text(model.t("loans.renew")) }
                 OutlinedButton(onClick = { action = LoanAction.Rate(renewal = false) }) { Text(model.t("loans.rateChange")) }
                 OutlinedButton(onClick = { action = LoanAction.PaymentChange }) { Text(model.t("loans.paymentChange")) }
-                OutlinedButton(onClick = { action = LoanAction.WhatIf }, enabled = status.owed.isPositive) { Text(model.t("loans.whatIf")) }
+                OutlinedButton(onClick = { action = LoanAction.WhatIf }, enabled = status.owed.isPositive, modifier = Modifier.walkTarget("loans.whatIf")) { Text(model.t("loans.whatIf")) }
             }
             PrimaryTabRow(selectedTabIndex = tab, modifier = Modifier.padding(top = 12.dp)) {
                 Tab(tab == 0, { tab = 0 }, text = { Text(model.t("loans.byYear")) })
@@ -333,7 +333,7 @@ private fun LoanTermsDialog(model: BooksModel, account: Account, existing: LoanD
         Amortization.payment(LoanTerms(p, rate(rateText, locale)!!, compounding, years.trim().toInt() * 12 + (months.trim().toIntOrNull() ?: 0), frequency))
     }.getOrNull()
 
-    FormDialog(model.t("loans.termsOf", account.name), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
+    FormDialog(model.t("loans.termsOf", account.name), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, walkId = "loans.termsDialog", onSave = {
         val ok = model.act {
             val months12 = runCatching { years.trim().toInt() * 12 + (months.trim().ifEmpty { "0" }.toInt()) }.getOrElse { throw ValidationException("error.loanAmortization") }
             model.books.loans.save(
@@ -408,7 +408,7 @@ private fun PaymentDialog(model: BooksModel, account: Account, details: LoanDeta
     var insurance by remember { mutableStateOf(amt(suggested?.insurance?.takeIf { it.isPositive })) }
     val total = runCatching { listOf(principal, interest, tax, insurance).mapNotNull { parseAmount(it, c, locale) }.sum(c) }.getOrNull()
 
-    FormDialog(model.t("loans.recordPayment") + " · " + account.name, model.t("common.save"), model.t("common.cancel"), canSave = payer != null, onDismiss = onClose, onSave = {
+    FormDialog(model.t("loans.recordPayment") + " · " + account.name, model.t("common.save"), model.t("common.cancel"), canSave = payer != null, onDismiss = onClose, walkId = "loans.paymentDialog", onSave = {
         val ok = model.act {
             val zero = Money.zero(c)
             model.books.loans.recordPayment(

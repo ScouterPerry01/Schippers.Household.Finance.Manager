@@ -129,7 +129,7 @@ internal fun ItemizeDialog(
     val shareOf = result?.let { r -> state.rows.filterNot { it.blank }.zip(r.shares).associate { (row, s) -> row to s.share } }.orEmpty()
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(Modifier.widthIn(max = 1000.dp).padding(24.dp), shape = MaterialTheme.shapes.extraLarge, tonalElevation = 6.dp) {
+        Surface(Modifier.widthIn(max = 1000.dp).padding(24.dp).walkTarget("itemize.dialog"), shape = MaterialTheme.shapes.extraLarge, tonalElevation = 6.dp) {
             Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(model.t("itemize.title"), style = MaterialTheme.typography.headlineSmall)
                 Text(model.t("itemize.hint"), style = MaterialTheme.typography.bodySmall)
@@ -150,7 +150,7 @@ internal fun ItemizeDialog(
                         }
                     }
                 }
-                OutlinedButton(onClick = { state.rows += ItemRow() }) { Text(model.t("itemize.add")) }
+                OutlinedButton(onClick = { state.rows += ItemRow() }, modifier = Modifier.walkTarget("itemize.add")) { Text(model.t("itemize.add")) }
                 Text(model.t("itemize.taxes"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     for (code in ITEM_TAXES) {
@@ -177,7 +177,7 @@ internal fun ItemizeDialog(
                 }
                 Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
                     TextButton(onClick = onDismiss) { Text(model.t("common.cancel")) }
-                    Button(enabled = result != null, onClick = { result?.let(onDone) }) { Text(model.t("itemize.use")) }
+                    Button(enabled = result != null, onClick = { result?.let(onDone) }, modifier = Modifier.walkTarget("itemize.use")) { Text(model.t("itemize.use")) }
                 }
             }
         }

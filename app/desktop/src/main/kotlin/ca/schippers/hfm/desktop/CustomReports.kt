@@ -97,7 +97,7 @@ fun CustomReportView(model: BooksModel, state: ReportState, filter: ReportFilter
     val books = model.books
     val layout = state.layout
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Picker(model.t("custom.rows"), ReportDimension.entries, layout.rows, { model.t("custom.dimension.$it") }, Modifier.width(190.dp)) { state.layout = layout.copy(rows = it) }
+        Picker(model.t("custom.rows"), ReportDimension.entries, layout.rows, { model.t("custom.dimension.$it") }, Modifier.width(190.dp).walkTarget("custom.rows")) { state.layout = layout.copy(rows = it) }
         Picker(model.t("custom.columns"), listOf(null) + listOf(ReportDimension.MONTH, ReportDimension.QUARTER, ReportDimension.YEAR, ReportDimension.PERSON, ReportDimension.ACCOUNT, ReportDimension.TOP_CATEGORY),
             layout.columns, { it?.let { d -> model.t("custom.dimension.$d") } ?: model.t("custom.noColumns") }, Modifier.width(190.dp)) { state.layout = layout.copy(columns = it) }
         Picker(model.t("custom.measure"), ReportMeasure.entries, layout.measure, { model.t("custom.measure.$it") }, Modifier.width(200.dp)) { state.layout = layout.copy(measure = it) }
@@ -159,7 +159,7 @@ fun SaveReportDialog(model: BooksModel, state: ReportState, onClose: () -> Unit)
     var folder by remember { mutableStateOf(existing?.folder.orEmpty()) }
     var asNew by remember { mutableStateOf(existing == null) }
     val custom = state.kind == ReportKind.CUSTOM
-    FormDialog(model.t("report.saveTitle"), model.t("common.save"), model.t("common.cancel"), canSave = name.isNotBlank(), onDismiss = onClose, onSave = {
+    FormDialog(model.t("report.saveTitle"), model.t("common.save"), model.t("common.cancel"), canSave = name.isNotBlank(), onDismiss = onClose, walkId = "reports.saveDialog", onSave = {
         val saved = model.act {
             books.savedReports.save(
                 SavedReport(if (asNew) "" else existing!!.id, name, state.definition().toJson(), schedule.takeIf { custom }, folder.takeIf { custom && schedule != null }, existing?.lastPeriod),

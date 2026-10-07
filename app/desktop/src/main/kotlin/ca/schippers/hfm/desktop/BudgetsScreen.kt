@@ -49,8 +49,8 @@ fun BudgetsScreen(model: BooksModel) {
             Text(model.t("nav.budgets"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
             // Budgets are the household's: a viewer sees them but cannot change them.
             if (model.books.canEdit) {
-                OutlinedButton(onClick = { suggesting = true }) { Text(model.t("budget.suggest")) }
-                Button(onClick = { adding = true }, modifier = Modifier.padding(start = 8.dp)) { Text(model.t("budget.add")) }
+                OutlinedButton(onClick = { suggesting = true }, modifier = Modifier.walkTarget("budgets.suggest")) { Text(model.t("budget.suggest")) }
+                Button(onClick = { adding = true }, modifier = Modifier.padding(start = 8.dp).walkTarget("budgets.add")) { Text(model.t("budget.add")) }
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
@@ -128,7 +128,7 @@ fun BudgetReportView(model: BooksModel, report: BudgetReport, yearView: Boolean,
 private fun CategoryPickDialog(model: BooksModel, onClose: () -> Unit, onPick: (Category) -> Unit) {
     val tree = remember { model.books.categories.tree() }
     var chosen by remember { mutableStateOf<Pair<Category, Int>?>(null) }
-    FormDialog(model.t("budget.add"), model.t("common.continue"), model.t("common.cancel"), canSave = chosen != null, onDismiss = onClose, onSave = { chosen?.let { onPick(it.first) } }) {
+    FormDialog(model.t("budget.add"), model.t("common.continue"), model.t("common.cancel"), canSave = chosen != null, onDismiss = onClose, walkId = "budget.category", onSave = { chosen?.let { onPick(it.first) } }) {
         Picker(model.t("register.category"), tree, chosen, { it.first.name(model.language) }, indent = { it.second }) { chosen = it }
     }
 }
@@ -145,7 +145,7 @@ private fun BudgetDialog(model: BooksModel, category: Category, line: BudgetLine
     var start by remember { mutableStateOf((existing?.startMonth ?: month).toString()) }
     var confirmDelete by remember { mutableStateOf(false) }
 
-    FormDialog(model.t("budget.edit", category.name(model.language)), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
+    FormDialog(model.t("budget.edit", category.name(model.language)), model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, walkId = "budget.dialog", onSave = {
         val ok = model.act {
             val value = parseAmount(amount, base, locale) ?: throw ValidationException("error.amountRequired")
             val startDate = runCatching { LocalDate.parse(start.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
@@ -182,7 +182,7 @@ private fun SuggestDialog(model: BooksModel, month: LocalDate, onClose: () -> Un
     val categories = remember { books.categories.list().associateBy { it.id } }
     val existing = remember { books.budgets.list().map { it.categoryId }.toSet() }
     var chosen by remember { mutableStateOf(suggestions.keys - existing) }
-    FormDialog(model.t("budget.suggest"), model.t("budget.apply"), model.t("common.cancel"), canSave = chosen.isNotEmpty(), onDismiss = onClose, onSave = {
+    FormDialog(model.t("budget.suggest"), model.t("budget.apply"), model.t("common.cancel"), canSave = chosen.isNotEmpty(), onDismiss = onClose, walkId = "budget.suggestions", onSave = {
         val ok = model.act {
             for (id in chosen) books.budgets.set(id, BudgetPeriod.MONTHLY, suggestions.getValue(id), startMonth = month)
         }

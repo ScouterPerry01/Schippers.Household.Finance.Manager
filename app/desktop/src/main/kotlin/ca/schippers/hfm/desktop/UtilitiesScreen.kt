@@ -83,7 +83,7 @@ fun UtilitiesScreen(model: BooksModel) {
         Text(model.t("nav.utilities"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("utilities.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
-            for (t in UtilitiesTab.entries) Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("utilities.tab.$t")) })
+            for (t in UtilitiesTab.entries) Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("utilities.tab.$t")) })
         }
         when (tab) {
             UtilitiesTab.METERS -> MetersTab(model)
@@ -103,7 +103,7 @@ private fun MetersTab(model: BooksModel) {
     var reading by remember { mutableStateOf<UtilityMeter?>(null) }
     val access = rememberAccess(model)
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-        if (access.canCreate) Button(onClick = { editing = UtilityMeter("", model.trackerGroup(), "", MeterKind.ELECTRICITY) }) { Text(model.t("meter.add")) }
+        if (access.canCreate) Button(onClick = { editing = UtilityMeter("", model.trackerGroup(), "", MeterKind.ELECTRICITY) }, modifier = Modifier.walkTarget("meters.add")) { Text(model.t("meter.add")) }
         LabeledCheckbox(model.t("utilities.showArchived"), showArchived) { showArchived = it }
     }
     if (meters.isEmpty()) Text(model.t("meter.none"), Modifier.padding(vertical = 8.dp))
@@ -125,7 +125,7 @@ private fun MetersTab(model: BooksModel) {
                                 style = MaterialTheme.typography.bodySmall,
                             )
                         }
-                        OutlinedButton(onClick = { reading = m }) { Text(model.t("meter.readings")) }
+                        OutlinedButton(onClick = { reading = m }, modifier = Modifier.walkTarget("meters.readings")) { Text(model.t("meter.readings")) }
                         TextButton(onClick = { editing = m }, enabled = access.mayEdit(m.groupId)) { Text(model.t("meter.edit")) }
                     }
                     if (s.months.isEmpty()) Text(model.t("meter.noUse"), style = MaterialTheme.typography.bodySmall)
@@ -170,7 +170,7 @@ private fun MeterDialog(model: BooksModel, m: UtilityMeter, onClose: () -> Unit)
     var archived by remember { mutableStateOf(m.archived) }
     var groupId by remember { mutableStateOf(m.groupId) }
     var asking by remember { mutableStateOf(false) }
-    FormDialog(model.t(if (m.id.isBlank()) "meter.add" else "meter.edit"), model.t("common.save"), model.t("common.cancel"), canSave = name.isNotBlank(), onDismiss = onClose, onSave = {
+    FormDialog(model.t(if (m.id.isBlank()) "meter.add" else "meter.edit"), model.t("common.save"), model.t("common.cancel"), canSave = name.isNotBlank(), onDismiss = onClose, walkId = "meter.dialog", onSave = {
         val ok = model.act {
             model.books.utilities.saveMeter(
                 m.copy(groupId = groupId, name = name, kind = kind, assetId = home?.id, timeOfUse = timeOfUse && kind == MeterKind.ELECTRICITY, billId = bill?.id, notes = notes, archived = archived),
@@ -215,7 +215,7 @@ private fun MeterReadingsDialog(model: BooksModel, m: UtilityMeter, access: Grou
     var notes by remember { mutableStateOf("") }
     var deleting by remember { mutableStateOf<UtilityReading?>(null) }
     val filled = value.isNotBlank() || (m.timeOfUse && listOf(on, mid, off).any { it.isNotBlank() })
-    FormDialog(m.name, model.t("meter.addReading"), model.t("common.close"), canSave = filled && access.mayAdd(m.groupId), onDismiss = onClose, onSave = {
+    FormDialog(m.name, model.t("meter.addReading"), model.t("common.close"), canSave = filled && access.mayAdd(m.groupId), onDismiss = onClose, walkId = "meter.reading", onSave = {
         val ok = model.act {
             model.books.utilities.addReading(m.id, trackerDate(day), trackerNumber(value, "error.meterReading"), trackerNumber(on, "error.meterReading"), trackerNumber(mid, "error.meterReading"), trackerNumber(off, "error.meterReading"), notes)
         }
@@ -271,7 +271,7 @@ private fun TanksTab(model: BooksModel) {
     var delivering by remember { mutableStateOf<FuelTank?>(null) }
     val access = rememberAccess(model)
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-        if (access.canCreate) Button(onClick = { editing = FuelTank("", model.trackerGroup(), "", FuelKind.PROPANE, BigDecimal.ZERO) }) { Text(model.t("tank.add")) }
+        if (access.canCreate) Button(onClick = { editing = FuelTank("", model.trackerGroup(), "", FuelKind.PROPANE, BigDecimal.ZERO) }, modifier = Modifier.walkTarget("tanks.add")) { Text(model.t("tank.add")) }
         LabeledCheckbox(model.t("utilities.showArchived"), showArchived) { showArchived = it }
     }
     if (tanks.isEmpty()) Text(model.t("tank.none"), Modifier.padding(vertical = 8.dp))

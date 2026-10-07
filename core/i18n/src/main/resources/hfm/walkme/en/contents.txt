@@ -1,0 +1,39 @@
+// The Walk-Me guides by group, in order (docs/walkme-format.md). "= group-id Title", then guide ids.
+= start Getting started
+household
+accounts
+members
+import
+reconcile
+backups
+= bills Bills and budgets
+bills
+property-tax
+pay-part
+budgets
+goals
+= documents Documents and the phone
+pair-phone
+receipt
+bill-capture
+itemize
+ai-reading
+= borrowing Borrowing and investing
+mortgage
+loans
+investments
+registered-plans
+= home Home, family and vehicles
+vehicles
+trips
+seasonal
+utilities
+medical
+insurance
+contacts
+family
+= taxes Taxes and reports
+tax-package
+tax-estimate
+custom-reports
+estate

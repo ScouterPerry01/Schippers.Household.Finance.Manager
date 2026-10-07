@@ -102,7 +102,7 @@ fun CalendarScreen(model: BooksModel) {
         }
         PrimaryTabRow(selectedTabIndex = view.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
             for (t in CalendarView.entries) {
-                Tab(selected = view == t, onClick = { model.calendarView = t.name }, text = { Text(model.t("calendar.tab.${t.name}")) })
+                Tab(selected = view == t, onClick = { model.calendarView = t.name }, modifier = Modifier.walkTab(t, view == t) { model.calendarView = t.name }, text = { Text(model.t("calendar.tab.${t.name}")) })
             }
         }
         // CAL-07: today, previous, next and a date picker, for every view.

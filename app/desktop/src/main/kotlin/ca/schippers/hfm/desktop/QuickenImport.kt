@@ -62,7 +62,7 @@ fun QuickenImportDialog(model: BooksModel, file: File, onClose: () -> Unit) {
     var running by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<QifImportResult?>(null) }
 
-    WideDialog(model.t("quicken.title", file.name), model.t("common.close"), onClose) {
+    WideDialog(model.t("quicken.title", file.name), model.t("common.close"), onClose, walkId = "quicken.dialog") {
         Column(Modifier.heightIn(max = 560.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             val done = result
             when {

@@ -75,7 +75,7 @@ fun TaxesScreen(model: BooksModel) {
         Text(model.t("nav.taxes"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("taxes.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
-            for (t in TaxesTab.entries) Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("taxes.tab.$t")) })
+            for (t in TaxesTab.entries) Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("taxes.tab.$t")) })
         }
         when (tab) {
             TaxesTab.SLIPS -> SlipsTab(model)
@@ -202,7 +202,7 @@ private fun SlipsTab(model: BooksModel) {
 
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Picker(model.t("taxes.year"), (thisYear downTo thisYear - 6).toList(), year, { it.toString() }, Modifier.width(190.dp)) { year = it }
-        OutlinedButton(onClick = { adding = true }, modifier = Modifier.padding(top = 8.dp)) { Text(model.t("slips.add")) }
+        OutlinedButton(onClick = { adding = true }, modifier = Modifier.padding(top = 8.dp).walkTarget("taxes.addSlip")) { Text(model.t("slips.add")) }
     }
     Text(model.t("slips.hint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
     if (slips.isEmpty()) Text(model.t("slips.none"), Modifier.padding(vertical = 12.dp))
@@ -395,14 +395,14 @@ private fun PackageTab(model: BooksModel) {
             Picker(model.t("report.person"), pkg.people, person, { model.personName(it.memberId) }, Modifier.width(220.dp)) { who = it.memberId }
         }
     }
-    Text(model.t("package.hint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp))
+    Text(model.t("package.hint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 4.dp).walkTarget("taxes.package"))
     if (person == null) {
         Text(model.t("package.none"), Modifier.padding(vertical = 12.dp))
         return
     }
     val table = packageTable(model, year, person)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(vertical = 4.dp)) {
-        androidx.compose.material3.Button(onClick = {
+        androidx.compose.material3.Button(modifier = Modifier.walkTarget("taxes.packageFolder"), onClick = {
             model.act { exportPackageFolder(model, pkg) }?.let { dir -> message = model.t("package.exported", dir.path) }
         }) { Text(model.t("package.exportFolder")) }
         for (format in ExportFormat.entries) {
@@ -574,7 +574,7 @@ private fun EstimateTab(model: BooksModel) {
         LazyColumn(Modifier.weight(1f)) {
             item(key = "head") {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(model.t("taxEstimate.figures"), fontWeight = FontWeight.Medium)
+                    Text(model.t("taxEstimate.figures"), fontWeight = FontWeight.Medium, modifier = Modifier.walkTarget("taxes.estimateFigures"))
                     Text(model.t("taxEstimate.figuresHint"), style = MaterialTheme.typography.bodySmall)
                     Text(model.t("taxEstimate.province", model.t("province.${result.province}")), style = MaterialTheme.typography.bodySmall)
                     LabeledCheckbox(model.t("taxEstimate.age65"), result.age65) { checked ->
@@ -648,7 +648,7 @@ private fun EstimateTab(model: BooksModel) {
                 return@LazyColumn
             }
             item(key = "result") {
-                OutlinedCard(Modifier.fillMaxWidth()) {
+                OutlinedCard(Modifier.fillMaxWidth().walkTarget("taxes.estimateResult")) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         ResultRow(model.t("taxEstimate.federalTax"), cad(e.federalTax))
                         ResultRow(model.t("taxEstimate.provincialTax", model.t("province.${e.province}")), cad(e.provincialTax))

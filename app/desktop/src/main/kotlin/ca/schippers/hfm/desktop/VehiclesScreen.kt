@@ -95,7 +95,7 @@ fun VehiclesScreen(model: BooksModel) {
             if (vehicle != null) Picker(model.t("vehicles.vehicle"), vehicles, vehicle, { vehicleLabel(model, it) }, Modifier.width(320.dp)) { selectedId = it.id }
             Box(Modifier.weight(1f))
             LabeledCheckbox(model.t("vehicles.showInactive"), showInactive) { showInactive = it }
-            Button(onClick = {
+            Button(modifier = Modifier.walkTarget("vehicles.add"), onClick = {
                 val group = model.editableGroups().let { g -> g.firstOrNull { !it.isPrivate } ?: g.firstOrNull() }
                 if (group == null) model.error = model.t("error.noEditableGroup") else edit = VehicleEdit.Details(Vehicle("", group.id, "", currency = books.rates.baseCurrency))
             }) { Text(model.t("vehicles.add")) }
@@ -104,7 +104,7 @@ fun VehiclesScreen(model: BooksModel) {
             Text(model.t("vehicles.none"), Modifier.padding(8.dp))
         } else {
             PrimaryScrollableTabRow(selectedTabIndex = tab.ordinal, edgePadding = 0.dp, modifier = Modifier.padding(vertical = 8.dp)) {
-                for (t in VehicleTab.entries) Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("vehicles.tab.${t.name}")) })
+                for (t in VehicleTab.entries) Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("vehicles.tab.${t.name}")) })
             }
             Box(Modifier.weight(1f)) {
                 when (tab) {
@@ -172,7 +172,7 @@ private fun OverviewTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) -> 
                 v.vin?.let { Text(model.t("vehicles.vinIs", it), style = MaterialTheme.typography.bodySmall) }
                 detailsLine(model, v)?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             }
-            OutlinedButton(onClick = { onEdit(VehicleEdit.Reading(v)) }) { Text(model.t("vehicles.addReading")) }
+            OutlinedButton(onClick = { onEdit(VehicleEdit.Reading(v)) }, modifier = Modifier.walkTarget("vehicles.addReading")) { Text(model.t("vehicles.addReading")) }
             TextButton(onClick = { onEdit(VehicleEdit.Details(v)) }) { Text(model.t("common.edit")) }
         }
         HorizontalDivider(Modifier.padding(vertical = 6.dp))
@@ -237,7 +237,9 @@ private fun MaintenanceTab(model: BooksModel, v: Vehicle, onEdit: (VehicleEdit) 
     Column {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(model.t("vehicles.maintenanceExplain"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-            OutlinedButton(onClick = { model.act { books.vehicles.addStarterTasks(v.id, today()) { model.t("task.$it") } } }) { Text(model.t("vehicles.starterTasks")) }
+            OutlinedButton(onClick = { model.act { books.vehicles.addStarterTasks(v.id, today()) { model.t("task.$it") } } }, modifier = Modifier.walkTarget("vehicles.starterTasks")) {
+                Text(model.t("vehicles.starterTasks"))
+            }
             Button(onClick = { onEdit(VehicleEdit.Task(MaintenanceTask("", v.id, "", intervalMonths = 12, startDate = today(), startOdometer = books.vehicles.latestOdometer(v.id)?.odometer))) }) {
                 Text(model.t("vehicles.addTask"))
             }
@@ -289,7 +291,7 @@ private fun TaskRow(model: BooksModel, v: Vehicle, s: TaskStatus, onEdit: (Vehic
                 s.forecastDate?.takeIf { s.dueOdometer != null }?.let { Text(model.t("vehicles.forecast", model.date(it)), style = MaterialTheme.typography.bodySmall) }
             }
             Row(Modifier.width(TASK_ACTIONS_WIDTH), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedButton(onClick = {
+                OutlinedButton(modifier = Modifier.walkTarget("vehicles.markDone"), onClick = {
                     onEdit(VehicleEdit.Service(v, ServiceRecord("", v.id, today(), model.books.vehicles.latestOdometer(v.id)?.odometer, taskIds = setOf(t.id))))
                 }) { Text(model.t("vehicles.markDone")) }
                 TextButton(onClick = { onEdit(VehicleEdit.Task(t)) }) { Text(model.t("common.edit")) }
@@ -587,7 +589,7 @@ private fun VehicleDialog(model: BooksModel, existing: Vehicle, onClose: (String
 
     FormDialog(
         model.t(if (existing.id.isBlank()) "vehicles.add" else "vehicles.edit"), model.t("common.save"), model.t("common.cancel"),
-        canSave = name.isNotBlank(), onDismiss = { onClose(null) },
+        canSave = name.isNotBlank(), onDismiss = { onClose(null) }, walkId = "vehicle.dialog",
         onSave = {
             val saved = model.act {
                 books.vehicles.save(
@@ -820,7 +822,7 @@ private fun ServiceDialog(model: BooksModel, v: Vehicle, existing: ServiceRecord
     var asking by remember { mutableStateOf(false) }
     FormDialog(
         model.t(if (existing.id.isBlank()) "vehicles.addService" else "vehicles.editService") + " · " + v.name, model.t("common.save"), model.t("common.cancel"),
-        onDismiss = onClose,
+        onDismiss = onClose, walkId = "vehicle.service",
         onSave = {
             val ok = model.act {
                 books.vehicles.saveService(

@@ -186,8 +186,8 @@ fun SuggestInput(label: String, value: String, suggestions: List<String>, modifi
 }
 
 @Composable
-fun LabeledCheckbox(label: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+fun LabeledCheckbox(label: String, checked: Boolean, enabled: Boolean = true, modifier: Modifier = Modifier, onChange: (Boolean) -> Unit) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         Checkbox(checked = checked, onCheckedChange = onChange, enabled = enabled)
         Text(label)
     }
@@ -195,19 +195,29 @@ fun LabeledCheckbox(label: String, checked: Boolean, enabled: Boolean = true, on
 
 /** A dialog with a form body and Save / Cancel buttons. */
 @Composable
-fun FormDialog(title: String, saveLabel: String, cancelLabel: String, canSave: Boolean = true, onSave: () -> Unit, onDismiss: () -> Unit, content: @Composable () -> Unit) {
+fun FormDialog(
+    title: String,
+    saveLabel: String,
+    cancelLabel: String,
+    canSave: Boolean = true,
+    onSave: () -> Unit,
+    onDismiss: () -> Unit,
+    // HLP-03: a Walk-Me id for the dialog; its Save button is "<walkId>.save".
+    walkId: String? = null,
+    content: @Composable () -> Unit,
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.width(520.dp).onPreviewKeyEvent { e ->
+                modifier = Modifier.width(520.dp).then(walkId?.let { Modifier.walkTarget(it) } ?: Modifier).onPreviewKeyEvent { e ->
                     if (e.type == KeyEventType.KeyDown && e.key == Key.Escape) { onDismiss(); true } else false
                 },
             ) { content() }
         },
-        confirmButton = { TextButton(onClick = onSave, enabled = canSave) { Text(saveLabel) } },
+        confirmButton = { TextButton(onClick = onSave, enabled = canSave, modifier = walkId?.let { Modifier.walkTarget("$it.save") } ?: Modifier) { Text(saveLabel) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text(cancelLabel) } },
     )
 }
@@ -267,9 +277,9 @@ private const val MAX_SHOWN = 200
  * results and report drill-downs.
  */
 @Composable
-fun WideDialog(title: String, closeLabel: String, onDismiss: () -> Unit, content: @Composable () -> Unit) {
+fun WideDialog(title: String, closeLabel: String, onDismiss: () -> Unit, walkId: String? = null, content: @Composable () -> Unit) {
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss, properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
-        androidx.compose.material3.Surface(Modifier.widthIn(max = 900.dp).padding(24.dp), shape = MaterialTheme.shapes.extraLarge, tonalElevation = 6.dp) {
+        androidx.compose.material3.Surface(Modifier.widthIn(max = 900.dp).padding(24.dp).then(walkId?.let { Modifier.walkTarget(it) } ?: Modifier), shape = MaterialTheme.shapes.extraLarge, tonalElevation = 6.dp) {
             Column(Modifier.padding(24.dp)) {
                 Text(title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 16.dp))
                 content()

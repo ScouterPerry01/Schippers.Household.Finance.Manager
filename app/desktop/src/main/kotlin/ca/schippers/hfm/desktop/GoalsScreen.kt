@@ -65,7 +65,7 @@ fun GoalsScreen(model: BooksModel) {
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(model.t("nav.goals"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-            Button(onClick = { action = GoalAction.Edit(null) }) { Text(model.t("goals.add")) }
+            Button(onClick = { action = GoalAction.Edit(null) }, modifier = Modifier.walkTarget("goals.add")) { Text(model.t("goals.add")) }
         }
         Text(model.t("goals.explain"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(vertical = 8.dp))
         LazyColumn {
@@ -118,7 +118,7 @@ private fun GoalRow(model: BooksModel, p: GoalProgress, onAction: (GoalAction) -
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedButton(onClick = { onAction(GoalAction.Amount(g, AmountKind.SET_ASIDE)) }) { Text(model.t("goals.setAside")) }
+                OutlinedButton(onClick = { onAction(GoalAction.Amount(g, AmountKind.SET_ASIDE)) }, modifier = Modifier.walkTarget("goals.setAside")) { Text(model.t("goals.setAside")) }
                 TextButton(onClick = { onAction(GoalAction.Amount(g, AmountKind.SPEND)) }) { Text(model.t("goals.spend")) }
                 TextButton(onClick = { onAction(GoalAction.Move(g)) }) { Text(model.t("goals.move")) }
                 TextButton(onClick = { onAction(GoalAction.History(g)) }) { Text(model.t("goals.history")) }
@@ -183,7 +183,7 @@ private fun GoalDialog(model: BooksModel, existing: SavingsGoal?, onClose: () ->
 
     FormDialog(
         model.t(if (existing == null) "goals.add" else "goals.edit"), model.t("common.save"), model.t("common.cancel"),
-        canSave = name.isNotBlank() && account != null, onDismiss = onClose,
+        canSave = name.isNotBlank() && account != null, onDismiss = onClose, walkId = "goal.dialog",
         onSave = {
             val ok = model.act {
                 fun date(text: String) = text.trim().ifEmpty { null }?.let { runCatching { LocalDate.parse(it) }.getOrElse { throw ValidationException("error.invalidDate") } }
@@ -259,7 +259,7 @@ private fun AmountDialog(model: BooksModel, goal: SavingsGoal, kind: AmountKind,
     fun purchaseLabel(t: ca.schippers.hfm.books.Transaction?) = t?.let {
         listOfNotNull(model.date(it.date), it.payeeId?.let(payees::get) ?: it.payeeText, it.memo, model.money(-it.amount)).joinToString(" · ")
     } ?: model.t("goals.noPurchase")
-    FormDialog(model.t("goals.amount.${mode.name}") + " · " + goal.name, model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, onSave = {
+    FormDialog(model.t("goals.amount.${mode.name}") + " · " + goal.name, model.t("common.save"), model.t("common.cancel"), onDismiss = onClose, walkId = "goal.amount", onSave = {
         val ok = model.act {
             val d = runCatching { LocalDate.parse(date.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
             val value = parseAmount(amount, goal.target.currency, locale) ?: throw ValidationException("error.amountPositive")

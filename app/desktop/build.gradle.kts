@@ -49,6 +49,22 @@ val versionResource = tasks.register<WriteProperties>("versionResource") {
 }
 sourceSets.main { resources.srcDir(versionResource.map { it.destinationFile.get().asFile.parentFile.parentFile }) }
 
+// HLP-02: About shows what's new from the release notes (docs/releases/<version>.<lang>.md), with a list of the versions.
+val releaseNotesRoot = layout.buildDirectory.dir("generated/releases")
+val releaseNotes = tasks.register<Sync>("releaseNotes") {
+    val notes = rootProject.layout.projectDirectory.dir("docs/releases")
+    val out = releaseNotesRoot.map { it.dir("hfm/releases") }
+    from(notes) { include("*.md") }
+    into(out)
+    doLast {
+        // The versions that have notes, one per line (About picks this copy's, or the nearest).
+        val versions = notes.asFile.listFiles().orEmpty().map { it.name }.filter { it.endsWith(".md") }
+            .map { it.substringBeforeLast('.').substringBeforeLast('.') }.distinct().sorted()
+        out.get().file("index.txt").asFile.writeText(versions.joinToString("\n", postfix = "\n"))
+    }
+}
+sourceSets.main { resources.srcDir(releaseNotes.map { releaseNotesRoot.get().asFile }) }
+
 // Packages are built on the platform they are for, so the desktop app keeps only the build
 // machine's native libraries from ONNX Runtime (55.6 MB with five platforms) and the SQLite driver
 // (twenty platforms). ADR 0004. PackagedSelfCheck proves the installed app still loads them.

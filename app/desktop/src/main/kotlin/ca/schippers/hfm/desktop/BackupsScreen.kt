@@ -78,11 +78,11 @@ fun BackupsScreen(model: BooksModel) {
             Text(settings.dir?.toString() ?: model.t("backup.noFolder"), Modifier.weight(1f))
             OutlinedButton(enabled = admin, onClick = {
                 chooseDirectory(model.t("backup.chooseFolder"))?.let { dir -> model.act { books.backups.saveSettings(settings.copy(dir = dir)) } }
-            }) { Text(model.t("backup.chooseFolder")) }
+            }, modifier = Modifier.walkTarget("backups.folder")) { Text(model.t("backup.chooseFolder")) }
         }
         Text(model.t("backup.folderHint"), style = MaterialTheme.typography.bodySmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Picker(model.t("backup.frequency"), BackupFrequency.entries, settings.frequency, { model.t("backupFrequency.$it") }, Modifier.width(220.dp), enabled = admin) {
+            Picker(model.t("backup.frequency"), BackupFrequency.entries, settings.frequency, { model.t("backupFrequency.$it") }, Modifier.width(220.dp).walkTarget("backups.frequency"), enabled = admin) {
                 model.act { books.backups.saveSettings(settings.copy(frequency = it)) }
             }
             TextInput(model.t("backup.keep"), keep, Modifier.width(200.dp), enabled = admin) { keep = it }
@@ -93,7 +93,7 @@ fun BackupsScreen(model: BooksModel) {
         if (!admin) Text(model.t("backup.adminOnly"), style = MaterialTheme.typography.bodySmall)
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Button(enabled = !busy && settings.dir != null, onClick = ::runBackup) { Text(model.t(if (busy) "backup.running" else "backup.now")) }
+            Button(enabled = !busy && settings.dir != null, onClick = ::runBackup, modifier = Modifier.walkTarget("backups.now")) { Text(model.t(if (busy) "backup.running" else "backup.now")) }
             Text(
                 status.lastSuccess?.let { model.t("backup.last", formatInstant(model, it)) } ?: model.t("backup.never"),
                 color = if (books.backups.needsReminder(Instant.now())) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,

@@ -140,6 +140,7 @@ private fun CsvMappingDialog(model: BooksModel, pending: PendingImport.Csv, onCl
         cancelLabel = model.t("common.cancel"),
         canSave = mapping.isValid(),
         onDismiss = onClose,
+        walkId = "import.csv",
         onSave = {
             val final = if (amountMode == "single") mapping.copy(debitColumn = null, creditColumn = null) else mapping.copy(amountColumn = null)
             try {

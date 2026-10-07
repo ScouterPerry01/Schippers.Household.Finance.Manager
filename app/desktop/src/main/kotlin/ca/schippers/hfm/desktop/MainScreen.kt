@@ -132,6 +132,7 @@ fun MainScreen(model: BooksModel, app: AppState) {
                     Section.USERS -> UsersScreen(model)
                     Section.BACKUPS -> BackupsScreen(model)
                     Section.SECURITY -> SecurityScreen(model, app)
+                    Section.WALKME -> WalkMeScreen(app)
                     Section.ABOUT -> AboutScreen(app)
                     Section.CATEGORIES -> CategoriesScreen(model)
                     Section.PAYEES -> PayeesScreen(model)

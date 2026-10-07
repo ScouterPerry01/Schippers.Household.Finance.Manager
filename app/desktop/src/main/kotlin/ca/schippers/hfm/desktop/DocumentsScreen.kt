@@ -127,14 +127,14 @@ fun DocumentsScreen(model: BooksModel) {
             Text(model.t("nav.documents"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
             TextButton(onClick = { showLearned = true }) { Text(model.t("learned.button")) }
             TextButton(onClick = { showSettings = true }) { Text(model.t("documents.watchFolder")) }
-            Button(enabled = !busy, onClick = { import(chooseFiles(model)) }) { Text(model.t(if (busy) "documents.reading" else "documents.import")) }
+            Button(enabled = !busy, onClick = { import(chooseFiles(model)) }, modifier = Modifier.walkTarget("documents.import")) { Text(model.t(if (busy) "documents.reading" else "documents.import")) }
         }
         Text(model.t("documents.dropHint"), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
         model.lastImportMessage?.let { Text(it, modifier = Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.primary) }
         val inboxCount = remember(model.revision) { model.books.documents.inboxCount() }
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
             for (t in DocumentsTab.entries) {
-                Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("documents.tab.${t.name}", inboxCount)) })
+                Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("documents.tab.${t.name}", inboxCount)) })
             }
         }
         Box(Modifier.weight(1f)) {
@@ -281,7 +281,7 @@ private fun DocumentRow(model: BooksModel, doc: VaultDocument, highlight: Boolea
                 if (duplicates.isNotEmpty()) Text(model.t("documents.possibleDuplicate"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             }
             Text(doc.amount?.let(model::money).orEmpty(), Modifier.width(120.dp), fontWeight = FontWeight.Bold)
-            Button(onClick = onOpen, Modifier.width(ACTIONS_WIDTH)) { Text(model.t(if (highlight) "documents.review" else "documents.open"), maxLines = 1) }
+            Button(onClick = onOpen, Modifier.width(ACTIONS_WIDTH).walkTarget("documents.review")) { Text(model.t(if (highlight) "documents.review" else "documents.open"), maxLines = 1) }
         }
     }
 }
@@ -321,7 +321,7 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
         books.documents.update(documentId, DocumentDetails(title, kind, d, title.ifBlank { null }, parseAmount(amount, currency, locale), keep, notes))
     } != null
 
-    WideDialog(doc.label, model.t("common.close"), onClose) {
+    WideDialog(doc.label, model.t("common.close"), onClose, walkId = "documents.window") {
         Row(Modifier.heightIn(max = 620.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             // The document itself, page by page (DOC-01).
             DocumentViewer(model, doc, Modifier.width(400.dp).height(600.dp))
@@ -455,7 +455,7 @@ private fun AiPart(model: BooksModel, doc: VaultDocument, kind: DocumentKind, on
     val scope = rememberCoroutineScope()
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         if (hasKey) {
-            OutlinedButton(enabled = !busy, onClick = {
+            OutlinedButton(enabled = !busy, modifier = Modifier.walkTarget("documents.aiRead"), onClick = {
                 failure = null
                 if (settings.confirmEach) {
                     asking = true
@@ -710,7 +710,7 @@ private fun FilingActions(
             Text(model.t("documents.billSuggestion", bill.name), Modifier.weight(1f))
             Button(onClick = {
                 if (saveDetails()) model.act { books.documents.fileWithBill(doc.id, bill.id) }?.let { onDone() }
-            }) { Text(model.t("documents.recordOnBill")) }
+            }, modifier = Modifier.walkTarget("documents.recordOnBill")) { Text(model.t("documents.recordOnBill")) }
         }
     }
     // BILL-18: a bill that matches none of the household's bills creates one, or is attached to one chosen.
@@ -718,7 +718,7 @@ private fun FilingActions(
         val anyBill = remember(model.revision) { books.bills.list().any { it.kind == ca.schippers.hfm.books.BillKind.BILL } }
         if (bill == null) Text(model.t("documents.noBill"), style = MaterialTheme.typography.bodySmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (bill == null && kind == DocumentKind.BILL) Button(onClick = { if (saveDetails()) onCreateBill() }) { Text(model.t("documents.createBill")) }
+            if (bill == null && kind == DocumentKind.BILL) Button(onClick = { if (saveDetails()) onCreateBill() }, modifier = Modifier.walkTarget("documents.createBill")) { Text(model.t("documents.createBill")) }
             if (anyBill) OutlinedButton(onClick = { if (saveDetails()) onAttachBill() }) { Text(model.t(if (bill == null) "documents.attachToBill" else "documents.attachToOtherBill")) }
         }
     }
@@ -728,16 +728,18 @@ private fun FilingActions(
                 "${model.date(m.transaction.date)} · ${m.accountName} · ${m.transaction.payeeText ?: ""} ${model.money(m.transaction.amount)}",
                 Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
-            OutlinedButton(onClick = { if (saveDetails() && model.act { books.documents.fileWithTransaction(doc.id, m.transaction.id) } != null) onDone() }) {
+            OutlinedButton(onClick = { if (saveDetails() && model.act { books.documents.fileWithTransaction(doc.id, m.transaction.id) } != null) onDone() }, modifier = Modifier.walkTarget("documents.attach")) {
                 Text(model.t("documents.attach"))
             }
         }
     }
     if (matches.isEmpty() && bill == null) Text(model.t("documents.noMatch"), style = MaterialTheme.typography.bodySmall)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = { if (saveDetails()) onCreate() }) { Text(model.t("documents.newTransaction")) }
+        OutlinedButton(onClick = { if (saveDetails()) onCreate() }, modifier = Modifier.walkTarget("documents.newTransaction")) { Text(model.t("documents.newTransaction")) }
         // DOC-02: a receipt or invoice split by its items, typed by hand.
-        if (kind == DocumentKind.RECEIPT || kind == DocumentKind.INVOICE) OutlinedButton(onClick = { if (saveDetails()) onItemize() }) { Text(model.t("documents.itemize")) }
+        if (kind == DocumentKind.RECEIPT || kind == DocumentKind.INVOICE) {
+            OutlinedButton(onClick = { if (saveDetails()) onItemize() }, modifier = Modifier.walkTarget("documents.itemize")) { Text(model.t("documents.itemize")) }
+        }
     }
 }
 
@@ -787,7 +789,7 @@ private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: S
     val shares = split?.shares.orEmpty()
     var byItems by remember { mutableStateOf(false) }
     val itemCategories = remember { mutableStateListOf<String?>().apply { repeat(shares.size) { add(null) } } }
-    FormDialog(model.t("documents.newTransaction"), model.t("common.save"), model.t("common.cancel"), canSave = account != null, onDismiss = { onClose(false) }, onSave = {
+    FormDialog(model.t("documents.newTransaction"), model.t("common.save"), model.t("common.cancel"), canSave = account != null, onDismiss = { onClose(false) }, walkId = "documents.transaction", onSave = {
         val ok = model.act {
             // DOC-02: items typed by hand come to the receipt's total, or are the total when none was given.
             val value = itemized?.total ?: parseAmount(amount, account!!.currency, locale) ?: throw ValidationException("error.amountRequired")

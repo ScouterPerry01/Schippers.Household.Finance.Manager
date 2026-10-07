@@ -166,7 +166,8 @@ Les nombres entre parenthèses indiquent ce qui vous attend. Documents indique l
 - Placements et emprunts : [Placements](investments), [Régimes enregistrés](plans) et [Prêts et hypothèques](loans).
 - Rapports et impôts : [Rapports](reports) et [Impôts](taxes).
 - Maison et famille : [Santé](health), [Réclamations médicales](medical), [Urgence et succession](estate), [Animaux](pets), [Véhicules](vehicles), [Déplacements](trips) et [Maison et biens](assets).
-- Réglages : [Membres du ménage](members), [Utilisateurs](users), [Catégories](categories), [Bénéficiaires](payees), [Règles de catégorie](rules), [Institutions financières](institutions), [Taux et cours](rates), [Téléphones](phones), [Lecture par IA](ai), [Sauvegardes](backups), [Sécurité](security), [Affichage et accessibilité](display) et [À propos](about).
+- Réglages : [Membres du ménage](members), [Utilisateurs](users), [Catégories](categories), [Bénéficiaires](payees), [Règles de catégorie](rules), [Institutions financières](institutions), [Taux et cours](rates), [Téléphones](phones), [Lecture par IA](ai), [Sauvegardes](backups), [Sécurité](security) et [Affichage et accessibilité](display).
+- Aide, le dernier groupe (à droite de la barre du haut) : Manuel (Maj+F1), Aide (F1), [Guides Walk-Me](walkme) et [À propos](about). Voir [Le menu Aide](walkme#help-menu).
 
 Ce que chaque utilisateur voit dans ces écrans dépend de son rôle et des groupes de comptes qu'il peut ouvrir ; voir [Utilisateurs](users).
 

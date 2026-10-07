@@ -61,7 +61,7 @@ The next screen, **Your recovery key**, shows a long key made of letters and dig
 
 The Dashboard shows a **Getting started** card with six steps: the people, the accounts, the bills and pay, a first receipt, a first statement reconciled and the phone. Each step has a button that opens the right screen, and the next step to do is in bold. The card counts what is done and disappears once the first five steps are done. **Hide this guide** removes it for you; **Show the Getting started guide again**, under Display and accessibility, brings it back.
 
-The steps below follow the same order.
+The steps below follow the same order. The card also leads to the **Walk-Me guides**, which take you through each of these steps on the screen itself; see [Walk-Me guides](walkme). Before the household exists, the welcome screen's **Walk-Me guides** button offers the first one, Create your household.
 
 ## Step 5: Add the people {#people}
 

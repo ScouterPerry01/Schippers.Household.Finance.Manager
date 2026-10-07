@@ -24,6 +24,9 @@ sealed interface Screen {
 
     /** About and privacy, before a household is open. */
     data object About : Screen
+
+    /** HLP-03: the Walk-Me guides, before a household is open. */
+    data object Guides : Screen
     data class Unlock(val dir: Path) : Screen
     data class Reset(val dir: Path) : Screen
     data class ShowRecoveryKey(val session: HouseholdSession, val key: RecoveryKey) : Screen
@@ -38,6 +41,9 @@ class AppState(
 ) {
     /** DIST-05, SEC-08: update checks for Linux packages from GitHub Releases (per computer). */
     val updater: Updater = Updater.create(prefs, System.getProperty("hfm.demo") == "true")
+
+    /** HLP-03: the Walk-Me guide in progress and each guide's progress (per computer). */
+    val walkMe: WalkMeState = WalkMeState(prefs)
 
     /** BILL-04: the reminders already shown as a notification today, per household (per computer). */
     val notified: NotifiedReminders = NotifiedReminders(prefs)

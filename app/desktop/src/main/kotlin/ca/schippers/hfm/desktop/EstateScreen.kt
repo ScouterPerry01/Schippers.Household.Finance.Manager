@@ -48,7 +48,7 @@ fun EstateScreen(model: BooksModel) {
         Text(model.t("nav.estate"), style = MaterialTheme.typography.titleLarge)
         Text(model.t("estate.hint"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
         PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.padding(vertical = 8.dp)) {
-            for (t in EstateTab.entries) Tab(selected = tab == t, onClick = { tab = t }, text = { Text(model.t("estate.tab.$t")) })
+            for (t in EstateTab.entries) Tab(selected = tab == t, onClick = { tab = t }, modifier = Modifier.walkTab(t, tab == t) { tab = t }, text = { Text(model.t("estate.tab.$t")) })
         }
         when (tab) {
             EstateTab.SUMMARY -> SummaryTab(model)
@@ -66,7 +66,7 @@ private fun SummaryTab(model: BooksModel) {
     val sections = remember(summary, model.language) { emergencySections(model, summary) }
     var exporting by remember { mutableStateOf(false) }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Button(onClick = { exporting = true }) { Text(model.t("estate.export")) }
+        Button(onClick = { exporting = true }, modifier = Modifier.walkTarget("estate.export")) { Text(model.t("estate.export")) }
         OutlinedButton(onClick = { model.act { printSections(model, model.t("estate.title"), sections) } }) { Text(model.t("report.print")) }
     }
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(top = 8.dp)) {
@@ -236,7 +236,7 @@ private fun PapersTab(model: BooksModel) {
             Picker(model.t("estate.keepIn"), groups, groups.firstOrNull { it.id == group }, { it.name }, Modifier.width(320.dp)) { group = it.id }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextInput(model.t("estate.will"), text(plan.willLocation), Modifier.weight(1f)) { plan = plan.copy(willLocation = clean(it)) }
+            TextInput(model.t("estate.will"), text(plan.willLocation), Modifier.weight(1f).walkTarget("estate.will")) { plan = plan.copy(willLocation = clean(it)) }
             DateInput(model.t("estate.willDate"), text(plan.willDate), Modifier.width(180.dp)) { plan = plan.copy(willDate = clean(it)) }
         }
         TextInput(model.t("estate.powerOfAttorney"), text(plan.powerOfAttorneyLocation)) { plan = plan.copy(powerOfAttorneyLocation = clean(it)) }
@@ -262,12 +262,12 @@ private fun PapersTab(model: BooksModel) {
                 RemoveButton(model.t("common.remove"), Modifier.align(Alignment.CenterVertically)) { contacts.removeAt(i) }
             }
         }
-        TextButton(onClick = { contacts.add(EstateContact(ContactRole.EXECUTOR, "")) }) { Text(model.t("estate.addContact")) }
+        TextButton(onClick = { contacts.add(EstateContact(ContactRole.EXECUTOR, "")) }, modifier = Modifier.walkTarget("estate.addContact")) { Text(model.t("estate.addContact")) }
         // CON-04: contacts from the Contacts screen in an estate role, once the papers are saved.
         record?.let { r -> LinkedContacts(model, LinkTarget.ESTATE, r.memberId, memberIds = setOf(r.memberId), groupId = r.groupId) }
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = {
+            Button(modifier = Modifier.walkTarget("estate.save"), onClick = {
                 val g = group ?: return@Button
                 saved = model.act { books.estate.save(memberId, g, plan.copy(contacts = contacts.filter { it.name.isNotBlank() }.toList())) } != null
             }) { Text(model.t("common.save")) }

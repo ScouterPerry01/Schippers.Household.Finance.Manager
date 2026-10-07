@@ -115,7 +115,7 @@ fun InvestmentsScreen(model: BooksModel) {
                     item { Text(model.t(if (registered) "investments.registered" else "investments.nonRegistered"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)) }
                     items(list, key = { it.account.id }) { h ->
                         val selected = shown == InvView.Of(h.account.id)
-                        Row(Modifier.fillMaxWidth().clickable { view = InvView.Of(h.account.id) }.padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().walkTarget("investments.row").clickable { view = InvView.Of(h.account.id) }.padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
                                 Text(h.account.name, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
                                 Text(
@@ -207,9 +207,9 @@ private fun AccountView(model: BooksModel, h: AccountHoldings, onAction: (InvAct
         Text(model.t("investments.missingPrices", h.missingPrices.joinToString { it.label }), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
     }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Button(onClick = { onAction(InvAction.Edit(null)) }) { Text(model.t("investments.add")) }
-        OutlinedButton(onClick = { onAction(InvAction.Prices) }, enabled = h.holdings.isNotEmpty()) { Text(model.t("investments.updatePrices")) }
-        OutlinedButton(onClick = { chooseBrokerageFile(model)?.let { onAction(InvAction.Import(it)) } }) { Text(model.t("investments.import")) }
+        Button(onClick = { onAction(InvAction.Edit(null)) }, modifier = Modifier.walkTarget("investments.add")) { Text(model.t("investments.add")) }
+        OutlinedButton(onClick = { onAction(InvAction.Prices) }, enabled = h.holdings.isNotEmpty(), modifier = Modifier.walkTarget("investments.updatePrices")) { Text(model.t("investments.updatePrices")) }
+        OutlinedButton(onClick = { chooseBrokerageFile(model)?.let { onAction(InvAction.Import(it)) } }, modifier = Modifier.walkTarget("investments.import")) { Text(model.t("investments.import")) }
         OutlinedButton(onClick = { onAction(InvAction.Statement(null)) }) { Text(model.t("investments.enterStatement")) }
     }
     PrimaryTabRow(selectedTabIndex = tab, modifier = Modifier.padding(top = 12.dp)) {
@@ -497,6 +497,7 @@ private fun TransactionDialog(model: BooksModel, account: Account, existing: Inv
     FormDialog(
         model.t(if (existing == null) "investments.add" else "investments.edit") + " · " + account.name, model.t("common.save"), model.t("common.cancel"),
         onDismiss = onClose,
+        walkId = "investments.txn",
         onSave = {
             // M-26: a change to a transaction whose cash lines are reconciled is asked first, as in the register.
             fun build(): InvestmentTxn {
@@ -533,7 +534,7 @@ private fun TransactionDialog(model: BooksModel, account: Account, existing: Inv
                     model.t(if (kind == InvestmentKind.MERGER) "investments.oldSecurity" else "investments.security"),
                     (if (optional) listOf<Security?>(null) else emptyList()) + securities, security, { it?.let { s -> "${s.label} · ${s.name}" } ?: model.t("common.none") }, Modifier.weight(1f),
                 ) { securityId = it?.id }
-                TextButton(onClick = { onNewSecurity { securityId = it.id } }) { Text(model.t("investments.newSecurity")) }
+                TextButton(onClick = { onNewSecurity { securityId = it.id } }, modifier = Modifier.walkTarget("investments.newSecurity")) { Text(model.t("investments.newSecurity")) }
             }
             if (kind == InvestmentKind.MERGER) {
                 Picker(model.t("investments.newSecurityReceived"), securities, securities.firstOrNull { it.id == otherId }, { "${it.label} · ${it.name}" }) { otherId = it.id }

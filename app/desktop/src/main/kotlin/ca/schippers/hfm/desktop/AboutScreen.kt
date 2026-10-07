@@ -28,7 +28,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import ca.schippers.hfm.data.core.CoreDatabase
+import ca.schippers.hfm.data.ledger.LedgerDatabase
 import ca.schippers.hfm.i18n.Language
+import ca.schippers.hfm.i18n.Manual
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.awt.Desktop
 import java.net.URI
 import java.time.Instant
@@ -38,6 +45,7 @@ import java.time.format.FormatStyle
 
 private const val REPOSITORY = "https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager"
 private const val WEBSITE = "https://www.rann.ca/rann-apps/rann-roost"
+private const val SUPPORT_EMAIL = "info-rann-apps@NorthMail.ca"
 
 /** About, in the household's navigation. */
 @Composable
@@ -53,11 +61,24 @@ fun AboutScreen(state: AppState) {
 @Composable
 fun AboutContent(state: AppState) {
     var notices by remember { mutableStateOf(false) }
+    var copied by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(state.t("about.title"), style = MaterialTheme.typography.titleLarge)
         Text(state.t("about.version", AppVersion.current))
         Text(state.t("about.publisher"), style = MaterialTheme.typography.bodySmall)
+        // HLP-02: what a support request needs, and nothing personal.
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(
+                onClick = {
+                    Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(supportDetails(state)), null)
+                    copied = true
+                },
+                modifier = Modifier.walkTarget("about.copy"),
+            ) { Text(state.t("about.copy")) }
+            if (copied) Text(state.t("about.copied"), style = MaterialTheme.typography.bodySmall)
+        }
         UpdatesCard(state)
+        WhatsNew(state)
         Section(state.t("about.privacy.title")) {
             Text(state.t("about.privacy.body"))
             val policy = if (state.language == Language.FRENCH) "privacy-policy-fr" else "privacy-policy-en"
@@ -73,7 +94,12 @@ fun AboutContent(state: AppState) {
         }
         Section(state.t("about.support.title")) {
             Text(state.t("about.support.body"))
-            LinkButton(state.t("about.issues.link"), "$REPOSITORY/issues")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                LinkButton(state.t("about.issues.link"), "$REPOSITORY/issues")
+                OutlinedButton(onClick = {
+                    runCatching { if (Desktop.isDesktopSupported()) Desktop.getDesktop().mail(URI("mailto:$SUPPORT_EMAIL")) }
+                }) { Text(state.t("about.email.link")) }
+            }
         }
         Section(state.t("about.thirdParty.title")) {
             TextButton(onClick = { notices = !notices }) {
@@ -88,6 +114,66 @@ fun AboutContent(state: AppState) {
         }
     }
 }
+
+/**
+ * HLP-02: what's new, from the release notes bundled with the app (docs/releases), in the app's
+ * language: this version's notes, else the nearest earlier version's, else the latest there is.
+ */
+@Composable
+private fun WhatsNew(state: AppState) {
+    var open by remember { mutableStateOf(false) }
+    val notes = remember(state.language) { releaseNotes(state.language, AppVersion.current) }
+    Section(state.t("about.whatsNew.title")) {
+        if (notes == null) {
+            Text(state.t("about.whatsNew.none"), style = MaterialTheme.typography.bodySmall)
+            return@Section
+        }
+        val (version, text) = notes
+        if (version != AppVersion.current) Text(state.t("about.whatsNew.other", AppVersion.current, version), style = MaterialTheme.typography.bodySmall)
+        TextButton(onClick = { open = !open }) { Text(state.t(if (open) "about.whatsNew.hide" else "about.whatsNew.show")) }
+        if (open) {
+            val chapter = remember(text) { Manual.parse("release", text) }
+            for (node in chapter.flatten()) {
+                Text(node.title, style = if (node.level == 1) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+                for (block in node.blocks) ManualBlock(state, block) { }
+            }
+        }
+    }
+}
+
+/** The release notes to show for [current]: its version and Markdown text, or null when none are bundled. */
+internal fun releaseNotes(language: Language, current: String): Pair<String, String>? {
+    fun read(name: String) = AppVersion::class.java.getResourceAsStream("/hfm/releases/$name")?.use { it.readBytes().decodeToString() }
+    val versions = read("index.txt")?.lines()?.map { it.trim() }?.filter { it.isNotEmpty() }.orEmpty().sortedWith(::compareVersions)
+    val version = versions.lastOrNull { it == current } ?: versions.lastOrNull { compareVersions(it, current) <= 0 } ?: versions.lastOrNull() ?: return null
+    val text = read("$version.${language.tag}.md") ?: read("$version.en.md") ?: return null
+    return version to text
+}
+
+/** Compares versions such as 1.0.0 and 1.10.2 part by part, as numbers. */
+internal fun compareVersions(a: String, b: String): Int {
+    val x = a.split('.', '-').map { it.toIntOrNull() ?: 0 }
+    val y = b.split('.', '-').map { it.toIntOrNull() ?: 0 }
+    for (i in 0 until maxOf(x.size, y.size)) {
+        val c = (x.getOrElse(i) { 0 }).compareTo(y.getOrElse(i) { 0 })
+        if (c != 0) return c
+    }
+    return 0
+}
+
+/**
+ * HLP-02: the details a support request needs: the version, the operating system, Java, the database
+ * versions this copy writes, the text size, colours and language. No names, folders or amounts.
+ */
+internal fun supportDetails(state: AppState): String = listOf(
+    "RANN's Roost ${AppVersion.current}",
+    state.t("support.os") + ": " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + System.getProperty("os.arch") + ")",
+    state.t("support.java") + ": " + System.getProperty("java.runtime.version", System.getProperty("java.version")) + " (" + System.getProperty("java.vendor") + ")",
+    state.t("support.database") + ": " + state.t("support.databaseValue", LedgerDatabase.Schema.version.toString(), CoreDatabase.Schema.version.toString()),
+    state.t("display.textSize") + ": " + (state.textScale * 100).toInt() + " %",
+    state.t("display.theme") + ": " + state.t("display.theme.${state.theme}"),
+    state.t("support.language") + ": " + state.language.tag,
+).joinToString("\n")
 
 @Composable
 private fun Section(title: String, content: @Composable () -> Unit) {

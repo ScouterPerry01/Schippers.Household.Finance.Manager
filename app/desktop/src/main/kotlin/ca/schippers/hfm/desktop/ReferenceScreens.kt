@@ -59,13 +59,15 @@ private fun <T> ListEditor(
     onAdd: () -> Unit,
     selectedKey: String?,
     onSelect: (T) -> Unit,
+    // HLP-03: the Walk-Me id of the Add button.
+    addTarget: String? = null,
     editor: @Composable () -> Unit,
 ) {
     Row(Modifier.fillMaxSize()) {
         Column(Modifier.width(380.dp).fillMaxHeight().padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-                if (addLabel != null) Button(onClick = onAdd) { Text(addLabel) }
+                if (addLabel != null) Button(onClick = onAdd, modifier = addTarget?.let { Modifier.walkTarget(it) } ?: Modifier) { Text(addLabel) }
             }
             LazyColumn(Modifier.weight(1f).padding(top = 8.dp)) {
                 items(items, key = key) { item ->
@@ -411,7 +413,7 @@ fun InstitutionsScreen(model: BooksModel) {
     ListEditor(
         model.t("nav.institutions"), institutions, key = { it.id }, label = { it.name },
         addLabel = model.t("common.add").takeIf { model.books.canEdit }, onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
-        onSelect = { selectedId = it.id; creating = false },
+        onSelect = { selectedId = it.id; creating = false }, addTarget = "institutions.add",
     ) {
         if (creating || selected != null) {
             InstitutionForm(model, if (creating) null else selected) { id -> creating = false; selectedId = id }
@@ -425,7 +427,7 @@ fun InstitutionsScreen(model: BooksModel) {
 private fun InstitutionForm(model: BooksModel, existing: Institution?, onSaved: (String) -> Unit) {
     val editable = model.books.canEdit
     var value by remember(existing) { mutableStateOf(existing ?: Institution("", "")) }
-    TextInput(model.t("institution.name"), value.name, enabled = editable) { value = value.copy(name = it) }
+    TextInput(model.t("institution.name"), value.name, Modifier.fillMaxWidth().walkTarget("institution.name"), enabled = editable) { value = value.copy(name = it) }
     TextInput(model.t("institution.branch"), value.branch.orEmpty(), enabled = editable) { value = value.copy(branch = it) }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         TextInput(model.t("institution.number"), value.institutionNumber.orEmpty(), Modifier.weight(1f), enabled = editable) { value = value.copy(institutionNumber = it) }
@@ -450,7 +452,7 @@ private fun InstitutionForm(model: BooksModel, existing: Institution?, onSaved: 
             if (existing == null) model.books.institutions.create(cleaned).id else model.books.institutions.update(cleaned).let { cleaned.id }
         }
         if (id != null) onSaved(id)
-    }) { Text(model.t("common.save")) }
+    }, modifier = Modifier.walkTarget("institution.save")) { Text(model.t("common.save")) }
 }
 
 // --- Household members (HH-01) -----------------------------------------------------------------
@@ -486,7 +488,7 @@ fun MembersScreen(model: BooksModel) {
                 model.t("nav.members"), members, key = { it.id },
                 label = { listOfNotNull(it.displayName, model.t("memberKind.${it.kind}"), it.province?.let { p -> model.t("province.$p") }).joinToString(" · ") }, dimmed = { it.archived },
                 addLabel = model.t("common.add").takeIf { model.books.users.isAdministrator }, onAdd = { creating = true; selectedId = null }, selectedKey = selectedId,
-                onSelect = { selectedId = it.id; creating = false },
+                onSelect = { selectedId = it.id; creating = false }, addTarget = "members.add",
             ) {
                 if (creating || selected != null) {
                     MemberForm(model, if (creating) null else selected) { id -> creating = false; selectedId = id }
@@ -508,7 +510,7 @@ private fun MemberForm(model: BooksModel, existing: Member?, onSaved: (String) -
     // M-76: only an administrator changes household members; others see the form read only.
     val editable = model.books.users.isAdministrator
 
-    TextInput(model.t("member.name"), name, enabled = editable) { name = it }
+    TextInput(model.t("member.name"), name, Modifier.fillMaxWidth().walkTarget("member.name"), enabled = editable) { name = it }
     Picker(model.t("member.kind"), MemberKind.entries, kind, { model.t("memberKind.$it") }, enabled = editable) { kind = it }
     DateInput(model.t("member.birthDate"), birth, Modifier.fillMaxWidth(), enabled = editable) { birth = it }
     Picker(
@@ -533,7 +535,7 @@ private fun MemberForm(model: BooksModel, existing: Member?, onSaved: (String) -
             }
         }
         if (id != null) onSaved(id)
-    }) { Text(model.t("common.save")) }
+    }, modifier = Modifier.walkTarget("member.save")) { Text(model.t("common.save")) }
 }
 
 // --- Category rules (CAT-02) -------------------------------------------------------------------
