@@ -44,7 +44,10 @@ The year's trips are listed newest first. Each line shows:
 - the date;
 - where from and where to ("Home → Client office"), with **↺** for a round trip;
 - the purpose, the person, the vehicle and the notes;
-- when known, a second line: the times ("16:30 to 18:45 (2 h 15)"), the odometer at each end, what was towed or carried ("towing: Utility trailer (5 x 8)" or "Heavy load"), the passengers, and "from the phone" with the phone's name for a trip driven with the phone;
+- when known, a second line: the times ("16:30 to 18:45 (2 h 15)", or with breaks "15:30 to 17:50 (2 h 20, driving 2 h 05)"), the odometer at each end, what was towed or carried ("towing: Utility trailer (5 x 8)" or "Heavy load"), the passengers, and "from the phone" with the phone's name for a trip driven with the phone;
+- the addresses at each end, when known ("from 48 Maple Street, Ottawa · to …");
+- for a trip with stops, one line per leg: "Office → Client in Kanata: 18 km, Business · arrived at 15:58", then the next leg; and each break, "Break from 17:05 to 17:20 (15 min)";
+- **From the phone:** and a button for each photo or note taken on the way (**Photo**, **Note**, or "Photo at" the stop); a click opens it in [Documents](documents), where a voice note can be played;
 - **Add to medical expenses**, for a **Medical** trip of 40 km or more one way (see [Medical travel](#medical-travel)); once the trip is added, it reads **Added to medical expenses** and can no longer be clicked;
 - the distance, doubled for a round trip.
 
@@ -77,22 +80,28 @@ The same dialog adds a trip (**Add a trip**) or changes one (**Edit the trip**).
 - **Province or state**: two letters, such as ON, QC or NY. Empty: the province of the place the trip started from, otherwise the person's (or the household's).
 - **Notes**: anything to remember, such as the client or the reason for the visit.
 - "from the phone": for a trip driven with the phone, the phone it came from.
+- For a trip with stops or breaks from the phone, a line says how many there are: they are kept as they are when you save, and each stop's odometer must stay between the start and the arrival ("Each stop's odometer must be higher than the one before it and lower than at arrival.").
 - When **Medical** is chosen, a reminder explains that a medical trip counts as a medical expense when the care is 40 km or more away, one way, and not available closer to home. The 40 km is a figure of [Rates and rules](rates-rules) (Medical travel: minimum distance), read for the trip's date.
 - **Delete**: shown when changing a trip. Asks "Delete the trip of date to destination?" and, once confirmed, deletes it. It cannot be undone. A medical expense made from the trip stays on the Medical claims screen.
 
 ## Trips from the phone {#from-phone}
-@index: GPS; location; trip on the phone; Start; Arrive
+@index: GPS; location; trip on the phone; Start; Arrive; stops; legs; multi-stop trip; breaks; trip photos
 
-On the phone, **Trip** on the Capture tab starts a trip and, later, ends it (see [RANN's Roost Mobile](phone-app#trip-form)). The phone takes one location fix when you start and one when you arrive, never in between, and names each end after the nearest saved place within its radius. When you arrive, it sends the trip like a capture; the computer adds it to the trip log with:
+On the phone, **Trip** on the Capture tab starts a trip and, later, ends it (see [RANN's Roost Mobile](phone-app#trip-form)). The phone takes one location fix when you start, at each stop and break, and when you arrive, never in between, and names each place after the nearest saved place within its radius. When you arrive, it sends the trip like a capture; the computer adds it to the trip log with:
 
 - the date and times, the vehicle, the driver and the passengers;
-- the places at both ends, or the name you typed, or the coordinates when the place was not named;
+- the places at both ends, or the name you typed, or the address or coordinates when the place was not named; the address and the position of each end;
+- each stop, with its time, odometer, place, address, position and the purpose of the leg that ends there, and each rest break with its times and position; breaks are left out of the driving time;
 - the odometer at both ends, the distance being their difference;
 - the purpose you confirmed, what was towed or carried, and the notes;
 - the province of the place it started from (or the household's);
 - the phone it came from.
 
-The trip goes to the account group the phone sends to (see [Phones](phones)), its odometers become readings of the vehicle, and places saved on the phone are added to the places. A trip received twice is kept once. A trip whose arrival odometer is not above the start is refused, and the phone shows why.
+The trip goes to the account group the phone sends to (see [Phones](phones)), its odometers become readings of the vehicle, and places saved on the phone (stations among them) are added to the places, with their address. A trip received twice is kept once. A trip whose arrival odometer is not above the start, or whose stops' odometers are out of order, is refused, and the phone shows why.
+
+Photos and notes taken on the way arrive first, as documents. They wait in the documents to review until the trip comes, and are then filed with it; a photo or note taken after arrival is filed at once. A trip discarded on the phone leaves them in the documents to review.
+
+A trip with stops is counted leg by leg: from the start to the first stop, from one stop to the next, and from the last stop to the arrival, each with its distance from the odometers and its own purpose (the last leg has the trip's). The person's totals, the vehicle's work kilometres and the [logbook](#logbook) follow the legs, so a business call on the way home counts as business and the rest as personal.
 
 ## Places {#places}
 @index: saved places; location; home; work; client; geofence; radius
@@ -101,13 +110,13 @@ The trip goes to the account group the phone sends to (see [Phones](phones)), it
 
 **Places** lists the saved places: name, kind, address, coordinates and radius, province or state, and "saved on the phone" for a place made there. Click one, or **Edit**, to change it. **Add a place** adds one. **Show archived places** includes the ones archived.
 
-The phone receives the places of every account group you can see, matches its location fix at the start and end of a trip to them, and lets you add the place where you are or rename one. Places stay on this computer and your phones, inside the household's encrypted files; they are never sent to a map service, and the app never looks up an address.
+The phone receives the places of every account group you can see, matches its location fix at the start, stops and end of a trip to them, and lets you add the place where you are, add a station, or rename one. Places stay on this computer and your phones, inside the household's encrypted files; they are never sent to a map service. On the phone, two lookups can be turned on: an address looked up from a position through Android's geocoder (Google), and stations nearby from OpenStreetMap (see [RANN's Roost Mobile](phone-app#trip-lookups)).
 
 ### Add or edit a place {#place-dialog}
 
 - **Name**: such as "Home", "Office (Bank Street)" or "Kingston Health Sciences Centre". Required. It is what the trip log and the phone show.
-- **Kind of place**: **Home**, **Work**, **Client**, **Store**, **Fuel or charging**, **Garage**, **Medical** or **Other**. On the phone, the purpose of a trip is suggested from it: to or from a **Client** is **Business**; to a **Medical** place, or home from one, is **Medical**; other trips in a commercial vehicle are **Business**, and everything else is **Personal**. The drive between home and your usual workplace is personal for the CRA.
-- **Address**: for your reference.
+- **Kind of place**: **Home**, **Work**, **Client**, **Store**, **Fuel station**, **EV charging**, **Garage**, **Medical** or **Other**. The phone's fuel form lists fuel stations and EV chargers first. On the phone, the purpose of a trip is suggested from it: to or from a **Client** is **Business**; to a **Medical** place, or home from one, is **Medical**; other trips in a commercial vehicle are **Business**, and everything else is **Personal**. The drive between home and your usual workplace is personal for the CRA.
+- **Address**: for your reference; a place saved on the phone may bring its address, typed or looked up there.
 - **Latitude** and **Longitude**: "The latitude and longitude come from the phone when a place is saved there. To enter them here, copy them from a map app you trust, such as 45.42153 and -75.69719. Without them, the phone cannot recognize the place." Both or neither.
 - **Radius (m)**: how close a location fix must be to count as this place, from 10 to 5,000 metres; 150 by default. Use a larger radius for a big site such as a hospital or a cottage lot.
 - **Province or state**: two letters. Trips starting here count in that province or state.
@@ -127,7 +136,7 @@ The phone receives the places of every account group you can see, matches its lo
 - A line with the kilometres driven in the year from the odometer, the work kilometres and the work share, as on the vehicle's card.
 - **By province or state**: the year's kilometres with this vehicle in each province or state.
 - **CSV**, **Excel** and **PDF**, above the table: ask where to save the file, in that format. The file has the table and, under it, the year's distance and work share. **Print** prints it; **Hide table** folds the table away.
-- The table: **Date**, **From**, **To**, **Purpose**, **Odometer at start**, **Odometer at arrival**, **Km**, **Driver** and **Province or state**, oldest first.
+- The table: **Date**, **From**, **To**, **Purpose**, **Odometer at start**, **Odometer at arrival**, **Km**, **Driver** and **Province or state**, oldest first. A trip with stops gives one line per leg, each with its destination, purpose, odometers and kilometres: the CRA asks for the destination and purpose of each business trip, and a call on the way is one.
 
 > Note: The CRA asks that a logbook show, for each business trip, the date, the destination, the purpose and the kilometres, and the odometer at the start and end of the year. Trips driven with the phone give all of these. Keep the files with your tax records.
 

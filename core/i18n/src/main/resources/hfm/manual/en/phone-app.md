@@ -273,11 +273,11 @@ Lists each child's chores from the [Family money](family#chores) screen, with wh
 - **Date**, **Time (h:mm)** and **Activity**. See [Volunteer hours](volunteer).
 ## Trip {#trip-form}
 
-@index: trip; mileage log; logbook; Start; Arrive; towing; trailer; passengers
+@index: trip; mileage log; logbook; Start; Arrive; towing; trailer; passengers; stops; multi-stop trip
 
-**Trip** records a trip from start to arrival: the vehicle, the driver, the odometer and the place at each end, the times, what you towed or carried, the passengers and the purpose. The distance is the difference between the two odometer readings, the way the CRA counts it. The trip goes to the [Trip log](trips#from-phone) on the computer, and its odometers to the vehicle.
+**Trip** records a trip from start to arrival: the vehicle, the driver, the odometer, the place, its address and position at each end, the times, what you towed or carried, the passengers and the purpose. On the way you can stop at several places, take rest breaks, and add notes and photos. The distance is the difference between the odometer readings, the way the CRA counts it. The trip goes to the [Trip log](trips#from-phone) on the computer, and its odometers to the vehicle.
 
-The trip under way is kept on the phone, encrypted, until you arrive: closing the app or restarting the phone does not lose it.
+The trip under way is kept on the phone, encrypted, until you arrive: closing the app or restarting the phone does not lose it. A trip to one place stays as quick as ever: **Start**, then **Arrive**.
 
 ### Start a trip {#trip-start}
 
@@ -290,8 +290,10 @@ The trip under way is kept on the phone, encrypted, until you arrive: closing th
 - **Where you leave from**: see [Where you are](#trip-where).
 - **Towing or load**: **Normal** (the default), **Towing a trailer** or **Heavy load**. Towing and heavy loads are measured apart in the vehicle's fuel consumption.
 - **Trailer**: when towing, the trailers from your computer (assets of the kind trailer).
+- **Where you are going**: optional; you can change or cancel it on the way. Tap **Home** (your saved place of the kind Home) or **Back to** the place the last trip came from, choose **A saved place**, or type an address in **Or an address**. The trip under way shows "Going to …", the stop and arrival forms offer it, and it is dropped once you stop there. It stays on the phone; only where you actually stop and arrive is sent.
 - **Passengers**: a box for each person in the household other than the driver, and **Others (names, separated by commas)**.
 - **Places**: opens [Places](#trip-places).
+- **Stations nearby** (or **Stations**): opens [Stations nearby](#stations).
 - **Cancel**: closes without starting.
 - **Start**: available once a vehicle and an odometer reading are entered. The trip is kept on the phone and the Capture tab shows it under way. Nothing is sent yet.
 
@@ -307,28 +309,66 @@ When the app is allowed to use the location, the form takes one fix as it opens 
 
 - **Place**: the saved places, the nearest first; the matched one is chosen. Choose another, or "(not a saved place)".
 - **Name this place (optional)**: with no saved place chosen, a name for where you are, such as "Cottage".
-- **Kind of place**: once a name is typed: **Home**, **Work**, **Client**, **Store**, **Fuel or charging**, **Garage**, **Medical** or **Other**.
+- **Kind of place**: once a name is typed: **Home**, **Work**, **Client**, **Store**, **Fuel station**, **EV charging**, **Garage**, **Medical** or **Other**.
 - **Save as a place**: once a name is typed and there is a fix; ticked by default. The place is saved with the fix and a radius of 150 m, kept on the phone and sent to the computer, so the next trip recognizes it. Unticked, the trip keeps the name only.
+- **Address (optional)**: the saved place's address, filled in when one is chosen; or type one. It is kept with the trip and, for a new place, with the place.
+- **Look up the address**: shown when there is a fix and **Look up addresses** is on in [Settings](#trip-lookups). It asks Android's geocoder, a Google service that receives the fix's position, for the address there, and fills it in ("Looking up the address…"). When nothing comes back: "No address found for this position: type it if you want one."
 - **Use my location**: shown until there is a fix. The first time, Android asks whether to allow the location (precise or approximate, only while using the app); see [Location](#location).
 - **Find where I am again**: takes another fix, for example after moving to the other end of a parking lot.
 
-With no saved place and no name, the trip keeps the coordinates.
+With no saved place and no name, the trip keeps the address, else the coordinates. Each end of the trip, and each stop, keeps the position of its fix, which goes to your computer with the trip.
+
+### Trip under way {#trip-under-way}
+
+@index: stop; break; rest break; destination
+
+With a trip under way, **Trip** opens **Trip under way**:
+
+- A card recalls the trip: the vehicle, when and where it left, the odometer at the start and the address, the towing or load, the passengers, then each stop ("Stop at 10:40 a.m.: Client in Kanata (22 km)") and break ("Break from 9:26 a.m. to 9:41 a.m."), and how many notes and photos were sent.
+- "Going to …" or "No destination planned", with **Plan** or **Change** (home, back to a stop, a saved place or an address) and **Cancel it**.
+- **Stop here**: opens [Stop here](#trip-stop).
+- **Break**: one tap starts a rest break, with its time and, when the app may use the location, where you are. The screen then shows "On a break since …" and **Resume the trip**, which ends it. Breaks are left out of the driving time; a break still running when you arrive ends then.
+- **Arrive**: opens [Arrive](#trip-arrive).
+- **Add a note or photo**: opens [Notes and photos](#trip-attach).
+- **Places** and **Stations nearby**: open [Places](#trip-places) and [Stations nearby](#stations).
+- **Later**: back to the Capture tab; the trip stays under way.
+- **Discard the trip**: asks "Discard this trip? Nothing about it is sent to the computer." A place saved on the way stays saved. Notes and photos already sent wait on the computer in the documents to review, and the question says so.
+
+### Stop here {#trip-stop}
+
+"The stop is kept with its time, odometer and place, and the trip goes on to the next one. Arrive ends the trip."
+
+- **Odometer here (km)**: required; it must be above the last reading of the trip (the start, or the previous stop). "Distance: 22 km" shows the leg.
+- **Planned: …**: when a destination is planned, a tap chooses it as the place.
+- **Where you stopped**: as at the start; see [Where you are](#trip-where).
+- **Purpose of this leg**: the purpose of the drive that ends here, suggested from the places as on arrival. On the computer each leg counts with its own purpose, so a business stop on a personal trip counts as business.
+- **Note**: anything to remember about the stop.
+- **Save the stop**: keeps it and goes back to the trip; stopping at the planned destination drops the plan.
+
+### Notes and photos {#trip-attach}
+
+@index: trip photo; voice note on a trip; dictate
+
+"Photos taken with the camera and a note typed, dictated or recorded. They are sent now and kept with the trip on the computer."
+
+- **At the stop: …**: shown after a stop; ticked, the note and photos are kept with that stop, otherwise with the trip.
+- **Take a photo**: opens the phone's camera; each photo taken is counted ("Photos taken: 2"), and **Delete** drops the last one.
+- **Note**, **Dictate the note** and **Record a voice note**: as on the [capture form](#voice-note).
+- **Save**: each photo goes as a document of its own, the note and the voice note with the first (or alone when there is no photo). They wait in the queue and are sent at once if possible. The computer keeps them with the trip once the trip arrives; until then they wait in the documents to review.
 
 ### Arrive {#trip-arrive}
 
 ![Arriving: the distance and the suggested purpose](images/phone-trip-arrive.png)
 
-With a trip under way, **Trip** opens **Arrive**:
+**Arrive** ends the trip:
 
-- A card recalls the trip: the vehicle, when and where it left, the odometer at the start, the towing or load, and the passengers.
-- **Odometer at arrival (km)**: required. Once typed, "Distance: 178 km" shows, or "Enter more than 61,500 km, the odometer at the start." when it is not above it. A trip of 10,000 km or more is refused.
+- **Odometer at arrival (km)**: required. Once typed, "Distance: 178 km" (from the start) shows, or "Enter more than 61,500 km, the last odometer reading of this trip." when it is not above the start or the last stop. A trip of 10,000 km or more is refused.
+- **Back home or to a stop**: quick choices: **Home**, **Back to** the last stop (or to where the trip started), and **Planned: …** when a destination is planned. A tap chooses that place; or use **Where you arrived** below for a new place.
 - **Where you arrived**: as at the start; see [Where you are](#trip-where).
-- **Purpose**: **Business**, **Employment**, **Medical** or **Personal**. "Suggested from the places; change it if it is not right.": to or from a **Client** is **Business**; to a **Medical** place, or home from one, is **Medical**; other trips in a vehicle whose use is commercial are **Business**; everything else is **Personal**, including the drive between home and work, which the CRA counts as personal.
+- **Purpose** (**Purpose of this leg** after stops): **Business**, **Employment**, **Medical** or **Personal**. "Suggested from the places; change it if it is not right.": to or from a **Client** is **Business**; to a **Medical** place, or home from one, is **Medical**; other trips in a vehicle whose use is commercial are **Business**; everything else is **Personal**, including the drive between home and work, which the CRA counts as personal.
 - **Note**: anything to remember, such as the client's name.
-- **Later**: back to the Capture tab; the trip stays under way.
-- **Arrive and send**: available with a valid odometer. The trip joins the queue, labelled with the vehicle, the places and the distance, and is sent at once if possible.
-- **Places**: opens [Places](#trip-places).
-- **Discard the trip**: asks "Discard this trip? Nothing about it is sent to the computer." A place saved at the start stays saved.
+- **Back**: back to the trip under way.
+- **Arrive and send**: available with a valid odometer. The trip, with its stops and breaks, joins the queue, labelled with the vehicle, the places and the distance, and is sent at once if possible.
 
 ### Places {#trip-places}
 
@@ -345,9 +385,9 @@ Places come from the computer's [Places](trips#places) and from those saved on t
 
 @index: location permission; GPS; privacy; ACCESS_FINE_LOCATION
 
-The app asks for permission only when you tap **Use my location**, **Add the place where I am** or **Find the nearest saved station**, never when it starts. Once allowed, it takes one fix as the Start and Arrive forms open, and when you tap those buttons. Android offers **Precise** or **Approximate**, and **While using the app** or **Only this time**: the app never needs more. With approximate location, matches are less sure; use a larger radius on the computer or choose the place yourself.
+The app asks for permission only when you tap **Use my location**, **Add the place where I am** or **Find the nearest saved station**, or open **Stations nearby** or **Add a station by hand**, never when it starts. Once allowed, it takes one fix as the Start, Stop here and Arrive forms open, when a break starts, and when you tap those buttons. Android offers **Precise** or **Approximate**, and **While using the app** or **Only this time**: the app never needs more. With approximate location, matches are less sure; use a larger radius on the computer or choose the place yourself.
 
-The app uses Android's own location service (no Google service), takes one fix at a time and stops; it never follows the phone in the background. The fixes stay on the phone: only the place's name, or the coordinates of an unnamed place or of a place you save, go to your computer with the trip. You can refuse or withdraw the permission in Android's settings at any time; trips then work by choosing places or typing names.
+The app uses Android's own location service (no Google service), takes one fix at a time and stops; it never follows the phone in the background. The fixes go only to your computer, with the trip, its stops and breaks and the places you save. Two lookups can use them, both off until you turn them on in [Settings](#trip-lookups): **Look up the address** sends a fix to Google through Android's geocoder, and **Stations nearby** sends a rough position, about a kilometre, to OpenStreetMap; each only when you tap it. You can refuse or withdraw the permission in Android's settings at any time; trips then work by choosing places or typing names.
 
 ## Fuel or charge {#fuel-form}
 
@@ -363,12 +403,34 @@ The app uses Android's own location service (no Google service), takes one fix a
 - **Cost**: what you paid, such as 68.55.
 - **Full tank** (or **Charged to full**): ticked by default; untick it for a partial fill. Consumption is measured from one full tank to the next.
 - **Where charged**: for a charge, **At home** or **Public charger**.
-- **Station**: a saved place, stations first, or "(none)".
+- **Station**: a saved place, fuel stations and EV chargers first, or "(none)". A station picked in **Stations nearby** and not saved shows here by its name.
 - **Find the nearest saved station**: takes one location fix and chooses the saved place you are at, if any.
+- **Stations nearby**: opens [Stations nearby](#stations) to pick one; **Use for this fill-up** fills in **Station** (a charger also sets **Where charged** to **Public charger**).
 - **Date (YYYY-MM-DD)**: today by default.
 - **Save**: available once a vehicle and a quantity are entered. The entry joins the queue and is sent at once if possible.
 
 On the computer, it goes straight to the vehicle's [Fuel tab](vehicles#fuel-tab), with "from the phone", without review. No payment is entered, and the line says "no payment entered yet": to enter it, click **Edit** on that line and tick **Also enter the payment in an account** (see [Also enter the payment](vehicles#payment)). If the payment reaches the books another way, such as a card statement import, leave it unlinked to the vehicle, or the fill-up's cost counts twice in the vehicle's **Costs** tab.
+
+## Stations nearby {#stations}
+
+@index: gas station; fuel station; EV charger; charging station; OpenStreetMap; Overpass
+
+From the Capture tab's **Stations nearby**, from a trip or from the fuel form. It lists the fuel stations and EV chargers around you, closest first, from OpenStreetMap, the free map made by volunteers (no account).
+
+- While the option is off, the screen says what it would send: "To find fuel stations and EV chargers around you, the app asks OpenStreetMap, sending a rough position (about a kilometre), only when you open this list." **Turn on stations nearby** turns it on, as in [Settings](#trip-lookups).
+- Once on, the app takes one location fix ("Finding where you are…"), then asks OpenStreetMap ("Asking OpenStreetMap…") for those within about 5 km, or 15 km when fewer than three are that close. Only the position rounded to two decimals is sent; the distances are worked out on the phone.
+- Each station shows its name (or brand), the distance, its kind (**Fuel station** or **EV charging**), its brand and its address when OpenStreetMap has them. Tap one to choose it: **Save as a place** keeps it as a saved place, with its address and position, sent to your computer ("Saved as a place"); from the fuel form, **Use for this fill-up** fills in the form, with **Save as a place** ticked to keep it too.
+- "No stations found within 15 km.", "No location: …" or "OpenStreetMap is busy or could not be reached. Search again in a moment." when nothing came; **Search again** asks again.
+- "© OpenStreetMap contributors": where the data comes from, as its licence asks.
+- **Add a station by hand**: see below. **Back** closes the list.
+
+### Add a station by hand {#add-station}
+
+- **Name of the station**: required.
+- **Kind of place**: **Fuel station** or **EV charging**.
+- **Address (optional)**: typed, or filled in from the position when **Look up addresses** is on.
+- "Position: …": the fix taken as the form opens; **Find where I am again** takes another. Without one, the station is saved without a position, and cannot be recognized by location.
+- **Save**: keeps it as a saved place, sent to the computer; from the fuel form, it also becomes the fill-up's station.
 
 ## The Sent tab {#sent-tab}
 
@@ -594,6 +656,17 @@ Shown when paired. Brings the calendars this phone already shows (Google, Outloo
 - **Done** goes back to Settings.
 
 Only the ticked calendars are read, for the days chosen: each item's title, place, start and end, never its description, guests or reminders. They go only to your paired computer, encrypted like your captures, over Wi-Fi, through the transfer folder or in a shared file. A calendar is sent whole when it changed since the last transfer; nothing is written to your calendars. If the computer could not store one, the reason shows under the title and the phone tries again at the next transfer. See [Calendars from phones and files](calendar-sync). The ticked calendars also show in [the agenda](#agenda-phone-calendars), read on the phone only.
+
+### Trips: addresses and stations {#trip-lookups}
+
+@index: geocoder; address lookup; Google; OpenStreetMap; privacy
+
+Two lookups for trips, both off by default:
+
+- **Look up addresses**: "When on, Look up the address sends the position of that fix to Google, through Android's geocoder, and fills in the address it returns. Only when you tap it; otherwise type addresses or use saved places." On a phone without Google's services, "This phone has no address lookup."
+- **Stations nearby**: "When on, Stations nearby sends a rough position (about a kilometre) to OpenStreetMap, only when you ask, to find fuel stations and EV chargers around you. No account; nothing else is sent."
+
+Turning one off stops it at once; nothing was kept by the app at Google or OpenStreetMap.
 
 ### Change PIN {#change-pin}
 

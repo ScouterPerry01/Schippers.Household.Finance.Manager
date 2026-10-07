@@ -53,10 +53,32 @@ fun main() {
     // An hour by default; -Pminutes=N keeps the sample household listening longer, to try the phone at leisure.
     val end = System.currentTimeMillis() + (System.getProperty("hfm.phone.minutes")?.toLongOrNull() ?: 60L) * 60_000L
     while (!stop.exists() && System.currentTimeMillis() < end) Thread.sleep(500)
+    report(model)
     model.syncServer.close()
     model.session.close()
     stop.delete()
     invitationFile.delete()
     println("Stopped.")
     System.exit(0)
+}
+
+/**
+ * What the phone sent, printed when the household stops, to check a run on the emulator without a
+ * window: the trips from the phone with their legs, breaks, addresses and documents, the places saved
+ * there, the fill-ups, and the documents waiting in the inbox.
+ */
+private fun report(model: BooksModel) {
+    val books = model.books
+    val year = java.time.LocalDate.now().year
+    for (t in books.trips.list(year).filter { it.deviceId != null }) {
+        println("Trip ${t.date} ${t.startAt?.time}-${t.endAt?.time} ${t.origin} -> ${t.destination}, ${t.km} km, ${t.purpose}, driving ${t.drivingMinutes} min, breaks ${t.breakMinutes} min")
+        println("  from ${t.startAddress} (${t.startLatitude}, ${t.startLongitude}) to ${t.endAddress} (${t.endLatitude}, ${t.endLongitude})")
+        for (leg in books.trips.legs(t)) println("  leg ${leg.from} -> ${leg.to}: ${leg.km} km, ${leg.purpose}, odometer ${leg.startOdometer}-${leg.endOdometer}")
+        for (s in t.stops) println("  ${s.kind} ${s.at.time}-${s.endAt?.time} ${s.place} ${s.address} (${s.latitude}, ${s.longitude}) ${s.purpose}")
+        val stops = books.trips.attachmentStops(t)
+        for (d in books.trips.attachments(t)) println("  document ${d.fileName} ${d.mimeType} ${d.status} stop=${stops[d.id]} note=${d.notes} voice=${books.documents.voiceNotes(d.id).size}")
+    }
+    for (p in books.places.list().filter { it.deviceId != null }) println("Place ${p.name} ${p.category} ${p.address} (${p.latitude}, ${p.longitude})")
+    for (v in books.vehicles.list()) for (f in books.vehicles.fuel(v.id).filter { it.deviceId != null }) println("Fuel ${v.name} ${f.date} ${f.quantity} ${f.station} place=${f.placeId}")
+    for (d in books.documents.inbox()) println("Inbox ${d.fileName} ${d.mimeType} links=${d.links}")
 }

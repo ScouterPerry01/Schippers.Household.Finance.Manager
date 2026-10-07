@@ -44,7 +44,10 @@ Les déplacements de l’année sont listés du plus récent au plus ancien. Cha
 - la date ;
 - le point de départ et la destination (« Maison → Bureau du client »), avec **↺** pour un aller-retour ;
 - le motif, la personne, le véhicule et les notes ;
-- quand elles sont connues, une deuxième ligne : les heures (« 16:30 à 18:45 (2 h 15) »), l’odomètre à chaque bout, ce qui a été remorqué ou transporté (« remorquage : Remorque utilitaire 5 x 8 » ou « Charge lourde »), les passagers, et « du téléphone » avec le nom du téléphone pour un déplacement fait avec le téléphone ;
+- quand elles sont connues, une deuxième ligne : les heures (« 16:30 à 18:45 (2 h 15) », ou avec des pauses « 15:30 à 17:50 (2 h 20, dont 2 h 05 de conduite) »), l’odomètre à chaque bout, ce qui a été remorqué ou transporté (« remorquage : Remorque utilitaire 5 x 8 » ou « Charge lourde »), les passagers, et « du téléphone » avec le nom du téléphone pour un déplacement fait avec le téléphone ;
+- les adresses à chaque bout, quand elles sont connues (« de 118, rue des Érables, Québec · à … ») ;
+- pour un déplacement avec des arrêts, une ligne par trajet : « Bureau → Client à Lévis : 18 km, Affaires · arrivé à 15:58 », puis le trajet suivant ; et chaque pause, « Pause de 17:05 à 17:20 (15 min) » ;
+- **Du téléphone :** et un bouton pour chaque photo ou note prise en route (**Photo**, **Note**, ou « Photo à » l’arrêt) ; un clic l’ouvre dans [Documents](documents), où une note vocale peut être écoutée ;
 - **Ajouter aux frais médicaux**, pour un déplacement **Médical** de 40 km ou plus aller simple (voir [Déplacements pour des soins](#medical-travel)) ; une fois le déplacement ajouté, le bouton devient **Ajouté aux frais médicaux** et ne se clique plus ;
 - la distance, doublée pour un aller-retour.
 
@@ -77,22 +80,28 @@ La même boîte ajoute un déplacement (**Ajouter un déplacement**) ou le modif
 - **Province ou État** : deux lettres, comme QC, ON ou NY. Vide : la province du lieu de départ, sinon celle de la personne (ou du ménage).
 - **Notes** : ce qu’il faut retenir, comme le client ou le motif de la visite.
 - « du téléphone » : pour un déplacement fait avec le téléphone, le téléphone d’où il vient.
+- Pour un déplacement avec des arrêts ou des pauses venus du téléphone, une ligne dit combien il y en a : ils sont gardés tels quels à l’enregistrement, et l’odomètre de chaque arrêt doit rester entre le départ et l’arrivée (« L’odomètre de chaque arrêt doit dépasser celui d’avant et rester sous celui de l’arrivée. »).
 - Quand **Médical** est choisi, un rappel explique qu’un déplacement médical compte comme dépense médicale quand les soins sont à 40 km ou plus, aller simple, et ne sont pas offerts plus près. Les 40 km sont un chiffre de [Taux et règles](rates-rules) (Déplacement médical : distance minimale), lu pour la date du déplacement.
 - **Supprimer** : affiché en modification. Demande « Supprimer le déplacement du date vers destination? » et, une fois confirmé, le supprime. C’est sans retour. Une dépense médicale faite à partir du déplacement reste dans l’écran Réclamations médicales.
 
 ## Les déplacements du téléphone {#from-phone}
-@index: GPS; position; déplacement sur le téléphone; Partir; Arrivée
+@index: GPS; position; déplacement sur le téléphone; Partir; Arrivée; arrêts; trajets; déplacement à plusieurs arrêts; pauses; photos de déplacement
 
-Sur le téléphone, **Déplacement** dans l’onglet Capturer commence un déplacement et, plus tard, le termine (voir [RANN’s Roost Mobile](phone-app#trip-form)). Le téléphone prend une seule position au départ et une à l’arrivée, jamais entre les deux, et nomme chaque bout d’après le lieu enregistré le plus proche dans son rayon. À l’arrivée, il envoie le déplacement comme une saisie ; l’ordinateur l’ajoute aux déplacements avec :
+Sur le téléphone, **Déplacement** dans l’onglet Capturer commence un déplacement et, plus tard, le termine (voir [RANN’s Roost Mobile](phone-app#trip-form)). Le téléphone prend une seule position au départ, à chaque arrêt et pause, et à l’arrivée, jamais entre les deux, et nomme chaque endroit d’après le lieu enregistré le plus proche dans son rayon. À l’arrivée, il envoie le déplacement comme une saisie ; l’ordinateur l’ajoute aux déplacements avec :
 
 - la date et les heures, le véhicule, le conducteur et les passagers ;
-- les lieux aux deux bouts, ou le nom tapé, ou les coordonnées quand le lieu n’a pas été nommé ;
+- les lieux aux deux bouts, ou le nom tapé, ou l’adresse ou les coordonnées quand le lieu n’a pas été nommé ; l’adresse et la position de chaque bout ;
+- chaque arrêt, avec son heure, son odomètre, son lieu, son adresse, sa position et le motif du trajet qui y finit, et chaque pause avec ses heures et sa position ; les pauses sont exclues du temps de conduite ;
 - l’odomètre aux deux bouts, la distance étant leur différence ;
 - le motif confirmé, ce qui a été remorqué ou transporté, et les notes ;
 - la province du lieu de départ (ou celle du ménage) ;
 - le téléphone d’où il vient.
 
-Le déplacement va dans le groupe de comptes où le téléphone envoie (voir [Téléphones](phones)), ses lectures d’odomètre deviennent celles du véhicule, et les lieux enregistrés sur le téléphone s’ajoutent aux lieux. Un déplacement reçu deux fois est gardé une fois. Un déplacement dont l’odomètre à l’arrivée ne dépasse pas celui du départ est refusé, et le téléphone dit pourquoi.
+Le déplacement va dans le groupe de comptes où le téléphone envoie (voir [Téléphones](phones)), ses lectures d’odomètre deviennent celles du véhicule, et les lieux enregistrés sur le téléphone (dont les stations) s’ajoutent aux lieux, avec leur adresse. Un déplacement reçu deux fois est gardé une fois. Un déplacement dont l’odomètre à l’arrivée ne dépasse pas celui du départ, ou dont les odomètres des arrêts sont dans le désordre, est refusé, et le téléphone dit pourquoi.
+
+Les photos et notes prises en route arrivent d’abord, comme documents. Elles attendent dans les documents à revoir jusqu’à l’arrivée du déplacement, puis sont classées avec lui ; une photo ou une note prise après l’arrivée est classée aussitôt. Un déplacement abandonné sur le téléphone les laisse dans les documents à revoir.
+
+Un déplacement avec des arrêts compte trajet par trajet : du départ au premier arrêt, d’un arrêt au suivant, et du dernier arrêt à l’arrivée, chacun avec sa distance tirée de l’odomètre et son propre motif (le dernier trajet a celui du déplacement). Les totaux de la personne, les kilomètres de travail du véhicule et le [carnet de route](#logbook) suivent les trajets : un appel d’affaires sur le chemin du retour compte comme affaires, et le reste comme personnel.
 
 ## Lieux {#places}
 @index: lieux enregistrés; position; domicile; travail; client; rayon
@@ -101,13 +110,13 @@ Le déplacement va dans le groupe de comptes où le téléphone envoie (voir [T�
 
 **Lieux** liste les lieux enregistrés : nom, type, adresse, coordonnées et rayon, province ou État, et « enregistré sur le téléphone » pour un lieu fait là. Cliquez sur un lieu, ou **Modifier**, pour le changer. **Ajouter un lieu** en ajoute un. **Afficher les lieux archivés** inclut ceux qui sont archivés.
 
-Le téléphone reçoit les lieux de chaque groupe de comptes que vous voyez, leur compare sa position au départ et à l’arrivée d’un déplacement, et vous laisse ajouter le lieu où vous êtes ou en renommer un. Les lieux restent sur cet ordinateur et vos téléphones, dans les fichiers chiffrés du ménage ; ils ne sont jamais envoyés à un service de cartes, et l’application ne cherche jamais d’adresse.
+Le téléphone reçoit les lieux de chaque groupe de comptes que vous voyez, leur compare sa position au départ, aux arrêts et à l’arrivée d’un déplacement, et vous laisse ajouter le lieu où vous êtes, ajouter une station ou en renommer un. Les lieux restent sur cet ordinateur et vos téléphones, dans les fichiers chiffrés du ménage ; ils ne sont jamais envoyés à un service de cartes. Sur le téléphone, deux recherches peuvent être activées : une adresse trouvée d’après une position par le géocodeur d’Android (Google), et les stations à proximité d’après OpenStreetMap (voir [RANN’s Roost Mobile](phone-app#trip-lookups)).
 
 ### Ajouter ou modifier un lieu {#place-dialog}
 
 - **Nom** : par exemple « Maison », « Bureau (boul. Laurier) » ou « Institut de cardiologie de Montréal ». Obligatoire. C’est ce que montrent les déplacements et le téléphone.
-- **Type de lieu** : **Domicile**, **Travail**, **Client**, **Commerce**, **Carburant ou recharge**, **Garage**, **Médical** ou **Autre**. Sur le téléphone, le motif d’un déplacement en est tiré : vers ou depuis un **Client**, c’est **Affaires** ; vers un lieu **Médical**, ou le retour à la maison depuis un tel lieu, c’est **Médical** ; les autres déplacements dans un véhicule commercial sont **Affaires**, et tout le reste est **Personnel**. Le trajet entre la maison et votre lieu de travail habituel est personnel pour l’ARC.
-- **Adresse** : pour mémoire.
+- **Type de lieu** : **Domicile**, **Travail**, **Client**, **Commerce**, **Station-service**, **Borne de recharge**, **Garage**, **Médical** ou **Autre**. Le formulaire de plein du téléphone montre d’abord les stations-service et les bornes. Sur le téléphone, le motif d’un déplacement en est tiré : vers ou depuis un **Client**, c’est **Affaires** ; vers un lieu **Médical**, ou le retour à la maison depuis un tel lieu, c’est **Médical** ; les autres déplacements dans un véhicule commercial sont **Affaires**, et tout le reste est **Personnel**. Le trajet entre la maison et votre lieu de travail habituel est personnel pour l’ARC.
+- **Adresse** : pour mémoire ; un lieu enregistré sur le téléphone peut apporter son adresse, tapée ou trouvée là.
 - **Latitude** et **Longitude** : « La latitude et la longitude viennent du téléphone quand un lieu y est enregistré. Pour les entrer ici, copiez-les d’une application de cartes en qui vous avez confiance, par exemple 46.81388 et -71.20798. Sans elles, le téléphone ne peut pas reconnaître le lieu. » Les deux ou aucune.
 - **Rayon (m)** : à quelle distance une position doit être pour compter comme ce lieu, de 10 à 5 000 mètres ; 150 par défaut. Prenez un plus grand rayon pour un grand site, comme un hôpital ou un terrain de chalet.
 - **Province ou État** : deux lettres. Les déplacements qui partent d’ici comptent dans cette province ou cet État.
@@ -127,7 +136,7 @@ Le téléphone reçoit les lieux de chaque groupe de comptes que vous voyez, leu
 - Une ligne avec les kilomètres parcourus dans l’année d’après l’odomètre, les kilomètres de travail et la part de travail, comme sur la carte du véhicule.
 - **Par province ou État** : les kilomètres de l’année avec ce véhicule dans chaque province ou État.
 - **CSV**, **Excel** et **PDF**, au-dessus du tableau : demandent où enregistrer le fichier, dans ce format. Le fichier contient le tableau et, en dessous, la distance de l’année et la part de travail. **Imprimer** l’imprime ; **Masquer le tableau** le replie.
-- Le tableau : **Date**, **De**, **À**, **Motif**, **Odomètre au départ**, **Odomètre à l’arrivée**, **Km**, **Conducteur** et **Province ou État**, du plus ancien au plus récent.
+- Le tableau : **Date**, **De**, **À**, **Motif**, **Odomètre au départ**, **Odomètre à l’arrivée**, **Km**, **Conducteur** et **Province ou État**, du plus ancien au plus récent. Un déplacement avec des arrêts donne une ligne par trajet, chacune avec sa destination, son motif, ses odomètres et ses kilomètres : l’ARC demande la destination et le motif de chaque déplacement d’affaires, et un arrêt en route en est un.
 
 > Remarque : L’ARC demande qu’un registre indique, pour chaque déplacement d’affaires, la date, la destination, le motif et les kilomètres, ainsi que l’odomètre au début et à la fin de l’année. Les déplacements faits avec le téléphone donnent tout cela. Gardez les fichiers avec vos documents fiscaux.
 

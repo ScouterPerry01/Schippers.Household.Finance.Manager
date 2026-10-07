@@ -273,11 +273,11 @@ Liste les tâches de chaque enfant de l’écran [Argent en famille](family#chor
 - **Date**, **Durée (h:mm)** et **Activité**. Voyez [Bénévolat](volunteer).
 ## Déplacement {#trip-form}
 
-@index: déplacement; registre de kilométrage; carnet de route; Partir; Arrivée; remorque; passagers
+@index: déplacement; registre de kilométrage; carnet de route; Partir; Arrivée; remorque; passagers; arrêts; déplacement à plusieurs arrêts
 
-**Déplacement** inscrit un déplacement du départ à l’arrivée : le véhicule, le conducteur, l’odomètre et le lieu à chaque bout, les heures, ce que vous avez remorqué ou transporté, les passagers et le motif. La distance est la différence entre les deux lectures de l’odomètre, comme l’ARC la compte. Le déplacement va dans les [Déplacements](trips#from-phone) de l’ordinateur, et ses lectures d’odomètre au véhicule.
+**Déplacement** inscrit un déplacement du départ à l’arrivée : le véhicule, le conducteur, l’odomètre, le lieu, son adresse et sa position à chaque bout, les heures, ce que vous avez remorqué ou transporté, les passagers et le motif. En route, vous pouvez vous arrêter à plusieurs endroits, prendre des pauses et ajouter des notes et des photos. La distance est la différence entre les lectures de l’odomètre, comme l’ARC la compte. Le déplacement va dans les [Déplacements](trips#from-phone) de l’ordinateur, et ses lectures d’odomètre au véhicule.
 
-Le déplacement en cours est gardé sur le téléphone, chiffré, jusqu’à l’arrivée : fermer l’application ou redémarrer le téléphone ne le perd pas.
+Le déplacement en cours est gardé sur le téléphone, chiffré, jusqu’à l’arrivée : fermer l’application ou redémarrer le téléphone ne le perd pas. Un déplacement vers un seul lieu reste aussi rapide : **Partir**, puis **Arrivée**.
 
 ### Commencer un déplacement {#trip-start}
 
@@ -290,8 +290,10 @@ Le déplacement en cours est gardé sur le téléphone, chiffré, jusqu’à l�
 - **Lieu de départ** : voir [Où vous êtes](#trip-where).
 - **Remorque ou charge** : **Normal** (par défaut), **Avec une remorque** ou **Charge lourde**. Le remorquage et les charges lourdes se mesurent à part dans la consommation du véhicule.
 - **Remorque** : avec une remorque, les remorques de votre ordinateur (biens du type remorque).
+- **Où vous allez** : facultatif ; vous pouvez la changer ou l’annuler en route. Touchez **Domicile** (votre lieu enregistré du type Domicile) ou **Retour à** suivi de l’endroit d’où venait le dernier déplacement, choisissez **Un lieu enregistré**, ou tapez une adresse dans **Ou une adresse**. Le déplacement en cours affiche « En route vers … », les formulaires d’arrêt et d’arrivée la proposent, et elle tombe dès que vous vous y arrêtez. Elle reste sur le téléphone ; seuls les endroits où vous vous arrêtez et arrivez sont envoyés.
 - **Passagers** : une case pour chaque personne du ménage autre que le conducteur, et **Autres (noms, séparés par des virgules)**.
 - **Lieux** : ouvre [Lieux](#trip-places).
+- **Stations à proximité** (ou **Stations**) : ouvre [Stations à proximité](#stations).
 - **Annuler** : ferme sans partir.
 - **Partir** : offert dès qu’un véhicule et une lecture de l’odomètre sont saisis. Le déplacement est gardé sur le téléphone et l’onglet Capturer l’affiche en cours. Rien n’est encore envoyé.
 
@@ -307,28 +309,66 @@ Quand l’application peut utiliser la position, le formulaire en prend une à l
 
 - **Lieu** : les lieux enregistrés, les plus proches d’abord ; celui qui correspond est choisi. Choisissez-en un autre, ou « (pas un lieu enregistré) ».
 - **Nom de ce lieu (facultatif)** : sans lieu enregistré choisi, un nom pour l’endroit où vous êtes, par exemple « Chalet ».
-- **Type de lieu** : une fois un nom tapé : **Domicile**, **Travail**, **Client**, **Commerce**, **Carburant ou recharge**, **Garage**, **Médical** ou **Autre**.
+- **Type de lieu** : une fois un nom tapé : **Domicile**, **Travail**, **Client**, **Commerce**, **Station-service**, **Borne de recharge**, **Garage**, **Médical** ou **Autre**.
 - **Enregistrer comme lieu** : une fois un nom tapé et une position prise ; coché par défaut. Le lieu est enregistré avec la position et un rayon de 150 m, gardé sur le téléphone et envoyé à l’ordinateur, pour que le prochain déplacement le reconnaisse. Décoché, le déplacement garde le nom seulement.
+- **Adresse (facultatif)** : l’adresse du lieu enregistré, inscrite quand il est choisi ; ou tapez-en une. Elle est gardée avec le déplacement et, pour un nouveau lieu, avec le lieu.
+- **Trouver l’adresse** : affiché quand il y a une position et que **Trouver les adresses** est activé dans les [Réglages](#trip-lookups). Il demande au géocodeur d’Android, un service de Google qui reçoit la position, l’adresse à cet endroit et l’inscrit (« Recherche de l’adresse… »). Quand rien ne revient : « Aucune adresse trouvée pour cette position : tapez-la au besoin. »
 - **Utiliser ma position** : affiché tant qu’il n’y a pas de position. La première fois, Android demande s’il faut autoriser la position (précise ou approximative, seulement pendant l’utilisation de l’application) ; voir [Position](#location).
 - **Chercher ma position de nouveau** : prend une autre position, par exemple après avoir changé de bout de stationnement.
 
-Sans lieu enregistré ni nom, le déplacement garde les coordonnées.
+Sans lieu enregistré ni nom, le déplacement garde l’adresse, sinon les coordonnées. Chaque bout du déplacement, et chaque arrêt, garde la position prise, qui va à votre ordinateur avec le déplacement.
+
+### Déplacement en cours {#trip-under-way}
+
+@index: arrêt; pause; destination
+
+Avec un déplacement en cours, **Déplacement** ouvre **Déplacement en cours** :
+
+- Une carte rappelle le déplacement : le véhicule, quand et d’où il est parti, l’odomètre au départ et l’adresse, la remorque ou la charge, les passagers, puis chaque arrêt (« Arrêt à 10 h 40 : Client à Lévis (22 km) ») et chaque pause (« Pause de 9 h 26 à 9 h 41 »), et combien de notes et de photos ont été envoyées.
+- « En route vers … » ou « Aucune destination prévue », avec **Prévoir** ou **Changer** (domicile, retour à un arrêt, un lieu enregistré ou une adresse) et **L’annuler**.
+- **Arrêt ici** : ouvre [Arrêt ici](#trip-stop).
+- **Pause** : un seul toucher commence une pause, avec son heure et, quand l’application peut utiliser la position, l’endroit où vous êtes. L’écran affiche alors « En pause depuis … » et **Reprendre la route**, qui la termine. Les pauses sont exclues du temps de conduite ; une pause encore en cours à l’arrivée se termine alors.
+- **Arrivée** : ouvre [Arrivée](#trip-arrive).
+- **Ajouter une note ou une photo** : ouvre [Notes et photos](#trip-attach).
+- **Lieux** et **Stations à proximité** : ouvrent [Lieux](#trip-places) et [Stations à proximité](#stations).
+- **Plus tard** : retour à l’onglet Capturer ; le déplacement reste en cours.
+- **Abandonner le déplacement** : demande « Abandonner ce déplacement? Rien n’en est envoyé à l’ordinateur. » Un lieu enregistré en route reste enregistré. Les notes et photos déjà envoyées attendent sur l’ordinateur dans les documents à revoir, et la question le dit.
+
+### Arrêt ici {#trip-stop}
+
+« L’arrêt est gardé avec son heure, son odomètre et son lieu, et le déplacement continue vers le suivant. Arrivée termine le déplacement. »
+
+- **Odomètre ici (km)** : obligatoire ; il doit dépasser la dernière lecture du déplacement (le départ ou l’arrêt précédent). « Distance : 22 km » montre le trajet.
+- **Prévu : …** : quand une destination est prévue, un toucher la choisit comme lieu.
+- **Lieu de l’arrêt** : comme au départ ; voir [Où vous êtes](#trip-where).
+- **Motif de ce trajet** : le motif du trajet qui finit ici, proposé selon les lieux comme à l’arrivée. Sur l’ordinateur, chaque trajet compte avec son propre motif : un arrêt d’affaires pendant un déplacement personnel compte comme affaires.
+- **Note** : ce qu’il faut retenir de l’arrêt.
+- **Enregistrer l’arrêt** : le garde et revient au déplacement ; s’arrêter à la destination prévue retire celle-ci.
+
+### Notes et photos {#trip-attach}
+
+@index: photo de déplacement; note vocale de déplacement; dicter
+
+« Des photos prises avec l’appareil photo et une note tapée, dictée ou enregistrée. Elles sont envoyées maintenant et gardées avec le déplacement sur l’ordinateur. »
+
+- **À l’arrêt : …** : affiché après un arrêt ; coché, la note et les photos sont gardées avec cet arrêt, sinon avec le déplacement.
+- **Prendre une photo** : ouvre l’appareil photo du téléphone ; chaque photo prise est comptée (« Photos prises : 2 »), et **Supprimer** retire la dernière.
+- **Note**, **Dicter la note** et **Enregistrer une note vocale** : comme dans le [formulaire de capture](#voice-note).
+- **Enregistrer** : chaque photo part comme un document distinct, la note et la note vocale avec la première (ou seules quand il n’y a pas de photo). Elles attendent dans la file et sont envoyées aussitôt si possible. L’ordinateur les garde avec le déplacement dès qu’il arrive ; d’ici là, elles attendent dans les documents à revoir.
 
 ### Arrivée {#trip-arrive}
 
 ![L’arrivée : la distance et le motif proposé](images/phone-trip-arrive.png)
 
-Avec un déplacement en cours, **Déplacement** ouvre **Arrivée** :
+**Arrivée** termine le déplacement :
 
-- Une carte rappelle le déplacement : le véhicule, quand et d’où il est parti, l’odomètre au départ, la remorque ou la charge, et les passagers.
-- **Odomètre à l’arrivée (km)** : obligatoire. Une fois tapé, « Distance : 178 km » s’affiche, ou « Entrez plus de 61 500 km, l’odomètre au départ. » quand il ne le dépasse pas. Un déplacement de 10 000 km ou plus est refusé.
+- **Odomètre à l’arrivée (km)** : obligatoire. Une fois tapé, « Distance : 178 km » (depuis le départ) s’affiche, ou « Entrez plus de 61 500 km, le dernier relevé de ce déplacement. » quand il ne dépasse pas le départ ou le dernier arrêt. Un déplacement de 10 000 km ou plus est refusé.
+- **Retour au domicile ou à un arrêt** : des choix rapides : **Domicile**, **Retour à** suivi du dernier arrêt (ou du point de départ), et **Prévu : …** quand une destination est prévue. Un toucher choisit ce lieu ; sinon, utilisez **Lieu d’arrivée** plus bas pour un nouveau lieu.
 - **Lieu d’arrivée** : comme au départ ; voir [Où vous êtes](#trip-where).
-- **Motif** : **Affaires**, **Emploi**, **Médical** ou **Personnel**. « Proposé selon les lieux ; changez-le au besoin. » : vers ou depuis un **Client**, c’est **Affaires** ; vers un lieu **Médical**, ou le retour à la maison depuis un tel lieu, c’est **Médical** ; les autres déplacements dans un véhicule à usage commercial sont **Affaires** ; tout le reste est **Personnel**, y compris le trajet entre la maison et le travail, que l’ARC compte comme personnel.
+- **Motif** (**Motif de ce trajet** après des arrêts) : **Affaires**, **Emploi**, **Médical** ou **Personnel**. « Proposé selon les lieux ; changez-le au besoin. » : vers ou depuis un **Client**, c’est **Affaires** ; vers un lieu **Médical**, ou le retour à la maison depuis un tel lieu, c’est **Médical** ; les autres déplacements dans un véhicule à usage commercial sont **Affaires** ; tout le reste est **Personnel**, y compris le trajet entre la maison et le travail, que l’ARC compte comme personnel.
 - **Note** : ce qu’il faut retenir, comme le nom du client.
-- **Plus tard** : retour à l’onglet Capturer ; le déplacement reste en cours.
-- **Arriver et envoyer** : offert avec un odomètre valide. Le déplacement rejoint la file d’attente, nommé d’après le véhicule, les lieux et la distance, et est envoyé aussitôt si possible.
-- **Lieux** : ouvre [Lieux](#trip-places).
-- **Abandonner le déplacement** : demande « Abandonner ce déplacement? Rien n’en est envoyé à l’ordinateur. » Un lieu enregistré au départ reste enregistré.
+- **Retour** : revient au déplacement en cours.
+- **Arriver et envoyer** : offert avec un odomètre valide. Le déplacement, avec ses arrêts et ses pauses, rejoint la file d’attente, nommé d’après le véhicule, les lieux et la distance, et est envoyé aussitôt si possible.
 
 ### Lieux {#trip-places}
 
@@ -345,9 +385,9 @@ Les lieux viennent des [Lieux](trips#places) de l’ordinateur et de ceux enregi
 
 @index: autorisation de position; GPS; confidentialité; ACCESS_FINE_LOCATION
 
-L’application demande l’autorisation seulement quand vous touchez **Utiliser ma position**, **Ajouter le lieu où je suis** ou **Trouver la station enregistrée la plus proche**, jamais au démarrage. Une fois autorisée, elle prend une position à l’ouverture des formulaires de départ et d’arrivée, et quand vous touchez ces boutons. Android offre **Précise** ou **Approximative**, et **Lorsque vous utilisez l’appli** ou **Uniquement cette fois-ci** : l’application n’a jamais besoin de plus. Avec la position approximative, les correspondances sont moins sûres ; prenez un plus grand rayon sur l’ordinateur ou choisissez le lieu vous-même.
+L’application demande l’autorisation seulement quand vous touchez **Utiliser ma position**, **Ajouter le lieu où je suis** ou **Trouver la station enregistrée la plus proche**, ou ouvrez **Stations à proximité** ou **Ajouter une station à la main**, jamais au démarrage. Une fois autorisée, elle prend une position à l’ouverture des formulaires de départ, d’arrêt et d’arrivée, au début d’une pause, et quand vous touchez ces boutons. Android offre **Précise** ou **Approximative**, et **Lorsque vous utilisez l’appli** ou **Uniquement cette fois-ci** : l’application n’a jamais besoin de plus. Avec la position approximative, les correspondances sont moins sûres ; prenez un plus grand rayon sur l’ordinateur ou choisissez le lieu vous-même.
 
-L’application utilise le service de localisation d’Android même (aucun service de Google), prend une position à la fois et s’arrête ; elle ne suit jamais le téléphone en arrière-plan. Les positions restent sur le téléphone : seul le nom du lieu, ou les coordonnées d’un lieu sans nom ou d’un lieu que vous enregistrez, va à votre ordinateur avec le déplacement. Vous pouvez refuser ou retirer l’autorisation dans les réglages d’Android en tout temps ; les déplacements fonctionnent alors en choisissant les lieux ou en tapant les noms.
+L’application utilise le service de localisation d’Android même (aucun service de Google), prend une position à la fois et s’arrête ; elle ne suit jamais le téléphone en arrière-plan. Les positions ne vont qu’à votre ordinateur, avec le déplacement, ses arrêts et ses pauses, et les lieux que vous enregistrez. Deux recherches peuvent les utiliser, toutes deux désactivées tant que vous ne les activez pas dans les [Réglages](#trip-lookups) : **Trouver l’adresse** envoie une position à Google par le géocodeur d’Android, et **Stations à proximité** envoie une position approximative, à un kilomètre près, à OpenStreetMap ; chacune seulement quand vous la touchez. Vous pouvez refuser ou retirer l’autorisation dans les réglages d’Android en tout temps ; les déplacements fonctionnent alors en choisissant les lieux ou en tapant les noms.
 
 ## Plein ou recharge {#fuel-form}
 
@@ -363,12 +403,34 @@ L’application utilise le service de localisation d’Android même (aucun serv
 - **Coût** : ce que vous avez payé, par exemple 68,55.
 - **Plein complet** (ou **Recharge complète**) : coché par défaut ; décochez-le pour un plein partiel. La consommation se mesure d’un plein à l’autre.
 - **Lieu de recharge** : pour une recharge, **À domicile** ou **Borne publique**.
-- **Station** : un lieu enregistré, les stations d’abord, ou « (aucun) ».
+- **Station** : un lieu enregistré, les stations-service et les bornes de recharge d’abord, ou « (aucun) ». Une station choisie dans **Stations à proximité** et non enregistrée paraît ici par son nom.
 - **Trouver la station enregistrée la plus proche** : prend une seule position et choisit le lieu enregistré où vous êtes, s’il y en a un.
+- **Stations à proximité** : ouvre [Stations à proximité](#stations) pour en choisir une ; **Utiliser pour ce plein** remplit **Station** (une borne met aussi **Lieu de recharge** à **Borne publique**).
 - **Date (AAAA-MM-JJ)** : aujourd’hui par défaut.
 - **Enregistrer** : offert dès qu’un véhicule et une quantité sont saisis. L’inscription rejoint la file d’attente et est envoyée aussitôt si possible.
 
 Sur l’ordinateur, elle va directement à l’[onglet Carburant](vehicles#fuel-tab) du véhicule, avec « du téléphone », sans vérification. Aucun paiement n’est inscrit, et la ligne indique « paiement pas encore inscrit » : pour l’inscrire, cliquez sur **Modifier** sur cette ligne et cochez **Inscrire aussi le paiement dans un compte** (voir [Inscrire aussi le paiement](vehicles#payment)). Si le paiement arrive dans les comptes autrement, comme par l’importation d’un relevé de carte, ne le liez pas au véhicule, sinon le coût du plein compte deux fois dans l’onglet **Coûts** du véhicule.
+
+## Stations à proximité {#stations}
+
+@index: station-service; poste d’essence; borne de recharge; OpenStreetMap; Overpass
+
+Depuis **Stations à proximité** de l’onglet Capturer, depuis un déplacement ou depuis le formulaire de plein. La liste montre les stations-service et les bornes de recharge autour de vous, les plus proches d’abord, d’après OpenStreetMap, la carte libre faite par des bénévoles (aucun compte).
+
+- Tant que l’option est désactivée, l’écran dit ce qui serait envoyé : « Pour trouver les stations-service et les bornes de recharge autour de vous, l’appli interroge OpenStreetMap en envoyant une position approximative (à un kilomètre près), seulement quand vous ouvrez cette liste. » **Activer les stations à proximité** l’active, comme dans les [Réglages](#trip-lookups).
+- Une fois activée, l’application prend une position (« Recherche de votre position… »), puis interroge OpenStreetMap (« Interrogation d’OpenStreetMap… ») pour celles à environ 5 km, ou 15 km quand moins de trois sont aussi proches. Seule la position arrondie à deux décimales est envoyée ; les distances sont calculées sur le téléphone.
+- Chaque station affiche son nom (ou sa marque), la distance, son type (**Station-service** ou **Borne de recharge**), sa marque et son adresse quand OpenStreetMap les a. Touchez-en une pour la choisir : **Enregistrer comme lieu** la garde comme lieu enregistré, avec son adresse et sa position, envoyé à votre ordinateur (« Enregistrée comme lieu ») ; depuis le formulaire de plein, **Utiliser pour ce plein** remplit le formulaire, avec **Enregistrer comme lieu** coché pour la garder aussi.
+- « Aucune station trouvée dans un rayon de 15 km. », « Aucune position : … » ou « OpenStreetMap est occupé ou injoignable. Cherchez de nouveau dans un moment. » quand rien n’est venu ; **Chercher de nouveau** interroge de nouveau.
+- « © OpenStreetMap contributors » : la source des données, comme sa licence le demande.
+- **Ajouter une station à la main** : voir plus bas. **Retour** ferme la liste.
+
+### Ajouter une station à la main {#add-station}
+
+- **Nom de la station** : obligatoire.
+- **Type de lieu** : **Station-service** ou **Borne de recharge**.
+- **Adresse (facultatif)** : tapée, ou inscrite d’après la position quand **Trouver les adresses** est activé.
+- « Position : … » : la position prise à l’ouverture du formulaire ; **Chercher ma position de nouveau** en prend une autre. Sans position, la station est enregistrée sans, et ne peut pas être reconnue par la position.
+- **Enregistrer** : la garde comme lieu enregistré, envoyé à l’ordinateur ; depuis le formulaire de plein, elle devient aussi la station du plein.
 
 ## L’onglet Envois {#sent-tab}
 
@@ -594,6 +656,17 @@ Affiché une fois jumelé. Envoie au Calendrier de l’ordinateur les calendrier
 - **Terminé** revient aux Réglages.
 
 Seuls les calendriers cochés sont lus, pour les jours choisis : le titre, le lieu, le début et la fin de chaque élément, jamais sa description, ses invités ou ses rappels. Ils ne vont qu’à votre ordinateur jumelé, chiffrés comme vos captures, par Wi-Fi, par le dossier de transfert ou dans un fichier partagé. Un calendrier est envoyé en entier quand il a changé depuis le dernier transfert ; rien n’est écrit dans vos calendriers. Si l’ordinateur n’a pas pu en enregistrer un, la raison paraît sous le titre et le téléphone réessaie au prochain transfert. Voir [Calendriers des téléphones et des fichiers](calendar-sync). Les calendriers cochés paraissent aussi dans [l’agenda](#agenda-phone-calendars), lus sur le téléphone seulement.
+
+### Déplacements : adresses et stations {#trip-lookups}
+
+@index: géocodeur; recherche d’adresse; Google; OpenStreetMap; confidentialité
+
+Deux recherches pour les déplacements, toutes deux désactivées par défaut :
+
+- **Trouver les adresses** : « Une fois activé, Trouver l’adresse envoie la position de ce relevé à Google, par le géocodeur d’Android, et inscrit l’adresse reçue. Seulement quand vous le touchez ; sinon, tapez les adresses ou utilisez les lieux enregistrés. » Sur un téléphone sans les services de Google : « Ce téléphone ne permet pas de trouver les adresses. »
+- **Stations à proximité** : « Une fois activé, Stations à proximité envoie une position approximative (à un kilomètre près) à OpenStreetMap, seulement quand vous le demandez, pour trouver les stations-service et les bornes de recharge autour de vous. Aucun compte ; rien d’autre n’est envoyé. »
+
+En désactiver une l’arrête aussitôt ; l’application n’a rien gardé chez Google ni chez OpenStreetMap.
 
 ### Changer le NIP {#change-pin}
 
