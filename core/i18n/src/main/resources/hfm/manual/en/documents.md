@@ -167,9 +167,18 @@ The Canada Revenue Agency generally asks that tax records and the papers that su
 
 **Review** or **Open** on a document opens its window. The title is the document's name. The left side shows the document; the right side shows what was read and what you can do with it. **Close** at the bottom closes the window without saving changes you did not save.
 
-### The preview {#preview}
+### The preview, pages and zoom {#preview}
+@index: pages; zoom; multi-page document; page by page; enlarge a receipt
 
-The left side shows the first page of the document as a picture, which you can scroll. While it loads it shows "Loading…". A quick expense typed on the phone shows "Entered on the phone, without a photo.", and a HEIC photo on a computer without a HEIC decoder shows how to install one.
+The left side shows the document, one page at a time. While a page loads it shows "Loading…". A quick expense typed on the phone shows "Entered on the phone, without a photo.", a HEIC photo on a computer without a HEIC decoder shows how to install one, and a file that cannot be drawn shows "This file cannot be shown here. Save a copy to open it in another program."
+
+A PDF shows each of its pages; a photo is one page. A bill or receipt photographed in several pages on the phone arrives as one PDF of its pages, in the order they were taken, so every page is here.
+
+- **◀** and **▶** (Previous page, Next page), with Page 1 of 2 between them: shown when the document has more than one page. Page Up and Page Down do the same once you have clicked the page.
+- **−** and **+** (Zoom out, Zoom in): make the page smaller or larger, from 50 % to 500 % of the width of the left side; the percentage shows between them. Ctrl with the mouse wheel, and Ctrl + and Ctrl -, do the same.
+- **Fit**: back to 100 %, the page as wide as the left side (also Ctrl 0).
+
+When the page is larger than the left side, drag it with the mouse or use the scroll bars to move about it. Each page starts at its top. Turning pages and zooming change only what you see, never the document. **Save a copy…** saves the whole file, every page, and every page also goes into a PDF of receipts made from documents, such as the one for medical expenses.
 
 ### Details read from the document {#document-details}
 
@@ -273,6 +282,7 @@ The top line repeats the store, date and total from the document window. Then:
 A choice made on the phone is used only if it still exists on the computer (and, for the account, is in the document's currency); otherwise the usual default applies. You can change any of them before saving.
 - **Vehicle**: shown only if you have vehicles. Links the expense to a vehicle for its cost reports.
 - **Split by items**: see [Split by items](documents#split-by-items).
+- Opened from **Itemize…**, the form shows the split lines of the items you typed instead of a single category: see [Itemize by hand](documents#itemize).
 
 **Save** creates the transaction and files the document:
 
@@ -292,6 +302,43 @@ When a receipt or invoice was read by AI and has at least two items, the new tra
 - Items with the same category become one split of the transaction, whose memo lists the items it covers.
 - Taxes are shared over the items: each tax goes to the items the receipt marks with it. The codes are trusted when each tax amount is what the marked items give at a rate that tax has somewhere in Canada on the receipt's date (from [Rates and rules](rates-rules)). If the receipt does not show which items are taxed, or its tax codes do not match its tax amounts, the taxes are shared over every item in proportion, and a note says so; check the categories you track closely.
 - A transaction split this way does not teach a single category for the store.
+
+### Itemize by hand {#itemize}
+@index: itemize; itemized receipt by hand; split a receipt without AI; sales tax per item
+
+![The Itemize the receipt window, a receipt typed item by item](images/documents-itemize.png)
+
+For a document of kind **Receipt** or **Invoice**, **Itemize…** (next to **New transaction from this document**) splits it by its items without AI: you type the items, and the app shares the taxes over them the same way as for a receipt read by AI. It first saves the details you corrected, then opens the window Itemize the receipt.
+
+If the receipt was read by AI, the window starts with the items and taxes it read; otherwise with the taxes read on this computer and two empty lines. What you type is kept while the document window stays open, so you can go back to it.
+
+For each item:
+
+- **Item**: the description, as printed. It goes into the memo of its split line.
+- **Amount**: the item's price before taxes, as printed. Type a discount or coupon as a negative amount. A simple sum such as 3.49+3.49 works.
+- **Category**: the category of the item. "(transaction's category)" leaves it to the category chosen afterwards in the new transaction form (or, in a register, the one chosen in the form).
+- The tax chips (**GST**, **HST**, **QST**, **PST**): one for each tax typed below. Tick those charged on the item, as the receipt marks them with a letter or code; a ticked chip shows ✓.
+- On the right: the item's share of the total, taxes included, worked out as you type.
+- **✕** (Remove this item) removes the line. **Add item** adds an empty one.
+
+**Sales taxes on the receipt**: one field each for GST, HST, QST and PST, for the amounts printed on the receipt. Manitoba's and Ontario's RST go under PST. Leave the others empty.
+
+Under them, the running total, Items ... + taxes ... = ..., then whether it matches the **Total** of the document window:
+
+- "This matches the total of ..." when the items and taxes add up to the total exactly.
+- "This differs from the total of ... by ...", in red, otherwise. The difference is shared over every item in proportion, as a tip or the receipt's rounding would be. Check for a missing item, a missing tax or a typing error; you can still go on, for example with the tip on a restaurant bill.
+- With no **Total** in the document window, the items and taxes make the total.
+
+How the taxes are shared:
+
+- Each tax goes to the items it is ticked on, in proportion to their amounts, so a zero-rated grocery carries none.
+- The ticks are trusted when each tax is what its ticked items give at a rate that tax has somewhere in Canada on the document's date (from [Rates and rules](rates-rules)). Otherwise a note says the taxes ticked cannot give these tax amounts, and every tax is shared over every item in proportion.
+- With no tax ticked on any item, every tax is shared over every item in proportion, and a note says so.
+- Shares are rounded to the cent so that they add up exactly to the total; the cents left by rounding go to the items that lost the most.
+
+**Use these items** (available once an item has an amount and every amount can be read) opens the form of [New transaction from this document](documents#new-transaction) with the split lines instead of a single category: **Category** becomes **Category of items without one**, for the items left on "(transaction's category)", and the lines are listed under it with their category, amount and items. Items of the same category become one split line. **Save** creates the transaction for the total, with these lines, and files the document. **Cancel**, in either window, goes back to the document window and keeps what you typed.
+
+> Tip: In an account's register, **Itemize…** next to **Split…** opens the same window for the transaction in the form, with no items to start. **Use these items** puts the split lines in the form (and the total as the amount when none was typed); **Save** in the form saves them. See [Split a transaction](accounts#split-transaction).
 
 ### File without attaching {#file-without-attaching}
 

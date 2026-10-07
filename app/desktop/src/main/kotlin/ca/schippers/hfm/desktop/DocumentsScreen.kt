@@ -1,6 +1,5 @@
 package ca.schippers.hfm.desktop
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.layout.Arrangement
@@ -42,14 +41,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropEvent
 import androidx.compose.ui.draganddrop.DragAndDropTarget
 import androidx.compose.ui.draganddrop.awtTransferable
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toComposeImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ca.schippers.hfm.calc.rules.LeadTimes
-import ca.schippers.hfm.ocr.desktop.Heif
 import ca.schippers.hfm.books.DocumentDetails
 import ca.schippers.hfm.books.DocumentEntity
 import ca.schippers.hfm.books.DocumentQuery
@@ -288,10 +283,6 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
         onClose()
         return
     }
-    var preview by remember(documentId) { mutableStateOf<ImageBitmap?>(null) }
-    LaunchedEffect(documentId) {
-        preview = withContext(Dispatchers.IO) { runCatching { DesktopOcr.reader.preview(books.documents.content(documentId))?.toComposeImageBitmap() }.getOrNull() }
-    }
     val currency = doc.amount?.currency ?: books.rates.baseCurrency
     var title by remember(documentId, doc.draft) { mutableStateOf(doc.title ?: doc.merchant.orEmpty()) }
     var date by remember(documentId, doc.draft) { mutableStateOf((doc.date ?: dateOfMillis(doc.capturedAt)).toString()) }
@@ -300,6 +291,10 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
     var keep by remember(documentId) { mutableStateOf(doc.keepForever) }
     var notes by remember(documentId) { mutableStateOf(doc.notes.orEmpty()) }
     var creating by remember { mutableStateOf(false) }
+    // DOC-02: the items typed by hand, kept while the dialog is open, and the result handed to the new transaction.
+    var itemizing by remember { mutableStateOf(false) }
+    var itemizeState by remember(documentId) { mutableStateOf<ItemizeState?>(null) }
+    var itemized by remember { mutableStateOf<ca.schippers.hfm.books.Itemized?>(null) }
     var confirmDelete by remember { mutableStateOf(false) }
 
     /** Saves what the user corrected before any filing action. */
@@ -310,17 +305,8 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
 
     WideDialog(doc.label, model.t("common.close"), onClose) {
         Row(Modifier.heightIn(max = 620.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            // The document itself.
-            Box(Modifier.width(360.dp).heightIn(min = 300.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant).verticalScroll(rememberScrollState())) {
-                val image = preview
-                when {
-                    image != null -> Image(image, doc.label, Modifier.fillMaxWidth(), contentScale = ContentScale.FillWidth)
-                    // CAP-07: a quick expense from the phone has no photo, only what was typed.
-                    doc.mimeType == "text/plain" -> Text(model.t("documents.noPhoto"), Modifier.padding(16.dp))
-                    doc.mimeType == "image/heic" && !Heif.available -> Text(model.t("documents.heicNoPreview") + " " + model.heicDecoderHint(), Modifier.padding(16.dp))
-                    else -> Text(model.t("documents.loadingPreview"), Modifier.padding(16.dp))
-                }
-            }
+            // The document itself, page by page (DOC-01).
+            DocumentViewer(model, doc, Modifier.width(400.dp).height(600.dp))
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 val draft = doc.draft
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -352,7 +338,14 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
                 LabeledCheckbox(model.t("documents.keepForever"), keep) { keep = it }
                 TextInput(model.t("calendar.notes"), notes, singleLine = false) { notes = it }
                 HorizontalDivider(Modifier.padding(vertical = 4.dp))
-                FilingActions(model, doc, kind, ::saveDetails, onCreate = { creating = true }, onDone = onClose)
+                FilingActions(model, doc, kind, ::saveDetails, onCreate = { creating = true }, onDone = onClose, onItemize = {
+                    if (itemizeState == null) {
+                        val printed = doc.draft?.taxes.orEmpty().filter { it.first != ca.schippers.hfm.ocr.TaxName.OTHER }
+                            .groupBy({ it.first.name }, { it.second.value }).mapValues { (_, v) -> v.reduce(Money::plus) }
+                        itemizeState = ItemizeState.start(runCatching { books.ai.readReceipt(documentId) }.getOrNull(), printed, locale, currency)
+                    }
+                    itemizing = true
+                })
                 HorizontalDivider(Modifier.padding(vertical = 4.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (doc.status == DocumentStatus.INBOX) {
@@ -374,7 +367,20 @@ private fun ReviewDialog(model: BooksModel, documentId: String, onClose: () -> U
         }
     }
 
-    if (creating) NewTransactionDialog(model, doc, title, date, amount) { done -> creating = false; if (done) onClose() }
+    if (itemizing) {
+        itemizeState?.let { state ->
+            ItemizeDialog(
+                model, state, currency, runCatching { parseAmount(amount, currency, locale) }.getOrNull()?.abs(),
+                runCatching { LocalDate.parse(date.trim()) }.getOrNull() ?: doc.date ?: today(),
+                onDismiss = { itemizing = false },
+            ) { result ->
+                itemized = result
+                itemizing = false
+                creating = true
+            }
+        }
+    }
+    if (creating) NewTransactionDialog(model, doc, title, date, amount, itemized) { done -> creating = false; itemized = null; if (done) onClose() }
     if (confirmDelete) {
         FormDialog(model.t("documents.delete.title"), model.t("common.delete"), model.t("common.cancel"), onDismiss = { confirmDelete = false }, onSave = {
             if (model.act { books.documents.delete(documentId) } != null) {
@@ -643,8 +649,9 @@ private fun Duplicates(model: BooksModel, doc: VaultDocument) {
  * Matching transactions, the bill it belongs to, or a new transaction (SYNC-05, BILL-03). [kind] is
  * the kind chosen in the dialog, saved or not: the choices follow it at once.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun FilingActions(model: BooksModel, doc: VaultDocument, kind: DocumentKind, saveDetails: () -> Boolean, onCreate: () -> Unit, onDone: () -> Unit) {
+private fun FilingActions(model: BooksModel, doc: VaultDocument, kind: DocumentKind, saveDetails: () -> Boolean, onCreate: () -> Unit, onDone: () -> Unit, onItemize: () -> Unit) {
     val books = model.books
     val matches = remember(model.revision, doc.id) { books.documents.matches(doc.id) }
     val bill = remember(model.revision, doc.id, kind) { if (kind == DocumentKind.BILL || kind == DocumentKind.INVOICE) books.documents.billFor(doc.id) else null }
@@ -677,7 +684,11 @@ private fun FilingActions(model: BooksModel, doc: VaultDocument, kind: DocumentK
         }
     }
     if (matches.isEmpty() && bill == null) Text(model.t("documents.noMatch"), style = MaterialTheme.typography.bodySmall)
-    OutlinedButton(onClick = { if (saveDetails()) onCreate() }) { Text(model.t("documents.newTransaction")) }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(onClick = { if (saveDetails()) onCreate() }) { Text(model.t("documents.newTransaction")) }
+        // DOC-02: a receipt or invoice split by its items, typed by hand.
+        if (kind == DocumentKind.RECEIPT || kind == DocumentKind.INVOICE) OutlinedButton(onClick = { if (saveDetails()) onItemize() }) { Text(model.t("documents.itemize")) }
+    }
 }
 
 private fun linkedDescriptions(model: BooksModel, doc: VaultDocument): List<String> = doc.links.mapNotNull { link ->
@@ -693,7 +704,7 @@ private fun linkedDescriptions(model: BooksModel, doc: VaultDocument): List<Stri
 
 /** Creates the transaction the receipt describes, with the receipt attached. */
 @Composable
-private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: String, date: String, amount: String, onClose: (Boolean) -> Unit) {
+private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: String, date: String, amount: String, itemized: ca.schippers.hfm.books.Itemized?, onClose: (Boolean) -> Unit) {
     val books = model.books
     val locale = model.language.locale
     val currency = doc.amount?.currency ?: books.rates.baseCurrency
@@ -722,37 +733,49 @@ private fun NewTransactionDialog(model: BooksModel, doc: VaultDocument, payee: S
     var assetId by remember { mutableStateOf<String?>(null) }
     val account = accounts.firstOrNull { it.id == accountId }
     // OCR-03: the items of a receipt read by AI, each with its share of the taxes.
-    val split = remember { parseAmount(amount, currency, locale)?.let { total -> runCatching { books.ai.itemSplit(doc.id, total) }.getOrNull() } }
+    val split = remember { if (itemized != null) null else parseAmount(amount, currency, locale)?.let { total -> runCatching { books.ai.itemSplit(doc.id, total) }.getOrNull() } }
     val shares = split?.shares.orEmpty()
     var byItems by remember { mutableStateOf(false) }
     val itemCategories = remember { mutableStateListOf<String?>().apply { repeat(shares.size) { add(null) } } }
     FormDialog(model.t("documents.newTransaction"), model.t("common.save"), model.t("common.cancel"), canSave = account != null, onDismiss = { onClose(false) }, onSave = {
         val ok = model.act {
-            val value = parseAmount(amount, account!!.currency, locale) ?: throw ValidationException("error.amountRequired")
+            // DOC-02: items typed by hand come to the receipt's total, or are the total when none was given.
+            val value = itemized?.total ?: parseAmount(amount, account!!.currency, locale) ?: throw ValidationException("error.amountRequired")
             val d = runCatching { LocalDate.parse(date.trim()) }.getOrElse { throw ValidationException("error.invalidDate") }
             // A receipt is money out; a refund slip would be entered from the register.
-            val splits = if (byItems && shares.isNotEmpty()) {
+            val splits = if (itemized != null) {
+                itemized.splits(categoryId, negative = true)
+            } else if (byItems && shares.isNotEmpty()) {
                 // Items with the same category become one split, noting what it covers.
-                shares.indices.groupBy { itemCategories[it] ?: categoryId }.map { (cat, items) ->
-                    SplitDraft(cat, -items.map { shares[it].share }.reduce(Money::plus), items.joinToString(", ") { shares[it].description }.take(250))
-                }
+                ca.schippers.hfm.books.ItemSplitter.combine(shares, { itemCategories[it] ?: categoryId }, negative = true)
             } else {
                 listOf(SplitDraft(categoryId, -value.abs()))
             }
             books.documents.fileAsTransaction(
                 doc.id,
-                TransactionDraft(account.id, d, -value.abs(), (payeeDefault?.name ?: payee).ifBlank { null }, splits, memberId = forId, assetId = assetId),
+                TransactionDraft(account!!.id, d, -value.abs(), (payeeDefault?.name ?: payee).ifBlank { null }, splits, memberId = forId, assetId = assetId),
             )
         }
         if (ok != null) onClose(true)
     }) {
-        Text(listOf(payee, date, amount).filter { it.isNotBlank() }.joinToString(" · "), fontWeight = FontWeight.Medium)
+        Text(listOf(payee, date, itemized?.total?.let(model::money) ?: amount).filter { it.isNotBlank() }.joinToString(" · "), fontWeight = FontWeight.Medium)
         Picker(model.t("documents.paidWith"), accounts, account, { it.name }) { accountId = it.id }
-        Picker(model.t("register.category"), listOf(null) + tree, tree.firstOrNull { it.first.id == categoryId }, { it?.first?.name(model.language) ?: model.t("register.uncategorized") }, indent = { it?.second ?: 0 }) {
+        Picker(model.t(if (itemized != null) "itemize.otherItemsCategory" else "register.category"), listOf(null) + tree, tree.firstOrNull { it.first.id == categoryId }, { it?.first?.name(model.language) ?: model.t("register.uncategorized") }, indent = { it?.second ?: 0 }) {
             categoryId = it?.first?.id
         }
         Picker(model.t("register.for"), listOf(null) + people, people.firstOrNull { it.id == forId }, { it?.name ?: model.t("register.forNobody") }) { forId = it?.id }
         if (vehicles.isNotEmpty()) Picker(model.t("register.vehicle"), listOf(null) + vehicles, vehicles.firstOrNull { it.first == assetId }, { it?.second ?: model.t("common.none") }) { assetId = it?.first }
+        // DOC-02: the split lines the items typed by hand make.
+        if (itemized != null) {
+            val lines = itemized.splits(categoryId, negative = true)
+            Text(model.t("itemize.lines", lines.size), style = MaterialTheme.typography.labelLarge)
+            for (line in lines) {
+                Text(
+                    listOfNotNull(tree.firstOrNull { it.first.id == line.categoryId }?.first?.name(model.language) ?: model.t("register.uncategorized"), model.money(line.amount.abs()), line.memo).joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
         if (shares.isNotEmpty()) {
             LabeledCheckbox(model.t("documents.splitByItems", shares.size), byItems) { byItems = it }
             if (byItems) {

@@ -79,20 +79,41 @@ class DocumentReader(private val engine: PaddleOcrEngine) {
         ReadDocument(FileKind.PDF, pdf.numberOfPages, OcrResult(lines, (System.nanoTime() - started) / 1_000_000), fromTextLayer = false)
     }
 
-    private fun scale(img: BufferedImage, maxSide: Int): BufferedImage {
-        val longSide = maxOf(img.width, img.height)
-        if (longSide <= maxSide) return img
-        val f = maxSide.toDouble() / longSide
-        val out = BufferedImage((img.width * f).toInt().coerceAtLeast(1), (img.height * f).toInt().coerceAtLeast(1), BufferedImage.TYPE_INT_RGB)
-        out.createGraphics().apply {
-            setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR)
-            drawImage(img, 0, 0, out.width, out.height, null)
-            dispose()
-        }
-        return out
-    }
+    private fun scale(img: BufferedImage, maxSide: Int): BufferedImage = scaleDown(img, maxSide)
 
     companion object {
+        /** DOC-01: how many pages the viewer can show: a PDF's pages, one for an image, none for anything else. */
+        fun pageCount(bytes: ByteArray): Int = when (FileKind.of(bytes)) {
+            FileKind.PDF -> Loader.loadPDF(bytes).use { it.numberOfPages }
+            FileKind.UNSUPPORTED -> 0
+            else -> 1
+        }
+
+        /**
+         * DOC-01: page [index] (from 0) for the viewer, sharp enough to zoom into: a PDF page at
+         * [dpi], an image at most [maxSide] pixels; null when there is no such page.
+         */
+        fun page(bytes: ByteArray, index: Int, maxSide: Int = VIEW_SIDE, dpi: Float = VIEW_DPI): BufferedImage? = when (FileKind.of(bytes)) {
+            FileKind.PDF -> Loader.loadPDF(bytes).use { pdf -> if (index !in 0 until pdf.numberOfPages) null else PDFRenderer(pdf).renderImageWithDPI(index, dpi, ImageType.RGB) }
+            FileKind.UNSUPPORTED -> null
+            else -> if (index == 0) ImageLoader.decode(bytes) else null
+        }?.let { scaleDown(it, maxSide) }
+
+        private fun scaleDown(img: BufferedImage, maxSide: Int): BufferedImage {
+            val longSide = maxOf(img.width, img.height)
+            if (longSide <= maxSide) return img
+            val f = maxSide.toDouble() / longSide
+            val out = BufferedImage((img.width * f).toInt().coerceAtLeast(1), (img.height * f).toInt().coerceAtLeast(1), BufferedImage.TYPE_INT_RGB)
+            out.createGraphics().apply {
+                setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+                drawImage(img, 0, 0, out.width, out.height, null)
+                dispose()
+            }
+            return out
+        }
+
+        private const val VIEW_SIDE = 2400
+        private const val VIEW_DPI = 150f
         private const val MIN_TEXT_LAYER = 40
         private const val MAX_OCR_PAGES = 5
         private const val OCR_DPI = 200f

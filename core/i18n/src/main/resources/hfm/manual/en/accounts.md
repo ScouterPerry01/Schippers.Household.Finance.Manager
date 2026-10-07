@@ -254,6 +254,7 @@ When you edit a credit card purchase and the card has benefits, a line in colour
 The buttons at the right of the form:
 
 - **Split…**: shares the transaction across several categories (not offered for a transfer).
+- **Itemize…**: shares the transaction over the items of its receipt, typed with their categories and sales taxes, which are shared over the items (not offered for a transfer). See [Itemize by hand](documents#itemize).
 - **Pay stub…**: on a Banking account, when entering a new transaction, enters a pay from its stub (see [Pay from a pay stub](accounts#pay-stub)).
 - **Sales tax…** and **Refund…**: when editing an existing transaction (see [Sales tax on a purchase](accounts#sales-tax) and [Record a refund](accounts#refund)).
 - **Save as template**: when editing an ordinary transaction, keeps it as a template for next time (see [Transaction templates](accounts#templates)).
