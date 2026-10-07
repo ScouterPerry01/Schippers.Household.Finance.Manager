@@ -2,7 +2,7 @@
 
 Chaque personne peut importer dans le [Calendrier](calendar) du ménage les calendriers que son téléphone affiche déjà (Google, Outlook ou Exchange, Samsung et autres), et choisir qui les voit. Un fichier iCalendar (.ics), envoyé par une école, une équipe ou un autre programme, peut aussi y être copié une fois.
 
-RANN's Roost ne se connecte jamais à un compte de calendrier. L’application du téléphone lit les calendriers qu’Android garde déjà, avec votre permission, et les envoie à l’ordinateur avec ses autres transferts, chiffrés de bout en bout.
+RANN's Roost ne se connecte jamais à un compte de calendrier. L’application du téléphone lit les calendriers qu’Android garde déjà, avec votre permission, et les envoie à l’ordinateur avec ses autres transferts, chiffrés de bout en bout. Si vous le choisissez, elle écrit aussi les prochains rendez-vous, horaires et factures du ménage dans un calendrier du téléphone (voir [Écrire dans un calendrier du téléphone](#both-ways)).
 
 ![Éléments importés d’un téléphone dans l’Agenda](images/calendar-brought-in.png)
 
@@ -10,14 +10,24 @@ RANN's Roost ne se connecte jamais à un compte de calendrier. L’application d
 
 ## Comment ça fonctionne {#how-it-works}
 
-1. Sur le téléphone, dans **Réglages**, ouvrez **Calendriers de ce téléphone** et activez **Envoyer les calendriers à l’ordinateur**. Android demande une fois l’accès au calendrier.
+1. Sur le téléphone, dans **Réglages**, ouvrez **Calendriers de ce téléphone** et choisissez **Importer seulement** (par défaut) ou **Dans les deux sens**, puis **Autoriser l’accès au calendrier**. Android le demande une fois.
 2. Cochez les calendriers à importer, choisissez qui voit chacun sur l’ordinateur et combien de jours à l’avance sont envoyés.
 3. À chaque transfert (par Wi-Fi, par le dossier de transfert ou dans un fichier partagé), le téléphone envoie en entier chaque calendrier qui a changé depuis la dernière fois. L’ordinateur remplace ce qu’il gardait de ce calendrier à partir de ce jour : les nouveaux éléments apparaissent, ceux qui ont changé sont mis à jour et ceux qui ont été supprimés disparaissent.
 4. Les éléments paraissent dans toutes les vues du Calendrier (**Agenda**, **Jour**, **Semaine**, **Mois**, et leurs jours ombrés dans **Année**), en lecture seule, marqués du calendrier d’où ils viennent et de la personne dont le téléphone les a envoyés.
 
-Le téléphone n’envoie que les calendriers que vous cochez, et seulement pour les jours choisis : le titre, le lieu, le début et la fin de chaque élément. Les descriptions, les invités, les pièces jointes et les rappels ne sont pas lus. Ce que vous ou quelqu’un d’autre changez dans l’application de calendrier du téléphone change sur l’ordinateur au prochain transfert ; rien n’est jamais écrit dans vos calendriers.
+Le téléphone n’envoie que les calendriers que vous cochez, et seulement pour les jours choisis : le titre, le lieu, le début et la fin de chaque élément. Les descriptions, les invités, les pièces jointes et les rappels ne sont pas lus. Ce que vous ou quelqu’un d’autre changez dans l’application de calendrier du téléphone change sur l’ordinateur au prochain transfert. Rien n’est écrit dans vos calendriers, sauf si vous choisissez **Dans les deux sens**.
 
 > Remarque : L’ordinateur doit être ouvert avec la connexion du propriétaire du téléphone quand un transfert arrive par Wi-Fi, comme pour les captures. Un fichier laissé dans le dossier de transfert attend que le propriétaire se connecte.
+
+## Écrire dans un calendrier du téléphone {#both-ways}
+@index: dans les deux sens; synchronisation dans les deux sens; écrire dans Google Agenda; calendrier RANN's Roost
+
+Avec **Dans les deux sens** choisi sur le téléphone, le téléphone écrit les 60 prochains jours du ménage dans un calendrier : les rendez-vous et événements, les heures de travail et d’école de chaque personne et les factures à payer. Il n’écrit que ce que l’utilisateur de ce téléphone peut voir sur l’ordinateur. Chaque personne choisit sur son propre téléphone où cela va :
+
+- **Calendrier RANN’s Roost sur ce téléphone seulement** : un calendrier à l’application, qui n’appartient à aucun compte et n’est jamais synchronisé avec Google, Outlook ni ailleurs.
+- Un calendrier d’un des comptes du téléphone, comme un calendrier Google ou Outlook. Il se synchronise alors avec ce fournisseur, et il est visible partout où ce compte est utilisé et par les personnes avec qui il est partagé.
+
+Dans l’un ou l’autre, un rendez-vous médical est écrit seulement comme « Rendez-vous santé », sans lieu ni détails, et une facture comme « Facture à payer : nom », jamais son montant. Les changements faits sur l’ordinateur arrivent dans le calendrier au prochain transfert ; les éléments retirés ou payés y sont supprimés. Ce que l’application a écrit n’est jamais réimporté comme élément importé. Désactiver l’option, choisir un autre calendrier ou annuler le jumelage du téléphone retire tout ce qu’elle a écrit. Voir [Dans les deux sens](phone-app#calendar-both-ways) dans le chapitre du téléphone.
 
 ## Qui voit quoi {#visibility}
 @index: calendrier privé; occupé seulement; disponibilités; calendrier partagé

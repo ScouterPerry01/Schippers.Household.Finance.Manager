@@ -108,7 +108,35 @@ data class CalendarShareSettings(
     val folder: Set<String> = emptySet(),
     val failures: Map<String, String> = emptyMap(),
     val lastReadMillis: Long? = null,
+    /** CSY-06: off, bring in only or both ways; null in settings kept before the choice existed (see [syncMode]). */
+    val mode: CalendarSyncMode? = null,
+    /** CSY-06: where RANN's Roost writes, when both ways. */
+    val writeTarget: WriteTarget? = null,
+    /** CSY-06: what RANN's Roost wrote, by its stable key, and in which calendar. */
+    val written: Map<String, WrittenEvent> = emptyMap(),
+    val writtenCalendarId: Long? = null,
+    /** CSY-06: the phone-only RANN's Roost calendar, once made. */
+    val localCalendarId: Long? = null,
 ) {
+    /**
+     * CSY-06: the mode chosen. Before the choice existed, bringing in was on or off with a switch: a phone
+     * that had turned it off with calendars ticked stays off; otherwise bring in only, the default.
+     */
+    val syncMode: CalendarSyncMode
+        get() = mode ?: if (enabled || chosen.isEmpty()) CalendarSyncMode.BRING_IN else CalendarSyncMode.OFF
+
+    val bringsIn: Boolean get() = syncMode != CalendarSyncMode.OFF
+
+    val writes: Boolean get() = syncMode == CalendarSyncMode.BOTH_WAYS
+
+    /** The phone's event ids RANN's Roost wrote: never brought in as the user's own items. */
+    val writtenEventIds: Set<Long> get() = written.values.map { it.eventId }.toSet()
+
+    /** The phone-only RANN's Roost calendar is never brought in; in an account calendar, only the items it wrote are skipped. */
+    fun isOwn(calendarId: Long): Boolean = calendarId == localCalendarId
+
+    fun withMode(m: CalendarSyncMode): CalendarShareSettings = copy(mode = m, enabled = m != CalendarSyncMode.OFF)
+
     fun isPending(id: String): Boolean = pending.any { it.id == id }
 
     /** SYNC-04: snapshots the desktop stored are no longer kept. */
@@ -146,7 +174,8 @@ object CalendarShare {
     fun refresh(settings: CalendarShareSettings, source: CalendarSource, now: Long, zone: ZoneId, newId: () -> String): CalendarShareSettings {
         val today = Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
         val until = today.plusDays(settings.daysAhead.coerceIn(1, 366).toLong())
-        val chosen = if (settings.enabled) settings.chosen else emptyList()
+        val chosen = if (settings.bringsIn) settings.chosen.filterNot { settings.isOwn(it.id) } else emptyList()
+        val own = settings.writtenEventIds
         var pending = settings.pending
         val sent = settings.sent.toMutableMap()
         if (chosen.isNotEmpty()) {
@@ -155,7 +184,7 @@ object CalendarShare {
             val byCalendar = source.instances(chosen.map { it.id }.toSet(), fromMillis, toMillis).groupBy { it.calendarId }
             for (c in chosen) {
                 val key = c.id.toString()
-                val items = byCalendar[c.id].orEmpty().mapNotNull { instance(it, zone, settings.itemVisibility) }
+                val items = byCalendar[c.id].orEmpty().filterNot { it.eventId in own }.mapNotNull { instance(it, zone, settings.itemVisibility) }
                     .filter { it.endDate >= today.toString() && it.startDate < until.toString() }
                     .sortedWith(compareBy({ it.startDate }, { it.startTime ?: "" }, { it.eventId })).take(MAX_ITEMS)
                 val snapshot = CalendarSnapshot(
@@ -198,8 +227,11 @@ object CalendarShare {
         if (settings.chosen.isEmpty()) return emptyList()
         val today: LocalDate = Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
         val until = today.plusDays(settings.daysAhead.coerceIn(1, 366).toLong())
-        val byId = settings.chosen.associateBy { it.id }
+        val byId = settings.chosen.filterNot { settings.isOwn(it.id) }.associateBy { it.id }
+        if (byId.isEmpty()) return emptyList()
+        val own = settings.writtenEventIds
         return source.instances(byId.keys, today.atStartOfDay(zone).toInstant().toEpochMilli(), until.atStartOfDay(zone).toInstant().toEpochMilli())
+            .filterNot { it.eventId in own }
             .mapNotNull { row -> byId[row.calendarId]?.let { c -> instance(row, zone, settings.itemVisibility)?.let { c to it } } }
             .sortedWith(compareBy({ it.second.startDate }, { it.second.startTime ?: "" }))
     }
