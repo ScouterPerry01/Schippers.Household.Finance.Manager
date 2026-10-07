@@ -1,6 +1,6 @@
 # Catégories
 
-Les catégories classent l'argent qui entre et qui sort : Épicerie, Électricité, Salaire. Chaque opération, ou chaque ventilation d'une opération, peut avoir une catégorie, et les budgets, les rapports et la trousse fiscale additionnent les montants par catégorie. L'écran se trouve dans le groupe **Réglages** du menu, sous **Catégories**.
+Les catégories classent l'argent qui entre et qui sort : Épicerie, Électricité, Salaire. Chaque opération, ou chaque ventilation d'une opération, peut avoir une catégorie, et les budgets, les rapports et la trousse fiscale additionnent les montants par catégorie. L'écran se trouve dans le groupe **Réglages** du menu, sous **Catégories**. Son onglet **Catégories de dépenses** contient ces catégories ; son onglet **Listes de factures**, les listes qui classent les factures (voir [Listes de factures](categories#bill-lists)).
 
 ![L’écran Catégories](images/categories.png)
 
@@ -106,6 +106,31 @@ Une catégorie archivée n'est plus offerte dans les listes de catégories (opé
 - [Impôts](taxes) : les dons et la trousse fiscale, par le traitement fiscal.
 - [Documents](documents) : la catégorie d'une opération créée à partir d'un reçu.
 - Le téléphone : les catégories des reçus saisis dans RANN's Roost Mobile. Voir [Téléphones](phones).
+
+## Listes de factures {#bill-lists}
+@index: listes de factures; classement des factures; type de facture; catégorie de facture; sous-catégorie de facture; Maison; Entreprise; rétablir les listes intégrées
+
+L'onglet **Listes de factures**, à côté de **Catégories de dépenses**, contient les listes qui servent à classer les factures dans l'écran [Factures](bills#classification) : chaque facture est Maison ou Entreprise, dans une catégorie, avec une sous-catégorie. Le ménage commence avec des listes intégrées en français et en anglais :
+
+- Maison : Logement et services essentiels (Services publics, Paiements de logement, Communications), Transport et mobilité (Paiements automobiles, Services liés aux véhicules, Carburant et parc automobile), Protection et santé (Assurances, Frais médicaux), Mode de vie et dépenses discrétionnaires (Entretien et réparations, Vacances et voyages, Abonnements et services, Éducation et famille) et Autre.
+- Entreprise : Installations et locaux (Occupation, Services publics, Entretien des installations), Technologie et infrastructure (Logiciels et logiciels-services, Télécommunications, Services informatiques), Opérations et chaîne d'approvisionnement (Stocks et fournitures, Bureau et frais généraux, Services marchands et bancaires), Services professionnels et administratifs (Honoraires professionnels, Assurances, Marketing et publicité), Employés et déplacements (Déplacements et frais de représentation, Avantages pour le personnel) et Autre.
+
+Chaque sous-catégorie, comme « Services publics : Électricité », est payée par défaut dans une catégorie de dépenses (Électricité sous Services publics, par exemple) ; une sous-catégorie Entreprise est payée dans une des catégories de Dépenses de travail autonome, qui suivent les lignes du formulaire T2125 (Publicité, Loyer d’entreprise, Téléphone et services publics, Logiciels et abonnements…).
+
+La gauche liste chaque catégorie, précédée de Maison ou Entreprise, et ses sous-catégories en retrait, chacune après sa rubrique. Les éléments masqués sont en gris. La droite offre :
+
+- **Ajouter une catégorie Maison** et **Ajouter une catégorie Entreprise** : commencent une nouvelle catégorie de ce type, avec ses noms en français et en anglais.
+- **Ajouter une sous-catégorie** : affiché quand une catégorie ou une sous-catégorie est choisie. Commence une nouvelle sous-catégorie dans cette catégorie, avec ses noms, **Sous la rubrique** (une des rubriques de la catégorie, ou aucune) et sa catégorie de dépenses.
+- **Rétablir les listes intégrées** : demande d'abord, puis remet tous les noms, catégories de dépenses et éléments masqués intégrés comme à l'origine. Ce que vous avez ajouté reste.
+
+Le formulaire de l'élément choisi :
+
+- **Nom en anglais** et **Nom en français** : les noms affichés dans chaque langue. Si l'un est vide, l'autre est utilisé. **Enregistrer** les garde.
+- **Catégorie de dépenses de ses paiements** (sous-catégories) : inscrite sur une facture quand elle reçoit cette sous-catégorie ; chaque facture peut en choisir une autre. Les factures déjà créées gardent la leur.
+- **Masquée des choix (les factures qui l’ont la gardent)** : retire aussitôt l'élément des choix du formulaire de facture. Décochez-la pour l'offrir de nouveau.
+- **Rétablir comme à l’origine** : affiché pour un élément intégré que vous avez renommé, payé dans une autre catégorie ou masqué. Il le remet comme à l'origine.
+
+Les listes appartiennent à tout le ménage, comme les catégories de dépenses : elles contiennent des noms, pas des montants. Les administrateurs et les membres peuvent les modifier ; les lecteurs les voient sans pouvoir les modifier.
 
 ## Qui peut modifier les catégories {#permissions}
 

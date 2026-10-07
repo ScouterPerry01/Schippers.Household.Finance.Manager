@@ -31,3 +31,7 @@ All documents lets you search the text and filter by date and amount. Save a cop
 ## E-receipts from email
 
 Save an emailed receipt from your email program as a file (.eml) and import it, drop it here or put it in the watched folder. Its PDF or picture attachments come in as documents; an email without attachments is kept as a PDF of its text, and its merchant, date and total are read from it. RANN's Roost never signs in to your mailbox.
+
+## A bill that matches none of your bills
+
+For a document of kind Bill, Create a bill from this opens a new bill filled in from what was read: the company, your account number, the amount, the due date, the statement number and, for a utility, the meter readings, with a classification guessed from the company. Check it and save: the bill appears on the Bills screen with the document as its first statement. Attach to a bill records it on a bill you choose instead.

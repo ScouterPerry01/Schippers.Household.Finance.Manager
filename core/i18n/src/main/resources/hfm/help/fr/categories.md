@@ -19,3 +19,7 @@ Le champ Traitement fiscal relie une catégorie à une ligne de la déclaration 
 - Cochez Archivé (masqué des listes) pour ne plus voir une catégorie inutilisée. Les opérations passées la gardent.
 
 La province ou le territoire du ménage, choisi dans Membres du ménage, détermine les catégories par défaut d’un nouveau ménage.
+
+## Listes de factures
+
+L’onglet Listes de factures contient les catégories et sous-catégories Maison et Entreprise qui classent les factures, chaque sous-catégorie avec la catégorie de dépenses de ses paiements. Renommez, ajoutez ou masquez des éléments ; Rétablir les listes intégrées remet celles d’origine, en gardant ce que vous avez ajouté.

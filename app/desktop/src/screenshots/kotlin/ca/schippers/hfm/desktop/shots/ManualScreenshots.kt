@@ -316,6 +316,14 @@ private val SHOTS: List<Shot> = buildList {
     add(Shot("utilities-tanks") { section(Section.UTILITIES); click(t("utilities.tab.TANKS")) })
     add(Shot("side-hours") { section(Section.SIDE); click(t("side.tab.HOURS")) })
     add(Shot("family-chores") { section(Section.FAMILY); click(t("family.tab.CHORES")) })
+    // BILL-18: the gas bill that matches no bill, made into one: classification guessed, statement and readings below.
+    add(
+        Shot("bills-from-document") {
+            model.focusDocumentId = model.books.documents.inbox().first { it.fileName == l("Energir-facture.jpg", "Enbridge-bill.jpg") }.id
+            section(Section.DOCUMENTS)
+            press(t("documents.createBill"))
+        },
+    )
     // DOC-02: the Canadian Tire receipt itemized by hand, its taxes as read on this computer.
     add(
         Shot("documents-itemize") {

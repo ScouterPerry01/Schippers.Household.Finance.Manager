@@ -1,6 +1,6 @@
 # Categories
 
-Categories sort money in and money out: Groceries, Electricity, Salary and wages. Every transaction, or each split of a transaction, can have a category, and budgets, reports and the tax package add amounts up by category. The screen is in the **Settings** group of the menu, under **Categories**.
+Categories sort money in and money out: Groceries, Electricity, Salary and wages. Every transaction, or each split of a transaction, can have a category, and budgets, reports and the tax package add amounts up by category. The screen is in the **Settings** group of the menu, under **Categories**. Its **Spending categories** tab holds these categories; its **Bill lists** tab, the lists that classify bills (see [Bill lists](categories#bill-lists)).
 
 ![The Categories screen](images/categories.png)
 
@@ -106,6 +106,31 @@ An archived category is no longer offered in the category pickers (transactions,
 - [Taxes](taxes): donations and the tax package, through the tax treatment.
 - [Documents](documents): the category of a transaction made from a receipt.
 - The phone: categories for receipts captured on RANN's Roost Mobile. See [Phones](phones).
+
+## Bill lists {#bill-lists}
+@index: bill lists; bill classification; bill type; bill category; bill subcategory; Home; Business; restore built-in lists
+
+The **Bill lists** tab, beside **Spending categories**, holds the lists used to classify bills on the [Bills](bills#classification) screen: each bill is Home or Business, in a category, with a subcategory. The household starts with built-in lists in English and French:
+
+- Home: Essential Housing & Utilities (Utilities, Housing Payments, Communication), Transportation & Mobility (Auto Payments, Vehicle Services, Fuel & Fleet), Protection & Health (Insurance, Medical Bills), Lifestyle & Discretionary (Maintenance & Repair, Vacation & Travel, Subscriptions & Services, Education & Family) and Other.
+- Business: Facilities & Premises (Occupancy, Utilities, Facilities Maintenance), Technology & Infrastructure (Software & SaaS, Telecommunications, IT Services), Operations & Supply Chain (Inventory & Supplies, Office & Overhead, Merchant & Bank Services), Professional & Administrative Services (Professional Fees, Insurance, Marketing & Advertising), Employee & Travel (Travel & Entertainment, Staff Amenities) and Other.
+
+Each subcategory, such as "Utilities: Electricity", pays into a spending category by default (Electricity under Utilities, for example); a Business subcategory pays into one of the Self-employment expenses categories, which follow the lines of form T2125 (Advertising, Business rent, Telephone and utilities, Software and subscriptions...).
+
+The left side lists each category, with Home or Business before its name, and its subcategories indented under it, each after its heading. Hidden entries are greyed out. The right side has:
+
+- **Add a Home category** and **Add a Business category**: start a new category of that type, with its names in English and French.
+- **Add a subcategory**: shown when a category or subcategory is selected. Starts a new subcategory in that category, with its names, **Under the heading** (one of the category's headings, or none) and its spending category.
+- **Restore the built-in lists**: asks first, then puts back every built-in name, spending category and hidden entry as shipped. What you added stays.
+
+The form of a selected entry:
+
+- **Name in English** and **Name in French**: the names shown in each language. If one is left empty, the other is used. **Save** keeps them.
+- **Spending category of its payments** (subcategories): filled in on a bill when it gets this subcategory; each bill can still choose another. Bills already set up keep theirs.
+- **Hidden from the choices (bills that have it keep it)**: takes the entry out of the bill form's choices at once. Untick it to offer it again.
+- **Restore as built in**: shown for a built-in entry you renamed, gave another spending category or hid. It puts it back as shipped.
+
+The lists belong to the whole household, like the spending categories: they hold names, not amounts. Administrators and members can change them; viewers see them read only.
 
 ## Who can change categories {#permissions}
 

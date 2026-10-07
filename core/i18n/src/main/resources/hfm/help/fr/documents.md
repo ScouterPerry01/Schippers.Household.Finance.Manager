@@ -31,3 +31,7 @@ Tous les documents permet de chercher dans le texte et de filtrer par date et pa
 ## Reçus par courriel
 
 Enregistrez un reçu reçu par courriel en fichier (.eml) depuis votre logiciel de courriel, puis importez-le, déposez-le ici ou placez-le dans le dossier surveillé. Ses pièces jointes PDF ou images deviennent des documents; un courriel sans pièce jointe est gardé en PDF de son texte, et le commerçant, la date et le total en sont lus. RANN’s Roost ne se connecte jamais à votre boîte de courriel.
+
+## Une facture qui ne correspond à aucune de vos factures
+
+Pour un document de type Facture, Créer une facture à partir de ceci ouvre une nouvelle facture remplie avec ce qui a été lu : l’entreprise, votre numéro de compte, le montant, la date d’échéance, le numéro de l’état de compte et, pour les services publics, les relevés du compteur, avec un classement deviné d’après l’entreprise. Vérifiez-la et enregistrez : la facture paraît dans l’écran Factures, avec le document comme premier état de compte. Joindre à une facture l’inscrit plutôt sur une facture que vous choisissez.

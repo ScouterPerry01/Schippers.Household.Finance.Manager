@@ -26,3 +26,11 @@ Abonnements montre chaque abonnement avec son coût annuel et le total de tous v
 ## Exporter le calendrier
 
 Exporter le calendrier… enregistre vos factures dans un fichier de calendrier, pour ajouter les échéances à un autre logiciel d’agenda. Les factures paraissent aussi dans l’écran Calendrier.
+
+## Classer une facture
+
+Sous Maison ou entreprise, choisissez Maison ou Entreprise, puis la catégorie de facture et la sous-catégorie, comme Services publics : Électricité. La sous-catégorie remplit la catégorie de dépenses. Une facture Entreprise nomme la personne sous Entreprise de : ses paiements comptent comme dépenses d’entreprise de cette personne dans la trousse fiscale de fin d’année. Les listes sont dans Réglages, Catégories, Listes de factures.
+
+## États de compte et relevés du compteur
+
+Votre numéro de compte chez le fournisseur est masqué ; Afficher le numéro redemande votre mot de passe. Quand vous modifiez une facture, États de compte énumère ceux reçus : Ajouter un état de compte inscrit son numéro, son montant, sa date d’émission et sa date d’échéance, qui devient l’échéance de cette période. Pour les services publics, entrez les relevés précédent et actuel avec leurs dates : ils sont ajoutés au compteur choisi sous Compteur (Services publics). Une facture saisie dans Documents est inscrite comme état de compte, ou crée la facture avec Créer une facture à partir de ceci.

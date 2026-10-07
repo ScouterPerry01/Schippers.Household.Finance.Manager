@@ -40,6 +40,16 @@ One form handles three types of scheduled items:
 - **Type**: Bill, Income or Transfer. See [Bills, income and transfers](bills#bill-types). The type changes which fields follow. Default: Bill.
 - **Name**: how the bill is called in every list, reminder and calendar, for example "Hydro-Québec", "Rent" or "Pay - Marie". Required.
 
+### Home or business, category and subcategory {#classification}
+@index: bill type; bill category; bill subcategory; business bill; classify a bill; Home; Business
+
+Shown for a bill (not for income or a transfer). They say what the bill is for, using the bill lists of Settings: see [Bill lists](categories#bill-lists).
+
+- **Home or business**: Home for the household's bills, Business for the bills of someone's business or side work. "Not classified" leaves the bill without a classification. Changing it clears the two fields below.
+- **Bill category**: the group the bill belongs to, such as Essential Housing & Utilities, Transportation & Mobility or, for a business, Technology & Infrastructure. Only the categories of the chosen type are offered.
+- **Subcategory**: what exactly the bill is, shown under its heading, such as "Utilities: Electricity", "Communication: Cell Phone plans" or "Software & SaaS: Business software licenses". Choosing one fills in **Category** with the subcategory's spending category, unless you chose another category yourself; you can still change it. A utility subcategory (electricity, gas, water) also proposes the meter of that kind when there is only one, and shows the meter readings on the bill's statements.
+- **Business of** (Business only): the person whose business the bill belongs to. Required for a Business bill. Its payments count as this person's business expenses in the [year-end package](taxes#year-end-package), with the sales taxes paid on them, whatever category they have.
+
 ### Accounts and category {#accounts-and-category}
 
 - **Paid from** (for a bill or transfer) or **Deposited to** (for income): the account the money leaves or arrives in. The bill's amount is in this account's currency. It is used by the forecast and by the overdraft warning, and the payment is recorded in it. It can be chosen only when you create the bill; to change it later, create a new bill. Required.
@@ -51,7 +61,7 @@ One form handles three types of scheduled items:
 Shown for a bill or income, not for a transfer.
 
 - **Payee**: who you pay, or who pays you. It becomes the payee of the recorded transaction. If empty, the bill's name is used. It also helps the app recognize a scanned or downloaded bill as this one.
-- **Your account number with the payee**: the account or customer number printed on the bill. Optional. When you scan or import a bill, the app compares the last four digits with this number to find the right bill. It is shown nowhere else.
+- **Your account number with the payee**: the account or customer number printed on the bill. Optional. When you scan or import a bill, the app compares the last four digits with this number to find the right bill. Once saved, it is shown masked, with only its last four characters ("•••• 6789"), like account numbers elsewhere: **Show number** asks for your password again and shows it in full, and **Change** lets you type another one (leave it empty and save to remove it). After three wrong passwords, each further try must wait a little longer.
 
 ### Amount {#amount}
 
@@ -110,6 +120,31 @@ Whatever you enter here, a bill that is due today or overdue is always in the re
 
 - **Subscription**: tick it for subscriptions such as streaming, software, magazines or a gym, to follow them on the **Subscriptions** tab with their yearly cost.
 - **Cancel by (reminder)**: shown when **Subscription** is ticked. The date by which you must cancel to avoid the next renewal or the end of a free trial, as YYYY-MM-DD. Starting 7 days before that date, a reminder says "cancel within ... days to avoid renewal". It is shown on the Subscriptions tab.
+
+### Meter (Utilities) {#meter}
+@index: meter; utility meter; link a meter
+
+Shown for a bill when the household has meters on the [Utilities](utilities) screen. The meter whose readings this bill reports, such as the house's electricity meter. A statement's readings are added to this meter, and the bill's amounts give the meter's cost per unit on the Utilities screen. A meter has one bill; choosing it here takes it from any other bill. "(none)" unlinks it.
+
+### Statements {#statements}
+@index: statement; bill statement; statement number; issued date; due date; meter reading; reading; amount used; consumption
+
+When you edit an existing bill, **Statements** lists the statements received for it, latest due date first: each with its due date, amount and number, then when it was issued, the current meter reading and the amount used, and "paid ..." once its due date is paid.
+
+- **Add a statement** opens the statement form; **Edit** on a statement opens it again.
+- **Document** shows the scanned bill kept with the statement (statements recorded from [Documents](documents) have one).
+- **Mark paid** appears while the statement's due date is unpaid: it is the same as [Mark paid](bills#mark-paid) on the To pay tab.
+
+The statement form:
+
+- **Statement number**: the bill or statement number printed on it. Optional.
+- **Amount**: the amount of this statement. It becomes the actual amount of its due date, as **Enter amount** would.
+- **Issued on**: the date the statement was issued. Optional.
+- **Due date**: the date it must be paid. Required. It becomes the bill's due date for that period: the bill's nearest unpaid due date (less than half a period away) moves to this date, so reminders, the calendar and the forecast follow the statement. When no due date is near, it is added as a due date of its own; when the nearest one is already paid, the statement is kept with it and nothing more is due.
+- **Previous reading**, **Previous reading date**, **Current reading**, **Current reading date** (utility bills, or bills with a meter): the meter readings printed on the statement, in kWh or cubic metres as on the bill.
+- **Amount used**: the consumption printed on the statement. Leave it empty to use the current reading less the previous one.
+
+Readings with a date are added to the bill's meter, unless the meter already has a reading on that day, so the same reading is never entered twice. **Delete** in the form removes the statement; the due date and amount it set stay, and so do readings added to the meter.
 
 ### Active and Delete {#active-and-delete}
 
@@ -200,7 +235,7 @@ A red line "The paying account would go below zero." appears on a bill whose pay
 
 ## The All bills tab {#all-bills-tab}
 
-**All bills** lists every bill, income and transfer, including inactive ones (marked "(inactive)"). Each line shows the name, the type, how it repeats, the next due date ("next ..."), and the amount ("≈" for variable or estimated amounts). **Edit** opens the bill's form.
+**All bills** lists every bill, income and transfer, including inactive ones (marked "(inactive)"). Each line shows the name, the type, how it repeats, the next due date ("next ..."), and the amount ("≈" for variable or estimated amounts). A classified bill also shows Home or Business, its category and subcategory, and the account number masked ("account •••• 6789"). **Edit** opens the bill's form.
 
 "No bills yet. Add rent, utilities, insurance, subscriptions, pay and regular transfers." means none are set up.
 
@@ -277,7 +312,17 @@ A bill is in the reminders:
 
 ## Bills from scanned documents {#bills-from-documents}
 
-A paper bill or e-bill imported on the [Documents](documents) screen can be recorded on its bill: the app recognizes the bill by your account number with the payee or by the payee's name, and **Record the amount on this bill** sets the actual amount for the nearest due date and keeps the document with it. Fill in **Payee** and **Your account number with the payee** on your bills so they are recognized.
+@index: Create a bill from this; Attach to a bill; captured bill
+
+A paper bill or e-bill imported on the [Documents](documents) screen is recorded as a statement of its bill, with what was read from it: the amount, the due date, the statement number, the issue date and, for a utility, the meter readings.
+
+![Create a bill from this: a captured gas bill made into a bill](images/bills-from-document.png)
+
+- When the app recognizes the bill, by your account number with the payee or by the payee's name, **Record it as this bill's statement** records it and keeps the document with it.
+- When it matches none of your bills, **Create a bill from this** opens the bill form filled in from the document: the company's name, your account number, the amount (as a variable amount), the due date as the first due date, monthly, and a home or business classification guessed from your earlier bills from the same company, the payee's category or the company's name (Hydro, Énergir, Bell, Rogers...). Check it, choose the account it is paid from, and save: the bill is created and the document becomes its first statement, under **First statement (the captured bill)**.
+- **Attach to a bill** records it on a bill you choose instead, with the statement's fields to correct if need be.
+
+Fill in **Payee** and **Your account number with the payee** on your bills so they are recognized. See [Documents](documents#record-on-bill).
 
 ## Where bills appear elsewhere {#elsewhere}
 

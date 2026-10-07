@@ -194,7 +194,7 @@ Under a field you may see:
 - "Check this: it was hard to read": the value was read with low confidence. Compare it with the picture.
 - "read by AI": the value comes from an AI reading.
 
-Under the date and total, one line can show other details that were read: the subtotal, each sales tax (GST, HST, QST, PST), how it was paid (cash, debit card, credit card, gift card), "card ending" with the last four digits, the invoice number, the due date, and your account number with the biller. These details are used when filing: the card digits pick the account in a new transaction, the taxes are recorded on it, the due date and account number find the bill.
+Under the date and total, one line can show other details that were read: the subtotal, each sales tax (GST, HST, QST, PST), how it was paid (cash, debit card, credit card, gift card), "card ending" with the last four digits, the invoice or statement number, the due date, your account number with the biller and, on a utility bill, the previous and current meter readings with their dates and the amount used. These details are used when filing: the card digits pick the account in a new transaction, the taxes are recorded on it, the due date and account number find the bill, and the number and readings go on the bill's statement.
 
 ### Kinds of documents {#document-kinds}
 @index: receipt; bill; invoice; statement; pay stub; explanation of benefits; EOB
@@ -260,13 +260,18 @@ This is the usual choice when the transaction was already imported from your ban
 "No transaction with this amount yet. Create one, or file the document and attach it later when the statement arrives." means no transaction matched. The amount must match exactly, so check the **Total** first.
 
 ### Record the amount on a bill {#record-on-bill}
-@index: e-bill; utility bill; variable bill amount
+@index: e-bill; utility bill; variable bill amount; Create a bill from this; Attach to a bill; bill statement
 
-For a document of kind **Bill** or **Invoice**, the app looks for one of your bills that it belongs to: first by your account number with the biller (the last four digits), then by the store or biller name compared with the bill's payee and name. When it finds one, it shows "This looks like the bill ..." and:
+For a document of kind **Bill** or **Invoice**, the app looks for one of your bills that it belongs to: first by your account number with the biller (the last four digits), then by the store or biller name compared with the bill's payee and name. The document is then recorded as a statement of a bill: its total, its due date, the statement number, the issue date (the document's date) and, for a utility, the meter readings it shows. See [Statements](bills#statements).
 
-- **Record the amount on this bill**: records the document's total as the amount of that bill's due date closest to the document's due date (or its date), within 45 days (the default, set in [Rates and rules](rates-rules)), attaches the document to the bill and files it. The bill's To pay list then shows the real amount for that due date. See [Bills](bills).
+When the app finds the bill, it shows "This looks like the bill ..." and:
 
-The bill must have a due date within 45 days of the document; otherwise an error says so. The document needs a total.
+- **Record it as this bill's statement**: records the statement on that bill, attaches the document and files it. The statement's due date becomes the bill's due date for that period: the bill's nearest unpaid due date moves to it. When the document shows no due date, the bill's due date closest to the document's date, within 45 days (the default, set in [Rates and rules](rates-rules)), is used, and an error says so if there is none. The document needs a total.
+
+When it matches none of your bills, "This bill matches none of your bills." is shown, and:
+
+- **Create a bill from this** (kind **Bill**): opens the bill form, titled "Create a bill from this", filled in from the document: the biller's name as the bill's name and payee, your account number, the total as a variable amount, the due date as the first due date, monthly, a home or business classification guessed from your earlier bills from the same company, the payee's category or the company's name, and the spending category that goes with it. The account it is paid from is your first bank account; check it. Under **First statement (the captured bill)** are the statement number, the amount, **Issued on**, **Due date** and, for a utility, the meter readings, to correct if need be. **Save** creates the bill, records the statement, adds dated readings to the chosen meter and files the document; the bill then appears on the Bills screen. See [Bills](bills#bills-from-documents).
+- **Attach to a bill** (also **Attach to another bill** when one was found): picks the bill yourself, with the statement's fields to correct, and records it there the same way.
 
 ### New transaction from this document {#new-transaction}
 @index: create transaction from receipt; cash receipt

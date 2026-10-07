@@ -70,20 +70,20 @@ internal fun classificationText(model: BooksModel, lists: BillLists, bill: Bill)
 @Composable
 private fun ClassificationFields(model: BooksModel, lists: BillLists, type: BillType?, categoryKey: String?, subcategoryKey: String?, onChange: (BillType?, String?, String?) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Picker(model.t("bills.billType"), listOf<BillType?>(null) + BillType.entries, type, { it?.let { t -> model.t("billType.$t") } ?: model.t("bills.notClassified") }, Modifier.weight(0.8f)) {
+        Picker(model.t("bills.billType"), listOf<BillType?>(null) + BillType.entries, type, { it?.let { t -> model.t("billType.$t") } ?: model.t("bills.notClassified") }, Modifier.weight(1f)) {
             if (it != type) onChange(it, null, null)
         }
         if (type != null) {
             val categories = lists.categories(type).let { visible -> visible + listOfNotNull(lists.category(categoryKey)?.takeIf { it !in visible }) }
-            Picker(model.t("bills.billCategory"), categories, lists.category(categoryKey), { it.name(model.language) }, Modifier.weight(1.2f)) {
+            Picker(model.t("bills.billCategory"), categories, lists.category(categoryKey), { it.name(model.language) }, Modifier.weight(2f)) {
                 if (it.key != categoryKey) onChange(type, it.key, null)
             }
-            if (categoryKey != null) {
-                val subs = lists.subcategories(categoryKey).let { visible -> visible + listOfNotNull(lists.subcategory(subcategoryKey)?.takeIf { it !in visible }) }
-                Picker(model.t("bills.billSubcategory"), listOf(null) + subs, lists.subcategory(subcategoryKey), { it?.let { s -> lists.label(s, model.language) } ?: model.t("common.none") }, Modifier.weight(1.4f)) {
-                    onChange(type, categoryKey, it?.key)
-                }
-            }
+        }
+    }
+    if (type != null && categoryKey != null) {
+        val subs = lists.subcategories(categoryKey).let { visible -> visible + listOfNotNull(lists.subcategory(subcategoryKey)?.takeIf { it !in visible }) }
+        Picker(model.t("bills.billSubcategory"), listOf(null) + subs, lists.subcategory(subcategoryKey), { it?.let { s -> lists.label(s, model.language) } ?: model.t("common.none") }) {
+            onChange(type, categoryKey, it?.key)
         }
     }
 }

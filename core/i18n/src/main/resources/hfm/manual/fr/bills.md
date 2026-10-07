@@ -40,6 +40,16 @@ Un seul formulaire sert à trois types d’éléments prévus :
 - **Type** : Facture, Revenu ou Virement. Voir [Factures, revenus et virements](bills#bill-types). Le type change les champs qui suivent. Par défaut : Facture.
 - **Nom** : le nom de la facture dans chaque liste, rappel et calendrier, par exemple « Hydro-Québec », « Loyer » ou « Paie - Marie ». Obligatoire.
 
+### Maison ou entreprise, catégorie et sous-catégorie {#classification}
+@index: type de facture; catégorie de facture; sous-catégorie de facture; facture d’entreprise; classer une facture; Maison; Entreprise
+
+Affichés pour une facture (pas pour un revenu ni un virement). Ils disent à quoi sert la facture, selon les listes de factures des Paramètres : voir [Listes de factures](categories#bill-lists).
+
+- **Maison ou entreprise** : Maison pour les factures du ménage, Entreprise pour celles de l’entreprise ou du travail autonome d’une personne. « Non classée » laisse la facture sans classement. Le changer efface les deux champs suivants.
+- **Catégorie de facture** : le groupe de la facture, comme Logement et services essentiels, Transport et mobilité ou, pour une entreprise, Technologie et infrastructure. Seules les catégories du type choisi sont offertes.
+- **Sous-catégorie** : ce qu’est exactement la facture, sous sa rubrique, comme « Services publics : Électricité », « Communications : Forfaits de cellulaire » ou « Logiciels et logiciels-services : Licences de logiciels d’entreprise ». En choisir une inscrit dans **Catégorie** la catégorie de dépenses de la sous-catégorie, sauf si vous en avez choisi une autre vous-même ; vous pouvez encore la changer. Une sous-catégorie de services publics (électricité, gaz, eau) propose aussi le compteur de ce genre quand il n’y en a qu’un, et montre les relevés du compteur sur les états de compte de la facture.
+- **Entreprise de** (Entreprise seulement) : la personne dont l’entreprise reçoit la facture. Obligatoire pour une facture Entreprise. Ses paiements comptent comme dépenses d’entreprise de cette personne dans la [trousse de fin d’année](taxes#year-end-package), avec les taxes de vente payées, quelle que soit leur catégorie.
+
 ### Comptes et catégorie {#accounts-and-category}
 
 - **Payée à partir de** (pour une facture ou un virement) ou **Déposé dans** (pour un revenu) : le compte d’où sort ou où arrive l’argent. Le montant de la facture est dans la devise de ce compte. Ce compte sert à la prévision et à l’avertissement de découvert, et le paiement y est inscrit. Il ne peut être choisi qu’à la création de la facture ; pour le changer plus tard, créez une nouvelle facture. Obligatoire.
@@ -51,7 +61,7 @@ Un seul formulaire sert à trois types d’éléments prévus :
 Affiché pour une facture ou un revenu, pas pour un virement.
 
 - **Bénéficiaire** : à qui vous payez, ou qui vous paie. Il devient le bénéficiaire de l’opération inscrite. S’il est vide, le nom de la facture est utilisé. Il aide aussi l’application à reconnaître une facture numérisée ou téléchargée comme étant celle-ci.
-- **Votre numéro de compte chez le fournisseur** : le numéro de compte ou de client imprimé sur la facture. Facultatif. Quand vous numérisez ou importez une facture, l’application compare ses quatre derniers chiffres avec ce numéro pour trouver la bonne facture. Il n’est affiché nulle part ailleurs.
+- **Votre numéro de compte chez le fournisseur** : le numéro de compte ou de client imprimé sur la facture. Facultatif. Quand vous numérisez ou importez une facture, l’application compare ses quatre derniers chiffres avec ce numéro pour trouver la bonne facture. Une fois enregistré, il est masqué, seuls ses quatre derniers caractères restant visibles (« •••• 6789 »), comme les numéros de compte ailleurs : **Afficher le numéro** redemande votre mot de passe et le montre au complet, et **Changer** permet d’en taper un autre (laissez-le vide et enregistrez pour le retirer). Après trois mots de passe erronés, chaque nouvel essai doit attendre un peu plus longtemps.
 
 ### Montant {#amount}
 
@@ -110,6 +120,31 @@ Quoi que vous entriez ici, une facture à payer aujourd’hui ou en retard figur
 
 - **Abonnement** : cochez-la pour les abonnements comme la diffusion en continu, les logiciels, les magazines ou le gym, afin de les suivre dans l’onglet **Abonnements** avec leur coût annuel.
 - **Annuler avant le (rappel)** : affiché quand **Abonnement** est cochée. La date limite pour annuler avant le prochain renouvellement ou la fin d’un essai gratuit, au format AAAA-MM-JJ. À partir de 7 jours avant cette date, un rappel indique « annuler d’ici … jours pour éviter le renouvellement ». Elle est affichée dans l’onglet Abonnements.
+
+### Compteur (Services publics) {#meter}
+@index: compteur; compteur de services publics; lier un compteur
+
+Affiché pour une facture quand le ménage a des compteurs dans l’écran [Services publics](utilities). Le compteur dont cette facture donne les relevés, comme le compteur d’électricité de la maison. Les relevés d’un état de compte sont ajoutés à ce compteur, et les montants de la facture donnent le coût par unité du compteur dans l’écran Services publics. Un compteur a une seule facture ; le choisir ici le retire de toute autre facture. « (aucun) » le délie.
+
+### États de compte {#statements}
+@index: état de compte; numéro de l’état de compte; date d’émission; date d’échéance; relevé du compteur; relevé; consommation
+
+Quand vous modifiez une facture existante, **États de compte** énumère les états de compte reçus, de la plus récente échéance à la plus ancienne : chacun avec sa date d’échéance, son montant et son numéro, puis sa date d’émission, le relevé actuel du compteur et la consommation, et « payée le … » une fois son échéance payée.
+
+- **Ajouter un état de compte** ouvre le formulaire de l’état de compte ; **Modifier** sur un état de compte le rouvre.
+- **Document** montre la facture numérisée gardée avec l’état de compte (ceux inscrits à partir de [Documents](documents) en ont une).
+- **Marquer payée** paraît tant que l’échéance de l’état de compte n’est pas payée : c’est la même chose que [Marquer payée](bills#mark-paid) dans l’onglet À payer.
+
+Le formulaire de l’état de compte :
+
+- **Numéro de l’état de compte** : le numéro de facture ou d’état de compte imprimé dessus. Facultatif.
+- **Montant** : le montant de cet état de compte. Il devient le montant réel de son échéance, comme le ferait **Entrer le montant**.
+- **Émis le** : la date d’émission de l’état de compte. Facultatif.
+- **Date d’échéance** : la date où il doit être payé. Obligatoire. Elle devient l’échéance de la facture pour cette période : l’échéance non payée la plus proche de la facture (à moins d’une demi-période) passe à cette date, de sorte que les rappels, le calendrier et la prévision suivent l’état de compte. Quand aucune échéance n’est proche, elle est ajoutée comme échéance à part ; quand la plus proche est déjà payée, l’état de compte est gardé avec elle et rien de plus n’est dû.
+- **Relevé précédent**, **Date du relevé précédent**, **Relevé actuel**, **Date du relevé actuel** (factures de services publics, ou factures avec un compteur) : les relevés du compteur imprimés sur l’état de compte, en kWh ou en mètres cubes comme sur la facture.
+- **Consommation** : la consommation imprimée sur l’état de compte. Laissez vide pour utiliser le relevé actuel moins le précédent.
+
+Les relevés datés sont ajoutés au compteur de la facture, sauf s’il a déjà un relevé ce jour-là : le même relevé n’est donc jamais inscrit deux fois. **Supprimer** dans le formulaire retire l’état de compte ; la date d’échéance et le montant qu’il a fixés restent, tout comme les relevés ajoutés au compteur.
 
 ### Active et Supprimer {#active-and-delete}
 
@@ -200,7 +235,7 @@ Une ligne rouge « Le compte de paiement passerait sous zéro. » apparaît sur 
 
 ## L’onglet Toutes les factures {#all-bills-tab}
 
-**Toutes les factures** énumère chaque facture, revenu et virement, y compris les inactifs (marqués « (inactive) »). Chaque ligne montre le nom, le type, la répétition, la prochaine échéance (« prochaine le … ») et le montant (« ≈ » pour un montant variable ou estimé). **Modifier** ouvre le formulaire de la facture.
+**Toutes les factures** énumère chaque facture, revenu et virement, y compris les inactifs (marqués « (inactive) »). Chaque ligne montre le nom, le type, la répétition, la prochaine échéance (« prochaine le … ») et le montant (« ≈ » pour un montant variable ou estimé). Une facture classée montre aussi Maison ou Entreprise, sa catégorie et sa sous-catégorie, et le numéro de compte masqué (« compte •••• 6789 »). **Modifier** ouvre le formulaire de la facture.
 
 « Aucune facture pour l’instant. Ajoutez le loyer, les services publics, les assurances, les abonnements, la paie et les virements réguliers. » signifie qu’aucune n’a été créée.
 
@@ -277,7 +312,17 @@ Une facture figure dans les rappels :
 
 ## Factures à partir de documents numérisés {#bills-from-documents}
 
-Une facture papier ou électronique importée dans l’écran [Documents](documents) peut être inscrite sur sa facture : l’application reconnaît la facture par votre numéro de compte chez le fournisseur ou par le nom du bénéficiaire, et **Inscrire le montant sur cette facture** fixe le montant réel de l’échéance la plus proche et garde le document avec elle. Remplissez **Bénéficiaire** et **Votre numéro de compte chez le fournisseur** sur vos factures pour qu’elles soient reconnues.
+@index: Créer une facture à partir de ceci; Joindre à une facture; facture saisie
+
+Une facture papier ou électronique importée dans l’écran [Documents](documents) est inscrite comme état de compte de sa facture, avec ce qui y a été lu : le montant, la date d’échéance, le numéro de l’état de compte, la date d’émission et, pour les services publics, les relevés du compteur.
+
+![Créer une facture à partir de ceci : une facture de gaz saisie devenue une facture](images/bills-from-document.png)
+
+- Quand l’application reconnaît la facture, par votre numéro de compte chez le fournisseur ou par le nom du bénéficiaire, **L’inscrire comme état de compte de cette facture** l’inscrit et garde le document avec elle.
+- Quand elle ne correspond à aucune de vos factures, **Créer une facture à partir de ceci** ouvre le formulaire de facture rempli à partir du document : le nom de l’entreprise, votre numéro de compte, le montant (montant variable), la date d’échéance comme première échéance, chaque mois, et un classement Maison ou Entreprise deviné d’après vos factures précédentes de la même entreprise, la catégorie du bénéficiaire ou le nom de l’entreprise (Hydro, Énergir, Bell, Vidéotron…). Vérifiez-le, choisissez le compte de paiement et enregistrez : la facture est créée et le document devient son premier état de compte, sous **Premier état de compte (la facture saisie)**.
+- **Joindre à une facture** l’inscrit plutôt sur une facture que vous choisissez, avec les champs de l’état de compte à corriger au besoin.
+
+Remplissez **Bénéficiaire** et **Votre numéro de compte chez le fournisseur** sur vos factures pour qu’elles soient reconnues. Voir [Documents](documents#record-on-bill).
 
 ## Où les factures apparaissent ailleurs {#elsewhere}
 

@@ -194,7 +194,7 @@ Sous un champ, vous pouvez voir :
 - « À vérifier : difficile à lire » : la valeur a été lue avec une faible confiance. Comparez-la avec l’image.
 - « lu par l’IA » : la valeur vient d’une lecture par l’IA.
 
-Sous la date et le total, une ligne peut montrer d’autres détails lus : le sous-total, chaque taxe de vente (TPS, TVH, TVQ, TVP), le mode de paiement (comptant, carte de débit, carte de crédit, carte-cadeau), « carte se terminant par » avec les quatre derniers chiffres, le numéro de facture, la date d’échéance et votre numéro de compte chez le fournisseur. Ces détails servent au classement : les chiffres de la carte choisissent le compte d’une nouvelle opération, les taxes y sont inscrites, la date d’échéance et le numéro de compte permettent de trouver la facture.
+Sous la date et le total, une ligne peut montrer d’autres détails lus : le sous-total, chaque taxe de vente (TPS, TVH, TVQ, TVP), le mode de paiement (comptant, carte de débit, carte de crédit, carte-cadeau), « carte se terminant par » avec les quatre derniers chiffres, le numéro de facture ou d’état de compte, la date d’échéance, votre numéro de compte chez le fournisseur et, sur une facture de services publics, les relevés précédent et actuel du compteur avec leurs dates et la consommation. Ces détails servent au classement : les chiffres de la carte choisissent le compte d’une nouvelle opération, les taxes y sont inscrites, la date d’échéance et le numéro de compte permettent de trouver la facture, et le numéro et les relevés vont sur l’état de compte de la facture.
 
 ### Les types de documents {#document-kinds}
 @index: reçu; facture; facture détaillée; relevé; talon de paie; relevé de prestations
@@ -260,13 +260,18 @@ C’est le choix habituel quand l’opération a déjà été importée de votre
 « Aucune opération de ce montant pour l’instant. Créez-en une, ou classez le document et joignez-le plus tard à l’arrivée du relevé. » signifie qu’aucune opération ne correspond. Le montant doit correspondre exactement : vérifiez d’abord le **Total**.
 
 ### Inscrire le montant sur une facture {#record-on-bill}
-@index: facture électronique; facture de services publics; montant variable
+@index: facture électronique; facture de services publics; montant variable; Créer une facture à partir de ceci; Joindre à une facture; état de compte
 
-Pour un document de type **Facture** ou **Facture détaillée**, l’application cherche l’une de vos factures à laquelle il se rapporte : d’abord par votre numéro de compte chez le fournisseur (les quatre derniers chiffres), puis en comparant le nom du commerce ou du fournisseur avec le bénéficiaire et le nom de la facture. Si elle en trouve une, elle affiche « Cela ressemble à la facture … » et :
+Pour un document de type **Facture** ou **Facture détaillée**, l’application cherche l’une de vos factures à laquelle il se rapporte : d’abord par votre numéro de compte chez le fournisseur (les quatre derniers chiffres), puis en comparant le nom du commerce ou du fournisseur avec le bénéficiaire et le nom de la facture. Le document est alors inscrit comme état de compte d’une facture : son total, sa date d’échéance, le numéro de l’état de compte, la date d’émission (la date du document) et, pour les services publics, les relevés du compteur qu’il montre. Voir [États de compte](bills#statements).
 
-- **Inscrire le montant sur cette facture** : inscrit le total du document comme montant de l’échéance de cette facture la plus proche de la date d’échéance du document (ou de sa date), à 45 jours ou moins (par défaut, réglable dans [Taux et règles](rates-rules)), joint le document à la facture et le classe. La liste À payer de la facture montre alors le montant réel de cette échéance. Voir [Factures](bills).
+Quand l’application trouve la facture, elle affiche « Cela ressemble à la facture … » et :
 
-La facture doit avoir une échéance à 45 jours ou moins du document ; sinon, une erreur l’indique. Le document doit avoir un total.
+- **L’inscrire comme état de compte de cette facture** : inscrit l’état de compte sur cette facture, y joint le document et le classe. La date d’échéance de l’état de compte devient l’échéance de la facture pour cette période : l’échéance non payée la plus proche passe à cette date. Quand le document ne montre pas de date d’échéance, l’échéance de la facture la plus proche de la date du document, à 45 jours ou moins (par défaut, réglable dans [Taux et règles](rates-rules)), est utilisée, et une erreur l’indique s’il n’y en a pas. Le document doit avoir un total.
+
+Quand il ne correspond à aucune de vos factures, « Cette facture ne correspond à aucune de vos factures. » est affiché, et :
+
+- **Créer une facture à partir de ceci** (type **Facture**) : ouvre le formulaire de facture, intitulé « Créer une facture à partir de ceci », rempli à partir du document : le nom du fournisseur comme nom et bénéficiaire de la facture, votre numéro de compte, le total comme montant variable, la date d’échéance comme première échéance, chaque mois, un classement Maison ou Entreprise deviné d’après vos factures précédentes de la même entreprise, la catégorie du bénéficiaire ou le nom de l’entreprise, et la catégorie de dépenses qui va avec. Le compte de paiement est votre premier compte bancaire ; vérifiez-le. Sous **Premier état de compte (la facture saisie)** se trouvent le numéro de l’état de compte, le montant, **Émis le**, **Date d’échéance** et, pour les services publics, les relevés du compteur, à corriger au besoin. **Enregistrer** crée la facture, inscrit l’état de compte, ajoute les relevés datés au compteur choisi et classe le document ; la facture paraît ensuite dans l’écran Factures. Voir [Factures](bills#bills-from-documents).
+- **Joindre à une facture** (aussi **Joindre à une autre facture** quand une a été trouvée) : vous choisissez la facture, avec les champs de l’état de compte à corriger, et il y est inscrit de la même façon.
 
 ### Nouvelle opération à partir de ce document {#new-transaction}
 @index: créer une opération à partir d’un reçu; reçu d’achat comptant

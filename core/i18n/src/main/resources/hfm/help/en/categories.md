@@ -19,3 +19,7 @@ Use Tax treatment to link a category to a tax line, such as Medical expenses, Ch
 - Tick Archived (hidden from lists) to stop seeing a category you no longer use. Past transactions keep it.
 
 The household's province or territory, set on Household members, decides the default categories a new household starts with.
+
+## Bill lists
+
+The Bill lists tab holds the Home and Business categories and subcategories that classify bills, each subcategory with the spending category its payments go to. Rename, add or hide entries; Restore the built-in lists puts the shipped ones back, keeping what you added.

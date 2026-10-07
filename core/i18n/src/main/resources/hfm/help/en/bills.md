@@ -26,3 +26,11 @@ Subscriptions shows each subscription with its yearly cost and the total for all
 ## Calendar export
 
 Export calendar… saves your bills as a calendar file, so you can add the due dates to another calendar program. Bills also appear on the Calendar.
+
+## Classify a bill
+
+Under Home or business, choose Home or Business, then the bill category and the subcategory, such as Utilities: Electricity. The subcategory fills in the spending category. A Business bill names the person under Business of: its payments count as that person's business expenses in the year-end tax package. The lists are in Settings, Categories, Bill lists.
+
+## Statements and meter readings
+
+Your account number with the payee is shown masked; Show number asks for your password. When you edit a bill, Statements lists those received: Add a statement records its number, amount, issue date and due date, which becomes that period's due date. For a utility, enter the previous and current readings with their dates: they are added to the meter chosen under Meter (Utilities). A captured bill from Documents is recorded as a statement, or creates the bill with Create a bill from this.
