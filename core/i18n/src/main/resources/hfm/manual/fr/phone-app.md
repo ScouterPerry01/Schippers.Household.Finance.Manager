@@ -556,6 +556,14 @@ Seuls les calendriers cochés sont lus, pour les jours choisis : le titre, le li
 
 ### Changer le NIP {#change-pin}
 
+### Langue de l’application {#language}
+
+@index: langue; français; anglais; English
+
+- **Langue de l’application** : **Comme le téléphone** (par défaut) suit la langue du téléphone; **English** ou **Français** garde l’application dans cette langue, quelle que soit celle du téléphone. Le changement s’applique aussitôt, aux écrans et aux notifications de l’application.
+
+> Remarque : Sur Android 13 et plus récent, le même choix se trouve aussi dans les réglages du téléphone, sous la langue de l’application. Les montants et les dates suivent la langue choisie (8,45 $ en français).
+
 **Changer le NIP** vous demande de choisir un nouveau NIP, de 4 à 8 chiffres, et de le saisir de nouveau.
 
 ### Déverrouiller avec l’empreinte ou le visage {#biometric}
