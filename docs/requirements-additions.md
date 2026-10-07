@@ -227,3 +227,18 @@ Owner's request (2026-10-06), before 1.0.
 | CAL-12 | The phone's agenda is reached from a calendar icon at the top of the Capture and Summary tabs. | Should |
 | DOC-01 | The document viewer on the computer shows every page of a document (page by page) and can zoom in, out and back to fit. | Should |
 | DOC-02 | A receipt or invoice can be itemized by hand in the review dialog (item, amount, category, sales tax), creating the transaction's split lines without AI reading. | Should |
+
+## Bills: classification and statements (owner's request, 2026-10-07)
+
+Source: `docs/Bill-Modifications.md` (the owner's list).
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| BILL-13 | Every bill has a type (Home or Business), a category and a subcategory from the owner's lists in `docs/Bill-Modifications.md`, shipped in English and French; each subcategory has a default spending category used for the bill's payments. | Should |
+| BILL-14 | The bill classification lists can be edited in Settings (rename, add, hide subcategories), like spending categories; the built-in lists stay the default. | Should |
+| BILL-15 | A bill keeps its account number with the company (masked like account numbers elsewhere). | Should |
+| BILL-16 | Each statement received for a bill is kept: statement number, issued date, due date, amount, and the scanned document; the Bills screen lists a bill's statements, and a due date from a statement becomes that occurrence's due date. | Should |
+| BILL-17 | A utility bill's statement also keeps the previous and current meter readings with their dates and the amount used; a utility bill can be linked to a meter on the Utilities screen (UTL-01), and each statement's readings are added to that meter. | Should |
+| BILL-18 | A captured document of kind Bill that matches no bill offers to create one, prefilled from what was read (payee, account number, amount, due date, a classification guessed from the payee), or to attach it to an existing bill; the statement is recorded either way. | Should |
+| BILL-19 | Reading a bill (on the device and with AI reading) fills the account number, statement number, issued date, due date, amount and, for utilities, the meter readings and their dates when the bill shows them. | Should |
+| BILL-20 | A Business bill names the person it belongs to; its payments count as that person's business expenses, with the sales taxes paid on them, in the year-end package. | Should |
