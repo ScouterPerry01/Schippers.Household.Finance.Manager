@@ -253,3 +253,12 @@ Source: `docs/Bill-Modifications.md` (the owner's list).
 | BILL-24 | Instalments roll over: until next year's statement is entered, next year's instalments are proposed on the same dates (adjusted to business days) with this year's amounts, marked as estimated. | Should |
 | BILL-25 | Reading a tax bill (on the device and with AI reading) finds its instalment dates and amounts when printed. | Should |
 | NAV-04 | Every list or table with columns has a heading row naming each column; the column of buttons is headed Actions. | Should |
+
+## Help menu, About and Walk-Me guides (owner's request, 2026-10-07)
+
+| ID | Requirement | Priority |
+| --- | --- | --- |
+| HLP-01 | A Help group in the menu (the last group of the side list; a Help menu at the right of the top menu bar) with Manual, Help (the short help for the screen shown), Walk-Me and About. The top bar's Help and Manual buttons and F1 / Shift+F1 stay. | Should |
+| HLP-02 | About shows the version and updates, what's new in this version (the release notes), the privacy summary and policy, the licence and brand notice, support contact, third-party notices, and a button that copies details for support (version, operating system, Java, database versions; no personal data). | Should |
+| HLP-03 | Walk-Me: step-by-step guides for the common tasks, chosen from a Walk-Me menu. A guide opens as a small window docked at the side (not blocking the app); each step says where to go, what to select and what to enter, highlights the control on screen, has Show me (opens the right screen), Back and Next, moves on by itself when the step is done where that can be seen, and links to the manual section. | Should |
+| HLP-04 | Walk-Me guides in English and French for: household creation; institutions and accounts; members and users; importing a statement or Quicken file; reconciling; backups; bills; municipal property taxes; paying a bill in part; budgets; savings goals; pairing a phone; capturing and processing a receipt; capturing and processing a bill; itemizing; AI reading; mortgages; loans and lines of credit; investment accounts and holdings; registered plans; vehicles and maintenance; trips on the phone; the seasonal checklist; utilities and meters; medical expenses and claims; insurance; contacts; family money and allowances; the year-end tax package; the income tax estimate; custom reports; the emergency and estate summary. Guides are content files that can be extended. | Should |
