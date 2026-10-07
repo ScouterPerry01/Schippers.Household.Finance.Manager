@@ -598,8 +598,8 @@ private fun MonthGrid(model: BooksModel, anchor: LocalDate, items: List<Calendar
 /** An item in one short line, for a day cell: "09:30 Winter tires on", "Civic: oil change". */
 internal fun lineText(model: BooksModel, item: CalendarItem): String = when (item) {
     is CalendarItem.Event -> listOfNotNull(time(item.occurrence.event.startTime), item.occurrence.event.title).joinToString(" ")
-    is CalendarItem.Renewal -> "${item.renewal.subjectName}: ${renewalTitle(model, item.renewal)}"
-    is CalendarItem.Maintenance -> "${item.due.subjectName}: ${item.due.taskName}"
+    is CalendarItem.Renewal -> model.t("common.labelValue", item.renewal.subjectName, renewalTitle(model, item.renewal))
+    is CalendarItem.Maintenance -> model.t("common.labelValue", item.due.subjectName, item.due.taskName)
     is CalendarItem.Imported -> importedMonthText(model, item)
     else -> itemTitle(model, item)
 }

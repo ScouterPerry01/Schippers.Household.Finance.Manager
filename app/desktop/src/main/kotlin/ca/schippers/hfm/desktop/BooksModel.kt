@@ -181,7 +181,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
 
     /** UTL-01: "Cottage hydro: unusual use in September 2026 (+35 % on the same month last year)". */
     fun describe(u: ca.schippers.hfm.books.UnusualUse): String {
-        val month = monthName(u.month.use)
+        val month = monthName(u.month.use, midSentence = true)
         val change = u.month.changePercent
         return if (change != null) {
             t("utilities.unusualReminder", u.meter.name, month, (if (change.signum() > 0) "+" else "") + MoneyFormat.formatDecimal(change, language.locale))
@@ -214,7 +214,8 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
     /** "Rex: municipal licence expires in 12 days". */
     fun describe(r: Renewal): String {
         val whenText = if (r.daysLeft < 0) t("renewal.overdue", -r.daysLeft) else t("renewal.inDays", r.daysLeft)
-        return "${r.subjectName.ifBlank { null }?.let { "$it: " }.orEmpty()}${t("renewalKind.${r.kind}")}${renewalDetail(r)?.let { " ($it)" }.orEmpty()} $whenText"
+        val what = "${t("renewalKind.${r.kind}")}${renewalDetail(r)?.let { " ($it)" }.orEmpty()} $whenText"
+        return r.subjectName.ifBlank { null }?.let { t("common.labelValue", it, what) } ?: what
     }
 
     /**

@@ -54,9 +54,10 @@ private fun BooksModel.homes(): List<Asset> = runCatching { books.assets.list() 
 private fun BooksModel.placeName(assetId: String?): String =
     assetId?.let { id -> runCatching { books.assets.get(id).name }.getOrNull() } ?: t("utilities.household")
 
-/** "January 2026" in the user's language. */
-internal fun BooksModel.monthName(m: MonthUse): String =
-    java.time.YearMonth.of(m.year, m.month).format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy", language.locale)).replaceFirstChar { it.uppercase(language.locale) }
+/** "January 2026" in the user's language; [midSentence] keeps French months in lower case ("en septembre 2026"). */
+internal fun BooksModel.monthName(m: MonthUse, midSentence: Boolean = false): String =
+    java.time.YearMonth.of(m.year, m.month).format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy", language.locale))
+        .let { if (midSentence) it else it.replaceFirstChar { c -> c.uppercase(language.locale) } }
 
 private fun BooksModel.unit(kind: MeterKind): String = t("meterUnit.${kind.unit}")
 
