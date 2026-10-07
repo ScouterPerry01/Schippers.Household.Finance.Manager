@@ -24,7 +24,7 @@ RANN’s Roost Mobile existe en deux éditions qui fonctionnent de la même faç
 - Tout ce que l’application garde (ses réglages, les captures et nouveaux contacts en attente, le résumé et les contacts) est chiffré avec une clé conservée dans le magasin de clés sécurisé du téléphone. La clé ne quitte jamais le téléphone.
 - L’application est exclue des sauvegardes infonuagiques d’Android : rien n’en est copié chez Google.
 - Les captures ne vont qu’à votre ordinateur, chiffrées avec la clé créée au jumelage. Loin de la maison, elles peuvent passer par un dossier de votre propre stockage infonuagique, toujours chiffrées.
-- Les calendriers ne sont lus que si vous activez [Calendriers de ce téléphone](phone-app#phone-calendars), seulement ceux que vous cochez, et ne vont qu’à votre ordinateur, chiffrés de la même façon.
+- Les calendriers ne sont lus que si vous activez [Calendriers de ce téléphone](phone-app#phone-calendars), seulement ceux que vous cochez, et ne vont qu’à votre ordinateur, chiffrés de la même façon. [L’agenda](#agenda) les affiche aussi, lus sur le téléphone pendant qu’il est ouvert ; rien de plus n’est envoyé.
 - La seule autre connexion est la vérification quotidienne des mises à jour de l’édition GitHub, si vous l’autorisez. Elle n’envoie rien sur vous ni sur votre ménage.
 - Position : seulement si vous l’autorisez, l’application prend une seule position au départ d’un déplacement, à l’arrivée, et quand vous enregistrez un lieu ou cherchez la station la plus proche, jamais en arrière-plan ni à d’autres moments. La position est comparée à vos lieux enregistrés sur le téléphone même ; aucun service de cartes n’est consulté. Ce qui va à votre ordinateur, chiffré comme le reste, c’est le nom du lieu, ou les coordonnées quand vous laissez un lieu sans nom, et les coordonnées d’un lieu que vous enregistrez. Voir [Position](#location).
 - Dès que votre ordinateur confirme avoir reçu une capture, le téléphone supprime sa copie des images et des détails.
@@ -80,7 +80,7 @@ Cinq onglets s’alignent au bas de l’écran :
 
 - **Capturer** : photographier ou inscrire quelque chose de nouveau. Voir [L’onglet Capturer](#capture-tab).
 - **Envois** : ce que vous avez capturé et où il en est. Voir [L’onglet Envois](#sent-tab).
-- **Résumé** : les soldes, les factures, l’entretien et les budgets venus de votre ordinateur. Voir [L’onglet Résumé](#summary-tab).
+- **Résumé** : les soldes, les factures, l’entretien et les budgets venus de votre ordinateur, et l’agenda des 60 prochains jours. Voir [L’onglet Résumé](#summary-tab) et [L’agenda](#agenda).
 - **Contacts** : les contacts du ménage venus de votre ordinateur, et les nouveaux contacts à envoyer. Voir [L’onglet Contacts](#contacts-tab).
 - **Réglages** : le jumelage, le dossier de transfert, le verrou et les mises à jour. Voir [L’onglet Réglages](#settings-tab).
 
@@ -431,13 +431,54 @@ Le Résumé affiche les chiffres de votre ordinateur au dernier transfert : le n
 
 - **Comptes** : chaque compte et son solde.
 - **Factures à payer** : les factures dues dans les 60 prochains jours et pas encore payées, jusqu’à 15, avec la date d’échéance et le montant, ou **environ** un montant quand il est estimé.
-- **À venir** : d’abord les heures de travail et d’école de chaque personne aujourd’hui et demain, comme « Alex · Travail · Bureau » avec la date et « 08:00–16:30 » ; puis les rendez-vous et événements du calendrier de l’ordinateur dans les prochaines semaines, jusqu’à 12, chacun avec la personne concernée, sa date et son heure, ou **Toute la journée** ; pour l’activité d’un enfant, qui conduit à l’aller et au retour ce jour-là, tours de covoiturage compris. Seuls les événements des comptes que votre utilisateur peut voir sur l’ordinateur sont envoyés : les rendez-vous privés d’un autre utilisateur n’arrivent jamais sur votre téléphone. Les événements marqués faits ou annulés sont laissés de côté.
+- **À venir** : le bouton **Voir l’agenda** ouvre [l’agenda](#agenda), les 60 prochains jours jour par jour ou par mois. En dessous, d’abord les heures de travail et d’école de chaque personne aujourd’hui et demain, comme « Alex · Travail · Bureau » avec la date et « 08:00–16:30 » ; puis les rendez-vous et événements du calendrier de l’ordinateur dans les prochaines semaines, jusqu’à 12, chacun avec la personne concernée, sa date et son heure, ou **Toute la journée** ; pour l’activité d’un enfant, qui conduit à l’aller et au retour ce jour-là, tours de covoiturage compris. Seuls les événements des comptes que votre utilisateur peut voir sur l’ordinateur sont envoyés : les rendez-vous privés d’un autre utilisateur n’arrivent jamais sur votre téléphone. Les événements marqués faits ou annulés sont laissés de côté.
 - **Renouvellements de médicaments** : les médicaments actifs dont la provision se termine dans les deux prochains mois, ou est déjà terminée, avec la date, et **à renouveler** quand il ne reste plus de renouvellements. Comme pour le calendrier, seuls les médicaments que votre utilisateur peut voir sont envoyés.
 - **Entretien du mois** : affiché quand quelque chose est prévu : chaque tâche, comme « Civic : Vidange d’huile », avec **à faire**, **bientôt** ou sa date.
 - **Services publics** : affiché quand un réservoir de combustible est à commander bientôt, avec « à commander d’ici le » une date, ou qu’un compteur a consommé plus que d’habitude le mois dernier, avec « consommation inhabituelle en » le mois et l’écart par rapport à l’an dernier. Voir [Services publics](utilities).
 - **Budgets du mois** : chaque catégorie de dépenses qui a un budget : ce qui a été dépensé sur le budget, par exemple « 412,30 $ sur 600,00 $ ».
 
 Les chiffres ne changent pas avant le prochain transfert. Touchez **Envoyer maintenant** dans l’onglet Envois pour les mettre à jour.
+
+## L’agenda {#agenda}
+
+@index: agenda; vue du mois; calendrier sur le téléphone; ce qui s’en vient; échéances
+
+**Voir l’agenda**, sous **À venir** dans l’onglet Résumé, ouvre en un seul endroit tout ce qui s’en vient dans les 60 prochains jours, aujourd’hui compris. Il ne fait qu’afficher : rien ne peut y être modifié. **Retour**, le geste de retour d’Android ou l’onglet **Résumé** touché de nouveau ramène au Résumé. Sous le titre, **De votre ordinateur** donne la date et l’heure du dernier transfert, comme dans le Résumé.
+
+Deux puces en haut choisissent la vue : **Agenda**, jour par jour, ou **Mois**.
+
+### Jour par jour {#agenda-days}
+
+Chaque jour où il y a quelque chose a son titre : **Aujourd’hui**, **Demain**, puis la date, comme « Vendredi 9 octobre ». Les jours vides sont sautés ; quand les 60 jours sont vides, l’agenda indique **Rien dans les 60 prochains jours.**
+
+Dans chaque jour, les éléments sans heure viennent d’abord (factures, médicaments, renouvellements et autres échéances), puis les autres par heure. Une barre de couleur devant chaque élément en indique le genre, avec les mêmes couleurs que les points de la vue du mois. L’agenda affiche :
+
+- **Événements** : les rendez-vous et événements du calendrier de l’ordinateur, avec l’heure ou **Toute la journée**, le lieu, la personne concernée et, pour l’activité d’un enfant, qui conduit à l’aller et au retour. Les événements marqués faits ou annulés sont laissés de côté.
+- **Travail et école** : les heures de chaque personne ce jour-là, comme « 08:00–16:30 », avec **Travail**, **École** ou **Horaire** et le lieu s’il est indiqué.
+- **Factures** : les factures dues ce jour-là et pas encore payées, avec le montant, ou **environ** un montant quand il est estimé.
+- **Médicaments** : un médicament à renouveler, avec la personne concernée, et **demander une nouvelle ordonnance** quand il ne reste plus de renouvellements.
+- **Entretien** : une tâche sur un véhicule ou un autre bien, comme « Civic : Vidange d’huile », à sa prochaine échéance.
+- **Tâches saisonnières** : les tâches de la liste de la saison à leur échéance, et une tâche qui revient, déjà faite, à la date où elle est à refaire.
+- **Renouvellements** : licences, polices, immatriculations, garanties, fins de terme de prêt, frais annuels et dates de paiement des cartes, réclamations à envoyer, acomptes provisionnels, échéances de placements et inspections, chacun avec ce qu’il y a à faire, comme « immatriculation » ou « paiement dû ». Les numéros de police et les plaques ne sont pas envoyés au téléphone.
+- **Combustible** : la date pour commander du combustible pour un réservoir, d’après son niveau prévu.
+- **Agendas de votre téléphone** : les éléments des calendriers que vous importez (voir plus bas), avec le nom de leur calendrier et la barre à la couleur de ce calendrier.
+
+Ce qui est en retard (un médicament, une tâche d’entretien, une tâche saisonnière ou une commande de combustible dont la date est passée) paraît sous **Aujourd’hui**, marqué **en retard** ; une tâche d’entretien due selon la distance ou les heures plutôt qu’à une date y paraît aussi, avec **à faire** ou **bientôt**. Les factures et les événements des jours passés sont laissés de côté.
+
+Comme le Résumé, l’agenda n’affiche que ce que votre utilisateur peut voir sur l’ordinateur : les rendez-vous, horaires, véhicules et factures privés d’un autre utilisateur n’arrivent jamais sur votre téléphone. Il change au prochain transfert.
+
+### La vue du mois {#agenda-month}
+
+**Mois** affiche le mois en cours comme un calendrier, les semaines commençant le jour habituel pour la langue et la région. Chaque jour des 60 jours montre jusqu’à quatre points de couleur, un pour chaque genre d’élément qu’il contient ; les couleurs sont expliquées sous le calendrier. Aujourd’hui est encerclé. Les jours avant aujourd’hui et après le 60e jour sont grisés.
+
+- **‹** et **›** : le mois précédent et le mois suivant, du mois en cours au mois du 60e jour.
+- Touchez un jour pour y aller dans la vue jour par jour ; un jour vide mène au jour suivant où il y a quelque chose.
+
+### Les calendriers de votre téléphone dans l’agenda {#agenda-phone-calendars}
+
+@index: calendrier du téléphone dans l’agenda; Google Agenda dans l’agenda
+
+Tant que [Calendriers de ce téléphone](#phone-calendars) est activé et que l’accès au calendrier est autorisé, l’agenda affiche aussi les éléments des calendriers que vous y avez cochés, pour les 60 prochains jours, quel que soit le nombre de jours choisi pour l’envoi. Ils sont lus dans les calendriers du téléphone chaque fois que l’agenda s’ouvre, seulement pour les afficher ici : l’agenda n’envoie rien à l’ordinateur et n’écrit rien dans vos calendriers. Un élément d’une journée entière qui couvre plusieurs jours paraît à chacun d’eux ; un élément commencé la veille et toujours en cours paraît sous **Aujourd’hui** avec **suite**.
 
 ## L’onglet Contacts {#contacts-tab}
 
@@ -552,7 +593,7 @@ Affiché une fois jumelé. Envoie au Calendrier de l’ordinateur les calendrier
 - **Marquer des éléments** : les éléments à venir des calendriers cochés. Chacun peut être **Comme son calendrier**, **Privé**, **Occupé seulement** ou **Partagé** ; le choix vaut pour toutes les dates d’un élément qui se répète.
 - **Terminé** revient aux Réglages.
 
-Seuls les calendriers cochés sont lus, pour les jours choisis : le titre, le lieu, le début et la fin de chaque élément, jamais sa description, ses invités ou ses rappels. Ils ne vont qu’à votre ordinateur jumelé, chiffrés comme vos captures, par Wi-Fi, par le dossier de transfert ou dans un fichier partagé. Un calendrier est envoyé en entier quand il a changé depuis le dernier transfert ; rien n’est écrit dans vos calendriers. Si l’ordinateur n’a pas pu en enregistrer un, la raison paraît sous le titre et le téléphone réessaie au prochain transfert. Voir [Calendriers des téléphones et des fichiers](calendar-sync).
+Seuls les calendriers cochés sont lus, pour les jours choisis : le titre, le lieu, le début et la fin de chaque élément, jamais sa description, ses invités ou ses rappels. Ils ne vont qu’à votre ordinateur jumelé, chiffrés comme vos captures, par Wi-Fi, par le dossier de transfert ou dans un fichier partagé. Un calendrier est envoyé en entier quand il a changé depuis le dernier transfert ; rien n’est écrit dans vos calendriers. Si l’ordinateur n’a pas pu en enregistrer un, la raison paraît sous le titre et le téléphone réessaie au prochain transfert. Voir [Calendriers des téléphones et des fichiers](calendar-sync). Les calendriers cochés paraissent aussi dans [l’agenda](#agenda-phone-calendars), lus sur le téléphone seulement.
 
 ### Changer le NIP {#change-pin}
 

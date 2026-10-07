@@ -179,7 +179,7 @@ class SeasonalChecklistTest {
         assertTrue("t-2" in reply.imported)
         assertEquals(listOf("t-3"), reply.failed.map { it.id })
         assertEquals(1, books.assetMaintenance.services(yard.id).size)
-        assertEquals(6, ReferenceData.FORMAT)
+        assertTrue(ReferenceData.FORMAT >= 6)
     }
 
     @Test

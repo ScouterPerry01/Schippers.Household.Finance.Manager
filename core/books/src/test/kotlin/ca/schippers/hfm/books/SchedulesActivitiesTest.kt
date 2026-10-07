@@ -251,7 +251,11 @@ class SchedulesActivitiesTest {
                 RefSchedule("Alex", "WORK", "2026-10-07", "08:00", "16:30", "Office"),
                 RefSchedule("Léa", "OTHER", "2026-10-07", "19:00", "07:00"),
             ),
-            response.reference!!.schedules,
+            response.reference!!.schedules.filter { it.date <= "2026-10-07" },
         )
+        // The agenda (format 7): the coming 60 days, today included; older phones still show only today's and tomorrow's.
+        val dates = response.reference!!.schedules.map { it.date }
+        assertEquals("2026-12-04", dates.max())
+        assertTrue("2026-11-20" in dates)
     }
 }

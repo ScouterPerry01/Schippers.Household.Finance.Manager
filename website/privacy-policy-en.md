@@ -28,6 +28,7 @@ The phone sends captures straight to your computer over your home network. Every
 The phone app can bring the calendars your phone already shows (Google, Outlook or Exchange, Samsung and others) to your computer. It is off until you turn it on in the app's Settings, and Android then asks you for calendar access.
 
 - The app reads only the calendars you tick, for the number of days ahead you choose: each item's title, place, start and end. It does not read descriptions, guests, attachments or reminders, and it never changes your calendars.
+- The app's agenda also shows the calendars you tick, for the coming 60 days, beside what your computer sent. It reads them on the phone each time you open the agenda, only to show them there; that reading sends nothing anywhere.
 - The app never signs in to your calendar accounts. It reads what Android already keeps on the phone.
 - What it reads goes only to your own computer, encrypted end to end like your captures, over your home network or through your own cloud folder or email. RANN and the cloud or email provider cannot read it.
 - On your computer, each calendar is kept private, shown to the other people of your household as busy times only, or shared with them, as you choose. Private calendars are kept in your own encrypted account group.
