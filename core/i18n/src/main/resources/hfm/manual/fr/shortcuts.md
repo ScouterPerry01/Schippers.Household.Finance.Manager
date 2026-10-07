@@ -1,6 +1,6 @@
 # Raccourcis clavier et accessibilité
 
-RANN's Roost peut s'utiliser au clavier, être lue par un lecteur d'écran et s'afficher en plus grand ou en couleurs sombres. Ce chapitre présente chaque raccourci que l'application ajoute aux raccourcis habituels, puis ce qui aide les personnes qui voient, lisent ou bougent différemment.
+RANN's Roost peut s’utiliser au clavier, être lue par un lecteur d’écran et s’afficher en plus grand ou en couleurs sombres. Ce chapitre présente chaque raccourci que l’application ajoute aux raccourcis habituels, puis ce qui aide les personnes qui voient, lisent ou bougent différemment.
 
 ## Raccourcis partout {#anywhere}
 
@@ -8,20 +8,20 @@ RANN's Roost peut s'utiliser au clavier, être lue par un lecteur d'écran et s'
 
 Ces raccourcis fonctionnent dans chaque écran :
 
-- **F1** : ouvre le panneau d'aide au sujet de l'écran affiché. Appuyez de nouveau sur F1, ou sur Échap, pour le fermer. Il fonctionne aussi dans les écrans de départ, avant qu'un ménage soit ouvert.
-- **Maj+F1** : ouvre le manuel au chapitre de l'écran affiché. Voir [La fenêtre du manuel](welcome#manual-window).
+- **F1** : ouvre le panneau d’aide au sujet de l’écran affiché. Appuyez de nouveau sur F1, ou sur Échap, pour le fermer. Il fonctionne aussi dans les écrans de départ, avant qu’un ménage soit ouvert.
+- **Maj+F1** : ouvre le manuel au chapitre de l’écran affiché. Voir [La fenêtre du manuel](welcome#manual-window).
 - **Ctrl+F** : place le curseur dans la case de recherche en haut de la fenêtre, prêt à taper. Il fonctionne quand un ménage est ouvert.
 
 ## Se déplacer au clavier {#keyboard-navigation}
 
 @index: Tab; Maj+Tab; focus; navigation au clavier
 
-Ce sont les touches habituelles de Windows et de Linux, et elles fonctionnent aussi dans l'application :
+Ce sont les touches habituelles de Windows et de Linux, et elles fonctionnent aussi dans l’application :
 
 - **Tab** : passe au champ, au bouton ou à la case à cocher suivant.
 - **Maj+Tab** : revient au précédent.
 - **Entrée** ou **Espace** : appuie sur le bouton qui a le focus.
-- **Échap** : ferme une fenêtre ouverte par-dessus l'écran.
+- **Échap** : ferme une fenêtre ouverte par-dessus l’écran.
 
 ## Dans la case de recherche {#search-box}
 
@@ -29,25 +29,25 @@ Ce sont les touches habituelles de Windows et de Linux, et elles fonctionnent au
 
 - **Entrée** : cherche ce que vous avez tapé. Tapez au moins deux caractères ; une recherche plus courte est ignorée.
 
-Les résultats s'ouvrent dans une fenêtre ; **Fermer** la ferme. Voir [La recherche](basics#search).
+Les résultats s’ouvrent dans une fenêtre ; **Fermer** la ferme. Voir [La recherche](basics#search).
 
-## Dans le registre d'un compte {#register}
+## Dans le registre d’un compte {#register}
 
 @index: raccourcis du registre; saisir une opération
 
 Le formulaire sous les opérations, où vous entrez ou modifiez une opération, répond à deux touches, où que soit le curseur dans le formulaire :
 
-- **Entrée** : enregistre l'opération, comme son bouton d'enregistrement.
+- **Entrée** : enregistre l’opération, comme son bouton d’enregistrement.
 - **Échap** : vide le formulaire sans enregistrer, pour recommencer.
 
-Après un enregistrement, le formulaire est vidé pour l'opération suivante et garde la date : vous pouvez ainsi entrer toute une pile de reçus du même jour sans la souris, en passant d'un champ à l'autre avec Tab, puis Entrée. Voir [Comptes](accounts).
+Après un enregistrement, le formulaire est vidé pour l’opération suivante et garde la date : vous pouvez ainsi entrer toute une pile de reçus du même jour sans la souris, en passant d’un champ à l’autre avec Tab, puis Entrée. Voir [Comptes](accounts).
 
 ## Dans les champs de date {#date-fields}
 
 @index: raccourci de date; touche plus; touche moins; jour suivant
 
-- La touche plus, tapée à la fin d'une date valide, l'avance d'un jour (2026-03-05 + devient 2026-03-06).
-- La touche moins, tapée à la fin d'une date valide, la recule d'un jour.
+- La touche plus, tapée à la fin d’une date valide, l’avance d’un jour (2026-03-05 + devient 2026-03-06).
+- La touche moins, tapée à la fin d’une date valide, la recule d’un jour.
 
 Tapez la touche plusieurs fois pour avancer ou reculer de plusieurs jours. Les dates se tapent au format AAAA-MM-JJ ; voir [Les champs de date](basics#date-fields).
 
@@ -55,7 +55,7 @@ Tapez la touche plusieurs fois pour avancer ou reculer de plusieurs jours. Les d
 
 @index: calculatrice; calcul; raccourci de montant
 
-Les champs de montant sont des calculatrices. Tapez un calcul et le résultat s'affiche sous le champ :
+Les champs de montant sont des calculatrices. Tapez un calcul et le résultat s’affiche sous le champ :
 
 - Additionnez et soustrayez avec + et -, comme 12,50 + 3,25.
 - Multipliez avec * ou ×, comme 3 * 4,99.
@@ -68,47 +68,47 @@ Seul le résultat final est arrondi au cent. Voir [Les champs de montant et la c
 
 @index: filtrer une liste; taper pour chercher
 
-Taper dans une liste déroulante ne garde que les choix qui contiennent ce que vous avez tapé. C'est la façon la plus rapide de choisir une catégorie, un compte ou un bénéficiaire dans une longue liste.
+Taper dans une liste déroulante ne garde que les choix qui contiennent ce que vous avez tapé. C’est la façon la plus rapide de choisir une catégorie, un compte ou un bénéficiaire dans une longue liste.
 
 ## Dans les formulaires en fenêtre {#dialogs}
 
 @index: touche Échap; fermer une fenêtre
 
 - **Échap** : ferme la fenêtre sans enregistrer, comme **Annuler**.
-- Passez avec Tab jusqu'à **Enregistrer** et appuyez sur Entrée ou Espace pour enregistrer.
+- Passez avec Tab jusqu’à **Enregistrer** et appuyez sur Entrée ou Espace pour enregistrer.
 
-## Dans le panneau d'aide {#help-panel}
+## Dans le panneau d’aide {#help-panel}
 
 - Le curseur se place dans **Chercher dans le guide** : tapez pour chercher aussitôt.
 - **Échap** ou **F1** : ferme le panneau.
 
 ## Accessibilité {#accessibility}
 
-@index: accessibilité; basse vision; lecteur d'écran; mode sombre; grand texte
+@index: accessibilité; basse vision; lecteur d’écran; mode sombre; grand texte
 
 ### Taille du texte et couleurs {#text-size-colours}
 
 Sous [Affichage et accessibilité](display), dans le groupe Réglages :
 
-- **Taille du texte** : de 90 % à 150 %. Chaque écran, et le manuel, grandit avec elle, et le menu de gauche s'élargit pour que les noms tiennent sur une ligne. Une ligne d'exemple montre la taille choisie.
+- **Taille du texte** : de 90 % à 150 %. Chaque écran, et le manuel, grandit avec elle, et le menu de gauche s’élargit pour que les noms tiennent sur une ligne. Une ligne d’exemple montre la taille choisie.
 - **Couleurs** : comme le système (clair ou sombre), toujours clair ou toujours sombre. Les graphiques suivent le même choix.
 
-Chaque ordinateur garde son propre choix, de sorte qu'un grand écran et un portable peuvent différer.
+Chaque ordinateur garde son propre choix, de sorte qu’un grand écran et un portable peuvent différer.
 
-### Les lecteurs d'écran {#screen-readers}
+### Les lecteurs d’écran {#screen-readers}
 
 @index: Narrateur; NVDA; Orca
 
-Les lecteurs d'écran, comme Narrateur ou NVDA sous Windows et Orca sous Linux, lisent les libellés des champs, des boutons et des cases à cocher. L'application leur indique aussi :
+Les lecteurs d’écran, comme Narrateur ou NVDA sous Windows et Orca sous Linux, lisent les libellés des champs, des boutons et des cases à cocher. L’application leur indique aussi :
 
 - si chaque groupe du menu de gauche est ouvert ou fermé ;
 - que chaque groupe du menu du haut ouvre un menu ;
 - si chaque étape du guide des premiers pas, au tableau de bord, est faite ou à faire ;
-- ce que fait chaque petit bouton **✕** : Retirer (une ligne d'un formulaire) ou Supprimer (un élément). Le même mot s'affiche quand la souris s'y arrête.
+- ce que fait chaque petit bouton **✕** : Retirer (une ligne d’un formulaire) ou Supprimer (un élément). Le même mot s’affiche quand la souris s’y arrête.
 
 ### Moins de choses à retenir {#memory-aids}
 
-- Le bandeau de rappels et les notifications de l'ordinateur disent en mots ce qui arrive à échéance : vous n'avez rien à retenir.
+- Le bandeau de rappels et les notifications de l’ordinateur disent en mots ce qui arrive à échéance : vous n’avez rien à retenir.
 - Le guide des premiers pas du tableau de bord montre quoi faire ensuite, et sa liste À vérifier montre ce qui attend une décision.
 - Chaque champ garde son libellé visible pendant que vous y tapez.
 
@@ -116,12 +116,12 @@ Les lecteurs d'écran, comme Narrateur ou NVDA sous Windows et Orca sous Linux, 
 
 @index: liste des raccourcis; aide-mémoire
 
-- F1 : l'aide sur cet écran.
+- F1 : l’aide sur cet écran.
 - Maj+F1 : le manuel sur cet écran.
 - Ctrl+F : la case de recherche.
 - Entrée dans la case de recherche : chercher.
-- Entrée dans le formulaire de saisie d'un registre : enregistrer l'opération.
-- Échap dans le formulaire de saisie d'un registre : vider le formulaire.
+- Entrée dans le formulaire de saisie d’un registre : enregistrer l’opération.
+- Échap dans le formulaire de saisie d’un registre : vider le formulaire.
 - Échap dans une fenêtre : fermer sans enregistrer.
 - + ou - après une date : un jour plus tard ou plus tôt.
 - Tab et Maj+Tab : champ ou bouton suivant et précédent.
