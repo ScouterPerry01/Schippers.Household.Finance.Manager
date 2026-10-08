@@ -16,11 +16,13 @@ New documents wait in To review. Choose Review to open one. Check the details th
 
 - File it with a recorded transaction of the same amount, using Attach.
 - Or choose New transaction from this document, and pick the account under Paid with.
-- If it looks like one of your bills, choose Record the amount on this bill.
+- If it looks like one of your bills, choose Record it as this bill's statement: its amount, due date, number and meter readings go on the bill.
 - Or choose File without attaching, and attach it later when the statement arrives.
 - For a receipt or invoice, Itemize… lets you type its items, their categories and the sales taxes on each, without AI: the taxes are shared over the items, and the new transaction gets one split line per category.
 
 The left side of the window shows the document page by page: ◀ and ▶, or Page Up and Page Down, turn the pages; −, + and Fit (or Ctrl with the mouse wheel) zoom, and you can drag a zoomed page.
+
+When you correct a store's name or a document's kind, the next documents from that store get your choices. Learned stores… lists what was learned; Forget undoes it for one store.
 
 Tick Keep this document for warranties and purchase receipts you want to keep for good. Read with AI can fill in the details, if AI reading is set up.
 

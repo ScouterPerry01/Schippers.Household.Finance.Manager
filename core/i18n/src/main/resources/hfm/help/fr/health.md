@@ -23,4 +23,4 @@ Dans l’onglet Professionnels, choisissez Ajouter un professionnel pour vos mé
 
 ## Sommaire de santé
 
-Choisissez Sommaire de santé… pour enregistrer un sommaire imprimable d’une personne : allergies, problèmes de santé actuels, médicaments et vaccins. Le PDF peut être protégé par un mot de passe. Il n’existe pas pour les animaux.
+Choisissez Sommaire de santé… pour enregistrer un sommaire imprimable d’une personne : allergies, problèmes de santé actuels, médicaments et vaccins. Le PDF peut être protégé par un mot de passe. Imprimer le sommaire de santé l’envoie directement à l’imprimante. Le sommaire n’existe pas pour les animaux.

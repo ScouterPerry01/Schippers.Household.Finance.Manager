@@ -51,7 +51,7 @@ The PDF is titled **In case of emergency** and says "Prepared with RANN's Roost 
 
 ### Print {#print}
 
-**Print** sends the summary to the computer's printer. Where printing directly is not possible, the PDF opens instead so you can print it from there. The copy made for printing is not password-protected and is deleted when the app closes.
+**Print** sends the summary to the computer's printer. Where printing directly is not possible, the PDF opens instead so you can print it from there. The copy made for printing is not password-protected, so it is kept only as long as the printer or viewer needs it: it is removed about two minutes after it goes to the printer, or ten minutes after it opens in the viewer, tried again each minute while the computer still holds it open, and in any case when the app closes.
 
 ## Papers and wishes tab {#papers-tab}
 @index: will; power of attorney; protection mandate; safe deposit box; funeral
@@ -114,6 +114,6 @@ Note where each paper is, not its content:
 
 @index: contact; linked contact; Link a contact
 
-Once a person's papers are saved, the Papers and wishes tab shows, under the people to call, the contacts linked to these papers in an estate role, such as Executor or Notary. **Link a contact…** picks one from Contacts. The emergency summary lists them with the people to call typed on this tab, which stay as they are.
+Once a person's papers are saved, the Papers and wishes tab shows, under the people to call, the contacts linked to these papers in an estate role, such as Executor or Notary. **Link a contact…** picks one from Contacts. The emergency summary lists them with the people to call typed on this tab, which stay as they are; a person typed here who is also linked from Contacts (the same name) is listed once, from Contacts, so their details stay up to date.
 
 Click a contact to open its page in [Contacts](contacts); **Remove link** takes the link away, and **Link a contact…** picks one, in its role, or creates a **New contact…** and links it. See [Contacts on other screens](contacts#on-other-screens).

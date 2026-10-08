@@ -54,7 +54,7 @@ If no backup has succeeded in the last 7 days, the dashboard's review list also 
 
 ## Backups in the folder {#backup-list}
 
-"Backups in the folder" with their number lists the backups of this household found in the folder, newest first. Backups of other households in the same folder are not listed. Each line shows the date and time, the file name and its size in KB.
+"Backups in the folder" with their number lists the backups of this household found in the folder, newest first. Backups of other households in the same folder are not listed. Under the column headings When, File, Size and Actions, each line shows the date and time, the file name and its size in KB. See [Lists and their columns](basics#lists).
 
 - **Check**: tests that backup again, as when it was made: every file against its checksum, no unencrypted database, and the databases you can open opened and checked for damage. The result shows under the line: "The backup is complete and readable" with the number of databases checked, or "The backup check failed:" and the problems.
 

@@ -18,7 +18,7 @@ Les nouveaux compteurs et réservoirs sont gardés dans le premier groupe de com
 
 Chaque compteur est une carte. Sa première ligne le nomme ; dessous viennent ce qu’il mesure, la maison ou le chalet (ou **Ménage**), **Relevés selon l’heure** s’il y a lieu, le dernier relevé avec sa date et, si le compteur a une facture, le coût unitaire, par exemple « 0,0742 $ le kWh ».
 
-Dessous, une ligne par mois, du plus récent au plus ancien, pour les treize derniers mois qui ont des relevés :
+Dessous, une ligne par mois, du plus récent au plus ancien, pour les treize derniers mois qui ont des relevés, sous les en-têtes **Mois**, **Consommation**, **L’an dernier**, **Variation** et **Coût** (« Deux relevés sont nécessaires pour montrer la consommation. » tant qu’il n’y en a pas deux) :
 
 - le mois, avec **(partie du mois)** quand les relevés ne couvrent pas tous ses jours (le premier et le mois en cours) ;
 - la consommation, en kWh pour l’électricité et en mètres cubes (m³) pour le gaz et l’eau ;
@@ -44,7 +44,7 @@ Le coût unitaire est le total de la facture du compteur sur les 12 derniers moi
 - **Mesure** : **Électricité** (kWh), **Gaz naturel** (m³) ou **Eau** (m³). Il fixe l’unité affichée.
 - **Maison ou chalet** : la maison ou le chalet parmi vos [biens](assets) (maisons et chalets seulement), ou **Ménage** s’il n’appartient à aucun.
 - **Relevés selon l’heure** : pour l’électricité seulement. Cochez-le quand le compteur garde des totaux en période de pointe, intermédiaire et creuse, comme en Ontario ; chaque relevé peut alors donner les trois registres.
-- **Facture pour le coût unitaire** : une de vos [factures](bills), comme celle d’électricité, ou **Aucune**. Sans facture, aucun coût n’est montré.
+- **Facture pour le coût unitaire** : une de vos [factures](bills), comme celle d’électricité, ou **Aucune**. Sans facture, aucun coût n’est montré. C’est le même lien que le champ **Compteur** du formulaire de facture (voir [Compteur (Services publics)](bills#meter)) : un compteur a une seule facture, et les états de compte inscrits pour cette facture ajoutent leurs relevés datés à ce compteur.
 - **Notes** : ce qu’il faut retenir, comme l’endroit où se trouve le compteur.
 - **Enregistrer dans** : pour un nouveau compteur, si vous pouvez modifier plusieurs groupes de comptes.
 - **Archivé (n’est plus relevé)** : sur un compteur existant ; il quitte la liste sauf si **Montrer les archivés** est coché, et le téléphone ne l’offre plus. Ses relevés restent.
@@ -61,7 +61,9 @@ Sous la liste, **Nouveau relevé** :
 - **Pointe**, **Intermédiaire**, **Creuse** : selon l’heure seulement. Laissez **Relevé** vide pour prendre le total des trois.
 - **Notes** : facultatif.
 
-**Ajouter le relevé** l’enregistre ; **Fermer** quitte sans ajouter.
+**Ajouter le relevé** l’enregistre ; **Fermer** quitte sans ajouter. La liste a pour en-têtes **Date**, **Relevé** et **Actions**.
+
+Les relevés viennent aussi de la facture du compteur : un [état de compte](bills#statements) qui porte un relevé actuel ou précédent avec sa date, tapé ou lu d’une facture numérisée, ajoute ce relevé ici, sauf si le compteur a déjà un relevé ce jour-là. Supprimer l’état de compte laisse le relevé du compteur.
 
 @index: tarification selon l’heure; pointe; creuse; intermédiaire
 
@@ -88,6 +90,8 @@ Le niveau d’aujourd’hui est le dernier relevé plus les livraisons depuis, m
 
 ### Boîte Ajouter un réservoir {#tank-dialog}
 
+**Ajouter un réservoir** l’ouvre ; **Modifier le réservoir** sur une carte l’ouvre pour ce réservoir.
+
 - **Nom** : obligatoire ; par exemple « Propane du chalet ».
 - **Combustible** : **Propane** ou **Mazout**.
 - **Maison ou chalet** : comme pour un compteur.
@@ -106,8 +110,10 @@ Le niveau d’aujourd’hui est le dernier relevé plus les livraisons depuis, m
 
 - **Date** et **Litres** : obligatoires.
 - **Coût** : facultatif ; il donne le prix d’un litre.
-- **Inscrire le paiement dans un compte** : avec un coût, inscrit aussi le paiement dans le compte choisi (comptes bancaires et cartes de crédit), au fournisseur, dans la catégorie **Chauffage (gaz, mazout)**, avec les litres en mémo.
+- **Inscrire le paiement dans un compte** : avec un coût, inscrit aussi le paiement dans le compte choisi sous **Payée à partir de** (comptes bancaires et cartes de crédit), au fournisseur, dans la catégorie **Chauffage (gaz, mazout)**, avec les litres en mémo.
 - **Notes** : facultatif.
+
+**Ajouter la livraison** l’enregistre (il faut la permission de modifier les données du groupe du réservoir) ; **Fermer** quitte sans ajouter. La liste a pour en-têtes **Date**, **Livraison** et **Actions**. Un niveau relevé le jour d’une livraison est pris comme après celle-ci.
 
 Supprimer une livraison demande d’abord et offre de supprimer aussi le paiement inscrit avec elle.
 

@@ -23,7 +23,7 @@ When the household has no account yet, the list says No accounts yet. Add your f
 
 @index: balances; last reconciled
 
-The accounts are grouped under headings by kind, always in this order: Banking, Credit, Loans, Investments and Assets. Each row shows:
+Two column headings, Account and Balance, sit above the list; screen readers announce them as headings. The accounts are grouped under headings by kind, always in this order: Banking, Credit, Loans, Investments and Assets. Each row shows:
 
 - the account name, in bold when it is the one selected, followed by (Closed) for a closed account;
 - under the name, Reconciled to followed by the date of the last reconciled statement, or Never reconciled. The date turns red when the last reconciliation is more than 45 days old (the default, set in [Rates and rules](rates-rules)), as a reminder to reconcile the next statement. The same accounts are listed on the Dashboard under Needs your attention;
@@ -143,7 +143,7 @@ With **Edit account** you can change the name, institution, opening balance, ope
 
 When an account has a stored number, its register shows **Show number**. It opens Show the full account number and asks: Enter your password to see the full account number.
 
-- **Password**: your own login password. **Show number** checks it and displays the full number in large type; **OK** closes the window. A wrong password shows Wrong login name or password. and nothing is revealed. **Cancel** closes without showing anything.
+- **Password**: your own login password. **Show number** checks it and displays the full number in large type; **OK** closes the window. A wrong password shows Wrong login name or password. and nothing is revealed. After several wrong passwords, the window makes you wait: Too many wrong passwords. Try again in 30 seconds. (the number of seconds varies). **Cancel** closes without showing anything.
 
 Each time a number is revealed, it is recorded in the household's activity log.
 
@@ -208,6 +208,8 @@ Which buttons appear depends on the account:
 - **✓**: the cleared mark (see [Cleared and reconciled marks](accounts#cleared-status)).
 - **Balance**: the running balance after this transaction, counting every earlier one and the opening balance.
 
+The column names are shown at the top of the register; screen readers announce them as headings, and read the ✓ heading as Cleared.
+
 Click a row to load it into the form below for changes; the row is highlighted while you edit it.
 
 ### Cleared and reconciled marks {#cleared-status}
@@ -254,7 +256,7 @@ When you edit a credit card purchase and the card has benefits, a line in colour
 The buttons at the right of the form:
 
 - **Split…**: shares the transaction across several categories (not offered for a transfer).
-- **Itemize…**: shares the transaction over the items of its receipt, typed with their categories and sales taxes, which are shared over the items (not offered for a transfer). See [Itemize by hand](documents#itemize).
+- **Itemize…**: shares the transaction over the items of its receipt, typed with their categories and sales taxes, which are shared over the items (not offered for a transfer). The items become the transaction's split lines, in place of any split already made; when no amount was typed, their total becomes the amount; an item with no category takes the one chosen in the form. Nothing is saved until you save the transaction. See [Itemize by hand](documents#itemize).
 - **Pay stub…**: on a Banking account, when entering a new transaction, enters a pay from its stub (see [Pay from a pay stub](accounts#pay-stub)).
 - **Sales tax…** and **Refund…**: when editing an existing transaction (see [Sales tax on a purchase](accounts#sales-tax) and [Record a refund](accounts#refund)).
 - **Save as template**: when editing an ordinary transaction, keeps it as a template for next time (see [Transaction templates](accounts#templates)).

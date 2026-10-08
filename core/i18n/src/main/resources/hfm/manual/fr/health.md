@@ -12,7 +12,8 @@ L’écran **Santé** sert à organiser les renseignements de santé de votre fa
 Le haut de l’écran contient :
 
 - **Personne ou animal** : la personne ou l’animal dont vous consultez le dossier. Voir [Choisir la personne ou l’animal](health#choose-person).
-- **Sommaire de santé…** : enregistre un sommaire imprimable pour la personne affichée. Il n’est pas offert pour un animal. Voir [Sommaire de santé](health#health-summary).
+- **Imprimer le sommaire de santé** : envoie le sommaire de la personne directement à l’imprimante. Pas offert pour un animal.
+- **Sommaire de santé…** : enregistre un sommaire imprimable pour la personne affichée, en PDF qui peut être protégé par un mot de passe. Il n’est pas offert pour un animal. Voir [Sommaire de santé](health#health-summary).
 - Le bouton d’ajout de l’onglet affiché : **Ajouter un médicament**, **Ajouter un rendez-vous**, **Ajouter un problème de santé**, **Ajouter une allergie**, **Ajouter un examen**, **Ajouter un vaccin** ou **Ajouter un professionnel**.
 
 En dessous se trouvent sept onglets : **Médicaments**, **Rendez-vous**, **Problèmes de santé**, **Allergies**, **Examens**, **Vaccins** et **Professionnels**. Tous les onglets sauf **Professionnels** montrent le dossier de la personne ou de l’animal choisi en haut. **Professionnels** est une seule liste pour tout le ménage.
@@ -225,7 +226,7 @@ Les professionnels ne peuvent pas être supprimés ; marquez-les plutôt **N’e
 
 Le PDF indique aussi quand et avec quoi il a été préparé, et qu’il doit rester confidentiel puisqu’il contient des renseignements de santé.
 
-**Imprimer le sommaire de santé** envoie le même sommaire directement à l’imprimante (ou l’ouvre dans votre lecteur PDF quand l’ordinateur n’offre pas l’impression). La copie faite pour l’impression est un fichier temporaire, supprimé à la fermeture de RANN's Roost.
+**Imprimer le sommaire de santé** envoie le même sommaire directement à l’imprimante (ou l’ouvre dans votre lecteur PDF quand l’ordinateur n’offre pas l’impression). La copie faite pour l’impression est un fichier temporaire, non protégé par un mot de passe : elle est supprimée environ deux minutes après son envoi à l’imprimante (dix minutes après son ouverture dans le lecteur PDF), et dans tous les cas à la fermeture de RANN's Roost.
 
 ### La boîte Enregistrer en PDF {#save-pdf}
 @index: mot de passe; PDF protégé; chiffrement

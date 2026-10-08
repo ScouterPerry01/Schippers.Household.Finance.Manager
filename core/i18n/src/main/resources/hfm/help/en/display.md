@@ -14,6 +14,10 @@ Choose a size from 90 % to 150 %. Every screen grows with it, and the menu on th
 
 Show details in notifications, ticked by default, lets a computer notification name up to four reminders, such as a bill, a medication or an appointment. Untick it if others can see this screen: notifications then say only how many reminders there are of each kind, such as Bills (2).
 
+## Getting started guide
+
+If you hid the Dashboard's Getting started guide, Show the Getting started guide again brings it back. It stays until its steps are done.
+
 ## The menu
 
 The menu can be a list on the left, with groups that fold, or a bar at the top with drop-down menus. Use Menu at the top at the bottom of the list, or Menu on the left at the end of the bar. Each user's choice is remembered on this computer.
@@ -25,7 +29,7 @@ Everything works from the keyboard:
 - Tab and Shift+Tab move between fields and buttons.
 - Enter or Space presses a button.
 - Ctrl+F goes to the search box.
-- F1 opens this help, on the topic for the screen shown.
+- F1 opens this help, on the topic for the screen shown; Shift+F1 opens the manual.
 - Esc closes a dialog.
 
 Screen readers, such as Narrator or NVDA on Windows and Orca on Linux, read the labels of fields and buttons, and say whether a menu group is open or closed.

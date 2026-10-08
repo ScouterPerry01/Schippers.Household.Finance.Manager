@@ -4,6 +4,7 @@ import java.net.URLDecoder
 import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -87,5 +88,48 @@ class NearbyStationsTest {
         assertEquals("850 m", NearbyStations.distanceText(853, Locale.CANADA))
         assertEquals("2.4 km", NearbyStations.distanceText(2_412, Locale.CANADA))
         assertEquals("2,4 km", NearbyStations.distanceText(2_412, Locale.CANADA_FRENCH))
+    }
+
+    @Test
+    fun `a hostile answer gives nothing harmful`() {
+        // Nested a hundred thousand deep.
+        assertTrue(NearbyStations.parse("[".repeat(100_000) + "]".repeat(100_000), lat, lon).isEmpty())
+        assertTrue(NearbyStations.parse("""{"elements":""" + "[".repeat(50_000) + "]".repeat(50_000) + "}", lat, lon).isEmpty())
+        // Numbers out of range or absurd, a name a megabyte long, an id that is not a number.
+        val long = "x".repeat(1_000_000)
+        val answer = """{"elements":[
+            {"type":"node","id":1,"lat":1e999,"lon":-75.6975,"tags":{"amenity":"fuel"}},
+            {"type":"node","id":2,"lat":45.4216,"lon":-1e400,"tags":{"amenity":"fuel"}},
+            {"type":"node","id":99999999999999999999999,"lat":45.4216,"lon":-75.6975,"tags":{"amenity":"fuel"}},
+            {"type":"node","id":3,"lat":"45.4216","lon":-75.6975,"tags":{"amenity":"fuel"}},
+            {"type":"node","id":4,"lat":45.4216,"lon":-75.6975,"tags":{"amenity":"fuel","name":"$long","addr:street":"$long"}},
+            {"type":"node","id":5,"lat":45.4216,"lon":-75.6975,"tags":"fuel"},
+            {"type":"node","id":6,"lat":45.4216,"lon":-75.6975,"tags":{"amenity":["fuel"]}}
+        ]}"""
+        val found = NearbyStations.parse(answer, lat, lon)
+        assertEquals(listOf("node/3", "node/4"), found.map { it.id }.sorted(), "positions as text are read; the rest is left out")
+        assertTrue(found.all { (it.name?.length ?: 0) <= 120 && (it.address?.length ?: 0) <= 250 }, "texts are cut")
+        // Thousands of stations: the closest forty.
+        val many = (1..5_000).joinToString(",") { """{"type":"node","id":$it,"lat":${45.4 + it / 1e6},"lon":-75.7,"tags":{"amenity":"fuel"}}""" }
+        assertEquals(NearbyStations.MAX_RESULTS, NearbyStations.parse("""{"elements":[$many]}""", lat, lon).size)
+    }
+
+    @Test
+    fun `an answer is read only up to its size and time limits`() {
+        val big = java.io.ByteArrayInputStream(ByteArray(NearbyStations.MAX_BYTES + 20_000) { 'a'.code.toByte() })
+        assertFailsWith<java.io.IOException> { NearbyStations.readAnswer(big) }
+        // A server sending a byte at a time for ever: stopped once the time is up.
+        var clock = 0L
+        val trickle = object : java.io.InputStream() {
+            override fun read(): Int = 'a'.code
+            override fun read(b: ByteArray, off: Int, len: Int): Int {
+                clock += 1_000_000_000L
+                b[off] = '{'.code.toByte()
+                return 1
+            }
+        }
+        assertFailsWith<java.io.IOException> { NearbyStations.readAnswer(trickle) { clock } }
+        assertTrue(clock <= (NearbyStations.MAX_ANSWER_MS + 2_000) * 1_000_000)
+        assertEquals("{}", NearbyStations.readAnswer("{}".byteInputStream()))
     }
 }

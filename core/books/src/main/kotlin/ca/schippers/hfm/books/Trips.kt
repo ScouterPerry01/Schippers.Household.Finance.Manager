@@ -210,6 +210,19 @@ class TripService internal constructor(private val books: Books) {
     /** Whether a trip with [id] is kept, in any group the user can see. */
     fun exists(id: String): Boolean = groupOf(id) != null
 
+    /**
+     * TRP-16, HH-11: the group a photo or note taken during trip [tripId] is kept in: the trip's when it
+     * is here, else the group of its vehicle [vehicleId] (where the trip will be kept), when the user may
+     * add there; null when neither applies (the phone's group is used). A private car's photos then never
+     * land in a group others read, even from a phone that sends to one.
+     */
+    internal fun groupForAttachment(tripId: String, vehicleId: String?): String? {
+        fun addable(groupId: String) = books.groups().firstOrNull { it.id == groupId }?.takeIf { it.level.allows(PermissionLevel.CAPTURE_ONLY) }?.id
+        groupOf(tripId)?.let { return addable(it) }
+        val vehicle = vehicleId?.let { id -> runCatching { books.vehicles.get(id) }.getOrNull() } ?: return null
+        return addable(vehicle.groupId)
+    }
+
     fun save(t: Trip): Trip = store(t, PermissionLevel.EDIT)
 
     /**
@@ -241,12 +254,25 @@ class TripService internal constructor(private val books: Books) {
         val province = t.province?.trim()?.uppercase()?.ifEmpty { null }
             ?: t.startPlaceId?.let { places[it]?.province }
             ?: books.provinceOf(t.memberId).name
+        val q = books.ledger(group).extrasQueries
+        // A stop's id is its own: one given twice, or already another trip's, gets a new one (a phone names them).
+        val used = HashSet<String>()
+        val stops = t.stops.map { s ->
+            val own = s.id.isNotBlank() && used.add(s.id) && q.tripOfStop(s.id).executeAsOneOrNull().let { it == null || it == id }
+            if (own) s else s.copy(id = Ids.newId()).also { used += it.id }
+        }
         val saved = t.copy(
             id = id, groupId = group.id, destination = destination, origin = origin, kmOneWay = km, roundTrip = t.roundTrip && !byOdometer, province = province,
-            trailerId = t.trailerId.takeIf { t.load == TripLoad.TOWING }, date = t.startAt?.date ?: t.date,
+            trailerId = t.trailerId.takeIf { t.load == TripLoad.TOWING }, date = t.startAt?.date ?: t.date, stops = stops,
         )
-        with(saved) {
-            books.ledger(group).extrasQueries.upsertTrip(
+        // The trip and its stops together, or nothing.
+        books.ledger(group).transaction { upsert(q, saved) }
+        return saved
+    }
+
+    private fun upsert(q: ca.schippers.hfm.data.ledger.ExtrasQueries, t: Trip) {
+        with(t) {
+            q.upsertTrip(
                 id, date.toString(), vehicleId, memberId, origin, destination,
                 kmOneWay.movePointRight(1).setScale(0, RoundingMode.HALF_UP).toLong(), if (roundTrip) 1 else 0, purpose.name, notes?.trim()?.ifEmpty { null },
                 startAt?.let(::minuteText), endAt?.let(::minuteText), startOdometer?.toLong(), endOdometer?.toLong(), startPlaceId, endPlaceId,
@@ -254,16 +280,14 @@ class TripService internal constructor(private val books: Books) {
                 startLatitude, startLongitude, startAddress.blankToNull(), endLatitude, endLongitude, endAddress.blankToNull(),
             )
             // TRP-12, TRP-15: the stops and breaks, kept in their order.
-            val q = books.ledger(group).extrasQueries
             q.deleteTripStops(id)
             stops.forEachIndexed { i, s ->
                 q.insertTripStop(
-                    s.id.ifBlank { Ids.newId() }, id, i.toLong(), s.kind.name, minuteText(s.at), s.endAt?.let(::minuteText), s.odometer?.toLong(), s.placeId,
+                    s.id, id, i.toLong(), s.kind.name, minuteText(s.at), s.endAt?.let(::minuteText), s.odometer?.toLong(), s.placeId,
                     s.place.blankToNull(), s.address.blankToNull(), s.latitude, s.longitude, s.purpose?.name, s.notes.blankToNull(),
                 )
             }
         }
-        return saved
     }
 
     fun delete(t: Trip) = books.ledger(books.group(t.groupId).also { books.require(it, PermissionLevel.EDIT) }).extrasQueries.deleteTrip(t.id)

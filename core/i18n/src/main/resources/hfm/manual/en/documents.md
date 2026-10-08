@@ -15,8 +15,9 @@ Every document goes through the same three stages:
 
 Until you file it, a document waits on the **To review** tab. The number of documents waiting is shown on the tab and next to Documents in the menu.
 
-The screen has a title bar with two buttons, a short reminder of how it works, the message from the last import, and three tabs: **To review**, **All documents** and **Old documents**.
+The screen has a title bar with three buttons, a short reminder of how it works, the message from the last import, and three tabs: **To review**, **All documents** and **Old documents**.
 
+- **Learned stores…**: lists what the app learned from your corrections, store by store, and lets you forget a store. See [Learning from your corrections](documents#learning).
 - **Watched folder…**: opens the settings of the folder that is imported automatically. See [The watched folder](documents#watched-folder).
 - **Import files…**: opens a file window where you choose one or more files to import. While files are being read the button shows **Reading…** and cannot be clicked again.
 
@@ -211,7 +212,7 @@ Under the date and total, one line can show other details that were read: the su
 
 Statements, pay stubs and explanations of benefits describe many amounts, not one transaction, so the **File it with** section does not appear for them.
 
-The filing choices follow the kind chosen in the window at once, before it is saved: change a receipt to **Bill** and **Record the amount on this bill** appears when the app finds the bill; change it to **Pay stub** and **Record the pay…** appears. The kind itself is saved when you use a filing button or **Save**.
+The filing choices follow the kind chosen in the window at once, before it is saved: change a receipt to **Bill** and **Record it as this bill's statement** appears when the app finds the bill (or **Create a bill from this** when it finds none); change it to **Pay stub** and **Record the pay…** appears. The kind itself is saved when you use a filing button or **Save**.
 
 ### Learning from your corrections {#learning}
 @index: learning; merchant names; auto-categorize receipts

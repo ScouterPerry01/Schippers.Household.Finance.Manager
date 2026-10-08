@@ -1,8 +1,8 @@
 # Téléphones
 
-L’écran Téléphones sert à jumeler RANN’s Roost Mobile, l’application compagnon pour téléphones Android, à cet ordinateur, et à gérer les téléphones déjà jumelés. Les téléphones jumelés envoient à cet ordinateur des reçus, des factures, d’autres documents, des dépenses rapides et des lectures d’odomètre, et reçoivent en retour un résumé des soldes, des factures et des budgets. L’écran se trouve dans le groupe **Réglages** du menu, sous **Téléphones**.
+L’écran Téléphones sert à jumeler RANN's Roost Mobile, l’application compagnon pour téléphones Android, à cet ordinateur, et à gérer les téléphones déjà jumelés. Les téléphones jumelés envoient à cet ordinateur des reçus, des factures, d’autres documents, des dépenses rapides, des lectures d’odomètre, des déplacements, des pleins et des recharges, des lieux enregistrés, des relevés de compteur et de réservoir, des heures travaillées, des tâches ménagères, des heures de bénévolat, des tâches saisonnières faites, de nouveaux contacts et les calendriers que leur propriétaire choisit. En retour, ils reçoivent un résumé des soldes, des factures, des budgets, des rendez-vous et des autres échéances, et les contacts du ménage. L’écran se trouve dans le groupe **Réglages** du menu, sous **Téléphones**.
 
-Pour le côté téléphone, voir [RANN’s Roost Mobile](phone-app). Pour un parcours rapide, voir [Premiers pas avec l’application mobile](start-phone).
+Pour le côté téléphone, voir [RANN's Roost Mobile](phone-app). Pour un parcours rapide, voir [Premiers pas avec l’application mobile](start-phone).
 
 @index: Android; application mobile; application compagnon; synchronisation; synchroniser; jumelage; code QR
 
@@ -13,23 +13,23 @@ Pour le côté téléphone, voir [RANN’s Roost Mobile](phone-app). Pour un par
 - L’ordinateur garde l’exemplaire de référence. Le téléphone ne garde que ses captures et nouveaux contacts en attente d’envoi, et un résumé et les contacts venus de l’ordinateur.
 - À la maison, le téléphone envoie par votre Wi-Fi directement à cet ordinateur. Rien ne passe par Internet ni par un serveur de RANN.
 - Tout ce qui circule entre le téléphone et cet ordinateur est chiffré avec une clé que les deux ont créée au jumelage. Aucun autre téléphone ni ordinateur ne peut le lire.
-- Les téléphones peuvent joindre cet ordinateur seulement pendant que le ménage est ouvert dans RANN’s Roost. Verrouiller le ménage ou fermer l’application arrête l’écoute ; le téléphone garde ses captures et les envoie plus tard.
+- Les téléphones peuvent joindre cet ordinateur seulement pendant que le ménage est ouvert dans RANN's Roost. Verrouiller le ménage ou fermer l’application arrête l’écoute ; le téléphone garde ses captures et les envoie plus tard.
 - Loin de la maison, le téléphone peut déposer ses captures, toujours chiffrées, dans un dossier de votre propre stockage infonuagique, que cet ordinateur surveille (voir [Loin de la maison](#away-from-home)).
-- Ce qui arrive n’entre jamais directement dans vos livres. Les reçus, factures, documents et dépenses rapides attendent dans l’onglet **À vérifier** de [Documents](documents) ; les lectures d’odomètre et d’heures sont ajoutées directement au véhicule ou à l’équipement ; les nouveaux contacts attendent d’être vérifiés à l’écran [Contacts](contacts#from-phone).
+- Ce qui arrive n’entre jamais directement dans vos livres. Les reçus, factures, documents et dépenses rapides attendent dans l’onglet **À vérifier** de [Documents](documents) ; les lectures, déplacements, pleins, inscriptions et tâches cochées sont enregistrés directement dans leurs écrans ; les nouveaux contacts attendent d’être vérifiés à l’écran [Contacts](contacts#from-phone). Voir [Ce que devient ce qu’envoie un téléphone](#received).
 
 @index: chiffrement; Wi-Fi; réseau local; réseau de la maison; confidentialité
 
 ### L’écoute {#listener}
 
-Pendant que le ménage est ouvert, RANN’s Roost attend les téléphones sur votre réseau de la maison. La ligne sous l’explication indique où en sont les choses :
+Pendant que le ménage est ouvert, RANN's Roost attend les téléphones sur votre réseau de la maison. La ligne sous l’explication indique où en sont les choses :
 
 - « Les téléphones peuvent joindre cet ordinateur à 192.168.1.20:47311 pendant que le ménage est ouvert. » : tout va bien. L’adresse est celle de cet ordinateur sur votre réseau de la maison, suivie du port d’écoute (47311, ou le suivant qui est libre jusqu’à 47320 si un autre programme l’utilise).
 - « Les téléphones ne peuvent pas joindre cet ordinateur : » suivi de la raison : l’écoute n’a pas pu démarrer, habituellement parce qu’aucun port n’était libre.
 - « Cet ordinateur n’est pas connecté à un réseau local. » : aucun réseau de la maison n’a été trouvé. Connectez-vous à votre Wi-Fi ou à votre réseau filaire, puis revenez à l’écran.
 
-Quand l’ordinateur a plusieurs cartes réseau, RANN’s Roost choisit l’adresse de votre réseau de la maison et évite celles des machines virtuelles et des cartes semblables.
+Quand l’ordinateur a plusieurs cartes réseau, RANN's Roost choisit l’adresse de votre réseau de la maison et évite celles des machines virtuelles et des cartes semblables.
 
-> Remarque : La première fois, Windows peut demander d’autoriser RANN’s Roost sur les réseaux. Autorisez-le sur les réseaux privés, sinon les téléphones ne pourront pas le joindre.
+> Remarque : La première fois, Windows peut demander d’autoriser RANN's Roost sur les réseaux. Autorisez-le sur les réseaux privés, sinon les téléphones ne pourront pas le joindre.
 
 ## Jumeler un téléphone {#pair}
 
@@ -41,7 +41,7 @@ Quand l’ordinateur a plusieurs cartes réseau, RANN’s Roost choisit l’adre
 
 La fenêtre montre un code QR à gauche et, à droite :
 
-- les étapes : sur le téléphone, ouvrez RANN’s Roost Mobile, touchez **Jumeler à un ordinateur** et numérisez le code ; l’appareil photo du téléphone peut aussi le numériser et ouvrir RANN’s Roost Mobile ;
+- les étapes : sur le téléphone, ouvrez RANN's Roost Mobile, touchez **Jumeler à un ordinateur** et numérisez le code ; l’appareil photo du téléphone peut aussi le numériser et ouvrir RANN's Roost Mobile ;
 - un rappel que le téléphone doit être sur le même Wi-Fi que cet ordinateur, et la question de Windows sur les réseaux ;
 - le temps qui reste : chaque code est valide 10 minutes (par défaut, réglable dans [Taux et règles](rates-rules)), puis « Ce code a expiré. Fermez et jumelez de nouveau. » ;
 - l’adresse et le port que le téléphone utilisera ;
@@ -72,7 +72,7 @@ Chaque téléphone jumelé a sa carte, avec :
 Les boutons :
 
 - **Modifier** : ouvre la [boîte du téléphone](#phone-dialog).
-- **Retirer** : arrête le téléphone aussitôt, sans demander. Il ne peut plus rien envoyer ni recevoir : à sa prochaine tentative, il apprend qu’il a été retiré, annule son jumelage et garde ses captures non envoyées. Pour l’utiliser de nouveau, jumelez-le de nouveau. Servez-vous de **Retirer** pour un téléphone perdu, vendu ou remplacé. Ce qu’il a déjà envoyé reste dans RANN’s Roost.
+- **Retirer** : arrête le téléphone aussitôt, sans demander. Il ne peut plus rien envoyer ni recevoir : à sa prochaine tentative, il apprend qu’il a été retiré, annule son jumelage et garde ses captures non envoyées. Pour l’utiliser de nouveau, jumelez-le de nouveau. Servez-vous de **Retirer** pour un téléphone perdu, vendu ou remplacé. Ce qu’il a déjà envoyé reste dans RANN's Roost.
 - **Oublier** : affiché pour un téléphone retiré. Le retire de la liste.
 
 @index: téléphone perdu; téléphone volé; révoquer; retirer un téléphone
@@ -80,25 +80,25 @@ Les boutons :
 ### Boîte du téléphone {#phone-dialog}
 
 - **Nom** : le nom affiché sur la carte, par exemple « Téléphone d’Alex ». Obligatoire.
-- **Enregistrer dans** : le groupe de comptes où sont enregistrés les reçus, factures, documents et dépenses rapides du téléphone, et où ses nouveaux contacts attendent d’être vérifiés. Seuls les groupes où vous pouvez ajouter des données sont offerts ; un groupe privé affiche « (privé) » après son nom. Le changement vaut pour ce que le téléphone enverra désormais ; les documents déjà reçus restent où ils sont.
+- **Enregistrer dans** : le groupe de comptes où sont enregistrés les reçus, factures, documents et dépenses rapides du téléphone, ses déplacements, ses lieux et ses inscriptions, et où ses nouveaux contacts attendent d’être vérifiés. Tous ceux qui peuvent ouvrir ce groupe les voient. Seuls les groupes où vous pouvez ajouter des données sont offerts ; un groupe privé affiche « (privé) » après son nom. Le changement vaut pour ce que le téléphone enverra désormais ; les documents déjà reçus restent où ils sont.
 
 ## Loin de la maison {#away-from-home}
 
 @index: dossier de transfert; dossier infonuagique; Google Drive; OneDrive; Dropbox; Nextcloud; transfert par courriel; USB; roostsync
 
-Quand le téléphone n’est pas sur le Wi-Fi de la maison, il peut déposer ses captures dans un dossier de transfert de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud. L’application de ce service copie le dossier sur cet ordinateur, et RANN’s Roost en importe le contenu. Les fichiers sont chiffrés avec la clé du téléphone : le service ne garde jamais que des fichiers illisibles.
+Quand le téléphone n’est pas sur le Wi-Fi de la maison, il peut déposer ses captures dans un dossier de transfert de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud. L’application de ce service copie le dossier sur cet ordinateur, et RANN's Roost en importe le contenu. Les fichiers sont chiffrés avec la clé du téléphone : le service ne garde jamais que des fichiers illisibles.
 
 La carte **Loin de la maison** montre le dossier utilisé (« Dossier de transfert : … ») ou « Aucun dossier de transfert choisi. », et ces boutons :
 
-- **Choisir un dossier de transfert…** (ou **Changer de dossier…**) : choisissez le dossier tel qu’il apparaît sur cet ordinateur, le même que celui choisi sur le téléphone. RANN’s Roost le consulte aussitôt et indique combien de saisies il a importées.
-- **Ne plus l’utiliser** : affiché une fois un dossier choisi. RANN’s Roost cesse de surveiller le dossier. Rien n’y est supprimé.
-- **Importer un fichier de transfert…** : choisissez un fichier de transfert (un fichier de transfert RANN’s Roost, qui se termine par .roostsync) arrivé autrement, comme une pièce jointe de courriel enregistrée ou un fichier copié par USB. Vous pouvez aussi déposer un tel fichier dans l’écran [Documents](documents). Cela fonctionne même quand l’écoute est arrêtée. Quand un dossier de transfert est choisi, la réponse y est laissée, et le message ajoute « Sa réponse est dans le dossier de transfert : le téléphone récupère la confirmation la prochaine fois qu’il le consulte. » Sans dossier, le téléphone apprend que ces saisies sont arrivées à son prochain transfert par Wi-Fi.
+- **Choisir un dossier de transfert…** (ou **Changer de dossier…**) : choisissez le dossier tel qu’il apparaît sur cet ordinateur, le même que celui choisi sur le téléphone. RANN's Roost le consulte aussitôt et indique combien de saisies il a importées.
+- **Ne plus l’utiliser** : affiché une fois un dossier choisi. RANN's Roost cesse de surveiller le dossier. Rien n’y est supprimé.
+- **Importer un fichier de transfert…** : choisissez un fichier de transfert (un fichier de transfert RANN's Roost, qui se termine par .roostsync) arrivé autrement, comme une pièce jointe de courriel enregistrée ou un fichier copié par USB. Vous pouvez aussi déposer un tel fichier dans l’écran [Documents](documents). Cela fonctionne même quand l’écoute est arrêtée. Quand un dossier de transfert est choisi, la réponse y est laissée, et le message ajoute « Sa réponse est dans le dossier de transfert : le téléphone récupère la confirmation la prochaine fois qu’il le consulte. » Sans dossier, le téléphone apprend que ces saisies sont arrivées à son prochain transfert par Wi-Fi.
 
 Le résultat de la dernière consultation ou importation est affiché au bas de la carte.
 
 ### Comment le dossier de transfert est surveillé {#watching}
 
-Pendant que le ménage est ouvert, RANN’s Roost consulte le dossier de transfert toutes les 20 secondes :
+Pendant que le ménage est ouvert, RANN's Roost consulte le dossier de transfert toutes les 20 secondes :
 
 - Chaque nouveau fichier d’un téléphone jumelé est importé, puis supprimé du dossier, et un fichier de confirmation est laissé à côté pour le téléphone. Le téléphone le récupère à sa prochaine consultation, et c’est seulement alors qu’il supprime ses propres copies. Un fichier que le service infonuagique est encore en train de copier est laissé pour la ronde suivante.
 - Un fichier venant du téléphone d’un autre utilisateur du ménage reste en place jusqu’à ce que cet utilisateur ouvre le ménage ; la carte l’indique.
@@ -112,7 +112,7 @@ Pendant que le ménage est ouvert, RANN’s Roost consulte le dossier de transfe
 - « … vient du téléphone de … ; … doit ouvrir le ménage pour l’importer. » : le téléphone appartient à un autre utilisateur.
 - « … est destiné à un autre ménage. »
 - « … vient d’un téléphone qui n’est pas jumelé à ce ménage. » : jumelez le téléphone de nouveau.
-- « … n’est pas un fichier de transfert RANN’s Roost. »
+- « … n’est pas un fichier de transfert RANN's Roost. »
 
 ## Ce que devient ce qu’envoie un téléphone {#received}
 
@@ -123,12 +123,18 @@ Pendant que le ménage est ouvert, RANN’s Roost consulte le dossier de transfe
 - Une note vocale enregistrée avec une capture est gardée avec son document ; écoutez-la depuis la fenêtre de vérification du document.
 - Une lecture d’odomètre ou d’heures est ajoutée aux lectures de ce véhicule dans l’écran [Véhicules](vehicles), ou au compteur de cet équipement dans [Maison et biens](assets), sans vérification.
 - Un contact ajouté sur le téléphone attend d’être vérifié à l’écran [Contacts](contacts#from-phone), qui affiche **Du téléphone** et leur nombre. Rien ne devient un contact avant que vous l’ajoutiez, que vous ajoutiez ses coordonnées à un contact existant, ou que vous l’écartiez.
-- Chaque capture et chaque contact n’est reçu qu’une fois, même quand le téléphone l’envoie de nouveau.
+- Un déplacement, avec ses arrêts et ses pauses, va dans les [Déplacements](trips#from-phone), et ses lectures d’odomètre au véhicule. Les notes et photos prises en route attendent dans l’onglet **À vérifier** de Documents jusqu’à l’arrivée du déplacement, puis sont gardées avec lui.
+- Un plein ou une recharge va dans l’[onglet Carburant](vehicles#fuel-tab) du véhicule, marqué comme venu du téléphone, sans paiement inscrit.
+- Un lieu enregistré ou renommé sur le téléphone s’ajoute aux [Lieux](trips#places), avant les déplacements qui s’en servent.
+- Un relevé de compteur ou de réservoir, des heures travaillées, des tâches ménagères et des heures de bénévolat sont enregistrés aussitôt dans les écrans [Services publics](utilities), [Revenus d’appoint](side#hours), [Argent en famille](family#chores) et [Bénévolat](volunteer), marqués comme venus du téléphone.
+- Une tâche cochée dans la liste saisonnière devient un service dans le carnet d’entretien du véhicule ou du bien, comme si elle avait été cochée ici.
+- Un calendrier importé remplace la copie qui en était gardée. Voir [Calendriers des téléphones et des fichiers](calendar-sync).
+- Chaque capture, contact et inscription n’est reçu qu’une fois, même quand le téléphone l’envoie de nouveau. Celui qui ne peut pas être enregistré est refusé avec sa raison, que le téléphone affiche dans son onglet Envois.
 
 Vérifiez chaque document dans l’onglet **À vérifier** : rattachez-le à une opération, inscrivez-le sur une facture, ou classez-le.
 
 ## Ce que reçoit le téléphone {#sent-to-phone}
 
-Après chaque transfert, le téléphone reçoit un résumé à jour quand quelque chose y a changé : le nom du ménage, la langue dans laquelle l’application est affichée sur cet ordinateur, la devise de base, vos comptes et leurs soldes, les catégories, jusqu’à 400 bénéficiaires, les membres et les animaux, les véhicules et les équipements à compteur avec leur dernière lecture, les factures à payer dans les 60 prochains jours avec leurs jours de rappel, les budgets du mois pour les catégories de dépenses, l’entretien prévu ce mois-ci, et les contacts. Le téléphone l’affiche dans son onglet **Résumé** et s’en sert pour ses rappels et ses listes de choix. Voir [L’onglet Résumé](phone-app#summary-tab).
+Après chaque transfert, le téléphone reçoit un résumé à jour quand quelque chose y a changé : le nom du ménage, la langue dans laquelle l’application est affichée sur cet ordinateur, la devise de base, vos comptes et leurs soldes, les catégories, jusqu’à 400 bénéficiaires, les membres et les animaux, les véhicules et les équipements à compteur avec leur dernière lecture, les factures à payer dans les 60 prochains jours avec leurs jours de rappel, les budgets du mois pour les catégories de dépenses, l’entretien prévu dans les 60 prochains jours, les rendez-vous et événements avec leurs rappels, les heures de travail et d’école de chaque personne, les renouvellements de médicaments à venir, les renouvellements et commandes de combustible des 60 prochains jours, la liste de la saison, les compteurs, réservoirs, clients, tâches et organismes que proposent les formulaires d’inscription, les lieux enregistrés et les remorques, et les contacts. Seul ce que le propriétaire du téléphone peut voir sur cet ordinateur est envoyé. Le téléphone l’affiche dans son onglet **Résumé** et dans son agenda, et s’en sert pour ses rappels et ses listes de choix. Voir [L’onglet Résumé](phone-app#summary-tab) et [L’agenda](phone-app#agenda).
 
 Les contacts sont ceux que le propriétaire du téléphone peut voir sur cet ordinateur, sauf les contacts archivés : leur nom, organisation ou personne, poste et organisation, types, « pour quoi », les noms des personnes qu’ils servent, téléphones et courriels avec leurs étiquettes, adresse, site Web, heures et notes. Les numéros de compte et de client ne sont jamais envoyés, pas plus que les liens vers les éléments. Le téléphone les affiche dans son onglet Contacts. Voir [Les contacts envoyés au téléphone](contacts#sent-to-phone).

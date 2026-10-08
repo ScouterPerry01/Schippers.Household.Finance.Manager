@@ -10,7 +10,7 @@ Prêts et hypothèques montre les conditions de chaque prêt et de chaque hypoth
 
 @index: prêt; hypothèque; amortissement; prêt auto; prêt étudiant; mortgage
 
-La colonne de gauche énumère chaque compte de prêt et d’hypothèque ouvert que vous pouvez voir, avec le montant dû à droite. Sous le nom, le type de compte est indiqué, ou « Conditions à saisir » en rouge pour un prêt dont les conditions manquent encore. Cliquez sur un prêt pour l’afficher à droite. Quand vous ouvrez cet écran à partir du registre d’un prêt, ce prêt s’affiche d’abord.
+La colonne de gauche énumère chaque compte de prêt et d’hypothèque ouvert que vous pouvez voir, sous les en-têtes **Prêt** et **Solde**, avec le montant dû à droite. Sous le nom, le type de compte est indiqué, ou « Conditions à saisir » en rouge pour un prêt dont les conditions manquent encore. Cliquez sur un prêt pour l’afficher à droite. Quand vous ouvrez cet écran à partir du registre d’un prêt, ce prêt s’affiche d’abord.
 
 Les marges de crédit et les cartes de crédit ne sont pas énumérées ici : elles n’ont pas de calendrier fixe. Elles paraissent dans le rapport Sommaire des dettes.
 
@@ -167,7 +167,7 @@ Les boutons **CSV**, **Excel** et **PDF** enregistrent le tableau affiché dans 
 
 ## Onglet Changements {#changes-tab}
 
-Les remboursements anticipés, les changements de taux, les renouvellements et les changements de versement inscrits, des plus récents aux plus anciens : la date, le genre, le montant ou le nouveau taux (avec « versement recalculé » ou « même versement »), et la note.
+Les remboursements anticipés, les changements de taux, les renouvellements et les changements de versement inscrits, des plus récents aux plus anciens, sous les en-têtes **Date**, **Changement**, **Détails**, **Notes** et **Actions** : la date, le genre, le montant ou le nouveau taux (avec « versement recalculé » ou « même versement »), et la note.
 
 **Supprimer** à côté d’un changement le retire aussitôt, et le calendrier est recalculé. Supprimer un remboursement anticipé ne retire pas l’argent transféré pour celui-ci : supprimez ce virement dans le registre au besoin (une ligne sous la liste le rappelle). Supprimer le dernier renouvellement remet la fin de terme qu’il remplaçait, et le rappel de renouvellement avec elle ; supprimer un renouvellement plus ancien ou un changement de taux laisse la fin de terme telle quelle. Les renouvellements inscrits avant cette version de l’application n’ont pas gardé la fin de terme précédente : après en avoir supprimé un, changez la fin de terme avec **Modifier les conditions** au besoin.
 

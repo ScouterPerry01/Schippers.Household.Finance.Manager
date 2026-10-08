@@ -13,9 +13,9 @@ Chaque objectif montre sa progression. Avec une date cible, il indique si vous �
 ## Mettre de côté ou utiliser
 
 - Mettre de côté réserve une plus grande part du solde pour l’objectif. Aucun argent ne bouge.
-- Utiliser indique que l’objectif a payé ce pour quoi il était prévu ou, sous Raison, que l’argent a été repris pour autre chose. Inscrivez l’achat lui-même dans le compte, comme d’habitude.
+- Utiliser indique que l’objectif a payé ce pour quoi il était prévu ou, sous Raison, que l’argent a été repris pour autre chose. Inscrivez l’achat lui-même dans le compte, comme d’habitude ; une fois inscrit, Achat (facultatif) le lie à l’objectif.
 - Transférer déplace un montant vers un autre objectif du même compte.
 
 ## Historique et modifications
 
-Historique énumère les montants mis de côté, utilisés et transférés d’un objectif; vous pouvez y supprimer une entrée. Modifier change l’objectif, et Supprimer l’efface avec son historique. L’argent reste dans le compte.
+Historique énumère les montants mis de côté, utilisés et transférés d’un objectif ; vous pouvez y supprimer une entrée. Modifier change l’objectif, et Supprimer l’efface avec son historique. L’argent reste dans le compte.

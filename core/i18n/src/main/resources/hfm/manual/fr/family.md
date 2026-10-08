@@ -1,6 +1,6 @@
 # Argent en famille
 
-L’écran Argent en famille suit l’argent qui circule entre des personnes plutôt qu’entre vos comptes : les dépenses partagées en voyage ou entre colocataires, l’argent prêté dans la famille et les allocations des enfants. Il se trouve dans le groupe **Argent** du menu, sous **Argent en famille**.
+L’écran Argent en famille suit l’argent qui circule entre des personnes plutôt qu’entre vos comptes : les dépenses partagées en voyage ou entre colocataires, l’argent prêté dans la famille, les allocations des enfants et les tâches qui leur rapportent de l’argent. Il se trouve dans le groupe **Argent** du menu, sous **Argent en famille**.
 
 Rien sur cet écran ne crée d’opérations dans vos comptes ni ne change vos soldes, vos budgets ou vos rapports. C’est un carnet à part de qui doit quoi à qui. Quand l’argent change vraiment de mains (vous faites un virement Interac à un ami, vous remettez de l’argent comptant à votre enfant), inscrivez aussi ce paiement dans le registre du compte si vous voulez qu’il figure dans vos livres.
 
@@ -118,7 +118,7 @@ Inscrivez ici l’argent prêté entre membres de la famille ou amis : un parent
 
 L’intérêt, s’il y en a, est un intérêt simple sur ce qui reste dû, compté jour par jour au taux annuel. Chaque remboursement paie d’abord l’intérêt dû jusque-là, puis le montant prêté.
 
-> Remarque : L’ARC a des règles sur les prêts à faible taux ou sans intérêt entre conjoints et avec des membres de la famille (les règles d’attribution), qui peuvent rendre imposable chez le prêteur le revenu gagné avec cet argent. Consultez un conseiller avant d’en faire un. RANN’s Roost ne donne pas de conseils fiscaux.
+> Remarque : L’ARC a des règles sur les prêts à faible taux ou sans intérêt entre conjoints et avec des membres de la famille (les règles d’attribution), qui peuvent rendre imposable chez le prêteur le revenu gagné avec cet argent. Consultez un conseiller avant d’en faire un. RANN's Roost ne donne pas de conseils fiscaux.
 
 ### La liste des prêts {#loan-list}
 
@@ -155,7 +155,7 @@ Cliquer sur un prêt ouvre une fenêtre intitulée « Prêteur à Emprunteur ».
 
 @index: argent de poche; allocation des enfants; argent des enfants; tâches ménagères
 
-Une allocation est un montant fixe qu’un enfant reçoit à intervalles réguliers. RANN’s Roost compte chaque jour d’allocation comme dû à l’enfant jusqu’à ce que vous le marquiez payé, et tient l’argent de l’enfant : ce qu’il a reçu en allocation, gagné ou reçu, moins ce qu’il a dépensé.
+Une allocation est un montant fixe qu’un enfant reçoit à intervalles réguliers. RANN's Roost compte chaque jour d’allocation comme dû à l’enfant jusqu’à ce que vous le marquiez payé, et tient l’argent de l’enfant : ce qu’il a reçu en allocation, gagné ou reçu, moins ce qu’il a dépensé.
 
 ### La liste des allocations {#allowance-list}
 
@@ -210,7 +210,7 @@ L’onglet **Tâches ménagères** garde les tâches de chaque enfant, qui valen
 - **Ajouter une tâche** : ouvre la [boîte de la tâche](#chore-dialog). Le bouton paraît dès que le ménage compte un membre ; il propose le premier enfant.
 - Une carte par enfant : **À payer** (l’argent gagné par les tâches faites jusqu’à aujourd’hui et pas encore payées, et combien) et les points, au total et ce mois-ci.
 - **Payer avec l’allocation** : si l’enfant a une allocation dans la même devise, ajoute une inscription **Gagné ou reçu** pour ce qui est à payer, notée **Tâches**, et marque ces tâches payées. **Marquer payé** dans la [liste des allocations](#allowance-list) fait de même en payant l’allocation. Sans allocation, **Marquer comme payé** les marque payées sans rien ajouter.
-- Chaque tâche : son nom (cliquez dessus pour la modifier), ce qu’elle vaut, combien de fois elle a été faite dans les sept derniers jours, **Historique**, et **Faite aujourd’hui**, qui la coche pour aujourd’hui. Une fois faite aujourd’hui, une tâche faite une fois par jour affiche **Déjà faite aujourd’hui**, grisé, pour qu’elle ne rapporte pas deux fois le même jour ; une tâche qui peut être faite plusieurs fois par jour affiche **Faite encore**. Les boutons sont grisés pour qui ne peut pas cocher ou modifier le groupe de la tâche.
+- Chaque tâche, sous les en-têtes **Tâche**, **Gagné**, **Cette semaine** et **Actions** : son nom (cliquez dessus pour la modifier), ce qu’elle vaut, combien de fois elle a été faite dans les sept derniers jours, **Historique**, et **Faite aujourd’hui**, qui la coche pour aujourd’hui. Une fois faite aujourd’hui, une tâche faite une fois par jour affiche **Déjà faite aujourd’hui**, grisé, pour qu’elle ne rapporte pas deux fois le même jour ; une tâche qui peut être faite plusieurs fois par jour affiche **Faite encore**. Les boutons sont grisés pour qui ne peut pas cocher ou modifier le groupe de la tâche.
 
 ### Boîte Ajouter une tâche {#chore-dialog}
 

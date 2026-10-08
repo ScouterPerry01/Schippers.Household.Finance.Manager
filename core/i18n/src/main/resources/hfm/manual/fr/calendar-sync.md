@@ -24,7 +24,7 @@ Le téléphone n’envoie que les calendriers que vous cochez, et seulement pour
 
 Avec **Dans les deux sens** choisi sur le téléphone, le téléphone écrit les 60 prochains jours du ménage dans un calendrier : les rendez-vous et événements, les heures de travail et d’école de chaque personne et les factures à payer. Il n’écrit que ce que l’utilisateur de ce téléphone peut voir sur l’ordinateur. Chaque personne choisit sur son propre téléphone où cela va :
 
-- **Calendrier RANN’s Roost sur ce téléphone seulement** : un calendrier à l’application, qui n’appartient à aucun compte et n’est jamais synchronisé avec Google, Outlook ni ailleurs.
+- **Calendrier RANN's Roost sur ce téléphone seulement** : un calendrier à l’application, qui n’appartient à aucun compte et n’est jamais synchronisé avec Google, Outlook ni ailleurs.
 - Un calendrier d’un des comptes du téléphone, comme un calendrier Google ou Outlook. Il se synchronise alors avec ce fournisseur, et il est visible partout où ce compte est utilisé et par les personnes avec qui il est partagé.
 
 Dans l’un ou l’autre, un rendez-vous médical est écrit seulement comme « Rendez-vous santé », sans lieu ni détails, et une facture comme « Facture à payer : nom », jamais son montant. Les changements faits sur l’ordinateur arrivent dans le calendrier au prochain transfert ; les éléments retirés ou payés y sont supprimés. Ce que l’application a écrit n’est jamais réimporté comme élément importé. Désactiver l’option, choisir un autre calendrier ou annuler le jumelage du téléphone retire tout ce qu’elle a écrit. Voir [Dans les deux sens](phone-app#calendar-both-ways) dans le chapitre du téléphone.
@@ -49,6 +49,7 @@ Si vous n’avez pas encore de groupe privé, un groupe à votre nom est créé 
 Les éléments importés paraissent parmi les rendez-vous, les factures et les échéances :
 
 - Dans l’**Agenda**, la ligne montre l’heure de début (ou **Toute la journée**, ou **Suite** les jours suivants d’un élément sur plusieurs jours), le titre, puis les heures, le lieu, le calendrier et le téléphone dont il vient, et qui le voit. **Lecture seule** rappelle qu’il se modifie dans le calendrier d’où il vient.
+- Dans le **Jour** et la **Semaine**, un élément avec une heure se place à ses heures et un élément d’une journée entière sur la ligne **Toute la journée**, comme les rendez-vous ; en lecture seule, il n’ouvre aucun formulaire quand on clique dessus. Un élément sur plusieurs jours remplit chacun de ses jours.
 - Dans le **Mois**, le jour montre l’heure de début et le titre, ou « Alex : occupé(e) ».
 
 Un élément sur plusieurs jours paraît chacun de ses jours. Les éléments importés n’ont pas de boutons Fait ou Annuler, ni de rappels sur l’ordinateur ou dans le résumé du téléphone : le calendrier d’où ils viennent vous les rappelle déjà.
@@ -75,7 +76,7 @@ Les calendriers importés, qui les voit et les jours à l’avance se choisissen
 
 1. Choisissez le groupe où vont les rendez-vous (**Enregistrer dans**).
 2. Cliquez sur **Choisir le fichier…** et choisissez le fichier .ics. Les fichiers d’au plus 5 Mo et 5 000 événements sont lus.
-3. La fenêtre indique combien de rendez-vous ont été créés et liste ce qui a été laissé de côté ou modifié.
+3. La fenêtre indique combien de rendez-vous ont été créés et combien de dates uniques ont été copiées (voir plus bas), et liste ce qui a été laissé de côté ou modifié, jusqu’à 30 lignes (« Et … de plus. » pour le reste). **Fermer** la ferme.
 
 Comment les événements du fichier sont copiés :
 

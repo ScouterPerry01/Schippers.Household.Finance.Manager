@@ -151,4 +151,27 @@ class BillPaymentsTest {
         val person = books.taxPackage.build(2026).people.first { it.memberId == sam.id }
         assertEquals(cad("600.00"), person.total(PackageItem.BUSINESS_EXPENSES))
     }
+
+    @Test
+    fun `a viewer sees what is due but cannot pay, record a statement or change a bill (service checks)`() {
+        val bill = books.bills.create(
+            BillDraft(BillKind.BILL, "Hydro", cad("120.00"), chequing.id, Recurrence.MONTHLY, d(1, 15), payeeAccountNumber = "6 1234 5678 9"),
+        )
+        books.bills.markPaid(bill.id, d(9, 15), d(9, 14), cad("50.00"))
+        val vic = books.users.add("vic", "Vic", ca.schippers.hfm.domain.Role.VIEWER, "password3-long".toCharArray()).userId
+        books.session.setPermission(group, vic, ca.schippers.hfm.domain.PermissionLevel.VIEW)
+        books.session.close()
+        books = Books(HouseholdStore(SqlCipherJdbcDriverFactory(), KdfParams.TESTING).unlock(temp.resolve("P.hfm"), "vic", "password3-long".toCharArray()))
+        val seen = books.bills.get(bill.id)
+        assertEquals("•••• 6789", seen.payeeAccountMasked, "masked for everyone")
+        assertEquals(cad("70.00"), books.bills.occurrences(d(9, 15), d(9, 15), setOf(bill.id)).single().outstanding)
+        val denied = ca.schippers.hfm.data.AccessDeniedException::class
+        assertFailsWith(denied) { books.bills.markPaid(bill.id, d(9, 15), d(9, 20)) }
+        assertFailsWith(denied) { books.bills.markPaid(bill.id, d(10, 15), d(10, 1), cad("1.00")) }
+        assertFailsWith(denied) { books.bills.unmarkPaid(bill.id, d(9, 15), deleteTransaction = true) }
+        assertFailsWith(denied) { books.bills.recordStatement(bill.id, StatementDraft(d(10, 15), cad("130.00"))) }
+        assertFailsWith(denied) { books.bills.setAmount(bill.id, d(10, 15), cad("130.00")) }
+        assertFailsWith(denied) { books.bills.update(seen.copy(name = "Changed"), newAccountNumber = "1") }
+        assertEquals(1, books.bills.payments(bill.id).size, "nothing changed")
+    }
 }

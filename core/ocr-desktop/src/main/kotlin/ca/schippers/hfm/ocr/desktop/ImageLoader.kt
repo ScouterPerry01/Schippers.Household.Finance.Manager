@@ -56,8 +56,11 @@ object ImageLoader {
                 val le = b[tiff].toInt() == 'I'.code
                 fun u16(o: Int) = if (le) (b[o].toInt() and 0xFF) or ((b[o + 1].toInt() and 0xFF) shl 8) else ((b[o].toInt() and 0xFF) shl 8) or (b[o + 1].toInt() and 0xFF)
                 fun u32(o: Int) = if (le) u16(o) or (u16(o + 2) shl 16) else (u16(o) shl 16) or u16(o + 2)
-                val ifd0 = tiff + u32(tiff + 4)
-                if (ifd0 + 2 > b.size) return 1
+                if (tiff + 8 > b.size) return 1
+                // An offset read from the file: it must point inside it (a negative or huge one is not read).
+                val offset = u32(tiff + 4).toLong() and 0xFFFFFFFFL
+                if (tiff + offset + 2 > b.size) return 1
+                val ifd0 = (tiff + offset).toInt()
                 for (e in 0 until u16(ifd0)) {
                     val entry = ifd0 + 2 + e * 12
                     if (entry + 10 > b.size) return 1

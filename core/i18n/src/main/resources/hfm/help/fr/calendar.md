@@ -6,8 +6,8 @@ En plus des rendez-vous que vous ajoutez, il affiche :
 
 - Les échéances de factures, tirées des Factures.
 - Les suivis de santé à faire, tirés de Santé.
-- Les renouvellements, comme une assurance, une immatriculation, une fin de garantie ou la fin du terme d’un prêt.
-- L’entretien à faire sur vos véhicules et dans Maison et biens.
+- Les renouvellements, comme une assurance, une immatriculation, une fin de garantie, la fin du terme d’un prêt ou la date où commander du combustible pour un réservoir.
+- L’entretien à faire sur vos véhicules et dans Maison et biens, y compris les tâches de la liste saisonnière.
 - Les heures de travail et d’école de chaque personne, en barre de la couleur de la personne.
 
 Chacun a un bouton, comme Ouvrir les factures ou Ouvrir la santé, qui mène à l’écran où il se gère.
@@ -31,7 +31,7 @@ Choisissez Ajouter un rendez-vous. Indiquez de quoi il s’agit, le type, la dat
 ## Marquer les rendez-vous
 
 - Fait marque cette occurrence comme faite.
-- Annuler celui-ci annule seulement cette occurrence; les autres répétitions restent.
+- Annuler celui-ci annule seulement cette occurrence ; les autres répétitions restent.
 - Annuler remet le rendez-vous comme avant.
 - Modifier ouvre le rendez-vous pour le changer ou le supprimer. La suppression efface toutes ses répétitions.
 

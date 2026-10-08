@@ -21,7 +21,7 @@ Click Set up instalments… and enter the amounts from the CRA or Revenu Québec
 
 ## Year-end package
 
-The Year-end package tab shows each person's figures for the return, gathered from the books, with the federal line each one goes on. Choose the year and the person. Click Folder for the accountant… to save a folder with every summary and the slips and receipts filed for them, or export one summary as PDF, Excel or CSV.
+The Year-end package tab shows each person's figures for the return, gathered from the books, with the federal line each one goes on. Choose the year and the person. Click Folder for the accountant… to save a folder with every summary and the slips and receipts filed for them, or export one summary as PDF, Excel or CSV. Notes under the lines list the slips still expected and the person's volunteer hours of the year, with whether volunteer firefighting or search and rescue reaches the 200 hours the tax credits need.
 
 ## Estimate
 

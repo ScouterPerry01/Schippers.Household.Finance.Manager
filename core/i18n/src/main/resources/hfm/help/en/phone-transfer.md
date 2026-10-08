@@ -1,6 +1,6 @@
 # Sending from the phone
 
-RANN's Roost Mobile, the companion app for Android, photographs receipts and bills and records quick expenses. Here is how those captures reach this computer.
+RANN's Roost Mobile, the companion app for Android, photographs receipts and bills, records quick expenses, and logs odometer readings, trips, fill-ups, meter and tank readings, hours, chores, volunteer hours and seasonal tasks done. Here is how those captures reach this computer.
 
 ## Pair a phone
 
@@ -22,10 +22,10 @@ A transfer file sent by email or copied by USB can be brought in with Import a t
 
 ## Review what arrived
 
-Captures never go straight into the books. They wait on the To review tab of Documents. Click Review on each one to check it, then attach it to a transaction, record it on a bill, or file it.
+Receipts, bills, documents and quick expenses never go straight into the books. They wait on the To review tab of Documents. Click Review on each one to check it, then attach it to a transaction, record it on a bill, or file it. A capture can carry a voice note: Play the voice note in its review window plays it.
+
+Odometer readings, trips, fill-ups, places, meter and tank readings, hours, chores, volunteer hours and seasonal tasks done are recorded straight on their screens, marked from the phone. New contacts wait for review on the Contacts screen.
 
 ## A lost phone
 
 On Phones, click Remove beside the phone. It can no longer send anything.
-
-A capture from the phone can carry a voice note: Play the voice note in its review window plays it.

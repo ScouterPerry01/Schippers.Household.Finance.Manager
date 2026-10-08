@@ -1,16 +1,16 @@
 # À propos
 
-L’écran À propos indique la version de RANN’s Roost que vous utilisez, comment vos renseignements sont traités et où obtenir de l’aide. Il se trouve dans le groupe Aide du menu, le dernier.
+L’écran À propos indique la version de RANN's Roost que vous utilisez, comment vos renseignements sont traités et où obtenir de l’aide. Il se trouve dans le groupe Aide du menu, le dernier.
 
 ## Version et mises à jour
 
-Le numéro de version est en haut. Selon l’installation, la partie Mises à jour permet d’activer Vérifier les mises à jour une fois par jour, ou de cliquer sur Vérifier maintenant. Quand une nouvelle version est trouvée, cliquez sur Télécharger et vérifier. Chaque mise à jour est vérifiée avec la signature de RANN avant de pouvoir être installée; si la vérification échoue, rien n’est installé.
+Le numéro de version est en haut. Selon l’installation, la partie Mises à jour permet d’activer Vérifier les mises à jour une fois par jour, ou de cliquer sur Vérifier maintenant. Quand une nouvelle version est trouvée, cliquez sur Télécharger et vérifier. Chaque mise à jour est vérifiée avec la signature de RANN avant de pouvoir être installée ; si la vérification échoue, rien n’est installé.
 
 Les copies du Microsoft Store ou de Flathub sont mises à jour par ces boutiques. Quand une mise à jour est prête, un bandeau en haut de la fenêtre vous amène ici.
 
 ## Quoi de neuf et détails pour le soutien
 
-Afficher les notes de version, sous Quoi de neuf, énumère ce qui a changé dans cette version. Copier les détails pour le soutien copie la version, le système d’exploitation, Java, les versions de la base de données, la taille du texte, les couleurs et la langue, à coller dans un message au soutien; ils ne nomment aucune personne, aucun dossier ni aucun montant. Écrire au soutien ouvre un courriel à info-rann-apps@NorthMail.ca.
+Afficher les notes de version, sous Quoi de neuf, énumère ce qui a changé dans cette version. Copier les détails pour le soutien copie la version, le système d’exploitation, Java, les versions de la base de données, la taille du texte, les couleurs et la langue, à coller dans un message au soutien ; ils ne nomment aucune personne, aucun dossier ni aucun montant. Écrire au soutien ouvre un courriel à info-rann-apps@NorthMail.ca.
 
 ## Confidentialité
 
@@ -22,7 +22,7 @@ Les chiffres fiscaux (feuillets, gains en capital, droits de cotisation, frais m
 
 ## Licence et soutien
 
-RANN’s Roost est un logiciel libre sous la licence publique générale GNU, version 3 ou ultérieure, sans aucune garantie. Code source sur GitHub ouvre le code.
+RANN's Roost est un logiciel libre sous la licence publique générale GNU, version 3 ou ultérieure, sans aucune garantie. Code source sur GitHub ouvre le code.
 
 Pour une question ou un problème, écrivez à l’adresse indiquée ou ouvrez un billet sur GitHub. N’envoyez jamais de mots de passe, de clés de récupération, de sauvegardes ni de détails financiers.
 

@@ -57,13 +57,14 @@ Marked **Renewal**, dates when something expires or must be renewed, gathered fr
 - an insurance claim to send ([Medical claims](medical));
 - a warranty ending on a home item, or an insurance policy renewal ([Home and assets](assets));
 - a tax instalment ([Taxes](taxes));
-- a bond or GIC you hold reaching its maturity, from 30 days before (the default, set in [Rates and rules](rates-rules)) until its redemption is recorded ([Investments](investments#security-dialog)).
+- a bond or GIC you hold reaching its maturity, from 30 days before (the default, set in [Rates and rules](rates-rules)) until its redemption is recorded ([Investments](investments#security-dialog));
+- the date to order fuel for a propane or heating oil tank, from its expected level ([Utilities](utilities)).
 
 The button on the line opens the screen where it is managed, such as **Open vehicles**, **Open loans** or **Open investments**.
 
 ### Maintenance {#maintenance}
 
-Marked **Maintenance**, the next due date of each maintenance task on your vehicles and on your home and other assets, such as an oil change or a furnace inspection. The button opens [Vehicles](vehicles) or [Home and assets](assets).
+Marked **Maintenance**, the next due date of each maintenance task on your vehicles and on your home and other assets, such as an oil change or a furnace inspection, including the tasks of the [seasonal checklist](assets#seasonal-tab). In the Show panel they are under **Maintenance and seasonal tasks**. The button opens [Vehicles](vehicles) or [Home and assets](assets).
 
 ## Views and moving around {#views}
 @index: day view; week view; month view; year view; go to date; date picker; today
@@ -301,7 +302,7 @@ An appointment marked done or cancelled gives no reminder. Work and school sched
 
 @index: phone reminder; appointment on the phone
 
-A paired phone receives the appointments of the coming two months with each transfer, with the reminder times you ticked, the medication refills coming up, and each person's work and school hours for today and tomorrow. It reminds you of the appointments and refills at those times even when the computer is off, and lists them under **Coming up** on its Summary tab, the day's hours first. Only appointments, medications and schedules from accounts the phone's user can see are sent: another user's private ones stay off that phone. A change made on the computer reaches the phone at its next transfer. On the phone, a medical appointment's notification says only "Health appointment" and when, and a refill names no medication. See [Notifications](phone-app#notifications).
+A paired phone receives the appointments of the coming two months with each transfer, with the reminder times you ticked, the medication refills coming up, and each person's work and school hours for the coming 60 days. It reminds you of the appointments and refills at those times even when the computer is off, lists them under **Coming up** on its Summary tab (today's and tomorrow's hours first), and shows them with the other due dates in its [agenda](phone-app#agenda). With **Both ways** chosen on the phone, it also writes them into a calendar there (see [Writing into a phone calendar](calendar-sync#both-ways)). Only appointments, medications and schedules from accounts the phone's user can see are sent: another user's private ones stay off that phone. A change made on the computer reaches the phone at its next transfer. On the phone, a medical appointment's notification says only "Health appointment" and when, and a refill names no medication. See [Notifications](phone-app#notifications).
 
 ## Who can do what {#permissions}
 

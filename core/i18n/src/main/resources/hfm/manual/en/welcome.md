@@ -61,8 +61,11 @@ The manual opens in its own window, beside the app. You can keep it open while y
 
 @index: Shift+F1; Manual button; open the manual
 
-- **Manual**: the button in the top bar of the main window, beside **Help (F1)**. It opens the manual.
-- **Shift+F1**: opens the manual on the chapter about the screen you are looking at. For example, pressing Shift+F1 on the Bills screen opens the Bills chapter.
+- **Manual (Shift+F1)**: the button in the top bar of the main window, beside **Help (F1)**, and **Manual** in the Help group of the menu. Both open the manual on the chapter about the screen you are looking at, or on the first chapter when that screen has none.
+- **Shift+F1**: does the same from the keyboard. For example, pressing Shift+F1 on the Bills screen opens the Bills chapter.
+- **Open the manual**: at the bottom of the Help panel; opens the manual the same way and closes the panel.
+
+When the Manual window is already open, each of these brings it to the front on that chapter.
 
 ### Contents {#contents-tab}
 
@@ -138,9 +141,10 @@ Press F1, or click **Help (F1)** in the top bar, to open the Help panel. It show
 ![The Help panel, opened on the Bills screen](images/help.png)
 
 - **Search the guide**: type words to list only the topics that contain them, each with the line that matched. If nothing is found, the panel says so; try other words.
+- **Open the manual**: opens the manual on the chapter for the screen shown, and closes the panel.
 - **Close**: closes the panel. Escape or F1 closes it too.
 
-When a topic does not answer your question, open the manual with **Manual** or Shift+F1 for the full story.
+When a topic does not answer your question, open the manual for the full story.
 
 ## A word of caution {#caution}
 

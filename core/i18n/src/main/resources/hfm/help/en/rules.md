@@ -11,6 +11,7 @@ When you import a statement, each new line is checked against the rules, from to
 - Click Add.
 - In Description contains, type the text to look for, for example HYDRO-QUEBEC or PAIE.
 - Pick the Category.
+- Optionally pick a payee under Also file under payee: matching lines also get that payee, whatever the bank's text says.
 - Optionally fill in Amount at least and Amount at most, to limit the rule to a range. This helps when one store sells very different things, or when a deposit from your employer can be pay or an expense refund.
 - Click Save.
 

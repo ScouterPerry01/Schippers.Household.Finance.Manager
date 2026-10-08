@@ -25,7 +25,7 @@ The page scrolls when the window is too small to show everything.
 
 @index: onboarding; setup; first steps; Getting started
 
-In a new household, a coloured card at the top of the Dashboard walks you through the first steps of setting up. Its title counts the steps done, for example Getting started: 2 of 6 done. Under the title, a short sentence explains that each step opens the screen that does it.
+In a new household, a coloured card at the top of the Dashboard walks you through the first steps of setting up. Its title counts the steps done, for example Getting started: 2 of 6 done. Under the title, a short sentence explains that each step opens the screen that does it. The next line says that the Walk-Me guides of the Help menu go through each of these steps with you; its button **Walk-Me guides** opens them. See [Walk-Me guides](walkme).
 
 Each step shows a ring (to do) or a tick (done). A step that is not done shows a one-line hint and a button. The next step to do is in bold and its button is filled in, so it stands out; the other buttons are outlined. A step is ticked by itself as soon as the books show it is done: you never tick it by hand.
 
@@ -81,7 +81,7 @@ All tile amounts are in the household's base currency. Balances and bills in oth
 @index: upcoming bills; due soon
 
 - **Bills overdue or due in the next 7 days**: the total of bill payments not yet paid that are either overdue (up to a year back) or due within the next seven days, so nothing late is hidden. Pay days and other income are left out.
-  The detail line counts them: 1 bill, 3 bills, or nothing due. A bill whose amount varies counts at its expected amount.
+  The detail line counts them: 1 bill, 3 bills, or nothing due. A bill whose amount varies counts at its expected amount, or at the amount you set for this bill; a bill paid in part counts at what is still owed.
   Clicking the tile opens Bills. See [Bills](bills).
 
 ### Spent this month {#budget-tile}
@@ -100,14 +100,14 @@ This card gathers everything waiting for a decision. Each line is a link: click 
 
 The lines that can appear, in this order:
 
+- Account alerts, in red, such as Chequing: balance $412.00, below $500.00: the alerts you set on accounts (low balance, card limit, unusual activity). Clicking one opens that account. An unusual transaction has a **Dismiss** button once you have looked at it. See [Account alerts](accounts#account-alerts).
 - Overdue bills, such as 1 bill is overdue or 3 bills are overdue: unpaid bills whose due date has passed. Opens Bills, where you record the payment or skip the occurrence. See [Bills](bills).
 - Statement lines, such as 2 statement lines need a decision: imported statement lines, in statements still being reconciled, that are marked To confirm or No match. Opens Accounts. Choose the account, then **Reconcile…** to settle them. See [Lines that need your attention](accounts#reconcile-attention).
 - Missing categories, such as 5 transactions have no category: transactions with at least one line that has no category. Transfers between your accounts are not counted, since they never need a category. Opens Accounts; the registers show (uncategorized) in the Category column. Uncategorized amounts count in no budget and show as (uncategorized) in reports, so it pays to fix them.
 - Accounts behind, such as Joint chequing has not been reconciled in more than 45 days: one line per account whose last reconciled statement is more than 45 days old (the default, set in [Rates and rules](rates-rules)). An account that was never reconciled is not listed here; the Accounts screen marks it Never reconciled instead. Opens Accounts.
 - No successful backup in the last 7 days: no backup has worked in the last week, or none was ever made. Opens Backups. See [Backups](backups).
-- Account alerts, in red, such as Chequing: balance $412.00, below $500.00: the alerts you set on accounts (low balance, card limit, unusual activity). Clicking one opens that account. An unusual transaction has a **Dismiss** button once you have looked at it. See [Account alerts](accounts#account-alerts).
-- Unusual utility use, such as Cottage hydro: unusual use in September 2026 (+35% on the same month last year): a meter whose last complete month, last month or the month before, used more than usual. Opens Utilities. See [Utilities](utilities#meters).
 - Missing rates, such as No exchange rate for USD: those amounts are left out: some balances, bills or spending are in a currency the app has no rate for, so they are not in the totals above. Opens Rates and prices, where you add the rate. See [Rates and prices](rates).
+- Unusual utility use, such as Cottage hydro: unusual use in September 2026 (+35% on the same month last year): a meter whose last complete month, last month or the month before, used more than usual. Opens Utilities. See [Utilities](utilities#meters).
 
 ## Net worth chart {#net-worth-chart}
 

@@ -13,7 +13,7 @@ Each goal shows its progress. With a target date, it tells you whether you are o
 ## Set money aside or use it
 
 - Set aside earmarks more of the account's balance for the goal. No money moves.
-- Use records that the goal paid for what it was saved for, or, under Reason, that money was taken back for something else. Enter the purchase itself in the account as usual.
+- Use records that the goal paid for what it was saved for, or, under Reason, that money was taken back for something else. Enter the purchase itself in the account as usual; once it is entered, Purchase (optional) links it to the goal.
 - Move shifts an amount to another goal in the same account.
 
 ## History and changes

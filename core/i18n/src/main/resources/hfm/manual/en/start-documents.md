@@ -32,7 +32,7 @@ See [The document window](documents#document-window).
 Under **File it with**, choose one:
 
 1. If the payment is already in your books (imported from the bank, for example), click **Attach** beside the matching transaction.
-2. If it is one of your bills, click **Record the amount on this bill**: the amount is set on the bill's nearest due date.
+2. If it is one of your bills, click **Record it as this bill's statement**: its amount, due date, number and any meter readings are recorded on the bill for that period, and the document is kept with it. A bill that matches none of yours offers **Create a bill from this**, which fills in the bill form from the document. See [Record the amount on a bill](documents#record-on-bill).
 3. If the payment is not in the books yet (a cash purchase, for example), click **New transaction from this document**, choose the account under **Paid with** and a **Category**, and click **Save**.
 4. Otherwise, click **File without attaching**. You can find it later on **All documents**.
 

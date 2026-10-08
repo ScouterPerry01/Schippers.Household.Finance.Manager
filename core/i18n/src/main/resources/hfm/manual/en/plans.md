@@ -47,7 +47,7 @@ Each card is titled with the plan and the person, for example "TFSA · Marie". U
 - **Room left**: the room for the year minus the contributions. When the contributions are higher, it is labelled **Over by** and shows the excess.
 - **Lifetime room left**: FHSA only: what is left of the $40,000 lifetime limit.
 
-**Show the contributions** (with their number) unfolds the list of lines counted: the date, the plan account (or "Outside the books" and its note) and the amount. **Hide the contributions** folds it again. Under the list, **Contribution outside the books** opens the window for this person and plan.
+**Show the contributions** (with their number) unfolds the list of lines counted, under the headings **Date**, **Account** and **Amount**: the date, the plan account (or "Outside the books" and its note) and the amount. **Hide the contributions** folds it again. Under the list, **Contribution outside the books** opens the window for this person and plan.
 
 ### How RRSP room is worked out {#rrsp-room}
 
@@ -276,7 +276,7 @@ Click **Add** to save the line. A second entry for the same year replaces the fi
 
 @index: beneficiary; successor holder; designation; estate
 
-This tab lists every registered plan with the people who receive it at death. A plan without one shows "No beneficiary recorded." in red. On each card, **Plan details** (for a spousal RRSP, spousal RRIF, RESP, RRIF, LIF or LIRA) opens [Plan details](plans#plan-details), and **Add** adds a beneficiary. Click a beneficiary to change it.
+This tab lists every registered plan with the people who receive it at death. A plan without one shows "No beneficiary recorded." in red. On each card, **Plan details** (for a spousal RRSP, spousal RRIF, RESP, RRIF, LIF or LIRA) opens [Plan details](plans#plan-details), and **Add** adds a beneficiary. The beneficiaries are listed under the headings **Kind** (Beneficiary, Successor holder or RESP beneficiary), **Beneficiary** (the name, with the relationship) and **Share (%)**. Click a beneficiary to change it.
 
 > Note: This is for reference. The designation made with the institution, or in a will, is what counts.
 

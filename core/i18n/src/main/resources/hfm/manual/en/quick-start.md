@@ -12,6 +12,7 @@ Have these at hand:
 - a password of at least 12 characters, without your login name, that you will remember (a few words in a row work well);
 - a printer or a pen and paper, for the recovery key;
 - the current balances of your bank accounts and cards;
+- a receipt or a bill, on paper to photograph or as a PDF;
 - a recent statement downloaded from your bank's website, as an OFX, QFX, QBO or CSV file (look for "Download transactions" or "Export" on the bank's site);
 - for backups, an external drive or a cloud folder (OneDrive, Google Drive, Dropbox);
 - optionally, an Android phone with RANN's Roost Mobile installed.
@@ -99,7 +100,18 @@ Add your main accounts the same way from the **Accounts** screen with **Add acco
 
 Reminders then appear across the top of the app and as computer notifications. See [Bills](bills).
 
-## Step 8: Import a first statement {#statement}
+## Step 8: File a first receipt {#receipt}
+
+@index: first receipt; file a receipt; To review
+
+1. Click **Open Documents** in the guide. The **Documents** screen opens.
+2. Drag a receipt (a photo or a PDF) onto the screen, or click **Import files…** and choose it. It is read on this computer: the store, the date and the total are found for you, and it waits on the **To review** tab.
+3. Click **Review** on it, and check **Store or biller**, **Date** and **Total** against the picture.
+4. Under **File it with**, click **Attach** beside the matching payment if it is already in your books, or **New transaction from this document** to record it, choosing the account under **Paid with** and a **Category**.
+
+A bill can be filed the same way on one of your bills, or turned into a new bill. See [Getting started with documents](start-documents) and [Documents](documents).
+
+## Step 9: Import a first statement {#statement}
 
 @index: import a statement; OFX; QFX; CSV
 
@@ -110,7 +122,7 @@ Reminders then appear across the top of the app and as computer notifications. S
 
 You can stop here and reconcile later. See [Getting started with money](start-money) and [Accounts](accounts).
 
-## Step 9: Set up backups {#backups}
+## Step 10: Set up backups {#backups}
 
 @index: backups; backup folder
 
@@ -123,7 +135,7 @@ From the first day, the app is set to make a backup every day into a folder besi
 
 Backups stay encrypted. See [Backups](backups).
 
-## Step 10: Pair your phone (optional) {#phone}
+## Step 11: Pair your phone (optional) {#phone}
 
 @index: pair a phone; QR code
 
@@ -132,7 +144,7 @@ Backups stay encrypted. See [Backups](backups).
 3. On the phone, open RANN's Roost Mobile, tap "Pair with a computer" and scan the code within 10 minutes.
 4. If Windows asks whether to allow the app on networks, allow it on private networks.
 
-From then on, receipts and bills you photograph arrive on the **To review** tab of **Documents** whenever the household is open. See [Getting started with the phone](start-phone).
+From then on, receipts and bills you photograph arrive on the **To review** tab of **Documents** whenever the household is open. The phone can also log trips, fill-ups, meter readings, hours, chores and volunteer hours, tick the seasonal checklist and show the agenda of the coming 60 days. See [Getting started with the phone](start-phone).
 
 ## Where to go next {#next}
 

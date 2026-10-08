@@ -25,7 +25,7 @@ The left column lists every investment account you can see, in two groups:
 - **Non-registered**: brokerage accounts, crypto wallets and precious metals accounts. Their sales give taxable capital gains.
 - **Registered plans**: RRSP, Spousal RRSP, RRIF, Spousal RRIF, LIRA, LIF, TFSA, FHSA, RESP and pension plans. Gains made inside them are not taxed while the money stays in the plan.
 
-Each line shows the account name, its type underneath and its total value on the right. A crypto wallet shows its balance in coins underneath and, on the right, its value in your base currency.
+The columns are headed **Account** and **Market value**. Each line shows the account name, its type underneath and its total value on the right. A crypto wallet shows its balance in coins underneath and, on the right, its value in your base currency.
 
 Below the accounts are three more choices:
 
@@ -81,7 +81,7 @@ One line per security held today, sorted by name:
 
 ### Transactions tab {#transactions-tab}
 
-Every investment transaction of the account, newest first: the date, the kind, the security (for a merger, an arrow to the security received), the quantity with "@ price" or "× ratio", and the effect on the account's cash. When a transaction moves no cash but has an amount (a notional distribution, units moved in), the amount is shown greyed.
+Every investment transaction of the account, newest first, under the headings **Date**, **Type**, **Security**, **Quantity** and **Amount**: the date, the kind, the security (for a merger, an arrow to the security received), the quantity with "@ price" or "× ratio", and the effect on the account's cash. When a transaction moves no cash but has an amount (a notional distribution, units moved in), the amount is shown greyed.
 
 Click a line to change or delete it.
 
@@ -89,7 +89,7 @@ Click a line to change or delete it.
 
 @index: reconcile; reconciliation; brokerage statement
 
-The statements saved for the account, imported or entered by hand, newest first. Each line shows the statement date, the cash on it, the number of holdings, and either **Reconciled** (in colour) or **To check** (in red). Click a line to open the comparison with the books. See [Check a statement](investments#check-statement).
+The statements saved for the account, imported or entered by hand, newest first. Under the headings **Statement date**, **Cash**, **Holdings** and **Status**, each line shows the statement date, the cash on it, the number of holdings, and either **Reconciled** (in colour) or **To check** (in red). Click a line to open the comparison with the books. See [Check a statement](investments#check-statement).
 
 ## Add or edit a transaction {#transaction-dialog}
 
@@ -241,7 +241,7 @@ A PDF or paper statement, or a trade confirmation, can be read by AI and brought
 
 @index: ticker; symbol; fund; bond; GIC; option
 
-Choose **Securities** at the bottom of the account list. Every security known to the books is listed with its symbol, name ("archived" when archived), kind, asset class and latest price with its date. A security is shared by every account that holds it: its name, kind, class and prices are the same everywhere.
+Choose **Securities** at the bottom of the account list. Every security known to the books is listed, under the headings **Symbol**, **Name**, **Kind**, **Asset class** and **Price**, with its symbol, name ("archived" when archived), kind, asset class and latest price with its date. A security is shared by every account that holds it: its name, kind, class and prices are the same everywhere.
 
 Securities are also created for you when you record a purchase with **New security…** or import a statement. Click **Add security** to create one ahead of time, or click a line to change it.
 
@@ -333,7 +333,7 @@ The heading shows the wallet's name, the coin's name and "watch-only" when it fo
 
 Coin prices are kept as each coin's exchange rate to Canadian dollars. Enter them by hand, or turn on the optional coin price download, under [Rates and prices](rates).
 
-Below the buttons, the wallet's transactions are listed newest first: date, note or payee, the other account for a transfer, the amount in the other currency when there is one, and the amount in coins.
+Below the buttons, the wallet's transactions are listed newest first, under the headings **Date**, **Description** and **Amount**: date, note or payee, the other account for a transfer, the amount in the other currency when there is one, and the amount in coins.
 
 ### Wallet buttons {#wallet-buttons}
 
@@ -408,7 +408,7 @@ A precious metals account is an account under [Accounts](accounts) with the type
 
 If a metal has no spot price yet, a red line says so. Spot prices are entered, or downloaded if you turn that on, under [Rates and prices](rates), in Canadian dollars per troy ounce of pure metal.
 
-The table lists each item: **Item** (quantity × description, with the metal, weight and unit, purity, storage place and "insured"), **Pure metal** (ounces), **Market value**, **Book cost** and **Gain**. Items sold are listed below under **Sold**, with their sale date and proceeds. Click any line to change it. Click **Add coins or bars** to add one.
+The table lists each item: **Item** (quantity × description, with the metal, weight and unit, purity, storage place and "insured"), **Pure metal** (ounces), **Market value**, **Book cost** and **Gain**. Items sold are listed below under **Sold**, with the headings **Item**, **Sold on** and **Proceeds**: their description, sale date and proceeds. Click any line to change it. Click **Add coins or bars** to add one.
 
 ### Add or edit coins or bars {#metal-item-dialog}
 

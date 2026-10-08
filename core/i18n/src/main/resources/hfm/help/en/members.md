@@ -6,7 +6,7 @@ Household members are not the same as Users. A user is someone who signs in to t
 
 ## Set the province or territory
 
-At the top of the screen, choose the household's Province or territory. Its rules apply: bank holidays for bills, default categories, provincial RESP grants, locked-in plans and tax forms. Only an administrator can change it.
+At the top of the screen, choose the household's Province or territory. Its rules apply: bank holidays for bills, default categories, provincial RESP grants, locked-in plans and tax forms. Only an administrator can change it. An administrator can also change the Household name there and click Rename.
 
 ## Add a person
 

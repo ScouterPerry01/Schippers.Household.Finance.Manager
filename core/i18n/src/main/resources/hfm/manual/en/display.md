@@ -64,7 +64,7 @@ The choice is kept on this computer, for every household and user. See [Computer
 
 When you have hidden the Dashboard's Getting started guide, this screen shows Getting started guide with a button:
 
-- **Show the Getting started guide again**: brings the guide back on your Dashboard and opens the Dashboard. The guide then stays until its first four steps are done, as before; if they are already done, there is nothing left for it to show. See [Getting started guide](dashboard#getting-started-guide).
+- **Show the Getting started guide again**: brings the guide back on your Dashboard and opens the Dashboard. The guide then stays until its first five steps are done (all but the phone), as before; if they are already done, there is nothing left for it to show. See [Getting started guide](dashboard#getting-started-guide).
 
 Unlike the other settings on this screen, this one is kept in the household, for you only. The part is not shown while the guide is not hidden.
 

@@ -113,7 +113,7 @@ object FieldExtractor {
             }
         }
         if (found.size < 2) return null
-        val list = found.entries.sortedBy { it.key }.map { (date, v) -> ReadInstalment(date, Money.exact(v.first, currency)) }
+        val list = found.entries.sortedBy { it.key }.take(ReadInstalment.MAX).map { (date, v) -> ReadInstalment(date, Money.exact(v.first, currency)) }
         var confidence = found.values.minOf { it.second } * 0.95f
         val sum = list.fold(Money.zero(currency)) { a, r -> a + r.amount }
         val shown = rows.flatMap { amounts(it.text) }.map { Money.exact(it, currency) }

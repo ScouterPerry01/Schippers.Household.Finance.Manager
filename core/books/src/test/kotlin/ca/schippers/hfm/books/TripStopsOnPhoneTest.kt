@@ -162,4 +162,68 @@ class TripStopsOnPhoneTest {
             books.session.close()
         }
     }
+
+    @Test
+    fun `photos of a trip in a car kept in a private group stay in that group, not the phone's`() {
+        val books = household()
+        try {
+            val shared = books.groups().first { !it.isPrivate }.id
+            val private = books.session.createGroup("Perry - personal", private = true)
+            val car = books.vehicles.save(Vehicle("", private, "Own car", purchaseDate = LocalDate(2024, 1, 1), purchaseOdometer = 10_000))
+            // An administrator's phone sends to the shared group.
+            val key = pairPhone(books, "phone-1")
+            val photo = CaptureItem(
+                "cap-1", CaptureKind.DOCUMENT, now, pages = listOf(SyncCrypto.b64(byteArrayOf(-1, -40, -1, -32, 1, 2, 3))), fileName = "trip-photo.jpg",
+                fields = CaptureFields(note = "Clinic door", vehicleId = car.id, tripId = "trip-1"),
+            )
+            assertEquals(listOf("cap-1"), send(books, "phone-1", key, SyncRequest(now, listOf(photo))).imported)
+            val early = books.documents.inbox().single()
+            assertEquals(private, early.groupId, "sent before the trip: kept with the car")
+            send(books, "phone-1", key, SyncRequest(now, emptyList(), trips = listOf(PhoneTrip("trip-1", now, car.id, "2026-10-07T08:00", "2026-10-07T09:00", 20_000, 20_030))))
+            // After the trip: its group, even without the car named.
+            val later = photo.copy(id = "cap-2", pages = listOf(SyncCrypto.b64(byteArrayOf(-1, -40, -1, -32, 7))), fields = CaptureFields(tripId = "trip-1"))
+            send(books, "phone-1", key, SyncRequest(now, listOf(later)))
+            val docs = books.trips.attachments(books.trips.list(2026).single())
+            assertEquals(2, docs.size)
+            assertTrue(docs.all { it.groupId == private }, docs.map { it.groupId }.toString())
+            // Any other capture still goes to the phone's group.
+            send(books, "phone-1", key, SyncRequest(now, listOf(CaptureItem("cap-3", CaptureKind.RECEIPT, now, pages = listOf(SyncCrypto.b64(byteArrayOf(-1, -40, -1, -32, 5)))))))
+            assertEquals(shared, books.documents.inbox().single().groupId)
+        } finally {
+            books.session.close()
+        }
+    }
+
+    @Test
+    fun `stop ids sent twice or already another trip's do not lose the trip's stops`() {
+        val books = household()
+        try {
+            val group = books.groups().first().id
+            val van = books.vehicles.save(Vehicle("", group, "Van", purchaseDate = LocalDate(2024, 1, 1), purchaseOdometer = 10_000))
+            val key = pairPhone(books, "phone-1")
+            val first = PhoneTrip(
+                "t1", now, van.id, "2026-10-06T08:00", "2026-10-06T09:00", 20_000, 20_050,
+                stops = listOf(PhoneTripStop("s", "STOP", "2026-10-06T08:30", odometer = 20_020)),
+            )
+            val second = PhoneTrip(
+                "t2", now, van.id, "2026-10-07T08:00", "2026-10-07T09:00", 20_100, 20_150,
+                stops = listOf(
+                    PhoneTripStop("s", "STOP", "2026-10-07T08:20", odometer = 20_110),
+                    PhoneTripStop("dup", "STOP", "2026-10-07T08:30", odometer = 20_120),
+                    PhoneTripStop("dup", "BREAK", "2026-10-07T08:35", "2026-10-07T08:45"),
+                ),
+            )
+            val answer = send(books, "phone-1", key, SyncRequest(now, emptyList(), trips = listOf(first, second)))
+            assertEquals(listOf("t1", "t2"), answer.imported, answer.failed.toString())
+            val trips = books.trips.list(2026).associateBy { it.id }
+            assertEquals(listOf("s"), trips.getValue("t1").stops.map { it.id }, "the first trip keeps its stop")
+            val stops = trips.getValue("t2").stops
+            assertEquals(3, stops.size, "every stop of the second trip is kept")
+            assertEquals(3, stops.map { it.id }.toSet().size)
+            assertTrue("s" !in stops.map { it.id } && stops[1].id == "dup")
+            assertEquals(listOf(20_110, 20_120, null), stops.map { it.odometer })
+        } finally {
+            books.session.close()
+        }
+    }
 }

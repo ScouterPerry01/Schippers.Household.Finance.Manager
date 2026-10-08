@@ -4,7 +4,7 @@ The Dashboard is the first screen you see after opening the household. It shows 
 
 ## Getting started guide
 
-In a new household, a Getting started guide appears at the top. It lists a few steps: the people in the household, your accounts, your bills and pay, a first receipt, a first statement reconciled, and the phone (optional). Each step has a button that opens the screen that does it. The guide goes away once the steps are done, or you can choose Hide this guide.
+In a new household, a Getting started guide appears at the top. It lists a few steps: the people in the household, your accounts, your bills and pay, a first receipt, a first statement reconciled, and the phone (optional). Each step has a button that opens the screen that does it. The Walk-Me guides in the Help menu take you through each step. The guide goes away once the steps are done, or you can choose Hide this guide.
 
 ## The tiles
 
@@ -17,7 +17,7 @@ A row of tiles gives the main numbers. Click a tile to open the screen behind it
 
 ## Needs your attention
 
-This list gathers what is waiting for you: overdue bills, statement lines that need a decision, transactions with no category, accounts not reconciled in more than 45 days (the figure is set in Rates and rules), no successful backup in the last 7 days, missing exchange rates, and the alerts set on accounts (low balance, card limit, unusual activity). Click a line to go to the screen where you can deal with it. When the list is empty, it says Nothing to review.
+This list gathers what is waiting for you: overdue bills, statement lines that need a decision, transactions with no category, accounts not reconciled in more than 45 days (the figure is set in Rates and rules), no successful backup in the last 7 days, missing exchange rates and meters that used more than usual, below the alerts set on accounts (low balance, card limit, unusual activity), which come first, in red. Click a line to go to the screen where you can deal with it. When the list is empty, it says Nothing to review.
 
 ## Charts
 

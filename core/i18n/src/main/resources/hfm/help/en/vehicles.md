@@ -4,7 +4,7 @@ Vehicles follows each car, truck or other vehicle: its papers, maintenance, fuel
 
 ## Add a vehicle
 
-Choose Add a vehicle. Enter a name you use for it, the make, model and year, the plate, the VIN and the main driver. Under Registration and insurance, enter the renewal dates. Once a vehicle is sold or retired, it is hidden; tick Show sold and retired to see it again. The Overview tab shows its details and odometer. Choose Enter odometer now and then to keep it current.
+Choose Add a vehicle. Enter a name you use for it, the make, model and year, the plate, the VIN and the main driver. Under Registration and insurance, enter the renewal dates. Once a vehicle is sold or retired, it is hidden; tick Show sold and retired to see it again. The Overview tab shows its details and odometer. Choose Enter odometer now and then to keep it current; fill-ups, services and trips in the Trip log add readings too.
 
 ## Maintenance
 
@@ -17,9 +17,13 @@ Choose Add a vehicle. Enter a name you use for it, the make, model and year, the
 - On the Service log tab, choose Add a service. Tick Also enter the payment in an account to record what you paid at the same time.
 - On the Fuel tab, choose Add a fill-up, or Add a charge for an electric vehicle. Tick Filled the tank or Charged to full when it applies. Consumption appears after two full tanks with odometer readings.
 
+## Forecast
+
+The Forecast tab estimates the distance, fuel or charging and maintenance of the next 3, 6 and 12 months, from your recent odometer readings, consumption and prices. Suggest for the budget proposes monthly amounts for the Transport categories.
+
 ## Warranties
 
-On the Warranties tab, choose Add a warranty. You are reminded 60 days before a warranty ends, so problems can be reported while still covered.
+On the Warranties tab, choose Add a warranty. You are reminded 60 days before a warranty ends, by its date or by the day the odometer should reach its kilometres, so problems can be reported while still covered.
 
 ## Costs
 

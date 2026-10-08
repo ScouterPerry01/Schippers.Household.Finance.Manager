@@ -4,7 +4,7 @@
 ## Sur le téléphone : numériser le reçu {#scan}
 @manual: phone-app#scanning
 
-Sur le téléphone, ouvrez RANN’s Roost Mobile et touchez **Reçu** à l’onglet Capturer. Le numériseur trouve les bords du reçu et le redresse ; prenez plus de pages pour un long reçu.
+Sur le téléphone, ouvrez RANN's Roost Mobile et touchez **Reçu** à l’onglet Capturer. Le numériseur trouve les bords du reçu et le redresse ; prenez plus de pages pour un long reçu.
 
 Pas de téléphone? Passez à l’étape Ou l’importer ici.
 

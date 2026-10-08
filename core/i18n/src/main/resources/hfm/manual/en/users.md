@@ -49,7 +49,7 @@ Each user has a card with:
 
 @index: permissions; no access; view; capture only; edit; grant access; share an account group
 
-The Access tab is a table. Each row is an account group you can see, with "private" or "shared" under its name. Each column is a user who can sign in.
+The Access tab is a table. Each row is an account group you can see, with "private" or "shared" under its name. Each column is a user who can sign in. The heading row names the columns: Account group, then each user's name. See [Lists and their columns](basics#lists).
 
 ![The Access tab](images/users-access.png)
 
@@ -89,7 +89,7 @@ The Activity tab lists what users did, newest first: up to the 300 latest entrie
 
 - **Whose activity**: shown to administrators. Choose **Everyone** or one user. Other users see only their own activity, with the note "Your own activity."
 
-Each line shows:
+The list has the column headings When, Whose activity, Action and Where. Each line shows:
 
 - The date and time.
 - The user's name.

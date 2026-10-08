@@ -23,4 +23,4 @@ On the Providers tab, choose Add a provider for your doctors, dentist, pharmacy 
 
 ## Health summary
 
-Choose Health summary… to save a printable summary for one person, with their allergies, current conditions, medications and vaccines. The PDF can be protected with a password. The summary is not available for pets.
+Choose Health summary… to save a printable summary for one person, with their allergies, current conditions, medications and vaccines. The PDF can be protected with a password. Print health summary sends it straight to the printer. The summary is not available for pets.

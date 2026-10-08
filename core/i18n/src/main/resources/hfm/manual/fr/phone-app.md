@@ -1,21 +1,21 @@
-# RANN’s Roost Mobile
+# RANN's Roost Mobile
 
-RANN’s Roost Mobile est l’application compagnon pour téléphones Android. Elle photographie les reçus, les factures et d’autres documents, inscrit des dépenses rapides, des lectures d’odomètre, des déplacements, des pleins et des recharges, et les envoie à RANN’s Roost sur votre ordinateur. En retour, elle affiche un résumé de vos soldes, des factures à payer, des rendez-vous à venir, des renouvellements de médicaments, des budgets et de l’entretien ainsi que les contacts du ménage, et vous rappelle les factures, les rendez-vous, les renouvellements et les budgets. Les contacts rencontrés en chemin peuvent être ajoutés sur le téléphone et envoyés à l’ordinateur pour vérification.
+RANN's Roost Mobile est l’application compagnon pour téléphones Android. Elle photographie les reçus, les factures et d’autres documents, inscrit des dépenses rapides, des lectures d’odomètre, des déplacements, des pleins et des recharges, et les envoie à RANN's Roost sur votre ordinateur. En retour, elle affiche un résumé de vos soldes, des factures à payer, des rendez-vous à venir, des renouvellements de médicaments, des budgets et de l’entretien ainsi que les contacts du ménage, et vous rappelle les factures, les rendez-vous, les renouvellements et les budgets. Les contacts rencontrés en chemin peuvent être ajoutés sur le téléphone et envoyés à l’ordinateur pour vérification.
 
-Le téléphone n’est pas une deuxième copie de vos livres : l’ordinateur garde l’exemplaire de référence. Le téléphone ne garde que ce qui attend d’être envoyé et le dernier résumé et les contacts venus de l’ordinateur. Sous son icône, l’application s’appelle RANN’s Roost.
+Le téléphone n’est pas une deuxième copie de vos livres : l’ordinateur garde l’exemplaire de référence. Le téléphone ne garde que ce qui attend d’être envoyé et le dernier résumé et les contacts venus de l’ordinateur. Sous son icône, l’application s’appelle RANN's Roost.
 
 Pour un parcours rapide, voir [Premiers pas avec l’application mobile](start-phone). Pour le côté ordinateur, voir [Téléphones](phones).
 
-@index: Android; application mobile; application du téléphone; application compagnon; capture; numériser des reçus; RANN’s Roost Mobile
+@index: Android; application mobile; application du téléphone; application compagnon; capture; numériser des reçus; RANN's Roost Mobile
 
 ## Deux éditions {#editions}
 
 @index: Google Play; GitHub; APK
 
-RANN’s Roost Mobile existe en deux éditions qui fonctionnent de la même façon :
+RANN's Roost Mobile existe en deux éditions qui fonctionnent de la même façon :
 
 - L’édition Google Play, tenue à jour par Google Play.
-- L’édition GitHub, installée à partir des versions publiées par RANN sur GitHub. Elle peut vérifier elle-même les mises à jour et les installer après avoir vérifié la signature de RANN (voir [Mises à jour](#updates)). Android peut vous demander, la première fois, d’autoriser RANN’s Roost Mobile à installer des applications.
+- L’édition GitHub, installée à partir des versions publiées par RANN sur GitHub. Elle peut vérifier elle-même les mises à jour et les installer après avoir vérifié la signature de RANN (voir [Mises à jour](#updates)). Android peut vous demander, la première fois, d’autoriser RANN's Roost Mobile à installer des applications.
 
 ## Confidentialité sur le téléphone {#privacy}
 
@@ -82,7 +82,7 @@ Cinq onglets s’alignent au bas de l’écran :
 - **Envois** : ce que vous avez capturé et où il en est. Voir [L’onglet Envois](#sent-tab).
 - **Résumé** : les soldes, les factures, l’entretien et les budgets venus de votre ordinateur, et l’agenda des 60 prochains jours. Voir [L’onglet Résumé](#summary-tab) et [L’agenda](#agenda).
 - **Contacts** : les contacts du ménage venus de votre ordinateur, et les nouveaux contacts à envoyer. Voir [L’onglet Contacts](#contacts-tab).
-- **Réglages** : le jumelage, le dossier de transfert, le verrou et les mises à jour. Voir [L’onglet Réglages](#settings-tab).
+- **Réglages** : le jumelage, le dossier de transfert, les rappels à la minute près, les calendriers, les recherches pour les déplacements, la langue, le verrou et les mises à jour. Voir [L’onglet Réglages](#settings-tab).
 
 Dans les onglets **Capturer** et **Résumé**, l’icône de calendrier en haut à droite ouvre [l’agenda](#agenda) ; les lecteurs d’écran la nomment **Ouvrir l’agenda**.
 
@@ -92,7 +92,7 @@ Quand une version plus récente est offerte (édition GitHub), une bande en haut
 
 @index: jumeler; jumelage; code QR; numériser le code; texte de jumelage
 
-Le jumelage relie ce téléphone à RANN’s Roost sur votre ordinateur. Faites-le une fois, à la maison, sur le même Wi-Fi que l’ordinateur.
+Le jumelage relie ce téléphone à RANN's Roost sur votre ordinateur. Faites-le une fois, à la maison, sur le même Wi-Fi que l’ordinateur.
 
 1. Sur l’ordinateur, ouvrez le ménage, allez à **Téléphones** et cliquez sur **Jumeler un téléphone**. Un code QR apparaît.
 2. Sur le téléphone, touchez **Jumeler à un ordinateur** (dans l’onglet Capturer ou Réglages).
@@ -102,15 +102,15 @@ L’écran affiche **Jumelage…**, puis l’application revient à l’onglet C
 
 Autres façons de jumeler :
 
-- Numérisez le code QR avec l’appareil photo du téléphone : il ouvre RANN’s Roost Mobile et jumelle (après que vous avez déverrouillé l’application).
+- Numérisez le code QR avec l’appareil photo du téléphone : il ouvre RANN's Roost Mobile et jumelle (après que vous avez déverrouillé l’application).
 - **Ou collez le texte de jumelage** : quand l’appareil photo ne peut pas lire l’écran, cliquez sur **Copier en texte** sur l’ordinateur, faites parvenir le texte au téléphone, collez-le ici et touchez **OK**.
 
 **Annuler** revient aux onglets sans jumeler.
 
 Messages :
 
-- **Ce n’est pas un code de jumelage de RANN’s Roost.** : le code ou le texte n’est pas un code de jumelage.
-- **Impossible de joindre l’ordinateur.** : vérifiez que les deux sont sur le même Wi-Fi, que le ménage est ouvert sur l’ordinateur et que Windows autorise RANN’s Roost sur les réseaux privés.
+- **Ce n’est pas un code de jumelage de RANN's Roost.** : le code ou le texte n’est pas un code de jumelage.
+- **Impossible de joindre l’ordinateur.** : vérifiez que les deux sont sur le même Wi-Fi, que le ménage est ouvert sur l’ordinateur et que Windows autorise RANN's Roost sur les réseaux privés.
 - **L’ordinateur a refusé.** : le code a peut-être expiré (chacun dure 10 minutes par défaut et ne sert qu’une fois). Affichez-en un nouveau sur l’ordinateur.
 
 Le téléphone est jumelé à l’utilisateur connecté sur l’ordinateur à ce moment-là. Jumeler de nouveau, au même ordinateur ou à un autre, remplace le jumelage précédent.
@@ -132,6 +132,9 @@ Les boutons :
 - **Relevé de compteur ou de réservoir**, **Heures travaillées**, **Tâches ménagères** et **Bénévolat** : les [formulaires d’inscription](#log-forms).
 - **Déplacement** : commencer un déplacement, ou arriver quand un déplacement est en cours. Pendant un déplacement, une ligne sous le bouton l’indique, par exemple « Déplacement en cours : RAV4, parti à 16 h 30 de Maison (rue des Érables) ». Voir [Déplacement](#trip-form).
 - **Plein ou recharge** : inscrire un plein ou une recharge. Voir [Plein ou recharge](#fuel-form).
+- **Stations à proximité** : les stations-service et les bornes de recharge autour de vous, pour en enregistrer une comme lieu. Voir [Stations à proximité](#stations).
+
+Après l’enregistrement d’une capture ou d’un formulaire d’inscription, l’application passe à l’onglet **Envois** ; fermer un formulaire sans enregistrer ramène à l’onglet Capturer.
 
 Le genre choisi décide du classement de la capture sur l’ordinateur : une facture comme facture, un reçu ou une dépense rapide comme reçu, un autre document selon ce que l’ordinateur y lit.
 
@@ -153,7 +156,7 @@ Les pages sont envoyées en images d’au plus 2 400 pixels sur leur plus grand 
 
 @index: partager; reçu électronique; reçu PDF; facture électronique
 
-Dans une autre application (courriel, l’application d’un magasin, vos fichiers, la galerie de photos), utilisez **Partager** et choisissez RANN’s Roost Mobile pour l’envoyer :
+Dans une autre application (courriel, l’application d’un magasin, vos fichiers, la galerie de photos), utilisez **Partager** et choisissez RANN's Roost Mobile pour l’envoyer :
 
 - un PDF, comme un reçu ou une facture électronique, est gardé tel quel ;
 - une ou plusieurs images deviennent les pages d’un même document, comme une numérisation de plusieurs pages ;
@@ -254,7 +257,9 @@ Sous les boutons de capture, quatre boutons ouvrent des formulaires qui inscrive
 - **Compteur ou réservoir** : les compteurs et réservoirs de l’écran [Services publics](utilities), chacun avec sa maison ou son chalet.
 - **Date (AAAA-MM-JJ)** : aujourd’hui par défaut.
 - Pour un compteur : **Relevé (kWh)** ou **Relevé (m³)**, avec le dernier relevé affiché au-dessus ; selon l’heure, aussi **Pointe**, **Intermédiaire** et **Creuse** (laissez le relevé vide pour envoyer le total des trois).
-- Pour un réservoir : **Niveau (%)**, ou **Ou litres** de sa capacité.
+- Pour un réservoir : **Niveau (%)**, ou **Ou litres** de sa capacité, avec le dernier niveau affiché au-dessus.
+
+Quand l’ordinateur n’a encore ni compteur ni réservoir, le formulaire invite à les ajouter dans l’écran Services publics ; ils viennent avec le prochain transfert. Les autres formulaires d’inscription disent de même pour les clients et les tâches.
 
 ### Heures travaillées {#log-hours}
 
@@ -273,6 +278,7 @@ Liste les tâches de chaque enfant de l’écran [Argent en famille](family#chor
 - **Organisme déjà utilisé** : les organismes déjà utilisés, qui ramènent aussi leur genre ; ou tapez l’**Organisme**.
 - **Genre** : **Pompier volontaire**, **Recherche et sauvetage**, **Heures communautaires (école)** ou **Autre bénévolat**.
 - **Date**, **Durée (h:mm)** et **Activité**. Voyez [Bénévolat](volunteer).
+
 ## Déplacement {#trip-form}
 
 @index: déplacement; registre de kilométrage; carnet de route; Partir; Arrivée; remorque; passagers; arrêts; déplacement à plusieurs arrêts
@@ -288,7 +294,7 @@ Le déplacement en cours est gardé sur le téléphone, chiffré, jusqu’à l�
 - **Véhicule** : les véhicules de votre ordinateur qui comptent des kilomètres. La liste se remplit après le premier transfert ; sans véhicule, le formulaire indique « Aucun véhicule : ajoutez-les sur l’ordinateur. »
 - **Conducteur** : les personnes du ménage ; la personne qu’est votre utilisateur sur l’ordinateur est proposée.
 - **Odomètre (km)** : la dernière lecture du véhicule est proposée : celle de l’ordinateur, ou la dernière inscrite sur ce téléphone si elle est plus haute. Vérifiez-la au tableau de bord et corrigez-la. Obligatoire.
-  Une lecture inférieure affiche « Inférieur au dernier relevé, 61 480 km. Vérifiez-le; pour le garder quand même, touchez de nouveau Partir. », pour repérer une faute de frappe avant le départ.
+  Une lecture inférieure affiche « Inférieur au dernier relevé, 61 480 km. Vérifiez-le ; pour le garder quand même, touchez de nouveau Partir. », pour repérer une faute de frappe avant le départ.
 - **Lieu de départ** : voir [Où vous êtes](#trip-where).
 - **Remorque ou charge** : **Normal** (par défaut), **Avec une remorque** ou **Charge lourde**. Le remorquage et les charges lourdes se mesurent à part dans la consommation du véhicule.
 - **Remorque** : avec une remorque, les remorques de votre ordinateur (biens du type remorque).
@@ -400,7 +406,7 @@ L’application utilise le service de localisation d’Android même (aucun serv
 - **Véhicule** : les véhicules de votre ordinateur.
 - **Carburant ou électricité** : pour un hybride rechargeable seulement.
 - **Odomètre (km)** : la dernière lecture est proposée ; nécessaire pour la consommation.
-  Une lecture inférieure à la dernière est signalée de la même façon; touchez de nouveau **Enregistrer** pour la garder.
+  Une lecture inférieure à la dernière est signalée de la même façon ; touchez de nouveau **Enregistrer** pour la garder.
 - **Litres** (ou **kWh** pour une recharge) : la quantité. Obligatoire, plus grande que zéro.
 - **Coût** : ce que vous avez payé, par exemple 68,55.
 - **Plein complet** (ou **Recharge complète**) : coché par défaut ; décochez-le pour un plein partiel. La consommation se mesure d’un plein à l’autre.
@@ -493,6 +499,8 @@ Le Résumé affiche les chiffres de votre ordinateur au dernier transfert : le n
 
 ![L’onglet Résumé : soldes et factures à payer, venus de l’ordinateur](images/phone-summary.png)
 
+Les listes à deux colonnes ont des en-têtes, que les lecteurs d’écran annoncent comme tels : **Compte** et **Solde**, **Échéance et facture** et **Montant**, **Catégorie** et **Dépensé sur le budget**.
+
 - **Comptes** : chaque compte et son solde.
 - **Factures à payer** : les factures dues dans les 60 prochains jours et pas encore payées, jusqu’à 15, avec la date d’échéance et le montant, ou **environ** un montant quand il est estimé.
 - **À venir** : le bouton **Voir l’agenda** ouvre [l’agenda](#agenda), les 60 prochains jours jour par jour ou par mois. En dessous, d’abord les heures de travail et d’école de chaque personne aujourd’hui et demain, comme « Alex · Travail · Bureau » avec la date et « 08:00–16:30 » ; puis les rendez-vous et événements du calendrier de l’ordinateur dans les prochaines semaines, jusqu’à 12, chacun avec la personne concernée, sa date et son heure, ou **Toute la journée** ; pour l’activité d’un enfant, qui conduit à l’aller et au retour ce jour-là, tours de covoiturage compris. Seuls les événements des comptes que votre utilisateur peut voir sur l’ordinateur sont envoyés : les rendez-vous privés d’un autre utilisateur n’arrivent jamais sur votre téléphone. Les événements marqués faits ou annulés sont laissés de côté.
@@ -507,7 +515,7 @@ Les chiffres ne changent pas avant le prochain transfert. Touchez **Envoyer main
 
 @index: agenda; vue du mois; calendrier sur le téléphone; ce qui s’en vient; échéances
 
-L’icône de calendrier en haut à droite des onglets **Capturer** et **Résumé**, ou **Voir l’agenda** sous **À venir** dans l’onglet Résumé, ouvre en un seul endroit tout ce qui s’en vient dans les 60 prochains jours, aujourd’hui compris. Il ne fait qu’afficher : rien ne peut y être modifié. **Retour** ou le geste de retour d’Android ramène à l’onglet d’où vous venez ; toucher un onglet mène à cet onglet. Sous le titre, **De votre ordinateur** donne la date et l’heure du dernier transfert, comme dans le Résumé.
+L’icône de calendrier en haut à droite des onglets **Capturer** et **Résumé**, ou **Voir l’agenda** sous **À venir** dans l’onglet Résumé, ouvre en un seul endroit tout ce qui s’en vient dans les 60 prochains jours, aujourd’hui compris. Il ne fait qu’afficher : rien ne peut y être modifié. **Retour** ou le geste de retour d’Android ramène à l’onglet d’où vous venez ; toucher un onglet mène à cet onglet. Sous le titre, **De votre ordinateur** donne la date et l’heure du dernier transfert, comme dans le Résumé. Avant le premier transfert, l’agenda affiche **Jumelez votre ordinateur pour voir ici ses rendez-vous, factures et rappels.**
 
 Deux puces en haut choisissent la vue : **Agenda**, jour par jour, ou **Mois**.
 
@@ -597,7 +605,7 @@ Nouveau contact inscrit quelqu’un que vous rencontrez en chemin, comme un plom
 
 Un nouveau contact prend les mêmes chemins que les captures : par votre Wi-Fi, par le dossier de transfert, ou dans un fichier partagé avec **Partager en fichier…**. Il figure dans l’onglet Envois comme **Nouveau contact**, avec les mêmes états. Quand l’ordinateur l’a reçu, le téléphone supprime sa copie. Un nouveau contact n’apparaît pas dans l’onglet Contacts : une fois ajouté sur l’ordinateur, il revient avec les autres contacts après le prochain transfert.
 
-> Remarque : un ordinateur qui a une version plus ancienne de RANN’s Roost ne prend pas les contacts du téléphone. Ils restent **En attente** sur le téléphone jusqu’à la mise à jour de l’ordinateur.
+> Remarque : un ordinateur qui a une version plus ancienne de RANN's Roost ne prend pas les contacts du téléphone. Ils restent **En attente** sur le téléphone jusqu’à la mise à jour de l’ordinateur.
 
 ## Notifications {#notifications}
 
@@ -633,7 +641,7 @@ La carte du jumelage est en haut, comme dans l’onglet Capturer.
 
 @index: dossier de transfert; Google Drive; OneDrive; Dropbox; Nextcloud; dossier infonuagique
 
-Affiché quand le téléphone est jumelé. Quand l’ordinateur n’est pas à portée, les captures peuvent être déposées, chiffrées, dans un dossier de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud ; le service ne voit que des fichiers illisibles. Choisissez le même dossier dans RANN’s Roost sur l’ordinateur (voir [Téléphones](phones#away-from-home)).
+Affiché quand le téléphone est jumelé. Quand l’ordinateur n’est pas à portée, les captures peuvent être déposées, chiffrées, dans un dossier de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud ; le service ne voit que des fichiers illisibles. Choisissez le même dossier dans RANN's Roost sur l’ordinateur (voir [Téléphones](phones#away-from-home)).
 
 - La ligne affiche **Dossier de transfert :** et le dossier, ou **Aucun dossier de transfert choisi.**
 - **Choisir un dossier…** (ou **Changer de dossier…**) : ouvre le sélecteur de dossiers d’Android. Choisissez votre service infonuagique dans son menu, puis le dossier, et autorisez l’accès. L’application du service doit être installée sur le téléphone.
@@ -670,8 +678,8 @@ Seuls les calendriers cochés sont lus, pour les jours choisis : le titre, le li
 
 Avec **Dans les deux sens**, l’application écrit dans un calendrier les rendez-vous et événements du ménage, les heures de travail et d’école de chaque personne et les factures à payer, pour les 60 prochains jours. Elle n’écrit que ce que votre utilisateur peut voir sur l’ordinateur, tel qu’envoyé à ce téléphone. La première fois que vous le choisissez, l’application explique pourquoi, puis Android demande d’autoriser l’écriture dans vos calendriers ; si vous refusez, le choix reste comme avant.
 
-- **Où RANN’s Roost écrit** : choisissez-en un.
-  - **Calendrier RANN’s Roost sur ce téléphone seulement** (choisi au départ) : un calendrier à l’application, gardé seulement sur ce téléphone. Il n’appartient à aucun compte, donc il n’est jamais synchronisé avec Google, Outlook ni ailleurs. Votre application de calendrier l’affiche parmi les autres.
+- **Où RANN's Roost écrit** : choisissez-en un.
+  - **Calendrier RANN's Roost sur ce téléphone seulement** (choisi au départ) : un calendrier à l’application, gardé seulement sur ce téléphone. Il n’appartient à aucun compte, donc il n’est jamais synchronisé avec Google, Outlook ni ailleurs. Votre application de calendrier l’affiche parmi les autres.
   - Un calendrier d’un de vos comptes : chaque calendrier où vous pouvez écrire, avec sa couleur et son compte. Ce calendrier se synchronise avec son fournisseur, donc ce que l’application y écrit est visible partout où ce compte est utilisé, et par les personnes avec qui le calendrier est partagé.
 
 Ce qui est écrit, dans l’un ou l’autre calendrier :
@@ -680,17 +688,11 @@ Ce qui est écrit, dans l’un ou l’autre calendrier :
 - Les heures de travail et d’école, comme « Alex : travail » ou « Sam : école », avec le lieu ; un quart de nuit finit le lendemain matin.
 - Les factures à payer, toute la journée, comme « Facture à payer : Hydro ».
 
-La même règle de confidentialité vaut dans les deux calendriers, puisque d’autres applications du téléphone peuvent aussi lire le calendrier du téléphone : un rendez-vous médical est écrit seulement comme **Rendez-vous santé**, sans lieu, conducteurs ni détails, et une facture ne montre jamais son montant. Les notes de chaque élément finissent par « Écrit par RANN’s Roost : modifiez-le sur l’ordinateur. »
+La même règle de confidentialité vaut dans les deux calendriers, puisque d’autres applications du téléphone peuvent aussi lire le calendrier du téléphone : un rendez-vous médical est écrit seulement comme **Rendez-vous santé**, sans lieu, conducteurs ni détails, et une facture ne montre jamais son montant. Les notes de chaque élément finissent par « Écrit par RANN's Roost : modifiez-le sur l’ordinateur. »
 
 L’application suit chaque élément écrit. Quand quelque chose change sur l’ordinateur, son élément est mis à jour au prochain transfert ; quand il est retiré ou payé, son élément est supprimé. Les éléments déjà passés restent comme ils étaient. Si vous modifiez ou supprimez un élément vous-même, l’application ne le change de nouveau que quand il change sur l’ordinateur. Les éléments écrits par l’application ne sont jamais renvoyés à l’ordinateur, même si vous cochez aussi ce calendrier pour l’importer.
 
 Désactiver **Dans les deux sens** (pour **Importer seulement** ou **Désactivé**), choisir un autre calendrier ou annuler le jumelage retire tous les éléments que l’application a écrits et supprime le calendrier du téléphone. Si l’accès au calendrier a été retiré dans les paramètres d’Android, ils sont retirés une fois l’accès autorisé de nouveau.
-
-### Redemander le NIP {#lock-time}
-
-@index: délai de verrouillage; verrouillage automatique; reverrouiller
-
-- **Redemander le NIP** : combien de temps l’application peut rester en arrière-plan avant de redemander le NIP (ou votre empreinte ou votre visage) : **Immédiatement**, **Après 1 minute** (par défaut), **Après 5 minutes** ou **Après 15 minutes**. Le retour d’un écran que l’application a ouvert elle-même, comme le numériseur de documents ou un sélecteur de fichiers, compte pour au moins une minute, pour qu’une numérisation ne vous verrouille pas en cours de route.
 
 ### Déplacements : adresses et stations {#trip-lookups}
 
@@ -703,21 +705,27 @@ Deux recherches pour les déplacements, toutes deux désactivées par défaut :
 
 En désactiver une l’arrête aussitôt ; l’application n’a rien gardé chez Google ni chez OpenStreetMap.
 
-### Changer le NIP {#change-pin}
-
 ### Langue de l’application {#language}
 
 @index: langue; français; anglais; English
 
-- **Langue de l’application** : **Comme le téléphone** (par défaut) suit la langue du téléphone; **English** ou **Français** garde l’application dans cette langue, quelle que soit celle du téléphone. Le changement s’applique aussitôt, aux écrans et aux notifications de l’application.
+- **Langue de l’application** : **Comme le téléphone** (par défaut) suit la langue du téléphone ; **English** ou **Français** garde l’application dans cette langue, quelle que soit celle du téléphone. Le changement s’applique aussitôt, aux écrans et aux notifications de l’application.
 
 > Remarque : Sur Android 13 et plus récent, le même choix se trouve aussi dans les réglages du téléphone, sous la langue de l’application. Les montants et les dates suivent la langue choisie (8,45 $ en français).
+
+### Changer le NIP {#change-pin}
 
 **Changer le NIP** vous demande de choisir un nouveau NIP, de 4 à 8 chiffres, et de le saisir de nouveau.
 
 ### Déverrouiller avec l’empreinte ou le visage {#biometric}
 
 Affiché quand le téléphone a un lecteur d’empreintes ou la reconnaissance faciale configurés. Activé, l’écran de verrouillage offre **Utiliser l’empreinte ou le visage**. Le NIP fonctionne toujours aussi.
+
+### Redemander le NIP {#lock-time}
+
+@index: délai de verrouillage; verrouillage automatique; reverrouiller
+
+- **Redemander le NIP** : combien de temps l’application peut rester en arrière-plan avant de redemander le NIP (ou votre empreinte ou votre visage) : **Immédiatement**, **Après 1 minute** (par défaut), **Après 5 minutes** ou **Après 15 minutes**. Le retour d’un écran que l’application a ouvert elle-même, comme le numériseur de documents ou un sélecteur de fichiers, compte pour au moins une minute, pour qu’une numérisation ne vous verrouille pas en cours de route.
 
 ### Mises à jour {#updates}
 
@@ -727,8 +735,8 @@ Affiché seulement dans l’édition GitHub ; l’édition Google Play est mise 
 
 - **Vérifier les mises à jour une fois par jour** : activé, l’application cherche sur GitHub au plus une fois par jour, pendant qu’elle est ouverte, une version plus récente. Seule la vérification sort du téléphone : GitHub voit l’adresse Internet de votre téléphone, comme pour toute page Web. Rien de vos captures ni de votre ménage n’est envoyé.
 - L’état : **La vérification des mises à jour est désactivée.**, **Vérification…**, **La version … est à jour.**, ou **La version … est disponible.** avec ses nouveautés.
-- **Télécharger, vérifier et installer** : télécharge la nouvelle version, la vérifie avec la signature de RANN, sa taille et son empreinte annoncées, puis la remet à Android, qui vous demande de confirmer l’installation. Une barre montre le téléchargement.
-- **Vérifier maintenant** : vérifie aussitôt.
+- **Télécharger, vérifier et installer** : télécharge la nouvelle version, la vérifie avec la signature de RANN, sa taille et son empreinte annoncées, puis la remet à Android, qui vous demande de confirmer l’installation. Une barre montre le téléchargement ; une fois la vérification faite, l’application affiche **La version … a été vérifiée avec la signature de RANN. Confirmez l’installation quand Android le demande.**
+- **Vérifier maintenant** : affiché quand la vérification quotidienne est activée. Vérifie aussitôt.
 
 Messages quand quelque chose ne va pas :
 
@@ -739,4 +747,4 @@ Messages quand quelque chose ne va pas :
 
 ### À propos et politique de confidentialité {#about}
 
-Une courte note rappelle que vos données restent sur votre téléphone et votre ordinateur. **Politique de confidentialité** ouvre la politique de confidentialité de RANN sur rann.ca dans votre navigateur, dans la langue du téléphone.
+Une courte note rappelle que vos données restent sur votre téléphone et votre ordinateur. **Politique de confidentialité** ouvre la politique de confidentialité de RANN sur rann.ca dans votre navigateur, dans la langue de l’application.

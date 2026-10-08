@@ -27,7 +27,7 @@ Amounts on this screen are in the household's base currency, except insurance po
 
 At the top, **Add an asset** and **Show those sold or discarded** (unticked by default; tick it to include assets no longer owned).
 
-Assets are listed alphabetically, each one under the asset it is part of, indented: the furnace and the dishwasher under the house, the outboard motor under the boat. Each line shows the name (with its status if no longer owned), the kind, make, model and location, and on the right what it is worth today, or the price paid in grey when its value is not tracked. Click a line to open the asset.
+Assets are listed alphabetically, each one under the asset it is part of, indented: the furnace and the dishwasher under the house, the outboard motor under the boat. Each line shows the name (with its status if no longer owned), the kind, make, model and location, and on the right what it is worth today, or the price paid in grey when its value is not tracked; the headings are **Name** and **Value**. Click a line to open the asset.
 
 When the list is empty: "No assets yet: start with the home, then add appliances, electronics and other things worth insuring."
 
@@ -108,7 +108,7 @@ Once the asset is saved, **Warranties and coverage** lists what covers it, each 
 - each warranty you added (click one to open it);
 - for an asset whose purchase is linked to a credit card payment, the card's own benefits that apply, such as **Purchase protection** or **Extended warranty**, as set on the card under [Accounts](accounts).
 
-"No warranty recorded." when there is none. **Add a warranty** adds one.
+The headings are **Coverage** and **Ends**. "No warranty recorded." when there is none. **Add a warranty** adds one.
 
 You are reminded 60 days before a warranty ends (the default lead time, set in [Rates and rules](rates-rules)): the reminder appears at the top of the window and in the system notification, and leads to this screen. For a warranty limited by hours of use, the end is the earlier of its end date and the day the hour meter should reach the limit, at the asset's usual use per day (see [Meter readings](assets#meter)).
 
@@ -152,7 +152,7 @@ Once an asset is saved, the bottom of its dialog shows **Maintenance**: "Each ta
 - **Add a task**: see [Add or edit a task](assets#task-form).
 - **Enter a meter reading** and "Meter: reading": shown when the asset has a meter. See [Meter readings](assets#meter).
 
-Each active task shows its interval (with "from 05-20 to 09-15" for a task kept to part of the year), "last done date" (or "counting from date" while it was never done), its state (**Next**, **Due soon** in bold, **Due now** in red) with the due date or use, a forecast "at your usual use, around date" for a task by use, and the buttons **Record as done** and **Edit**. Paused tasks follow, marked "(paused)". "No maintenance tasks yet." when there are none.
+The tasks are listed under the headings **Task**, **Due** and **Actions**. Each active task shows its interval (with "from 05-20 to 09-15" for a task kept to part of the year), "last done date" (or "counting from date" while it was never done), its state (**Next**, **Due soon** in bold, **Due now** in red) with the due date or use, a forecast "at your usual use, around date" for a task by use, and the buttons **Record as done** and **Edit**. Paused tasks follow, marked "(paused)". "No maintenance tasks yet." when there are none.
 
 The rules for when a task is due are the same as for vehicles: see [When a task is due](vehicles#task-due). Hours or kilometres replace the odometer.
 
@@ -201,7 +201,7 @@ The dates suit most of southern Canada; move them to suit your region by editing
 
 ### Service log {#service-log}
 
-Under **Service log**, every service on the asset, the most recent first: date, tasks done (or notes, or "Service"), the provider or "Done myself", the meter reading, the parts, "payment entered", the cost and **Edit**. **Log a service** adds one; **Record as done** on a task opens the same form with the task ticked.
+Under **Service log**, every service on the asset, the most recent first: date, tasks done (or notes, or "Service"), the provider or "Done myself", the meter reading, the parts, "payment entered", the cost and **Edit**, under the headings **Date**, **Service**, **Cost** and **Actions**. **Log a service** adds one; **Record as done** on a task opens the same form with the task ticked.
 
 ### Log a service {#service-form}
 
@@ -232,7 +232,7 @@ Two buttons choose how far ahead to look:
 - **This month** (the default): tasks due soon or overdue, and those next due by the end of the month.
 - **Next 12 months**: also those next due in the coming year.
 
-Each line shows the task, the asset or vehicle (marked "vehicle"), its state and due date or use, and a forecast for tasks by use. **Open** opens the asset's dialog, or the [Vehicles](vehicles) screen for a vehicle. "Nothing due." when the list is empty.
+Each line shows the task, the asset or vehicle (marked "vehicle"), its state and due date or use, and a forecast for tasks by use, under the headings **Task**, **Due** and **Actions**. **Open** opens the asset's dialog, or the [Vehicles](vehicles) screen for a vehicle. "Nothing due." when the list is empty.
 
 Tasks **Due soon** and **Due now** also appear in the reminders at the top of the window and in the system notification, and next due dates on the [Calendar](calendar).
 
@@ -245,7 +245,7 @@ Everything to do in a season, on the vehicles, the home, the cottage, the pool, 
 
 At the top, a button for each season, the current one first and marked "now", such as **Fall 2026 · now**, **Winter 2026–2027**, **Spring 2027** and **Summer 2027**. The other seasons are the next time they come. Under them, the season's dates ("2026-09-22 to 2026-12-20") and how far along it is ("7 of 12 done"), with a bar, and the buttons **Print** and **Save as PDF…**.
 
-The tasks are grouped by vehicle or asset (a vehicle is marked "vehicle"). Each line shows a box to tick, the task, when it falls due ("due 2026-10-15") or when it was done ("done 2026-10-08"), and its state:
+The tasks are grouped by vehicle or asset (a vehicle is marked "vehicle"), under the headings ✓ (read out as **Done**), **Task**, **When** and **Status**. Each line shows a box to tick, the task, when it falls due ("due 2026-10-15") or when it was done ("done 2026-10-08"), and its state:
 
 - **Done**: done during this season. It stays on the list, ticked. A task that comes back within the season (a weekly pool test, a monthly filter) is done only for this time: its line reads "done 2026-06-25 · due again 2026-07-02", and from that date it is due again, unticked, until it is ticked again. A weekly task is therefore never done for the whole season after one tick.
 - **Overdue**: its due date has passed and it was not done since; in the current season, a task overdue from before the season started is listed too.
@@ -283,7 +283,7 @@ The seasons start on the astronomical dates: spring on March 20, summer on June 
 
 "Projects done or under way on a home. Capital improvements add to its cost base, which matters if the home is ever sold and is not the principal residence for every year."
 
-At the top, **Add a project**. For each home or cottage that has a price paid or improvements, a line "Home: cost base amount, of which improvements amount", followed by "less amount in rebates and grants" when rebates were received on its capital projects. Then the projects, each with its name, status, home, "Capital improvement" or "Repair", "energy upgrade: kind" for an energy upgrade, the budget, and what was spent, in red when over budget. Click a project to see and add its costs; **Edit** opens its form. "No projects yet." when there are none.
+At the top, **Add a project**. For each home or cottage that has a price paid or improvements, a line "Home: cost base amount, of which improvements amount", followed by "less amount in rebates and grants" when rebates were received on its capital projects. Then the projects, each with its name, status, home, "Capital improvement" or "Repair", "energy upgrade: kind" for an energy upgrade, the budget, and what was spent, in red when over budget, under the headings **Project**, **Spent** and **Actions**. Click a project to see and add its costs; **Edit** opens its form. "No projects yet." when there are none.
 
 ### Add or edit a project {#project-form}
 
@@ -299,7 +299,7 @@ At the top, **Add a project**. For each home or cottage that has a price paid or
 
 ### Project costs {#project-costs}
 
-Click a project to open its costs. The top line reads "Spent amount of a budget of amount". Each cost shows its date, what it was for, the contractor and the amount, with **✕** to delete it: it asks "Delete the cost "description" of amount?" first, and the window closes once it is deleted. To add one:
+Click a project to open its costs. The top line reads "Spent amount of a budget of amount". Each cost shows its date, what it was for, the contractor and the amount (headings **Date**, **Description**, **Amount** and **Actions**), with **✕** to delete it: it asks "Delete the cost "description" of amount?" first, and the window closes once it is deleted. To add one:
 
 - **Date**: today by default.
 - **What it was for**: for example "Shingles" or "Deposit". If left empty, the project's name is used.
@@ -342,7 +342,7 @@ The cost base of a home is its **Price paid** plus what was spent on its capital
 ## Contractors tab {#contractors-tab}
 @index: tradesman; plumber; electrician; roofer; ratings
 
-At the top, **Add a contractor** and **Show archived**. Each contractor shows the name and trade, the phone, email and website, the average rating in stars, and the number of jobs, with **Edit**. Click a contractor to see and add jobs. "No contractors yet." when there are none.
+At the top, **Add a contractor** and **Show archived**. Each contractor shows the name and trade, the phone, email and website, the average rating in stars, and the number of jobs, with **Edit**, under the headings **Name**, **Rating**, **Jobs** and **Actions**. Click a contractor to see and add jobs. "No contractors yet." when there are none.
 
 ### Add or edit a contractor {#contractor-form}
 
@@ -354,7 +354,7 @@ At the top, **Add a contractor** and **Show archived**. Each contractor shows th
 
 ### Jobs and ratings {#jobs}
 
-Click a contractor to open a dialog with its name, listing its jobs: date, description, stars and cost, with **✕** to delete one: it asks "Delete the job "job" of date? The contractor's rating is worked out again." first, and the dialog closes once it is deleted. Under **A new job**:
+Click a contractor to open a dialog with its name, listing its jobs: date, description, stars and cost (headings **Date**, **Job**, **Cost** and **Actions**), with **✕** to delete one: it asks "Delete the job "job" of date? The contractor's rating is worked out again." first, and the dialog closes once it is deleted. Under **A new job**:
 
 - **Date**: today by default.
 - **Job**: what was done. Required.
@@ -390,7 +390,7 @@ To record a warranty claim, open the asset on the **Assets** tab, then the warra
 ## Insurance tab {#insurance-tab}
 @index: insurance policy; home insurance; tenant insurance; auto insurance; life insurance; disability insurance; premiums
 
-At the top, **Add a policy**. Each policy shows its kind and insurer ("inactive" for one no longer in force), the policy number, "renews date", "covers amount", and the premium per year. Click a policy to open it. "No policies yet." when there are none.
+At the top, **Add a policy**. Each policy shows its kind and insurer ("inactive" for one no longer in force), the policy number, "renews date", "covers amount", and the premium per year, under the headings **Policy** and **Premium**. Click a policy to open it. "No policies yet." when there are none.
 
 ![The Insurance tab](images/assets-insurance.png)
 
@@ -442,7 +442,7 @@ Beneficiaries are recorded for reference; the designation filed with the insurer
 
 ### Insurance claims {#insurance-claims}
 
-**Claims** lists each claim with its date, description, status and amount paid. **Add a claim**, or a click on a claim, opens **Insurance claim**:
+**Claims** lists each claim with its date, description, status and amount paid, under the headings **Claim** and **Status**. **Add a claim**, or a click on a claim, opens **Insurance claim**:
 
 - **Date**: the date of the loss or of the claim; today by default.
 - **Claim number**: the insurer's reference.
@@ -456,7 +456,7 @@ Beneficiaries are recorded for reference; the designation filed with the insurer
 
 ### Not covered by any policy {#uninsured}
 
-"Assets and vehicles no active policy covers, directly or as part of something insured (a home policy covers its contents)." A policy counts while it is active and its renewal date has not passed. Each item is listed in red with its value (or price). Tick the item under **What it covers** in the right policy, or note that you choose not to insure it.
+"Assets and vehicles no active policy covers, directly or as part of something insured (a home policy covers its contents)." A policy counts while it is active and its renewal date has not passed. Each item is listed in red with its value (or price), under the headings **Item** and **Value**. Tick the item under **What it covers** in the right policy, or note that you choose not to insure it.
 
 ### Life and disability cover {#life-cover}
 

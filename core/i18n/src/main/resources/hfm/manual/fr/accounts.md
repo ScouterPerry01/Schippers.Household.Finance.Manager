@@ -23,7 +23,7 @@ Quand le ménage n’a encore aucun compte, la liste affiche Aucun compte pour l
 
 @index: soldes; dernier rapprochement
 
-Les comptes sont regroupés sous des titres par nature, toujours dans cet ordre : Comptes bancaires, Crédit, Prêts, Placements et Biens. Chaque ligne affiche :
+Deux en-têtes de colonne, Compte et Solde, surmontent la liste ; les lecteurs d’écran les annoncent comme des en-têtes. Les comptes sont regroupés sous des titres par nature, toujours dans cet ordre : Comptes bancaires, Crédit, Prêts, Placements et Biens. Chaque ligne affiche :
 
 - le nom du compte, en gras pour le compte choisi, suivi de (Fermé) pour un compte fermé ;
 - sous le nom, Rapproché au suivi de la date du dernier relevé rapproché, ou Jamais rapproché. La date passe au rouge quand le dernier rapprochement date de plus de 45 jours (par défaut, réglable dans [Taux et règles](rates-rules)), pour vous rappeler de rapprocher le prochain relevé. Les mêmes comptes figurent dans le tableau de bord sous À vérifier ;
@@ -143,7 +143,7 @@ Avec **Modifier le compte**, vous pouvez changer le nom, l’institution, le sol
 
 Quand un compte a un numéro enregistré, son registre affiche **Afficher le numéro**. La fenêtre Afficher le numéro de compte complet demande : Entrez votre mot de passe pour voir le numéro de compte complet.
 
-- **Mot de passe** : votre propre mot de passe de connexion. **Afficher le numéro** le vérifie et affiche le numéro complet en gros caractères ; **OK** ferme la fenêtre. Un mauvais mot de passe affiche Nom d’utilisateur ou mot de passe incorrect. et rien n’est révélé. **Annuler** ferme sans rien afficher.
+- **Mot de passe** : votre propre mot de passe de connexion. **Afficher le numéro** le vérifie et affiche le numéro complet en gros caractères ; **OK** ferme la fenêtre. Un mauvais mot de passe affiche Nom d’utilisateur ou mot de passe incorrect. et rien n’est révélé. Après plusieurs mauvais mots de passe, la fenêtre fait attendre : Trop de mots de passe erronés. Réessayez dans 30 secondes. (le nombre de secondes varie). **Annuler** ferme sans rien afficher.
 
 Chaque fois qu’un numéro est révélé, c’est inscrit dans le journal d’activité du ménage.
 
@@ -208,6 +208,8 @@ Les boutons affichés dépendent du compte :
 - **✓** : la marque de compensation (voir [Marques compensée et rapprochée](accounts#cleared-status)).
 - **Solde** : le solde courant après cette opération, en comptant toutes les précédentes et le solde d’ouverture.
 
+Les noms des colonnes figurent en tête du registre ; les lecteurs d’écran les annoncent comme des en-têtes, et lisent l’en-tête ✓ comme « Compensé ».
+
 Cliquez sur une ligne pour la charger dans le formulaire du bas et la modifier ; la ligne reste en surbrillance pendant la modification.
 
 ### Marques compensée et rapprochée {#cleared-status}
@@ -254,7 +256,7 @@ Quand vous modifiez un achat par carte de crédit et que la carte a des avantage
 Les boutons à droite du formulaire :
 
 - **Ventiler…** : répartit l’opération entre plusieurs catégories (pas offert pour un virement).
-- **Détailler…** : répartit l’opération sur les articles de son reçu, saisis avec leurs catégories et leurs taxes de vente, qui sont réparties sur les articles (pas offert pour un virement). Voir [Détailler à la main](documents#itemize).
+- **Détailler…** : répartit l’opération sur les articles de son reçu, saisis avec leurs catégories et leurs taxes de vente, qui sont réparties sur les articles (pas offert pour un virement). Les articles deviennent les lignes de ventilation de l’opération, à la place d’une ventilation déjà faite ; quand aucun montant n’était saisi, leur total devient le montant ; un article sans catégorie prend celle choisie dans le formulaire. Rien n’est enregistré avant que vous enregistriez l’opération. Voir [Détailler à la main](documents#itemize).
 - **Talon de paie…** : dans un compte bancaire, à l’entrée d’une nouvelle opération, entre une paie d’après son talon (voir [Paie selon le talon de paie](accounts#pay-stub)).
 - **Taxes de vente…** et **Remboursement…** : pendant la modification d’une opération existante (voir [Taxes de vente sur un achat](accounts#sales-tax) et [Inscrire un remboursement](accounts#refund)).
 - **Enregistrer comme modèle** : pendant la modification d’une opération ordinaire, la garde comme modèle pour la prochaine fois (voir [Modèles d’opération](accounts#templates)).

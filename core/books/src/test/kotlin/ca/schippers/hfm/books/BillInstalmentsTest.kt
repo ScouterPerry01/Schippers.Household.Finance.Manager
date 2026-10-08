@@ -10,6 +10,7 @@ import ca.schippers.hfm.ocr.OcrLine
 import ca.schippers.hfm.ocr.OcrResult
 import ca.schippers.hfm.security.KdfParams
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
@@ -162,5 +163,16 @@ class BillInstalmentsTest {
         assertEquals(year2026, books.documents.statementFrom(books.documents.get(doc.id), bill).instalments)
         books.documents.fileWithBill(doc.id, bill.id)
         assertEquals(year2026.map { it.dueDate }, inYear(bill, 2026).map { it.dueDate })
+    }
+
+    @Test
+    fun `a statement listing more instalments than any plan has is refused`() {
+        val bill = taxes()
+        val daily = (0 until 61).map { BillInstalment(d(2026, 1, 1).plus(kotlinx.datetime.DatePeriod(days = it)), cad("1.00")) }
+        val refused = kotlin.test.assertFailsWith<ValidationException> { books.bills.recordStatement(bill.id, StatementDraft(d(2026, 1, 1), instalments = daily)) }
+        assertEquals("error.billInstalments", refused.key)
+        assertTrue(books.bills.statements(bill.id).isEmpty())
+        books.bills.recordStatement(bill.id, StatementDraft(d(2026, 1, 1), instalments = daily.take(60)))
+        assertEquals(60, books.bills.statements(bill.id).single().instalments.size)
     }
 }
