@@ -125,7 +125,7 @@ class AiService internal constructor(private val books: Books) {
         val card = reading.typeId == "card_statement"
         val answer = Json.parseToJsonElement(reading.answer).jsonObject
         val currency = answer.text("currency")?.let { runCatching { Currency.of(it.uppercase()) }.getOrNull() } ?: account.currency
-        fun money(key: String, from: JsonObject = answer): Money? = (from[key] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toBigDecimalOrNull()
+        fun money(key: String, from: JsonObject = answer): Money? = (from[key] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.let(ca.schippers.hfm.ocr.ReadNumbers::parse)
             ?.let { Money.of(if (card) it.negate() else it, currency) }
         fun date(key: String, from: JsonObject = answer) = from.text(key)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
         val lines = (answer["transactions"] as? JsonArray).orEmpty().mapNotNull { e ->
@@ -252,7 +252,7 @@ class AiService internal constructor(private val books: Books) {
         )
     }
 
-    private fun JsonObject.number(key: String): BigDecimal? = (this[key] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toBigDecimalOrNull()
+    private fun JsonObject.number(key: String): BigDecimal? = (this[key] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.let(ca.schippers.hfm.ocr.ReadNumbers::parse)
 
     /** AI-06: the signed-in user's requests between two instants (epoch milliseconds), newest first. */
     fun usage(fromMillis: Long, toMillis: Long): List<AiUsageEntry> = books.groups().flatMap { g ->

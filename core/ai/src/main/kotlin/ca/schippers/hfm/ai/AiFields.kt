@@ -8,6 +8,7 @@ import ca.schippers.hfm.ocr.Extracted
 import ca.schippers.hfm.ocr.FieldSource
 import ca.schippers.hfm.ocr.MeterReadings
 import ca.schippers.hfm.ocr.ReadInstalment
+import ca.schippers.hfm.ocr.ReadNumbers
 import ca.schippers.hfm.ocr.TaxName
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.JsonArray
@@ -162,7 +163,7 @@ object AiFields {
                 meter = ai(meterReadings(answer["meter_readings"])),
                 instalments = ai(
                     answer.list("instalments").mapNotNull { i -> i.str("due_date")?.let { runCatching { LocalDate.parse(it) }.getOrNull() }?.let { d -> money(i.num("amount"))?.takeIf { it.isPositive }?.let { ReadInstalment(d, it) } } }
-                        .distinctBy { it.dueDate }.sortedBy { it.dueDate }.takeIf { it.isNotEmpty() },
+                        .distinctBy { it.dueDate }.sortedBy { it.dueDate }.take(ReadInstalment.MAX).takeIf { it.isNotEmpty() },
                 ),
             )
             "invoice" -> DocumentDraft(
@@ -265,7 +266,7 @@ object AiFields {
     private fun JsonElement.str(key: String): String? = ((this as? JsonObject)?.get(key) as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull?.trim()?.takeIf { it.isNotEmpty() }
 
     /** A number exactly as written in the answer, never through floating point. */
-    private fun JsonElement.num(key: String): BigDecimal? = ((this as? JsonObject)?.get(key) as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toBigDecimalOrNull()
+    private fun JsonElement.num(key: String): BigDecimal? = ((this as? JsonObject)?.get(key) as? JsonPrimitive)?.takeIf { !it.isString }?.content?.let(ReadNumbers::parse)
 
     private fun JsonObject.list(key: String): List<JsonElement> = (this[key] as? JsonArray) ?: emptyList()
 }

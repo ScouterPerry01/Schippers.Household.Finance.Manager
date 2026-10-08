@@ -594,6 +594,7 @@ class BillService internal constructor(private val books: Books) {
         val currency = bill.amount.currency
         draft.amount?.let { validate(it.currency == currency && !it.isNegative, "error.billAmountPositive") }
         val instalments = draft.instalments.distinctBy { it.dueDate }.sortedBy { it.dueDate }
+        validate(instalments.size <= ca.schippers.hfm.ocr.ReadInstalment.MAX, "error.billInstalments", ca.schippers.hfm.ocr.ReadInstalment.MAX.toString())
         instalments.forEach { validate(it.amount.currency == currency && it.amount.isPositive, "error.billAmountPositive") }
         val dueDate = instalments.firstOrNull()?.dueDate ?: draft.dueDate
         val amount = draft.amount ?: instalments.takeIf { it.isNotEmpty() }?.fold(Money.zero(currency)) { a, i -> a + i.amount }

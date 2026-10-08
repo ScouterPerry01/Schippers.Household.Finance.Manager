@@ -169,4 +169,74 @@ class AuditPrivacyTest {
             assertTrue(details.none { secret in it }, "\"$secret\" is not in the audit log: $details")
         }
     }
+
+    @Test
+    fun `bills, statements, payments, instalments, account numbers and trips' stops leave nothing private in the audit log`() {
+        val group = books.groups().single().id
+        val cad = { a: String -> Money.parse(a, Currency.CAD) }
+        val alex = books.members.create("Alex Secretperson", ca.schippers.hfm.domain.MemberKind.ADULT)
+        val account = books.accounts.create(AccountDraft(group, "Chequing", ca.schippers.hfm.domain.AccountType.CHEQUING, Currency.CAD, cad("5000"), LocalDate(2026, 1, 1)))
+        // BILL-13, BILL-15, BILL-20: a Business bill with its account number, revealed with the password, then changed.
+        val lists = books.billLists.lists()
+        val business = lists.categories(BillType.BUSINESS).first()
+        val hydro = books.bills.create(
+            BillDraft(
+                BillKind.BILL, "Secretbill", cad("123.45"), account.id, ca.schippers.hfm.calc.schedule.Recurrence.MONTHLY, LocalDate(2026, 9, 15),
+                payeeName = "Secretpayee", payeeAccountNumber = "987-654-3210", amountKind = AmountKind.VARIABLE, notes = "typed bill note",
+                type = BillType.BUSINESS, categoryKey = business.key, subcategoryKey = lists.subcategories(business.key).firstOrNull()?.key, memberId = alex.id,
+            ),
+        )
+        assertEquals("987-654-3210", books.bills.revealAccountNumber(hydro.id, "pw".toCharArray()))
+        books.bills.update(books.bills.get(hydro.id), newAccountNumber = "111-222-3339")
+        // BILL-16, BILL-17: a statement with its number and meter readings; BILL-22: paid in part, then the rest, one payment undone.
+        val meter = books.utilities.saveMeter(UtilityMeter("", group, "Meter", MeterKind.ELECTRICITY))
+        books.utilities.linkBill(hydro.id, meter.id)
+        books.bills.recordStatement(
+            hydro.id,
+            StatementDraft(
+                LocalDate(2026, 10, 15), cad("234.56"), "Secretstatement-55", LocalDate(2026, 9, 25), notes = "typed statement note",
+                readings = ca.schippers.hfm.ocr.MeterReadings(java.math.BigDecimal("45678"), LocalDate(2026, 8, 12), java.math.BigDecimal("46321"), LocalDate(2026, 9, 11)),
+            ),
+        )
+        books.bills.markPaid(hydro.id, LocalDate(2026, 10, 15), LocalDate(2026, 10, 1), cad("100.01"))
+        books.bills.markPaid(hydro.id, LocalDate(2026, 10, 15), LocalDate(2026, 10, 10))
+        books.bills.unmarkPaid(hydro.id, LocalDate(2026, 10, 15), deleteTransaction = true)
+        // BILL-23: a tax bill's instalments, its statement then deleted; BILL-14: a bill list renamed.
+        val taxes = books.bills.create(
+            BillDraft(BillKind.BILL, "Secrettaxes", cad("3000.00"), account.id, ca.schippers.hfm.calc.schedule.Recurrence.INSTALMENTS, LocalDate(2026, 2, 27)),
+        )
+        val statement = books.bills.recordStatement(
+            taxes.id, StatementDraft(LocalDate(2026, 2, 27), instalments = listOf(BillInstalment(LocalDate(2026, 2, 27), cad("1501.11")), BillInstalment(LocalDate(2026, 6, 30), cad("1498.89")))),
+        )
+        books.bills.deleteStatement(taxes.id, statement.id)
+        books.billLists.rename(lists.categories(BillType.HOME).first().key, "Secretlist", "Secretliste")
+        // TRP-11 to TRP-15: a trip with a stop and a break, positions and addresses, to a place with its address.
+        val car = books.vehicles.save(Vehicle("", group, "Car", purchaseOdometer = 1_000))
+        val cottage = books.places.save(Place("", group, "Cottage", PlaceCategory.OTHER, "12 Secretlane", 44.77123, -76.69456))
+        books.trips.save(
+            Trip(
+                "", group, LocalDate(2026, 10, 3), "", java.math.BigDecimal.ZERO, false, TripPurpose.BUSINESS, car.id, endPlaceId = cottage.id,
+                startOdometer = 61_500, endOdometer = 61_678, startLatitude = 45.40123, startLongitude = -75.70321, startAddress = "34 Secretstart St",
+                endAddress = "12 Secretlane",
+                stops = listOf(
+                    TripStop(
+                        "s1", TripStopKind.STOP, kotlinx.datetime.LocalDateTime(2026, 10, 3, 9, 0), odometer = 61_600, place = "Secretstop", address = "5 Secretstop Rd",
+                        latitude = 45.11111, longitude = -76.22222, notes = "typed stop note",
+                    ),
+                    TripStop("b1", TripStopKind.BREAK, kotlinx.datetime.LocalDateTime(2026, 10, 3, 9, 30), kotlinx.datetime.LocalDateTime(2026, 10, 3, 9, 45), latitude = 45.33333, longitude = -76.44444),
+                ),
+            ),
+        )
+
+        val log = books.session.core.coreQueries.recentAudit(300).executeAsList()
+        val details = log.mapNotNull { it.details }
+        for (secret in listOf(
+            "Secret", "secret", "typed", "987-654", "3210", "111-222", "3339", "123.45", "12345", "234.56", "23456", "100.01", "10001", "134.55", "13455",
+            "1501.11", "150111", "1498.89", "149889", "45678", "46321", "45.40", "75.70", "45.11", "76.22", "45.33", "76.44", "44.77", "76.69",
+        )) {
+            assertTrue(details.none { secret in it }, "\"$secret\" is not in the audit log: $details")
+        }
+        assertTrue(log.mapNotNull { it.entity_id }.none { "Secret" in it || "987-654" in it || "111-222" in it }, "no name or number as an id")
+        assertTrue(log.any { it.action == "REVEAL" && it.entity == "bill" }, "revealing the number is logged, without it")
+    }
 }

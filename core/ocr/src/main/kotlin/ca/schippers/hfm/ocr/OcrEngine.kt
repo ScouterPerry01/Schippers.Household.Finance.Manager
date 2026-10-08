@@ -63,7 +63,12 @@ data class DocumentDraft(
 )
 
 /** BILL-23, BILL-25: one instalment printed on a bill: its due date and amount. */
-data class ReadInstalment(val dueDate: LocalDate, val amount: Money)
+data class ReadInstalment(val dueDate: LocalDate, val amount: Money) {
+    companion object {
+        /** The most instalments one statement may list (a monthly plan has 12; a read listing more is cut). */
+        const val MAX = 60
+    }
+}
 
 /**
  * BILL-17: the meter readings a utility bill shows: the previous and current readings with their

@@ -341,7 +341,9 @@ class SyncService internal constructor(private val books: Books) {
             }
             return null
         }
-        val group = groupId ?: throw ValidationException("error.noEditableGroup")
+        // TRP-16, HH-11: a photo or note taken during a trip is kept where the trip is (its vehicle's group), not in the phone's.
+        val tripGroup = f.tripId?.takeIf { it.length <= MAX_ID }?.let { books.trips.groupForAttachment(it, f.vehicleId) }
+        val group = tripGroup ?: groupId ?: throw ValidationException("error.noEditableGroup")
         val pages = item.pages.map(SyncCrypto::unb64)
         val pdf = item.pdf
         val (content, mime) = when {

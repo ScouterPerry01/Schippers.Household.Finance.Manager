@@ -5,12 +5,14 @@ import ca.schippers.hfm.money.Money
 import ca.schippers.hfm.ocr.DocumentKind
 import ca.schippers.hfm.ocr.FieldSource
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /** INV-05 and AI-03: trade confirmations, investment statement version 2, and types added by the user. */
@@ -76,6 +78,25 @@ class AiTypesTest {
         assertEquals(listOf(LocalDate(2026, 6, 18), LocalDate(2026, 9, 17)), read.value.map { it.dueDate }, "in date order")
         assertEquals(Money.parse("1216.00", Currency.CAD), read.value.first().amount)
         assertEquals(null, AiFields.draft("bill", obj("""{"biller":"Bell","amount_due":95.00,"currency":"CAD"}"""), checked = true).instalments)
+    }
+
+    @Test
+    fun `numbers too large for any bill are left out of an answer, however JSON writes them`() {
+        // A document can try to steer an answer; "1E999999999" would take all the memory once rounded to the cent.
+        val answer = obj(
+            """{"biller":"Hydro","amount_due":1E999999999,"currency":"CAD","meter_readings":{"previous_reading":1e999999999,"current_reading":46321},
+                "instalments":[{"due_date":"2026-06-18","amount":1e-999999999},{"due_date":"2026-09-17","amount":1216.00},{"due_date":"2026-10-17","amount":1216.00}]}""",
+        )
+        val draft = AiFields.draft("bill", answer, checked = true)
+        assertEquals(null, draft.total)
+        assertEquals(null, draft.meter!!.value.previous)
+        assertEquals(java.math.BigDecimal(46321), draft.meter!!.value.current)
+        assertEquals(listOf(LocalDate(2026, 9, 17), LocalDate(2026, 10, 17)), draft.instalments!!.value.map { it.dueDate })
+        assertTrue(ca.schippers.hfm.ocr.ReadNumbers.sensible(java.math.BigDecimal("999999999999.99")))
+        assertFalse(ca.schippers.hfm.ocr.ReadNumbers.sensible(java.math.BigDecimal("1E+12")))
+        // A plan listing more instalments than any has is cut.
+        val many = (1..80).joinToString(",") { """{"due_date":"${LocalDate(2026, 1, 1).plus(kotlinx.datetime.DatePeriod(days = it))}","amount":10}""" }
+        assertEquals(60, AiFields.draft("bill", obj("""{"biller":"X","currency":"CAD","instalments":[$many]}"""), checked = true).instalments!!.value.size)
     }
 
     @Test

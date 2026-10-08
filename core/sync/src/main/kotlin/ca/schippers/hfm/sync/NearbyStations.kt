@@ -7,6 +7,9 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.net.URLEncoder
@@ -59,6 +62,28 @@ object NearbyStations {
 
     /** Seconds Overpass may spend on the search; the phone's own timeouts are a little longer. */
     const val SERVER_TIMEOUT_S = 20
+
+    /** The longest an answer may take to arrive, however slowly it trickles in, in milliseconds. */
+    const val MAX_ANSWER_MS = 45_000L
+
+    /**
+     * Reads an answer from [input]: at most [MAX_BYTES], within [MAX_ANSWER_MS] in all ([nanos] is
+     * the clock), as UTF-8; throws [IOException] beyond either. A read timeout alone would let a server
+     * keep the phone waiting by sending a byte now and then.
+     */
+    fun readAnswer(input: InputStream, nanos: () -> Long = System::nanoTime): String {
+        val deadline = nanos() + MAX_ANSWER_MS * 1_000_000
+        val out = ByteArrayOutputStream()
+        val buffer = ByteArray(16 * 1024)
+        while (true) {
+            val n = input.read(buffer)
+            if (n < 0) break
+            out.write(buffer, 0, n)
+            if (out.size() > MAX_BYTES) throw IOException("Answer too large")
+            if (nanos() > deadline) throw IOException("Answer too slow")
+        }
+        return out.toString(Charsets.UTF_8.name())
+    }
 
     /** A position rounded to two decimals (about 1.1 km north to south), as sent. */
     fun rough(value: Double): Double = BigDecimal(value).setScale(2, RoundingMode.HALF_UP).toDouble()

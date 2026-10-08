@@ -198,6 +198,9 @@ insertTripStop:
 INSERT INTO trip_stop(id, trip_id, position, kind, start_at, end_at, odometer, place_id, place, address, latitude, longitude, purpose, notes)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+tripOfStop:
+SELECT trip_id FROM trip_stop WHERE id = ?;
+
 deleteTripStops:
 DELETE FROM trip_stop WHERE trip_id = ?;
 

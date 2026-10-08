@@ -3,6 +3,7 @@ package ca.schippers.hfm.ocr.desktop
 import ca.schippers.hfm.ocr.OcrLine
 import ca.schippers.hfm.ocr.OcrResult
 import org.apache.pdfbox.Loader
+import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.ImageType
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.text.PDFTextStripper
@@ -45,7 +46,7 @@ class DocumentReader(private val engine: PaddleOcrEngine) {
 
     /** The first page as a PNG or JPEG image, at most [maxSide] pixels, for previews. */
     fun preview(bytes: ByteArray, maxSide: Int = 1200): BufferedImage? = when (FileKind.of(bytes)) {
-        FileKind.PDF -> Loader.loadPDF(bytes).use { pdf -> if (pdf.numberOfPages == 0) null else PDFRenderer(pdf).renderImageWithDPI(0, PREVIEW_DPI, ImageType.RGB) }
+        FileKind.PDF -> Loader.loadPDF(bytes).use { pdf -> if (pdf.numberOfPages == 0) null else render(pdf, 0, PREVIEW_DPI, maxSide * 2) }
         FileKind.UNSUPPORTED -> null
         else -> ImageLoader.decode(bytes)
     }?.let { scale(it, maxSide) }
@@ -56,8 +57,7 @@ class DocumentReader(private val engine: PaddleOcrEngine) {
      */
     fun pageImages(bytes: ByteArray, maxPages: Int = 20, dpi: Float = AI_DPI): List<BufferedImage> = when (FileKind.of(bytes)) {
         FileKind.PDF -> Loader.loadPDF(bytes).use { pdf ->
-            val renderer = PDFRenderer(pdf)
-            (0 until minOf(pdf.numberOfPages, maxPages)).map { renderer.renderImageWithDPI(it, dpi, ImageType.RGB) }
+            (0 until minOf(pdf.numberOfPages, maxPages)).map { render(pdf, it, dpi, AI_SIDE) }
         }
         FileKind.UNSUPPORTED -> emptyList()
         else -> listOfNotNull(ImageLoader.decode(bytes))
@@ -71,10 +71,9 @@ class DocumentReader(private val engine: PaddleOcrEngine) {
             return ReadDocument(FileKind.PDF, pdf.numberOfPages, OcrResult(lines, (System.nanoTime() - started) / 1_000_000), fromTextLayer = true)
         }
         // A scanned PDF: recognise each page (the first few; statements have their totals early).
-        val renderer = PDFRenderer(pdf)
         val lines = ArrayList<OcrLine>()
         for (page in 0 until minOf(pdf.numberOfPages, MAX_OCR_PAGES)) {
-            lines += engine.recognize(renderer.renderImageWithDPI(page, OCR_DPI, ImageType.RGB)).lines
+            lines += engine.recognize(render(pdf, page, OCR_DPI, OCR_SIDE)).lines
         }
         ReadDocument(FileKind.PDF, pdf.numberOfPages, OcrResult(lines, (System.nanoTime() - started) / 1_000_000), fromTextLayer = false)
     }
@@ -94,10 +93,25 @@ class DocumentReader(private val engine: PaddleOcrEngine) {
          * [dpi], an image at most [maxSide] pixels; null when there is no such page.
          */
         fun page(bytes: ByteArray, index: Int, maxSide: Int = VIEW_SIDE, dpi: Float = VIEW_DPI): BufferedImage? = when (FileKind.of(bytes)) {
-            FileKind.PDF -> Loader.loadPDF(bytes).use { pdf -> if (index !in 0 until pdf.numberOfPages) null else PDFRenderer(pdf).renderImageWithDPI(index, dpi, ImageType.RGB) }
+            FileKind.PDF -> Loader.loadPDF(bytes).use { pdf -> if (index !in 0 until pdf.numberOfPages) null else render(pdf, index, dpi, maxSide) }
             FileKind.UNSUPPORTED -> null
             else -> if (index == 0) ImageLoader.decode(bytes) else null
         }?.let { scaleDown(it, maxSide) }
+
+        /**
+         * Page [index] of [pdf] at [dpi], or at less so that its longer side stays within [maxPixels]: a
+         * page drawn hundreds of inches wide in an untrusted PDF would otherwise need gigabytes of
+         * memory. The images in the page are read only as finely as the page is drawn.
+         */
+        internal fun render(pdf: PDDocument, index: Int, dpi: Float, maxPixels: Int): BufferedImage {
+            val box = pdf.getPage(index).cropBox
+            val longest = maxOf(box.width, box.height)
+            if (!longest.isFinite() || longest <= 0f) throw UnsupportedImageException()
+            return PDFRenderer(pdf).apply { isSubsamplingAllowed = true }.renderImageWithDPI(index, renderDpi(longest, dpi, maxPixels), ImageType.RGB)
+        }
+
+        /** The resolution a page whose longer side is [longestPoints] points long is drawn at: [dpi], or less to stay within [maxPixels]. */
+        internal fun renderDpi(longestPoints: Float, dpi: Float, maxPixels: Int): Float = minOf(dpi, maxPixels * 72f / longestPoints)
 
         private fun scaleDown(img: BufferedImage, maxSide: Int): BufferedImage {
             val longSide = maxOf(img.width, img.height)
@@ -119,6 +133,10 @@ class DocumentReader(private val engine: PaddleOcrEngine) {
         private const val OCR_DPI = 200f
         private const val PREVIEW_DPI = 110f
         private const val AI_DPI = 150f
+
+        /** The longest side, in pixels, a PDF page is drawn at to be read and for AI reading (a letter page at their resolutions fits). */
+        private const val OCR_SIDE = 4000
+        private const val AI_SIDE = 2400
 
         fun png(img: BufferedImage): ByteArray = ByteArrayOutputStream().also { ImageIO.write(img, "png", it) }.toByteArray()
     }
