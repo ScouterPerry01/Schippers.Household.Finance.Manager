@@ -22,6 +22,17 @@ class HelpTopicsTest {
     }
 
     @Test
+    fun `no help topic is left out of the list, in either language`() {
+        val ids = helpTopicIds().toSet()
+        for (language in Language.entries) {
+            val folder = java.io.File("../../core/i18n/src/main/resources/hfm/help/${language.tag}")
+            val files = folder.listFiles { f -> f.extension == "md" }!!.map { it.nameWithoutExtension }.toSet()
+            assertTrue(files.isNotEmpty(), "the help folder of $language is found")
+            assertEquals(emptySet(), files - ids, "help topics in $language that no screen or general topic opens")
+        }
+    }
+
+    @Test
     fun `the guide is searched in the user's language, accents ignored`() {
         assertTrue(HelpGuide.search(Language.ENGLISH, helpTopicIds(), "reconcile statement").isNotEmpty())
         assertTrue(HelpGuide.search(Language.FRENCH, helpTopicIds(), "releve").isNotEmpty(), "relevé found without its accent")

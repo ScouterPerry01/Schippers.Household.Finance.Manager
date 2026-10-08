@@ -1,6 +1,6 @@
 # Getting started with home and family
 
-The **Home and family** group of the menu keeps everything about the people, animals and things of the household that is not an account: health, medical claims, papers for an emergency, pets, vehicles, trips and the home. This chapter gets each one going in a few steps. Do them in any order; each part works on its own, and they help each other once filled in. Family money, which is in the **Money** group, is covered at the end.
+The **Home and family** group of the menu keeps everything about the people, animals and things of the household that is not an account: health, medical claims, papers for an emergency, pets, vehicles, trips, the home and its seasonal checklist, utilities and volunteer hours. This chapter gets each one going in a few steps. Do them in any order; each part works on its own, and they help each other once filled in. Family money, which is in the **Money** group, is covered at the end.
 
 ## Before you start {#before}
 @index: household members; private group
@@ -80,8 +80,28 @@ Details: [Trip log](trips).
 5. On the **Insurance** tab, choose **Add a policy** for the home and auto policies and tick what each covers. Check **Not covered by any policy**.
 6. Record renovations on the **Projects** tab, ticking **A capital improvement** when it applies, and the people who did the work on the **Contractors** tab.
 7. Each month, look at the **Maintenance** tab.
+8. At the start of each season, open the **Seasonal checklist** tab: it gathers the usual tasks of the vehicles and every asset that fall due in the season. Tick each one as it is done, here or on the phone, or print the list with **Print**.
 
-Details: [Home and assets](assets).
+Details: [Home and assets](assets) and [Seasonal checklist tab](assets#seasonal-tab).
+
+## Utilities {#utilities}
+@index: utilities; meter readings; propane; heating oil
+
+1. Open **Utilities** in the **Home and family** group.
+2. On the **Meters** tab, choose **Add a meter** for the electricity, gas or water meter, and pick its bill under **Bill for the cost per unit** so the use gets a cost.
+3. Read the meter now and then and enter the number under **Readings**, **New reading**, or send it from the phone. Statements recorded on the meter's bill, typed or read from a scanned bill, add their dated readings too.
+4. For propane or heating oil, choose **Add a tank** on the **Fuel tanks** tab, then record the levels you read and the deliveries: the app tells you when to order.
+
+A month that uses much more than usual is shown as **Unusual** and listed on the Dashboard. Details: [Utilities](utilities).
+
+## Volunteer hours {#volunteer}
+@index: volunteer hours; volunteer firefighter; community hours
+
+1. Open **Volunteer hours** in the **Home and family** group.
+2. Choose **Add volunteer hours** and enter the person, the organization, the kind, the date and the time, or log them from the phone.
+3. Each person's card adds up the year. Volunteer firefighters and search and rescue volunteers see how far they are from the 200 hours that give a tax credit; students see their community hours.
+
+Details: [Volunteer hours](volunteer).
 
 ## Family money {#family-money}
 
@@ -91,6 +111,7 @@ The **Family money** screen, in the **Money** group, keeps money between people:
 2. On the **Shared expenses** tab, create a group for a trip or a shared apartment, then add each expense with who paid and the shares.
 3. On the **Family loans** tab, record money lent between family members, then its repayments.
 4. On the **Allowances** tab, set up each child's allowance and mark it paid on allowance days.
+5. On the **Chores** tab, choose **Add a chore** for each child's jobs, worth an amount, points or both. Tick **Done today** each time it is done, here or on the phone, and **Pay with the allowance** adds what was earned to the child's money.
 
 Details: [Family money](family).
 

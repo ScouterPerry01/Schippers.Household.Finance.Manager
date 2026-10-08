@@ -92,8 +92,8 @@ class MessageKeysTest {
             "maintenance" to ca.schippers.hfm.books.TaskState.entries,
             "task" to ca.schippers.hfm.books.VehicleService.TEMPLATE_KEYS,
             "vehicles.tab" to listOf("OVERVIEW", "MAINTENANCE", "SERVICE", "FUEL", "WARRANTIES", "COSTS"),
-            // Every section a calendar date can open (BooksModel.renewalSection, maintenance).
-            "calendar.open" to listOf("PETS", "VEHICLES", "LOANS", "ACCOUNTS", "MEDICAL", "ASSETS"),
+            // Every section a calendar date can open (renewalSectionOf, maintenance); a fuel order's key was missing once.
+            "calendar.open" to (ca.schippers.hfm.books.RenewalKind.entries.map { renewalSectionOf(it).name } + listOf("VEHICLES", "ASSETS")).distinct(),
             "assetTemplate" to ca.schippers.hfm.books.AssetMaintenanceService.TEMPLATE_KEYS,
             "meterUnit" to ca.schippers.hfm.books.MeterUnit.entries,
             "assets.tab" to listOf("ASSETS", "UPKEEP", "SEASONAL", "PROJECTS", "CONTRACTORS", "COVERED", "INSURANCE"),

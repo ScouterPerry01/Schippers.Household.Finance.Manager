@@ -128,7 +128,7 @@ The top bar is always visible. From left to right:
 - **English** and **Français**: switch the whole app to that language at once; the button of the language in use is greyed. The choice is remembered on this computer and is used the next time the app starts. Before you ever choose, the app follows your computer's language. Lines the app writes itself in the books from then on (such as automatic memos) are written in the language in use. The manual and help follow the same choice.
 - **Search (Ctrl+F)**: the search box, shown only while a household is open. See [Searching](basics#search).
 - **Help (F1)**: opens the short Help panel on the topic for the screen shown. See [Help (F1) and the Manual](welcome#help-and-manual).
-- **Manual**: opens this manual in its own window. Shift+F1 opens it on the chapter for the screen shown. See [Using the Manual window](welcome#manual-window).
+- **Manual (Shift+F1)**: opens this manual in its own window, on the chapter for the screen shown. Shift+F1 does the same from anywhere. See [Using the Manual window](welcome#manual-window).
 - **Lock**: shown only while a household is open. Locks the household at once. See [Locking](basics#locking).
 
 ### Banners {#banners}
@@ -144,7 +144,7 @@ Two kinds of coloured banner can appear under the top bar:
 
 @index: menu; navigation; side menu; menu at the top
 
-The menu leads to every screen. The **Dashboard** and **Contacts** stand on their own at the top, outside the groups; the other screens are in five groups: Money, Investing and borrowing, Reports and taxes, Home and family, and Settings.
+The menu leads to every screen. The **Dashboard** and **Contacts** stand on their own at the top, outside the groups; the other screens are in six groups: Money, Investing and borrowing, Reports and taxes, Home and family, Settings, and Help.
 
 The menu can be shown in two ways, and each user's choice is remembered on this computer:
 
@@ -165,8 +165,8 @@ Counts in parentheses show what waits for you. Documents shows the number of doc
 - Money: [Accounts](accounts), [Documents](documents), [Bills](bills), [Budgets](budgets), [Savings goals](goals), [Family money](family), [Side income](side) and [Calendar](calendar).
 - Investing and borrowing: [Investments](investments), [Registered plans](plans) and [Loans and mortgages](loans).
 - Reports and taxes: [Reports](reports) and [Taxes](taxes).
-- Home and family: [Health](health), [Medical claims](medical), [Emergency and estate](estate), [Pets](pets), [Vehicles](vehicles), [Trip log](trips) and [Home and assets](assets).
-- Settings: [Household members](members), [Users](users), [Categories](categories), [Payees](payees), [Category rules](rules), [Institutions](institutions), [Rates and prices](rates), [Phones](phones), [AI reading](ai), [Backups](backups), [Security](security) and [Display and accessibility](display).
+- Home and family: [Health](health), [Medical claims](medical), [Emergency and estate](estate), [Pets](pets), [Vehicles](vehicles), [Trip log](trips), [Home and assets](assets), [Utilities](utilities) and [Volunteer hours](volunteer).
+- Settings: [Household members](members), [Users](users), [Categories](categories), [Payees](payees), [Category rules](rules), [Institutions](institutions), [Rates and prices](rates), [Rates and rules](rates-rules), [Phones](phones), [AI reading](ai), [Backups](backups), [Security](security) and [Display and accessibility](display).
 - Help, the last group (at the right of the bar at the top): Manual (Shift+F1), Help (F1), [Walk-Me guides](walkme) and [About](about). See [The Help menu](walkme#help-menu).
 
 What each user sees inside these screens depends on their role and on the account groups they may open; see [Users](users).
@@ -272,6 +272,14 @@ A suggestion field, such as Payee in a register, accepts any text and offers mat
 ### Checkboxes {#checkboxes}
 
 A ticked box turns an option on. The text beside it says what the option does.
+
+### Lists and their columns {#lists}
+
+@index: column headings; table; list; Actions column; greyed button
+
+Every list with columns has a heading row that names each column, with a line under it; screen readers announce these names as headings. The column of buttons on the right of a row, such as **Edit**, **Delete** or ✕, is headed Actions.
+
+Buttons the books would refuse you are greyed out or hidden: for example, on a group you may only view, its records open read-only. See [Access tab](users#access-tab).
 
 ### Forms in a window: Save and Cancel {#form-dialogs}
 

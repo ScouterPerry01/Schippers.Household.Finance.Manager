@@ -25,7 +25,7 @@ La page défile quand la fenêtre est trop petite pour tout afficher.
 
 @index: démarrage; configuration; premières étapes; Premiers pas
 
-Dans un nouveau ménage, une carte en couleur en haut du tableau de bord vous guide dans les premières étapes. Son titre compte les étapes faites, par exemple Premiers pas : 2 sur 6 faits. Sous le titre, une courte phrase explique que chaque étape ouvre l’écran qui s’en charge.
+Dans un nouveau ménage, une carte en couleur en haut du tableau de bord vous guide dans les premières étapes. Son titre compte les étapes faites, par exemple Premiers pas : 2 sur 6 faits. Sous le titre, une courte phrase explique que chaque étape ouvre l’écran qui s’en charge. La ligne suivante indique que les guides Walk-Me du menu Aide vous accompagnent dans chacune de ces étapes ; son bouton **Guides Walk-Me** les ouvre. Voir [Guides Walk-Me](walkme).
 
 Chaque étape affiche un cercle (à faire) ou un crochet (fait). Une étape à faire affiche une ligne d’aide et un bouton. La prochaine étape à faire est en gras et son bouton est plein, pour qu’elle ressorte ; les autres boutons sont simplement encadrés. Une étape se coche d’elle-même dès que les livres montrent qu’elle est faite : vous ne la cochez jamais à la main.
 
@@ -81,7 +81,7 @@ Tous les montants des tuiles sont dans la devise de base du ménage. Les soldes 
 @index: factures à venir; échéances proches
 
 - **Factures en retard ou dues dans les 7 prochains jours** : le total des paiements de factures pas encore payés qui sont soit en retard (jusqu’à un an en arrière), soit dus dans les sept prochains jours, pour que rien de tardif ne soit caché. Les jours de paie et autres revenus sont exclus.
-  La ligne de détail les compte : 1 facture, 3 factures, ou rien à payer. Une facture dont le montant varie compte pour son montant estimé.
+  La ligne de détail les compte : 1 facture, 3 factures, ou rien à payer. Une facture dont le montant varie compte pour son montant estimé, ou pour le montant que vous avez indiqué pour cette facture ; une facture payée en partie compte pour ce qui reste dû.
   Un clic sur la tuile ouvre Factures. Voir [Factures](bills).
 
 ### Dépensé ce mois-ci {#budget-tile}
@@ -100,14 +100,14 @@ Cette carte rassemble tout ce qui attend une décision. Chaque ligne est un lien
 
 Les lignes possibles, dans cet ordre :
 
+- Alertes de compte, en rouge, par exemple Compte chèques : solde de 412,00 $, sous 500,00 $ : les alertes réglées sur les comptes (solde bas, limite de carte, activité inhabituelle). Un clic ouvre ce compte. Une opération inhabituelle a un bouton **Écarter** une fois vérifiée. Voir [Alertes de compte](accounts#account-alerts).
 - Factures en retard, par exemple 1 facture est en retard ou 3 factures sont en retard : des factures impayées dont l’échéance est passée. Ouvre Factures, où vous inscrivez le paiement ou sautez l’échéance. Voir [Factures](bills).
 - Lignes de relevé, par exemple 2 lignes de relevé demandent une décision : des lignes importées, dans des relevés en cours de rapprochement, marquées À confirmer ou Aucune correspondance. Ouvre Comptes. Choisissez le compte, puis **Rapprocher…** pour les régler. Voir [Lignes à vérifier](accounts#reconcile-attention).
 - Catégories manquantes, par exemple 5 opérations n’ont pas de catégorie : des opérations dont au moins une ligne n’a pas de catégorie. Les virements entre vos comptes ne sont pas comptés, puisqu’ils n’ont jamais besoin de catégorie. Ouvre Comptes ; les registres affichent (non catégorisé) dans la colonne Catégorie. Les montants non catégorisés ne comptent dans aucun budget et paraissent comme (non catégorisé) dans les rapports : il vaut la peine de les corriger.
 - Comptes en retard, par exemple Compte chèques conjoint n’a pas été rapproché depuis plus de 45 jours : une ligne par compte dont le dernier relevé rapproché date de plus de 45 jours (par défaut, réglable dans [Taux et règles](rates-rules)). Un compte jamais rapproché n’est pas listé ici ; l’écran Comptes l’indique plutôt par Jamais rapproché. Ouvre Comptes.
 - Aucune sauvegarde réussie dans les 7 derniers jours : aucune sauvegarde n’a réussi depuis une semaine, ou aucune n’a jamais été faite. Ouvre Sauvegardes. Voir [Sauvegardes](backups).
-- Alertes de compte, en rouge, par exemple Compte chèques : solde de 412,00 $, sous 500,00 $ : les alertes réglées sur les comptes (solde bas, limite de carte, activité inhabituelle). Un clic ouvre ce compte. Une opération inhabituelle a un bouton **Écarter** une fois vérifiée. Voir [Alertes de compte](accounts#account-alerts).
-- Consommation inhabituelle, par exemple Chalet électricité : consommation inhabituelle en septembre 2026 (+35 % par rapport au même mois l’an dernier) : un compteur dont le dernier mois complet, le mois dernier ou celui d’avant, a consommé plus que d’habitude. Ouvre Services publics. Voir [Services publics](utilities#meters).
 - Taux manquants, par exemple Aucun taux de change pour USD : ces montants sont exclus : des soldes, factures ou dépenses sont dans une devise sans taux connu, et ne sont donc pas dans les totaux ci-dessus. Ouvre Taux et cours, où vous ajoutez le taux. Voir [Taux et cours](rates).
+- Consommation inhabituelle, par exemple Chalet électricité : consommation inhabituelle en septembre 2026 (+35 % par rapport au même mois l’an dernier) : un compteur dont le dernier mois complet, le mois dernier ou celui d’avant, a consommé plus que d’habitude. Ouvre Services publics. Voir [Services publics](utilities#meters).
 
 ## Graphique de la valeur nette {#net-worth-chart}
 

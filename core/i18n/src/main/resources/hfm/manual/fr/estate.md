@@ -30,7 +30,7 @@ Dans cet ordre :
 - **Polices d’assurance** : chaque police active de l’onglet **Assurances** de [Maison et biens](assets#insurance-tab) : son type et son assureur, le numéro de police, la personne assurée, le montant de garantie, le courtier et les bénéficiaires.
 - **Régimes de santé et dentaires** : chaque régime actif des [Réclamations médicales](medical) : son type et son nom, l’assureur, les numéros de police et de certificat, le participant et les personnes couvertes.
 - **Régimes de retraite** : les régimes de retraite inscrits sous [Régimes enregistrés](plans), avec leur type, le participant, l’administrateur et le numéro de participant.
-- **Documents conservés** : « Documents marqués à conserver dans le coffre de RANN’s Roost », avec leur date et leurs notes. Voir [Documents](documents).
+- **Documents conservés** : « Documents marqués à conserver dans le coffre de RANN's Roost », avec leur date et leurs notes. Voir [Documents](documents).
 
 Le sommaire est toujours à jour : il est refait chaque fois que vous ouvrez l’onglet.
 
@@ -45,13 +45,13 @@ Le sommaire est toujours à jour : il est refait chaque fois que vous ouvrez l�
 - **Enregistrer sous…** : accessible une fois les mots de passe identiques, ou quand la protection est décochée. Il demande où enregistrer ; le fichier s’appelle « En cas d’urgence.pdf » à moins que vous ne le changiez.
 - **Annuler** : ferme sans enregistrer.
 
-Le PDF s’intitule **En cas d’urgence** et indique « Préparé avec RANN’s Roost le date. Gardez-le en lieu sûr : il énumère les comptes du ménage. »
+Le PDF s’intitule **En cas d’urgence** et indique « Préparé avec RANN's Roost le date. Gardez-le en lieu sûr : il énumère les comptes du ménage. »
 
 > Important : Une copie non protégée énumère chaque compte, solde et police. Gardez toute copie en lieu sûr, et donnez le mot de passe par téléphone ou en personne, jamais dans le même courriel que le fichier.
 
 ### Imprimer {#print}
 
-**Imprimer** envoie le sommaire à l’imprimante de l’ordinateur. Là où l’impression directe n’est pas possible, le PDF s’ouvre plutôt pour que vous l’imprimiez de là. La copie faite pour l’impression n’est pas protégée par un mot de passe et est effacée à la fermeture de l’application.
+**Imprimer** envoie le sommaire à l’imprimante de l’ordinateur. Là où l’impression directe n’est pas possible, le PDF s’ouvre plutôt pour que vous l’imprimiez de là. La copie faite pour l’impression n’est pas protégée par un mot de passe ; elle n’est donc gardée que le temps qu’il faut à l’imprimante ou au lecteur : elle est effacée environ deux minutes après son envoi à l’imprimante, ou dix minutes après son ouverture dans le lecteur, avec un nouvel essai chaque minute tant que l’ordinateur la garde ouverte, et dans tous les cas à la fermeture de l’application.
 
 ## Onglet Papiers et volontés {#papers-tab}
 @index: testament; procuration; mandat de protection; coffret de sûreté; funérailles
@@ -114,6 +114,6 @@ Notez où se trouve chaque papier, pas son contenu :
 
 @index: contact; contact lié; Lier un contact
 
-Une fois les papiers d’une personne enregistrés, l’onglet Papiers et volontés montre, sous les personnes à appeler, les contacts liés à ces papiers dans un rôle de succession, comme Liquidateur ou Notaire. **Lier un contact…** en choisit un dans Contacts. Le sommaire d’urgence les énumère avec les personnes à appeler tapées dans cet onglet, qui restent telles quelles.
+Une fois les papiers d’une personne enregistrés, l’onglet Papiers et volontés montre, sous les personnes à appeler, les contacts liés à ces papiers dans un rôle de succession, comme Liquidateur ou Notaire. **Lier un contact…** en choisit un dans Contacts. Le sommaire d’urgence les énumère avec les personnes à appeler tapées dans cet onglet, qui restent telles quelles ; une personne tapée ici qui est aussi liée depuis Contacts (le même nom) n’est énumérée qu’une fois, depuis Contacts, pour que ses coordonnées restent à jour.
 
 Cliquez sur un contact pour ouvrir sa page dans [Contacts](contacts) ; **Retirer le lien** enlève le lien, et **Lier un contact…** en choisit un, dans son rôle, ou crée un **Nouveau contact…** et le lie. Voir [Les contacts dans les autres écrans](contacts#on-other-screens).

@@ -49,15 +49,15 @@ Cliquez sur un contact pour afficher sa page à droite.
 
 La page montre, de haut en bas :
 
-- le nom, avec **Modifier**, **Fusionner avec…** et **Supprimer** pour les utilisateurs qui peuvent modifier le contact;
-- la ligne pour quoi, sous la forme Pour : REER et CELI;
-- les types;
-- pour une personne, sa fonction et son organisation (cliquez sur l’organisation pour ouvrir sa page);
-- Pour tout le ménage, ou Pour : suivi des personnes et des animaux qu’il sert;
-- chaque téléphone, courriel et numéro, avec son libellé;
-- l’adresse, le site Web, les heures et les notes, s’ils sont remplis;
-- Conservé dans : le groupe de comptes où le contact est enregistré;
-- pour une organisation, Personnes : celles qui y travaillent, chacune avec sa ligne pour quoi (cliquez sur l’une pour l’ouvrir);
+- le nom, avec **Modifier**, **Fusionner avec…** et **Supprimer** pour les utilisateurs qui peuvent modifier le contact ;
+- la ligne pour quoi, sous la forme Pour : REER et CELI ;
+- les types ;
+- pour une personne, sa fonction et son organisation (cliquez sur l’organisation pour ouvrir sa page) ;
+- Pour tout le ménage, ou Pour : suivi des personnes et des animaux qu’il sert ;
+- chaque téléphone, courriel et numéro, avec son libellé ;
+- l’adresse, le site Web, les heures et les notes, s’ils sont remplis ;
+- Conservé dans : le groupe de comptes où le contact est enregistré ;
+- pour une organisation, Personnes : celles qui y travaillent, chacune avec sa ligne pour quoi (cliquez sur l’une pour l’ouvrir) ;
 - Liens, regroupés par rôle.
 
 ### Afficher un numéro {#show-number}
@@ -214,7 +214,7 @@ Chaque nouveau contact est lié à sa provenance, et plus encore : une banque au
 
 ## Les contacts et le téléphone {#phone}
 
-@index: contacts du téléphone; RANN’s Roost Mobile; contacts sur le téléphone; nouveau contact du téléphone
+@index: contacts du téléphone; RANN's Roost Mobile; contacts sur le téléphone; nouveau contact du téléphone
 
 ### Les contacts envoyés au téléphone {#sent-to-phone}
 

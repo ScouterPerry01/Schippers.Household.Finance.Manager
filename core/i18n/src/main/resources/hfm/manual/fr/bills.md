@@ -251,7 +251,7 @@ Une facture variable ou estimée dont le montant n’a pas été indiqué est pa
 
 La ligne montre alors le montant sans « ≈ » sous **Montant dû**, et la prévision et les rappels l’utilisent. Rien n’est inscrit dans le compte avant que vous la marquiez payée. Pour inscrire ce que vous payez, utilisez **Marquer payée**.
 
-> Conseil : Quand vous numérisez ou importez une facture papier ou électronique dans l’écran Documents, Inscrire le montant sur cette facture fait la même chose et garde la facture avec l’échéance. Voir [Inscrire le montant sur une facture](documents#record-on-bill).
+> Conseil : Quand vous numérisez ou importez une facture papier ou électronique dans l’écran Documents, L’inscrire comme état de compte de cette facture inscrit le montant de la même façon, fait de l’échéance imprimée sur la facture celle de la période et garde la facture numérisée avec son état de compte. Voir [Inscrire le montant sur une facture](documents#record-on-bill).
 
 ### Sauter {#skip}
 

@@ -230,17 +230,7 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         else -> r.detail
     }
 
-    fun renewalSection(kind: RenewalKind): Section = when (kind) {
-        RenewalKind.PET_LICENCE, RenewalKind.PET_INSURANCE -> Section.PETS
-        RenewalKind.LOAN_RENEWAL -> Section.LOANS
-        RenewalKind.CARD_ANNUAL_FEE, RenewalKind.CARD_PAYMENT_DUE -> Section.ACCOUNTS
-        RenewalKind.MEDICAL_CLAIM -> Section.MEDICAL
-        RenewalKind.ASSET_WARRANTY, RenewalKind.INSURANCE_RENEWAL -> Section.ASSETS
-        RenewalKind.TAX_INSTALMENT -> Section.TAXES
-        RenewalKind.SECURITY_MATURITY -> Section.INVESTMENTS
-        RenewalKind.FUEL_ORDER -> Section.UTILITIES
-        else -> Section.VEHICLES
-    }
+    fun renewalSection(kind: RenewalKind): Section = renewalSectionOf(kind)
 
     /** "Garage: winter tires: tomorrow at 09:30". */
     fun describe(r: EventReminder): String {
@@ -308,4 +298,17 @@ class BooksModel(val session: HouseholdSession, private val app: AppState) {
         is AccessDeniedException -> t("error.accessDenied")
         else -> t("error.generic", e.message ?: e.javaClass.simpleName)
     }
+}
+
+/** The screen a renewal's reminder or calendar line opens. */
+internal fun renewalSectionOf(kind: RenewalKind): Section = when (kind) {
+    RenewalKind.PET_LICENCE, RenewalKind.PET_INSURANCE -> Section.PETS
+    RenewalKind.LOAN_RENEWAL -> Section.LOANS
+    RenewalKind.CARD_ANNUAL_FEE, RenewalKind.CARD_PAYMENT_DUE -> Section.ACCOUNTS
+    RenewalKind.MEDICAL_CLAIM -> Section.MEDICAL
+    RenewalKind.ASSET_WARRANTY, RenewalKind.INSURANCE_RENEWAL -> Section.ASSETS
+    RenewalKind.TAX_INSTALMENT -> Section.TAXES
+    RenewalKind.SECURITY_MATURITY -> Section.INVESTMENTS
+    RenewalKind.FUEL_ORDER -> Section.UTILITIES
+    else -> Section.VEHICLES
 }

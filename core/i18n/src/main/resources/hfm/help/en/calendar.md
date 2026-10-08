@@ -6,8 +6,8 @@ Besides the appointments you add, it shows:
 
 - Bills coming due, from Bills.
 - Health items that are due, from Health.
-- Renewals, such as insurance, registrations, warranties ending or a loan term ending.
-- Maintenance due on your vehicles and your home and assets.
+- Renewals, such as insurance, registrations, warranties ending, a loan term ending or the date to order fuel for a tank.
+- Maintenance due on your vehicles and your home and assets, including the seasonal checklist's tasks.
 - Each person's work and school hours, as a bar in the person's colour.
 
 Each of these has a button, such as Open bills or Open health, that takes you to the screen where it is managed.

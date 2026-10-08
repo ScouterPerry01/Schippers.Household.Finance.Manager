@@ -42,6 +42,16 @@ The words used in RANN's Roost and in this manual, with a short definition and t
 - **Set-aside**: money earmarked for a savings goal inside an account, by hand or on a schedule. See [Savings goals](goals).
 - **Net worth**: everything owned (accounts, investments, the home, vehicles and other assets) minus everything owed. See [Reports](reports).
 - **Reminder**: a notice of something coming due, shown in the banner at the top and as a computer notification. See [Finding your way](basics#reminders).
+- **Bill statement**: the bill a company sends for a period, recorded on the bill in the app: its number, amount, issue date, due date (which becomes that period's due date) and, for a utility, the meter readings. See [Statements](bills#statements).
+- **Instalments on set dates**: a bill, such as property taxes, whose due dates and amounts are the instalments printed on each statement; next year's are proposed from this year's until the new bill is entered. See [Property taxes and other instalments](bills#instalments).
+- **Bill lists**: the Home and Business categories and subcategories that classify bills, each subcategory paying into a spending category. See [Bill lists](categories#bill-lists).
+- **Business bill**: a bill classified Business, for one person's business; its payments count as that person's business expenses. See [Home or business, category and subcategory](bills#classification).
+- **Learned store**: a store or biller whose name, kind or category the app has learned from your corrections, to use on the next documents from it. See [Learning from your corrections](documents#learning).
+- **Brought-in calendar**: a calendar of a person's phone, such as their Google or Outlook calendar, shown read-only in the Calendar. See [Calendars from phones and files](calendar-sync).
+- **Both ways**: the phone setting that, besides bringing its calendars in, writes the household's coming appointments, hours and bills into a calendar on the phone. See [Both ways](phone-app#calendar-both-ways).
+- **Agenda (phone)**: the phone app's list of everything coming up in the next 60 days, day by day or by month. See [The agenda](phone-app#agenda).
+- **Leg**: the part of a trip with stops between two of them, with its own distance and purpose. See [Trip log](trips).
+- **Work share**: the work kilometres of a vehicle as a percentage of all the kilometres it was driven in the year, the share asked for when vehicle expenses are deducted. See [Trip log](trips).
 
 ## Banking and borrowing {#banking}
 
@@ -160,6 +170,9 @@ See [Taxes](taxes). In Quebec, provincial slips are called Relevés (RL).
 - **Dependant**: a person you support, such as a child or a parent, who may give you tax credits.
 - **Shared expense**: a cost paid by one person for several, to be divided among them. See [Family money](family).
 - **Allowance**: money given regularly to a child. See [Family money](family).
+- **Plan year**: the 12 months over which a health or dental plan counts its maximums and deductibles, and for some plans the deadline to claim; it may start on any date, such as July 1. See [Claim deadlines and reminders](medical#deadlines).
+- **Health Spending Account**: a yearly amount from an employer that pays back health and dental costs the other plans leave. See [Medical claims](medical).
+- **Cost base (of a home)**: the price paid plus the capital improvements, less the rebates and grants received on them; it matters if the home is sold and was not the principal residence every year. See [Projects tab](assets#projects-tab).
 
 ## Emergency and estate {#estate}
 

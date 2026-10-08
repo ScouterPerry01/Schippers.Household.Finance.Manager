@@ -49,6 +49,17 @@ On the **Agenda** tab:
 2. Click **Undo** if you marked the wrong one.
 3. Click **Edit** to change or delete the appointment.
 
+## On your phone {#phone}
+@index: phone agenda; phone calendars; Both ways
+
+Once a phone is paired, RANN's Roost Mobile shows what is coming up:
+
+1. Tap the calendar icon at the top of the Capture or Summary tab, or **See the agenda** on the Summary tab: the agenda lists the next 60 days, day by day or by month, with the appointments, hours, bills, refills and renewals sent from this computer.
+2. To bring your phone's own calendars in as well, open **Settings** on the phone, then **Calendars on this phone**, choose **Bring in only** and tick the calendars: they show in the agenda and come to the Calendar on this computer, read-only.
+3. Choose **Both ways** instead to also write the household's appointments, hours and bills into a calendar on the phone.
+
+See [The agenda](phone-app#agenda) and [Calendars from phones and files](calendar-sync).
+
 ## Next {#next}
 
 - [Bills](bills): the due dates on the calendar and how to mark them paid.

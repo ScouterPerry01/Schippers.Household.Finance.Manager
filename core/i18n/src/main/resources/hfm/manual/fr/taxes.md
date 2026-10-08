@@ -34,7 +34,7 @@ Une grande partie de ce qu’affiche cet écran vient de la façon dont les opé
 
 L’onglet **Feuillets** est une liste de contrôle des feuillets que chaque personne devrait recevoir pour l’année d’imposition, établie à partir des livres, plus ceux que vous ajoutez à la main. La plupart des feuillets arrivent d’ici la fin février ; les T3 et les Relevés 16, d’ici le 31 mars.
 
-La liste est regroupée par personne, le ménage en dernier. L’en-tête de chaque personne indique combien de feuillets sont arrivés, par exemple « 3 sur 5 reçus » ; les feuillets marqués non attendus ne sont pas comptés. Chaque feuillet affiche :
+La liste est regroupée par personne, le ménage en dernier. L’en-tête de chaque personne indique combien de feuillets sont arrivés, par exemple « 3 sur 5 reçus » ; les feuillets marqués non attendus ne sont pas comptés. Les colonnes ont pour en-têtes **Feuillet**, **De** et **État**. Chaque feuillet affiche :
 
 - sa sorte, par exemple « T4, revenus d’emploi » ;
 - de qui il vient (l’employeur, le payeur ou l’institution) ;
@@ -109,7 +109,7 @@ En haut, une carte par personne donne :
 
 Les totaux ne comptent que les dons en dollars canadiens.
 
-Sous les cartes, chaque don affiche sa date, la personne, l’organisme (ou le bénéficiaire), sa sorte et l’état du reçu, et son montant :
+Sous les cartes, sous les en-têtes **Date**, **Personne**, **Organisme ou parti** et **Montant**, chaque don affiche sa date, la personne, l’organisme (ou le bénéficiaire), sa sorte et l’état du reçu, et son montant :
 
 - **Reçu obtenu** : marqué reçu dans sa fenêtre, ou un fichier est joint à l’opération.
 - **Sur le feuillet T4 (case 46)** : un don retenu sur la paie (voir [Paie selon le talon de paie](taxes#pay-stub)) ; le T4 tient lieu de reçu. Un tel don affiche l’organisme tiré de la note de la ligne, par exemple « Centraide, par la paie de Acme ».
@@ -140,7 +140,7 @@ Chaque don a ses propres détails de reçu : quand un même paiement contient de
 
 Certaines personnes paient leur impôt pendant l’année par acomptes plutôt qu’à la production de la déclaration : habituellement celles dont l’impôt à payer à la production dépasse 3 000 $ (1 800 $ au Québec) cette année et l’une des deux années précédentes, comme les retraités ou les travailleurs autonomes. L’ARC et Revenu Québec envoient des rappels avec les montants. Les acomptes sont dus les 15 mars, 15 juin, 15 septembre et 15 décembre (dates conservées dans [Taux et règles](rates-rules)) ; un paiement fait le jour ouvrable suivant une fin de semaine ou un jour férié est à temps.
 
-L’onglet **Acomptes** énumère les acomptes de l’année d’imposition, regroupés par personne et par autorité, par exemple « Jean · Agence du revenu du Canada ». Cliquez sur l’en-tête, ou sur **Modifier** à côté, pour les changer. Chaque acompte affiche :
+L’onglet **Acomptes** énumère les acomptes de l’année d’imposition, regroupés par personne et par autorité, par exemple « Jean · Agence du revenu du Canada ». Cliquez sur l’en-tête, ou sur **Modifier** à côté, pour les changer. Les colonnes ont pour en-têtes **Échéance**, **État** et **Montant**. Chaque acompte affiche :
 
 - sa date d’échéance ;
 - son état : **Payé**, **Payé en partie** (avec la somme payée jusqu’ici, par exemple « 400,00 $ payé »), **À payer**, ou **En retard** en rouge quand la date est passée et qu’il n’est pas entièrement payé ;
@@ -186,7 +186,7 @@ L’onglet **Trousse de fin d’année** présente les montants de chaque person
 
 ![L’onglet Trousse de fin d’année](images/taxes-year-end.png)
 
-Chaque ligne affiche l’élément, sa provenance (un payeur, un compte, une période), la ligne ou le formulaire, et le montant. Les lignes de même provenance sont additionnées. Les montants dans d’autres devises sont convertis en dollars canadiens à la date de chaque opération. Les opérations propres aux régimes enregistrés sont exclues.
+Chaque ligne affiche, sous les en-têtes **Élément**, **Provenance**, **Ligne** et **Montant**, l’élément, sa provenance (un payeur, un compte, une période), la ligne ou le formulaire, et le montant. Les lignes de même provenance sont additionnées. Les montants dans d’autres devises sont convertis en dollars canadiens à la date de chaque opération. Les opérations propres aux régimes enregistrés sont exclues.
 
 « Rien pour cette année encore » signifie qu’aucune paie, déduction, aucun crédit ni feuillet n’a été inscrit pour l’année.
 

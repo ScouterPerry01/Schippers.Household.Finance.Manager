@@ -5,13 +5,14 @@ RANN's Roost can be used with the mouse or the keyboard. These are the shortcuts
 ## Anywhere in the household
 
 - F1: open this help.
+- Shift+F1: open the manual on the chapter for the screen shown.
 - Ctrl+F: go to the search box at the top of the window.
 
 ## In the search box
 
 - Enter: search. Type at least two characters.
 
-The results are grouped by kind: transactions, accounts, payees, categories, bills, institutions and documents. Click a result to open it where it lives.
+The results are grouped by kind: transactions, accounts, payees, categories, bills, institutions, documents and contacts. Click a result to open it where it lives.
 
 ## In an account's register
 
@@ -23,6 +24,16 @@ The form below the transactions, where you enter or edit a transaction, answers 
 ## In forms that open in a window
 
 - Escape: close the window without saving, the same as Cancel.
+
+## In a document's pages
+
+- Page Down and Page Up: next and previous page.
+- Ctrl+plus and Ctrl+minus, or Ctrl and the mouse wheel: zoom in and out. Ctrl+0: fit the page.
+
+## In the Manual window
+
+- Alt+Left and Alt+Right: back and forward.
+- Ctrl+F: search the manual.
 
 ## Tips
 

@@ -16,11 +16,13 @@ Les nouveaux documents attendent dans À vérifier. Choisissez Vérifier pour en
 
 - Avec une opération déjà inscrite du même montant, grâce à Joindre.
 - Ou choisissez Nouvelle opération à partir de ce document et indiquez le compte sous Payé avec.
-- S’il ressemble à l’une de vos factures, choisissez Inscrire le montant sur cette facture.
+- S’il ressemble à l’une de vos factures, choisissez L’inscrire comme état de compte de cette facture : son montant, son échéance, son numéro et les relevés de compteur vont sur la facture.
 - Ou choisissez Classer sans joindre et joignez-le plus tard, à l’arrivée du relevé.
 - Pour un reçu ou une facture détaillée, Détailler… permet de saisir ses articles, leurs catégories et les taxes de vente de chacun, sans IA : les taxes sont réparties sur les articles, et la nouvelle opération reçoit une ligne de ventilation par catégorie.
 
 La partie gauche de la fenêtre montre le document page par page : ◀ et ▶, ou les touches Pg préc. et Pg suiv., tournent les pages ; −, + et Ajuster (ou Ctrl avec la molette de la souris) règlent le zoom, et vous pouvez faire glisser une page agrandie.
+
+Quand vous corrigez le nom d’un commerce ou le type d’un document, les documents suivants de ce commerce reprennent vos choix. Commerces appris… montre ce qui a été appris ; Oublier l’annule pour un commerce.
 
 Cochez Conserver ce document pour les garanties et les preuves d’achat à garder pour de bon. Lire avec l’IA peut remplir les détails, si la lecture par IA est configurée.
 
@@ -30,7 +32,7 @@ Tous les documents permet de chercher dans le texte et de filtrer par date et pa
 
 ## Reçus par courriel
 
-Enregistrez un reçu reçu par courriel en fichier (.eml) depuis votre logiciel de courriel, puis importez-le, déposez-le ici ou placez-le dans le dossier surveillé. Ses pièces jointes PDF ou images deviennent des documents; un courriel sans pièce jointe est gardé en PDF de son texte, et le commerçant, la date et le total en sont lus. RANN’s Roost ne se connecte jamais à votre boîte de courriel.
+Enregistrez un reçu reçu par courriel en fichier (.eml) depuis votre logiciel de courriel, puis importez-le, déposez-le ici ou placez-le dans le dossier surveillé. Ses pièces jointes PDF ou images deviennent des documents ; un courriel sans pièce jointe est gardé en PDF de son texte, et le commerçant, la date et le total en sont lus. RANN's Roost ne se connecte jamais à votre boîte de courriel.
 
 ## Une facture qui ne correspond à aucune de vos factures
 

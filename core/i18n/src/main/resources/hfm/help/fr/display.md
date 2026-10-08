@@ -1,6 +1,6 @@
 # Affichage et accessibilité
 
-Affichage et accessibilité règle l’apparence de RANN’s Roost sur cet ordinateur. L’écran se trouve dans le groupe Réglages du menu. Chaque ordinateur garde son propre choix : un grand écran et un portable peuvent différer.
+Affichage et accessibilité règle l’apparence de RANN's Roost sur cet ordinateur. L’écran se trouve dans le groupe Réglages du menu. Chaque ordinateur garde son propre choix : un grand écran et un portable peuvent différer.
 
 ## Couleurs
 
@@ -14,6 +14,10 @@ Choisissez une taille de 90 % à 150 %. Tous les écrans grandissent avec elle, 
 
 Afficher les détails dans les notifications, coché par défaut, permet à une notification de l’ordinateur de nommer jusqu’à quatre rappels, comme une facture, un médicament ou un rendez-vous. Décochez-le si d’autres peuvent voir cet écran : les notifications indiquent alors seulement combien il y a de rappels de chaque sorte, comme Factures (2).
 
+## Guide Premiers pas
+
+Si vous avez masqué le guide Premiers pas du tableau de bord, Afficher de nouveau le guide Premiers pas le fait revenir. Il reste jusqu’à ce que ses étapes soient faites.
+
 ## Le menu
 
 Le menu peut être une liste à gauche, aux groupes repliables, ou une barre en haut aux menus déroulants. Utilisez Menu en haut au bas de la liste, ou Menu à gauche au bout de la barre. Le choix de chaque utilisateur est retenu sur cet ordinateur.
@@ -25,7 +29,7 @@ Tout fonctionne au clavier :
 - Tab et Maj+Tab passent d’un champ ou d’un bouton à l’autre.
 - Entrée ou Espace appuie sur un bouton.
 - Ctrl+F va à la recherche.
-- F1 ouvre cette aide, au sujet de l’écran affiché.
+- F1 ouvre cette aide, au sujet de l’écran affiché ; Maj+F1 ouvre le manuel.
 - Échap ferme une fenêtre.
 
 Les lecteurs d’écran, comme Narrateur ou NVDA sous Windows et Orca sous Linux, lisent les libellés des champs et des boutons, et disent si un groupe du menu est ouvert ou fermé.

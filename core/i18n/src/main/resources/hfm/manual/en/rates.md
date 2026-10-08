@@ -36,7 +36,7 @@ At the top of the screen:
 - **Update rates**: downloads the missing rates now, from the Bank of Canada and, if it is on, the second source. The result shows below it: "Rates are up to date.", the number of rates added, or "The rates could not be downloaded:" with the reason.
 - A note: amounts in other currencies are converted to the base currency at the Bank of Canada's daily rate, and rates you enter yourself are never replaced.
 
-Then one line per currency the household needs: the currencies of accounts and investments, and the currencies you follow. Each line shows:
+Then one line per currency the household needs: the currencies of accounts and investments, and the currencies you follow, under the column headings Currency, Rate, Date and source, and Actions. See [Lists and their columns](basics#lists). Each line shows:
 
 - The currency code, such as USD.
 - The latest rate of the last 30 days, in Canadian dollars per unit, such as "1.3642 $ CA per USD". Rates are shown with six significant digits; the full value is kept for conversions.
@@ -96,7 +96,7 @@ When a feed is on, its prices are also downloaded each time the household is ope
 
 ### Crypto-assets held {#coins}
 
-Shown when a wallet holds a crypto-asset. One line per coin:
+Shown when a wallet holds a crypto-asset, under the column headings Currency, Price, CoinGecko name and Actions. One line per coin:
 
 - The coin's code, its latest price in Canadian dollars with its date and source, or "No rate yet".
 - **CoinGecko name**: the name CoinGecko uses for the coin, the one in the coin's address on coingecko.com, such as bitcoin or ethereum. The usual coins are filled in already; enter it for others, or to correct one.
@@ -106,7 +106,7 @@ A coin with no CoinGecko name is listed as not available when prices are downloa
 
 ### Precious metal spot prices {#metals}
 
-One line per metal (Gold, Silver, Platinum, Palladium) with its latest price per troy ounce in Canadian dollars, its date, and whether it is a market price or entered by hand, or "No rate yet".
+Under the column headings Metal and Spot price, one line per metal (Gold, Silver, Platinum, Palladium) with its latest price per troy ounce in Canadian dollars, its date, and whether it is a market price or entered by hand, or "No rate yet".
 
 To enter a price yourself:
 
@@ -119,7 +119,7 @@ Prices are for one troy ounce (31.1035 g) of pure metal. Coins and bars on the [
 
 ## Recent rates {#recent-rates}
 
-Click **Recent rates** on a currency's line. The bottom of the screen shows "Recent rates for" the currency: every rate of the last 60 days, newest first, with its date, its value and its source.
+Click **Recent rates** on a currency's line. The bottom of the screen shows "Recent rates for" the currency: every rate of the last 60 days, newest first, under the column headings Date, Rate, Source and Actions.
 
 - **Delete**: shown only for rates entered by hand. Removes that day's rate at once. Downloaded rates cannot be deleted.
 

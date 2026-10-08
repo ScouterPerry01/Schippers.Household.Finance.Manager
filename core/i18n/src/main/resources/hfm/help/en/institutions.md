@@ -7,7 +7,7 @@ Institutions are the banks, credit unions, brokers and other companies that hold
 - Click Add.
 - Type the Name, for example Desjardins or TD Canada Trust.
 - Optionally add the Branch, the Institution number (3 digits) and the Transit number (5 digits). These are the same numbers printed on your cheques and on a direct deposit form.
-- Optionally add the Website, the Phone number and any notes.
+- Optionally add the Website, the Phone and any Notes.
 - Click Save.
 
 ## Change an institution

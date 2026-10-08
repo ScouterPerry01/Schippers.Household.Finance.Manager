@@ -1,10 +1,10 @@
 # Jumeler un téléphone
-@about: Reliez RANN’s Roost Mobile à cet ordinateur, pour qu’il puisse envoyer reçus et factures par votre Wi-Fi.
+@about: Reliez RANN's Roost Mobile à cet ordinateur, pour qu’il puisse envoyer reçus et factures par votre Wi-Fi.
 
 ## Sur le téléphone : installer et verrouiller {#install}
 @manual: phone-app#lock
 
-Installez RANN’s Roost Mobile sur votre téléphone Android et ouvrez-le. Il vous demande de choisir un NIP de 4 à 8 chiffres qui verrouille l’application : tapez-le, touchez **OK**, tapez-le de nouveau et touchez **OK**.
+Installez RANN's Roost Mobile sur votre téléphone Android et ouvrez-le. Il vous demande de choisir un NIP de 4 à 8 chiffres qui verrouille l’application : tapez-le, touchez **OK**, tapez-le de nouveau et touchez **OK**.
 
 Le téléphone doit être sur le même Wi-Fi que cet ordinateur.
 
@@ -21,7 +21,7 @@ Sur cet ordinateur, dans le menu, ouvrez **Réglages**, puis **Téléphones**. L
 @done: shown phones.pairing
 @manual: phones#pair
 
-Cliquez sur **Jumeler un téléphone**. Un code QR apparaît, valide 10 minutes. Si Windows demande s’il faut autoriser RANN’s Roost sur le réseau, autorisez-le sur les réseaux privés.
+Cliquez sur **Jumeler un téléphone**. Un code QR apparaît, valide 10 minutes. Si Windows demande s’il faut autoriser RANN's Roost sur le réseau, autorisez-le sur les réseaux privés.
 
 ## Sur le téléphone : numériser le code {#scan}
 @target: phones.pairing

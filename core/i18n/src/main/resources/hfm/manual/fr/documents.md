@@ -15,8 +15,9 @@ Chaque document passe par les trois mêmes étapes :
 
 Tant que vous ne l’avez pas classé, un document attend dans l’onglet **À vérifier**. Le nombre de documents en attente est affiché sur l’onglet et à côté de Documents dans le menu.
 
-L’écran comprend une barre de titre avec deux boutons, un court rappel de son fonctionnement, le message de la dernière importation et trois onglets : **À vérifier**, **Tous les documents** et **Anciens documents**.
+L’écran comprend une barre de titre avec trois boutons, un court rappel de son fonctionnement, le message de la dernière importation et trois onglets : **À vérifier**, **Tous les documents** et **Anciens documents**.
 
+- **Commerces appris…** : montre ce que l’application a appris de vos corrections, commerce par commerce, et permet d’oublier un commerce. Voir [Ce que l’application apprend de vos corrections](documents#learning).
 - **Dossier surveillé…** : ouvre les réglages du dossier importé automatiquement. Voir [Le dossier surveillé](documents#watched-folder).
 - **Importer des fichiers…** : ouvre une fenêtre où vous choisissez un ou plusieurs fichiers à importer. Pendant la lecture, le bouton affiche **Lecture…** et ne peut pas être cliqué de nouveau.
 
@@ -211,7 +212,7 @@ Sous la date et le total, une ligne peut montrer d’autres détails lus : le so
 
 Les relevés, les talons de paie et les relevés de prestations décrivent de nombreux montants, pas une seule opération ; la section **Classer avec** n’apparaît donc pas pour eux.
 
-Les choix de classement suivent tout de suite le type choisi dans la fenêtre, avant même qu’il soit enregistré : changez un reçu pour **Facture** et **Inscrire le montant sur cette facture** apparaît quand l’application trouve la facture ; changez-le pour **Talon de paie** et **Inscrire la paie…** apparaît. Le type lui-même est enregistré quand vous utilisez un bouton de classement ou **Enregistrer**.
+Les choix de classement suivent tout de suite le type choisi dans la fenêtre, avant même qu’il soit enregistré : changez un reçu pour **Facture** et **L’inscrire comme état de compte de cette facture** apparaît quand l’application trouve la facture (ou **Créer une facture à partir de ceci** quand elle n’en trouve aucune) ; changez-le pour **Talon de paie** et **Inscrire la paie…** apparaît. Le type lui-même est enregistré quand vous utilisez un bouton de classement ou **Enregistrer**.
 
 ### Ce que l’application apprend de vos corrections {#learning}
 @index: apprentissage; noms de commerces; catégorisation automatique des reçus

@@ -251,7 +251,7 @@ A variable or estimated bill whose amount was not set is paid in full by the amo
 
 The line then shows the amount without "≈" under **Amount due**, and the forecast and reminders use it. Nothing is recorded in the account until you mark it paid. To record what you pay, use **Mark paid**.
 
-> Tip: When you scan or import a paper or e-bill on the Documents screen, Record the amount on this bill does the same thing and keeps the bill with it. See [Record the amount on a bill](documents#record-on-bill).
+> Tip: When you scan or import a paper or e-bill on the Documents screen, Record it as this bill's statement sets the amount the same way, makes the due date printed on the bill that period's due date, and keeps the scanned bill with its statement. See [Record the amount on a bill](documents#record-on-bill).
 
 ### Skip {#skip}
 

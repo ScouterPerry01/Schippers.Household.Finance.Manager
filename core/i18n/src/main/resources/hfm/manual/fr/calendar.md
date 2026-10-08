@@ -57,13 +57,14 @@ Marquées **Renouvellement**, les dates où quelque chose expire ou doit être r
 - une réclamation d’assurance à envoyer ([Réclamations médicales](medical)) ;
 - la fin de la garantie d’un bien de la maison, ou le renouvellement d’une police d’assurance ([Maison et biens](assets)) ;
 - un acompte provisionnel d’impôt ([Impôts](taxes)) ;
-- l’échéance d’une obligation ou d’un CPG que vous détenez, à partir de 30 jours avant (par défaut, réglable dans [Taux et règles](rates-rules)) et jusqu’à ce que son remboursement soit inscrit ([Placements](investments#security-dialog)).
+- l’échéance d’une obligation ou d’un CPG que vous détenez, à partir de 30 jours avant (par défaut, réglable dans [Taux et règles](rates-rules)) et jusqu’à ce que son remboursement soit inscrit ([Placements](investments#security-dialog)) ;
+- la date où commander du combustible pour un réservoir de propane ou de mazout, d’après son niveau prévu ([Services publics](utilities)).
 
 Le bouton de la ligne ouvre l’écran où l’élément est géré, comme **Ouvrir les véhicules**, **Ouvrir les prêts** ou **Ouvrir les placements**.
 
 ### L’entretien {#maintenance}
 
-Marquée **Entretien**, la prochaine échéance de chaque tâche d’entretien de vos véhicules, de votre maison et de vos autres biens, comme une vidange d’huile ou l’inspection de la fournaise. Le bouton ouvre [Véhicules](vehicles) ou [Maison et biens](assets).
+Marquée **Entretien**, la prochaine échéance de chaque tâche d’entretien de vos véhicules, de votre maison et de vos autres biens, comme une vidange d’huile ou l’inspection de la fournaise, y compris les tâches de la [liste saisonnière](assets#seasonal-tab). Dans le panneau Afficher, elles sont sous **Entretien et tâches saisonnières**. Le bouton ouvre [Véhicules](vehicles) ou [Maison et biens](assets).
 
 ## Les vues et les déplacements {#views}
 @index: vue Jour; vue Semaine; vue Mois; vue Année; aller à une date; sélecteur de date; aujourd’hui
@@ -301,7 +302,7 @@ Un rendez-vous marqué fait ou annulé ne donne aucun rappel. Les horaires de tr
 
 @index: rappel sur le téléphone; rendez-vous sur le téléphone
 
-Un téléphone jumelé reçoit à chaque transfert les rendez-vous des deux prochains mois, avec les moments de rappel que vous avez cochés, les renouvellements de médicaments à venir, et les heures de travail et d’école de chaque personne pour aujourd’hui et demain. Il vous rappelle les rendez-vous et les renouvellements à ces moments même quand l’ordinateur est éteint, et les liste sous **À venir** dans son onglet Résumé, les heures de la journée en premier. Seuls les rendez-vous, les médicaments et les horaires des comptes que l’utilisateur du téléphone peut voir sont envoyés : ceux, privés, d’un autre utilisateur restent hors de ce téléphone. Une modification faite sur l’ordinateur arrive sur le téléphone à son prochain transfert. Sur le téléphone, la notification d’un rendez-vous médical ne dit que « Rendez-vous santé » et le moment, et un renouvellement ne nomme aucun médicament. Voir [Notifications](phone-app#notifications).
+Un téléphone jumelé reçoit à chaque transfert les rendez-vous des deux prochains mois, avec les moments de rappel que vous avez cochés, les renouvellements de médicaments à venir, et les heures de travail et d’école de chaque personne pour les 60 prochains jours. Il vous rappelle les rendez-vous et les renouvellements à ces moments même quand l’ordinateur est éteint, les liste sous **À venir** dans son onglet Résumé (les heures d’aujourd’hui et de demain en premier), et les montre avec les autres échéances dans son [agenda](phone-app#agenda). Avec **Dans les deux sens** choisi sur le téléphone, il les écrit aussi dans un calendrier du téléphone (voir [Écrire dans un calendrier du téléphone](calendar-sync#both-ways)). Seuls les rendez-vous, les médicaments et les horaires des comptes que l’utilisateur du téléphone peut voir sont envoyés : ceux, privés, d’un autre utilisateur restent hors de ce téléphone. Une modification faite sur l’ordinateur arrive sur le téléphone à son prochain transfert. Sur le téléphone, la notification d’un rendez-vous médical ne dit que « Rendez-vous santé » et le moment, et un renouvellement ne nomme aucun médicament. Voir [Notifications](phone-app#notifications).
 
 ## Qui peut faire quoi {#permissions}
 

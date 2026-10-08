@@ -4,7 +4,7 @@ La section Véhicules suit chaque auto, camion ou autre véhicule : ses papiers,
 
 ## Ajouter un véhicule
 
-Choisissez Ajouter un véhicule. Inscrivez le nom que vous lui donnez, la marque, le modèle et l’année, la plaque, le NIV et le conducteur principal. Sous Immatriculation et assurance, inscrivez les dates de renouvellement. Un véhicule vendu ou retiré est caché; cochez Afficher les véhicules vendus ou retirés pour le revoir. L’onglet Aperçu montre ses renseignements et son odomètre. Choisissez Inscrire l’odomètre de temps en temps pour le tenir à jour.
+Choisissez Ajouter un véhicule. Inscrivez le nom que vous lui donnez, la marque, le modèle et l’année, la plaque, le NIV et le conducteur principal. Sous Immatriculation et assurance, inscrivez les dates de renouvellement. Un véhicule vendu ou retiré est caché ; cochez Afficher les véhicules vendus ou retirés pour le revoir. L’onglet Aperçu montre ses renseignements et son odomètre. Choisissez Inscrire l’odomètre de temps en temps pour le tenir à jour ; les pleins, les entretiens et les déplacements du registre des déplacements ajoutent aussi des lectures.
 
 ## Entretien
 
@@ -17,9 +17,13 @@ Choisissez Ajouter un véhicule. Inscrivez le nom que vous lui donnez, la marque
 - Dans l’onglet Carnet d’entretien, choisissez Ajouter un entretien. Cochez Inscrire aussi le paiement dans un compte pour inscrire en même temps ce que vous avez payé.
 - Dans l’onglet Carburant, choisissez Ajouter un plein, ou Ajouter une recharge pour un véhicule électrique. Cochez Plein fait ou Recharge complète s’il y a lieu. La consommation s’affiche après deux pleins complets avec la lecture de l’odomètre.
 
+## Prévisions
+
+L’onglet Prévisions estime la distance, le carburant ou la recharge et l’entretien des 3, 6 et 12 prochains mois, à partir de vos lectures récentes de l’odomètre, de la consommation et des prix. Proposer au budget propose des montants mensuels pour les catégories Transport.
+
 ## Garanties
 
-Dans l’onglet Garanties, choisissez Ajouter une garantie. Un rappel arrive 60 jours avant la fin d’une garantie.
+Dans l’onglet Garanties, choisissez Ajouter une garantie. Un rappel arrive 60 jours avant la fin d’une garantie, selon sa date ou le jour où l’odomètre devrait atteindre son kilométrage, pour signaler un problème pendant qu’elle couvre encore.
 
 ## Coûts
 

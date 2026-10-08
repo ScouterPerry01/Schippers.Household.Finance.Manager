@@ -4,7 +4,7 @@ Le tableau de bord est le premier écran qui s’affiche à l’ouverture du mé
 
 ## Le guide Premiers pas
 
-Dans un nouveau ménage, un guide Premiers pas s’affiche en haut. Il propose quelques étapes : les personnes du ménage, vos comptes, vos factures et votre paie, un premier reçu, un premier relevé rapproché, puis le téléphone (facultatif). Chaque étape a un bouton qui ouvre l’écran voulu. Le guide disparaît une fois les étapes faites; vous pouvez aussi choisir Masquer ce guide.
+Dans un nouveau ménage, un guide Premiers pas s’affiche en haut. Il propose quelques étapes : les personnes du ménage, vos comptes, vos factures et votre paie, un premier reçu, un premier relevé rapproché, puis le téléphone (facultatif). Chaque étape a un bouton qui ouvre l’écran voulu. Les guides Walk-Me du menu Aide vous accompagnent pas à pas dans chacune. Le guide disparaît une fois les étapes faites ; vous pouvez aussi choisir Masquer ce guide.
 
 ## Les tuiles
 
@@ -17,7 +17,7 @@ Une rangée de tuiles donne les chiffres principaux. Cliquez sur une tuile pour 
 
 ## À vérifier
 
-Cette liste regroupe ce qui vous attend : factures en retard, lignes de relevé qui demandent une décision, opérations sans catégorie, comptes non rapprochés depuis plus de 45 jours (nombre fixé dans Taux et règles), aucune sauvegarde réussie dans les 7 derniers jours, taux de change manquants et alertes réglées sur les comptes (solde bas, limite de carte, activité inhabituelle). Cliquez sur une ligne pour aller à l’écran où régler la question. Quand tout est réglé, la liste indique Rien à vérifier.
+Cette liste regroupe ce qui vous attend : factures en retard, lignes de relevé qui demandent une décision, opérations sans catégorie, comptes non rapprochés depuis plus de 45 jours (nombre fixé dans Taux et règles), aucune sauvegarde réussie dans les 7 derniers jours, taux de change manquants et compteurs à la consommation inhabituelle, sous les alertes réglées sur les comptes (solde bas, limite de carte, activité inhabituelle), en rouge en tête de liste. Cliquez sur une ligne pour aller à l’écran où régler la question. Quand tout est réglé, la liste indique Rien à vérifier.
 
 ## Les graphiques
 

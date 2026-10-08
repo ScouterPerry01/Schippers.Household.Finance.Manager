@@ -27,7 +27,7 @@ Les montants de cet écran sont dans la devise de base du ménage, sauf ceux des
 
 En haut, **Ajouter un bien** et **Afficher ceux vendus ou jetés** (décoché par défaut ; cochez-le pour inclure les biens que vous ne possédez plus).
 
-Les biens sont en ordre alphabétique, chacun sous le bien dont il fait partie, en retrait : la fournaise et le lave-vaisselle sous la maison, le moteur hors-bord sous le bateau. Chaque ligne affiche le nom (avec son statut s’il n’est plus possédé), le type, la marque, le modèle et l’emplacement, et à droite ce qu’il vaut aujourd’hui, ou le prix payé en gris quand sa valeur n’est pas suivie. Cliquez sur une ligne pour ouvrir le bien.
+Les biens sont en ordre alphabétique, chacun sous le bien dont il fait partie, en retrait : la fournaise et le lave-vaisselle sous la maison, le moteur hors-bord sous le bateau. Chaque ligne affiche le nom (avec son statut s’il n’est plus possédé), le type, la marque, le modèle et l’emplacement, et à droite ce qu’il vaut aujourd’hui, ou le prix payé en gris quand sa valeur n’est pas suivie ; les en-têtes sont **Nom** et **Valeur**. Cliquez sur une ligne pour ouvrir le bien.
 
 Quand la liste est vide : « Aucun bien pour l’instant : commencez par la maison, puis ajoutez les électroménagers, l’électronique et ce qui vaut la peine d’être assuré. »
 
@@ -108,7 +108,7 @@ Une fois le bien enregistré, **Garanties et couverture** énumère ce qui le co
 - chaque garantie que vous avez ajoutée (cliquez pour l’ouvrir) ;
 - pour un bien dont l’achat est lié à un paiement par carte de crédit, les avantages de la carte qui s’appliquent, comme la **Protection des achats** ou la **Garantie prolongée**, tels qu’inscrits pour la carte sous [Comptes](accounts).
 
-« Aucune garantie inscrite. » quand il n’y en a pas. **Ajouter une garantie** en ajoute une.
+Les en-têtes sont **Couverture** et **Fin**. « Aucune garantie inscrite. » quand il n’y en a pas. **Ajouter une garantie** en ajoute une.
 
 Un rappel arrive 60 jours avant la fin d’une garantie (délai par défaut, réglable dans [Taux et règles](rates-rules)) : il paraît en haut de la fenêtre et dans la notification du système, et mène à cet écran. Pour une garantie limitée en heures d’utilisation, la fin est la plus proche de sa date de fin et du jour où le compteur d’heures devrait atteindre la limite, à l’utilisation habituelle par jour du bien (voir [Lectures du compteur](assets#meter)).
 
@@ -152,7 +152,7 @@ Une fois un bien enregistré, le bas de sa boîte affiche **Entretien** : « Cha
 - **Ajouter une tâche** : voir [Ajouter ou modifier une tâche](assets#task-form).
 - **Saisir le compteur** et « Compteur : lecture » : affichés quand le bien a un compteur. Voir [Lectures du compteur](assets#meter).
 
-Chaque tâche active affiche son intervalle (avec « du 05-20 au 09-15 » pour une tâche limitée à une partie de l’année), « faite le date » (ou « à compter du date » tant qu’elle n’a jamais été faite), son état (**Prochaine**, **Bientôt** en gras, **À faire** en rouge) avec la date ou l’utilisation d’échéance, une prévision « à votre rythme habituel, vers le date » pour une tâche selon l’utilisation, et les boutons **Inscrire comme faite** et **Modifier**. Les tâches en pause suivent, marquées « (en pause) ». « Aucune tâche d’entretien pour l’instant. » quand il n’y en a pas.
+Les tâches sont listées sous les en-têtes **Tâche**, **Échéance** et **Actions**. Chaque tâche active affiche son intervalle (avec « du 05-20 au 09-15 » pour une tâche limitée à une partie de l’année), « faite le date » (ou « à compter du date » tant qu’elle n’a jamais été faite), son état (**Prochaine**, **Bientôt** en gras, **À faire** en rouge) avec la date ou l’utilisation d’échéance, une prévision « à votre rythme habituel, vers le date » pour une tâche selon l’utilisation, et les boutons **Inscrire comme faite** et **Modifier**. Les tâches en pause suivent, marquées « (en pause) ». « Aucune tâche d’entretien pour l’instant. » quand il n’y en a pas.
 
 Les règles qui décident quand une tâche est due sont les mêmes que pour les véhicules : voir [Quand une tâche est due](vehicles#task-due). Les heures ou les kilomètres remplacent l’odomètre.
 
@@ -201,7 +201,7 @@ Ces dates conviennent à la plus grande partie du sud du Canada ; ajustez-les à
 
 ### Carnet d’entretien {#service-log}
 
-Sous **Carnet d’entretien**, chaque entretien du bien, le plus récent d’abord : date, tâches faites (ou notes, ou « Entretien »), le fournisseur ou « Fait moi-même », la lecture du compteur, les pièces, « paiement inscrit », le coût et **Modifier**. **Inscrire un entretien** en ajoute un ; **Inscrire comme faite** sur une tâche ouvre le même formulaire avec la tâche cochée.
+Sous **Carnet d’entretien**, chaque entretien du bien, le plus récent d’abord : date, tâches faites (ou notes, ou « Entretien »), le fournisseur ou « Fait moi-même », la lecture du compteur, les pièces, « paiement inscrit », le coût et **Modifier**, sous les en-têtes **Date**, **Entretien**, **Coût** et **Actions**. **Inscrire un entretien** en ajoute un ; **Inscrire comme faite** sur une tâche ouvre le même formulaire avec la tâche cochée.
 
 ### Inscrire un entretien {#service-form}
 
@@ -232,7 +232,7 @@ Deux boutons choisissent jusqu’où regarder :
 - **Ce mois-ci** (par défaut) : les tâches bientôt dues ou en retard, et celles dont la prochaine échéance tombe d’ici la fin du mois.
 - **12 prochains mois** : aussi celles dont la prochaine échéance tombe dans l’année qui vient.
 
-Chaque ligne affiche la tâche, le bien ou le véhicule (marqué « véhicule »), son état et sa date ou son utilisation d’échéance, et une prévision pour les tâches selon l’utilisation. **Ouvrir** ouvre la boîte du bien, ou l’écran [Véhicules](vehicles) pour un véhicule. « Rien à faire. » quand la liste est vide.
+Chaque ligne affiche la tâche, le bien ou le véhicule (marqué « véhicule »), son état et sa date ou son utilisation d’échéance, et une prévision pour les tâches selon l’utilisation, sous les en-têtes **Tâche**, **Échéance** et **Actions**. **Ouvrir** ouvre la boîte du bien, ou l’écran [Véhicules](vehicles) pour un véhicule. « Rien à faire. » quand la liste est vide.
 
 Les tâches **Bientôt** et **À faire** paraissent aussi dans les rappels en haut de la fenêtre et dans la notification du système, et les prochaines échéances au [Calendrier](calendar).
 
@@ -245,7 +245,7 @@ Tout ce qu’il y a à faire dans une saison, sur les véhicules, la maison, le 
 
 En haut, un bouton par saison, la saison en cours d’abord et marquée « en cours », comme **Automne 2026 · en cours**, **Hiver 2026–2027**, **Printemps 2027** et **Été 2027**. Les autres saisons sont la prochaine fois qu’elles reviennent. En dessous, les dates de la saison (« Du 2026-09-22 au 2026-12-20 ») et l’avancement (« 7 sur 12 faites »), avec une barre, et les boutons **Imprimer** et **Enregistrer en PDF…**.
 
-Les tâches sont regroupées par véhicule ou par bien (un véhicule est marqué « véhicule »). Chaque ligne montre une case à cocher, la tâche, son échéance (« prévue le 2026-10-15 ») ou la date où elle a été faite (« faite le 2026-10-08 »), et son état :
+Les tâches sont regroupées par véhicule ou par bien (un véhicule est marqué « véhicule »), sous les en-têtes ✓ (lu **Fait**), **Tâche**, **Quand** et **État**. Chaque ligne montre une case à cocher, la tâche, son échéance (« prévue le 2026-10-15 ») ou la date où elle a été faite (« faite le 2026-10-08 »), et son état :
 
 - **Faite** : faite pendant cette saison. Elle reste dans la liste, cochée. Une tâche qui revient pendant la saison (un test hebdomadaire de la piscine, un filtre mensuel) n’est faite que pour cette fois : sa ligne indique « faite le 2026-06-25 · à refaire le 2026-07-02 », et à partir de cette date elle est de nouveau à faire, décochée, jusqu’à ce qu’on la coche de nouveau. Une tâche hebdomadaire n’est donc jamais faite pour toute la saison après une seule coche.
 - **En retard** : sa date d’échéance est passée et elle n’a pas été faite depuis ; dans la saison en cours, une tâche en retard d’avant le début de la saison est aussi listée.
@@ -283,7 +283,7 @@ Les saisons commencent aux dates astronomiques : le printemps le 20 mars, l’é
 
 « Les projets faits ou en cours sur une maison. Les améliorations en capital s’ajoutent à son prix de base, ce qui compte si la maison est vendue et n’a pas été la résidence principale chaque année. »
 
-En haut, **Ajouter un projet**. Pour chaque maison ou chalet qui a un prix payé ou des améliorations, une ligne « Maison : prix de base montant, dont des améliorations de montant », suivie de « moins montant en remises et subventions » quand des remises ont été reçues pour ses projets en capital. Puis les projets, chacun avec son nom, son état, sa maison, « Amélioration en capital » ou « Réparation », « rénovation écoénergétique : type » pour une rénovation écoénergétique, le budget et ce qui a été dépensé, en rouge quand le budget est dépassé. Cliquez sur un projet pour voir et ajouter ses coûts ; **Modifier** ouvre son formulaire. « Aucun projet pour l’instant. » quand il n’y en a pas.
+En haut, **Ajouter un projet**. Pour chaque maison ou chalet qui a un prix payé ou des améliorations, une ligne « Maison : prix de base montant, dont des améliorations de montant », suivie de « moins montant en remises et subventions » quand des remises ont été reçues pour ses projets en capital. Puis les projets, chacun avec son nom, son état, sa maison, « Amélioration en capital » ou « Réparation », « rénovation écoénergétique : type » pour une rénovation écoénergétique, le budget et ce qui a été dépensé, en rouge quand le budget est dépassé, sous les en-têtes **Projet**, **Dépensé** et **Actions**. Cliquez sur un projet pour voir et ajouter ses coûts ; **Modifier** ouvre son formulaire. « Aucun projet pour l’instant. » quand il n’y en a pas.
 
 ### Ajouter ou modifier un projet {#project-form}
 
@@ -299,7 +299,7 @@ En haut, **Ajouter un projet**. Pour chaque maison ou chalet qui a un prix payé
 
 ### Coûts d’un projet {#project-costs}
 
-Cliquez sur un projet pour ouvrir ses coûts. La ligne du haut indique « Dépensé montant sur un budget de montant ». Chaque coût affiche sa date, pour quoi, l’entrepreneur et le montant, avec **✕** pour le supprimer : il demande d’abord « Supprimer le coût « description » de montant? », et la fenêtre se ferme une fois le coût supprimé. Pour en ajouter un :
+Cliquez sur un projet pour ouvrir ses coûts. La ligne du haut indique « Dépensé montant sur un budget de montant ». Chaque coût affiche sa date, pour quoi, l’entrepreneur et le montant (en-têtes **Date**, **Description**, **Montant** et **Actions**), avec **✕** pour le supprimer : il demande d’abord « Supprimer le coût « description » de montant? », et la fenêtre se ferme une fois le coût supprimé. Pour en ajouter un :
 
 - **Date** : aujourd’hui par défaut.
 - **Pour quoi** : par exemple « Bardeaux » ou « Acompte ». S’il est vide, le nom du projet sert.
@@ -342,7 +342,7 @@ Le prix de base d’une maison est son **Prix payé** plus ce qui a été dépen
 ## Onglet Entrepreneurs {#contractors-tab}
 @index: corps de métier; plombier; électricien; couvreur; notes
 
-En haut, **Ajouter un entrepreneur** et **Afficher les archivés**. Chaque entrepreneur affiche le nom et le métier, le téléphone, le courriel et le site Web, la note moyenne en étoiles et le nombre de travaux, avec **Modifier**. Cliquez sur un entrepreneur pour voir et ajouter des travaux. « Aucun entrepreneur pour l’instant. » quand il n’y en a pas.
+En haut, **Ajouter un entrepreneur** et **Afficher les archivés**. Chaque entrepreneur affiche le nom et le métier, le téléphone, le courriel et le site Web, la note moyenne en étoiles et le nombre de travaux, avec **Modifier**, sous les en-têtes **Nom**, **Note**, **Travaux** et **Actions**. Cliquez sur un entrepreneur pour voir et ajouter des travaux. « Aucun entrepreneur pour l’instant. » quand il n’y en a pas.
 
 ### Ajouter ou modifier un entrepreneur {#contractor-form}
 
@@ -354,7 +354,7 @@ En haut, **Ajouter un entrepreneur** et **Afficher les archivés**. Chaque entre
 
 ### Travaux et notes {#jobs}
 
-Cliquez sur un entrepreneur pour ouvrir une boîte à son nom, qui énumère ses travaux : date, description, étoiles et coût, avec **✕** pour en supprimer un : il demande d’abord « Supprimer les travaux « travaux » du date? La note de l’entrepreneur est recalculée. », et la boîte se ferme une fois les travaux supprimés. Sous **De nouveaux travaux** :
+Cliquez sur un entrepreneur pour ouvrir une boîte à son nom, qui énumère ses travaux : date, description, étoiles et coût (en-têtes **Date**, **Travaux**, **Coût** et **Actions**), avec **✕** pour en supprimer un : il demande d’abord « Supprimer les travaux « travaux » du date? La note de l’entrepreneur est recalculée. », et la boîte se ferme une fois les travaux supprimés. Sous **De nouveaux travaux** :
 
 - **Date** : aujourd’hui par défaut.
 - **Travaux** : ce qui a été fait. Obligatoire.
@@ -390,7 +390,7 @@ Pour inscrire une réclamation de garantie, ouvrez le bien à l’onglet **Biens
 ## Onglet Assurances {#insurance-tab}
 @index: police d’assurance; assurance habitation; assurance locataire; assurance auto; assurance vie; assurance invalidité; primes
 
-En haut, **Ajouter une police**. Chaque police affiche son type et son assureur (« inactif » pour une police qui n’est plus en vigueur), le numéro de police, « renouvellement le date », « couvre montant », et la prime par année. Cliquez sur une police pour l’ouvrir. « Aucune police pour l’instant. » quand il n’y en a pas.
+En haut, **Ajouter une police**. Chaque police affiche son type et son assureur (« inactif » pour une police qui n’est plus en vigueur), le numéro de police, « renouvellement le date », « couvre montant », et la prime par année, sous les en-têtes **Police** et **Prime**. Cliquez sur une police pour l’ouvrir. « Aucune police pour l’instant. » quand il n’y en a pas.
 
 ![L’onglet Assurances](images/assets-insurance.png)
 
@@ -442,7 +442,7 @@ Les bénéficiaires sont inscrits pour mémoire ; c’est la désignation dépos
 
 ### Réclamations d’assurance {#insurance-claims}
 
-**Réclamations** énumère chaque réclamation avec sa date, sa description, son statut et le montant payé. **Ajouter une réclamation**, ou un clic sur une réclamation, ouvre **Réclamation d’assurance** :
+**Réclamations** énumère chaque réclamation avec sa date, sa description, son statut et le montant payé, sous les en-têtes **Réclamation** et **État**. **Ajouter une réclamation**, ou un clic sur une réclamation, ouvre **Réclamation d’assurance** :
 
 - **Date** : la date du sinistre ou de la réclamation ; aujourd’hui par défaut.
 - **Numéro de réclamation** : la référence de l’assureur.
@@ -456,7 +456,7 @@ Les bénéficiaires sont inscrits pour mémoire ; c’est la désignation dépos
 
 ### Non couverts par une police {#uninsured}
 
-« Biens et véhicules qu’aucune police active ne couvre, directement ou comme partie de quelque chose d’assuré (une police habitation couvre son contenu). » Une police compte tant qu’elle est active et que sa date de renouvellement n’est pas passée. Chaque article est en rouge avec sa valeur (ou son prix). Cochez l’article sous **Ce qu’elle couvre** dans la bonne police, ou prenez note que vous choisissez de ne pas l’assurer.
+« Biens et véhicules qu’aucune police active ne couvre, directement ou comme partie de quelque chose d’assuré (une police habitation couvre son contenu). » Une police compte tant qu’elle est active et que sa date de renouvellement n’est pas passée. Chaque article est en rouge avec sa valeur (ou son prix), sous les en-têtes **Article** et **Valeur**. Cochez l’article sous **Ce qu’elle couvre** dans la bonne police, ou prenez note que vous choisissez de ne pas l’assurer.
 
 ### Assurance vie et invalidité {#life-cover}
 

@@ -17,7 +17,7 @@ Cliquez sur Enregistrer après les avoir changés.
 
 ## Sauvegarder maintenant
 
-Cliquez sur Sauvegarder maintenant au besoin. L’écran indique la date de la dernière sauvegarde et tout problème survenu. La liste montre les sauvegardes du dossier; cliquez sur Vérifier à côté de l’une d’elles pour confirmer qu’elle est complète et lisible.
+Cliquez sur Sauvegarder maintenant au besoin. L’écran indique la date de la dernière sauvegarde et tout problème survenu. La liste montre les sauvegardes du dossier ; cliquez sur Vérifier à côté de l’une d’elles pour confirmer qu’elle est complète et lisible.
 
 Si aucune sauvegarde n’a réussi depuis 7 jours, le tableau de bord vous le rappelle.
 

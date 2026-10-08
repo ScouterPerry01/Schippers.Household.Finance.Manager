@@ -1,6 +1,6 @@
 # Pour commencer : maison et famille
 
-Le groupe **Maison et famille** du menu garde tout ce qui concerne les personnes, les animaux et les choses du ménage qui n’est pas un compte : santé, réclamations médicales, papiers en cas d’urgence, animaux, véhicules, déplacements et maison. Ce chapitre met chacun en route en quelques étapes. Faites-les dans l’ordre qui vous convient ; chaque partie fonctionne seule, et elles s’entraident une fois remplies. L’argent en famille, qui se trouve dans le groupe **Argent**, est présenté à la fin.
+Le groupe **Maison et famille** du menu garde tout ce qui concerne les personnes, les animaux et les choses du ménage qui n’est pas un compte : santé, réclamations médicales, papiers en cas d’urgence, animaux, véhicules, déplacements, la maison et sa liste saisonnière, les services publics et le bénévolat. Ce chapitre met chacun en route en quelques étapes. Faites-les dans l’ordre qui vous convient ; chaque partie fonctionne seule, et elles s’entraident une fois remplies. L’argent en famille, qui se trouve dans le groupe **Argent**, est présenté à la fin.
 
 ## Avant de commencer {#before}
 @index: membres du ménage; groupe privé
@@ -80,8 +80,28 @@ Détails : [Déplacements](trips).
 5. À l’onglet **Assurances**, choisissez **Ajouter une police** pour les polices habitation et auto, et cochez ce que chacune couvre. Vérifiez **Non couverts par une police**.
 6. Inscrivez les rénovations à l’onglet **Projets**, en cochant **Une amélioration en capital** s’il y a lieu, et les personnes qui ont fait les travaux à l’onglet **Entrepreneurs**.
 7. Chaque mois, consultez l’onglet **Entretien**.
+8. Au début de chaque saison, ouvrez l’onglet **Liste saisonnière** : il rassemble les tâches habituelles des véhicules et de chaque bien qui tombent pendant la saison. Cochez chacune une fois faite, ici ou sur le téléphone, ou imprimez la liste avec **Imprimer**.
 
-Détails : [Maison et biens](assets).
+Détails : [Maison et biens](assets) et [Onglet Liste saisonnière](assets#seasonal-tab).
+
+## Services publics {#utilities}
+@index: services publics; relevés de compteur; propane; mazout
+
+1. Ouvrez **Services publics** dans le groupe **Maison et famille**.
+2. À l’onglet **Compteurs**, choisissez **Ajouter un compteur** pour le compteur d’électricité, de gaz ou d’eau, et choisissez sa facture sous **Facture pour le coût unitaire** pour que la consommation ait un coût.
+3. Lisez le compteur de temps en temps et inscrivez le chiffre sous **Relevés**, **Nouveau relevé**, ou envoyez-le du téléphone. Les états de compte inscrits sur la facture du compteur, tapés ou lus sur une facture numérisée, ajoutent aussi leurs relevés datés.
+4. Pour le propane ou le mazout, choisissez **Ajouter un réservoir** à l’onglet **Réservoirs**, puis inscrivez les niveaux lus et les livraisons : l’application vous dit quand commander.
+
+Un mois qui consomme beaucoup plus que d’habitude est marqué **Inhabituel** et signalé au tableau de bord. Détails : [Services publics](utilities).
+
+## Bénévolat {#volunteer}
+@index: heures de bénévolat; pompier volontaire; heures communautaires
+
+1. Ouvrez **Bénévolat** dans le groupe **Maison et famille**.
+2. Choisissez **Ajouter des heures de bénévolat** et entrez la personne, l’organisme, le genre, la date et la durée, ou inscrivez-les à partir du téléphone.
+3. La carte de chaque personne fait le total de l’année. Les pompiers volontaires et les bénévoles en recherche et sauvetage voient où ils en sont des 200 heures qui donnent droit à un crédit d’impôt ; les élèves voient leurs heures communautaires.
+
+Détails : [Bénévolat](volunteer).
 
 ## Argent en famille {#family-money}
 
@@ -91,6 +111,7 @@ L’écran **Argent en famille**, dans le groupe **Argent**, garde l’argent en
 2. À l’onglet **Dépenses partagées**, créez un groupe pour un voyage ou un appartement partagé, puis ajoutez chaque dépense avec qui a payé et les parts.
 3. À l’onglet **Prêts en famille**, inscrivez l’argent prêté entre membres de la famille, puis ses remboursements.
 4. À l’onglet **Allocations**, établissez l’allocation de chaque enfant et marquez-la payée les jours d’allocation.
+5. À l’onglet **Tâches ménagères**, choisissez **Ajouter une tâche** pour les travaux de chaque enfant, qui valent un montant, des points ou les deux. Cochez **Faite aujourd’hui** chaque fois qu’elle est faite, ici ou sur le téléphone, et **Payer avec l’allocation** ajoute ce qui a été gagné à l’argent de l’enfant.
 
 Détails : [Argent en famille](family).
 

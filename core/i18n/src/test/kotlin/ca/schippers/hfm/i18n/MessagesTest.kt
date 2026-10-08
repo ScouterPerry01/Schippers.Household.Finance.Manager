@@ -53,7 +53,7 @@ class MessagesTest {
     @Test
     fun `French accents and apostrophes survive`() {
         assertEquals("RANN's Roost", Messages.get(Language.FRENCH, "app.name"))
-        assertEquals("Nom d'utilisateur", Messages.get(Language.FRENCH, "unlock.login"))
+        assertEquals("Nom d’utilisateur", Messages.get(Language.FRENCH, "unlock.login"))
         assertEquals("Au moins 12 caractères.", Messages.get(Language.FRENCH, "security.passwordRules.summary.length", 12))
     }
 

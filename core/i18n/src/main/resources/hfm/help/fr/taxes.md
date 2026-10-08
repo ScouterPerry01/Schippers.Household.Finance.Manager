@@ -21,7 +21,7 @@ Cliquez sur Prévoir des acomptes… et entrez les montants du rappel de l’ARC
 
 ## Trousse de fin d’année
 
-L’onglet Trousse de fin d’année montre les montants de chaque personne pour la déclaration, tirés des livres, avec la ligne fédérale de chacun. Choisissez l’année et la personne. Cliquez sur Dossier pour le comptable… pour enregistrer un dossier avec chaque sommaire et les feuillets et reçus classés, ou exportez un sommaire en PDF, Excel ou CSV.
+L’onglet Trousse de fin d’année montre les montants de chaque personne pour la déclaration, tirés des livres, avec la ligne fédérale de chacun. Choisissez l’année et la personne. Cliquez sur Dossier pour le comptable… pour enregistrer un dossier avec chaque sommaire et les feuillets et reçus classés, ou exportez un sommaire en PDF, Excel ou CSV. Des notes sous les lignes énumèrent les feuillets encore attendus et les heures de bénévolat de la personne pour l’année, en indiquant si le bénévolat comme pompier ou en recherche et sauvetage atteint les 200 heures que demandent les crédits d’impôt.
 
 ## Estimation
 

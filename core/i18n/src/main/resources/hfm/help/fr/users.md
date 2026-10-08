@@ -26,6 +26,6 @@ Dans l’onglet Accès, choisissez pour chaque personne et chaque groupe : Aucun
 
 ## Voir qui a fait quoi
 
-L’onglet Activité liste les changements faits dans le ménage. Un administrateur peut choisir l’activité de qui afficher; les autres voient la leur.
+L’onglet Activité liste les changements faits dans le ménage. Un administrateur peut choisir l’activité de qui afficher ; les autres voient la leur.
 
 Pour empêcher quelqu’un de se connecter sans le supprimer, modifiez l’utilisateur et décochez Peut se connecter.

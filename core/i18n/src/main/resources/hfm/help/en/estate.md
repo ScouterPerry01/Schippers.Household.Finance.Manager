@@ -16,7 +16,7 @@ Choose Add a person to list the people to call. Choose Keep it in to pick the gr
 
 ## Emergency summary
 
-The Emergency summary tab puts it all together: each person's papers and contacts, then the household's institutions, accounts with their balances and beneficiaries, insurance policies, pensions and documents kept for good.
+The Emergency summary tab puts it all together: each person's papers and contacts, then the household's institutions, accounts with their balances and beneficiaries, insurance policies, health and dental plans, pensions and documents kept for good.
 
 ## Hand it over
 

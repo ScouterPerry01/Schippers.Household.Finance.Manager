@@ -12,7 +12,7 @@ Choisissez Ajouter un animal. Inscrivez son nom, le type d’animal, la race, la
 - l’assurance pour animaux, avec l’assureur, le numéro de police et la date de renouvellement
 - le propriétaire : une personne ou tout le ménage
 
-Quand un animal ne fait plus partie du ménage, modifiez sa fiche et cochez N’est plus dans le ménage. Sa fiche est alors cachée; cochez Afficher les anciens animaux pour la revoir. Si vous supprimez un animal, les transactions inscrites pour lui sont conservées.
+Quand un animal ne fait plus partie du ménage, modifiez sa fiche et cochez N’est plus dans le ménage. Sa fiche est alors cachée ; cochez Afficher les anciens animaux pour la revoir. Si vous supprimez un animal, les transactions inscrites pour lui sont conservées.
 
 ## Dossier de santé et rendez-vous
 
@@ -21,4 +21,4 @@ Quand un animal ne fait plus partie du ménage, modifiez sa fiche et cochez N’
 
 ## Coûts
 
-Chaque fiche montre ce que l’animal a coûté cette année et dans les 12 derniers mois. Choisissez Coûts pour plus de détails. Les coûts viennent du registre : quand vous inscrivez une transaction, choisissez l’animal dans « Pour ».
+Chaque fiche montre ce que l’animal a coûté cette année et dans les 12 derniers mois. Choisissez Coûts pour plus de détails : par année et par catégorie, pour les cinq dernières années ou pour une année. Les coûts viennent du registre : quand vous inscrivez une transaction, choisissez l’animal dans « Pour ».

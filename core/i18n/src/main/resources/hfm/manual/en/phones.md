@@ -1,6 +1,6 @@
 # Phones
 
-On the Phones screen you pair RANN's Roost Mobile, the companion app for Android phones, with this computer, and manage the phones already paired. Paired phones send receipts, bills, other documents, quick expenses and odometer readings to this computer, and receive a summary of balances, bills and budgets in return. The screen is in the **Settings** group of the menu, under **Phones**.
+On the Phones screen you pair RANN's Roost Mobile, the companion app for Android phones, with this computer, and manage the phones already paired. Paired phones send receipts, bills, other documents, quick expenses, odometer readings, trips, fill-ups and charges, saved places, meter and tank readings, hours worked, chores, volunteer hours, seasonal tasks done, new contacts and the calendars their owner chooses to this computer. In return they receive a summary of balances, bills, budgets, appointments and other due dates, and the household's contacts. The screen is in the **Settings** group of the menu, under **Phones**.
 
 For the phone side, see [RANN's Roost Mobile](phone-app). For a short walk-through, see [Getting started with the phone app](start-phone).
 
@@ -15,7 +15,7 @@ For the phone side, see [RANN's Roost Mobile](phone-app). For a short walk-throu
 - Everything between the phone and this computer is encrypted with a key the two made when they were paired. No other phone or computer can read it.
 - Phones can reach this computer only while the household is open in RANN's Roost. Locking the household or closing the app stops the listener; the phone keeps its captures and sends them later.
 - Away from home, the phone can leave its captures, still encrypted, in a folder of your own cloud storage, which this computer watches (see [Away from home](#away-from-home)).
-- What arrives never goes straight into your books. Receipts, bills, documents and quick expenses wait on the **To review** tab of [Documents](documents); odometer and hour readings are added to the vehicle or equipment directly; new contacts wait for review on the [Contacts](contacts#from-phone) screen.
+- What arrives never goes straight into your books. Receipts, bills, documents and quick expenses wait on the **To review** tab of [Documents](documents); readings, trips, fill-ups, log entries and checklist ticks are recorded directly on their screens; new contacts wait for review on the [Contacts](contacts#from-phone) screen. See [What happens to what a phone sends](#received).
 
 @index: encryption; Wi-Fi; local network; home network; privacy
 
@@ -80,7 +80,7 @@ The buttons:
 ### Phone dialog {#phone-dialog}
 
 - **Name**: the name shown on the card, such as "Alex's phone". Required.
-- **Store in**: the account group the phone's receipts, bills, documents and quick expenses are stored in, and where its new contacts wait for review. Only groups you can add to are offered; a private group shows "(private)" after its name. Changing it affects what the phone sends from now on; documents already received stay where they are.
+- **Store in**: the account group the phone's receipts, bills, documents and quick expenses, its trips, places and log entries are stored in, and where its new contacts wait for review. Everyone who can open that group sees them. Only groups you can add to are offered; a private group shows "(private)" after its name. Changing it affects what the phone sends from now on; documents already received stay where they are.
 
 ## Away from home {#away-from-home}
 
@@ -123,12 +123,18 @@ While the household is open, RANN's Roost looks in the transfer folder every 20 
 - A voice note recorded with a capture is kept with its document; play it from the document's review window.
 - An odometer or hours reading is added to that vehicle's readings on the [Vehicles](vehicles) screen, or to that equipment's meter on [Home and assets](assets), with no review.
 - A contact added on the phone waits for review on the [Contacts](contacts#from-phone) screen, which shows **From the phone** and their number. Nothing becomes a contact until you add it, add its details to a contact you have, or discard it.
-- Each capture and each contact is received exactly once, even when the phone sends it again.
+- A trip, with its stops and breaks, goes to the [Trip log](trips#from-phone), and its odometer readings to the vehicle. Notes and photos taken on the way wait on the **To review** tab of Documents until the trip arrives, then are kept with it.
+- A fill-up or a charge goes to the vehicle's [Fuel tab](vehicles#fuel-tab), marked from the phone, with no payment entered.
+- A place saved or renamed on the phone joins the [Places](trips#places), before the trips that use it.
+- A meter or tank reading, hours worked, chores and volunteer hours are stored straight away on the [Utilities](utilities), [Side income](side#hours), [Family money](family#chores) and [Volunteer hours](volunteer) screens, marked from the phone.
+- A task ticked in the seasonal checklist becomes a service in the vehicle's or asset's service log, as if it had been ticked here.
+- A calendar brought in replaces the copy kept of it. See [Calendars from phones and files](calendar-sync).
+- Each capture, contact and entry is received exactly once, even when the phone sends it again. One that cannot be stored is refused with its reason, which the phone shows on its Sent tab.
 
 Review each document on the **To review** tab: attach it to a transaction, record it on a bill, or file it.
 
 ## What the phone receives {#sent-to-phone}
 
-After each transfer, the phone receives a fresh summary when anything in it changed: the household's name, the language the app is shown in on this computer, the base currency, your accounts and balances, the categories, up to 400 payees, the members and pets, the vehicles and metered equipment with their latest readings, the bills due in the next 60 days with their reminder days, this month's budgets for spending categories, the maintenance due this month, and the contacts. The phone shows it on its **Summary** tab and uses it for its reminders and pick lists. See [The Summary tab](phone-app#summary-tab).
+After each transfer, the phone receives a fresh summary when anything in it changed: the household's name, the language the app is shown in on this computer, the base currency, your accounts and balances, the categories, up to 400 payees, the members and pets, the vehicles and metered equipment with their latest readings, the bills due in the next 60 days with their reminder days, this month's budgets for spending categories, the maintenance due in the next 60 days, the appointments and events with their reminders, each person's work and school hours, the medication refills coming up, the renewals and fuel orders of the next 60 days, the season's checklist, the meters, tanks, clients, chores and organizations the log forms pick from, the saved places and trailers, and the contacts. Only what the phone's owner can see on this computer is sent. The phone shows it on its **Summary** tab and in its agenda, and uses it for its reminders and pick lists. See [The Summary tab](phone-app#summary-tab) and [The agenda](phone-app#agenda).
 
 The contacts are those the phone's owner can see on this computer, except archived ones: their name, organization or person, job title and organization, kinds, what for, the names of the people they serve, phones and emails with their labels, address, website, hours and notes. Account and client numbers are never sent, and neither are links to records. The phone shows them on its Contacts tab. See [Contacts sent to the phone](contacts#sent-to-phone).

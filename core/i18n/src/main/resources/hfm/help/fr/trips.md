@@ -8,7 +8,13 @@ Choisissez Ajouter un déplacement et entrez la date, la destination, les kilom�
 
 ## Déplacements du téléphone
 
-Un déplacement commencé sur le téléphone peut avoir plusieurs arrêts et pauses. Chaque arrêt donne un trajet avec sa propre distance et son propre motif, montré sous le déplacement et sur sa propre ligne dans le carnet de route ; les pauses sont exclues du temps de conduite. Les photos et notes prises en route s’ouvrent dans Documents.
+Un déplacement commencé sur le téléphone peut avoir plusieurs arrêts et pauses. Chaque arrêt donne un trajet avec sa propre distance et son propre motif, montré sous le déplacement et sur sa propre ligne dans le registre ; les pauses sont exclues du temps de conduite. Les photos et notes prises en route s’ouvrent dans Documents.
+
+## Lieux et registre
+
+Lieux garde les endroits où vous allez souvent (la maison, le bureau, un client, une station, un hôpital), avec leur province ou État et, pour le téléphone, leur position et leur rayon. Choisir un lieu sur un déplacement remplit le départ ou la destination. Registre montre les déplacements de l’année d’un véhicule comme l’ARC les demande, une ligne par trajet, avec la part de travail, et les enregistre en CSV, Excel ou PDF.
+
+Un déplacement avec l’odomètre aux deux bouts en tire sa distance, et ses lectures comptent comme lectures du véhicule. Les kilomètres sont aussi additionnés par province ou État, pour les déclarations de taxe sur les carburants.
 
 ## La part de travail d’un véhicule
 

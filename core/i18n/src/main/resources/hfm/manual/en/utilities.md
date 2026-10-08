@@ -18,7 +18,7 @@ New meters and tanks are kept in the first shared account group you may change; 
 
 Each meter is a card. Its first line names it; under it come what it measures, the home or cottage (or **Household**), **Time-of-use readings** when on, the last reading with its date and, when the meter has a bill, the cost per unit, such as "$0.1342 per kWh".
 
-Under it, one line per month, newest first, for the last thirteen months that have readings:
+Under it, one line per month, newest first, for the last thirteen months that have readings, under the headings **Month**, **Used**, **Last year**, **Change** and **Cost** ("Two readings are needed to show the use." until there are two):
 
 - the month, with **(part of the month)** when the readings do not cover all of its days (the first and the current month);
 - the use, in kWh for electricity and in cubic metres (m³) for gas and water;
@@ -44,7 +44,7 @@ The cost per unit is what the meter's bill came to over the last 12 months (the 
 - **Measures**: **Electricity** (kWh), **Natural gas** (m³) or **Water** (m³). It sets the unit shown.
 - **Home or cottage**: the home or cottage among your [assets](assets) (houses and cottages only), or **Household** when it belongs to none.
 - **Time-of-use readings**: for electricity only. Tick it when the meter keeps on-peak, mid-peak and off-peak totals, as in Ontario; each reading can then give the three registers.
-- **Bill for the cost per unit**: one of your [bills](bills), such as the electricity bill, or **None**. Without a bill, no cost is shown.
+- **Bill for the cost per unit**: one of your [bills](bills), such as the electricity bill, or **None**. Without a bill, no cost is shown. It is the same link as the **Meter** field of the bill form (see [Meter (Utilities)](bills#meter)): a meter has one bill, and the statements recorded for that bill add their dated readings to this meter.
 - **Notes**: anything to remember, such as where the meter is.
 - **Store in**: for a new meter, when you may change several account groups.
 - **Archived (no longer read)**: on an existing meter; it leaves the list unless **Show archived** is ticked, and the phone no longer offers it. Its readings stay.
@@ -61,7 +61,9 @@ Under the list, **New reading**:
 - **On-peak**, **Mid-peak**, **Off-peak**: with time of use only. Leave **Reading** empty to use the total of the three.
 - **Notes**: optional.
 
-**Add the reading** saves it; **Close** leaves without adding.
+**Add the reading** saves it; **Close** leaves without adding. The list is headed **Date**, **Reading** and **Actions**.
+
+Readings also come from the meter's bill: a [statement](bills#statements) with a current or previous reading and its date, typed or read from a scanned bill, adds that reading here, unless the meter already has a reading on that day. Deleting the statement leaves the reading.
 
 @index: time-of-use; on-peak; off-peak; mid-peak
 
@@ -88,6 +90,8 @@ The level today is the last reading plus the deliveries since, less the use per 
 
 ### Add a tank dialog {#tank-dialog}
 
+**Add a tank** opens it; **Edit the tank** on a card opens it for that tank.
+
 - **Name**: required; for example "Cottage propane".
 - **Fuel**: **Propane** or **Heating oil**.
 - **Home or cottage**: as for a meter.
@@ -106,8 +110,10 @@ The level today is the last reading plus the deliveries since, less the use per 
 
 - **Date** and **Litres**: required.
 - **Cost**: optional; it gives the price of a litre.
-- **Record the payment in an account**: with a cost, also records the payment in the account you choose (bank and credit card accounts), to the supplier, in the **Heating (gas, oil)** category, with the litres as memo.
+- **Record the payment in an account**: with a cost, also records the payment in the account you choose under **Paid from** (bank and credit card accounts), to the supplier, in the **Heating (gas, oil)** category, with the litres as memo.
 - **Notes**: optional.
+
+**Add the delivery** saves it (it needs permission to change records in the tank's group); **Close** leaves without adding. The list is headed **Date**, **Delivery** and **Actions**. A level read on the day of a delivery is taken as after it.
 
 Deleting a delivery asks first and offers to delete the payment recorded with it too.
 
