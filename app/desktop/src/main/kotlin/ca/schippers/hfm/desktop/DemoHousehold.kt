@@ -1075,7 +1075,7 @@ object DemoHousehold {
         accounts.filter { it.type == AccountType.RRSP || it.type == AccountType.TFSA }.forEach { contacts.link(advisor.id, LinkRole.ADVISOR, LinkTarget.ACCOUNT, it.id) }
 
         update(l("Dre Gagnon (GMF Limoilou)", "Dr. Patel (Glebe Family Health Team)")) {
-            it.copy(purpose = l("Médecin de famille de toute la famille", "Family doctor for all of us"), hours = l("Lun-ven 8 h-17 h; sans rendez-vous le samedi", "Mon-Fri 8-5; walk-in Saturday mornings"))
+            it.copy(purpose = l("Médecin de famille de toute la famille", "Family doctor for all of us"), hours = l("Lun-ven 8 h-17 h ; sans rendez-vous le samedi", "Mon-Fri 8-5; walk-in Saturday mornings"))
         }
         update(l("Pharmacie Jean Coutu", "Shoppers Drug Mart")) { it.copy(purpose = l("Ordonnances d’Alex et de Sam", "Alex's and Sam's prescriptions"), hours = l("Tous les jours 8 h-22 h", "Every day 8 a.m.-10 p.m.")) }
         update(l("Clinique dentaire Saint-Roch", "Elgin Street Dental")) { it.copy(purpose = l("Dentiste de la famille", "Family dentist")) }
