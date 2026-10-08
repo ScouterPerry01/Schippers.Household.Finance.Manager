@@ -330,6 +330,8 @@ Sans lieu enregistré ni nom, le déplacement garde l’adresse, sinon les coord
 
 @index: arrêt; pause; destination
 
+![Un déplacement en cours : un arrêt et une pause jusqu’ici, en route vers le chalet](images/phone-trip-underway.png)
+
 Avec un déplacement en cours, **Déplacement** ouvre **Déplacement en cours** :
 
 - Une carte rappelle le déplacement : le véhicule, quand et d’où il est parti, l’odomètre au départ et l’adresse, la remorque ou la charge, les passagers, puis chaque arrêt (« Arrêt à 10 h 40 : Client à Lévis (22 km) ») et chaque pause (« Pause de 9 h 26 à 9 h 41 »), et combien de notes et de photos ont été envoyées.
@@ -518,6 +520,8 @@ Les chiffres ne changent pas avant le prochain transfert. Touchez **Envoyer main
 L’icône de calendrier en haut à droite des onglets **Capturer** et **Résumé**, ou **Voir l’agenda** sous **À venir** dans l’onglet Résumé, ouvre en un seul endroit tout ce qui s’en vient dans les 60 prochains jours, aujourd’hui compris. Il ne fait qu’afficher : rien ne peut y être modifié. **Retour** ou le geste de retour d’Android ramène à l’onglet d’où vous venez ; toucher un onglet mène à cet onglet. Sous le titre, **De votre ordinateur** donne la date et l’heure du dernier transfert, comme dans le Résumé. Avant le premier transfert, l’agenda affiche **Jumelez votre ordinateur pour voir ici ses rendez-vous, factures et rappels.**
 
 Deux puces en haut choisissent la vue : **Agenda**, jour par jour, ou **Mois**.
+
+![L’agenda jour par jour : la tâche saisonnière, les horaires et une activité d’aujourd’hui](images/phone-agenda.png)
 
 ### Jour par jour {#agenda-days}
 

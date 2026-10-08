@@ -330,6 +330,8 @@ With no saved place and no name, the trip keeps the address, else the coordinate
 
 @index: stop; break; rest break; destination
 
+![A trip under way: a stop and a break so far, going to the cottage](images/phone-trip-underway.png)
+
 With a trip under way, **Trip** opens **Trip under way**:
 
 - A card recalls the trip: the vehicle, when and where it left, the odometer at the start and the address, the towing or load, the passengers, then each stop ("Stop at 10:40 a.m.: Client in Kanata (22 km)") and break ("Break from 9:26 a.m. to 9:41 a.m."), and how many notes and photos were sent.
@@ -518,6 +520,8 @@ The figures do not change until the next transfer. Tap **Send now** on the Sent 
 The calendar icon at the top right of the **Capture** and **Summary** tabs, or **See the agenda** under **Coming up** on the Summary tab, opens everything coming up in the next 60 days, today included, in one place. It only shows: nothing can be changed here. **Back** or Android's back gesture returns to the tab you came from; tapping any tab goes to that tab. Under the title, **From your computer** gives the date and time of the last transfer, as on the Summary. Before the first transfer, the agenda says **Pair with your computer to see its appointments, bills and reminders here.**
 
 Two chips at the top choose the view: **Agenda**, day by day, or **Month**.
+
+![The agenda, day by day: today's seasonal task, schedules and an activity](images/phone-agenda.png)
 
 ### Day by day {#agenda-days}
 
