@@ -8,13 +8,13 @@ owner's choices in Partner Center.
 - Website: https://www.rann.ca/rann-apps/rann-roost (source code: https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager)
 - Support contact: info-rann-apps@NorthMail.ca
 - Category: Personal finance
-- Screenshots: `docs/store/screenshots/desktop-en/` and `desktop-fr/` (1440 × 900, eight per language, in listing order: dashboard, credit card register, spending by category, income tax estimate, investments, contacts, medical claims, budgets). Retake them with `./gradlew :app:desktop:storeScreenshots -Plang=en` (then `fr`), which draws the sample household offscreen.
+- Screenshots: `docs/store/screenshots/desktop-en/` and `desktop-fr/` (1440 × 900, eight per language, in listing order: dashboard, credit card register, spending by category, income tax estimate, investments, all bills with their columns, medical claims, budgets). Retake them with `./gradlew :app:desktop:storeScreenshots -Plang=en` (then `fr`), which draws the sample household offscreen.
 
 ## English (en-CA)
 
 ### Short description (max 1,000)
 
-Your household's finances and family life, on your own computer. Accounts, budgets, bills, investments, registered plans, mortgages, taxes with an income tax estimate, medical claims, a family calendar with work and school schedules, seasonal checklists for the home, vehicle trips and fuel, utilities, contacts and everything you own, for every province and territory, in English and French. Your data stays encrypted on your computer: no account to create, no advertising, no analytics.
+Your household's finances and family life, on your own computer. Accounts, budgets, bills with their statements, investments, registered plans, mortgages, taxes with an income tax estimate, medical claims, a family calendar with work and school schedules, seasonal checklists for the home, vehicle trips and fuel, utilities, contacts and everything you own, for every province and territory, in English and French, with step-by-step guides for the common tasks. Your data stays encrypted on your computer: no account to create, no advertising, no analytics.
 
 ### Description (max 10,000)
 
@@ -25,12 +25,14 @@ EVERYDAY BOOKS
 • Import statements (OFX, QFX, QBO and CSV) and your full history from Quicken, GnuCash or Moneydance (QIF). Categories filled in from a payee's habits are marked so you can review them in one pass.
 • Reconcile each statement to the cent: automatic matching, one statement line matched to several transactions or the reverse, a running difference and a saved report.
 • Categories, rules, split transactions, transfers, named templates, changes to many transactions at once and fast keyboard entry.
-• Bills and subscriptions with reminders, budgets with rollover, savings goals inside an account, and alerts for a low balance, a card near its limit or unusual activity.
+• Bills and subscriptions with reminders, each one Home or Business with its category, the account number with the company and every statement received. A utility bill's meter readings go to its meter. Pay a bill in part and the rest stays due; property taxes and other bills paid in instalments roll over to next year until the new statement comes.
+• Budgets with rollover, savings goals inside an account, and alerts for a low balance, a card near its limit or unusual activity.
 • A cash flow forecast of your bank accounts over the coming weeks.
 
 RECEIPTS AND DOCUMENTS
 • Receipts, bills and statements read on your computer, from the phone or from saved emails, kept in an encrypted vault and matched to their transactions.
 • Optional AI reading with your own Anthropic account and key: receipts split by item with their sales taxes, and bank, card and investment statements read into the books. It is off until you turn it on; you see each page, can hide any part of it, and nothing is sent until you choose Send.
+• Every page of a document, with zoom, and receipts itemized by hand into split lines with their sales taxes, without AI reading.
 
 TAXES
 • One Taxes screen: the slips each person should receive (T4, T5, T3, RL slips and more), donations and their receipts, instalments, and a year-end package for your return or your accountant.
@@ -60,10 +62,12 @@ HOME, HEALTH AND FAMILY
 CALENDAR
 • Agenda, day, week, month and year views, with appointments, bills, refills, renewals and maintenance, shown or hidden by kind and by person.
 • Work and school schedules for each person, weekly or on a rotation for shift work, with holidays and exceptions, and children's activities with who drives each way and what they cost.
-• Each person can bring in the calendars their phone already shows (Google, Outlook and others), each kept private, shown to others as busy only, or shared. Calendar files (.ics) can be imported too.
+• Each person can bring in the calendars their phone already shows (Google, Outlook and others), each kept private, shown to others as busy only, or shared. If they choose both ways, the phone also writes the household's appointments, hours and bills into a calendar they pick. Calendar files (.ics) can be imported too.
+• On the phone, an agenda of the coming 60 days, from the calendar icon: events, schedules, bills, refills, maintenance and renewals.
 
 VEHICLES AND TRIPS
-• Trips started and ended on the phone, with saved places: one location fix at each end, never in the background. Distance comes from the odometer, and the purpose is suggested from the place.
+• Trips started and ended on the phone, with several stops, rest breaks, notes and photos: a location fix at the start, at each stop and at the end, never in the background. Addresses come from saved places, are typed, or are looked up if you turn that on. Distance comes from the odometer, and the purpose is suggested from the place.
+• Fuel stations and EV chargers nearby, from OpenStreetMap, if you turn it on; a station can also be added by hand.
 • Fuel and charging entered on the phone, with consumption shown separately for normal driving, towing and heavy loads, and the cost per km of charging compared with fuel.
 • A forecast of each vehicle's fuel or charging and maintenance for the coming months, from your recent driving.
 • A CRA logbook for a vehicle's work share, kilometres per province, inspection reminders, and medical travel.
@@ -74,12 +78,12 @@ REPORTS
 
 THE WHOLE HOUSEHOLD
 • Several users, each with their own password, and private account groups that other users cannot open.
-• RANN's Roost Mobile, the free Android companion, photographs receipts and bills, notes quick expenses and voice notes, logs trips, fill-ups, meter readings, hours worked, chores and volunteer hours, ticks off the seasonal checklist, shows what is coming up, today's schedules and the month's budgets, and reminds you of bills, appointments and refills. It sends to your computer over your home Wi-Fi, or through a cloud folder or email of your own, encrypted end to end.
+• RANN's Roost Mobile, the free Android companion, photographs receipts and bills, notes quick expenses and voice notes, logs trips, fill-ups, meter readings, hours worked, chores and volunteer hours, ticks off the seasonal checklist, shows the agenda of the coming two months and the month's budgets, and reminds you of bills, appointments and refills. It locks after the time you choose and speaks English or French, whatever the phone's language. It sends to your computer over your home Wi-Fi, or through a cloud folder or email of your own, encrypted end to end.
 • Encrypted scheduled backups, tested after every backup, and a full export in open formats.
-• A built-in manual with pictures, help for every screen and a getting started guide.
+• A built-in manual with pictures, help for every screen, a getting started guide, a Help menu, and Walk-Me guides that lead you step by step through common tasks, from creating the household to the year-end tax package.
 
 PRIVATE BY DESIGN
-Your data is encrypted with AES-256 and stays on your computer: there is no RANN account, no RANN cloud, no advertising and no analytics. Price downloads and AI reading stay off until you turn them on. RANN's Roost does not connect to your bank: you import the statements your bank provides.
+Your data is encrypted with AES-256 and stays on your computer: there is no RANN account, no RANN cloud, no advertising and no analytics. Price downloads, AI reading and, on the phone, address lookup and stations nearby stay off until you turn them on. RANN's Roost does not connect to your bank: you import the statements your bank provides.
 
 Tax figures, including the income tax estimate, are organizational aids, not tax advice. RANN's Roost is free software (GPL-3.0); its source code is on GitHub.
 
@@ -88,36 +92,41 @@ Tax figures, including the income tax estimate, are organizational aids, not tax
 First release of RANN's Roost, for the whole household's finances on your own computer.
 
 Also in this first version:
-• A family calendar with agenda, day, week, month and year views, work and school schedules (shift rotations included) and children's activities with drivers and costs.
+• A family calendar (agenda, day, week, month, year), work and school schedules (shifts included) and children's activities.
 • Each person's phone calendars brought in, each kept private, busy only or shared.
 • Seasonal checklists across the home, cottage, vehicles, pools and yards, and energy upgrades with their rebates.
-• Trips logged on the phone with saved places, and fuel or charging with consumption by kind of driving.
+• Fuel or charging with consumption by kind of driving.
 • Vehicle forecasts of fuel, charging and maintenance, and a CRA logbook.
 • Utility meters and propane or oil tanks.
 • Hours worked turned into invoices, children's chores and volunteer hours.
+• Bills classed Home or Business, with account numbers, statements, utility readings, payments in part and property taxes in instalments.
+• Trips with several stops, breaks, notes and photos, addresses, and stations nearby (opt-in).
+• On the phone: an agenda, calendars synced both ways (opt-in), the lock time and the app's language.
+• Documents page by page with zoom, and receipts itemized by hand.
+• A Help menu and Walk-Me guides for common tasks.
 
 ### Product features (up to 20, max 200 each)
 
 1. Bank accounts, credit cards, loans and investments in any currency, with Bank of Canada exchange rates
 2. Import OFX, QFX, QBO and CSV statements, and your Quicken, GnuCash or Moneydance history (QIF)
 3. Reconcile statements to the cent, with automatic matching and saved reports
-4. Bills, subscriptions, budgets, savings goals and account alerts, with reminders
+4. Bills Home or Business with statements, account numbers, payments in part and instalments; budgets, savings goals and alerts
 5. Income tax estimate for each person, for every province and territory, and a year-end package with slips and donations
-6. Optional AI reading of receipts and statements with your own Anthropic key; nothing is sent until you choose
+6. Optional AI reading of receipts and statements with your own Anthropic key, or receipts itemized by hand; nothing is sent until you choose
 7. Adjusted cost base and capital gains; RRSP, TFSA, FHSA, RESP, RRIF, LIF and pensions
 8. Mortgages with Canadian compounding, prepayments and renewals
 9. Medical plans and claims with coordination of benefits between spouses
 10. Family calendar: agenda, day, week, month and year views, work and school schedules, and children's activities
-11. Each person's phone calendars brought in, each kept private, shown as busy only or shared
+11. Each person's phone calendars brought in, each kept private, shown as busy only or shared, and synced both ways if they choose
 12. Seasonal checklists for the home, cottage, vehicles, pools and yards, and energy upgrades with their rebates
-13. Trips logged on the phone with saved places, and fuel or charging with consumption by kind of driving
+13. Trips on the phone with stops, breaks, notes and photos, stations nearby, and fuel or charging with consumption by kind of driving
 14. Vehicle forecasts of fuel, charging and maintenance, and a CRA logbook for a vehicle's work share
 15. Utility meters with unusual use flagged, and propane or oil tanks with a reminder to order
 16. Hours worked turned into invoices, children's chores toward their allowance, and volunteer hours
 17. Home inventory, warranties, insurance, contacts, and an emergency and estate summary as a protected PDF
 18. Custom, saved and scheduled reports with charts, exported to PDF, Excel or CSV
-19. Free Android companion: capture receipts, log trips and hours, see what is coming up and get reminders
-20. Several users, encrypted backups, and your data stays encrypted on your computer: no account, no RANN cloud, no ads
+19. Free Android companion: capture receipts, log trips and hours, see the agenda and get reminders
+20. Walk-Me guides, several users, encrypted backups; your data stays encrypted on your computer: no account, no RANN cloud, no ads
 
 ### Search terms (7 terms, max 30 characters each)
 
@@ -131,7 +140,7 @@ budget; personal finance; Quicken; income tax; RRSP TFSA; family calendar; milea
 
 ### Brève description (max 1 000)
 
-Les finances et la vie de famille de votre ménage, sur votre propre ordinateur. Comptes, budgets, factures, placements, régimes enregistrés, prêts hypothécaires, impôts avec une estimation de l'impôt sur le revenu, frais médicaux, un calendrier familial avec les horaires de travail et d'école, des listes saisonnières pour la maison, les trajets et le carburant des véhicules, les services publics, les contacts et tous vos biens, pour chaque province et territoire, en français et en anglais. Vos données restent chiffrées sur votre ordinateur : aucun compte à créer, aucune publicité, aucun outil d'analyse.
+Les finances et la vie de famille de votre ménage, sur votre propre ordinateur. Comptes, budgets, factures avec leurs relevés, placements, régimes enregistrés, prêts hypothécaires, impôts avec une estimation de l'impôt sur le revenu, frais médicaux, un calendrier familial avec les horaires de travail et d'école, des listes saisonnières pour la maison, les trajets et le carburant des véhicules, les services publics, les contacts et tous vos biens, pour chaque province et territoire, en français et en anglais, avec des guides pas à pas pour les tâches courantes. Vos données restent chiffrées sur votre ordinateur : aucun compte à créer, aucune publicité, aucun outil d'analyse.
 
 ### Description (max 10 000)
 
@@ -142,12 +151,14 @@ LA COMPTABILITÉ DE TOUS LES JOURS
 • Importation des relevés (OFX, QFX, QBO et CSV) et de tout votre historique de Quicken, GnuCash ou Moneydance (QIF). Les catégories reprises des habitudes d'un bénéficiaire sont marquées pour que vous les vérifiiez d'un seul coup.
 • Rapprochement de chaque relevé au cent près : jumelage automatique, une ligne de relevé jumelée à plusieurs opérations ou l'inverse, écart en continu et rapport enregistré.
 • Catégories, règles, opérations ventilées, virements, modèles nommés, modification de plusieurs opérations à la fois et saisie rapide au clavier.
-• Factures et abonnements avec rappels, budgets avec report, objectifs d'épargne à l'intérieur d'un compte, et alertes pour un solde bas, une carte près de sa limite ou une activité inhabituelle.
+• Factures et abonnements avec rappels, chacun Maison ou Entreprise avec sa catégorie, le numéro de compte chez l'entreprise et chaque relevé reçu. Les relevés de compteur d'une facture de services publics vont à son compteur. Payez une facture en partie et le reste demeure dû; les taxes municipales et autres factures payées par versements sont reportées à l'année suivante jusqu'à l'arrivée du nouveau relevé.
+• Budgets avec report, objectifs d'épargne à l'intérieur d'un compte, et alertes pour un solde bas, une carte près de sa limite ou une activité inhabituelle.
 • Une prévision de trésorerie de vos comptes bancaires pour les semaines à venir.
 
 REÇUS ET DOCUMENTS
 • Reçus, factures et relevés lus sur votre ordinateur, depuis le téléphone ou à partir de courriels enregistrés, gardés dans un coffre chiffré et jumelés à leurs opérations.
 • Lecture par IA facultative avec votre propre compte et votre propre clé Anthropic : reçus ventilés par article avec leurs taxes de vente, et relevés bancaires, de carte et de placement lus dans les livres. Elle reste désactivée tant que vous ne l'activez pas; vous voyez chaque page, pouvez en masquer toute partie, et rien n'est envoyé avant que vous choisissiez Envoyer.
+• Chaque page d'un document, avec zoom, et reçus détaillés à la main en lignes ventilées avec leurs taxes de vente, sans lecture par IA.
 
 IMPÔTS
 • Un seul écran Impôts : les feuillets que chaque personne devrait recevoir (T4, T5, T3, relevés RL et plus), les dons et leurs reçus, les acomptes, et une trousse de fin d'année pour votre déclaration ou votre comptable.
@@ -177,10 +188,12 @@ MAISON, SANTÉ ET FAMILLE
 CALENDRIER
 • Vues agenda, jour, semaine, mois et année, avec les rendez-vous, factures, renouvellements d'ordonnance, échéances et entretiens, affichés ou masqués par genre et par personne.
 • Horaires de travail et d'école de chaque personne, hebdomadaires ou en rotation pour le travail par quarts, avec jours fériés et exceptions, et activités des enfants avec qui conduit à l'aller et au retour et ce qu'elles coûtent.
-• Chacun peut apporter les calendriers que son téléphone affiche déjà (Google, Outlook et autres), chacun gardé privé, montré aux autres comme occupé seulement, ou partagé. Les fichiers de calendrier (.ics) peuvent aussi être importés.
+• Chacun peut apporter les calendriers que son téléphone affiche déjà (Google, Outlook et autres), chacun gardé privé, montré aux autres comme occupé seulement, ou partagé. S'il choisit les deux sens, le téléphone inscrit aussi les rendez-vous, horaires et factures du ménage dans un calendrier de son choix. Les fichiers de calendrier (.ics) peuvent aussi être importés.
+• Sur le téléphone, un agenda des 60 prochains jours, par l'icône de calendrier : événements, horaires, factures, renouvellements d'ordonnance, entretiens et échéances.
 
 VÉHICULES ET TRAJETS
-• Trajets commencés et terminés sur le téléphone, avec des lieux enregistrés : une position à chaque bout, jamais en arrière-plan. La distance vient de l'odomètre, et le motif est suggéré selon le lieu.
+• Trajets commencés et terminés sur le téléphone, avec plusieurs arrêts, des pauses, des notes et des photos : une position au départ, à chaque arrêt et à l'arrivée, jamais en arrière-plan. Les adresses viennent des lieux enregistrés, sont tapées, ou sont trouvées si vous l'activez. La distance vient de l'odomètre, et le motif est suggéré selon le lieu.
+• Stations-service et bornes de recharge à proximité, d'OpenStreetMap, si vous l'activez; une station peut aussi être ajoutée à la main.
 • Carburant et recharges saisis sur le téléphone, avec la consommation montrée à part pour la conduite normale, le remorquage et les charges lourdes, et le coût au kilomètre de la recharge comparé au carburant.
 • Une prévision du carburant ou de la recharge et de l'entretien de chaque véhicule pour les mois à venir, selon votre conduite récente.
 • Un registre de l'ARC pour l'usage professionnel d'un véhicule, les kilomètres par province, les rappels d'inspection et les déplacements médicaux.
@@ -191,12 +204,12 @@ RAPPORTS
 
 TOUT LE MÉNAGE
 • Plusieurs utilisateurs, chacun avec son mot de passe, et des groupes de comptes privés que les autres ne peuvent pas ouvrir.
-• RANN's Roost Mobile, le compagnon Android gratuit, photographie les reçus et les factures, note les dépenses rapides et les notes vocales, inscrit les trajets, les pleins, les relevés de compteur, les heures travaillées, les tâches ménagères et les heures de bénévolat, coche la liste saisonnière, montre ce qui s'en vient, les horaires du jour et les budgets du mois, et vous rappelle les factures, les rendez-vous et les renouvellements d'ordonnance. Il envoie à votre ordinateur par le Wi-Fi de la maison, ou par un dossier infonuagique ou un courriel à vous, chiffré de bout en bout.
+• RANN's Roost Mobile, le compagnon Android gratuit, photographie les reçus et les factures, note les dépenses rapides et les notes vocales, inscrit les trajets, les pleins, les relevés de compteur, les heures travaillées, les tâches ménagères et les heures de bénévolat, coche la liste saisonnière, montre l'agenda des deux prochains mois et les budgets du mois, et vous rappelle les factures, les rendez-vous et les renouvellements d'ordonnance. Il se verrouille après le délai choisi et parle français ou anglais, quelle que soit la langue du téléphone. Il envoie à votre ordinateur par le Wi-Fi de la maison, ou par un dossier infonuagique ou un courriel à vous, chiffré de bout en bout.
 • Sauvegardes chiffrées planifiées, vérifiées après chaque sauvegarde, et une exportation complète dans des formats ouverts.
-• Un manuel intégré avec images, de l'aide pour chaque écran et un guide de démarrage.
+• Un manuel intégré avec images, de l'aide pour chaque écran, un guide de démarrage, un menu Aide, et des guides Walk-Me qui vous mènent pas à pas dans les tâches courantes, de la création du ménage à la trousse fiscale de fin d'année.
 
 CONFIDENTIEL DÈS LA CONCEPTION
-Vos données sont chiffrées en AES-256 et restent sur votre ordinateur : pas de compte RANN, pas de nuage RANN, pas de publicité, pas d'outil d'analyse. Les téléchargements de cours et la lecture par IA restent désactivés tant que vous ne les activez pas. RANN's Roost ne se connecte pas à votre banque : vous importez les relevés qu'elle vous fournit.
+Vos données sont chiffrées en AES-256 et restent sur votre ordinateur : pas de compte RANN, pas de nuage RANN, pas de publicité, pas d'outil d'analyse. Les téléchargements de cours, la lecture par IA et, sur le téléphone, la recherche d'adresse et les stations à proximité restent désactivés tant que vous ne les activez pas. RANN's Roost ne se connecte pas à votre banque : vous importez les relevés qu'elle vous fournit.
 
 Les chiffres fiscaux, y compris l'estimation de l'impôt, sont une aide à l'organisation et non des conseils fiscaux. RANN's Roost est un logiciel libre (GPL-3.0); son code source est sur GitHub.
 
@@ -205,36 +218,41 @@ Les chiffres fiscaux, y compris l'estimation de l'impôt, sont une aide à l'org
 Première version de RANN's Roost, pour toutes les finances du ménage sur votre propre ordinateur.
 
 Aussi dans cette première version :
-• Un calendrier familial avec les vues agenda, jour, semaine, mois et année, les horaires de travail et d'école (rotations de quarts comprises) et les activités des enfants avec conducteurs et coûts.
+• Un calendrier familial (agenda, jour, semaine, mois, année), les horaires de travail et d'école (quarts compris) et les activités des enfants.
 • Les calendriers du téléphone de chaque personne, chacun privé, occupé seulement ou partagé.
 • Des listes saisonnières pour la maison, le chalet, les véhicules, la piscine et le terrain, et les rénovations écoénergétiques avec leurs remises.
-• Les trajets inscrits sur le téléphone avec des lieux enregistrés, et le carburant ou la recharge avec la consommation selon le genre de conduite.
+• Le carburant ou la recharge avec la consommation selon le genre de conduite.
 • Des prévisions de carburant, de recharge et d'entretien des véhicules, et un registre de l'ARC.
 • Les compteurs de services publics et les réservoirs de propane ou de mazout.
 • Les heures travaillées transformées en factures, les tâches des enfants et les heures de bénévolat.
+• Factures Maison ou Entreprise, avec numéros de compte, relevés, relevés de compteur, paiements partiels et taxes municipales par versements.
+• Trajets avec plusieurs arrêts, pauses, notes et photos, adresses, et stations à proximité (facultatif).
+• Sur le téléphone : un agenda, les calendriers synchronisés dans les deux sens (facultatif), le délai de verrouillage et la langue.
+• Documents page par page avec zoom, et reçus détaillés à la main.
+• Un menu Aide et des guides Walk-Me pour les tâches courantes.
 
 ### Caractéristiques du produit (jusqu'à 20, max 200 chacune)
 
 1. Comptes bancaires, cartes de crédit, prêts et placements dans toute monnaie, avec les taux de change de la Banque du Canada
 2. Importation des relevés OFX, QFX, QBO et CSV, et de votre historique Quicken, GnuCash ou Moneydance (QIF)
 3. Rapprochement des relevés au cent près, avec jumelage automatique et rapports enregistrés
-4. Factures, abonnements, budgets, objectifs d'épargne et alertes de compte, avec rappels
+4. Factures Maison ou Entreprise avec relevés, numéros de compte, paiements partiels et versements; budgets, objectifs d'épargne et alertes
 5. Estimation de l'impôt de chaque personne, pour chaque province et territoire, et trousse de fin d'année avec feuillets et dons
-6. Lecture par IA facultative des reçus et des relevés avec votre propre clé Anthropic; rien n'est envoyé sans votre choix
+6. Lecture par IA facultative des reçus et des relevés avec votre propre clé Anthropic, ou reçus détaillés à la main; rien n'est envoyé sans votre choix
 7. Prix de base rajusté et gains en capital; REER, CELI, CELIAPP, REEE, FERR, FRV et régimes de retraite
 8. Prêts hypothécaires avec l'intérêt composé à la canadienne, paiements anticipés et renouvellements
 9. Régimes et réclamations médicales avec coordination des prestations entre conjoints
 10. Calendrier familial : vues agenda, jour, semaine, mois et année, horaires de travail et d'école, et activités des enfants
-11. Les calendriers du téléphone de chaque personne, chacun gardé privé, montré comme occupé seulement ou partagé
+11. Les calendriers du téléphone de chaque personne, chacun gardé privé, montré comme occupé seulement ou partagé, et synchronisés dans les deux sens au choix
 12. Listes saisonnières pour la maison, le chalet, les véhicules, la piscine et le terrain, et rénovations écoénergétiques avec leurs remises
-13. Trajets inscrits sur le téléphone avec des lieux enregistrés, et carburant ou recharge avec la consommation selon le genre de conduite
+13. Trajets sur le téléphone avec arrêts, pauses, notes et photos, stations à proximité, et carburant ou recharge avec la consommation selon la conduite
 14. Prévisions de carburant, de recharge et d'entretien des véhicules, et registre de l'ARC pour l'usage professionnel d'un véhicule
 15. Compteurs de services publics avec la consommation inhabituelle signalée, et réservoirs de propane ou de mazout avec rappel de commander
 16. Heures travaillées transformées en factures, tâches des enfants pour leur allocation, et heures de bénévolat
 17. Inventaire de la maison, garanties, assurances, contacts, et sommaire d'urgence et de succession en PDF protégé
 18. Rapports personnalisés, enregistrés et planifiés avec graphiques, exportés en PDF, Excel ou CSV
-19. Compagnon Android gratuit : capturez vos reçus, inscrivez trajets et heures, voyez ce qui s'en vient et recevez des rappels
-20. Plusieurs utilisateurs, sauvegardes chiffrées, et vos données restent chiffrées sur votre ordinateur : pas de compte, pas de nuage RANN, pas de publicité
+19. Compagnon Android gratuit : capturez vos reçus, inscrivez trajets et heures, consultez l'agenda et recevez des rappels
+20. Guides Walk-Me, plusieurs utilisateurs, sauvegardes chiffrées; vos données restent chiffrées sur votre ordinateur : pas de compte, pas de nuage RANN, pas de publicité
 
 ### Termes de recherche (7 termes, max 30 caractères chacun)
 

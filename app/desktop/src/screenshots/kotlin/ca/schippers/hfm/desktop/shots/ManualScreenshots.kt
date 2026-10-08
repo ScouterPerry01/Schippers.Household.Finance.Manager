@@ -368,11 +368,8 @@ private val STORE_SHOTS: List<StoreShot> = listOf(
     StoreShot("3-reports", "3-rapports") { model.reportState.kind = ReportKind.SPENDING_BY_CATEGORY; section(Section.REPORTS) },
     StoreShot("4-taxes", "4-impots") { section(Section.TAXES); click(t("taxes.tab.ESTIMATE")) },
     StoreShot("5-investments", "5-placements") { section(Section.INVESTMENTS) },
-    StoreShot("6-contacts", "6-contacts") {
-        // The family doctor, with the people they serve and their links.
-        model.focusContactId = model.books.contacts.list().firstOrNull { it.name.startsWith(l("Dre Gagnon", "Dr. Patel")) }?.id
-        section(Section.CONTACTS)
-    },
+    // BILL-13 to BILL-23: every bill in the bill columns, Home or Business with its classification and account number, and instalments.
+    StoreShot("6-bills", "6-factures") { section(Section.BILLS); click(t("bills.tab.ALL")) },
     StoreShot("7-medical", "7-reclamations-medicales") { section(Section.MEDICAL) },
     StoreShot("8-budgets", "8-budgets") { section(Section.BUDGETS) },
 )

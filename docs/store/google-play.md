@@ -7,7 +7,7 @@ build is the `play` flavour: no update check and no permission to install packag
 - Contact email: info-rann-apps@NorthMail.ca
 - Category: Finance. Price: free (decided in the SRS, 16.2).
 - App icon: `branding/store/play-icon-512.png`. Feature graphic: `branding/store/play-feature-1024x500.png`.
-- Phone screenshots: `docs/store/screenshots/phone-en/` and `phone-fr/` (1080 × 2160, within Play's 2:1 limit; five per language: capture, summary, Coming up with refills, contacts, sent), taken on the emulator from the sample household (`tools/dev/README.md`).
+- Phone screenshots: `docs/store/screenshots/phone-en/` and `phone-fr/` (1080 × 2160, within Play's 2:1 limit; six per language: capture, summary, agenda, contacts, sent, trip under way), taken on the emulator from the sample household (`tools/dev/README.md`).
 
 ## English (en-CA)
 
@@ -31,11 +31,12 @@ CAPTURE ON THE SPOT
 • Add a new contact on the spot: your computer shows it for review.
 
 LOG AS YOU GO
-• Start and end a trip with its vehicle, driver and odometer, and a trailer or heavy load if any. The phone takes one location fix at each end, never in the background, and matches it to your saved places on the phone.
+• Start and end a trip with its vehicle, driver and odometer, and a trailer or heavy load if any. Stop at several places, take rest breaks, and add notes and photos on the way. The phone takes one location fix at the start, at each stop and at the end, never in the background, and matches it to your saved places on the phone.
+• If you turn them on: fuel stations and EV chargers nearby, from OpenStreetMap, and addresses looked up from a position through Android's geocoder. A station can also be added by hand.
 • Fill-ups and charges, utility meter readings and propane or oil tank levels.
 • Hours worked for a client, with a timer; children's chores ticked off; volunteer hours.
 • Tick off the season's maintenance checklist for the home, vehicles, pool and yard.
-• Bring in the calendars your phone already shows (Google, Outlook and others), each kept private, busy only or shared on the computer. The app never signs in to a calendar account.
+• Bring in the calendars your phone already shows (Google, Outlook and others), each kept private, busy only or shared on the computer. Or both ways: the household's appointments, hours and bills are also written into a calendar you choose. The app never signs in to a calendar account.
 
 SENT TO YOUR COMPUTER, NOT TO OUR CLOUD
 • Pair the phone once by scanning a code shown on your computer.
@@ -45,15 +46,16 @@ SENT TO YOUR COMPUTER, NOT TO OUR CLOUD
 
 AT A GLANCE
 • Your accounts, this month's budgets, bills coming due, appointments, medication refills, maintenance due and the season's checklist, and each person's work and school hours today and tomorrow, sent by your computer.
+• An agenda of the coming 60 days, from the calendar icon: events, hours, bills, refills, maintenance and renewals, beside your phone's own calendars.
 • The household's contacts: the doctor, the dentist, the bank or the contractor, with their phone numbers and addresses.
 • Reminders for bills, maintenance, appointments and refills, and a notice when a budget reaches 80 % and 100 %.
 
 PRIVATE
-• Locked by a PIN, with fingerprint or face unlock if you wish.
+• Locked by a PIN after the time you choose (at once, or after 1, 5 or 15 minutes), with fingerprint or face unlock if you wish.
 • No RANN account, no advertising, no analytics. Text is read on the phone by Google's ML Kit.
 • Every member of the household can pair their own phone; their captures go to their own inbox, and the phone shows only what they may see on the computer.
 
-In English and French, for every province and territory.
+In English and French, as you choose in Settings, for every province and territory.
 
 ## Français (fr-CA)
 
@@ -77,11 +79,12 @@ CAPTUREZ SUR LE MOMENT
 • Ajoutez un nouveau contact sur le moment : votre ordinateur vous le présente pour vérification.
 
 INSCRIVEZ AU FUR ET À MESURE
-• Commencez et terminez un trajet avec son véhicule, son conducteur et l'odomètre, et une remorque ou une charge lourde s'il y a lieu. Le téléphone prend une position à chaque bout, jamais en arrière-plan, et la jumelle à vos lieux enregistrés sur le téléphone.
+• Commencez et terminez un trajet avec son véhicule, son conducteur et l'odomètre, et une remorque ou une charge lourde s'il y a lieu. Arrêtez-vous à plusieurs endroits, prenez des pauses, et ajoutez des notes et des photos en route. Le téléphone prend une position au départ, à chaque arrêt et à l'arrivée, jamais en arrière-plan, et la jumelle à vos lieux enregistrés sur le téléphone.
+• Si vous les activez : les stations-service et bornes de recharge à proximité, d'OpenStreetMap, et les adresses trouvées à partir d'une position par le géocodeur d'Android. Une station peut aussi être ajoutée à la main.
 • Pleins et recharges, relevés des compteurs de services publics et niveaux des réservoirs de propane ou de mazout.
 • Heures travaillées pour un client, avec un chronomètre; tâches des enfants cochées; heures de bénévolat.
 • Cochez la liste d'entretien de la saison pour la maison, les véhicules, la piscine et le terrain.
-• Apportez les calendriers que votre téléphone affiche déjà (Google, Outlook et autres), chacun gardé privé, occupé seulement ou partagé sur l'ordinateur. L'application ne se connecte jamais à un compte de calendrier.
+• Apportez les calendriers que votre téléphone affiche déjà (Google, Outlook et autres), chacun gardé privé, occupé seulement ou partagé sur l'ordinateur. Ou dans les deux sens : les rendez-vous, horaires et factures du ménage sont aussi inscrits dans un calendrier de votre choix. L'application ne se connecte jamais à un compte de calendrier.
 
 ENVOYÉ À VOTRE ORDINATEUR, PAS À NOTRE NUAGE
 • Jumelez le téléphone une seule fois en numérisant un code affiché sur votre ordinateur.
@@ -91,15 +94,16 @@ ENVOYÉ À VOTRE ORDINATEUR, PAS À NOTRE NUAGE
 
 EN UN COUP D'ŒIL
 • Vos comptes, les budgets du mois, les factures à payer, les rendez-vous, les renouvellements d'ordonnance, l'entretien à faire et la liste de la saison, et les heures de travail et d'école de chacun aujourd'hui et demain, envoyés par votre ordinateur.
+• Un agenda des 60 prochains jours, par l'icône de calendrier : événements, horaires, factures, renouvellements, entretiens et échéances, à côté des calendriers de votre téléphone.
 • Les contacts du ménage : le médecin, le dentiste, la banque ou l'entrepreneur, avec leurs numéros de téléphone et leurs adresses.
 • Rappels de factures, d'entretien, de rendez-vous et de renouvellements, et un avis quand un budget atteint 80 % et 100 %.
 
 CONFIDENTIEL
-• Verrouillé par un NIP, avec déverrouillage par empreinte ou visage si vous le souhaitez.
+• Verrouillé par un NIP après le délai choisi (tout de suite, ou après 1, 5 ou 15 minutes), avec déverrouillage par empreinte ou visage si vous le souhaitez.
 • Pas de compte RANN, pas de publicité, pas d'outil d'analyse. Le texte est lu sur le téléphone par ML Kit de Google.
 • Chaque membre du ménage peut jumeler son propre téléphone; ses captures vont dans sa propre boîte de révision, et le téléphone ne montre que ce qu'il peut voir sur l'ordinateur.
 
-En français et en anglais, pour toutes les provinces et tous les territoires.
+En français et en anglais, au choix dans Réglages, pour toutes les provinces et tous les territoires.
 
 ## Data safety form
 
