@@ -3,7 +3,7 @@
 For the owner. Everything that touches a secret (the release key, the Android upload key, their
 passwords and the repository secrets) is done **in your own PowerShell window**, never in a Claude
 session and never with `!` in one. Commands assume the repository at
-`C:\Users\PSchi\source\repos\Schippers.Household.Finance.Manager` and Git, `gh` (signed in) and the
+`C:\Users\PSchi\source\repos\Rann.Roost` and Git, `gh` (signed in) and the
 JDK at `C:\Program Files\Android\openjdk\jdk-21.0.8`.
 
 Background: [ADR 0008](adr/0008-signed-releases-and-updates.md) (signed releases and update checks),
@@ -33,7 +33,7 @@ Keep the secret file offline (a USB key or your password manager) with a second 
 
 In your own PowerShell window:
 
-    cd C:\Users\PSchi\source\repos\Schippers.Household.Finance.Manager
+    cd C:\Users\PSchi\source\repos\Rann.Roost
     $env:JAVA_HOME = "C:\Program Files\Android\openjdk\jdk-21.0.8"
     .\gradlew :tools:release:run --args="keygen E:\RANN-keys\rann-release.key"
 
@@ -136,12 +136,12 @@ of the same commit instead (developer mode is on):
 
     .\gradlew :app:desktop:packageMsix
     Add-AppxPackage -Register app\desktop\build\msix\layout\AppxManifest.xml
-    $fam = (Get-AppxPackage RANN.SchippersHouseholdFinanceManager).PackageFamilyName
+    $fam = (Get-AppxPackage RANN.RannsRoost).PackageFamilyName
     Start-Process "shell:AppsFolder\$fam!RANNsRoost"
 
 - [ ] The welcome or unlock window opens (a "Failed to launch JVM" box means a JDK module is missing
       from the packaged runtime; see `suggestRuntimeModules` in the README).
-- [ ] Close it, then `Get-AppxPackage RANN.SchippersHouseholdFinanceManager | Remove-AppxPackage`.
+- [ ] Close it, then `Get-AppxPackage RANN.RannsRoost | Remove-AppxPackage`.
 
 The packaged app reads your real settings (recent households, language), but its writes are kept
 apart; your real household is not touched unless you open it.
@@ -151,7 +151,7 @@ apart; your real household is not touched unless you open it.
 Partner Center > Apps and games > **RANN's Roost** > Start submission (before the name reservation lapses).
 
 - [ ] **Packages:** upload `RANNsRoost-1.0.0-x64.msix` from the `msix` artifact. Partner Center checks
-      the identity (`RANN.SchippersHouseholdFinanceManager`, publisher `CN=A48DF0F5-…`) against the
+      the identity (`RANN.RannsRoost`, publisher `CN=A48DF0F5-…`) against the
       reservation; a mismatch means `app/desktop/packaging/msix/store-identity.properties` is out of date.
 - [ ] **Restricted capability `runFullTrust`:** explain that this is a desktop (Win32) app packaged as
       MSIX, which needs full trust to run.

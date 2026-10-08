@@ -285,7 +285,7 @@ The application was renamed RANN's Roost on 2026-10-03 (see the decisions log); 
 | Shared code | Plain Kotlin/JVM libraries rather than Kotlin Multiplatform modules; no visible difference to users. Converting is possible later if iPhone or web is ever wanted (ADR 0001) |
 | Windows Hello | NativeAOT helper exe with KeyCredentialManager-derived key; optional per-machine slot; Linux password only (ADR 0003) |
 | Desktop OCR | PaddleOCR PP-OCRv5 (latin) via ONNX Runtime; Tesseract not needed (ADR 0004) |
-| Microsoft Store | MSIX listing, first reserved as "Schippers Household Finance Manager" and now "RANN's Roost"; identity in `app/desktop/packaging/msix/store-identity.properties` |
+| Microsoft Store | MSIX listing "RANN's Roost", identity `RANN.RannsRoost` since 2026-10-08 (replaced the first product, `RANN.SchippersHouseholdFinanceManager`); identity in `app/desktop/packaging/msix/store-identity.properties` |
 | Android package | `ca.ranns.roost.mobile` since 2026-10-03 (was `ca.schippers.hfm.companion`, changed before anything was uploaded); permanent once uploaded to Google Play |
 | Support | GitHub Issues and info-rann-apps@NorthMail.ca (DIST-06) |
 | Windows Hello | Optional, off by default, opt-in per computer; low priority (the owner does not use it) |
