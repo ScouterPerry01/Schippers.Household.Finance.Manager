@@ -39,7 +39,7 @@ When the year's trips were driven in more than one province or state, a card **B
 
 ### The list of trips {#trip-list}
 
-The year's trips are listed newest first. Each line shows:
+The year's trips are listed newest first, under the headings **Date**, **Trip**, **Distance** and **Actions**. Each line shows:
 
 - the date;
 - where from and where to ("Home → Client office"), with **↺** for a round trip;

@@ -82,7 +82,7 @@ Five tabs run along the bottom of the screen:
 - **Sent**: what you captured and how far it got. See [The Sent tab](#sent-tab).
 - **Summary**: balances, bills, maintenance and budgets from your computer, and the agenda of the coming 60 days. See [The Summary tab](#summary-tab) and [The agenda](#agenda).
 - **Contacts**: the household's contacts from your computer, and new contacts to send. See [The Contacts tab](#contacts-tab).
-- **Settings**: pairing, the transfer folder, the lock and updates. See [The Settings tab](#settings-tab).
+- **Settings**: pairing, the transfer folder, reminders on the minute, the calendars, the lookups for trips, the language, the lock and updates. See [The Settings tab](#settings-tab).
 
 On the **Capture** and **Summary** tabs, the calendar icon at the top right opens [the agenda](#agenda); screen readers call it **Open the agenda**.
 
@@ -132,6 +132,9 @@ The buttons:
 - **Meter or tank reading**, **Hours worked**, **Chores** and **Volunteer hours**: the [log forms](#log-forms).
 - **Trip**: start a trip, or arrive when one is under way. While a trip is under way, a line under the button says so, such as "Trip under way: RAV4, left at 4:30 PM from Home (Maple Street)". See [Trip](#trip-form).
 - **Fuel or charge**: record a fill-up or a charge. See [Fuel or charge](#fuel-form).
+- **Stations nearby**: the fuel stations and EV chargers around you, to save one as a place. See [Stations nearby](#stations).
+
+After saving a capture or a log form, the app goes to the **Sent** tab; closing a form without saving returns to the Capture tab.
 
 The kind you choose decides how the capture is filed on the computer: a bill as a bill, a receipt or quick expense as a receipt, another document as whatever the computer reads it to be.
 
@@ -254,7 +257,9 @@ Under the capture buttons, four buttons open forms that log facts for the comput
 - **Meter or tank**: the utility meters and fuel tanks of the [Utilities](utilities) screen, each with its home or cottage.
 - **Date (YYYY-MM-DD)**: today by default.
 - For a meter: **Reading (kWh)** or **Reading (m³)**, with the last reading shown above it; with time of use, also **On-peak**, **Mid-peak** and **Off-peak** (leave the reading empty to send the total of the three).
-- For a tank: **Level (%)**, or **Or litres** of its capacity.
+- For a tank: **Level (%)**, or **Or litres** of its capacity, with the last level shown above it.
+
+When the computer has no meters or tanks yet, the form says to add them on the Utilities screen; they come with the next transfer. The other log forms say the same about clients and chores.
 
 ### Hours worked {#log-hours}
 
@@ -273,6 +278,7 @@ Lists each child's chores from the [Family money](family#chores) screen, with wh
 - **Organization from before**: organizations used before, which also bring back their kind; or type the **Organization**.
 - **Kind**: **Volunteer firefighter**, **Search and rescue**, **Community hours (school)** or **Other volunteering**.
 - **Date**, **Time (h:mm)** and **Activity**. See [Volunteer hours](volunteer).
+
 ## Trip {#trip-form}
 
 @index: trip; mileage log; logbook; Start; Arrive; towing; trailer; passengers; stops; multi-stop trip
@@ -493,6 +499,8 @@ The Summary shows figures from your computer, as of the last transfer: the house
 
 ![The Summary tab: balances and bills due, from the computer](images/phone-summary.png)
 
+The lists with two columns have headings, which screen readers announce as such: **Account** and **Balance**, **Due date and bill** and **Amount**, **Category** and **Spent of budget**.
+
 - **Accounts**: each account and its balance.
 - **Bills due**: the bills due in the next 60 days that are not yet paid, up to 15, with the due date and the amount, or **about** an amount when it is estimated.
 - **Coming up**: the **See the agenda** button opens [the agenda](#agenda), the coming 60 days day by day or by month. Below it, first each person's work and school hours today and tomorrow, such as "Alex · Work · Office" with the date and "08:00–16:30"; then the appointments and events from the computer's calendar in the coming weeks, up to 12, each with who it is for, its date and its time, or **All day**; for a child's activity, who drives there and who drives back that day, carpool turns included. Only events from accounts your user can see on the computer are sent, so another user's private appointments never reach your phone. Events marked done or cancelled are left out.
@@ -507,7 +515,7 @@ The figures do not change until the next transfer. Tap **Send now** on the Sent 
 
 @index: agenda; month view; calendar on the phone; what is coming up; due dates
 
-The calendar icon at the top right of the **Capture** and **Summary** tabs, or **See the agenda** under **Coming up** on the Summary tab, opens everything coming up in the next 60 days, today included, in one place. It only shows: nothing can be changed here. **Back** or Android's back gesture returns to the tab you came from; tapping any tab goes to that tab. Under the title, **From your computer** gives the date and time of the last transfer, as on the Summary.
+The calendar icon at the top right of the **Capture** and **Summary** tabs, or **See the agenda** under **Coming up** on the Summary tab, opens everything coming up in the next 60 days, today included, in one place. It only shows: nothing can be changed here. **Back** or Android's back gesture returns to the tab you came from; tapping any tab goes to that tab. Under the title, **From your computer** gives the date and time of the last transfer, as on the Summary. Before the first transfer, the agenda says **Pair with your computer to see its appointments, bills and reminders here.**
 
 Two chips at the top choose the view: **Agenda**, day by day, or **Month**.
 
@@ -686,12 +694,6 @@ Each item written is followed by the app. When something changes on the computer
 
 Turning **Both ways** off (to **Bring in only** or **Off**), choosing another calendar, or unpairing removes every item the app wrote, and deletes the phone-only calendar. If calendar access was taken back in Android's settings, they are removed once it is allowed again.
 
-### Ask for the PIN again {#lock-time}
-
-@index: lock time; auto-lock; relock; lock after
-
-- **Ask for the PIN again**: how long the app may be away before it asks for the PIN (or your fingerprint or face) again: **Immediately**, **After 1 minute** (the default), **After 5 minutes** or **After 15 minutes**. Coming back from a screen the app opened itself, such as the document scanner or a file picker, counts as at least a minute, so a scan does not lock you out halfway.
-
 ### Trips: addresses and stations {#trip-lookups}
 
 @index: geocoder; address lookup; Google; OpenStreetMap; privacy
@@ -703,8 +705,6 @@ Two lookups for trips, both off by default:
 
 Turning one off stops it at once; nothing was kept by the app at Google or OpenStreetMap.
 
-### Change PIN {#change-pin}
-
 ### Language of the app {#language}
 
 @index: language; French; English; français
@@ -713,11 +713,19 @@ Turning one off stops it at once; nothing was kept by the app at Google or OpenS
 
 > Note: On Android 13 and later the same choice is also in the phone's own settings, under the app's Language. Amounts and dates follow the language chosen (8,45 $ in French).
 
+### Change PIN {#change-pin}
+
 **Change PIN** asks you to choose a new PIN, 4 to 8 digits, and to enter it again.
 
 ### Unlock with fingerprint or face {#biometric}
 
 Shown when the phone has a fingerprint reader or face unlock set up. When on, the lock screen offers **Use fingerprint or face**. The PIN always works too.
+
+### Ask for the PIN again {#lock-time}
+
+@index: lock time; auto-lock; relock; lock after
+
+- **Ask for the PIN again**: how long the app may be away before it asks for the PIN (or your fingerprint or face) again: **Immediately**, **After 1 minute** (the default), **After 5 minutes** or **After 15 minutes**. Coming back from a screen the app opened itself, such as the document scanner or a file picker, counts as at least a minute, so a scan does not lock you out halfway.
 
 ### Updates {#updates}
 
@@ -727,8 +735,8 @@ Shown in the GitHub edition only; the Google Play edition is updated by Google P
 
 - **Check for updates once a day**: when on, the app looks on GitHub at most once a day, while it is open, for a newer version. Only the check goes out: GitHub sees your phone's internet address, as for any web page. Nothing about your captures or household is sent.
 - The status: **Update checks are off.**, **Checking…**, **Version … is up to date.**, or **Version … is available.** with what is new.
-- **Download, check and install**: downloads the new version, checks it against RANN's signature and its announced size and fingerprint, then hands it to Android, which asks you to confirm the install. A bar shows the download.
-- **Check now**: checks at once.
+- **Download, check and install**: downloads the new version, checks it against RANN's signature and its announced size and fingerprint, then hands it to Android, which asks you to confirm the install. A bar shows the download; once checked, the app says **Version … was checked against RANN's signature. Confirm the install when Android asks.**
+- **Check now**: shown while the daily check is on. Checks at once.
 
 Messages when something goes wrong:
 
@@ -739,4 +747,4 @@ Messages when something goes wrong:
 
 ### About and privacy policy {#about}
 
-A short note reminds you that your data stays on your phone and your computer. **Privacy policy** opens RANN's privacy policy on rann.ca in your browser, in the phone's language.
+A short note reminds you that your data stays on your phone and your computer. **Privacy policy** opens RANN's privacy policy on rann.ca in your browser, in the app's language.

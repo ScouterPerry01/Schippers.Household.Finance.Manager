@@ -128,7 +128,7 @@ La barre du haut est toujours visible. De gauche à droite :
 - **English** et **Français** : font passer toute l’application à cette langue d’un coup ; le bouton de la langue en usage est grisé. Le choix est retenu sur cet ordinateur et sert au prochain démarrage. Tant que vous n’avez rien choisi, l’application suit la langue de votre ordinateur. Les lignes que l’application écrit elle-même dans les comptes à partir de ce moment (comme les notes automatiques) sont écrites dans la langue en usage. Le manuel et l’aide suivent le même choix.
 - **Rechercher (Ctrl+F)** : la case de recherche, présente seulement quand un ménage est ouvert. Voir [La recherche](basics#search).
 - **Aide (F1)** : ouvre le court panneau d’aide au sujet de l’écran affiché. Voir [L’aide (F1) et le manuel](welcome#help-and-manual).
-- **Manuel** : ouvre ce manuel dans sa propre fenêtre. Maj+F1 l’ouvre au chapitre de l’écran affiché. Voir [La fenêtre du manuel](welcome#manual-window).
+- **Manuel (Maj+F1)** : ouvre ce manuel dans sa propre fenêtre, au chapitre de l’écran affiché. Maj+F1 fait de même de partout. Voir [La fenêtre du manuel](welcome#manual-window).
 - **Verrouiller** : présent seulement quand un ménage est ouvert. Verrouille le ménage immédiatement. Voir [Le verrouillage](basics#locking).
 
 ### Les bandeaux {#banners}
@@ -144,7 +144,7 @@ Deux sortes de bandeaux de couleur peuvent paraître sous la barre du haut :
 
 @index: menu; navigation; menu latéral; menu en haut
 
-Le menu mène à chaque écran. Le **Tableau de bord** et **Contacts** sont seuls en haut, en dehors des groupes ; les autres écrans sont répartis en cinq groupes : Argent, Placements et emprunts, Rapports et impôts, Maison et famille, et Réglages.
+Le menu mène à chaque écran. Le **Tableau de bord** et **Contacts** sont seuls en haut, en dehors des groupes ; les autres écrans sont répartis en six groupes : Argent, Placements et emprunts, Rapports et impôts, Maison et famille, Réglages, et Aide.
 
 Le menu peut se présenter de deux façons, et le choix de chaque utilisateur est retenu sur cet ordinateur :
 
@@ -165,8 +165,8 @@ Les nombres entre parenthèses indiquent ce qui vous attend. Documents indique l
 - Argent : [Comptes](accounts), [Documents](documents), [Factures](bills), [Budgets](budgets), [Objectifs d’épargne](goals), [Argent en famille](family), [Revenus d’appoint](side) et [Calendrier](calendar).
 - Placements et emprunts : [Placements](investments), [Régimes enregistrés](plans) et [Prêts et hypothèques](loans).
 - Rapports et impôts : [Rapports](reports) et [Impôts](taxes).
-- Maison et famille : [Santé](health), [Réclamations médicales](medical), [Urgence et succession](estate), [Animaux](pets), [Véhicules](vehicles), [Déplacements](trips) et [Maison et biens](assets).
-- Réglages : [Membres du ménage](members), [Utilisateurs](users), [Catégories](categories), [Bénéficiaires](payees), [Règles de catégorie](rules), [Institutions financières](institutions), [Taux et cours](rates), [Téléphones](phones), [Lecture par IA](ai), [Sauvegardes](backups), [Sécurité](security) et [Affichage et accessibilité](display).
+- Maison et famille : [Santé](health), [Réclamations médicales](medical), [Urgence et succession](estate), [Animaux](pets), [Véhicules](vehicles), [Déplacements](trips), [Maison et biens](assets), [Services publics](utilities) et [Bénévolat](volunteer).
+- Réglages : [Membres du ménage](members), [Utilisateurs](users), [Catégories](categories), [Bénéficiaires](payees), [Règles de catégorie](rules), [Institutions financières](institutions), [Taux et cours](rates), [Taux et règles](rates-rules), [Téléphones](phones), [Lecture par IA](ai), [Sauvegardes](backups), [Sécurité](security) et [Affichage et accessibilité](display).
 - Aide, le dernier groupe (à droite de la barre du haut) : Manuel (Maj+F1), Aide (F1), [Guides Walk-Me](walkme) et [À propos](about). Voir [Le menu Aide](walkme#help-menu).
 
 Ce que chaque utilisateur voit dans ces écrans dépend de son rôle et des groupes de comptes qu’il peut ouvrir ; voir [Utilisateurs](users).
@@ -272,6 +272,14 @@ Un champ à suggestions, comme Bénéficiaire dans un registre, accepte n’impo
 ### Les cases à cocher {#checkboxes}
 
 Une case cochée active une option. Le texte à côté indique ce que fait l’option.
+
+### Les listes et leurs colonnes {#lists}
+
+@index: en-têtes de colonne; tableau; liste; colonne Actions; bouton grisé
+
+Chaque liste à colonnes a une ligne d’en-tête qui nomme chaque colonne, avec un trait en dessous ; les lecteurs d’écran annoncent ces noms comme des titres. La colonne de boutons à droite d’une ligne, comme **Modifier**, **Supprimer** ou ✕, a pour en-tête Actions.
+
+Les boutons que les livres vous refuseraient sont grisés ou masqués : par exemple, dans un groupe que vous pouvez seulement consulter, les fiches s’ouvrent en lecture seule. Voir [Onglet Accès](users#access-tab).
 
 ### Les formulaires en fenêtre : Enregistrer et Annuler {#form-dialogs}
 

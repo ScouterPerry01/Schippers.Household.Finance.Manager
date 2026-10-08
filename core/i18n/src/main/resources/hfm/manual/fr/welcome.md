@@ -61,8 +61,11 @@ Le manuel s’ouvre dans sa propre fenêtre, à côté de l’application. Vous 
 
 @index: Maj+F1; bouton Manuel; ouvrir le manuel
 
-- **Manuel** : le bouton de la barre du haut de la fenêtre principale, à côté de **Aide (F1)**. Il ouvre le manuel.
-- **Maj+F1** : ouvre le manuel au chapitre de l’écran que vous regardez. Par exemple, Maj+F1 dans l’écran Factures ouvre le chapitre Factures.
+- **Manuel (Maj+F1)** : le bouton de la barre du haut de la fenêtre principale, à côté de **Aide (F1)**, et **Manuel** dans le groupe Aide du menu. Tous deux ouvrent le manuel au chapitre de l’écran que vous regardez, ou au premier chapitre quand cet écran n’en a pas.
+- **Maj+F1** : fait de même au clavier. Par exemple, Maj+F1 dans l’écran Factures ouvre le chapitre Factures.
+- **Ouvrir le manuel** : au bas du panneau d’aide ; ouvre le manuel de la même façon et ferme le panneau.
+
+Quand la fenêtre du manuel est déjà ouverte, chacun de ces moyens la ramène au premier plan sur ce chapitre.
 
 ### Table des matières {#contents-tab}
 
@@ -138,9 +141,10 @@ Appuyez sur F1, ou cliquez sur **Aide (F1)** dans la barre du haut, pour ouvrir 
 ![Le panneau d’aide, ouvert sur l’écran Factures](images/help.png)
 
 - **Chercher dans le guide** : tapez des mots pour ne lister que les sujets qui les contiennent, chacun avec la ligne qui correspond. Si rien n’est trouvé, le panneau le dit ; essayez d’autres mots.
+- **Ouvrir le manuel** : ouvre le manuel au chapitre de l’écran affiché, et ferme le panneau.
 - **Fermer** : ferme le panneau. Échap ou F1 le ferment aussi.
 
-Quand un sujet ne répond pas à votre question, ouvrez le manuel avec **Manuel** ou Maj+F1 pour avoir toute l’explication.
+Quand un sujet ne répond pas à votre question, ouvrez le manuel pour avoir toute l’explication.
 
 ## Une mise en garde {#caution}
 

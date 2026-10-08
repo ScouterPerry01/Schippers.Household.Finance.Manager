@@ -24,12 +24,14 @@ Ajoutez ensuite votre paie : cliquez sur **Ajouter une facture**, mettez **Type*
 
 Ajoutez de la même façon un virement régulier vers l’épargne, avec **Type** à Virement et le compte d’épargne sous **Vers le compte**.
 
+Une facture peut aussi se créer à partir de celle que vous recevez : importez-la, ou photographiez-la avec le téléphone, dans l’écran Documents, ouvrez-la et cliquez sur **Créer une facture à partir de ceci**. Le formulaire arrive rempli à partir du document, et son premier état de compte est inscrit. Voir [Factures à partir de documents numérisés](bills#bills-from-documents).
+
 Le détail de chaque champ se trouve dans [Ajouter ou modifier une facture](bills#bill-form).
 
 ## Payer les factures à leur échéance {#pay-bills}
 
 1. Ouvrez l’onglet **À payer** de Factures. Il énumère ce qui est en retard, à payer aujourd’hui et à payer dans les 30 prochains jours. Des rappels apparaissent aussi en haut de chaque écran.
-2. Quand une facture variable arrive, cliquez sur **Indiquer le montant de la facture** et tapez le montant imprimé dessus.
+2. Quand une facture variable arrive, cliquez sur **Indiquer le montant de la facture** et tapez le montant imprimé dessus, ou faites entrer la facture dans Documents et cliquez sur **L’inscrire comme état de compte de cette facture**.
 3. Après l’avoir payée par votre banque, cliquez sur **Marquer payée**, vérifiez la date et le montant, et cliquez sur **Enregistrer**. Le paiement est inscrit dans le compte et sera jumelé au relevé bancaire lors de son importation.
 4. Pour passer par-dessus une échéance, cliquez sur **Sauter** ; **Rétablir** sous Sautées la fait revenir. Un paiement marqué par erreur peut être défait avec **Annuler** sous Payées récemment.
 

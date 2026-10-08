@@ -20,7 +20,7 @@ Un membre du ménage est une personne, pas un compte de connexion. Un enfant peu
 
 L’écran a trois parties :
 
-- En haut, la **Province ou territoire** du ménage, avec une courte note sur ce qu’elle change.
+- En haut, la **Province ou territoire** du ménage, avec une courte note sur ce qu’elle change, et, pour les administrateurs, le **Nom du ménage** avec **Renommer**.
 - À gauche, la liste des personnes, avec un bouton **Ajouter** au-dessus pour les administrateurs.
 - À droite, le formulaire de la personne choisie, ou d’une nouvelle personne.
 
@@ -41,6 +41,15 @@ Ce que la province change :
 Seul un administrateur peut changer la province. Pour les autres utilisateurs, la liste est affichée mais ne peut pas être changée.
 
 > Remarque : Le changement s’applique dès que vous choisissez une nouvelle province. Il n’y a pas de bouton Enregistrer pour ce réglage. La changer de nouveau plus tard est sans risque : rien n’est supprimé.
+
+### Nom du ménage {#household-name}
+
+@index: renommer le ménage; nom du ménage
+
+Affiché seulement aux administrateurs.
+
+- **Nom du ménage** : le nom donné à la création du ménage. Les téléphones jumelés le reçoivent avec leur résumé, et une facture émise par aucune personne en particulier est émise au nom du ménage.
+- **Renommer** : enregistre le nouveau nom. Grisé tant que le nom est vide ou inchangé. Le changement est inscrit dans le journal d’activité. Le dossier du ménage sur l’ordinateur garde son nom ; les téléphones affichent le nouveau nom après leur prochain transfert.
 
 ### La liste des personnes {#list}
 

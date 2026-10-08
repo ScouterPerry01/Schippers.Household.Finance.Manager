@@ -1,10 +1,10 @@
 # Envoyer depuis le téléphone
 
-RANN’s Roost Mobile, l’application compagnon pour Android, photographie reçus et factures et note des dépenses rapides. Voici comment ces saisies arrivent sur cet ordinateur.
+RANN's Roost Mobile, l’application compagnon pour Android, photographie reçus et factures, note des dépenses rapides, et inscrit des lectures d’odomètre, des déplacements, des pleins, des relevés de compteur et de réservoir, des heures, des tâches ménagères, des heures de bénévolat et des tâches saisonnières faites. Voici comment ces saisies arrivent sur cet ordinateur.
 
 ## Jumeler un téléphone
 
-Allez dans Téléphones, dans le groupe Réglages du menu, et cliquez sur Jumeler un téléphone. Un code QR s’affiche. Sur le téléphone, ouvrez RANN’s Roost Mobile, touchez Jumeler à un ordinateur et numérisez le code.
+Allez dans Téléphones, dans le groupe Réglages du menu, et cliquez sur Jumeler un téléphone. Un code QR s’affiche. Sur le téléphone, ouvrez RANN's Roost Mobile, touchez Jumeler à un ordinateur et numérisez le code.
 
 - Le téléphone doit être sur le même Wi-Fi que cet ordinateur.
 - Si Windows demande d’autoriser l’application sur les réseaux, autorisez-la sur les réseaux privés.
@@ -16,16 +16,16 @@ Tant que le ménage est ouvert, les téléphones jumelés envoient leurs saisies
 
 ## Loin de la maison
 
-Sous Loin de la maison, à l’écran Téléphones, cliquez sur Choisir un dossier de transfert… et choisissez un dossier de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud que l’application du service garde sur cet ordinateur. Choisissez le même dossier sur le téléphone. Les nouvelles saisies en sont importées; le service ne peut pas les lire.
+Sous Loin de la maison, à l’écran Téléphones, cliquez sur Choisir un dossier de transfert… et choisissez un dossier de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud que l’application du service garde sur cet ordinateur. Choisissez le même dossier sur le téléphone. Les nouvelles saisies en sont importées ; le service ne peut pas les lire.
 
 Un fichier de transfert reçu par courriel ou copié par clé USB peut être importé avec Importer un fichier de transfert…, ou déposé sur l’écran Documents. L’objet de son courriel commence par [RANN's Roost] et un court identifiant, jamais des noms ni des montants. Quand un dossier de transfert est choisi, la réponse y est laissée pour que le téléphone récupère sa confirmation.
 
 ## Vérifier ce qui est arrivé
 
-Les saisies n’entrent jamais directement dans les comptes. Elles attendent dans l’onglet À vérifier de Documents. Cliquez sur Vérifier pour chacune, puis joignez-la à une opération, inscrivez-la sur une facture ou classez-la.
+Les reçus, factures, documents et dépenses rapides n’entrent jamais directement dans les comptes. Ils attendent dans l’onglet À vérifier de Documents. Cliquez sur Vérifier pour chacun, puis joignez-le à une opération, inscrivez-le sur une facture ou classez-le. Une capture peut avoir une note vocale : Écouter la note vocale, dans sa fenêtre de vérification, la fait entendre.
+
+Les lectures d’odomètre, déplacements, pleins, lieux, relevés de compteur et de réservoir, heures, tâches ménagères, heures de bénévolat et tâches saisonnières faites sont enregistrés directement dans leurs écrans, marqués comme venus du téléphone. Les nouveaux contacts attendent d’être vérifiés à l’écran Contacts.
 
 ## Un téléphone perdu
 
 Dans Téléphones, cliquez sur Retirer à côté du téléphone. Il ne peut plus rien envoyer.
-
-Une capture du téléphone peut avoir une note vocale : Écouter la note vocale, dans sa fenêtre de vérification, la fait entendre.

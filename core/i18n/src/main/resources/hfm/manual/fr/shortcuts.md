@@ -82,6 +82,28 @@ Taper dans une liste déroulante ne garde que les choix qui contiennent ce que v
 - Le curseur se place dans **Chercher dans le guide** : tapez pour chercher aussitôt.
 - **Échap** ou **F1** : ferme le panneau.
 
+## Dans la fenêtre du manuel {#manual-window}
+
+@index: Alt+Gauche; Alt+Droite; raccourcis du manuel
+
+- **Alt+Gauche** et **Alt+Droite** : reculer et avancer, comme **Retour** et **Avancer**.
+- **Ctrl+F** : ouvre l’onglet **Recherche**, le curseur dans sa case.
+
+Voir [La fenêtre du manuel](welcome#manual-window).
+
+## Dans les pages d’un document {#document-pages}
+
+@index: zoom; Page précédente; Page suivante; Ctrl+molette; raccourcis des documents
+
+Dans l’aperçu d’un document, après avoir cliqué dessus :
+
+- **Pg suiv** et **Pg préc** : la page suivante et la page précédente.
+- **Ctrl+plus** et **Ctrl+moins** (aussi sur le pavé numérique) : agrandir et réduire. Ctrl et la molette de la souris font de même.
+- **Ctrl+0** : ajuster de nouveau la page à la fenêtre.
+- Faites glisser avec la souris pour vous déplacer dans une page plus grande que la fenêtre.
+
+Voir [L’aperçu, les pages et le zoom](documents#preview).
+
 ## Accessibilité {#accessibility}
 
 @index: accessibilité; basse vision; lecteur d’écran; mode sombre; grand texte
@@ -123,6 +145,9 @@ Les lecteurs d’écran, comme Narrateur ou NVDA sous Windows et Orca sous Linux
 - Entrée dans le formulaire de saisie d’un registre : enregistrer l’opération.
 - Échap dans le formulaire de saisie d’un registre : vider le formulaire.
 - Échap dans une fenêtre : fermer sans enregistrer.
+- Pg préc et Pg suiv dans un document : page précédente et suivante.
+- Ctrl+plus, Ctrl+moins et Ctrl+0 dans un document : agrandir, réduire, ajuster la page.
+- Alt+Gauche et Alt+Droite dans le manuel : reculer et avancer.
 - + ou - après une date : un jour plus tard ou plus tôt.
 - Tab et Maj+Tab : champ ou bouton suivant et précédent.
 - Entrée ou Espace : appuyer sur le bouton qui a le focus.

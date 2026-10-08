@@ -21,4 +21,4 @@ When a pet is no longer in the household, edit it and tick No longer in the hous
 
 ## Costs
 
-Each card shows what the pet cost this year and over the last 12 months. Choose Costs for more detail. Costs come from the register: when you enter a transaction, choose the pet under "For".
+Each card shows what the pet cost this year and over the last 12 months. Choose Costs for more detail: by year and by category, for the last five years or for one year. Costs come from the register: when you enter a transaction, choose the pet under "For".

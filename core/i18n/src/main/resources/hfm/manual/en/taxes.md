@@ -34,7 +34,7 @@ Much of what this screen shows comes from the way transactions are entered throu
 
 The **Slips** tab is a checklist of the slips each person should receive for the tax year, worked out from the books, plus any you add by hand. Most slips arrive by the end of February; T3 and RL-16 slips by March 31.
 
-The list is grouped by person, the household last. Each person's heading says how many slips have arrived, such as "3 of 5 received"; slips marked not expected are not counted. Each slip shows:
+The list is grouped by person, the household last. Each person's heading says how many slips have arrived, such as "3 of 5 received"; slips marked not expected are not counted. The columns are headed **Slip**, **From** and **Status**. Each slip shows:
 
 - its kind, such as "T4, employment income";
 - who it comes from (the employer, payer or institution);
@@ -109,7 +109,7 @@ At the top, a card per person gives:
 
 The totals count gifts in Canadian dollars only.
 
-Under the cards, each gift shows its date, the person, the charity (or the payee), its kind and receipt status, and its amount:
+Under the cards, under the headings **Date**, **Person**, **Charity or party** and **Amount**, each gift shows its date, the person, the charity (or the payee), its kind and receipt status, and its amount:
 
 - **Receipt received**: marked received in its window, or a file is attached to the transaction.
 - **On the T4 slip (box 46)**: a gift deducted from pay (see [Pay from a pay stub](taxes#pay-stub)); the T4 is the receipt. Such a gift shows the charity from the line's memo, such as "United Way, through Acme payroll".
@@ -140,7 +140,7 @@ Each gift has its own receipt details: when one payment holds gifts for two peop
 
 Some people pay their income tax during the year in instalments instead of at filing: usually those whose tax owing at filing is more than $3,000 ($1,800 in Quebec) this year and in either of the two years before, such as retirees or the self-employed. The CRA and Revenu Québec send reminders with the amounts. Instalments are due March 15, June 15, September 15 and December 15 (dates kept in [Rates and rules](rates-rules)); a payment made the next business day after a weekend or holiday is on time.
 
-The **Instalments** tab lists the instalments of the tax year, grouped by person and authority, such as "Jean · Canada Revenue Agency". Click the heading, or **Change** beside it, to change them. Each instalment shows:
+The **Instalments** tab lists the instalments of the tax year, grouped by person and authority, such as "Jean · Canada Revenue Agency". Click the heading, or **Change** beside it, to change them. The columns are headed **Due date**, **Status** and **Amount**. Each instalment shows:
 
 - its due date;
 - its state: **Paid**, **Partly paid** (with the amount paid so far, such as "$400.00 paid"), **Due**, or **Late** in red when the date has passed and it is not fully paid;
@@ -186,7 +186,7 @@ The **Year-end package** tab shows each person's figures for the return, gathere
 
 ![The Year-end package tab](images/taxes-year-end.png)
 
-Each line shows the item, where it comes from (a payer, an account, a period), the line or form, and the amount. Lines from the same source are added together. Amounts in other currencies are converted to Canadian dollars at each transaction's date. Registered plans' own transactions are left out.
+Each line shows, under the headings **Item**, **From**, **Line** and **Amount**, the item, where it comes from (a payer, an account, a period), the line or form, and the amount. Lines from the same source are added together. Amounts in other currencies are converted to Canadian dollars at each transaction's date. Registered plans' own transactions are left out.
 
 "Nothing for this year yet" means no pay, deductions, credits or slips have been recorded for the year.
 

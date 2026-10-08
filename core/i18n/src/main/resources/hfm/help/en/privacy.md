@@ -21,6 +21,8 @@ Nothing is sent anywhere except in these cases, and most are off until you turn 
 
 RANN's Roost Mobile talks only to this computer, over your home Wi-Fi, encrypted between the two. Away from home, it can leave its captures, encrypted, in a folder of your own cloud service; that service only sees files it cannot read. See the help topic on sending from the phone.
 
+On the phone, two trip lookups are off until you turn them on in its Settings: Look up addresses sends one position to Google, through Android's geocoder, when you tap Look up the address; Stations nearby sends a rough position to OpenStreetMap when you open that list. The phone's calendars are read and written on the phone only, and only if you allow it. The phone app downloaded from GitHub checks for updates there, if you agreed.
+
 ## Learn more
 
 About has a link to the full privacy policy, which says what each service learns.

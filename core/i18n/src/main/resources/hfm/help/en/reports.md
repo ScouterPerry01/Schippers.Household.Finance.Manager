@@ -21,6 +21,6 @@ Custom report lets you choose what the rows and columns are, and whether it adds
 
 ## Save a report
 
-Click Save this report… to keep the current choices under a name. Saved reports appear under Saved reports at the bottom of the list; click the ✕ beside one to remove it.
+Click Save this report… to keep the current choices under a name. Saved reports appear under Saved reports at the bottom of the list; click the ✕ beside one to remove it (you are asked first).
 
-A custom report can also be made on a schedule: each month, each quarter or each year. The PDF goes to a folder you choose. It is made the first time the household is open after the period ends, and missed periods are made then.
+A custom report can also be made on a schedule: each month, each quarter or each year. The PDF goes to a folder you choose. The app checks when the household is opened and every hour while it is open: each period that has ended is made then, including periods missed while the household was closed, up to a year back.

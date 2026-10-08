@@ -20,7 +20,7 @@ A household member is a person, not a sign-in account. A child can be a member w
 
 The screen has three parts:
 
-- At the top, the household's **Province or territory**, with a short note on what it changes.
+- At the top, the household's **Province or territory**, with a short note on what it changes, and, for administrators, the **Household name** with **Rename**.
 - On the left, the list of people, with an **Add** button above it for administrators.
 - On the right, the form for the person selected, or for a new person.
 
@@ -41,6 +41,15 @@ What the province changes:
 Only an administrator can change the province. For other users the picker is shown but cannot be changed.
 
 > Note: The change takes effect as soon as you pick a new province. There is no Save button for it. Changing it again later is safe: nothing is deleted.
+
+### Household name {#household-name}
+
+@index: rename the household; household name
+
+Shown only to administrators.
+
+- **Household name**: the name given when the household was created. The paired phones receive it with their summary, and an invoice made out by no particular person is made out in the household's name.
+- **Rename**: saves the new name. Greyed while the name is empty or unchanged. The change is recorded in the activity log. The household's folder on the computer keeps its name; the phones show the new name after their next transfer.
 
 ### The list of people {#list}
 

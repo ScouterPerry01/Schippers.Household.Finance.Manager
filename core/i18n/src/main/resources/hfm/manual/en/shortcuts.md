@@ -82,6 +82,28 @@ Typing in a drop-down list keeps only the choices that contain what you typed. T
 - The cursor starts in **Search the guide**: type to search at once.
 - **Escape** or **F1**: closes the panel.
 
+## In the Manual window {#manual-window}
+
+@index: Alt+Left; Alt+Right; manual shortcuts
+
+- **Alt+Left** and **Alt+Right**: back and forward, like **Back** and **Forward**.
+- **Ctrl+F**: opens the **Search** tab with the cursor in its box.
+
+See [Using the Manual window](welcome#manual-window).
+
+## In a document's pages {#document-pages}
+
+@index: zoom; Page Up; Page Down; Ctrl+wheel; document shortcuts
+
+In the preview of a document, once you have clicked it:
+
+- **Page Down** and **Page Up**: the next and the previous page.
+- **Ctrl+plus** and **Ctrl+minus** (also on the number pad): zoom in and out. Ctrl and the mouse wheel do the same.
+- **Ctrl+0**: fit the page to the window again.
+- Drag with the mouse to move around a page larger than the window.
+
+See [The preview, pages and zoom](documents#preview).
+
 ## Accessibility {#accessibility}
 
 @index: accessibility; low vision; screen reader; dark mode; large text
@@ -123,6 +145,9 @@ Screen readers, such as Narrator or NVDA on Windows and Orca on Linux, read the 
 - Enter in a register's entry form: save the transaction.
 - Escape in a register's entry form: clear the form.
 - Escape in a window: close without saving.
+- Page Up and Page Down in a document: previous and next page.
+- Ctrl+plus, Ctrl+minus and Ctrl+0 in a document: zoom in, zoom out, fit the page.
+- Alt+Left and Alt+Right in the manual: back and forward.
 - + or - after a date: one day later or earlier.
 - Tab and Shift+Tab: next and previous field or button.
 - Enter or Space: press the button that has the focus.

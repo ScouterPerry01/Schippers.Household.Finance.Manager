@@ -78,7 +78,7 @@ Pour changer votre mot de passe, utilisez **Changer mon mot de passe…** à l�
 
 @index: règles des mots de passe; politique de mots de passe; exigences des mots de passe; Argon2id; dérivation de clé
 
-Les règles des mots de passe du ménage disent ce que tout mot de passe choisi à partir de maintenant doit avoir. Elles sont à l’écran **Sécurité**, dans la carte **Règles des mots de passe**. Un administrateur les fixe pour tout le ménage; les autres utilisateurs les voient sans pouvoir les changer (« Seul un administrateur peut changer ces règles. »).
+Les règles des mots de passe du ménage disent ce que tout mot de passe choisi à partir de maintenant doit avoir. Elles sont à l’écran **Sécurité**, dans la carte **Règles des mots de passe**. Un administrateur les fixe pour tout le ménage ; les autres utilisateurs les voient sans pouvoir les changer (« Seul un administrateur peut changer ces règles. »).
 
 - **Mot de passe le plus court, en caractères (8 à 64)** : le nombre minimum de caractères d’un mot de passe. Par défaut, 12. Moins de 8 ou plus de 64 est refusé.
 - **Doit avoir une majuscule** : tout nouveau mot de passe doit avoir au moins une majuscule, accentuée ou non. Désactivé par défaut.
@@ -88,7 +88,7 @@ Les règles des mots de passe du ménage disent ce que tout mot de passe choisi 
 - **Ne peut pas contenir le nom d’utilisateur** : le mot de passe ne peut pas contenir le nom d’utilisateur, en majuscules ou non. Activé par défaut. Les noms d’utilisateur d’un ou deux caractères ne sont pas cherchés.
 - **Enregistrer les règles des mots de passe** : garde les règles. Seul ce qui a changé est enregistré, et prend effet aujourd’hui. Une ligne le confirme : « Règles des mots de passe enregistrées. Elles s’appliquent dès aujourd’hui à tout mot de passe choisi à partir de maintenant. »
 
-Les règles s’appliquent partout où l’on choisit un mot de passe : ajout d’un utilisateur, changement de mot de passe et réinitialisation avec la clé de récupération. Un mot de passe qui ne les respecte pas est refusé avec ce qui lui manque, comme « Le mot de passe doit avoir un chiffre. » Les mots de passe déjà choisis continuent de fonctionner, même s’ils ne respectent pas les nouvelles règles; demandez aux utilisateurs de changer le leur si vous le souhaitez.
+Les règles s’appliquent partout où l’on choisit un mot de passe : ajout d’un utilisateur, changement de mot de passe et réinitialisation avec la clé de récupération. Un mot de passe qui ne les respecte pas est refusé avec ce qui lui manque, comme « Le mot de passe doit avoir un chiffre. » Les mots de passe déjà choisis continuent de fonctionner, même s’ils ne respectent pas les nouvelles règles ; demandez aux utilisateurs de changer le leur si vous le souhaitez.
 
 Chaque changement est conservé dans [Taux et règles](rates-rules) avec sa date d’effet, comme toute autre règle : on y voit les règles en vigueur à n’importe quelle date.
 

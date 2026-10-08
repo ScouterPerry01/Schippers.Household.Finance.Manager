@@ -35,7 +35,7 @@ At the top:
 - **New invoice**: opens the [invoice dialog](#invoice-dialog) with the next number of the year already filled in.
 - When invoices are waiting to be paid, a line such as "2 invoices waiting to be paid: $1,250.00". It counts the invoices whose status is **Sent** and gives one total per currency, the base currency first, such as "3 invoices waiting to be paid: $1,250.00 + US$400.00".
 
-Each invoice is listed, newest first, with:
+Each invoice is listed, newest first, under the column headings **Number**, **Customer**, **Status**, **Total** and **Actions** (see [Lists and their columns](basics#lists)), with:
 
 - its number;
 - the customer, and under it the date issued, "due" and the due date if there is one, and "paid" and the date it was paid;
@@ -133,7 +133,7 @@ The **Hours worked** tab keeps the hours worked for each client, timed on the ph
 - **Add hours**: opens the [hours dialog](#hours-dialog); shown once there is a client.
 - **Show archived**: also lists the clients marked archived.
 
-Each client is a card: its name, its hourly rate, who does the work and its tasks. **Not billed** gives the hours not on an invoice yet and what they come to at their rates, or **Everything is billed.** Below, the client's last hours, newest first: the date, the task, the description, the start time, **from the phone**, the time worked, the amount and **Not billed** or **Billed** with the invoice's number. Click a line to change or delete it. **Make an invoice** opens the [invoice step](#hours-invoice); **Edit the client** opens the client dialog.
+Each client is a card: its name, its hourly rate, who does the work and its tasks. **Not billed** gives the hours not on an invoice yet and what they come to at their rates, or **Everything is billed.** Below, the client's last eight entries of hours, newest first, under the headings **Date**, **Task**, **Time**, **Amount** and **Billed**: the date, the task, the description, the start time, **from the phone**, the time worked, the amount and **Not billed** or **Billed** with the invoice's number. Click a line to change or delete it. **Make an invoice** opens the [invoice step](#hours-invoice); **Edit the client** opens the client dialog.
 
 Hours whose invoice was deleted count as not billed again.
 
@@ -159,7 +159,7 @@ Changing hours already on an invoice does not change the invoice.
 
 ### Make an invoice {#hours-invoice}
 
-**Make an invoice** lists the client's hours not billed yet, all ticked; untick those to leave for later. Choose the **Issued** date and click **Make an invoice**. RANN's Roost makes a draft invoice to the client, numbered as the next of that year, with one line per task and rate: the task (or the description) with the dates, the hours as the quantity (to two decimals) and the rate as the price. Its sales taxes follow the person's last invoice. The hours are marked billed on it at the same time: the invoice and the marks are saved together, so if anything goes wrong neither is kept and the hours stay to bill. **Make an invoice** and **Edit the client** are greyed out for someone who may not change the client's group; **Add hours** offers only the clients of groups you may add to. Open the invoice on the [Invoices](#invoices) tab to check it, change its taxes and send it.
+**Make an invoice** lists the client's hours not billed yet, all ticked; untick those to leave for later; each line shows the date, the task, the description, the time and its amount (or "no rate"). **Total before taxes** adds up the hours ticked. Choose the **Issued** date and click **Make an invoice**. Every hour ticked needs a rate (its own, its task's or the client's); otherwise nothing is made and the app says so. RANN's Roost makes a draft invoice to the client, numbered as the next of that year, with one line per task and rate: the task (or the description) with the dates, the hours as the quantity (to two decimals) and the rate as the price. Its sales taxes follow the person's last invoice. The hours are marked billed on it at the same time: the invoice and the marks are saved together, so if anything goes wrong neither is kept and the hours stay to bill. **Make an invoice** and **Edit the client** are greyed out for someone who may not change the client's group; **Add hours** offers only the clients of groups you may add to. A line above the cards then says "Invoice number made as a draft (total): see the Invoices tab." Open the invoice on the [Invoices](#invoices) tab to check it, change its taxes and send it.
 
 ## Rental properties {#rentals}
 

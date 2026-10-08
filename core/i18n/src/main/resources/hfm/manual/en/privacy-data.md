@@ -67,7 +67,7 @@ Full account numbers are kept encrypted like everything else, and the screens sh
 
 RANN's Roost Mobile keeps its settings, the lists and contacts it receives from the computer and its queue of captures and new contacts in files encrypted with a key held in the phone's own secure hardware. It is locked by a PIN, with fingerprint or face unlock if you choose, and it is left out of the phone's cloud backups. A phone never holds the household's keys: it can only send captures and new contacts, and receive short lists. See [RANN's Roost Mobile](phone-app).
 
-What goes to the phone: the household's name and language, the base currency, the accounts and their balances, the categories, payees, members and pets, vehicles and metered equipment with their readings, the bills due in the next 60 days, this month's budgets and maintenance, and the contacts its owner can see (not archived ones). Full account numbers, contacts' account and client numbers, transactions, documents and health records do not go to the phone. Only what its owner can see on this computer goes to a phone: another user's private groups never do. See [What the phone receives](phones#sent-to-phone).
+What goes to the phone: the household's name and language, the base currency, the accounts and their balances, the categories, payees, members and pets, vehicles, trailers and metered equipment with their readings, the bills due in the next 60 days, this month's budgets and maintenance (and the maintenance and renewals due within 60 days), the calendar's coming appointments, work and school hours and children's activities, the medication refills coming up, the current season's checklist, the meters, tanks, clients, chores and organizations the log forms pick from, the saved places for trips, and the contacts its owner can see (not archived ones). Full account numbers, contacts' account and client numbers, policy numbers, plates, transactions and documents do not go to the phone, nor health records beyond the names of medications whose refill is near and the appointments in the calendar. Only what its owner can see on this computer goes to a phone: another user's private groups never do. See [What the phone receives](phones#sent-to-phone).
 
 ## Passwords and the recovery key {#passwords}
 
@@ -157,13 +157,26 @@ AI reading is off until you turn it on under [AI reading](ai) and add your own A
 
 @index: Wi-Fi; phone sync; transfer folder; cloud folder
 
-RANN's Roost Mobile talks only to this computer, over your home Wi-Fi, encrypted between the two. Nothing goes through the internet. The phone sends captures and new contacts, and receives the summary and contacts described in [On the phone](#on-the-phone). Away from home, the phone can leave its captures and new contacts, encrypted, in a folder of your own Google Drive, OneDrive, Dropbox or Nextcloud; that service sees only files it cannot read. RANN holds no account with those services. See [Phones](phones).
+RANN's Roost Mobile talks only to this computer, over your home Wi-Fi, encrypted between the two. Nothing of the household goes through the internet. The phone sends captures and new contacts, and receives the summary and contacts described in [On the phone](#on-the-phone). Away from home, the phone can leave its captures and new contacts, encrypted, in a folder of your own Google Drive, OneDrive, Dropbox or Nextcloud; that service sees only files it cannot read. RANN holds no account with those services. See [Phones](phones).
+
+### The phone's calendars and location {#phone-calendars-location}
+
+@index: calendar access; location; address lookup; stations nearby; Overpass; geocoder
+
+The phone app reads your phone's calendars only after you allow calendar access and tick calendars in its Settings, and writes into one only if you choose **Both ways**; that reading and writing happen on the phone, without the internet, and what is brought in comes to this computer by the usual encrypted transfer. See [Calendars on this phone](phone-app#phone-calendars) and [Calendars from phones and files](calendar-sync).
+
+The phone uses its location only if you allow it, and only for trips: one fix when you start, stop, take a break, arrive or save a place. Two lookups go on the internet, both off until you turn them on in the phone's Settings (see [Trips: addresses and stations](phone-app#trip-lookups)):
+
+- **Look up addresses**: tapping **Look up the address** sends that fix's coordinates to Google, through Android's geocoder, which returns the address.
+- **Stations nearby**: opening that list sends a rough position, rounded to about a kilometre, to OpenStreetMap's Overpass service, which returns the fuel stations and chargers around it.
+
+Nothing else about you or your trips is sent with them.
 
 ### Update checks {#update-checks}
 
 @index: update check; GitHub
 
-On Linux copies installed from a .deb or .rpm package or an AppImage, and only if you agreed, the app checks GitHub once a day for a new version. GitHub sees your computer's internet address and that the app is in use, as for any web page. Every update is checked against RANN's signature before it can be installed. Other copies are updated by their store and make no check.
+On Linux copies installed from a .deb or .rpm package or an AppImage, and only if you agreed, the app checks GitHub once a day for a new version. The phone app downloaded from GitHub does the same, if you agreed (see [Updates](phone-app#updates)). GitHub sees your computer's or phone's internet address and that the app is in use, as for any web page. Every update is checked against RANN's signature before it can be installed. Copies from the Microsoft Store, Flathub or Google Play are updated by their store and make no check.
 
 ### Links you open {#links}
 

@@ -47,7 +47,7 @@ Chaque fiche porte le régime et la personne, par exemple « CELI · Marie ». S
 - **Droits restants** : les droits de l’année moins les cotisations. Quand les cotisations sont plus élevées, le libellé devient **Excédent** et montre le surplus.
 - **Plafond à vie restant** : CELIAPP seulement : ce qui reste du plafond à vie de 40 000 $.
 
-**Voir les cotisations** (avec leur nombre) déplie la liste des lignes comptées : la date, le compte du régime (ou « Hors des livres » et sa note) et le montant. **Masquer les cotisations** la replie. Sous la liste, **Cotisation hors des livres** ouvre la fenêtre pour cette personne et ce régime.
+**Voir les cotisations** (avec leur nombre) déplie la liste des lignes comptées, sous les en-têtes **Date**, **Compte** et **Montant** : la date, le compte du régime (ou « Hors des livres » et sa note) et le montant. **Masquer les cotisations** la replie. Sous la liste, **Cotisation hors des livres** ouvre la fenêtre pour cette personne et ce régime.
 
 ### Comment les droits REER sont calculés {#rrsp-room}
 
@@ -276,7 +276,7 @@ Cliquez sur **Ajouter** pour enregistrer la ligne. Une deuxième saisie pour la 
 
 @index: bénéficiaire; titulaire successeur; désignation; succession
 
-Cet onglet énumère chaque régime enregistré avec les personnes qui le reçoivent au décès. Un régime sans bénéficiaire affiche « Aucun bénéficiaire inscrit. » en rouge. Sur chaque fiche, **Détails du régime** (pour un REER de conjoint, un FERR de conjoint, un REEE, un FERR, un FRV ou un CRI) ouvre [Détails du régime](plans#plan-details), et **Ajouter** ajoute un bénéficiaire. Cliquez sur un bénéficiaire pour le modifier.
+Cet onglet énumère chaque régime enregistré avec les personnes qui le reçoivent au décès. Un régime sans bénéficiaire affiche « Aucun bénéficiaire inscrit. » en rouge. Sur chaque fiche, **Détails du régime** (pour un REER de conjoint, un FERR de conjoint, un REEE, un FERR, un FRV ou un CRI) ouvre [Détails du régime](plans#plan-details), et **Ajouter** ajoute un bénéficiaire. Les bénéficiaires sont énumérés sous les en-têtes **Type** (Bénéficiaire, Titulaire successeur ou Bénéficiaire du REEE), **Bénéficiaire** (le nom, avec le lien) et **Part (%)**. Cliquez sur un bénéficiaire pour le modifier.
 
 > Remarque : C’est pour référence. C’est la désignation faite auprès de l’institution, ou dans un testament, qui compte.
 

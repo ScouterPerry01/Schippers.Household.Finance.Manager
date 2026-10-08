@@ -24,12 +24,14 @@ Then add your pay: click **Add a bill**, set **Type** to Income, choose the acco
 
 Add a regular transfer to savings the same way, with **Type** set to Transfer and the savings account under **To account**.
 
+A bill can also set itself up from the bill you receive: import it, or photograph it with the phone, on the Documents screen, open it and click **Create a bill from this**. The form comes filled in from the document, and its first statement is recorded. See [Bills from scanned documents](bills#bills-from-documents).
+
 The details of every field are in [Add or edit a bill](bills#bill-form).
 
 ## Pay bills as they come due {#pay-bills}
 
 1. Open the **To pay** tab of Bills. It lists what is overdue, due today and due in the next 30 days. Reminders also appear at the top of every screen.
-2. When a variable bill arrives, click **Set the bill's amount** and type the amount printed on it.
+2. When a variable bill arrives, click **Set the bill's amount** and type the amount printed on it, or bring the bill in on Documents and click **Record it as this bill's statement**.
 3. After you pay it through your bank, click **Mark paid**, check the date and amount, and click **Save**. The payment is recorded in the account and will match the bank statement when you import it. To pay only part of it, type that amount under **To pay** first: the rest stays due under **Outstanding**.
 4. To pass over a due date, click **Skip**; **Unskip** under Skipped brings it back. A payment marked by mistake can be reversed with **Undo** under Paid recently.
 

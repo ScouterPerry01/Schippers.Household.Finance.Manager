@@ -20,13 +20,13 @@ L’écran s’ouvre sur **Factures**.
 
 Les nouvelles factures et les nouveaux immeubles sont enregistrés dans le groupe de comptes partagé où vous pouvez ajouter des données (ou, s’il n’y en a pas, le premier groupe où vous le pouvez), et les listes montrent ceux de tous les groupes que vous voyez. Enregistrer, modifier ou supprimer demande la permission de modifier les données de ce groupe ; un utilisateur en lecture seule voit les onglets mais reçoit une erreur en enregistrant. Voir [Utilisateurs](users).
 
-> Remarque : RANN’s Roost ne prépare pas de formulaire T2125 (revenus d’entreprise) ni T776 (revenus de location) et ne donne pas de conseils fiscaux. Les totaux vous aident, vous ou la personne qui prépare votre déclaration, à les remplir.
+> Remarque : RANN's Roost ne prépare pas de formulaire T2125 (revenus d’entreprise) ni T776 (revenus de location) et ne donne pas de conseils fiscaux. Les totaux vous aident, vous ou la personne qui prépare votre déclaration, à les remplir.
 
 ## Factures {#invoices}
 
 @index: facture; facturer un client; comptes clients; inscrit à la TPS/TVH; TVQ; TVP; facture en retard
 
-Une facture est une demande de paiement que vous envoyez à un client. RANN’s Roost la numérote, ajoute les taxes de vente si vous les percevez, en fait un PDF à envoyer par courriel ou à imprimer et, quand le client paie, peut inscrire le dépôt dans votre compte bancaire comme revenu de travail autonome.
+Une facture est une demande de paiement que vous envoyez à un client. RANN's Roost la numérote, ajoute les taxes de vente si vous les percevez, en fait un PDF à envoyer par courriel ou à imprimer et, quand le client paie, peut inscrire le dépôt dans votre compte bancaire comme revenu de travail autonome.
 
 ### La liste des factures {#invoice-list}
 
@@ -35,7 +35,7 @@ En haut :
 - **Nouvelle facture** : ouvre la [boîte de la facture](#invoice-dialog) avec le prochain numéro de l’année déjà rempli.
 - Quand des factures attendent leur paiement, une ligne comme « 2 factures en attente de paiement : 1 250,00 $ ». Elle compte les factures à l’état **Envoyée** et donne un total par devise, la devise de base en premier, par exemple « 3 factures en attente de paiement : 1 250,00 $ + 400,00 $ US ».
 
-Chaque facture est listée, de la plus récente à la plus ancienne, avec :
+Chaque facture est listée, de la plus récente à la plus ancienne, sous les en-têtes de colonnes **Numéro**, **Client**, **État**, **Total** et **Actions** (voir [Les listes et leurs colonnes](basics#lists)), avec :
 
 - son numéro ;
 - le client, et dessous la date d’émission, « due le » et la date d’échéance s’il y en a une, et « payée le » et la date du paiement ;
@@ -91,7 +91,7 @@ La devise de la facture est la devise de base du ménage au moment de sa créati
 
 **PDF**, sur la ligne d’une facture, demande où enregistrer le fichier en proposant un nom comme « Facture 2026-001.pdf » (« .pdf » est ajouté si vous l’omettez), l’écrit, puis l’ouvre avec votre lecteur PDF. Rien n’est enregistré si vous annulez.
 
-Le PDF est une page au format lettre, dans la langue que vous utilisez dans RANN’s Roost, avec :
+Le PDF est une page au format lettre, dans la langue que vous utilisez dans RANN's Roost, avec :
 
 - « Facture » et son numéro en titre, puis le nom choisi dans **De** ;
 - **Facturer à**, le client et ses coordonnées ;
@@ -100,7 +100,7 @@ Le PDF est une page au format lettre, dans la langue que vous utilisez dans RANN
 - le sous-total, une ligne par taxe de vente avec son taux et son montant (par exemple « TPS (5 %) »), et le total ;
 - les notes sur la facture.
 
-Refaites le PDF après tout changement ; il n’est pas gardé dans RANN’s Roost.
+Refaites le PDF après tout changement ; il n’est pas gardé dans RANN's Roost.
 
 ### Boîte Marquer payée {#mark-paid}
 
@@ -133,7 +133,7 @@ L’onglet **Heures travaillées** garde les heures travaillées pour chaque cli
 - **Ajouter des heures** : ouvre la [boîte des heures](#hours-dialog) ; offert dès qu’il y a un client.
 - **Montrer les archivés** : montre aussi les clients marqués archivés.
 
-Chaque client est une carte : son nom, son taux horaire, qui fait le travail et ses tâches. **Non facturé** donne les heures pas encore sur une facture et ce qu’elles donnent à leurs taux, ou **Tout est facturé.** Dessous, les dernières heures du client, des plus récentes aux plus anciennes : la date, la tâche, la description, l’heure de début, **du téléphone**, la durée, le montant et **Non facturé** ou **Facturé** avec le numéro de la facture. Cliquez sur une ligne pour la modifier ou la supprimer. **Faire une facture** ouvre [l’étape de facturation](#hours-invoice) ; **Modifier le client** ouvre la boîte du client.
+Chaque client est une carte : son nom, son taux horaire, qui fait le travail et ses tâches. **Non facturé** donne les heures pas encore sur une facture et ce qu’elles donnent à leurs taux, ou **Tout est facturé.** Dessous, les huit dernières inscriptions d’heures du client, des plus récentes aux plus anciennes, sous les en-têtes **Date**, **Tâche**, **Durée**, **Montant** et **Facturé** : la date, la tâche, la description, l’heure de début, **du téléphone**, la durée, le montant et **Non facturé** ou **Facturé** avec le numéro de la facture. Cliquez sur une ligne pour la modifier ou la supprimer. **Faire une facture** ouvre [l’étape de facturation](#hours-invoice) ; **Modifier le client** ouvre la boîte du client.
 
 Les heures dont la facture a été supprimée comptent de nouveau comme non facturées.
 
@@ -159,7 +159,7 @@ Modifier des heures déjà sur une facture ne change pas la facture.
 
 ### Faire une facture {#hours-invoice}
 
-**Faire une facture** liste les heures du client pas encore facturées, toutes cochées ; décochez celles à garder pour plus tard. Choisissez la date **Émise le** et cliquez sur **Faire une facture**. RANN's Roost fait une facture brouillon au client, numérotée comme la suivante de l’année, avec une ligne par tâche et par taux : la tâche (ou la description) avec les dates, les heures comme quantité (à deux décimales) et le taux comme prix. Ses taxes de vente suivent la dernière facture de la personne. Les heures y sont marquées facturées en même temps : la facture et les marques sont enregistrées ensemble, de sorte qu’en cas de problème ni l’une ni les autres ne sont gardées et les heures restent à facturer. **Faire une facture** et **Modifier le client** sont grisés pour qui ne peut pas modifier le groupe du client ; **Ajouter des heures** n’offre que les clients des groupes où vous pouvez ajouter. Ouvrez la facture à l’onglet [Factures](#invoices) pour la vérifier, changer ses taxes et l’envoyer.
+**Faire une facture** liste les heures du client pas encore facturées, toutes cochées ; décochez celles à garder pour plus tard ; chaque ligne montre la date, la tâche, la description, le temps et son montant (ou « sans taux »). **Total avant taxes** additionne les heures cochées. Choisissez la date **Émise le** et cliquez sur **Faire une facture**. Chaque heure cochée doit avoir un taux (le sien, celui de sa tâche ou celui du client) ; sinon rien n’est fait et l’application le dit. RANN's Roost fait une facture brouillon au client, numérotée comme la suivante de l’année, avec une ligne par tâche et par taux : la tâche (ou la description) avec les dates, les heures comme quantité (à deux décimales) et le taux comme prix. Ses taxes de vente suivent la dernière facture de la personne. Les heures y sont marquées facturées en même temps : la facture et les marques sont enregistrées ensemble, de sorte qu’en cas de problème ni l’une ni les autres ne sont gardées et les heures restent à facturer. **Faire une facture** et **Modifier le client** sont grisés pour qui ne peut pas modifier le groupe du client ; **Ajouter des heures** n’offre que les clients des groupes où vous pouvez ajouter. Une ligne au-dessus des cartes dit alors « Facture numéro faite en brouillon (total) : voyez l’onglet Factures. » Ouvrez la facture à l’onglet [Factures](#invoices) pour la vérifier, changer ses taxes et l’envoyer.
 
 ## Immeubles locatifs {#rentals}
 

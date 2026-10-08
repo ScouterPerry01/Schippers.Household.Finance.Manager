@@ -105,6 +105,7 @@ The review of the document says what went wrong:
 - "Claude declined to read this document."
 - "The answer could not be checked, even after asking again; enter the fields by hand."
 - "The document is too long to read at once; send fewer pages.": crop or leave out pages in the preview.
+- "Send from 1 to 20 pages.": every page was left out, or more than 20 were to be sent. Send at least one page, and at most 20.
 - "Anthropic returned an error.", with the service's message.
 
 Nothing is changed in your books by a failed reading.

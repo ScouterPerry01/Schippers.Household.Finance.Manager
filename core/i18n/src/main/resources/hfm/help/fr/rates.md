@@ -12,7 +12,7 @@ Les montants en devises sont convertis au taux quotidien de la Banque du Canada.
 
 ## Devises que la Banque du Canada ne publie pas
 
-La Banque du Canada publie 27 devises. Sous Deuxième source de taux (facultative), cochez Télécharger aussi les taux que la Banque du Canada ne publie pas pour obtenir les autres d’ExchangeRate-API. Seule la liste des taux est téléchargée; rien sur votre ménage n’est envoyé.
+La Banque du Canada publie 27 devises. Sous Deuxième source de taux (facultative), cochez Télécharger aussi les taux que la Banque du Canada ne publie pas pour obtenir les autres d’ExchangeRate-API. Seule la liste des taux est téléchargée ; rien sur votre ménage n’est envoyé.
 
 ## Entrer un taux vous-même
 

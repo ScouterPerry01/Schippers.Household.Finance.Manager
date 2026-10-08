@@ -12,7 +12,8 @@ The **Health** screen is an organizer for your family's health information: medi
 The top of the screen holds:
 
 - **Person or pet**: whose records you are looking at. See [Choose the person or pet](health#choose-person).
-- **Health summary…**: saves a printable summary for the person shown. It is not offered for a pet. See [Health summary](health#health-summary).
+- **Print health summary**: sends the person's summary straight to the printer. Not offered for a pet.
+- **Health summary…**: saves a printable summary for the person shown, as a PDF that can be protected by a password. It is not offered for a pet. See [Health summary](health#health-summary).
 - The add button of the tab shown: **Add a medication**, **Add an appointment**, **Add a condition**, **Add an allergy**, **Add a test**, **Add a vaccine** or **Add a provider**.
 
 Below are seven tabs: **Medications**, **Appointments**, **Conditions**, **Allergies**, **Tests**, **Vaccines** and **Providers**. Every tab except **Providers** shows the records of the person or pet chosen at the top. **Providers** is one list for the whole household.
@@ -225,7 +226,7 @@ Providers cannot be deleted; mark them **No longer used** instead.
 
 The PDF also says when and with what it was prepared, and that it should be kept private since it holds health information.
 
-**Print health summary** sends the same summary straight to the printer (or opens it in your PDF reader when the computer has no print action). The copy made for printing is a temporary file, deleted when RANN's Roost closes.
+**Print health summary** sends the same summary straight to the printer (or opens it in your PDF reader when the computer has no print action). The copy made for printing is a temporary file, not password-protected: it is removed about two minutes after it goes to the printer (ten minutes after it opens in the PDF reader), and in any case when RANN's Roost closes.
 
 ### Save as PDF dialog {#save-pdf}
 @index: password; protected PDF; encryption

@@ -49,6 +49,17 @@ Dans l’onglet **Agenda** :
 2. Cliquez sur **Annuler** si vous avez marqué le mauvais.
 3. Cliquez sur **Modifier** pour changer ou supprimer le rendez-vous.
 
+## Sur votre téléphone {#phone}
+@index: agenda du téléphone; calendriers du téléphone; Dans les deux sens
+
+Une fois le téléphone jumelé, RANN's Roost Mobile montre ce qui s’en vient :
+
+1. Touchez l’icône de calendrier en haut de l’onglet Capturer ou Résumé, ou **Voir l’agenda** dans l’onglet Résumé : l’agenda présente les 60 prochains jours, jour par jour ou par mois, avec les rendez-vous, les horaires, les factures, les renouvellements de médicaments et les échéances envoyés par cet ordinateur.
+2. Pour importer aussi les calendriers de votre téléphone, ouvrez **Réglages** sur le téléphone, puis **Calendriers de ce téléphone**, choisissez **Importer seulement** et cochez les calendriers : ils paraissent dans l’agenda et arrivent dans le Calendrier de cet ordinateur, en lecture seule.
+3. Choisissez plutôt **Dans les deux sens** pour écrire aussi les rendez-vous, les horaires et les factures du ménage dans un calendrier du téléphone.
+
+Voir [L’agenda](phone-app#agenda) et [Calendriers des téléphones et des fichiers](calendar-sync).
+
 ## Ensuite {#next}
 
 - [Factures](bills) : les échéances du calendrier et comment les marquer payées.

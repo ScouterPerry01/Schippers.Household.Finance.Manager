@@ -7,7 +7,7 @@ Les institutions financières sont les banques, caisses, courtiers et autres ent
 - Cliquez sur Ajouter.
 - Inscrivez le Nom, par exemple Desjardins ou Banque Nationale.
 - Au besoin, ajoutez la Succursale, le Numéro d’institution (3 chiffres) et le Numéro de transit (5 chiffres). Ce sont les numéros imprimés sur vos chèques et sur un formulaire de dépôt direct.
-- Au besoin, ajoutez le Site Web, le Téléphone et des notes.
+- Au besoin, ajoutez le Site Web, le Téléphone et des Notes.
 - Cliquez sur Enregistrer.
 
 ## Modifier une institution

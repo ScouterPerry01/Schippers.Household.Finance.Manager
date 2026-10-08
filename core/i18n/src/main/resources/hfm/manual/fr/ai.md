@@ -105,6 +105,7 @@ La révision du document dit ce qui n’a pas fonctionné :
 - « Claude a refusé de lire ce document. »
 - « La réponse n’a pas pu être vérifiée, même après une seconde demande ; entrez les champs à la main. »
 - « Le document est trop long pour être lu d’un coup ; envoyez moins de pages. » : rognez ou laissez de côté des pages dans l’aperçu.
+- « Envoyez de 1 à 20 pages. » : toutes les pages ont été laissées de côté, ou plus de 20 devaient être envoyées. Envoyez au moins une page, et au plus 20.
 - « Anthropic a renvoyé une erreur. », avec le message du service.
 
 Une lecture qui échoue ne change rien dans vos livres.

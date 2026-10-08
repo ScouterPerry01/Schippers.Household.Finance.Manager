@@ -42,6 +42,16 @@ Les mots employés dans RANN's Roost et dans ce manuel, avec une courte définit
 - **Mise de côté** : de l’argent réservé à un objectif d’épargne à l’intérieur d’un compte, à la main ou selon un horaire. Voir [Objectifs d’épargne](goals).
 - **Valeur nette** : tout ce que vous possédez (comptes, placements, maison, véhicules et autres biens) moins tout ce que vous devez. Voir [Rapports](reports).
 - **Rappel** : un avis de quelque chose qui arrive à échéance, affiché dans le bandeau du haut et en notification de l’ordinateur. Voir [S’y retrouver](basics#reminders).
+- **État de compte (d’une facture)** : la facture qu’une entreprise envoie pour une période, inscrite sur la facture dans l’application : son numéro, son montant, sa date d’émission, sa date d’échéance (qui devient l’échéance de cette période) et, pour un service public, les relevés du compteur. Voir [États de compte](bills#statements).
+- **Versements à dates fixes** : une facture, comme les taxes foncières, dont les échéances et les montants sont les versements imprimés sur chaque état de compte ; ceux de l’année suivante sont proposés à partir de ceux de cette année jusqu’à ce que la nouvelle facture soit inscrite. Voir [Taxes foncières et autres versements](bills#instalments).
+- **Listes de factures** : les catégories et sous-catégories Maison et Entreprise qui classent les factures, chaque sous-catégorie payant dans une catégorie de dépenses. Voir [Listes de factures](categories#bill-lists).
+- **Facture d’entreprise** : une facture classée Entreprise, pour l’entreprise d’une personne ; ses paiements comptent comme dépenses d’entreprise de cette personne. Voir [Maison ou entreprise, catégorie et sous-catégorie](bills#classification).
+- **Commerce appris** : un commerce ou un fournisseur dont l’application a appris le nom, le type ou la catégorie à partir de vos corrections, pour s’en servir sur ses prochains documents. Voir [Ce que l’application apprend de vos corrections](documents#learning).
+- **Calendrier importé** : un calendrier du téléphone d’une personne, comme son calendrier Google ou Outlook, montré en lecture seule dans le Calendrier. Voir [Calendriers des téléphones et des fichiers](calendar-sync).
+- **Dans les deux sens** : le réglage du téléphone qui, en plus d’importer ses calendriers, écrit les prochains rendez-vous, horaires et factures du ménage dans un calendrier du téléphone. Voir [Dans les deux sens](phone-app#calendar-both-ways).
+- **Agenda (téléphone)** : la liste de l’application du téléphone de tout ce qui s’en vient dans les 60 prochains jours, jour par jour ou par mois. Voir [L’agenda](phone-app#agenda).
+- **Trajet (d’un déplacement)** : la partie d’un déplacement avec arrêts entre deux d’entre eux, avec sa propre distance et son propre motif. Voir [Déplacements](trips).
+- **Part de travail** : les kilomètres de travail d’un véhicule en pourcentage de tous les kilomètres parcourus dans l’année, la part demandée quand on déduit des frais de véhicule. Voir [Déplacements](trips).
 
 ## La banque et les emprunts {#banking}
 
@@ -160,6 +170,9 @@ Voir [Impôts](taxes). Au Québec, les feuillets provinciaux s’appellent des r
 - **Personne à charge** : une personne que vous soutenez, comme un enfant ou un parent, qui peut vous donner droit à des crédits d’impôt.
 - **Dépense partagée** : un coût payé par une personne pour plusieurs, à répartir entre elles. Voir [Argent en famille](family).
 - **Allocation** : de l’argent donné régulièrement à un enfant. Voir [Argent en famille](family).
+- **Année du régime** : les 12 mois sur lesquels un régime de santé ou dentaire compte ses maximums et ses franchises, et pour certains régimes l’échéance pour réclamer ; elle peut commencer à n’importe quelle date, comme le 1er juillet. Voir [Échéances et rappels](medical#deadlines).
+- **Compte gestion-santé** : un montant annuel d’un employeur qui rembourse les frais de santé et dentaires que les autres régimes laissent. Voir [Réclamations médicales](medical).
+- **Prix de base (d’une maison)** : le prix payé plus les améliorations en capital, moins les remises et subventions reçues pour elles ; il compte si la maison est vendue et n’a pas été la résidence principale chaque année. Voir [Onglet Projets](assets#projects-tab).
 
 ## L’urgence et la succession {#estate}
 

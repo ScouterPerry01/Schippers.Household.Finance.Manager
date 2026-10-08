@@ -473,7 +473,7 @@ private fun TankDeliveriesDialog(model: BooksModel, t: FuelTank, access: GroupAc
         }
         if (accounts.isNotEmpty()) {
             LabeledCheckbox(model.t("tank.recordPayment"), record) { record = it }
-            if (record) Picker(model.t("payStub.account"), accounts, account, { it.name }) { account = it }
+            if (record) Picker(model.t("bills.payingAccount"), accounts, account, { it.name }) { account = it }
         }
         Text(model.t("tank.deliveryHint"), style = MaterialTheme.typography.bodySmall)
         TextInput(model.t("calendar.notes"), notes) { notes = it }

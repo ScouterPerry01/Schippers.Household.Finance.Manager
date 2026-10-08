@@ -67,7 +67,7 @@ Les numéros de compte complets sont gardés chiffrés comme tout le reste, et l
 
 RANN's Roost Mobile garde ses réglages, les listes et les contacts qu’elle reçoit de l’ordinateur et sa file de saisies et de nouveaux contacts dans des fichiers chiffrés avec une clé conservée dans le matériel sécurisé du téléphone. Elle est verrouillée par un NIP, avec le déverrouillage par empreinte digitale ou par le visage si vous le choisissez, et elle est exclue des sauvegardes infonuagiques du téléphone. Un téléphone ne détient jamais les clés du ménage : il peut seulement envoyer des saisies et de nouveaux contacts, et recevoir de courtes listes. Voir [RANN's Roost Mobile](phone-app).
 
-Ce qui va au téléphone : le nom et la langue du ménage, la devise de base, les comptes et leurs soldes, les catégories, les bénéficiaires, les membres et les animaux, les véhicules et les équipements à compteur avec leurs lectures, les factures à payer dans les 60 prochains jours, les budgets et l’entretien du mois, et les contacts que son propriétaire peut voir (sauf les contacts archivés). Les numéros de compte complets, les numéros de compte et de client des contacts, les opérations, les documents et les dossiers de santé ne vont pas au téléphone. Seul ce que son propriétaire peut voir sur cet ordinateur va à un téléphone : les groupes privés d’un autre utilisateur, jamais. Voir [Ce que reçoit le téléphone](phones#sent-to-phone).
+Ce qui va au téléphone : le nom et la langue du ménage, la devise de base, les comptes et leurs soldes, les catégories, les bénéficiaires, les membres et les animaux, les véhicules, les remorques et les équipements à compteur avec leurs lectures, les factures à payer dans les 60 prochains jours, les budgets et l’entretien du mois (et l’entretien et les renouvellements dus dans les 60 jours), les prochains rendez-vous du calendrier, les heures de travail et d’école et les activités des enfants, les renouvellements de médicaments à venir, la liste saisonnière en cours, les compteurs, réservoirs, clients, tâches et organismes parmi lesquels les formulaires de suivi font choisir, les lieux enregistrés pour les trajets, et les contacts que son propriétaire peut voir (sauf les contacts archivés). Les numéros de compte complets, les numéros de compte et de client des contacts, les numéros de police, les plaques, les opérations et les documents ne vont pas au téléphone, ni les dossiers de santé au-delà du nom des médicaments dont le renouvellement approche et des rendez-vous du calendrier. Seul ce que son propriétaire peut voir sur cet ordinateur va à un téléphone : les groupes privés d’un autre utilisateur, jamais. Voir [Ce que reçoit le téléphone](phones#sent-to-phone).
 
 ## Les mots de passe et la clé de récupération {#passwords}
 
@@ -157,13 +157,26 @@ La lecture par IA est désactivée tant que vous ne l’activez pas sous [Lectur
 
 @index: Wi-Fi; synchronisation du téléphone; dossier de transfert; dossier infonuagique
 
-RANN's Roost Mobile ne parle qu’à cet ordinateur, par le Wi-Fi de la maison, de façon chiffrée entre les deux. Rien ne passe par Internet. Le téléphone envoie des saisies et de nouveaux contacts, et reçoit le résumé et les contacts décrits sous [Sur le téléphone](#on-the-phone). Loin de la maison, le téléphone peut déposer ses saisies et nouveaux contacts, chiffrés, dans un dossier de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud ; ce service ne voit que des fichiers illisibles. RANN n’a aucun compte auprès de ces services. Voir [Téléphones](phones).
+RANN's Roost Mobile ne parle qu’à cet ordinateur, par le Wi-Fi de la maison, de façon chiffrée entre les deux. Rien du ménage ne passe par Internet. Le téléphone envoie des saisies et de nouveaux contacts, et reçoit le résumé et les contacts décrits sous [Sur le téléphone](#on-the-phone). Loin de la maison, le téléphone peut déposer ses saisies et nouveaux contacts, chiffrés, dans un dossier de votre propre Google Drive, OneDrive, Dropbox ou Nextcloud ; ce service ne voit que des fichiers illisibles. RANN n’a aucun compte auprès de ces services. Voir [Téléphones](phones).
+
+### Les calendriers et la position du téléphone {#phone-calendars-location}
+
+@index: accès au calendrier; position; recherche d’adresse; stations à proximité; Overpass; géocodeur
+
+L’application du téléphone ne lit les calendriers du téléphone qu’après que vous avez permis l’accès au calendrier et coché des calendriers dans ses Réglages, et n’écrit dans l’un d’eux que si vous choisissez **Dans les deux sens** ; cette lecture et cette écriture se font sur le téléphone, sans Internet, et ce qui est apporté arrive à cet ordinateur par le transfert chiffré habituel. Voir [Calendriers de ce téléphone](phone-app#phone-calendars) et [Calendriers des téléphones et des fichiers](calendar-sync).
+
+Le téléphone n’utilise sa position que si vous le permettez, et seulement pour les trajets : une position quand vous partez, vous arrêtez, prenez une pause, arrivez ou enregistrez un lieu. Deux recherches passent par Internet, toutes deux désactivées tant que vous ne les activez pas dans les Réglages du téléphone (voir [Déplacements : adresses et stations](phone-app#trip-lookups)) :
+
+- **Trouver les adresses** : toucher **Trouver l’adresse** envoie les coordonnées de cette position à Google, par le géocodeur d’Android, qui renvoie l’adresse.
+- **Stations à proximité** : ouvrir cette liste envoie une position approximative, arrondie à environ un kilomètre, au service Overpass d’OpenStreetMap, qui renvoie les stations-service et les bornes de recharge autour.
+
+Rien d’autre sur vous ou vos trajets n’est envoyé avec elles.
 
 ### La vérification des mises à jour {#update-checks}
 
 @index: vérification des mises à jour; GitHub
 
-Sur les copies Linux installées à partir d’un paquet .deb ou .rpm ou d’une AppImage, et seulement si vous l’avez accepté, l’application vérifie une fois par jour sur GitHub si une nouvelle version est parue. GitHub voit l’adresse Internet de votre ordinateur et le fait que l’application est utilisée, comme pour toute page Web. Chaque mise à jour est vérifiée avec la signature de RANN avant de pouvoir être installée. Les autres copies sont mises à jour par leur boutique et ne font aucune vérification.
+Sur les copies Linux installées à partir d’un paquet .deb ou .rpm ou d’une AppImage, et seulement si vous l’avez accepté, l’application vérifie une fois par jour sur GitHub si une nouvelle version est parue. L’application du téléphone téléchargée de GitHub fait de même, si vous l’avez accepté (voir [Mises à jour](phone-app#updates)). GitHub voit l’adresse Internet de votre ordinateur ou de votre téléphone et le fait que l’application est utilisée, comme pour toute page Web. Chaque mise à jour est vérifiée avec la signature de RANN avant de pouvoir être installée. Les copies du Microsoft Store, de Flathub ou de Google Play sont mises à jour par leur boutique et ne font aucune vérification.
 
 ### Les liens que vous ouvrez {#links}
 

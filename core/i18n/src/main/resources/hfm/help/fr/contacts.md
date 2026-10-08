@@ -8,7 +8,7 @@ Contacts réunit les personnes et les organisations avec qui votre ménage fait 
 - Choisissez Organisation ou Personne. Une personne peut travailler dans une organisation (Travaille chez) et figure alors sous celle-ci.
 - Cochez un ou plusieurs Types (banque, pharmacie, médecin de famille...). Autres types… affiche la liste complète.
 - Sous Pour qui, cochez les personnes ou les animaux qu’il sert. Si personne n’est coché, il sert tout le ménage.
-- Ajoutez des téléphones, des courriels et des numéros de compte ou de client, chacun avec un libellé comme Bureau ou Cellulaire. Les numéros sont masqués; Afficher le numéro demande votre mot de passe.
+- Ajoutez des téléphones, des courriels et des numéros de compte ou de client, chacun avec un libellé comme Bureau ou Cellulaire. Les numéros sont masqués ; Afficher le numéro demande votre mot de passe.
 - Enregistrer dans choisit le groupe de comptes. Choisissez un groupe privé pour garder un contact pour vous seul.
 
 ## Trouver un contact
@@ -23,8 +23,12 @@ Les écrans des éléments affichent aussi leurs contacts, avec un bouton Lier u
 
 ## Rassembler les contacts de l’application
 
-La première fois que vous ouvrez Contacts, et chaque fois que vous choisissez Rassembler les contacts de l’application, l’application propose de créer des contacts à partir des institutions, professionnels de la santé, entrepreneurs, assureurs (des polices, des animaux, des véhicules et des régimes d’assurance maladie), courtiers et personnes à appeler qu’elle contient déjà, chacun lié à sa provenance. Ceux qui semblent être le même contact (même nom ou téléphone) sont présentés ensemble; cochez En faire un seul contact pour les fusionner. Rien n’est déplacé ni supprimé.
+La première fois que vous ouvrez Contacts, et chaque fois que vous choisissez Rassembler les contacts de l’application, l’application propose de créer des contacts à partir des institutions, professionnels de la santé, entrepreneurs, assureurs (des polices, des animaux, des véhicules et des régimes d’assurance maladie), courtiers et personnes à appeler qu’elle contient déjà, chacun lié à sa provenance. Ceux qui semblent être le même contact (même nom ou téléphone) sont présentés ensemble ; cochez En faire un seul contact pour les fusionner. Rien n’est déplacé ni supprimé.
+
+## Contacts venant du téléphone
+
+Un contact ajouté sur un téléphone jumelé attend votre vérification : Du téléphone, en haut de l’écran, en donne la liste. Ajouter comme nouveau contact… ouvre le formulaire déjà rempli ; Ajouter les coordonnées à ajoute ses téléphones et courriels à un contact que vous avez déjà ; Écarter le laisse tomber. Rien n’est ajouté avant votre choix.
 
 ## Fusionner deux contacts
 
-Quand le même contact existe en double, choisissez Fusionner avec… sur sa page et choisissez l’autre; les doublons probables (même nom ou téléphone) viennent en premier. Pour chaque champ que les deux remplissent différemment, choisissez la valeur à garder. Les téléphones, courriels, numéros, types, personnes servies, liens et personnes d’une organisation sont réunis, sans doublons. Si les deux sont conservés dans des groupes différents, Enregistrer dans choisit où va le contact fusionné, et la fenêtre avertit quand un contact privé deviendrait visible pour d’autres. L’autre contact est ensuite supprimé; cela ne peut pas être annulé.
+Quand le même contact existe en double, choisissez Fusionner avec… sur sa page et choisissez l’autre ; les doublons probables (même nom ou téléphone) viennent en premier. Pour chaque champ que les deux remplissent différemment, choisissez la valeur à garder. Les téléphones, courriels, numéros, types, personnes servies, liens et personnes d’une organisation sont réunis, sans doublons. Si les deux sont conservés dans des groupes différents, Enregistrer dans choisit où va le contact fusionné, et la fenêtre avertit quand un contact privé deviendrait visible pour d’autres. L’autre contact est ensuite supprimé ; cela ne peut pas être annulé.

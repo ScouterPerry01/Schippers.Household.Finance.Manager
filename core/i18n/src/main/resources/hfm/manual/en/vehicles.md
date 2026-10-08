@@ -101,7 +101,7 @@ The **Overview** tab shows:
 - the purchase line, "Bought date for price from seller, at distance", when a purchase date or price is entered;
 - for a vehicle no longer in use, its status, date and sale price, and for a sold one the gain or loss and the linked sale with its buyer;
 - the notes;
-- **Odometer readings**: the last 12 readings.
+- **Odometer readings**: the last 12 readings, under the headings **Date**, **Odometer**, **Source** and **Actions**.
 
 ### Odometer readings {#odometer}
 @index: mileage; kilometres; odometer
@@ -138,7 +138,7 @@ Enter a reading every month or two, or let fill-ups and services do it, so that 
 
 "Each task repeats after a number of months, a distance, or whichever comes first. The forecast uses your usual distance per day."
 
-Each active task shows a card with:
+The tasks are listed under the headings **Task**, **Due** and **Actions**. Each active task shows:
 
 - its name, its interval ("every 6 months or every 8,000 km") and when it was last done, with the odometer;
 - its state: **Next**, **Due soon** (in bold) or **Due now** (in red), with the due date and distance;
@@ -206,7 +206,7 @@ Tasks **Due soon** or **Due now** appear in the reminders at the top of the wind
 ## Service log tab {#service-tab}
 @index: service history; repairs; garage
 
-The **Service log** tab lists every service, the most recent first: the date, the odometer, the tasks done (or the notes, or "Service"), the garage or "Done myself", "payment entered" when a payment is linked, and the cost. **Add a service** adds one; **Edit** opens one. When empty: "No services recorded."
+The **Service log** tab lists every service, the most recent first: the date, the odometer, the tasks done (or the notes, or "Service"), the garage or "Done myself", "payment entered" when a payment is linked, and the cost, under the headings **Date**, **Odometer**, **Service**, **Cost** and **Actions**. **Add a service** adds one; **Edit** opens one. When empty: "No services recorded."
 
 ### Add or edit a service {#service-form}
 
@@ -238,7 +238,7 @@ Without a payment, the service's cost still counts in the **Costs** tab on its o
 ## Fuel tab {#fuel-tab}
 @index: gas; fill-up; charging; consumption; L/100 km; kWh
 
-At the top, the consumption over the last year and what a kilometre costs, with **Add a fill-up** (or **Add a charge** for an electric vehicle). Below, every fill-up, the most recent first: date, odometer, quantity in L or kWh ("partial" when the tank was not filled), home or public charging, station, "from the phone" for an entry made on the phone, "payment entered", or "no payment entered yet" for a fill-up from the phone with a cost and no payment, cost, and **Edit**.
+At the top, the consumption over the last year and what a kilometre costs, with **Add a fill-up** (or **Add a charge** for an electric vehicle). Below, every fill-up, the most recent first: date, odometer, quantity in L or kWh ("partial" when the tank was not filled), home or public charging, station, "from the phone" for an entry made on the phone, "payment entered", or "no payment entered yet" for a fill-up from the phone with a cost and no payment, cost, and **Edit**. The headings are **Date**, **Odometer**, **Quantity**, **Details**, **Cost** and **Actions**.
 
 ![The Fuel tab of a plug-in hybrid](images/vehicles-fuel.png)
 
@@ -287,14 +287,14 @@ For a plug-in hybrid, the forecast counts both energies. Its fuel is forecast as
 
 ### Suggest for the budget {#forecast-budget}
 
-**Suggest for the budget** (not for a viewer) opens a list of monthly amounts for the Transport categories, from the next 12 months of every vehicle in use kept in a shared account group and in the base currency: fuel (or EV charging for an electric vehicle; both for a plug-in hybrid) and vehicle maintenance, each rounded up to the dollar, beside the budget the category has now. A vehicle in a private group is left out, since budgets are the whole household's. **Use these amounts** sets each as a monthly budget from this month, keeping the category's rollover choice; other budgets do not change. See [Budgets](budgets).
+**Suggest for the budget** (not for a viewer) opens a list of monthly amounts for the Transport categories, from the next 12 months of every vehicle in use kept in a shared account group and in the base currency: fuel (or EV charging for an electric vehicle; both for a plug-in hybrid) and vehicle maintenance, each rounded up to the dollar, beside the budget the category has now (headings **Category**, **Monthly** and **Current budget**; "no budget yet" when there is none). A vehicle in a private group is left out, since budgets are the whole household's. **Use these amounts** sets each as a monthly budget from this month, keeping the category's rollover choice; other budgets do not change. See [Budgets](budgets).
 
 ## Warranties tab {#warranties-tab}
 @index: vehicle warranty; powertrain; extended warranty; corrosion; battery warranty
 
 "You are reminded 60 days before a warranty ends, so problems can be reported while still covered." A warranty ends on its end date, or, when it has a distance limit, on the day the odometer should reach it at the usual distance per day (from readings at least two weeks apart over the last year), whichever comes first. A warranty limited only by kilometres reminds this way too.
 
-Each warranty shows its kind and provider, its end date, its distance limit and its phone, with **Still covered** or **Ended**. A warranty is still covered while today is on or before its end date and the odometer has not passed its distance limit. **Add a warranty** adds one; **Edit** opens one.
+Each warranty shows its kind and provider, its end date, its distance limit and its phone, with **Still covered** or **Ended**, under the headings **Warranty**, **Coverage** and **Actions**. A warranty is still covered while today is on or before its end date and the odometer has not passed its distance limit. **Add a warranty** adds one; **Edit** opens one.
 
 ### Add or edit a warranty {#warranty-form}
 
@@ -322,7 +322,7 @@ A new warranty says "Save the warranty to keep a log of claims under it." Once i
 
 The claims are for your records: what you paid is not added to the **Costs** tab; enter the payment in the [Service log](vehicles#service-tab) with **Also enter the payment** for that.
 
-The reminder comes from 60 days before the **Ends** date until that date; a warranty limited only by distance gives no reminder, so watch the odometer.
+The reminder comes from 60 days before the warranty ends until that day: the **Ends** date or, with **Up to (km)**, the day the odometer should reach the limit at your usual distance per day, whichever comes first. A warranty limited only by distance reminds once the usual distance is known (odometer readings at least two weeks apart over the last year); without it, watch the odometer.
 
 ## Costs tab {#costs-tab}
 @index: cost of ownership; cost per km; running costs
@@ -333,7 +333,7 @@ Two buttons choose the period: this year, or **All years**. The tab shows:
 - "distance driven" and "amount per km", from the odometer readings of the period (at least two are needed);
 - the total of each category, largest first;
 - "Share of insurance premiums (estimate, not in the total)": when an insurance policy names the vehicle (see [Home and assets](assets)), its yearly premium split evenly between the things the policy names, for the days of the period the vehicle was owned (from its purchase date, or its first odometer reading) and the policy was in force. It is an estimate shown beside the running costs, not added to them, since the premium payments may also be linked to the vehicle in the register;
-- with **All years**, costs by year and category: a bar chart with a group of bars per year, one bar for each of the four largest categories and one for the others together, then the table **Year**, **Category**, **Amount**, with each year's total and its insurance share, which you can export or print;
+- with **All years**, costs by year and category: a bar chart with a group of bars per year, one bar for each of the four largest categories and one for the others together, then the table **Year**, **Category**, **Amount**, with each year's total and its insurance share (the line **Insurance premiums (share, estimate)**), which you can export or print;
 - "The purchase price (price) is not a running cost and is not included.";
 - a note when amounts in another currency have no exchange rate;
 - "Includes the transactions linked to this vehicle in the register, and fuel and service entries that have no payment of their own. The share of insurance premiums is an estimate from the policies that name the vehicle, shown on its own and not added to the total."

@@ -101,7 +101,7 @@ L’onglet **Aperçu** affiche :
 - la ligne d’achat, « Acheté le date pour prix chez vendeur, à distance », quand une date ou un prix d’achat est entré ;
 - pour un véhicule qui n’est plus en service, son état, sa date et son prix de vente et, pour un véhicule vendu, le gain ou la perte et la vente liée avec son acheteur ;
 - les notes ;
-- **Lectures de l’odomètre** : les 12 dernières lectures.
+- **Lectures de l’odomètre** : les 12 dernières lectures, sous les en-têtes **Date**, **Odomètre**, **Source** et **Actions**.
 
 ### Lectures de l’odomètre {#odometer}
 @index: kilométrage; kilomètres; odomètre
@@ -138,7 +138,7 @@ Inscrivez une lecture tous les mois ou deux, ou laissez les pleins et les entret
 
 « Chaque tâche revient après un nombre de mois, une distance, ou ce qui arrive en premier. La prévision utilise votre distance habituelle par jour. »
 
-Chaque tâche active a une carte avec :
+Les tâches sont listées sous les en-têtes **Tâche**, **Échéance** et **Actions**. Chaque tâche active affiche :
 
 - son nom, son intervalle (« aux 6 mois ou aux 8 000 km ») et quand elle a été faite la dernière fois, avec l’odomètre ;
 - son état : **Prochaine**, **Bientôt** (en gras) ou **À faire** (en rouge), avec la date et la distance d’échéance ;
@@ -206,7 +206,7 @@ Les tâches **Bientôt** ou **À faire** paraissent dans les rappels en haut de 
 ## Onglet Carnet d’entretien {#service-tab}
 @index: historique d’entretien; réparations; garage
 
-L’onglet **Carnet d’entretien** liste chaque entretien, le plus récent d’abord : la date, l’odomètre, les tâches faites (ou les notes, ou « Entretien »), le garage ou « Fait moi-même », « paiement inscrit » quand un paiement est lié, et le coût. **Ajouter un entretien** en ajoute un ; **Modifier** en ouvre un. Quand il est vide : « Aucun entretien inscrit. »
+L’onglet **Carnet d’entretien** liste chaque entretien, le plus récent d’abord : la date, l’odomètre, les tâches faites (ou les notes, ou « Entretien »), le garage ou « Fait moi-même », « paiement inscrit » quand un paiement est lié, et le coût, sous les en-têtes **Date**, **Odomètre**, **Entretien**, **Coût** et **Actions**. **Ajouter un entretien** en ajoute un ; **Modifier** en ouvre un. Quand il est vide : « Aucun entretien inscrit. »
 
 ### Ajouter ou modifier un entretien {#service-form}
 
@@ -238,7 +238,7 @@ Sans paiement, le coût de l’entretien compte tout de même seul à l’onglet
 ## Onglet Carburant {#fuel-tab}
 @index: essence; plein; recharge; consommation; L/100 km; kWh
 
-En haut, la consommation de la dernière année et ce que coûte un kilomètre, avec **Ajouter un plein** (ou **Ajouter une recharge** pour un véhicule électrique). En dessous, chaque plein, le plus récent d’abord : date, odomètre, quantité en L ou en kWh (« partiel » quand le plein n’a pas été fait), recharge à domicile ou publique, station, « du téléphone » pour une inscription faite sur le téléphone, « paiement inscrit », ou « paiement pas encore inscrit » pour un plein du téléphone avec un coût et sans paiement, coût, et **Modifier**.
+En haut, la consommation de la dernière année et ce que coûte un kilomètre, avec **Ajouter un plein** (ou **Ajouter une recharge** pour un véhicule électrique). En dessous, chaque plein, le plus récent d’abord : date, odomètre, quantité en L ou en kWh (« partiel » quand le plein n’a pas été fait), recharge à domicile ou publique, station, « du téléphone » pour une inscription faite sur le téléphone, « paiement inscrit », ou « paiement pas encore inscrit » pour un plein du téléphone avec un coût et sans paiement, coût, et **Modifier**. Les en-têtes sont **Date**, **Odomètre**, **Quantité**, **Détails**, **Coût** et **Actions**.
 
 ![L’onglet Carburant d’un véhicule hybride rechargeable](images/vehicles-fuel.png)
 
@@ -287,14 +287,14 @@ Pour un hybride rechargeable, les prévisions comptent les deux énergies. Son c
 
 ### Proposer au budget {#forecast-budget}
 
-**Proposer au budget** (pas pour un lecteur) ouvre une liste de montants mensuels pour les catégories Transport, tirés des 12 prochains mois de chaque véhicule en service gardé dans un groupe de comptes partagé et dans la devise de base : carburant (ou recharge électrique pour un véhicule électrique ; les deux pour un hybride rechargeable) et entretien du véhicule, chacun arrondi au dollar supérieur, à côté du budget actuel de la catégorie. Un véhicule d’un groupe privé est laissé de côté, puisque les budgets sont ceux de tout le ménage. **Utiliser ces montants** fixe chacun comme budget mensuel à partir de ce mois-ci, en gardant le choix de report de la catégorie ; les autres budgets ne changent pas. Voir [Budgets](budgets).
+**Proposer au budget** (pas pour un lecteur) ouvre une liste de montants mensuels pour les catégories Transport, tirés des 12 prochains mois de chaque véhicule en service gardé dans un groupe de comptes partagé et dans la devise de base : carburant (ou recharge électrique pour un véhicule électrique ; les deux pour un hybride rechargeable) et entretien du véhicule, chacun arrondi au dollar supérieur, à côté du budget actuel de la catégorie (en-têtes **Catégorie**, **Par mois** et **Budget actuel** ; « aucun budget » quand il n’y en a pas). Un véhicule d’un groupe privé est laissé de côté, puisque les budgets sont ceux de tout le ménage. **Utiliser ces montants** fixe chacun comme budget mensuel à partir de ce mois-ci, en gardant le choix de report de la catégorie ; les autres budgets ne changent pas. Voir [Budgets](budgets).
 
 ## Onglet Garanties {#warranties-tab}
 @index: garantie du véhicule; groupe motopropulseur; garantie prolongée; corrosion; garantie de la batterie
 
 « Un rappel arrive 60 jours avant la fin d’une garantie, pour signaler les problèmes pendant qu’ils sont couverts. » Une garantie se termine à sa date de fin ou, quand elle a une limite de kilométrage, le jour où l’odomètre devrait l’atteindre au kilométrage habituel par jour (d’après des lectures à au moins deux semaines d’écart dans la dernière année), selon ce qui arrive en premier. Une garantie limitée seulement en kilomètres donne ainsi un rappel elle aussi.
 
-Chaque garantie affiche son type et son fournisseur, sa date de fin, sa limite de kilométrage et son téléphone, avec **Toujours couvert** ou **Terminée**. Une garantie couvre encore tant que la date du jour ne dépasse pas sa date de fin et que l’odomètre n’a pas dépassé sa limite de kilométrage. **Ajouter une garantie** en ajoute une ; **Modifier** en ouvre une.
+Chaque garantie affiche son type et son fournisseur, sa date de fin, sa limite de kilométrage et son téléphone, avec **Toujours couvert** ou **Terminée**, sous les en-têtes **Garantie**, **Couverture** et **Actions**. Une garantie couvre encore tant que la date du jour ne dépasse pas sa date de fin et que l’odomètre n’a pas dépassé sa limite de kilométrage. **Ajouter une garantie** en ajoute une ; **Modifier** en ouvre une.
 
 ### Ajouter ou modifier une garantie {#warranty-form}
 
@@ -322,7 +322,7 @@ Une nouvelle garantie indique « Enregistrez la garantie pour tenir le registre 
 
 Les réclamations servent à vos dossiers : ce que vous avez payé n’est pas ajouté à l’onglet **Coûts** ; inscrivez le paiement au [Carnet d’entretien](vehicles#service-tab) avec **Inscrire aussi le paiement** pour cela.
 
-Le rappel arrive à partir de 60 jours avant la date de **Fin** et jusqu’à cette date ; une garantie limitée seulement en kilomètres ne donne pas de rappel, alors surveillez l’odomètre.
+Le rappel arrive à partir de 60 jours avant la fin de la garantie et jusqu’à ce jour : la date de **Fin** ou, avec **Jusqu’à (km)**, le jour où l’odomètre devrait atteindre la limite à votre distance habituelle par jour, selon la première échéance. Une garantie limitée seulement en kilomètres donne un rappel dès que la distance habituelle est connue (des lectures de l’odomètre à au moins deux semaines d’écart dans la dernière année) ; sinon, surveillez l’odomètre.
 
 ## Onglet Coûts {#costs-tab}
 @index: coût de possession; coût par km; coûts d’utilisation
@@ -333,7 +333,7 @@ Deux boutons choisissent la période : l’année en cours, ou **Toutes les ann�
 - « distance parcourus » et « montant par km », d’après les lectures de l’odomètre de la période (il en faut au moins deux) ;
 - le total de chaque catégorie, du plus grand au plus petit ;
 - « Part des primes d’assurance (estimation, non comprise dans le total) » : quand une police d’assurance nomme le véhicule (voir [Maison et biens](assets)), sa prime annuelle répartie également entre les biens que la police nomme, pour les jours de la période où le véhicule était à vous (depuis sa date d’achat, ou sa première lecture de l’odomètre) et où la police était en vigueur. C’est une estimation montrée à côté des coûts d’utilisation, sans y être ajoutée, puisque les paiements de prime peuvent aussi être liés au véhicule dans le registre ;
-- avec **Toutes les années**, les coûts par année et par catégorie : un graphique à barres avec un groupe de barres par année, une barre pour chacune des quatre plus grandes catégories et une pour les autres ensemble, puis le tableau **Année**, **Catégorie**, **Montant**, avec le total de chaque année et sa part d’assurance, que vous pouvez exporter ou imprimer ;
+- avec **Toutes les années**, les coûts par année et par catégorie : un graphique à barres avec un groupe de barres par année, une barre pour chacune des quatre plus grandes catégories et une pour les autres ensemble, puis le tableau **Année**, **Catégorie**, **Montant**, avec le total de chaque année et sa part d’assurance (la ligne **Primes d’assurance (part, estimation)**), que vous pouvez exporter ou imprimer ;
 - « Le prix d’achat (prix) n’est pas un coût d’utilisation et n’est pas compté. » ;
 - une remarque quand des montants dans une autre devise n’ont pas de taux de change ;
 - « Comprend les opérations liées à ce véhicule dans le registre, ainsi que les pleins et entretiens qui n’ont pas leur propre paiement. La part des primes d’assurance est une estimation tirée des polices qui nomment le véhicule, montrée à part et non ajoutée au total. »

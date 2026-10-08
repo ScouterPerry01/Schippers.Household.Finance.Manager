@@ -262,6 +262,25 @@ The Phones screen says whether phones can reach the computer, and at which addre
 
 On [Phones](phones), click **Remove** beside the phone: it can no longer send or receive anything. A phone never holds the household's keys, so nothing more is needed. **Forget** then deletes a removed phone from the list. Pair the new phone as usual.
 
+### The phone's calendars do not come in {#phone-calendars}
+
+@index: calendars missing; calendar access
+
+- On the phone, under **Settings**, **Calendars on this phone** must be on **Bring in only** or **Both ways**, with calendar access allowed and the calendars ticked. If access was taken back in Android's settings, allow it again there.
+- The calendars come with the next transfer. Over Wi-Fi, the household must be open on this computer with the phone owner's sign-in, as for captures.
+
+See [Calendars from phones and files](calendar-sync) and [Calendars on this phone](phone-app#phone-calendars).
+
+### Trips: no position, address or stations {#trip-location}
+
+@index: no location; address not found; stations not found
+
+- "No location: allow the app to know where the phone is, or add a station by hand.": the app may not use the phone's location. Allow it in Android's settings, or choose places and type addresses by hand. See [Location](phone-app#location).
+- "No address found for this position: type it if you want one." or "This phone has no address lookup.": type the address. **Look up addresses** must be on in the phone's **Settings**.
+- "OpenStreetMap is busy or could not be reached. Search again in a moment.": the phone needs the internet for **Stations nearby**; tap **Search again** later, or **Add a station by hand**.
+
+See [Trips: addresses and stations](phone-app#trip-lookups).
+
 ## Backups {#backups}
 
 @index: backup problems; backup failed

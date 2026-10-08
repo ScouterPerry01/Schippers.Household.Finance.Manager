@@ -1,6 +1,6 @@
 # Family money
 
-Family money keeps track of money that moves between people rather than between your accounts: expenses shared on a trip or with roommates, money lent within the family, and children's allowances. It is in the **Money** group of the menu, under **Family money**.
+Family money keeps track of money that moves between people rather than between your accounts: expenses shared on a trip or with roommates, money lent within the family, children's allowances and the chores that earn them money. It is in the **Money** group of the menu, under **Family money**.
 
 Nothing on this screen creates transactions in your accounts or changes your balances, budgets or reports. It is a separate notebook of who owes whom. When real money changes hands (you e-transfer a friend, you hand your child cash), record that payment in the account register as usual if you want it in your books too.
 
@@ -210,7 +210,7 @@ The **Chores** tab keeps each child's chores, worth an amount, points, or both. 
 - **Add a chore**: opens the [chore dialog](#chore-dialog). It appears once the household has a member; it starts with the first child.
 - One card per child: **To pay** (the money earned by chores done up to today and not paid yet, and how many) and the points, in all and this month.
 - **Pay with the allowance**: when the child has an allowance in the same currency, adds one **Earned or received** entry for what is to pay, noted **Chores**, and marks those chores paid. **Mark paid** on the [list of allowances](#allowance-list) does the same when it pays the allowance. Without an allowance, **Mark as paid** marks them paid without adding anything.
-- Each chore: its name (click it to change it), what it is worth, how many times it was done in the last seven days, **History**, and **Done today**, which ticks it for today. Once done today, a chore done once a day shows **Already done today**, greyed out, so it cannot earn twice the same day; a chore that may be done several times a day shows **Done again**. Buttons are greyed out for someone who may not tick or change the chore's group.
+- Each chore, under the headings **Chore**, **Earned**, **This week** and **Actions**: its name (click it to change it), what it is worth, how many times it was done in the last seven days, **History**, and **Done today**, which ticks it for today. Once done today, a chore done once a day shows **Already done today**, greyed out, so it cannot earn twice the same day; a chore that may be done several times a day shows **Done again**. Buttons are greyed out for someone who may not tick or change the chore's group.
 
 ### Add a chore dialog {#chore-dialog}
 

@@ -36,7 +36,7 @@ En haut de l’écran :
 - **Mettre à jour les taux** : télécharge maintenant les taux manquants, de la Banque du Canada et, si elle est activée, de la deuxième source. Le résultat s’affiche en dessous : « Les taux sont à jour. », le nombre de taux ajoutés, ou « Les taux n’ont pas pu être téléchargés : » avec la raison.
 - Une note : les montants en devises sont convertis dans la devise de base au taux quotidien de la Banque du Canada, et les taux que vous entrez vous-même ne sont jamais remplacés.
 
-Puis une ligne par devise dont le ménage a besoin : les devises des comptes et des placements, et les devises que vous suivez. Chaque ligne montre :
+Puis une ligne par devise dont le ménage a besoin : les devises des comptes et des placements, et les devises que vous suivez, sous les en-têtes de colonne Devise, Taux, Date et source, et Actions. Voir [Les listes et leurs colonnes](basics#lists). Chaque ligne montre :
 
 - Le code de la devise, comme USD.
 - Le dernier taux des 30 derniers jours, en dollars canadiens par unité, comme « 1,3642 $ CA par USD ». Les taux sont affichés avec six chiffres significatifs ; la valeur complète est gardée pour les conversions.
@@ -96,7 +96,7 @@ Quand une source est activée, ses cours sont aussi téléchargés chaque fois q
 
 ### Cryptoactifs détenus {#coins}
 
-Affiché quand un portefeuille détient un cryptoactif. Une ligne par cryptoactif :
+Affiché quand un portefeuille détient un cryptoactif, sous les en-têtes de colonne Devise, Cours, Nom CoinGecko et Actions. Une ligne par cryptoactif :
 
 - Le code du cryptoactif, son dernier cours en dollars canadiens avec sa date et sa provenance, ou « Aucun taux pour l’instant ».
 - **Nom CoinGecko** : le nom que CoinGecko donne au cryptoactif, celui qui figure dans l’adresse de sa page sur coingecko.com, comme bitcoin ou ethereum. Les cryptoactifs courants sont déjà remplis ; entrez-le pour les autres, ou pour en corriger un.
@@ -106,7 +106,7 @@ Un cryptoactif sans nom CoinGecko est indiqué comme non disponible lors du tél
 
 ### Cours au comptant des métaux précieux {#metals}
 
-Une ligne par métal (Or, Argent, Platine, Palladium) avec son dernier cours par once troy en dollars canadiens, sa date, et s’il s’agit d’un cours du marché ou d’un cours entré à la main, ou « Aucun taux pour l’instant ».
+Sous les en-têtes de colonne Métal et Cours au comptant, une ligne par métal (Or, Argent, Platine, Palladium) avec son dernier cours par once troy en dollars canadiens, sa date, et s’il s’agit d’un cours du marché ou d’un cours entré à la main, ou « Aucun taux pour l’instant ».
 
 Pour entrer un cours vous-même :
 
@@ -119,7 +119,7 @@ Les cours sont pour une once troy (31,1035 g) de métal pur. Les pièces et ling
 
 ## Taux récents {#recent-rates}
 
-Cliquez sur **Taux récents** sur la ligne d’une devise. Le bas de l’écran montre « Taux récents pour » la devise : chaque taux des 60 derniers jours, les plus récents en premier, avec sa date, sa valeur et sa provenance.
+Cliquez sur **Taux récents** sur la ligne d’une devise. Le bas de l’écran montre « Taux récents pour » la devise : chaque taux des 60 derniers jours, les plus récents en premier, sous les en-têtes de colonne Date, Taux, Source et Actions.
 
 - **Supprimer** : affiché seulement pour les taux entrés à la main. Retire tout de suite le taux de ce jour. Les taux téléchargés ne peuvent pas être supprimés.
 

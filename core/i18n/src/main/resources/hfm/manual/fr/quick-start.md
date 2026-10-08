@@ -12,6 +12,7 @@ Ayez sous la main :
 - un mot de passe d’au moins 12 caractères, sans votre nom d’utilisateur, dont vous vous souviendrez (quelques mots à la suite font très bien l’affaire) ;
 - une imprimante, ou un crayon et du papier, pour la clé de récupération ;
 - les soldes actuels de vos comptes bancaires et de vos cartes ;
+- un reçu ou une facture, sur papier à photographier ou en PDF ;
 - un relevé récent téléchargé du site de votre banque, en fichier OFX, QFX, QBO ou CSV (cherchez « Télécharger les opérations » ou « Exporter » sur le site de la banque) ;
 - pour les sauvegardes, un disque externe ou un dossier infonuagique (OneDrive, Google Drive, Dropbox) ;
 - au besoin, un téléphone Android où RANN's Roost Mobile est installée.
@@ -99,7 +100,18 @@ Ajoutez vos principaux comptes de la même façon à partir de l’écran **Comp
 
 Les rappels s’affichent ensuite en haut de l’application et en notifications de l’ordinateur. Voir [Factures](bills).
 
-## Étape 8 : Importer un premier relevé {#statement}
+## Étape 8 : Classer un premier reçu {#receipt}
+
+@index: premier reçu; classer un reçu; À vérifier
+
+1. Cliquez sur **Ouvrir Documents** dans le guide. L’écran **Documents** s’ouvre.
+2. Faites glisser un reçu (une photo ou un PDF) sur l’écran, ou cliquez sur **Importer des fichiers…** et choisissez-le. Il est lu sur cet ordinateur : le commerce, la date et le total sont trouvés pour vous, et il attend dans l’onglet **À vérifier**.
+3. Cliquez sur **Vérifier** sur ce document, et comparez **Commerce ou fournisseur**, **Date** et **Total** avec l’image.
+4. Sous **Classer avec**, cliquez sur **Joindre** à côté du paiement correspondant s’il est déjà dans vos livres, ou sur **Nouvelle opération à partir de ce document** pour l’inscrire, en choisissant le compte sous **Payé avec** et une **Catégorie**.
+
+Une facture se classe de la même façon sur l’une de vos factures, ou devient une nouvelle facture. Voir [Premiers pas avec les documents](start-documents) et [Documents](documents).
+
+## Étape 9 : Importer un premier relevé {#statement}
 
 @index: importer un relevé; OFX; QFX; CSV
 
@@ -110,7 +122,7 @@ Les rappels s’affichent ensuite en haut de l’application et en notifications
 
 Vous pouvez vous arrêter ici et faire le rapprochement plus tard. Voir [Premiers pas avec l’argent](start-money) et [Comptes](accounts).
 
-## Étape 9 : Régler les sauvegardes {#backups}
+## Étape 10 : Régler les sauvegardes {#backups}
 
 @index: sauvegardes; dossier de sauvegarde
 
@@ -123,7 +135,7 @@ Dès le premier jour, l’application est réglée pour faire une sauvegarde cha
 
 Les sauvegardes restent chiffrées. Voir [Sauvegardes](backups).
 
-## Étape 10 : Jumeler votre téléphone (facultatif) {#phone}
+## Étape 11 : Jumeler votre téléphone (facultatif) {#phone}
 
 @index: jumeler un téléphone; code QR
 
@@ -132,7 +144,7 @@ Les sauvegardes restent chiffrées. Voir [Sauvegardes](backups).
 3. Sur le téléphone, ouvrez RANN's Roost Mobile, touchez « Jumeler à un ordinateur » et numérisez le code dans les 10 minutes.
 4. Si Windows demande d’autoriser l’application sur les réseaux, autorisez-la sur les réseaux privés.
 
-Dès lors, les reçus et factures que vous photographiez arrivent dans l’onglet **À vérifier** de **Documents** chaque fois que le ménage est ouvert. Voir [Premiers pas avec le téléphone](start-phone).
+Dès lors, les reçus et factures que vous photographiez arrivent dans l’onglet **À vérifier** de **Documents** chaque fois que le ménage est ouvert. Le téléphone peut aussi inscrire les déplacements, les pleins, les relevés de compteur, les heures, les tâches ménagères et le bénévolat, cocher la liste saisonnière et montrer l’agenda des 60 prochains jours. Voir [Premiers pas avec le téléphone](start-phone).
 
 ## Pour aller plus loin {#next}
 

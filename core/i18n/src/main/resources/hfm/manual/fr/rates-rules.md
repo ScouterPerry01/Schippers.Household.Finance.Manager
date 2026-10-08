@@ -66,7 +66,7 @@ En haut à droite :
 
 @index: taux actuel; valeur d’aujourd’hui
 
-Sous **En vigueur aujourd’hui**, l’écran montre la valeur qui s’applique aujourd’hui, avec « depuis le » et la date de son entrée en vigueur.
+Sous **En vigueur aujourd’hui**, l’écran montre la valeur qui s’applique aujourd’hui, avec « depuis le » et la date de son entrée en vigueur. Les en-têtes de colonne sont Valeur et Depuis, précédés de Province ou territoire pour une règle qui peut varier selon la province. Voir [Les listes et leurs colonnes](basics#lists).
 
 Pour une règle qui peut varier selon la province ou le territoire, il y a une ligne pour **Partout** (la valeur utilisée là où une province n’a pas la sienne), puis une ligne par province et territoire : la vôtre d’abord, marquée « (votre province) », puis les autres par ordre alphabétique. Une ligne dont la valeur vient de la valeur pour partout le dit (« la valeur pour partout »). Votre province est celle du ménage, indiquée dans [Membres du ménage](members).
 
@@ -76,7 +76,7 @@ Pour une règle qui est la même partout, il y a une seule ligne.
 
 @index: taux passés; historique des taux; source d’un taux; valeur intégrée; valeur du ménage
 
-Sous **Historique des valeurs**, toutes les valeurs de la règle, de la plus récente à la plus ancienne. Chaque ligne montre :
+Sous **Historique des valeurs**, toutes les valeurs de la règle, de la plus récente à la plus ancienne, sous les en-têtes de colonne En vigueur à partir du, Province ou territoire (pour une règle qui peut varier selon la province), Valeur et, pour un administrateur, Actions. Chaque ligne montre :
 
 - La date d’entrée en vigueur de la valeur.
 - Pour une règle qui peut varier selon la province : la province ou le territoire, ou Partout.

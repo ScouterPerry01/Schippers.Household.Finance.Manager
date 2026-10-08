@@ -21,6 +21,6 @@ Rapport personnalisé vous laisse choisir les lignes et les colonnes, et ce qu�
 
 ## Enregistrer un rapport
 
-Cliquez sur Enregistrer ce rapport… pour garder vos choix sous un nom. Les rapports enregistrés apparaissent sous Rapports enregistrés, au bas de la liste ; cliquez sur le ✕ à côté d’un rapport pour le retirer.
+Cliquez sur Enregistrer ce rapport… pour garder vos choix sous un nom. Les rapports enregistrés apparaissent sous Rapports enregistrés, au bas de la liste ; cliquez sur le ✕ à côté d’un rapport pour le retirer (l’application le demande d’abord).
 
-Un rapport personnalisé peut aussi être produit selon un calendrier : chaque mois, chaque trimestre ou chaque année. Le PDF va dans le dossier de votre choix. Il est produit la première fois que le ménage est ouvert après la fin de la période, et les périodes manquées aussi.
+Un rapport personnalisé peut aussi être produit selon un calendrier : chaque mois, chaque trimestre ou chaque année. Le PDF va dans le dossier de votre choix. L’application vérifie à l’ouverture du ménage, puis toutes les heures tant qu’il est ouvert : chaque période terminée est alors produite, y compris celles manquées pendant que le ménage était fermé, jusqu’à un an en arrière.

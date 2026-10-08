@@ -1,10 +1,10 @@
 # Déplacements
 
-Le registre des déplacements garde les trajets que vous faites en voiture : pour le travail, pour des soins, ou tout déplacement commencé et terminé sur le téléphone. À partir de lui, RANN’s Roost additionne les kilomètres de chaque personne par motif, calcule la part de la conduite de chaque véhicule qui était pour le travail, imprime le registre que l’ARC demande, compte les kilomètres dans chaque province ou État, et transforme un long déplacement médical en dépense médicale. Les déplacements faits avec le téléphone donnent aussi au véhicule ses lectures d’odomètre et montrent comment une remorque change la consommation. Il se trouve dans le groupe **Maison et famille** du menu, sous **Déplacements**.
+Le registre des déplacements garde les trajets que vous faites en voiture : pour le travail, pour des soins, ou tout déplacement commencé et terminé sur le téléphone. À partir de lui, RANN's Roost additionne les kilomètres de chaque personne par motif, calcule la part de la conduite de chaque véhicule qui était pour le travail, imprime le registre que l’ARC demande, compte les kilomètres dans chaque province ou État, et transforme un long déplacement médical en dépense médicale. Les déplacements faits avec le téléphone donnent aussi au véhicule ses lectures d’odomètre et montrent comment une remorque change la consommation. Il se trouve dans le groupe **Maison et famille** du menu, sous **Déplacements**.
 
 @index: registre de kilométrage; carnet de route; kilomètres; usage d’un véhicule pour le travail; kilomètres de travail; frais de véhicule
 
-> Remarque : L’ARC s’attend à un carnet de route des déplacements d’affaires ou d’emploi (date, destination, motif et distance) pour appuyer une déduction de frais de véhicule, avec le total des kilomètres parcourus dans l’année. RANN’s Roost ne donne pas de conseils fiscaux ; vérifiez les règles de l’ARC avant de déduire quoi que ce soit.
+> Remarque : L’ARC s’attend à un carnet de route des déplacements d’affaires ou d’emploi (date, destination, motif et distance) pour appuyer une déduction de frais de véhicule, avec le total des kilomètres parcourus dans l’année. RANN's Roost ne donne pas de conseils fiscaux ; vérifiez les règles de l’ARC avant de déduire quoi que ce soit.
 
 ![L’écran Déplacements](images/trips.png)
 
@@ -31,7 +31,7 @@ Une carte par véhicule qui a des déplacements de travail ou des lectures d’o
 - **Parcourus en tout** : les kilomètres parcourus dans l’année, d’après les lectures d’odomètre du véhicule : la dernière lecture de l’année moins la première. Il faut au moins deux lectures dans l’année ; sinon, la carte vous demande d’ajouter une lecture au début et à la fin de l’année.
 - **Part de travail** : les kilomètres de travail en pourcentage de tous les kilomètres parcourus, arrondis et jamais au-dessus de 100 %. C’est la part d’usage pour le travail demandée quand on déduit des frais de véhicule.
 
-Les lectures d’odomètre se saisissent dans l’écran [Véhicules](vehicles), ou s’envoient du téléphone avec **Odomètre ou heures** (voir [RANN’s Roost Mobile](phone-app#odometer-form)) ; les déplacements avec lectures d’odomètre comptent aussi comme lectures. Les véhicules inactifs gardent leurs cartes pour les années où ils ont servi.
+Les lectures d’odomètre se saisissent dans l’écran [Véhicules](vehicles), ou s’envoient du téléphone avec **Odomètre ou heures** (voir [RANN's Roost Mobile](phone-app#odometer-form)) ; les déplacements avec lectures d’odomètre comptent aussi comme lectures. Les véhicules inactifs gardent leurs cartes pour les années où ils ont servi.
 
 Quand les déplacements de l’année ont été faits dans plus d’une province ou d’un État, une carte **Par province ou État** donne les kilomètres de chacun, par exemple « Québec : 1 240 km » et « ON : 64 km » : les chiffres que demandent les déclarations de taxe sur les carburants comme l’IFTA. Chaque déplacement compte là où il a été fait, comme choisi sur le déplacement (voir **Province ou État** plus bas) ; par défaut, là où il a commencé.
 
@@ -39,7 +39,7 @@ Quand les déplacements de l’année ont été faits dans plus d’une province
 
 ### La liste des déplacements {#trip-list}
 
-Les déplacements de l’année sont listés du plus récent au plus ancien. Chaque ligne montre :
+Les déplacements de l’année sont listés du plus récent au plus ancien, sous les en-têtes **Date**, **Déplacement**, **Distance** et **Actions**. Chaque ligne montre :
 
 - la date ;
 - le point de départ et la destination (« Maison → Bureau du client »), avec **↺** pour un aller-retour ;
@@ -87,7 +87,7 @@ La même boîte ajoute un déplacement (**Ajouter un déplacement**) ou le modif
 ## Les déplacements du téléphone {#from-phone}
 @index: GPS; position; déplacement sur le téléphone; Partir; Arrivée; arrêts; trajets; déplacement à plusieurs arrêts; pauses; photos de déplacement
 
-Sur le téléphone, **Déplacement** dans l’onglet Capturer commence un déplacement et, plus tard, le termine (voir [RANN’s Roost Mobile](phone-app#trip-form)). Le téléphone prend une seule position au départ, à chaque arrêt et pause, et à l’arrivée, jamais entre les deux, et nomme chaque endroit d’après le lieu enregistré le plus proche dans son rayon. À l’arrivée, il envoie le déplacement comme une saisie ; l’ordinateur l’ajoute aux déplacements avec :
+Sur le téléphone, **Déplacement** dans l’onglet Capturer commence un déplacement et, plus tard, le termine (voir [RANN's Roost Mobile](phone-app#trip-form)). Le téléphone prend une seule position au départ, à chaque arrêt et pause, et à l’arrivée, jamais entre les deux, et nomme chaque endroit d’après le lieu enregistré le plus proche dans son rayon. À l’arrivée, il envoie le déplacement comme une saisie ; l’ordinateur l’ajoute aux déplacements avec :
 
 - la date et les heures, le véhicule, le conducteur et les passagers ;
 - les lieux aux deux bouts, ou le nom tapé, ou l’adresse ou les coordonnées quand le lieu n’a pas été nommé ; l’adresse et la position de chaque bout ;
@@ -110,7 +110,7 @@ Un déplacement avec des arrêts compte trajet par trajet : du départ au premie
 
 **Lieux** liste les lieux enregistrés : nom, type, adresse, coordonnées et rayon, province ou État, et « enregistré sur le téléphone » pour un lieu fait là. Cliquez sur un lieu, ou **Modifier**, pour le changer. **Ajouter un lieu** en ajoute un. **Afficher les lieux archivés** inclut ceux qui sont archivés.
 
-Le téléphone reçoit les lieux de chaque groupe de comptes que vous voyez, leur compare sa position au départ, aux arrêts et à l’arrivée d’un déplacement, et vous laisse ajouter le lieu où vous êtes, ajouter une station ou en renommer un. Les lieux restent sur cet ordinateur et vos téléphones, dans les fichiers chiffrés du ménage ; ils ne sont jamais envoyés à un service de cartes. Sur le téléphone, deux recherches peuvent être activées : une adresse trouvée d’après une position par le géocodeur d’Android (Google), et les stations à proximité d’après OpenStreetMap (voir [RANN’s Roost Mobile](phone-app#trip-lookups)).
+Le téléphone reçoit les lieux de chaque groupe de comptes que vous voyez, leur compare sa position au départ, aux arrêts et à l’arrivée d’un déplacement, et vous laisse ajouter le lieu où vous êtes, ajouter une station ou en renommer un. Les lieux restent sur cet ordinateur et vos téléphones, dans les fichiers chiffrés du ménage ; ils ne sont jamais envoyés à un service de cartes. Sur le téléphone, deux recherches peuvent être activées : une adresse trouvée d’après une position par le géocodeur d’Android (Google), et les stations à proximité d’après OpenStreetMap (voir [RANN's Roost Mobile](phone-app#trip-lookups)).
 
 ### Ajouter ou modifier un lieu {#place-dialog}
 

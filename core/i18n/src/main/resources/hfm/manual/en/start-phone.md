@@ -14,7 +14,7 @@ RANN's Roost Mobile, on your Android phone, lets you photograph a receipt at the
 
 1. Install RANN's Roost Mobile from Google Play, or the GitHub edition from RANN's releases on GitHub (see [Two editions](phone-app#editions)).
 2. Open it. Allow notifications if Android asks, to get bill and budget reminders.
-3. Choose a PIN of 4 to 8 digits and enter it again. The app asks for it each time you come back after more than a minute (see [The lock](phone-app#lock)).
+3. Choose a PIN of 4 to 8 digits and enter it again. The app asks for it again when you come back after a minute away, or after the time you choose in Settings (see [The lock](phone-app#lock) and [Ask for the PIN again](phone-app#lock-time)). The app follows the phone's language; Settings can keep it in English or French (see [Language of the app](phone-app#language)).
 4. GitHub edition only: choose whether it may check for updates once a day.
 
 ## 2. Pair the phone with your computer {#pair}
@@ -36,6 +36,8 @@ If the phone cannot reach the computer, check that both are on the same Wi-Fi an
 
 Use **Bill** for a bill, **Other document** for anything else to keep, **Quick expense** for a purchase without a receipt, and **Odometer or hours** for a vehicle reading. Details: [The capture form](phone-app#capture-form).
 
+The buttons below them log other things the computer keeps: **Seasonal checklist** to tick off the season's tasks, **Meter or tank reading**, **Hours worked**, **Chores** and **Volunteer hours**, **Trip** to log a drive from start to arrival, **Fuel or charge** for a fill-up, and **Stations nearby**. See [Seasonal checklist on the phone](phone-app#seasonal-form), [Log forms](phone-app#log-forms), [Trip](phone-app#trip-form) and [Fuel or charge](phone-app#fuel-form).
+
 ## 4. Send it {#send}
 
 At home, with RANN's Roost open on the computer, the capture is sent as soon as you save it. Otherwise it waits on the phone and goes by itself the next time the phone is on your Wi-Fi.
@@ -49,11 +51,11 @@ On the **Sent** tab, each capture shows **Waiting**, then **On the computer** on
 1. On the computer, open **Documents** and its **To review** tab. Your capture is there with the picture, the text read and what you typed.
 2. Click **Review**, check the details, then attach it to a transaction, record it on a bill, or file it. See [Documents](documents). **New transaction from this document** starts with the account, category and person you chose on the phone.
 
-Odometer readings skip this step: they go straight to the vehicle's readings.
+Odometer readings, trips, fill-ups, log entries and checklist ticks skip this step: they go straight to their screens on the computer. Notes and photos taken on a trip wait here until the trip arrives.
 
 ## 6. Check your summary {#summary}
 
-The phone's **Summary** tab shows your accounts' balances, bills due, budgets this month and maintenance due, as of the last transfer. See [The Summary tab](phone-app#summary-tab).
+The phone's **Summary** tab shows your accounts' balances, bills due, budgets this month and maintenance due, as of the last transfer, and under **Coming up** the day's work and school hours and the coming appointments. The calendar icon at the top right, or **See the agenda**, opens the agenda of the next 60 days, day by day or by month. See [The Summary tab](phone-app#summary-tab) and [The agenda](phone-app#agenda).
 
 ![The Summary tab](images/phone-summary.png)
 

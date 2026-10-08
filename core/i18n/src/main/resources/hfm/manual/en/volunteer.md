@@ -26,7 +26,7 @@ One card per person with hours in the year shows:
 
 ### The list {#list}
 
-The year's hours are listed newest first: the date, the person and the organization, the kind, the activity, **from the phone** when sent from it, and the time. Click a line to change or delete it.
+The year's hours are listed newest first, under the headings **Date**, **Organization** and **Time**: the date, the person and the organization, the kind, the activity, **from the phone** when sent from it, and the time. Click a line to change or delete it.
 
 ## Add volunteer hours dialog {#dialog}
 

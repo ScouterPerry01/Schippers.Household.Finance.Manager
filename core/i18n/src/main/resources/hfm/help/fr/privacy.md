@@ -19,7 +19,9 @@ Rien n’est envoyé ailleurs, sauf dans ces cas, la plupart désactivés tant q
 
 ## Votre téléphone
 
-RANN’s Roost Mobile ne parle qu’à cet ordinateur, par votre Wi-Fi, avec un chiffrement entre les deux. Loin de la maison, il peut déposer ses saisies, chiffrées, dans un dossier de votre propre service infonuagique; ce service ne voit que des fichiers qu’il ne peut pas lire. Voyez la rubrique d’aide Envoyer depuis le téléphone.
+RANN's Roost Mobile ne parle qu’à cet ordinateur, par votre Wi-Fi, avec un chiffrement entre les deux. Loin de la maison, il peut déposer ses saisies, chiffrées, dans un dossier de votre propre service infonuagique ; ce service ne voit que des fichiers qu’il ne peut pas lire. Voyez la rubrique d’aide Envoyer depuis le téléphone.
+
+Sur le téléphone, deux recherches pour les déplacements restent désactivées tant que vous ne les activez pas dans ses Réglages : Trouver les adresses envoie une position à Google, par le géocodeur d’Android, quand vous touchez Trouver l’adresse ; Stations à proximité envoie une position approximative à OpenStreetMap quand vous ouvrez cette liste. Les calendriers du téléphone sont lus et écrits sur le téléphone seulement, et seulement si vous le permettez. L’application du téléphone téléchargée de GitHub y vérifie les mises à jour, si vous l’avez accepté.
 
 ## Pour en savoir plus
 

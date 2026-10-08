@@ -54,7 +54,7 @@ Si aucune sauvegarde n’a réussi dans les 7 derniers jours, la liste à revoir
 
 ## Sauvegardes dans le dossier {#backup-list}
 
-« Sauvegardes dans le dossier » avec leur nombre liste les sauvegardes de ce ménage trouvées dans le dossier, les plus récentes en premier. Les sauvegardes d’autres ménages dans le même dossier ne sont pas listées. Chaque ligne montre la date et l’heure, le nom du fichier et sa taille en Ko.
+« Sauvegardes dans le dossier » avec leur nombre liste les sauvegardes de ce ménage trouvées dans le dossier, les plus récentes en premier. Les sauvegardes d’autres ménages dans le même dossier ne sont pas listées. Sous les en-têtes de colonne Quand, Fichier, Taille et Actions, chaque ligne montre la date et l’heure, le nom du fichier et sa taille en Ko. Voir [Les listes et leurs colonnes](basics#lists).
 
 - **Vérifier** : teste de nouveau cette sauvegarde, comme lorsqu’elle a été faite : chaque fichier par rapport à sa somme de contrôle, aucune base de données non chiffrée, et les bases de données que vous pouvez ouvrir ouvertes et vérifiées. Le résultat s’affiche sous la ligne : « La sauvegarde est complète et lisible » avec le nombre de bases de données vérifiées, ou « La vérification de la sauvegarde a échoué : » et les problèmes.
 

@@ -10,7 +10,7 @@ Next, the app shows your recovery key. There is no server that can reset your pa
 
 ## The Getting started guide
 
-When the household opens, the Dashboard shows a Getting started guide with the steps still to do. Each step has a button that opens the screen that does it. Click Hide this guide if you prefer to work without it.
+When the household opens, the Dashboard shows a Getting started guide with the steps still to do. Each step has a button that opens the screen that does it. Click Hide this guide if you prefer to work without it; Show the Getting started guide again, under Display and accessibility, brings it back. Its Walk-Me guides button opens step-by-step guides that show you each of these steps on the screen itself.
 
 ## The order of first steps
 
@@ -25,4 +25,4 @@ The guide goes away once the first five steps are done.
 
 ## Next
 
-Set up Backups early, choosing an external drive or a cloud folder. The menu is grouped by topic: Money, Investing and borrowing, Reports and taxes, Home and family, and Settings.
+Set up Backups early, choosing an external drive or a cloud folder. The menu is grouped by topic: Money, Investing and borrowing, Reports and taxes, Home and family, Settings, and Help, the last group, with the Manual, this Help, the Walk-Me guides and About.

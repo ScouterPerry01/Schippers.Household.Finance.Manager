@@ -262,6 +262,25 @@ L’écran Téléphones indique si les téléphones peuvent joindre l’ordinate
 
 Sous [Téléphones](phones), cliquez sur **Retirer** à côté du téléphone : il ne peut plus rien envoyer ni recevoir. Un téléphone ne détient jamais les clés du ménage ; il n’y a donc rien d’autre à faire. **Oublier** supprime ensuite de la liste un téléphone retiré. Jumelez le nouveau téléphone comme d’habitude.
 
+### Les calendriers du téléphone n’arrivent pas {#phone-calendars}
+
+@index: calendriers manquants; accès au calendrier
+
+- Sur le téléphone, dans **Réglages**, **Calendriers de ce téléphone** doit être à **Importer seulement** ou **Dans les deux sens**, avec l’accès au calendrier autorisé et les calendriers cochés. Si l’accès a été retiré dans les paramètres d’Android, autorisez-le de nouveau là.
+- Les calendriers arrivent avec le prochain transfert. Par Wi-Fi, le ménage doit être ouvert sur cet ordinateur avec la connexion du propriétaire du téléphone, comme pour les captures.
+
+Voir [Calendriers des téléphones et des fichiers](calendar-sync) et [Calendriers de ce téléphone](phone-app#phone-calendars).
+
+### Déplacements : pas de position, d’adresse ni de stations {#trip-location}
+
+@index: pas de position; adresse introuvable; stations introuvables
+
+- « Aucune position : permettez à l’appli de savoir où est le téléphone, ou ajoutez une station à la main. » : l’application ne peut pas utiliser la position du téléphone. Autorisez-la dans les paramètres d’Android, ou choisissez les lieux et tapez les adresses à la main. Voir [Position](phone-app#location).
+- « Aucune adresse trouvée pour cette position : tapez-la au besoin. » ou « Ce téléphone ne permet pas de trouver les adresses. » : tapez l’adresse. **Trouver les adresses** doit être activé dans les **Réglages** du téléphone.
+- « OpenStreetMap est occupé ou injoignable. Cherchez de nouveau dans un moment. » : le téléphone a besoin d’Internet pour **Stations à proximité** ; touchez **Chercher de nouveau** plus tard, ou **Ajouter une station à la main**.
+
+Voir [Déplacements : adresses et stations](phone-app#trip-lookups).
+
 ## Les sauvegardes {#backups}
 
 @index: problèmes de sauvegarde; sauvegarde échouée

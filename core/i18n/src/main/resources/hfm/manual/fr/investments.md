@@ -25,7 +25,7 @@ La colonne de gauche présente tous les comptes de placement que vous pouvez voi
 - **Non enregistrés** : les comptes de courtage, les portefeuilles de cryptoactifs et les comptes de métaux précieux. Leurs ventes donnent des gains en capital imposables.
 - **Régimes enregistrés** : REER, REER de conjoint, FERR, FERR de conjoint, CRI, FRV, CELI, CELIAPP, REEE et régimes de retraite. Les gains réalisés à l’intérieur ne sont pas imposés tant que l’argent reste dans le régime.
 
-Chaque ligne montre le nom du compte, son type en dessous et sa valeur totale à droite. Un portefeuille de cryptoactifs montre son solde en cryptoactifs en dessous et, à droite, sa valeur dans votre devise de base.
+Les colonnes ont pour en-têtes **Compte** et **Valeur marchande**. Chaque ligne montre le nom du compte, son type en dessous et sa valeur totale à droite. Un portefeuille de cryptoactifs montre son solde en cryptoactifs en dessous et, à droite, sa valeur dans votre devise de base.
 
 Sous les comptes se trouvent trois autres choix :
 
@@ -81,7 +81,7 @@ Une ligne par titre détenu aujourd’hui, par ordre de nom :
 
 ### Onglet Opérations {#transactions-tab}
 
-Toutes les opérations de placement du compte, des plus récentes aux plus anciennes : la date, le type, le titre (pour une fusion, une flèche vers le titre reçu), la quantité avec « @ cours » ou « × ratio », et l’effet sur l’encaisse du compte. Quand une opération ne déplace pas d’argent mais a un montant (une distribution théorique, des unités transférées en entrée), le montant s’affiche en gris.
+Toutes les opérations de placement du compte, des plus récentes aux plus anciennes, sous les en-têtes **Date**, **Type**, **Titre**, **Quantité** et **Montant** : la date, le type, le titre (pour une fusion, une flèche vers le titre reçu), la quantité avec « @ cours » ou « × ratio », et l’effet sur l’encaisse du compte. Quand une opération ne déplace pas d’argent mais a un montant (une distribution théorique, des unités transférées en entrée), le montant s’affiche en gris.
 
 Cliquez sur une ligne pour la modifier ou la supprimer.
 
@@ -89,7 +89,7 @@ Cliquez sur une ligne pour la modifier ou la supprimer.
 
 @index: rapprochement; rapprocher; relevé de courtage
 
-Les relevés enregistrés pour le compte, importés ou saisis à la main, des plus récents aux plus anciens. Chaque ligne montre la date du relevé, l’encaisse indiquée, le nombre de titres et soit **Rapproché** (en couleur), soit **À vérifier** (en rouge). Cliquez sur une ligne pour ouvrir la comparaison avec les livres. Voir [Vérifier un relevé](investments#check-statement).
+Les relevés enregistrés pour le compte, importés ou saisis à la main, des plus récents aux plus anciens. Sous les en-têtes **Date du relevé**, **Encaisse**, **Titres détenus** et **État**, chaque ligne montre la date du relevé, l’encaisse indiquée, le nombre de titres et soit **Rapproché** (en couleur), soit **À vérifier** (en rouge). Cliquez sur une ligne pour ouvrir la comparaison avec les livres. Voir [Vérifier un relevé](investments#check-statement).
 
 ## Ajouter ou modifier une opération {#transaction-dialog}
 
@@ -241,7 +241,7 @@ Un relevé en PDF ou sur papier, ou un avis d’exécution, peut être lu par l�
 
 @index: symbole boursier; téléscripteur; fonds; obligation; CPG; option
 
-Choisissez **Titres** au bas de la liste des comptes. Chaque titre connu des livres est énuméré avec son symbole, son nom (« archivé » s’il est archivé), son genre, sa catégorie d’actif et son dernier cours avec sa date. Un titre est partagé par tous les comptes qui le détiennent : son nom, son genre, sa catégorie et ses cours sont les mêmes partout.
+Choisissez **Titres** au bas de la liste des comptes. Chaque titre connu des livres est énuméré, sous les en-têtes **Symbole**, **Nom**, **Genre**, **Catégorie d’actif** et **Cours**, avec son symbole, son nom (« archivé » s’il est archivé), son genre, sa catégorie d’actif et son dernier cours avec sa date. Un titre est partagé par tous les comptes qui le détiennent : son nom, son genre, sa catégorie et ses cours sont les mêmes partout.
 
 Les titres sont aussi créés pour vous quand vous inscrivez un achat avec **Nouveau titre…** ou importez un relevé. Cliquez sur **Ajouter un titre** pour en créer un d’avance, ou sur une ligne pour le modifier.
 
@@ -333,7 +333,7 @@ L’en-tête montre le nom du portefeuille, le nom du cryptoactif et « suivi se
 
 Les cours des cryptoactifs sont gardés comme le taux de change de chaque cryptoactif en dollars canadiens. Saisissez-les à la main, ou activez le téléchargement facultatif des cours des cryptoactifs, dans [Taux et cours](rates).
 
-Sous les boutons, les opérations du portefeuille sont énumérées des plus récentes aux plus anciennes : la date, la note ou le bénéficiaire, l’autre compte pour un virement, le montant dans l’autre devise s’il y en a un, et le montant en cryptoactifs.
+Sous les boutons, les opérations du portefeuille sont énumérées des plus récentes aux plus anciennes, sous les en-têtes **Date**, **Description** et **Montant** : la date, la note ou le bénéficiaire, l’autre compte pour un virement, le montant dans l’autre devise s’il y en a un, et le montant en cryptoactifs.
 
 ### Boutons du portefeuille {#wallet-buttons}
 
@@ -408,7 +408,7 @@ Un compte de métaux précieux est un compte créé dans [Comptes](accounts) ave
 
 Si un métal n’a pas encore de cours au comptant, une ligne en rouge l’indique. Les cours au comptant se saisissent, ou se téléchargent si vous l’activez, dans [Taux et cours](rates), en dollars canadiens par once troy de métal pur.
 
-Le tableau énumère chaque article : **Article** (quantité × description, avec le métal, le poids et l’unité, la pureté, l’endroit où il est gardé et « assuré »), **Métal pur** (en onces), **Valeur marchande**, **Valeur comptable** et **Gain**. Les articles vendus sont énumérés en dessous sous **Vendus**, avec leur date de vente et leur produit. Cliquez sur une ligne pour la modifier. Cliquez sur **Ajouter des pièces ou lingots** pour en ajouter.
+Le tableau énumère chaque article : **Article** (quantité × description, avec le métal, le poids et l’unité, la pureté, l’endroit où il est gardé et « assuré »), **Métal pur** (en onces), **Valeur marchande**, **Valeur comptable** et **Gain**. Les articles vendus sont énumérés en dessous sous **Vendus**, avec les en-têtes **Article**, **Vendu le** et **Produit de la vente** : leur description, leur date de vente et leur produit. Cliquez sur une ligne pour la modifier. Cliquez sur **Ajouter des pièces ou lingots** pour en ajouter.
 
 ### Ajouter ou modifier des pièces ou lingots {#metal-item-dialog}
 

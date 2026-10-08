@@ -32,7 +32,7 @@ Voir [La fenêtre du document](documents#document-window).
 Sous **Classer avec**, choisissez :
 
 1. Si le paiement est déjà dans vos livres (importé de la banque, par exemple), cliquez sur **Joindre** à côté de l’opération correspondante.
-2. S’il s’agit de l’une de vos factures, cliquez sur **Inscrire le montant sur cette facture** : le montant est inscrit sur l’échéance la plus proche de la facture.
+2. S’il s’agit de l’une de vos factures, cliquez sur **L’inscrire comme état de compte de cette facture** : son montant, sa date d’échéance, son numéro et ses relevés de compteur éventuels sont inscrits sur la facture pour cette période, et le document est gardé avec elle. Une facture qui ne correspond à aucune des vôtres propose **Créer une facture à partir de ceci**, qui remplit le formulaire de facture à partir du document. Voir [Inscrire le montant sur une facture](documents#record-on-bill).
 3. Si le paiement n’est pas encore dans les livres (un achat payé comptant, par exemple), cliquez sur **Nouvelle opération à partir de ce document**, choisissez le compte sous **Payé avec** et une **Catégorie**, et cliquez sur **Enregistrer**.
 4. Sinon, cliquez sur **Classer sans joindre**. Vous le retrouverez plus tard dans **Tous les documents**.
 

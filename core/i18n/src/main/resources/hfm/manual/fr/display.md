@@ -64,7 +64,7 @@ Le choix est gardé sur cet ordinateur, pour chaque ménage et chaque utilisateu
 
 Quand vous avez masqué le guide Premiers pas du tableau de bord, cet écran affiche Guide Premiers pas avec un bouton :
 
-- **Afficher de nouveau le guide Premiers pas** : fait revenir le guide sur votre tableau de bord et ouvre le tableau de bord. Le guide reste ensuite jusqu’à ce que ses quatre premières étapes soient faites, comme avant ; si elles le sont déjà, il n’a plus rien à afficher. Voir [Guide Premiers pas](dashboard#getting-started-guide).
+- **Afficher de nouveau le guide Premiers pas** : fait revenir le guide sur votre tableau de bord et ouvre le tableau de bord. Le guide reste ensuite jusqu’à ce que ses cinq premières étapes soient faites (toutes sauf le téléphone), comme avant ; si elles le sont déjà, il n’a plus rien à afficher. Voir [Guide Premiers pas](dashboard#getting-started-guide).
 
 Contrairement aux autres réglages de cet écran, celui-ci est conservé dans le ménage, pour vous seulement. Cette partie n’est pas affichée tant que le guide n’est pas masqué.
 

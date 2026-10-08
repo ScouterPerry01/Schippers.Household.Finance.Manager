@@ -66,7 +66,7 @@ At the top of the right side:
 
 @index: current rate; today's value
 
-Under **In effect today**, the screen shows the value that applies today, with "since" and the date it took effect.
+Under **In effect today**, the screen shows the value that applies today, with "since" and the date it took effect. The column headings are Value and Since, with Province or territory first for a rule that can differ by province. See [Lists and their columns](basics#lists).
 
 For a rule that can differ by province or territory, there is one line for **Everywhere** (the value used where a province has none of its own), then one line per province and territory: yours first, marked "(your province)", then the others in alphabetical order. A line whose value comes from the value for everywhere says so ("the value for everywhere"). Your province is the one set for the household in [Household members](members).
 
@@ -76,7 +76,7 @@ For a rule that is the same everywhere, there is a single line.
 
 @index: past rates; rate history; source of a rate; built-in value; household value
 
-Under **History of values**, every value of the rule, newest first. Each line shows:
+Under **History of values**, every value of the rule, newest first, under the column headings Effective from, Province or territory (for a rule that can differ by province), Value and, for an administrator, Actions. Each line shows:
 
 - The date the value takes effect.
 - For a rule that can differ by province: the province or territory, or Everywhere.

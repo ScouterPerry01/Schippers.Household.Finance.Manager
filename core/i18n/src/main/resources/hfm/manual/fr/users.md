@@ -49,7 +49,7 @@ Chaque utilisateur a une fiche avec :
 
 @index: permissions; aucun accès; consultation; saisie seulement; modification; donner accès; partager un groupe de comptes
 
-L’onglet Accès est un tableau. Chaque ligne est un groupe de comptes que vous pouvez voir, avec « privé » ou « partagé » sous son nom. Chaque colonne est un utilisateur qui peut se connecter.
+L’onglet Accès est un tableau. Chaque ligne est un groupe de comptes que vous pouvez voir, avec « privé » ou « partagé » sous son nom. Chaque colonne est un utilisateur qui peut se connecter. La ligne d’en-tête nomme les colonnes : Groupe de comptes, puis le nom de chaque utilisateur. Voir [Les listes et leurs colonnes](basics#lists).
 
 ![L’onglet Accès](images/users-access.png)
 
@@ -89,7 +89,7 @@ L’onglet Activité liste ce que les utilisateurs ont fait, les plus récents e
 
 - **Activité de** : affiché aux administrateurs. Choisissez **Tout le monde** ou un utilisateur. Les autres utilisateurs ne voient que leur propre activité, avec la note « Votre propre activité. »
 
-Chaque ligne montre :
+La liste a les en-têtes de colonne Quand, Activité de, Action et Où. Chaque ligne montre :
 
 - La date et l’heure.
 - Le nom de l’utilisateur.

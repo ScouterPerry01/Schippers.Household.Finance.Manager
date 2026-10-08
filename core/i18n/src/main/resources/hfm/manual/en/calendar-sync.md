@@ -49,6 +49,7 @@ If you have no private group yet, one named after you is made the first time a c
 Brought-in items appear among the appointments, bills and due dates:
 
 - In the **Agenda**, the line shows the start time (or **All day**, or **Continues** on the later days of an item over several days), the title, then the times, the place, the calendar it comes from ("From Work") and whose phone sent it, and who sees it. **Read-only** reminds you that it is changed in the calendar it comes from.
+- In the **Day** and **Week**, a timed item sits at its hours and an all-day item on the **All day** line, as appointments do; being read-only, it opens no form when clicked. An item over several days fills each of its days.
 - In the **Month**, the day shows the start time and title, or "Alex: busy".
 
 An item over several days shows on each of its days. Brought-in items have no Done or Cancel buttons and no reminders on the computer or in the phone's summary: the calendar they come from already reminds you.
@@ -75,7 +76,7 @@ Which calendars are brought in, who sees them and the days ahead are chosen on t
 
 1. Choose the group the appointments go in (**Store in**).
 2. Click **Choose the file…** and pick the .ics file. Files of up to 5 MB and 5,000 events are read.
-3. The dialog says how many appointments were created and lists what was left out or changed.
+3. The dialog says how many appointments were created and how many single dates were copied (see below), and lists what was left out or changed, up to 30 lines ("And … more." for the rest). **Close** closes it.
 
 How the file's events are copied:
 

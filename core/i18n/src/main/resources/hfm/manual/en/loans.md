@@ -10,7 +10,7 @@ Loans and mortgages shows the terms of each loan and mortgage, its full payment 
 
 @index: loan; mortgage; amortization; car loan; student loan; hypothèque
 
-The left column lists every open loan and mortgage account you can see, with what you owe on the right. Under the name, the account type is shown, or "Terms not entered" in red for a loan whose terms are still missing. Click a loan to see it on the right. When you open this screen from a loan's register, that loan is shown first.
+The left column lists every open loan and mortgage account you can see, under the headings **Loan** and **Balance**, with what you owe on the right. Under the name, the account type is shown, or "Terms not entered" in red for a loan whose terms are still missing. Click a loan to see it on the right. When you open this screen from a loan's register, that loan is shown first.
 
 Lines of credit and credit cards are not listed here: they have no fixed schedule. They appear in the Debt summary report.
 
@@ -167,7 +167,7 @@ The **CSV**, **Excel** and **PDF** buttons save the table shown to a file; **Pri
 
 ## Changes tab {#changes-tab}
 
-The prepayments, rate changes, renewals and payment changes recorded, newest first: the date, the kind, the amount or the new rate (with "payment recalculated" or "same payment"), and the note.
+The prepayments, rate changes, renewals and payment changes recorded, newest first, under the headings **Date**, **Change**, **Details**, **Notes** and **Actions**: the date, the kind, the amount or the new rate (with "payment recalculated" or "same payment"), and the note.
 
 **Delete** beside a change removes it at once, and the schedule is recalculated. Deleting a prepayment does not remove the money moved for it: delete that transfer in the register if needed (a line under the list reminds you). Deleting the latest renewal puts back the term end it replaced, and the renewal reminder with it; deleting an older renewal or a rate change leaves the term end as it is. Renewals recorded before this version of the app did not keep the earlier term end: after deleting one of those, change the term end with **Edit terms** if needed.
 

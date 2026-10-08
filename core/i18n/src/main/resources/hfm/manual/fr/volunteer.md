@@ -26,7 +26,7 @@ Une carte par personne ayant des heures dans l’année montre :
 
 ### La liste {#list}
 
-Les heures de l’année sont listées de la plus récente à la plus ancienne : la date, la personne et l’organisme, le genre, l’activité, **du téléphone** si elles en viennent, et la durée. Cliquez sur une ligne pour la modifier ou la supprimer.
+Les heures de l’année sont listées de la plus récente à la plus ancienne, sous les en-têtes **Date**, **Organisme** et **Durée** : la date, la personne et l’organisme, le genre, l’activité, **du téléphone** si elles en viennent, et la durée. Cliquez sur une ligne pour la modifier ou la supprimer.
 
 ## Boîte Ajouter des heures de bénévolat {#dialog}
 
