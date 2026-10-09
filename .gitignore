@@ -20,6 +20,10 @@ spikes/**/models/
 spikes/**/bin/
 spikes/**/obj/
 
+# Claude Code: agent worktrees and personal settings
+.claude/worktrees/
+.claude/settings.local.json
+
 # Never commit household data or keys
 *.hfm/
 *.hfmbak

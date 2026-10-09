@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(build/**)",
+      "Edit(**/build/**)",
+      "Read(.gradle/**)",
+      "Read(.kotlin/**)",
+      "Read(local.properties)",
+      "Edit(local.properties)",
+      "Read(**/*.onnx)",
+      "Read(core/data/src/main/sqldelight/**/schemas/*.db)",
+      "Edit(core/data/src/main/sqldelight/**/schemas/*.db)",
+      "Read(spikes/**/samples/**)",
+      "Read(**/*.hfm/**)",
+      "Read(**/*.hfmbak)"
+    ]
+  }
+}
