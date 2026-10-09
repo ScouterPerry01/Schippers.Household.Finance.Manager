@@ -15,10 +15,9 @@ publish a modified version, or a build of your own, give it a different name and
 | `logo/` | The main logo: the kite with "RANN" and "ROOST" in white, and the kite alone, on a transparent background |
 | `msix/Assets/` | Microsoft Store tiles and icons, packaged into the MSIX |
 | `desktop/` | Windows installer icon (`.ico`, 16 to 256 px) and Linux menu icon (512 px), made from the tiles |
-| `store/` | Google Play icon (512 px) and feature graphic (1024 x 500, the main logo on the tiles' sky blue) |
 
 Icons made from these files: `app/desktop/src/main/resources/hfm/branding/icon.png` (window, taskbar
-and tray) and `app/android/src/main/res/mipmap-*/ic_launcher_foreground.png` (the phone's launcher
-icon, on the sky blue `#3D8FCB`).
+and tray). The phone app's launcher icon (on the sky blue `#3D8FCB`), Google Play icon and feature
+graphic are in its own repository, Rann.Roost.Mobile.
 
 Questions: info-rann-apps@NorthMail.ca.

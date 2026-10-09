@@ -12,10 +12,9 @@ RANN's Roost Mobile, sur votre téléphone Android, vous permet de photographier
 
 ## 1. Installer l’application {#install}
 
-1. Installez RANN's Roost Mobile à partir de Google Play, ou l’édition GitHub à partir des versions publiées par RANN sur GitHub (voir [Deux éditions](phone-app#editions)).
+1. Installez RANN's Roost Mobile à partir de Google Play (voir [Obtenir l’application](phone-app#editions)).
 2. Ouvrez-la. Autorisez les notifications si Android le demande, pour recevoir les rappels de factures et de budgets.
 3. Choisissez un NIP de 4 à 8 chiffres et saisissez-le de nouveau. L’application le redemande quand vous y revenez après une minute d’absence, ou après le délai choisi dans les Réglages (voir [Le verrou](phone-app#lock) et [Redemander le NIP](phone-app#lock-time)). L’application suit la langue du téléphone ; les Réglages peuvent la garder en anglais ou en français (voir [Langue de l’application](phone-app#language)).
-4. Édition GitHub seulement : choisissez si elle peut vérifier les mises à jour une fois par jour.
 
 ## 2. Jumeler le téléphone à votre ordinateur {#pair}
 

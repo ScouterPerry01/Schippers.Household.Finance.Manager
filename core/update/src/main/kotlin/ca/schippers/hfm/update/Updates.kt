@@ -10,9 +10,6 @@ enum class Channel(val kind: String) {
     DEB("deb"),
     RPM("rpm"),
     APPIMAGE("appimage"),
-
-    /** The phone app from GitHub Releases; the Google Play build is updated by Play. */
-    APK("apk"),
 }
 
 /** A release's version, compared number by number: 0.10.0 is newer than 0.9.1. */

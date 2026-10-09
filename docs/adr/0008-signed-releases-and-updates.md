@@ -1,6 +1,6 @@
 # ADR 0008: Signed releases and update checks
 
-Status: Accepted (Phase 4d, 2026-10-03)
+Status: Accepted (Phase 4d, 2026-10-03). Amended 2026-10-08: the phone app moved to its own private repository and is on Google Play only, so there is no GitHub APK, no `apk` kind in `update.json` and no update check on the phone. What follows about the APK is kept as the record of the first design.
 
 ## Context
 

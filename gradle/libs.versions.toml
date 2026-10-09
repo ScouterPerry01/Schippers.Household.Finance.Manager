@@ -1,3 +1,5 @@
+# Also the version catalog of the phone app, Rann.Roost.Mobile, which builds the shared core
+# from this repository: the Android entries are its own.
 [versions]
 kotlin = "2.4.20"
 compose-multiplatform = "1.12.1"

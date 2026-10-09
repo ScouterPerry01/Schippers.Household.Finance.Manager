@@ -32,6 +32,5 @@ include(
     ":core:ai",
     ":core:update",
     ":app:desktop",
-    ":app:android",
     ":tools:release",
 )

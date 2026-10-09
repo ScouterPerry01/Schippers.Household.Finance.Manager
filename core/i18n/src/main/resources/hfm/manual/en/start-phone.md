@@ -12,10 +12,9 @@ RANN's Roost Mobile, on your Android phone, lets you photograph a receipt at the
 
 ## 1. Install the app {#install}
 
-1. Install RANN's Roost Mobile from Google Play, or the GitHub edition from RANN's releases on GitHub (see [Two editions](phone-app#editions)).
+1. Install RANN's Roost Mobile from Google Play (see [Getting the app](phone-app#editions)).
 2. Open it. Allow notifications if Android asks, to get bill and budget reminders.
 3. Choose a PIN of 4 to 8 digits and enter it again. The app asks for it again when you come back after a minute away, or after the time you choose in Settings (see [The lock](phone-app#lock) and [Ask for the PIN again](phone-app#lock-time)). The app follows the phone's language; Settings can keep it in English or French (see [Language of the app](phone-app#language)).
-4. GitHub edition only: choose whether it may check for updates once a day.
 
 ## 2. Pair the phone with your computer {#pair}
 

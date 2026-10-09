@@ -79,7 +79,7 @@ Toutes les demandes utilisent HTTPS. Chaque service voit l'adresse Internet de v
 - Ce qu'il apprend : les adresses publiques de ce portefeuille.
 
 **GitHub** (github.com)
-- Quand : seulement sur les copies qui vérifient les mises à jour, seulement si vous l'avez accepté, et au plus une fois par jour. Ce sont les paquets Linux et l'application Android téléchargée sur GitHub.
+- Quand : seulement sur les copies qui vérifient les mises à jour, seulement si vous l'avez accepté, et au plus une fois par jour. Ce sont les paquets Linux de GitHub.
 - Ce qu'il apprend : qu'une copie de l'application vérifie les mises à jour, et les mises à jour que vous choisissez de télécharger.
 
 Les versions du Microsoft Store et de Google Play ne consultent jamais GitHub : la boutique les met à jour.
@@ -109,7 +109,7 @@ Les composants de Google envoient toutefois à Google des renseignements techniq
 
 **Dictée.** Si vous touchez Dicter la note, la saisie vocale du téléphone (souvent celle de Google) écoute et ne remet à l'application que les mots; elle traite votre voix selon sa propre politique de confidentialité. Les notes vocales enregistrées dans l'application ne sont pas de la dictée : elles restent sur le téléphone jusqu'à leur arrivée sur votre ordinateur, chiffrées de bout en bout.
 
-Si vous installez l'application à partir de Google Play, Google s'occupe de son téléchargement et de ses mises à jour.
+L'application vient de Google Play, qui s'occupe de son achat, de son téléchargement et de ses mises à jour.
 
 ## Les boutiques
 

@@ -40,7 +40,7 @@ Type the part you pay now, such as half.
 ## Writing rules
 
 - Say where to go, what to click and what to type, in the order the user does it. A step does one thing, or fills one part of a form.
-- Quote every button, field, tab and menu exactly as on screen, in **bold**: English labels are in `messages_en.properties`, French in `messages_fr.properties`, the phone's in `app/android/src/main/res/values*/strings.xml`. The test fails on a bold label the app does not show (a trailing … or : may be left out; for a label with a value, such as `To review ({0})`, the words around the value count).
+- Quote every button, field, tab and menu exactly as on screen, in **bold**: English labels are in `messages_en.properties`, French in `messages_fr.properties`, the phone's in `app/src/main/res/values*/strings.xml` of Rann.Roost.Mobile (checked when that repository is checked out beside this one). The test fails on a bold label the app does not show (a trailing … or : may be left out; for a label with a value, such as `To review ({0})`, the words around the value count).
 - Steps done on the phone (pairing, capturing, trips, the seasonal checklist) are described in words, beginning with "On the phone"; they have no screen, target or condition, since the computer cannot point at the phone.
 - Do not invent behaviour: check the screen's code and the manual. Keep each guide to about five to eight steps, with a manual link where the user may want more.
 - French: Canadian French with the app's French labels, typographic apostrophes and French spacing, as in the manual.

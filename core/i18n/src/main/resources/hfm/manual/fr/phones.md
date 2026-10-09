@@ -41,7 +41,7 @@ Quand l’ordinateur a plusieurs cartes réseau, RANN's Roost choisit l’adress
 
 La fenêtre montre un code QR à gauche et, à droite :
 
-- les étapes : sur le téléphone, ouvrez RANN's Roost Mobile, touchez **Jumeler à un ordinateur** et numérisez le code ; l’appareil photo du téléphone peut aussi le numériser et ouvrir RANN's Roost Mobile ;
+- les étapes : sur le téléphone, ouvrez RANN's Roost Mobile (sur Google Play), touchez **Jumeler à un ordinateur** et numérisez le code ; l’appareil photo du téléphone peut aussi le numériser et ouvrir RANN's Roost Mobile ;
 - un rappel que le téléphone doit être sur le même Wi-Fi que cet ordinateur, et la question de Windows sur les réseaux ;
 - le temps qui reste : chaque code est valide 10 minutes (par défaut, réglable dans [Taux et règles](rates-rules)), puis « Ce code a expiré. Fermez et jumelez de nouveau. » ;
 - l’adresse et le port que le téléphone utilisera ;

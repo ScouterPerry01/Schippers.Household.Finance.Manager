@@ -7,7 +7,7 @@ Everything is encrypted between the phone and this computer, and over Wi-Fi noth
 ## Pair a phone
 
 - Click Pair a phone. A QR code appears.
-- On the phone, open RANN's Roost Mobile, tap Pair with a computer, and scan the code. The phone's camera app also works.
+- On the phone, install RANN's Roost Mobile from Google Play, open it, tap Pair with a computer, and scan the code. The phone's camera app also works.
 - The phone must be on the same Wi-Fi as this computer. If Windows asks whether to allow the app on networks, allow it on private networks.
 - The code expires after 10 minutes. If it does, close the window and pair again. If the camera cannot read the screen, click Copy as text and paste the link on the phone.
 

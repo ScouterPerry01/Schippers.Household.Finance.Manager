@@ -8,14 +8,11 @@ Pour un parcours rapide, voir [Premiers pas avec l’application mobile](start-p
 
 @index: Android; application mobile; application du téléphone; application compagnon; capture; numériser des reçus; RANN's Roost Mobile
 
-## Deux éditions {#editions}
+## Obtenir l’application {#editions}
 
-@index: Google Play; GitHub; APK
+@index: Google Play; installer; mise à jour; acheter
 
-RANN's Roost Mobile existe en deux éditions qui fonctionnent de la même façon :
-
-- L’édition Google Play, tenue à jour par Google Play.
-- L’édition GitHub, installée à partir des versions publiées par RANN sur GitHub. Elle peut vérifier elle-même les mises à jour et les installer après avoir vérifié la signature de RANN (voir [Mises à jour](#updates)). Android peut vous demander, la première fois, d’autoriser RANN's Roost Mobile à installer des applications.
+RANN's Roost Mobile est vendue sur Google Play, qui l’installe et la tient à jour. Elle fonctionne avec RANN's Roost sur votre ordinateur, sous Windows ou Linux, et exige Android 10 ou plus récent.
 
 ## Confidentialité sur le téléphone {#privacy}
 
@@ -25,7 +22,6 @@ RANN's Roost Mobile existe en deux éditions qui fonctionnent de la même façon
 - L’application est exclue des sauvegardes infonuagiques d’Android : rien n’en est copié chez Google.
 - Les captures ne vont qu’à votre ordinateur, chiffrées avec la clé créée au jumelage. Loin de la maison, elles peuvent passer par un dossier de votre propre stockage infonuagique, toujours chiffrées.
 - Les calendriers ne sont lus que si vous activez [Calendriers de ce téléphone](phone-app#phone-calendars), seulement ceux que vous cochez, et ne vont qu’à votre ordinateur, chiffrés de la même façon. [L’agenda](#agenda) les affiche aussi, lus sur le téléphone pendant qu’il est ouvert ; rien de plus n’est envoyé. Seulement si vous choisissez **Dans les deux sens**, l’application écrit aussi les prochains rendez-vous, horaires et factures du ménage dans le calendrier que vous choisissez : un calendrier gardé seulement sur ce téléphone, ou un calendrier d’un de vos comptes, qui se synchronise alors avec ce compte. Voir [Dans les deux sens](phone-app#calendar-both-ways).
-- La seule autre connexion est la vérification quotidienne des mises à jour de l’édition GitHub, si vous l’autorisez. Elle n’envoie rien sur vous ni sur votre ménage.
 - Position : seulement si vous l’autorisez, l’application prend une seule position au départ d’un déplacement, à l’arrivée, et quand vous enregistrez un lieu ou cherchez la station la plus proche, jamais en arrière-plan ni à d’autres moments. La position est comparée à vos lieux enregistrés sur le téléphone même ; aucun service de cartes n’est consulté. Ce qui va à votre ordinateur, chiffré comme le reste, c’est le nom du lieu, ou les coordonnées quand vous laissez un lieu sans nom, et les coordonnées d’un lieu que vous enregistrez. Voir [Position](#location).
 - Dès que votre ordinateur confirme avoir reçu une capture, le téléphone supprime sa copie des images et des détails.
 
@@ -71,7 +67,6 @@ Ce qui reste : tout ce que l’ordinateur a déjà reçu, et le ménage sur l’
 ## Le premier démarrage {#first-start}
 
 - Sur Android 13 et plus, l’application demande si elle peut afficher des notifications. Autorisez-la pour recevoir les rappels de factures, de rendez-vous, de renouvellements, de budgets et d’entretien.
-- L’édition GitHub demande une seule fois **Vérifier les mises à jour?** : **Vérifier une fois par jour** ou **Ne pas vérifier**. Vous pourrez changer ce choix plus tard dans [Réglages](#updates).
 - Tant que le téléphone n’est pas jumelé, les onglets Capturer et Réglages affichent **Pas encore jumelé** et un bouton **Jumeler à un ordinateur**.
 
 ## Les onglets principaux {#tabs}
@@ -82,11 +77,9 @@ Cinq onglets s’alignent au bas de l’écran :
 - **Envois** : ce que vous avez capturé et où il en est. Voir [L’onglet Envois](#sent-tab).
 - **Résumé** : les soldes, les factures, l’entretien et les budgets venus de votre ordinateur, et l’agenda des 60 prochains jours. Voir [L’onglet Résumé](#summary-tab) et [L’agenda](#agenda).
 - **Contacts** : les contacts du ménage venus de votre ordinateur, et les nouveaux contacts à envoyer. Voir [L’onglet Contacts](#contacts-tab).
-- **Réglages** : le jumelage, le dossier de transfert, les rappels à la minute près, les calendriers, les recherches pour les déplacements, la langue, le verrou et les mises à jour. Voir [L’onglet Réglages](#settings-tab).
+- **Réglages** : le jumelage, le dossier de transfert, les rappels à la minute près, les calendriers, les recherches pour les déplacements, la langue et le verrou. Voir [L’onglet Réglages](#settings-tab).
 
 Dans les onglets **Capturer** et **Résumé**, l’icône de calendrier en haut à droite ouvre [l’agenda](#agenda) ; les lecteurs d’écran la nomment **Ouvrir l’agenda**.
-
-Quand une version plus récente est offerte (édition GitHub), une bande en haut des autres onglets l’indique ; touchez-la pour aller aux Réglages.
 
 ## Jumeler à un ordinateur {#pair-screen}
 
@@ -730,24 +723,6 @@ Affiché quand le téléphone a un lecteur d’empreintes ou la reconnaissance f
 @index: délai de verrouillage; verrouillage automatique; reverrouiller
 
 - **Redemander le NIP** : combien de temps l’application peut rester en arrière-plan avant de redemander le NIP (ou votre empreinte ou votre visage) : **Immédiatement**, **Après 1 minute** (par défaut), **Après 5 minutes** ou **Après 15 minutes**. Le retour d’un écran que l’application a ouvert elle-même, comme le numériseur de documents ou un sélecteur de fichiers, compte pour au moins une minute, pour qu’une numérisation ne vous verrouille pas en cours de route.
-
-### Mises à jour {#updates}
-
-@index: mise à jour; nouvelle version; signature
-
-Affiché seulement dans l’édition GitHub ; l’édition Google Play est mise à jour par Google Play.
-
-- **Vérifier les mises à jour une fois par jour** : activé, l’application cherche sur GitHub au plus une fois par jour, pendant qu’elle est ouverte, une version plus récente. Seule la vérification sort du téléphone : GitHub voit l’adresse Internet de votre téléphone, comme pour toute page Web. Rien de vos captures ni de votre ménage n’est envoyé.
-- L’état : **La vérification des mises à jour est désactivée.**, **Vérification…**, **La version … est à jour.**, ou **La version … est disponible.** avec ses nouveautés.
-- **Télécharger, vérifier et installer** : télécharge la nouvelle version, la vérifie avec la signature de RANN, sa taille et son empreinte annoncées, puis la remet à Android, qui vous demande de confirmer l’installation. Une barre montre le téléchargement ; une fois la vérification faite, l’application affiche **La version … a été vérifiée avec la signature de RANN. Confirmez l’installation quand Android le demande.**
-- **Vérifier maintenant** : affiché quand la vérification quotidienne est activée. Vérifie aussitôt.
-
-Messages quand quelque chose ne va pas :
-
-- **La mise à jour a été refusée parce qu’on n’a pas pu confirmer qu’elle est une version signée par RANN. Rien n’a été installé.**
-- **Le téléchargement ne correspondait pas à la version signée par RANN ; il a été supprimé.**
-- **Impossible de joindre GitHub pour vérifier les mises à jour.**, avec la raison.
-- **La mise à jour n’a pas pu être installée.**, avec la raison.
 
 ### À propos et politique de confidentialité {#about}
 

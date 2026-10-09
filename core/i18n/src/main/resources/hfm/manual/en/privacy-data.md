@@ -176,7 +176,7 @@ Nothing else about you or your trips is sent with them.
 
 @index: update check; GitHub
 
-On Linux copies installed from a .deb or .rpm package or an AppImage, and only if you agreed, the app checks GitHub once a day for a new version. The phone app downloaded from GitHub does the same, if you agreed (see [Updates](phone-app#updates)). GitHub sees your computer's or phone's internet address and that the app is in use, as for any web page. Every update is checked against RANN's signature before it can be installed. Copies from the Microsoft Store, Flathub or Google Play are updated by their store and make no check.
+On Linux copies installed from a .deb or .rpm package or an AppImage, and only if you agreed, the app checks GitHub once a day for a new version. GitHub sees your computer's internet address and that the app is in use, as for any web page. Every update is checked against RANN's signature before it can be installed. Copies from the Microsoft Store or Flathub, and the phone app from Google Play, are updated by their store and make no check.
 
 ### Links you open {#links}
 

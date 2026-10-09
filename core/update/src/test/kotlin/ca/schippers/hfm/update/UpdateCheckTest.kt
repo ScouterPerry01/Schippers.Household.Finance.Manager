@@ -53,7 +53,7 @@ class UpdateCheckTest {
     @Test
     fun `a channel without a file in the release gets nothing`() {
         val bytes = manifest()
-        assertNull(check.evaluate(bytes, signed(bytes), "0.9.0", Channel.APK))
+        assertNull(check.evaluate(bytes, signed(bytes), "0.9.0", Channel.APPIMAGE))
     }
 
     @Test

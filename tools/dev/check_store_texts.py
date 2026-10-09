@@ -1,6 +1,7 @@
 """Checks the store texts in docs/store against each field's limit (DIST-07).
 
-Usage: python tools/dev/check_store_texts.py
+Usage: python tools/dev/check_store_texts.py [folder]
+The folder defaults to docs/store; the phone app's repository passes its own docs/store.
 A field is a "### Name (max N)" heading; lists say "(up to N, max M each)" and search terms
 "(K terms, max M characters each)". Limits count characters, as the stores do.
 """
@@ -8,7 +9,7 @@ import os
 import re
 import sys
 
-BASE = os.path.join(os.path.dirname(__file__), "..", "..", "docs", "store")
+BASE = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "..", "docs", "store")
 HEADING = re.compile(r"^### (.+?) \((.+)\)$")
 
 

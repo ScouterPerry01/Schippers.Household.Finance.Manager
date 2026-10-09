@@ -14,10 +14,17 @@ import kotlin.test.assertTrue
  * steps in both languages, each step's screen and tab exist, each control it points at is marked
  * on some screen, its condition is one the panel knows, its manual link opens a page, and every
  * label it quotes in bold is a label of the app (desktop or phone) in that language.
+ *
+ * The phone app's labels come from a checkout of its own repository, Rann.Roost.Mobile, beside this
+ * one (or at ROOST_MOBILE_DIR). Without it, as on CI, the labels of the phone's steps (those with no
+ * screen on the computer) are not checked; the desktop's always are.
  */
 class WalkMeGuidesTest {
 
     private val sources = File("src/main/kotlin").walk().filter { it.extension == "kt" }.toList()
+
+    private val phoneRes: File? = listOfNotNull(System.getenv("ROOST_MOBILE_DIR"), "../../../Rann.Roost.Mobile")
+        .map { File(it, "app/src/main/res") }.firstOrNull { it.isDirectory }
 
     /** The ids marked with walkTarget("…"), the dialogs' walkId = "…" with their Save buttons, and lists' addTarget = "…". */
     private val targets: Set<String> = sources.flatMapTo(sortedSetOf()) { file ->
@@ -84,6 +91,7 @@ class WalkMeGuidesTest {
         for (language in Language.entries) {
             val labels = labels(language)
             for (guide in WalkMe.groups(language).flatMap { it.guides }) for (step in guide.steps) {
+                if (phoneRes == null && step.screen == null && step.target == null) continue
                 for (label in WalkMe.boldLabels(step.text)) {
                     if (normalize(label) !in labels) problems += "${language.tag} ${guide.id}#${step.id}: **$label**"
                 }
@@ -114,7 +122,7 @@ class WalkMeGuidesTest {
         val desktop = java.util.Properties().apply {
             Messages::class.java.getResourceAsStream("/hfm/i18n/messages_${language.tag}.properties")!!.reader(Charsets.UTF_8).use { load(it) }
         }.values.map { (it as String).replace("''", "'") }
-        val phone = File(if (language == Language.FRENCH) "../android/src/main/res/values-fr/strings.xml" else "../android/src/main/res/values/strings.xml").readText()
+        val phone = phoneRes?.let { File(it, if (language == Language.FRENCH) "values-fr/strings.xml" else "values/strings.xml").readText() }.orEmpty()
             .let { xml -> Regex("""<string name="[^"]+"[^>]*>(.*?)</string>""", RegexOption.DOT_MATCHES_ALL).findAll(xml).map { it.groupValues[1].replace("\\'", "'").replace("\\\"", "\"") } }
         // A label with a value in it (To review ({0}), Paired with %1$s) counts for its words around the value,
         // and each choice of a {0,choice,...} counts as written.

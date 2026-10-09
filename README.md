@@ -16,7 +16,7 @@ A personal, family and household finance application for Canada, in every provin
   - **Calendar:** appointments with reminders, agenda to year views, work and school schedules, children's activities, and the calendars brought in from phones.
   - **Reports:** charts with drill-down, a custom report builder, reports by person or chosen accounts, saved and scheduled reports, the year in review.
   - Several users with private account groups, encrypted backups, a full user manual in its own window, short help for every screen, and Walk-Me guides that take you step by step through common tasks, all in the Help menu.
-- **Android companion app, RANN's Roost Mobile** captures receipts, bills, expenses, voice notes, readings, trips (with stops, breaks, photos and addresses) and fuel on the spot, finds stations nearby (opt-in) and sends them to the desktop over your home Wi-Fi (or through a cloud folder, email or USB), shows balances, budgets, what is due, a 60-day agenda and the day's schedules with reminders, can sync calendars both ways (opt-in), and carries the household's contacts, with new ones sent back for review.
+- **Android companion app, RANN's Roost Mobile** (sold separately on Google Play; not in this repository) captures receipts, bills, expenses, voice notes, readings, trips (with stops, breaks, photos and addresses) and fuel on the spot, finds stations nearby (opt-in) and sends them to the desktop over your home Wi-Fi (or through a cloud folder, email or USB), shows balances, budgets, what is due, a 60-day agenda and the day's schedules with reminders, can sync calendars both ways (opt-in), and carries the household's contacts, with new ones sent back for review.
 
 All data stays on your own computer, encrypted. See the [release notes](docs/releases/1.0.0.en.md) ([français](docs/releases/1.0.0.fr.md)) for the full list and the known limits.
 
@@ -26,14 +26,14 @@ Status: **1.0.0 is being prepared.** Every phase of the [development plan](docs/
 
 - **Windows:** from the Microsoft Store (Windows 10 version 1809 or later, 64-bit), which installs, signs and updates it.
 - **Linux:** .deb, .rpm and AppImage packages (64-bit x86) on [GitHub Releases](https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager/releases), each with a minisign signature and listed in `SHA256SUMS`. Check a download with `minisign -Vm <file> -p core/update/src/main/resources/hfm/update/release-key.pub`. These copies can check GitHub for updates once a day, if you agree when first asked.
-- **Android:** RANN's Roost Mobile on Google Play, or the signed APK on GitHub Releases (Android 10 or later). The two are signed differently: uninstall one before installing the other.
+- **Android:** RANN's Roost Mobile on Google Play (Android 10 or later), CAD $4.99. It needs RANN's Roost on the computer.
 - HEIC photos need the system's decoder: Microsoft's HEIF and HEVC Video Extensions on Windows, libheif with its HEVC plugin (such as `libheif-plugin-libde265`) on Linux.
 
 The [user manual](core/i18n/src/main/resources/hfm/manual/en) ([français](core/i18n/src/main/resources/hfm/manual/fr)) is built into the app (Shift+F1), with help for each screen (F1).
 
 ## Privacy
 
-RANN's Roost has no RANN account, no RANN server, no advertising and no analytics. The household is one folder encrypted with AES-256 under keys protected by the users' passwords; the phone talks only to the household's own computer, encrypted end to end. The apps contact the internet only for the Bank of Canada exchange rates (when a currency other than the Canadian dollar is used) and for features the user turns on: price downloads, AI reading with the user's own key, the cloud folder or email transfer, and update checks (Linux packages and the GitHub APK only). The phone uses Google's ML Kit, whose diagnostics are disclosed. The full [privacy policy](https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en) ([français](https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr)) is kept in [`website/`](website).
+RANN's Roost has no RANN account, no RANN server, no advertising and no analytics. The household is one folder encrypted with AES-256 under keys protected by the users' passwords; the phone talks only to the household's own computer, encrypted end to end. The apps contact the internet only for the Bank of Canada exchange rates (when a currency other than the Canadian dollar is used) and for features the user turns on: price downloads, AI reading with the user's own key, the cloud folder or email transfer, and update checks (Linux packages only). The phone uses Google's ML Kit, whose diagnostics are disclosed. The full [privacy policy](https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en) ([français](https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr)) is kept in [`website/`](website).
 
 ## Project layout
 
@@ -51,10 +51,9 @@ RANN's Roost has no RANN account, no RANN server, no advertising and no analytic
 | `core/ocr` | Text recognition interface and the field extractor shared with the phone |
 | `core/ai` | Cloud AI reading with the user's own key (ADR 0009): document schemas, Claude through Anthropic's SDK, checks on every answer, the key in the system's secret store |
 | `core/ocr-desktop` | PaddleOCR on ONNX Runtime, PDF reading and HEIC photos (with the decoder the user installs), for the desktop |
-| `core/sync` | Pairing invitation, sealed transfer bundles, the phone's client and its contact book |
-| `core/update` | Signed release list, version comparison and download checks, shared by the desktop and the phone (ADR 0008) |
+| `core/sync` | Pairing invitation, sealed transfer bundles, the phone's client and its contact book (also built into the phone app) |
+| `core/update` | Signed release list, version comparison and download checks for the Linux packages (ADR 0008) |
 | `app/desktop` | Compose Desktop application, including the listener for phones |
-| `app/android` | Android companion: capture, encrypted queue, transfer, summaries and reminders, contacts, trips and log forms, the phone's calendars; `play` and `github` flavours |
 | `tools/release` | Makes the release key pair and signs releases (run by the release workflow) |
 | `tools/natives` | Builds the small Windows helper that reads HEIC through Windows Imaging Component |
 | `website/` | Text and images for the home page and privacy policy on rann.ca (Google Sites), in English and French |
@@ -65,7 +64,7 @@ Architecture decisions are recorded in [docs/adr](docs/adr).
 
 ## Building
 
-Requirements: JDK 21. For the Android app, the Android SDK (API 37).
+Requirements: JDK 21.
 
 ```sh
 ./gradlew test                      # all core tests
@@ -75,8 +74,7 @@ Requirements: JDK 21. For the Android app, the Android SDK (API 37).
 ./gradlew :app:desktop:packageMsix  # Microsoft Store package (on Windows, with the Windows SDK)
 ./gradlew :app:desktop:packageMsi   # Windows installer for testing (on Windows)
 ./gradlew :app:desktop:packageDeb   # Linux package (on Linux)
-./gradlew :app:android:assembleGithubDebug   # phone app (the play flavour has no update check)
-./gradlew build                     # everything, with Android lint (run before every commit)
+./gradlew build                     # everything (run before every commit)
 ./gradlew :app:desktop:manualScreenshots -Plang=en   # retake the manual's pictures offscreen (and fr)
 ./gradlew :app:desktop:storeScreenshots -Plang=en    # retake the Microsoft Store pictures offscreen (and fr)
 ./gradlew :app:desktop:suggestRuntimeModules         # JDK modules the packaged runtime needs
@@ -95,6 +93,8 @@ GitHub Issues, or email info-rann-apps@NorthMail.ca.
 ## Licence
 
 The source code is GPL-3.0-or-later. See [LICENSE](LICENSE).
+
+RANN's Roost Mobile, the Android companion, is not part of this repository and is not covered by the GPL: its code is in a separate private repository, and it is sold on Google Play. It builds on this repository's shared core (`core/money`, `core/calc`, `core/domain`, `core/security`, `core/sync`, `core/ocr`).
 
 The names RANN, RANN's Roost and RANN's Roost Mobile and the logo are © Perry Schippers, trading as RANN, and are not covered by the GPL (section 7(e)); see [branding/README.md](branding/README.md). A modified version you publish needs its own name and icon.
 

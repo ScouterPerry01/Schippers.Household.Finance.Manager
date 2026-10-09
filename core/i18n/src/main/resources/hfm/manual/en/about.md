@@ -100,7 +100,7 @@ See also [Privacy and your data](privacy-data).
 
 @index: licence; license; GPL; free software; open source; source code; warranty
 
-RANN's Roost is free software under the GNU General Public License, version 3 or later, and comes with no warranty. You may use it, study it, share it and change it under that licence. Its source code is on GitHub. The names RANN, RANN's Roost and RANN's Roost Mobile and the logo are © Perry Schippers, trading as RANN, and are not covered by the licence.
+RANN's Roost is free software under the GNU General Public License, version 3 or later, and comes with no warranty. You may use it, study it, share it and change it under that licence. Its source code is on GitHub. RANN's Roost Mobile, the phone app, is sold separately on Google Play and is not covered by this licence. The names RANN, RANN's Roost and RANN's Roost Mobile and the logo are © Perry Schippers, trading as RANN, and are not covered by the licence.
 
 - **Source code on GitHub**: opens the source code's page in your web browser.
 

@@ -679,9 +679,9 @@ The application is published publicly: Windows through the Microsoft Store, Linu
 | --- | --- | --- |
 | DIST-01 | Signed Windows build submitted to the Microsoft Store (MSIX, or an MSI/EXE installer, which the Store also accepts). | Must |
 | DIST-02 | Linux builds (.deb, .rpm, AppImage), free on GitHub Releases, with checksums; source code on GitHub. Flatpak on Flathub optional (16.3). | Must |
-| DIST-03 | Android companion app, paid on Google Play (16.3) and as a signed APK on GitHub Releases; an F-Droid build is optional. | Must |
+| DIST-03 | Android companion app, paid on Google Play only (16.3), built from its own private repository (Rann.Roost.Mobile) on the shared core. | Must |
 | DIST-04 | Published privacy policy (required by the Microsoft Store and Google Play) stating that data stays on the user's devices and describing opt-in cloud features. | Must |
-| DIST-05 | Updates: the Microsoft Store, Google Play and Flathub update their own installs; .deb, .rpm, AppImage and APK builds check GitHub Releases for new versions. | Should |
+| DIST-05 | Updates: the Microsoft Store, Google Play and Flathub update their own installs; .deb, .rpm and AppImage builds check GitHub Releases for new versions. | Should |
 | DIST-06 | GitHub repository with licence, user guide, contribution guide and issue templates; support through GitHub Issues and a dedicated support email address. | Should |
 | DIST-07 | Store listings and in-app text in English and French. | Should |
 
@@ -710,10 +710,10 @@ Phases 1 and 2 together cover daily household bookkeeping; each later phase adds
 
 | Topic | Decision | Notes |
 | --- | --- | --- |
-| Licence | GPL-3.0 (confirmed) | As sole copyright holder, the owner can still sell the Store version; others may share and modify the code but cannot release a closed-source copy. If outside contributions are accepted, contributors sign a contributor agreement so the licence can be changed later. |
+| Licence | GPL-3.0 (confirmed) | As sole copyright holder, the owner can still sell the Store version; others may share and modify the code but cannot release a closed-source copy. If outside contributions are accepted, contributors sign a contributor agreement so the licence can be changed later. The Android companion is not under the GPL: it has its own private repository and is sold only on Google Play (owner's decision, 2026-10-08). |
 | Microsoft Store pricing | CAD $19.99, one-time (owner's decision, 2026-10-08) | Set from the first submission, not started free: users who install an app while it is free keep it. Temporary sale prices are set in Partner Center. |
 | Google Play pricing | CAD $4.99, one-time paid download (owner's decision, 2026-10-08) | Google Play does not allow an app published as free to become paid later, so the price is set when the app is created in Play Console; a paid app can still become free. Needs a payments profile in Play Console. |
-| Android distribution | Google Play (developer account registered) | New personal Play accounts must run a closed test with at least 12 testers for 14 days before public release. Signed APK also on GitHub Releases. F-Droid undecided; it cannot sell apps, only show donation links. |
+| Android distribution | Google Play (developer account registered) | New personal Play accounts must run a closed test with at least 12 testers for 14 days before public release. Google Play only: no APK on GitHub Releases and no F-Droid build. |
 | Support | GitHub Issues and a dedicated support email address | DIST-06 |
 | Linux packages | Free .deb, .rpm and AppImage on GitHub Releases (owner's decision, 2026-10-07); Flatpak on Flathub optional | DIST-02 |
 
@@ -726,8 +726,8 @@ Income comes from the two stores: the Windows app in the Microsoft Store and the
 | Windows | CAD $19.99 in the Microsoft Store, one-time | Microsoft collects payment and sales taxes and keeps its store fee |
 | Linux | Free ready-to-install builds (.deb, .rpm, AppImage) on GitHub Releases | No storefront or merchant of record |
 | Linux (Flathub) | Optional | Free like the other Linux builds, so it undercuts nothing |
-| Android | CAD $4.99 on Google Play, one-time; signed APK on GitHub Releases | Google collects payment and sales taxes and keeps its store fee |
-| Source code | Free on GitHub | Required by GPL-3.0; anyone may build it themselves, so the price pays for convenience, signed builds, updates and support |
+| Android | CAD $4.99 on Google Play, one-time; Google Play only | Google collects payment and sales taxes and keeps its store fee |
+| Source code | The desktop app and shared core free on GitHub; the phone app's code private | The GPL lets anyone build the desktop app themselves, so its price pays for convenience, signed builds, updates and support. The phone app is not under the GPL, so Google Play is the only way to get it |
 
 No licence keys or copy protection: under GPL-3.0 anyone could remove them, and they add support burden without stopping copying.
 

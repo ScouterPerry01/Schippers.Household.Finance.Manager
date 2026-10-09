@@ -22,7 +22,7 @@ Background: [ADR 0008](adr/0008-signed-releases-and-updates.md) (signed releases
 
 - [ ] The Windows package opens normally when installed (not only the self-check): see
       [section 6](#6-check-the-msix-on-this-computer).
-- [ ] The real-phone test of the companion is done (sideload the GitHub APK over USB with `adb install`).
+- [ ] The real-phone test of the companion is done (in Rann.Roost.Mobile: its release checklist, step 0).
 - [ ] The release notes read well in both languages. The GitHub release body is the English file
       followed by the French one (assembled by the workflow); `update.json` carries both.
 
@@ -53,8 +53,9 @@ It writes the secret to that file and the public key to
 
 ## 2. The Android upload key (once, ever)
 
-Google Play App Signing keeps the app signing key; this upload key signs what you upload and the
-GitHub APK. In your own PowerShell window:
+Google Play App Signing keeps the app signing key; this upload key signs the bundles you upload. Its
+secrets now go in the phone app's repository, Rann.Roost.Mobile (its release checklist, step 1).
+If the key does not exist yet, make it in your own PowerShell window:
 
     $kt = "C:\Program Files\Android\openjdk\jdk-21.0.8\bin\keytool.exe"
     & $kt -genkeypair -v -keystore E:\RANN-keys\upload.jks -keyalg RSA -keysize 4096 -validity 10000 -alias upload
@@ -62,23 +63,13 @@ GitHub APK. In your own PowerShell window:
 keytool asks for the keystore password, your name and organization (RANN), and the key password.
 Keep `upload.jks` and both passwords offline, with a second copy.
 
-- [ ] The four secrets (each `gh secret set` without a value asks for it, hidden):
-
-      gh secret set ANDROID_KEYSTORE_BASE64 --body ([Convert]::ToBase64String([IO.File]::ReadAllBytes("E:\RANN-keys\upload.jks")))
-      gh secret set ANDROID_KEYSTORE_PASSWORD
-      gh secret set ANDROID_KEY_ALIAS
-      gh secret set ANDROID_KEY_PASSWORD
-
-  The alias is `upload` if you used the command above. `--body` keeps PowerShell from adding a line
-  ending to the value, which the workflow's `base64 -d` would refuse.
-
-- [ ] Check they are there (names only, never values): `gh secret list`. Expect `HFM_RELEASE_KEY` and
-      the four `ANDROID_*`.
+- [ ] Check this repository's secrets (names only, never values): `gh secret list`. Expect
+      `HFM_RELEASE_KEY`; the four `ANDROID_*` belong to Rann.Roost.Mobile and can be removed here
+      (`gh secret delete ANDROID_KEYSTORE_BASE64`, and the same for the other three).
 
 ## 3. Version 1.0.0 and the tag
 
-- [ ] In `gradle.properties`, change `hfm.version=0.9.0` to `hfm.version=1.0.0` (the phone's version
-      code becomes 10000). Then:
+- [ ] In `gradle.properties`, change `hfm.version=0.9.0` to `hfm.version=1.0.0`. Then:
 
       git pull
       .\gradlew build
@@ -99,9 +90,7 @@ The tag starts **Release** (`gh run watch (gh run list --workflow release.yml -L
    .rpm (Fedora container) and runs the self-check inside each, and inside the AppImage.
 3. **Microsoft Store package** (Windows): builds the unsigned MSIX and runs the self-check in its app
    image. Kept as the `msix` artifact (the Store signs it).
-4. **Android:** builds the GitHub APK and the Play bundle (AAB), both signed with the upload key. The
-   AAB is kept as the `android` artifact; it is not put on GitHub Releases.
-5. **Sign and draft the release:** signs every Linux package and the APK with the release key, writes
+4. **Sign and draft the release:** signs every Linux package with the release key, writes
    `SHA256SUMS` and `update.json` (with both release notes), checks every signature with `minisign`,
    and creates a **draft** GitHub release `v1.0.0` with the English notes. Nothing is public yet.
 
@@ -110,8 +99,8 @@ If a job fails, nothing is published. Fix on `main`, delete the tag (`git push o
 
 ## 5. Publish the GitHub release
 
-- [ ] Look at the draft: `gh release view v1.0.0` (or on GitHub, Releases). Expect the .deb, .rpm,
-      AppImage and APK, a `.minisig` for each, `SHA256SUMS`, `update.json` and their `.minisig`.
+- [ ] Look at the draft: `gh release view v1.0.0` (or on GitHub, Releases). Expect the .deb, .rpm
+      and AppImage, a `.minisig` for each, `SHA256SUMS`, `update.json` and their `.minisig`.
 - [ ] Check one download yourself:
 
       gh release download v1.0.0 --pattern "*.deb*" --pattern "SHA256SUMS*" -D $env:TEMP\rel100
@@ -120,8 +109,8 @@ If a job fails, nothing is published. Fix on `main`, delete the tag (`git push o
 
 - [ ] Read the release text: the workflow puts the English notes first, then a line and the French
       notes under a "Français" heading (from `docs/releases/1.0.0.en.md` and `.fr.md`).
-- [ ] Publish: `gh release edit v1.0.0 --draft=false --latest`. From now on, Linux copies and the GitHub
-      APK that agreed to check will see later releases through `releases/latest`.
+- [ ] Publish: `gh release edit v1.0.0 --draft=false --latest`. From now on, Linux copies that agreed to
+      check will see later releases through `releases/latest`.
 
 ## 6. Check the MSIX on this computer
 
@@ -168,38 +157,8 @@ Partner Center > Apps and games > **RANN's Roost** > Start submission (before th
 
 ## 8. Google Play (Play Console)
 
-Nothing has been uploaded to Play yet; the package `ca.ranns.roost.mobile` becomes permanent with the
-first upload. Personal developer accounts need a closed test with at least 12 testers for 14 days in
-a row before production.
-
-- [ ] **Payments profile:** Setup > Payments profile, linked to the developer account; Play needs it
-      before a paid app can be created.
-- [ ] **Create the app:** RANN's Roost Mobile, default language English (Canada), App, **Paid**. This
-      cannot be changed from free to paid later.
-- [ ] **Price:** Monetize > App pricing: CAD $4.99 (SRS 16.2); other countries from Play's conversion.
-- [ ] **Testers and the price:** before the closed test, check in Play Console how the 12 testers get
-      a paid app (licence testers, or buying it and being refunded).
-- [ ] **Play App Signing:** accept Google-generated app signing key; the upload key is the one from step 2.
-- [ ] **App content:** privacy policy URL (above); ads: none; App access: explain that the app needs
-      RANN's Roost on a computer to pair, and give reviewers the steps (or a demo pairing) if Play asks;
-      content rating questionnaire; target audience adults (18+); news app: no; government app: no;
-      financial features: personal finance management only (no banking, loans or payments in the app);
-      health: the app holds medication refills and appointments sent from the user's computer (answer
-      the Health apps declaration if Play shows it).
-- [ ] **Data safety:** fill it in from [`docs/store/google-play.md`](store/google-play.md#data-safety-form),
-      after confirming its five points (end-to-end exception, dictation, permissions, ML Kit's current
-      list, location).
-- [ ] **Store listing:** English (Canada) and French (Canada) from `docs/store/google-play.md`, the icon
-      `branding/store/play-icon-512.png`, the feature graphic `branding/store/play-feature-1024x500.png`
-      and five phone screenshots per language from `docs/store/screenshots/phone-en` and `phone-fr`.
-- [ ] **Internal testing:** Testing > Internal testing > Create release, upload
-      `ranns-roost-mobile-1.0.0-play.aab` from the `android` artifact, release notes (short: "First
-      release." / « Première version. »), roll out; install it from the Play link on your own phone and
-      pair it with the computer.
-- [ ] **Closed testing:** create a closed track, add at least 12 testers (an email list or a Google
-      Group), promote the same release, and keep them opted in for 14 days in a row.
-- [ ] **Production:** after the 14 days, apply for production access (Play asks about the test), then
-      promote the release to production for Canada.
+The phone app is released from its own repository, Rann.Roost.Mobile: follow its
+`docs/release-checklist.md` (secrets, version and tag, then Play Console).
 
 ## 9. rann.ca (Google Sites)
 

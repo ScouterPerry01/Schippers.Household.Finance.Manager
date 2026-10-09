@@ -8,14 +8,11 @@ For a short walk-through, see [Getting started with the phone app](start-phone).
 
 @index: Android; mobile app; phone app; companion app; capture; scan receipts; RANN's Roost Mobile
 
-## Two editions {#editions}
+## Getting the app {#editions}
 
-@index: Google Play; GitHub; APK
+@index: Google Play; install; update; buy
 
-RANN's Roost Mobile comes in two editions that work the same way:
-
-- The Google Play edition, kept up to date by Google Play.
-- The GitHub edition, installed from RANN's releases on GitHub. It can check for updates itself and install them after checking RANN's signature (see [Updates](#updates)). Android may ask you to allow RANN's Roost Mobile to install apps the first time.
+RANN's Roost Mobile is sold on Google Play, which installs it and keeps it up to date. It works with RANN's Roost on your computer, Windows or Linux, and needs Android 10 or later.
 
 ## Privacy on the phone {#privacy}
 
@@ -25,7 +22,6 @@ RANN's Roost Mobile comes in two editions that work the same way:
 - The app is excluded from Android's cloud backups, so none of it is copied to Google.
 - Captures go only to your computer, encrypted with the key made when you paired. Away from home, they may go through a folder of your own cloud storage, still encrypted.
 - Calendars are read only if you turn on [Calendars on this phone](phone-app#phone-calendars), only those you tick, and they go only to your computer, encrypted the same way. [The agenda](#agenda) also shows them, read on the phone while it is open; that sends nothing more. Only if you choose **Both ways**, the app also writes the household's coming appointments, hours and bills into the calendar you pick: a calendar kept only on this phone, or one of your accounts' calendars, which then syncs with that account. See [Both ways](phone-app#calendar-both-ways).
-- The only other connection is the daily update check of the GitHub edition, if you allow it. It sends nothing about you or your household.
 - Location: only if you allow it, the app takes one location fix when you start a trip, when you arrive, and when you save a place or look for the nearest station, never in the background and never at other times. The fix is matched to your saved places on the phone itself; no map service is asked. What travels to your computer, encrypted like the rest, is the place's name, or the coordinates when you leave a place unnamed, and the coordinates of a place you save. See [Location](#location).
 - Once your computer confirms it received a capture, the phone deletes its copy of the pictures and details.
 
@@ -71,7 +67,6 @@ What stays: everything the computer already received, and the household on the c
 ## The first start {#first-start}
 
 - On Android 13 and later, the app asks whether it may show notifications. Allow it to get bill, appointment, refill, budget and maintenance reminders.
-- The GitHub edition asks **Check for updates?** once: **Check once a day** or **Don't check**. You can change it later in [Settings](#updates).
 - Until the phone is paired, the Capture and Settings tabs show **Not paired yet** and a **Pair with a computer** button.
 
 ## The main tabs {#tabs}
@@ -82,11 +77,9 @@ Five tabs run along the bottom of the screen:
 - **Sent**: what you captured and how far it got. See [The Sent tab](#sent-tab).
 - **Summary**: balances, bills, maintenance and budgets from your computer, and the agenda of the coming 60 days. See [The Summary tab](#summary-tab) and [The agenda](#agenda).
 - **Contacts**: the household's contacts from your computer, and new contacts to send. See [The Contacts tab](#contacts-tab).
-- **Settings**: pairing, the transfer folder, reminders on the minute, the calendars, the lookups for trips, the language, the lock and updates. See [The Settings tab](#settings-tab).
+- **Settings**: pairing, the transfer folder, reminders on the minute, the calendars, the lookups for trips, the language and the lock. See [The Settings tab](#settings-tab).
 
 On the **Capture** and **Summary** tabs, the calendar icon at the top right opens [the agenda](#agenda); screen readers call it **Open the agenda**.
-
-When a newer version is available (GitHub edition), a band at the top of the other tabs says so; tap it to go to Settings.
 
 ## Pair with a computer {#pair-screen}
 
@@ -730,24 +723,6 @@ Shown when the phone has a fingerprint reader or face unlock set up. When on, th
 @index: lock time; auto-lock; relock; lock after
 
 - **Ask for the PIN again**: how long the app may be away before it asks for the PIN (or your fingerprint or face) again: **Immediately**, **After 1 minute** (the default), **After 5 minutes** or **After 15 minutes**. Coming back from a screen the app opened itself, such as the document scanner or a file picker, counts as at least a minute, so a scan does not lock you out halfway.
-
-### Updates {#updates}
-
-@index: update; new version; signature
-
-Shown in the GitHub edition only; the Google Play edition is updated by Google Play.
-
-- **Check for updates once a day**: when on, the app looks on GitHub at most once a day, while it is open, for a newer version. Only the check goes out: GitHub sees your phone's internet address, as for any web page. Nothing about your captures or household is sent.
-- The status: **Update checks are off.**, **Checking…**, **Version … is up to date.**, or **Version … is available.** with what is new.
-- **Download, check and install**: downloads the new version, checks it against RANN's signature and its announced size and fingerprint, then hands it to Android, which asks you to confirm the install. A bar shows the download; once checked, the app says **Version … was checked against RANN's signature. Confirm the install when Android asks.**
-- **Check now**: shown while the daily check is on. Checks at once.
-
-Messages when something goes wrong:
-
-- **The update was refused because it could not be confirmed as a release signed by RANN. Nothing was installed.**
-- **The download did not match RANN's signed release, so it was deleted.**
-- **GitHub could not be reached to check for updates.**, with the reason.
-- **The update could not be installed.**, with the reason.
 
 ### About and privacy policy {#about}
 

@@ -7,7 +7,7 @@ Tout est chiffré entre le téléphone et cet ordinateur, et par le Wi-Fi rien n
 ## Jumeler un téléphone
 
 - Cliquez sur Jumeler un téléphone. Un code QR s’affiche.
-- Sur le téléphone, ouvrez RANN's Roost Mobile, touchez Jumeler à un ordinateur et numérisez le code. L’appareil photo du téléphone fonctionne aussi.
+- Sur le téléphone, installez RANN's Roost Mobile à partir de Google Play, ouvrez-la, touchez Jumeler à un ordinateur et numérisez le code. L’appareil photo du téléphone fonctionne aussi.
 - Le téléphone doit être sur le même Wi-Fi que l’ordinateur. Si Windows demande d’autoriser l’application sur les réseaux, autorisez-la sur les réseaux privés.
 - Le code expire après 10 minutes. Fermez alors la fenêtre et recommencez. Si l’appareil photo ne lit pas l’écran, cliquez sur Copier en texte et collez le lien sur le téléphone.
 

@@ -1,9 +1,10 @@
 name: Release
 
-# SEC-08, DIST-01 to DIST-05 (ADR 0008). A tag v<version> builds every package on its own platform,
+# SEC-08, DIST-01, DIST-02, DIST-05 (ADR 0008). A tag v<version> builds every package on its own platform,
 # checks each installed package with the self-check, signs everything with RANN's release key and
-# creates a DRAFT GitHub release; the owner reviews and publishes it. The MSIX (Microsoft Store) and
-# the Google Play bundle are kept as workflow artifacts for the owner to upload to the stores.
+# creates a DRAFT GitHub release; the owner reviews and publishes it. The MSIX is kept as a workflow
+# artifact for the owner to upload to the Microsoft Store. The phone app is released from its own
+# repository, Rann.Roost.Mobile.
 # Run by hand (workflow_dispatch) for a dry run: the same builds and checks with a throwaway key,
 # and nothing is published.
 
@@ -151,47 +152,9 @@ jobs:
           name: msix
           path: app/desktop/build/compose/binaries/main/msix/*.msix
 
-  android:
-    name: Android
-    needs: version
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-      - uses: gradle/actions/setup-gradle@v4
-      - name: Throwaway release key (dry run only)
-        if: needs.version.outputs.dry == 'true'
-        run: ./gradlew :tools:release:run --args="keygen $RUNNER_TEMP/dry-run.key" --console=plain
-      - name: Upload key
-        if: needs.version.outputs.dry == 'false'
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
-      - name: Build the GitHub APK and the Google Play bundle
-        shell: bash
-        env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          if [ "${{ needs.version.outputs.dry }}" = "false" ]; then export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"; fi
-          # The signing secrets must not be kept in a configuration cache entry.
-          ./gradlew :app:android:assembleGithubRelease :app:android:bundlePlayRelease --no-configuration-cache --console=plain
-          mkdir -p dist
-          cp app/android/build/outputs/apk/github/release/*.apk "dist/ranns-roost-mobile-${{ needs.version.outputs.version }}.apk"
-          cp app/android/build/outputs/bundle/playRelease/*.aab "dist/ranns-roost-mobile-${{ needs.version.outputs.version }}-play.aab"
-          ls -la dist
-      - uses: actions/upload-artifact@v4
-        with:
-          name: android
-          path: dist/
-
   publish:
     name: Sign and draft the release
-    needs: [version, linux, windows, android]
+    needs: [version, linux, windows]
     if: needs.version.outputs.dry == 'false'
     runs-on: ubuntu-latest
     permissions:
@@ -211,7 +174,6 @@ jobs:
         run: |
           mkdir -p release
           cp artifacts/linux/* release/
-          cp artifacts/android/*.apk release/
           ls -la release
       - name: Sign
         shell: bash

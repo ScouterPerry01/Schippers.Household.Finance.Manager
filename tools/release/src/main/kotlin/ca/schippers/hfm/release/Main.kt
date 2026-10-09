@@ -71,7 +71,7 @@ private fun keygen(secretFile: Path) {
 
 /**
  * Signs every file in [dir] and writes SHA256SUMS and update.json (with their signatures).
- * Files the apps can install (.deb, .rpm, .AppImage, .apk) are listed in update.json.
+ * Files the apps can install (.deb, .rpm, .AppImage) are listed in update.json.
  */
 private fun signRelease(version: String, dir: Path, notesEn: Path?, notesFr: Path?) {
     val secret = System.getenv("HFM_RELEASE_KEY")?.takeIf { it.isNotBlank() }
@@ -123,7 +123,6 @@ private fun kindOf(name: String): Channel? = when {
     name.endsWith(".deb") -> Channel.DEB
     name.endsWith(".rpm") -> Channel.RPM
     name.endsWith(".AppImage") -> Channel.APPIMAGE
-    name.endsWith(".apk") -> Channel.APK
     else -> null
 }
 

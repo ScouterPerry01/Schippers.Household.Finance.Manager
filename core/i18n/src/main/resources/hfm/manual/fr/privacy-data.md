@@ -176,7 +176,7 @@ Rien d’autre sur vous ou vos trajets n’est envoyé avec elles.
 
 @index: vérification des mises à jour; GitHub
 
-Sur les copies Linux installées à partir d’un paquet .deb ou .rpm ou d’une AppImage, et seulement si vous l’avez accepté, l’application vérifie une fois par jour sur GitHub si une nouvelle version est parue. L’application du téléphone téléchargée de GitHub fait de même, si vous l’avez accepté (voir [Mises à jour](phone-app#updates)). GitHub voit l’adresse Internet de votre ordinateur ou de votre téléphone et le fait que l’application est utilisée, comme pour toute page Web. Chaque mise à jour est vérifiée avec la signature de RANN avant de pouvoir être installée. Les copies du Microsoft Store, de Flathub ou de Google Play sont mises à jour par leur boutique et ne font aucune vérification.
+Sur les copies Linux installées à partir d’un paquet .deb ou .rpm ou d’une AppImage, et seulement si vous l’avez accepté, l’application vérifie une fois par jour sur GitHub si une nouvelle version est parue. GitHub voit l’adresse Internet de votre ordinateur et le fait que l’application est utilisée, comme pour toute page Web. Chaque mise à jour est vérifiée avec la signature de RANN avant de pouvoir être installée. Les copies du Microsoft Store ou de Flathub, et l’application du téléphone de Google Play, sont mises à jour par leur boutique et ne font aucune vérification.
 
 ### Les liens que vous ouvrez {#links}
 

@@ -79,7 +79,7 @@ All requests use HTTPS. Each service sees your device's internet address, as for
 - What it learns: that wallet's public addresses.
 
 **GitHub** (github.com)
-- When: only on copies that check for updates, only if you agreed when asked, and at most once a day. These are the Linux packages and the Android app downloaded from GitHub.
+- When: only on copies that check for updates, only if you agreed when asked, and at most once a day. These are the Linux packages from GitHub.
 - What it learns: that a copy of the app is checking for updates, and the updates you choose to download.
 
 The Microsoft Store and Google Play versions never check GitHub: the store updates them.
@@ -109,7 +109,7 @@ Google's components do send Google technical information about their use: the de
 
 **Dictation.** If you tap Dictate the note, the phone's own speech input (often Google's) listens and hands the app only the words; it handles your voice under its own privacy policy. Voice notes you record in the app are not dictation: they stay on the phone until they reach your computer, encrypted end to end.
 
-If you install the app from Google Play, Google handles its download and updates.
+The app comes from Google Play, which handles its purchase, download and updates.
 
 ## The stores
 
