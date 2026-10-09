@@ -17,7 +17,8 @@ import kotlin.test.assertTrue
  *
  * The phone app's labels come from a checkout of its own repository, Rann.Roost.Mobile, beside this
  * one (or at ROOST_MOBILE_DIR). Without it, as on CI, the labels of the phone's steps (those with no
- * screen on the computer) are not checked; the desktop's always are.
+ * screen on the computer) and of sentences about the phone in the computer's steps are not checked;
+ * the desktop's always are.
  */
 class WalkMeGuidesTest {
 
@@ -92,7 +93,9 @@ class WalkMeGuidesTest {
             val labels = labels(language)
             for (guide in WalkMe.groups(language).flatMap { it.guides }) for (step in guide.steps) {
                 if (phoneRes == null && step.screen == null && step.target == null) continue
-                for (label in WalkMe.boldLabels(step.text)) {
+                val text = if (phoneRes != null) step.text
+                else step.text.split(SENTENCE_END).filterNot { PHONE_WORD.containsMatchIn(it) }.joinToString("\n")
+                for (label in WalkMe.boldLabels(text)) {
                     if (normalize(label) !in labels) problems += "${language.tag} ${guide.id}#${step.id}: **$label**"
                 }
             }
@@ -136,4 +139,11 @@ class WalkMeGuidesTest {
 
     private fun normalize(s: String): String = s.trim().removeSuffix("…").removeSuffix("...").removeSuffix(":").trim()
         .removeSuffix("(").trim().replace('’', '\'')
+
+    private companion object {
+        val SENTENCE_END = Regex("""(?<=[.!?])\s+|\n""")
+
+        /** A sentence about the phone ("On the phone, tap …"), whose bold labels are the phone's. */
+        val PHONE_WORD = Regex("""\b(phone|téléphone)\b""", RegexOption.IGNORE_CASE)
+    }
 }
