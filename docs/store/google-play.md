@@ -5,7 +5,7 @@ build is the `play` flavour: no update check and no permission to install packag
 
 - Privacy policy URL: https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en (French: https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr)
 - Contact email: info-rann-apps@NorthMail.ca
-- Category: Finance. Price: free (decided in the SRS, 16.2).
+- Category: Finance. Price: CAD $4.99, a one-time paid download (SRS 16.2). Set it when creating the app: Play never lets a free app become paid.
 - App icon: `branding/store/play-icon-512.png`. Feature graphic: `branding/store/play-feature-1024x500.png`.
 - Phone screenshots: `docs/store/screenshots/phone-en/` and `phone-fr/` (1080 × 2160, within Play's 2:1 limit; six per language: capture, summary, agenda, contacts, sent, trip under way), taken on the emulator from the sample household (`tools/dev/README.md`).
 
@@ -21,7 +21,7 @@ Snap receipts, log trips and hours, see what's due, for RANN's Roost. Encrypted.
 
 ### Full description (max 4,000)
 
-RANN's Roost Mobile is the free companion to RANN's Roost, the household finance app for Windows and Linux. It needs RANN's Roost on your computer.
+RANN's Roost Mobile is the companion to RANN's Roost, the household finance app for Windows and Linux. It needs RANN's Roost on your computer.
 
 CAPTURE ON THE SPOT
 • Photograph a receipt or a bill: the edges are found, the page is straightened and the text is read on your phone.
@@ -69,7 +69,7 @@ Reçus, trajets, heures et échéances pour RANN's Roost sur l'ordinateur. Chiff
 
 ### Description complète (max 4 000)
 
-RANN's Roost Mobile est le compagnon gratuit de RANN's Roost, l'application de finances du ménage pour Windows et Linux. Il nécessite RANN's Roost sur votre ordinateur.
+RANN's Roost Mobile est le compagnon de RANN's Roost, l'application de finances du ménage pour Windows et Linux. Il nécessite RANN's Roost sur votre ordinateur.
 
 CAPTUREZ SUR LE MOMENT
 • Photographiez un reçu ou une facture : les bords sont détectés, la page est redressée et le texte est lu sur votre téléphone.

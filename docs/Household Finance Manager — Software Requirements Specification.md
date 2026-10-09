@@ -678,8 +678,8 @@ The application is published publicly: Windows through the Microsoft Store, Linu
 | ID | Requirement | Priority |
 | --- | --- | --- |
 | DIST-01 | Signed Windows build submitted to the Microsoft Store (MSIX, or an MSI/EXE installer, which the Store also accepts). | Must |
-| DIST-02 | Linux builds (.deb, .rpm, AppImage) sold through an online storefront, with checksums; source code on GitHub. Flatpak on Flathub once its paid-app support launches (16.3). | Must |
-| DIST-03 | Free Android companion app on Google Play and as a signed APK on GitHub Releases; an F-Droid build is optional. | Must |
+| DIST-02 | Linux builds (.deb, .rpm, AppImage), free on GitHub Releases, with checksums; source code on GitHub. Flatpak on Flathub optional (16.3). | Must |
+| DIST-03 | Android companion app, paid on Google Play (16.3) and as a signed APK on GitHub Releases; an F-Droid build is optional. | Must |
 | DIST-04 | Published privacy policy (required by the Microsoft Store and Google Play) stating that data stays on the user's devices and describing opt-in cloud features. | Must |
 | DIST-05 | Updates: the Microsoft Store, Google Play and Flathub update their own installs; .deb, .rpm, AppImage and APK builds check GitHub Releases for new versions. | Should |
 | DIST-06 | GitHub repository with licence, user guide, contribution guide and issue templates; support through GitHub Issues and a dedicated support email address. | Should |
@@ -711,30 +711,30 @@ Phases 1 and 2 together cover daily household bookkeeping; each later phase adds
 | Topic | Decision | Notes |
 | --- | --- | --- |
 | Licence | GPL-3.0 (confirmed) | As sole copyright holder, the owner can still sell the Store version; others may share and modify the code but cannot release a closed-source copy. If outside contributions are accepted, contributors sign a contributor agreement so the licence can be changed later. |
-| Microsoft Store pricing | Start free | The price can be changed later in Partner Center. Users who already installed it free keep it. |
-| Google Play pricing | Start free | Google Play does not allow an app published as free to become paid later. Any income on Android must come from optional in-app donations or a one-time "supporter" purchase. |
+| Microsoft Store pricing | CAD $19.99, one-time (owner's decision, 2026-10-08) | Set from the first submission, not started free: users who install an app while it is free keep it. Temporary sale prices are set in Partner Center. |
+| Google Play pricing | CAD $4.99, one-time paid download (owner's decision, 2026-10-08) | Google Play does not allow an app published as free to become paid later, so the price is set when the app is created in Play Console; a paid app can still become free. Needs a payments profile in Play Console. |
 | Android distribution | Google Play (developer account registered) | New personal Play accounts must run a closed test with at least 12 testers for 14 days before public release. Signed APK also on GitHub Releases. F-Droid undecided; it cannot sell apps, only show donation links. |
 | Support | GitHub Issues and a dedicated support email address | DIST-06 |
-| Linux packages | Flatpak on Flathub (primary), plus .deb, .rpm and AppImage | DIST-02 |
+| Linux packages | Free .deb, .rpm and AppImage on GitHub Releases (owner's decision, 2026-10-07); Flatpak on Flathub optional | DIST-02 |
 
 ### 16.3 Income model
 
-The desktop application is the paid product; the Android app is a free companion that only works with a desktop installation.
+Income comes from the two stores: the Windows app in the Microsoft Store and the Android companion on Google Play. The Linux builds are free. The Android app only works with a desktop installation, so a Linux household pays only for the phone app.
 
 | Platform | How it is sold | Notes |
 | --- | --- | --- |
-| Windows | Paid in the Microsoft Store | Starts free; price set later in Partner Center |
-| Linux | Paid ready-to-install builds (.deb, .rpm, AppImage) from an online storefront | A merchant-of-record storefront such as Paddle or Lemon Squeezy collects payment and handles sales taxes (GST/HST, QST, foreign VAT); itch.io and Gumroad are simpler alternatives |
-| Linux (Flathub) | Deferred | Flathub has planned paid apps for several years, but the feature is not yet live ([source](https://tim.siosm.fr/blog/2025/11/24/building-better-app-store-flathub/)); a free Flathub listing would undercut the paid builds |
-| Android | Free on Google Play and GitHub | Optional one-time supporter purchase on Google Play |
+| Windows | CAD $19.99 in the Microsoft Store, one-time | Microsoft collects payment and sales taxes and keeps its store fee |
+| Linux | Free ready-to-install builds (.deb, .rpm, AppImage) on GitHub Releases | No storefront or merchant of record |
+| Linux (Flathub) | Optional | Free like the other Linux builds, so it undercuts nothing |
+| Android | CAD $4.99 on Google Play, one-time; signed APK on GitHub Releases | Google collects payment and sales taxes and keeps its store fee |
 | Source code | Free on GitHub | Required by GPL-3.0; anyone may build it themselves, so the price pays for convenience, signed builds, updates and support |
 
 No licence keys or copy protection: under GPL-3.0 anyone could remove them, and they add support burden without stopping copying.
 
 Pricing decisions:
 
-- **Price model:** fixed price on both Windows and Linux. The Microsoft Store supports fixed prices only, with optional free trials and temporary sale prices.
-- **Separate purchases:** Windows and Linux are bought separately; no cross-platform entitlement or proof-of-purchase process is needed.
-- **Linux storefront (deferred):** chosen before the first paid Linux release. Candidates: Paddle or Lemon Squeezy (merchant of record, handle sales taxes), itch.io or Gumroad (simpler), or a payment processor such as Nuvei (lower fees, but the seller handles sales taxes, checkout, refunds and chargebacks). Nothing in the design depends on this choice.
+- **Price model:** fixed one-time prices in both stores, no subscriptions and no purchases inside the apps. The Microsoft Store supports fixed prices, with optional free trials and temporary sale prices; a trial would need the app to check its Store licence, so there is none.
+- **Separate purchases:** the Windows app and the Android app are bought separately in their own stores; no cross-platform entitlement or proof-of-purchase process is needed.
+- **Linux storefront:** none; the Linux builds are free (2026-10-07).
 
 Note: existing products already cover parts of this scope (for example Quicken, Moneydance, GnuCash), but none combines all of it with Canadian registered plans, medical claims and asset maintenance. Reviewing them before development can help confirm priorities.

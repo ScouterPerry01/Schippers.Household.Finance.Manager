@@ -1,8 +1,10 @@
 # Microsoft Store listing: RANN's Roost
 
 Texts for Partner Center (DIST-01, DIST-07). Each field is marked with its Partner Center name and
-limit; `tools/dev/check_store_texts.py` checks the limits. Price, markets and age rating are the
-owner's choices in Partner Center.
+limit; `tools/dev/check_store_texts.py` checks the limits. Markets and age rating are the owner's choices in
+Partner Center.
+
+- Price: CAD $19.99, one-time, from the first submission (SRS 16.2); a launch discount is a sale price in Partner Center.
 
 - Privacy policy URL: https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en (French: https://www.rann.ca/rann-apps/rann-roost/privacy-policy-fr)
 - Website: https://www.rann.ca/rann-apps/rann-roost (source code: https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager)
@@ -78,7 +80,7 @@ REPORTS
 
 THE WHOLE HOUSEHOLD
 • Several users, each with their own password, and private account groups that other users cannot open.
-• RANN's Roost Mobile, the free Android companion, photographs receipts and bills, notes quick expenses and voice notes, logs trips, fill-ups, meter readings, hours worked, chores and volunteer hours, ticks off the seasonal checklist, shows the agenda of the coming two months and the month's budgets, and reminds you of bills, appointments and refills. It locks after the time you choose and speaks English or French, whatever the phone's language. It sends to your computer over your home Wi-Fi, or through a cloud folder or email of your own, encrypted end to end.
+• RANN's Roost Mobile, the Android companion on Google Play, photographs receipts and bills, notes quick expenses and voice notes, logs trips, fill-ups, meter readings, hours worked, chores and volunteer hours, ticks off the seasonal checklist, shows the agenda of the coming two months and the month's budgets, and reminds you of bills, appointments and refills. It locks after the time you choose and speaks English or French, whatever the phone's language. It sends to your computer over your home Wi-Fi, or through a cloud folder or email of your own, encrypted end to end.
 • Encrypted scheduled backups, tested after every backup, and a full export in open formats.
 • A built-in manual with pictures, help for every screen, a getting started guide, a Help menu, and Walk-Me guides that lead you step by step through common tasks, from creating the household to the year-end tax package.
 
@@ -125,7 +127,7 @@ Also in this first version:
 16. Hours worked turned into invoices, children's chores toward their allowance, and volunteer hours
 17. Home inventory, warranties, insurance, contacts, and an emergency and estate summary as a protected PDF
 18. Custom, saved and scheduled reports with charts, exported to PDF, Excel or CSV
-19. Free Android companion: capture receipts, log trips and hours, see the agenda and get reminders
+19. Android companion: capture receipts, log trips and hours, see the agenda and get reminders
 20. Walk-Me guides, several users, encrypted backups; your data stays encrypted on your computer: no account, no RANN cloud, no ads
 
 ### Search terms (7 terms, max 30 characters each)
@@ -204,7 +206,7 @@ RAPPORTS
 
 TOUT LE MÉNAGE
 • Plusieurs utilisateurs, chacun avec son mot de passe, et des groupes de comptes privés que les autres ne peuvent pas ouvrir.
-• RANN's Roost Mobile, le compagnon Android gratuit, photographie les reçus et les factures, note les dépenses rapides et les notes vocales, inscrit les trajets, les pleins, les relevés de compteur, les heures travaillées, les tâches ménagères et les heures de bénévolat, coche la liste saisonnière, montre l'agenda des deux prochains mois et les budgets du mois, et vous rappelle les factures, les rendez-vous et les renouvellements d'ordonnance. Il se verrouille après le délai choisi et parle français ou anglais, quelle que soit la langue du téléphone. Il envoie à votre ordinateur par le Wi-Fi de la maison, ou par un dossier infonuagique ou un courriel à vous, chiffré de bout en bout.
+• RANN's Roost Mobile, le compagnon Android sur Google Play, photographie les reçus et les factures, note les dépenses rapides et les notes vocales, inscrit les trajets, les pleins, les relevés de compteur, les heures travaillées, les tâches ménagères et les heures de bénévolat, coche la liste saisonnière, montre l'agenda des deux prochains mois et les budgets du mois, et vous rappelle les factures, les rendez-vous et les renouvellements d'ordonnance. Il se verrouille après le délai choisi et parle français ou anglais, quelle que soit la langue du téléphone. Il envoie à votre ordinateur par le Wi-Fi de la maison, ou par un dossier infonuagique ou un courriel à vous, chiffré de bout en bout.
 • Sauvegardes chiffrées planifiées, vérifiées après chaque sauvegarde, et une exportation complète dans des formats ouverts.
 • Un manuel intégré avec images, de l'aide pour chaque écran, un guide de démarrage, un menu Aide, et des guides Walk-Me qui vous mènent pas à pas dans les tâches courantes, de la création du ménage à la trousse fiscale de fin d'année.
 
@@ -251,7 +253,7 @@ Aussi dans cette première version :
 16. Heures travaillées transformées en factures, tâches des enfants pour leur allocation, et heures de bénévolat
 17. Inventaire de la maison, garanties, assurances, contacts, et sommaire d'urgence et de succession en PDF protégé
 18. Rapports personnalisés, enregistrés et planifiés avec graphiques, exportés en PDF, Excel ou CSV
-19. Compagnon Android gratuit : capturez vos reçus, inscrivez trajets et heures, consultez l'agenda et recevez des rappels
+19. Compagnon Android : capturez vos reçus, inscrivez trajets et heures, consultez l'agenda et recevez des rappels
 20. Guides Walk-Me, plusieurs utilisateurs, sauvegardes chiffrées; vos données restent chiffrées sur votre ordinateur : pas de compte, pas de nuage RANN, pas de publicité
 
 ### Termes de recherche (7 termes, max 30 caractères chacun)

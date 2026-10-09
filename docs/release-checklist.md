@@ -155,7 +155,8 @@ Partner Center > Apps and games > **RANN's Roost** > Start submission (before th
       reservation; a mismatch means `app/desktop/packaging/msix/store-identity.properties` is out of date.
 - [ ] **Restricted capability `runFullTrust`:** explain that this is a desktop (Win32) app packaged as
       MSIX, which needs full trust to run.
-- [ ] **Pricing and availability:** price and markets (your choice); Canada at least.
+- [ ] **Pricing and availability:** CAD $19.99 (SRS 16.2), set before the first submission so nobody
+      installs it free; markets your choice, Canada at least. A launch discount is a sale price.
 - [ ] **Properties:** category Personal finance; privacy policy
       https://www.rann.ca/rann-apps/rann-roost/privacy-policy-en; website https://www.rann.ca/rann-apps/rann-roost;
       support info-rann-apps@NorthMail.ca.
@@ -171,7 +172,13 @@ Nothing has been uploaded to Play yet; the package `ca.ranns.roost.mobile` becom
 first upload. Personal developer accounts need a closed test with at least 12 testers for 14 days in
 a row before production.
 
-- [ ] **Create the app:** RANN's Roost Mobile, default language English (Canada), App, Free.
+- [ ] **Payments profile:** Setup > Payments profile, linked to the developer account; Play needs it
+      before a paid app can be created.
+- [ ] **Create the app:** RANN's Roost Mobile, default language English (Canada), App, **Paid**. This
+      cannot be changed from free to paid later.
+- [ ] **Price:** Monetize > App pricing: CAD $4.99 (SRS 16.2); other countries from Play's conversion.
+- [ ] **Testers and the price:** before the closed test, check in Play Console how the 12 testers get
+      a paid app (licence testers, or buying it and being refunded).
 - [ ] **Play App Signing:** accept Google-generated app signing key; the upload key is the one from step 2.
 - [ ] **App content:** privacy policy URL (above); ads: none; App access: explain that the app needs
       RANN's Roost on a computer to pair, and give reviewers the steps (or a demo pairing) if Play asks;

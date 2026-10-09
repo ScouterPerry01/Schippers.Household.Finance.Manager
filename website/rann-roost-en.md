@@ -57,7 +57,7 @@ Accounts and registers
 [Image: desktop-en-reports.jpg. Alt text: The income and expense report, with a chart by month]
 Reports you can drill into and export
 
-## RANN's Roost Mobile, the free companion
+## RANN's Roost Mobile, the companion
 
 [Two columns: the text on the left, the image on the right.]
 
@@ -72,15 +72,15 @@ The phone also shows this month's budgets, the bills coming due and the maintena
 [Three boxes side by side. Replace "Coming soon" with a button linking to each store once the app is published there.]
 
 **Windows**
-From the Microsoft Store.
+From the Microsoft Store, CAD $19.99.
 Coming soon.
 
 **Linux**
-.deb, .rpm and AppImage packages.
+Free .deb, .rpm and AppImage packages.
 Coming soon.
 
 **Android companion**
-Free on Google Play. Requires RANN's Roost on your computer.
+CAD $4.99 on Google Play. Requires RANN's Roost on your computer.
 Coming soon.
 
 ## Free software, with support

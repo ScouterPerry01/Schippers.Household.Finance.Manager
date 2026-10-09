@@ -57,7 +57,7 @@ Comptes et registres
 [Image : desktop-fr-rapports.jpg. Texte de remplacement : Le rapport des revenus et dépenses, avec un graphique par mois]
 Des rapports à explorer et à exporter
 
-## RANN's Roost Mobile, le compagnon gratuit
+## RANN's Roost Mobile, le compagnon
 
 [Deux colonnes : le texte à gauche, l'image à droite.]
 
@@ -72,15 +72,15 @@ Le téléphone affiche aussi les budgets du mois, les factures à payer et l'ent
 [Trois cases côte à côte. Remplacer « Bientôt offert » par un bouton menant à chaque boutique une fois l'application publiée.]
 
 **Windows**
-Dans le Microsoft Store.
+Dans le Microsoft Store, 19,99 $ CA.
 Bientôt offert.
 
 **Linux**
-Paquets .deb, .rpm et AppImage.
+Paquets .deb, .rpm et AppImage gratuits.
 Bientôt offert.
 
 **Compagnon Android**
-Gratuit sur Google Play. Nécessite RANN's Roost sur votre ordinateur.
+4,99 $ CA sur Google Play. Nécessite RANN's Roost sur votre ordinateur.
 Bientôt offert.
 
 ## Un logiciel libre, avec du soutien
