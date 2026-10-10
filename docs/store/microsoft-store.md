@@ -1,8 +1,18 @@
+<!--
+File path and name: docs/store/microsoft-store.md
+Modified On Timestamp: 2026-10-10 @ 02:26 EDT
+Created On Timestamp: 2026-10-03 @ 09:38 EDT
+File Description: The Microsoft Store listing texts of RANN's Roost in English and French, with the caption and alt text of each screenshot.
+Uses: docs/store/screenshots/desktop-en and desktop-fr; tools/dev/check_store_texts.py checks the limits.
+Used By: the owner, pasting into Partner Center; docs/release-checklist.md section 7.
+Purpose: Keep every Store field ready to paste, within its limit.
+-->
+
 # Microsoft Store listing: RANN's Roost
 
 Texts for Partner Center (DIST-01, DIST-07). Each field is marked with its Partner Center name and
 limit; `tools/dev/check_store_texts.py` checks the limits. Markets and age rating are the owner's choices in
-Partner Center.
+Partner Center. Nothing has been published on the Microsoft Store yet: version 1.0.0 is the first submission.
 
 - Price: CAD $19.99, one-time, from the first submission (SRS 16.2); a launch discount is a sale price in Partner Center.
 
@@ -10,7 +20,11 @@ Partner Center.
 - Website: https://www.rann.ca/rann-apps/rann-roost (source code: https://github.com/ScouterPerry01/Schippers.Household.Finance.Manager)
 - Support contact: info-rann-apps@NorthMail.ca
 - Category: Personal finance
-- Screenshots: `docs/store/screenshots/desktop-en/` and `desktop-fr/` (1440 × 900, eight per language, in listing order: dashboard, credit card register, spending by category, income tax estimate, investments, all bills with their columns, medical claims, budgets). Retake them with `./gradlew :app:desktop:storeScreenshots -Plang=en` (then `fr`), which draws the sample household offscreen.
+- Screenshots: `docs/store/screenshots/desktop-en/` and `desktop-fr/` (1440 × 900, eight per language, in listing order: dashboard, credit card register, spending by category, income tax estimate, investments, all bills with their columns, medical claims, budgets). Retake them with `./gradlew :app:desktop:storeScreenshots -Plang=en` (then `fr`), which draws the sample household offscreen. Each one has a caption and an alt text under "Screenshots: captions and alt text" at the end of this file.
+- Store logos (Partner Center > Store listing > Store logos), in `branding/store/`, drawn by `python tools/dev/make_store_logos.py` from the logo files: `poster-1440x2160.png` (2:3 poster art), `box-2160x2160.png` (1:1 box art), `hero-3840x2160.png` and `hero-1920x1080.png` (16:9 super hero art: the kite alone, no lettering, since the Store writes the title over it), `tile-300x300.png` (1:1 app tile icon, used instead of the package icon), and `tile-150x150.png` and `tile-71x71.png` (the 1:1 150 × 150 and 71 × 71 tile icons). The name and kite keep to the top two-thirds, where the Store lays no text; the black lettering on sky blue `#3D8FCB` has a contrast of 6.0:1 (4.5:1 needed).
+  - Poster and box art alt text: "The RANN's Roost logo: a Brahminy kite in flight, wings spread, between the words RANN and ROOST in black on a sky blue background." French: "Le logo de RANN's Roost : un milan sacré en vol, ailes déployées, entre les mots RANN et ROOST en noir sur un fond bleu ciel."
+  - Super hero art alt text: "A Brahminy kite in flight, wings spread, against a clear sky blue background." French: "Un milan sacré en vol, ailes déployées, sur un fond bleu ciel uni."
+  - App tile icons (all three sizes) alt text: "RANN's Roost icon: a Brahminy kite, white head and chestnut wings, against a sky blue background." French: "Icône de RANN's Roost : un milan sacré, tête blanche et ailes brun-roux, sur un fond bleu ciel."
 
 ## English (en-CA)
 
@@ -80,7 +94,7 @@ REPORTS
 
 THE WHOLE HOUSEHOLD
 • Several users, each with their own password, and private account groups that other users cannot open.
-• RANN's Roost Mobile, the Android companion on Google Play, photographs receipts and bills, notes quick expenses and voice notes, logs trips, fill-ups, meter readings, hours worked, chores and volunteer hours, ticks off the seasonal checklist, shows the agenda of the coming two months and the month's budgets, and reminds you of bills, appointments and refills. It locks after the time you choose and speaks English or French, whatever the phone's language. It sends to your computer over your home Wi-Fi, or through a cloud folder or email of your own, encrypted end to end.
+• RANN's Roost Mobile, the Android companion sold separately on Google Play, photographs receipts and bills, notes quick expenses and voice notes, logs trips, fill-ups, meter readings, hours worked, chores and volunteer hours, ticks off the seasonal checklist, shows the agenda of the coming two months and the month's budgets, and reminds you of bills, appointments and refills. It locks after the time you choose and speaks English or French, whatever the phone's language. It sends to your computer over your home Wi-Fi, or through a cloud folder or email of your own, encrypted end to end.
 • Encrypted scheduled backups, tested after every backup, and a full export in open formats.
 • A built-in manual with pictures, help for every screen, a getting started guide, a Help menu, and Walk-Me guides that lead you step by step through common tasks, from creating the household to the year-end tax package.
 
@@ -91,21 +105,7 @@ Tax figures, including the income tax estimate, are organizational aids, not tax
 
 ### What's new in this version (max 1,500)
 
-First release of RANN's Roost, for the whole household's finances on your own computer.
-
-Also in this first version:
-• A family calendar (agenda, day, week, month, year), work and school schedules (shifts included) and children's activities.
-• Each person's phone calendars brought in, each kept private, busy only or shared.
-• Seasonal checklists across the home, cottage, vehicles, pools and yards, and energy upgrades with their rebates.
-• Fuel or charging with consumption by kind of driving.
-• Vehicle forecasts of fuel, charging and maintenance, and a CRA logbook.
-• Utility meters and propane or oil tanks.
-• Hours worked turned into invoices, children's chores and volunteer hours.
-• Bills classed Home or Business, with account numbers, statements, utility readings, payments in part and property taxes in instalments.
-• Trips with several stops, breaks, notes and photos, addresses, and stations nearby (opt-in).
-• On the phone: an agenda, calendars synced both ways (opt-in), the lock time and the app's language.
-• Documents page by page with zoom, and receipts itemized by hand.
-• A Help menu and Walk-Me guides for common tasks.
+First release of RANN's Roost: a Canadian household's complete finances and family life on your own computer, encrypted, in English and French.
 
 ### Product features (up to 20, max 200 each)
 
@@ -127,7 +127,7 @@ Also in this first version:
 16. Hours worked turned into invoices, children's chores toward their allowance, and volunteer hours
 17. Home inventory, warranties, insurance, contacts, and an emergency and estate summary as a protected PDF
 18. Custom, saved and scheduled reports with charts, exported to PDF, Excel or CSV
-19. Android companion: capture receipts, log trips and hours, see the agenda and get reminders
+19. Android companion, sold separately on Google Play: capture receipts, log trips and hours, see the agenda and get reminders
 20. Walk-Me guides, several users, encrypted backups; your data stays encrypted on your computer: no account, no RANN cloud, no ads
 
 ### Search terms (7 terms, max 30 characters each)
@@ -206,7 +206,7 @@ RAPPORTS
 
 TOUT LE MÉNAGE
 • Plusieurs utilisateurs, chacun avec son mot de passe, et des groupes de comptes privés que les autres ne peuvent pas ouvrir.
-• RANN's Roost Mobile, le compagnon Android sur Google Play, photographie les reçus et les factures, note les dépenses rapides et les notes vocales, inscrit les trajets, les pleins, les relevés de compteur, les heures travaillées, les tâches ménagères et les heures de bénévolat, coche la liste saisonnière, montre l'agenda des deux prochains mois et les budgets du mois, et vous rappelle les factures, les rendez-vous et les renouvellements d'ordonnance. Il se verrouille après le délai choisi et parle français ou anglais, quelle que soit la langue du téléphone. Il envoie à votre ordinateur par le Wi-Fi de la maison, ou par un dossier infonuagique ou un courriel à vous, chiffré de bout en bout.
+• RANN's Roost Mobile, le compagnon Android vendu séparément sur Google Play, photographie les reçus et les factures, note les dépenses rapides et les notes vocales, inscrit les trajets, les pleins, les relevés de compteur, les heures travaillées, les tâches ménagères et les heures de bénévolat, coche la liste saisonnière, montre l'agenda des deux prochains mois et les budgets du mois, et vous rappelle les factures, les rendez-vous et les renouvellements d'ordonnance. Il se verrouille après le délai choisi et parle français ou anglais, quelle que soit la langue du téléphone. Il envoie à votre ordinateur par le Wi-Fi de la maison, ou par un dossier infonuagique ou un courriel à vous, chiffré de bout en bout.
 • Sauvegardes chiffrées planifiées, vérifiées après chaque sauvegarde, et une exportation complète dans des formats ouverts.
 • Un manuel intégré avec images, de l'aide pour chaque écran, un guide de démarrage, un menu Aide, et des guides Walk-Me qui vous mènent pas à pas dans les tâches courantes, de la création du ménage à la trousse fiscale de fin d'année.
 
@@ -217,21 +217,7 @@ Les chiffres fiscaux, y compris l'estimation de l'impôt, sont une aide à l'org
 
 ### Nouveautés de cette version (max 1 500)
 
-Première version de RANN's Roost, pour toutes les finances du ménage sur votre propre ordinateur.
-
-Aussi dans cette première version :
-• Un calendrier familial (agenda, jour, semaine, mois, année), les horaires de travail et d'école (quarts compris) et les activités des enfants.
-• Les calendriers du téléphone de chaque personne, chacun privé, occupé seulement ou partagé.
-• Des listes saisonnières pour la maison, le chalet, les véhicules, la piscine et le terrain, et les rénovations écoénergétiques avec leurs remises.
-• Le carburant ou la recharge avec la consommation selon le genre de conduite.
-• Des prévisions de carburant, de recharge et d'entretien des véhicules, et un registre de l'ARC.
-• Les compteurs de services publics et les réservoirs de propane ou de mazout.
-• Les heures travaillées transformées en factures, les tâches des enfants et les heures de bénévolat.
-• Factures Maison ou Entreprise, avec numéros de compte, relevés, relevés de compteur, paiements partiels et taxes municipales par versements.
-• Trajets avec plusieurs arrêts, pauses, notes et photos, adresses, et stations à proximité (facultatif).
-• Sur le téléphone : un agenda, les calendriers synchronisés dans les deux sens (facultatif), le délai de verrouillage et la langue.
-• Documents page par page avec zoom, et reçus détaillés à la main.
-• Un menu Aide et des guides Walk-Me pour les tâches courantes.
+Première version de RANN's Roost : toutes les finances et la vie familiale d'un ménage canadien sur votre propre ordinateur, chiffrées, en français et en anglais.
 
 ### Caractéristiques du produit (jusqu'à 20, max 200 chacune)
 
@@ -253,7 +239,7 @@ Aussi dans cette première version :
 16. Heures travaillées transformées en factures, tâches des enfants pour leur allocation, et heures de bénévolat
 17. Inventaire de la maison, garanties, assurances, contacts, et sommaire d'urgence et de succession en PDF protégé
 18. Rapports personnalisés, enregistrés et planifiés avec graphiques, exportés en PDF, Excel ou CSV
-19. Compagnon Android : capturez vos reçus, inscrivez trajets et heures, consultez l'agenda et recevez des rappels
+19. Compagnon Android vendu séparément sur Google Play : capturez vos reçus, inscrivez trajets et heures, consultez l'agenda et recevez des rappels
 20. Guides Walk-Me, plusieurs utilisateurs, sauvegardes chiffrées; vos données restent chiffrées sur votre ordinateur : pas de compte, pas de nuage RANN, pas de publicité
 
 ### Termes de recherche (7 termes, max 30 caractères chacun)
@@ -263,3 +249,140 @@ budget; finances personnelles; Quicken; impôt sur le revenu; REER CELI; calendr
 ### Droits d'auteur et marques (max 200)
 
 © 2026 Perry Schippers, faisant affaire sous le nom de RANN. RANN's Roost est un logiciel libre (GPL-3.0 ou ultérieure); le nom et le logo ne sont pas visés par cette licence.
+
+## Screenshots: captions and alt text
+
+Upload the pictures in this order, the English set with the English listing and the French set with the French
+listing. Partner Center shows a **Caption** box under each screenshot (max 200): paste the caption there. The alt
+text describes the picture for people who use a screen reader; paste it wherever an alt text or description box
+is offered (Partner Center, and the same pictures on rann.ca: in Google Sites, click the picture, then the three
+dots, then **Alt text**). Alt texts are kept under 250 characters so they are read in one go. They do not quote
+amounts, so they stay true when the pictures are retaken.
+
+### English 1, 1-dashboard.png: caption (max 200)
+
+Your household at a glance: net worth, cash, what you owe, bills due this week, spending against budget and what needs your attention.
+
+### English 1, 1-dashboard.png: alt text (max 250)
+
+Dashboard of a sample household: cards for net worth, cash available, credit and loans owing, bills due in the next 7 days and spending this month, a list of items needing attention, a net worth chart and a top spending chart.
+
+### English 2, 2-accounts.png: caption (max 200)
+
+Every account in one list, with a credit card register, statement import, reconciling and quick entry of new transactions.
+
+### English 2, 2-accounts.png: alt text (max 250)
+
+Accounts page: chequing, savings, US dollar, credit card, mortgage and investment accounts with their balances, and a credit card register with its transactions and a form to enter a new one.
+
+### English 3, 3-reports.png: caption (max 200)
+
+Spending by category for the year, for everyone or one person, by tag or group of accounts, saved as your own report.
+
+### English 3, 3-reports.png: alt text (max 250)
+
+Spending by category report for this year: a bar for each category such as housing, taxes, transportation, food, utilities and pets, with its amount and share, beside the list of reports.
+
+### English 4, 4-taxes.png: caption (max 200)
+
+An income tax estimate for each person, for every province and territory, from the figures of your year-end package.
+
+### English 4, 4-taxes.png: alt text (max 250)
+
+Taxes page, Estimate tab: one person's income figures on the left; federal and Ontario tax, refundable credits, the refund, and the average and marginal rates on the right.
+
+### English 5, 5-investments.png: caption (max 200)
+
+Investments with market value, book cost and unrealized gains, beside registered plans, crypto and precious metals.
+
+### English 5, 5-investments.png: alt text (max 250)
+
+Investments page: non-registered accounts, crypto, precious metals and registered plans on the left; a brokerage account's holdings with quantity, price, market value, book cost and gain on the right.
+
+### English 6, 6-bills.png: caption (max 200)
+
+All your bills with due dates, amounts, account numbers and instalments; mark each one paid in one click.
+
+### English 6, 6-bills.png: alt text (max 250)
+
+Bills page, All bills tab: upcoming bills and pay with their due date, kind, category, amount due, amount to pay and amount outstanding, each with a Mark paid or Mark received button.
+
+### English 7, 7-medical.png: caption (max 200)
+
+Medical and dental expenses from the receipt to every claim, with the plans of both spouses in the right order.
+
+### English 7, 7-medical.png: alt text (max 250)
+
+Medical claims page: open expenses for each family member, with the date, the kind of care, the plan to claim from, the deadline, the amount expected back and the amount paid.
+
+### English 8, 8-budgets.png: caption (max 200)
+
+Monthly budgets by category, with what is left, amounts carried over and overspending shown in red.
+
+### English 8, 8-budgets.png: alt text (max 250)
+
+Budgets page for one month: totals spent, budgeted and remaining, and a bar for each category, with housing and transportation over budget in red, and food, restaurants and utilities within budget.
+
+### Français 1, 1-tableau-de-bord.png : légende (max 200)
+
+Votre ménage d'un coup d'œil : valeur nette, encaisse, ce que vous devez, factures de la semaine, dépenses par rapport au budget et ce qui demande votre attention.
+
+### Français 1, 1-tableau-de-bord.png : texte de remplacement (max 250)
+
+Tableau de bord d'un ménage fictif : cases de la valeur nette, de l'encaisse, du crédit et des prêts dus, des factures des 7 prochains jours et des dépenses du mois, points à voir, graphique de la valeur nette et des dépenses.
+
+### Français 2, 2-comptes.png : légende (max 200)
+
+Tous vos comptes dans une liste, avec le registre d'une carte de crédit, l'importation des relevés, le rapprochement et la saisie rapide.
+
+### Français 2, 2-comptes.png : texte de remplacement (max 250)
+
+Page Comptes : comptes chèques, épargne, en dollars US, carte de crédit, prêt hypothécaire et placements avec leur solde, et le registre d'une carte de crédit avec ses opérations et un formulaire de saisie.
+
+### Français 3, 3-rapports.png : légende (max 200)
+
+Les dépenses par catégorie de l'année, pour tous ou une personne, par étiquette ou groupe de comptes, enregistrées comme votre propre rapport.
+
+### Français 3, 3-rapports.png : texte de remplacement (max 250)
+
+Rapport des dépenses par catégorie de l'année : une barre par catégorie, comme l'habitation, les impôts, le transport, l'alimentation, les services publics et les animaux, avec le montant et la part, à côté de la liste des rapports.
+
+### Français 4, 4-impots.png : légende (max 200)
+
+Une estimation de l'impôt de chaque personne, pour chaque province et territoire, à partir des chiffres de votre trousse de fin d'année.
+
+### Français 4, 4-impots.png : texte de remplacement (max 250)
+
+Page Impôts, onglet Estimation : les revenus d'une personne à gauche; l'impôt fédéral et du Québec, les crédits remboursables, le remboursement et les taux moyen et marginal à droite.
+
+### Français 5, 5-placements.png : légende (max 200)
+
+Vos placements avec la valeur marchande, le prix de base et le gain non réalisé, à côté des régimes enregistrés, des cryptomonnaies et des métaux précieux.
+
+### Français 5, 5-placements.png : texte de remplacement (max 250)
+
+Page Placements : comptes non enregistrés, cryptomonnaies, métaux précieux et régimes enregistrés à gauche; les titres d'un compte de courtage avec quantité, cours, valeur marchande, prix de base et gain à droite.
+
+### Français 6, 6-factures.png : légende (max 200)
+
+Toutes vos factures avec l'échéance, le montant, le numéro de compte et les versements; marquez-les payées d'un seul clic.
+
+### Français 6, 6-factures.png : texte de remplacement (max 250)
+
+Page Factures, onglet Toutes les factures : factures et paies à venir avec l'échéance, le genre, la catégorie, le montant dû, le montant à payer et le solde, chacune avec un bouton pour la marquer payée ou reçue.
+
+### Français 7, 7-reclamations-medicales.png : légende (max 200)
+
+Les frais médicaux et dentaires, du reçu à chaque réclamation, avec les régimes des deux conjoints dans le bon ordre.
+
+### Français 7, 7-reclamations-medicales.png : texte de remplacement (max 250)
+
+Page Réclamations médicales : les frais encore ouverts de chaque membre de la famille, avec la date, le genre de soins, le régime à réclamer, la date limite, le montant attendu et le montant payé.
+
+### Français 8, 8-budgets.png : légende (max 200)
+
+Les budgets du mois par catégorie, avec ce qui reste, les montants reportés et les dépassements en rouge.
+
+### Français 8, 8-budgets.png : texte de remplacement (max 250)
+
+Page Budgets d'un mois : totaux dépensé, budgété et restant, et une barre par catégorie, l'habitation et le transport dépassés en rouge, l'alimentation, les restaurants et les services publics dans le budget.
