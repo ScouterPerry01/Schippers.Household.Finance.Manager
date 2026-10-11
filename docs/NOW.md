@@ -1,6 +1,6 @@
 <!--
 File path and name: docs/NOW.md
-Modified On Timestamp: 2026-10-09 @ 08:14 EDT
+Modified On Timestamp: 2026-10-10 @ 21:15 EDT
 Created On Timestamp: 2026-10-09 @ 08:14 EDT
 File Description: The ONE short "where are we right now" file. Read this first when resuming.
 Uses: docs/session-log.md, the current handover file.
@@ -13,26 +13,25 @@ Purpose: Keep current state out of the always-loaded CLAUDE.md.
 > **This file is OVERWRITTEN at the end of every session, never appended to. Keep it under ~40 lines.**
 > History goes in `docs/session-log.md`; detail in the day's handover file.
 
-**As of:** 2026-10-09 morning
+**As of:** 2026-10-10 evening
 
-**Branch:** `docs/context-slim` (Claude Code context setup, not yet committed). `main` = `f18f6e12` locally —
-the rewritten history (phone app removed, noreply email), **not yet pushed**.
+**Branch:** `main`, pushed. Tag `v1.0.0` (`f20b66e2`). The repository is public. The phone app
+(Rann.Roost.Mobile, also 1.0.0) is in **closed testing** on Google Play.
 
-**Just finished:** Phone app moved to Rann.Roost.Mobile; history rewritten; Store prices set; Claude Code
-context set up (CLAUDE.md, this file, session log, deny list, end-session skill, test-runner agent).
+**Just finished:** release 1.0.0; Microsoft Store listing texts with a caption and alt text for every
+picture, retaken screenshots, Store logos (`branding/store/`), 15 trailers (8 EN, 7 FR, Azure neural
+voices) kept outside the repository. Detail: `docs/session-handover-2026-10-10.md`.
 
 **NEXT (in order):**
-1. Owner force-pushes the rewritten `main` (`git push --force origin main`, then `git branch -u origin/main`)
-   and ticks GitHub Settings > Emails "Keep my email addresses private" and "Block command line pushes that
-   expose my email".
-2. Push/merge `docs/context-slim` after the force-push.
-3. Make the repository public (owner approved 2026-10-09; history scanned, no secrets).
-4. Check Rann.Roost.Mobile CI goes green (it can fetch the submodule once this repo is public); release dry
-   runs in both repositories.
+1. Owner: publish the draft GitHub release v1.0.0 (still a draft).
+2. Owner: first Microsoft Store submission per `docs/release-checklist.md` § 7 (MSIX from run
+   37953543559, the `msix` artifact; listing, logos, trailers 01-07).
+3. Owner: keep the 12+ Play closed testers opted in for 14 days in a row, then apply for production
+   (Rann.Roost.Mobile `docs/release-checklist.md` § 3).
+4. Owner: rann.ca updates (`website/`), including the phone trailer if wanted.
 
-**Waiting on the developer:** step 1 (force-push and GitHub email settings).
+**Waiting on the developer:** steps 1 to 4.
 
-**To resume, read ONLY:** this file; `docs/development-plan.md` § Decisions log (search for it) if a decision
-is needed.
+**To resume, read ONLY:** this file; `docs/session-handover-2026-10-10.md` § 3 (open items) if needed.
 
 **Standing state:** no Android code in this repository. Public 1.0 = end of Phase 5.

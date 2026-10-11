@@ -1,3 +1,13 @@
+<!--
+File path and name: docs/release-checklist.md
+Modified On Timestamp: 2026-10-10 @ 21:15 EDT
+Created On Timestamp: 2026-10-06 @ 17:12 EDT
+File Description: The owner's release-day checklist for the desktop app (keys, tag, GitHub release, Microsoft Store).
+Uses: .github/workflows/release.yml, docs/store/, branding/store/, docs/releases/.
+Used By: The owner on release day.
+Purpose: One ordered list so no release step is forgotten.
+-->
+
 # Release day checklist: RANN's Roost 1.0.0
 
 For the owner. Everything that touches a secret (the release key, the Android upload key, their
@@ -153,6 +163,15 @@ Partner Center > Apps and games > **RANN's Roost** > Start submission (before th
 - [ ] **Store listings:** English (Canada) and French (Canada) from [`docs/store/microsoft-store.md`](store/microsoft-store.md),
       with the eight screenshots per language in `docs/store/screenshots/desktop-en` and `desktop-fr`
       and the tiles from `branding/`. Check the texts still fit: `python tools/dev/check_store_texts.py`.
+      Each screenshot's caption and alt text are in that file's "Screenshots: captions and alt text".
+- [ ] **Store logos:** from `branding/store/`: 2:3 poster `poster-1440x2160.png`, 1:1 box art
+      `box-2160x2160.png`, tiles `tile-300x300.png`, `tile-150x150.png`, `tile-71x71.png`, and the 16:9
+      super hero art `hero-3840x2160.png` / `hero-1920x1080.png` (required once a trailer is added).
+      Rebuild them with `python tools/dev/make_store_logos.py`.
+- [ ] **Trailers (optional):** the 1080p MP4s are not kept in this repository (they are in the owner's
+      `Downloads\rann-trailers\en` and `fr`, each with a thumbnail PNG, a `.vtt` caption file and a
+      title). Upload 01 to 07; keep 08 (the phone companion) for rann.ca, since a Store trailer about
+      a separately sold Android app may not pass certification.
 - [ ] Submit. Certification usually takes one to three business days.
 
 ## 8. Google Play (Play Console)
